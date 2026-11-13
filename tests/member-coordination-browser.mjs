@@ -1,6 +1,6 @@
 import {focusWorkspace,openIncidentAction,openWorkspaceSection} from './keyboard.mjs'
 import assert from 'node:assert/strict'
-import {mkdir} from 'node:fs/promises'
+import {mkdir,readFile} from 'node:fs/promises'
 import {chromium,expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import {localWorker} from './worker.mjs'
@@ -125,6 +125,101 @@ async function incidentSaves(page) {
  assert.deepEqual((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations.filter(row=>['serious','critical'].includes(row.impact)),[]);
  console.log('PASS incident saves: persistent runbook and review Saved states, failed-save alerts and Retry, phone header without leading separators, draft edits without timeline entries, exactly one attributed accepted review; changed screens captured at 1440 and 390');
 }
+// Extend the member incident journey through retained handoff actions, rather
+// than introducing another browser registration or repeating it at phone width.
+async function incidentHandoff(ownerPage) {
+ const req=async(path,data)=>ok(await call(ownerPage,path,data));
+ const created=await req('/api/command',{type:'declare',service:'checkout',title:'Synthetic handoff incident',summary:'Checkout confirmations are delayed',severity:'warning'});
+ let incident=await req('/api/command',{type:'transition',incident:created.id,revision:created.revision,state:'acknowledged',summary:'Investigating checkout confirmations'});
+ const member=await open(1440);const responderRecord=await passwordSignIn(member.page,responder);
+ const page=member.page;
+ await openIncident(page,incident.id);await openIncidentAction(page,'Handoff draft');
+ const panel=page.getByRole('dialog',{name:'Handoff draft',exact:true});
+ const capture=async(name,target=page)=>{
+  for(const width of [1440,390]){
+   await target.setViewportSize({width,height:1000});
+   await target.evaluate(()=>window.scrollTo(0,0));
+   await target.getByRole('dialog',{name:'Handoff draft',exact:true}).evaluate(element=>{element.scrollTop=0;});
+   await target.screenshot({path:`${captureDirectory}/handoff-${name}-${width}.png`,fullPage:false});
+  }
+  await target.setViewportSize({width:1440,height:1000});
+ };
+ await panel.getByLabel('Intended audience',{exact:true}).selectOption('customer');
+ const title='Checkout update for customers',summary='Checkout confirmations are delayed. Responders are investigating.\nNext update after the database check.';
+ await panel.getByLabel('Title',{exact:true}).fill(title);await panel.getByLabel('Summary',{exact:true}).fill(summary);
+ await capture('prepare');
+ // A response lost after commit retries the same prepare identity exactly once.
+ let lose=true;
+ const lost=async route=>{const response=await route.fetch();if(lose){lose=false;await route.abort();}else await route.fulfill({response});};
+ await page.route('**/api/handoffs/prepare',lost);
+ await panel.getByRole('button',{name:'Prepare copy',exact:true}).click();
+ await expect(panel.getByRole('button',{name:'Retry action',exact:true})).toBeVisible();
+ await expect(panel.getByLabel('Summary',{exact:true})).toHaveValue(summary);
+ await panel.getByRole('button',{name:'Retry action',exact:true}).click();
+ await expect(panel.getByRole('button',{name:'Review exact copy',exact:true})).toBeVisible();
+ await page.unroute('**/api/handoffs/prepare',lost);
+ let records=(await req('/api/handoffs')).records.filter(record=>record.source.incident.id===incident.id);
+ assert.equal(records.length,1);assert.equal(records[0].history.length,1);assert.equal(records[0].history[0].actor.id,responderRecord.id);
+ const saved=panel.getByRole('article',{name:'Saved handoff copy'});
+ await expect(saved.getByRole('heading',{name:title,exact:true})).toBeVisible();await expect(saved.locator('.handoff-summary')).toHaveText(summary);
+ assert.deepEqual(records[0].payload,{audience:'customer',title,summary,evidenceLinks:[],impactLinks:[]});
+ await capture('prepared');
+ lose=true;await page.route('**/api/handoffs/*/review',lost);
+ await panel.getByRole('button',{name:'Review exact copy',exact:true}).click();
+ await expect(panel.getByRole('button',{name:'Retry action',exact:true})).toBeVisible();
+ await expect(panel.getByRole('button',{name:'Review exact copy',exact:true})).toBeDisabled();
+ await panel.getByRole('button',{name:'Retry action',exact:true}).click();
+ await expect(panel.getByRole('button',{name:'Export reviewed copy',exact:true})).toBeVisible();
+ await page.unroute('**/api/handoffs/*/review',lost);
+ let record=(await req('/api/handoffs/'+records[0].id)).record;
+ const approval=record.history.at(-1);assert.equal(record.history.length,2,'lost review response retry appends one review');assert.equal(approval.type,'reviewed');assert.equal(approval.actor.id,responderRecord.id);
+ await expect(saved.getByText(/Reviewed by/)).toContainText(responderRecord.name);
+ assert.equal(await saved.locator('time').last().getAttribute('datetime'),new Date(approval.at).toISOString());
+ await capture('reviewed');
+ const download=page.waitForEvent('download');await panel.getByRole('button',{name:'Export reviewed copy',exact:true}).click();
+ const file=await download,packet=JSON.parse(await readFile(await file.path(),'utf8'));
+ assert.deepEqual(packet,(await call(page,'/api/handoffs/'+record.id+'/export')).value);
+ assert.deepEqual(packet.record,record);assert.equal(packet.transport,'unsent');assert.equal(packet.publication,'not-published');assert.deepEqual(packet.providerActions,[]);
+ // The existing viewer can inspect exact saved copy, with no action controls.
+ const readOnly=await open(1440);await passwordSignIn(readOnly.page,viewer);await openIncident(readOnly.page,incident.id);await openIncidentAction(readOnly.page,'Handoff draft');
+ const viewerPanel=readOnly.page.getByRole('dialog',{name:'Handoff draft',exact:true});
+ await expect(viewerPanel.locator('.handoff-summary')).toHaveText(summary);
+ assert.equal(await viewerPanel.getByRole('button').count(),1,'viewer has only the existing Close control');
+ assert.equal(await viewerPanel.locator('form').count(),0);
+ await capture('viewer',readOnly.page);await readOnly.context.close();
+ // Current role is rechecked by the public door even while an old panel is open.
+ await req('/api/command',{type:'member',id:responderRecord.id,role:'viewer',active:true});
+ await panel.getByRole('button',{name:'Prepare again',exact:true}).click();
+ await panel.getByRole('button',{name:'Prepare copy',exact:true}).click();
+ await expect(panel.getByRole('alert')).toBeVisible();
+ assert.equal((await req('/api/handoffs')).records.filter(row=>row.source.incident.id===incident.id).length,1);
+ await req('/api/command',{type:'member',id:responderRecord.id,role:'responder',active:true});
+ await panel.getByRole('button',{name:'Cancel',exact:true}).click();
+ // Mutate the source after review, then exercise the actual HTTP export conflict.
+ incident=await req('/api/command',{type:'note',incident:incident.id,revision:incident.revision,text:'Database checks changed the current incident context.'});
+ const conflict=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/handoffs/'+record.id+'/export');
+ await panel.getByRole('button',{name:'Export reviewed copy',exact:true}).click();assert.equal((await conflict).status(),409);
+ await expect(panel.getByRole('button',{name:'Export reviewed copy',exact:true})).toHaveCount(0);
+ await expect(panel.getByRole('button',{name:'Prepare again',exact:true})).toBeVisible();
+ assert.equal((await req('/api/handoffs/'+record.id)).eligibility.eligible,false);
+ await capture('stale');
+ await panel.getByRole('button',{name:'Prepare again',exact:true}).click();
+ await panel.getByLabel('Summary',{exact:true}).fill('Current database checks show checkout confirmations recovering.');
+ await panel.getByRole('button',{name:'Prepare copy',exact:true}).click();await expect(panel.getByRole('button',{name:'Review exact copy',exact:true})).toBeVisible();
+ records=(await req('/api/handoffs')).records.filter(row=>row.source.incident.id===incident.id);
+ assert.equal(records.length,2);assert.equal(records[1].supersedes,record.id);assert.equal(records[1].source.incident.revision,incident.revision);
+ assert.deepEqual(records[0],record,'the old reviewed record is unchanged');
+ // Administrator review uses the same panel and existing actions.
+ await openIncident(ownerPage,incident.id);await openIncidentAction(ownerPage,'Handoff draft');
+ const adminPanel=ownerPage.getByRole('dialog',{name:'Handoff draft',exact:true});
+ await adminPanel.getByRole('button',{name:'Review exact copy',exact:true}).click();await expect(adminPanel.getByRole('button',{name:'Export reviewed copy',exact:true})).toBeVisible();
+ assert.equal((await req('/api/handoffs/'+records[1].id)).record.history.at(-1).actor.role,'admin');
+ await adminPanel.getByRole('button',{name:'Close',exact:true}).click();
+ assert.deepEqual((await new AxeBuilder({page}).include('.incident-sheet').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations.filter(row=>['serious','critical'].includes(row.impact)),[]);
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ await member.context.close();
+ console.log('PASS incident handoff: responder prepares, reviews and downloads exact unsent JSON; lost-response retry commits once; viewer inspects without actions; current-role refusal, source-drift export conflict and replacement; admin reviews; screens captured at 1440 and 390');
+}
 try {
  const claimed=await worker.request('/auth/bootstrap',{token:worker.vars.SETUP_TOKEN,displayName:'Oncall lead'},undefined,{'CF-Connecting-IP':'127.0.0.1'})
  assert.equal(claimed.status,303,JSON.stringify(claimed.value))
@@ -157,6 +252,7 @@ try {
  const afterRetry=ok(await call(owner.page,'/api/state'));assert.equal(afterRetry.audit.length,beforeRetry+1,'Retry adds exactly one audit row');assert.equal(afterRetry.services.find(s=>s.id==='checkout').owner,rosaRecord.id);
  console.log('OC4 autosave: menu departure retains owner after reload; offline retains input; Retry audit +1');
  await incidentSaves(owner.page);
+ await incidentHandoff(owner.page);
  if(!focusedSaves){
  // OC-023 public-team forms use the existing Team section at both widths.
  for(const width of [1440]){
@@ -385,7 +481,41 @@ try {
   await expect(statusPanel.getByText('Owning team: '+teams[0].name,{exact:true})).toBeVisible()
   console.log('OC-061 one-team branch: the form names its sole created team',teams[0].name)
  }
- await statusPanel.getByLabel('Supporting technical services',{exact:true}).selectOption('synthetic-oncall-61')
+ // Refused creates retain their draft and name the invalid field beside it.
+ const supporting=statusPanel.getByLabel('Supporting technical services',{exact:true}),createBusiness=statusPanel.getByRole('button',{name:'Create business service',exact:true});
+ await statusPanel.getByLabel('Communications owner',{exact:true}).selectOption(rosaRecord.id);
+ const statusBefore=ok(await call(owner.page,'/api/status')),createRequests=[];
+ const observeCreate=request=>{if(new URL(request.url()).pathname==='/api/status'&&request.method()==='POST')createRequests.push(request);};
+ owner.page.on('request',observeCreate);
+ await supporting.selectOption([]);await createBusiness.click();
+ const fieldError=supporting.locator('..').getByRole('alert');
+ await expect(fieldError).toBeVisible();await expect(supporting).toBeFocused();await expect(supporting).toHaveAttribute('aria-invalid','true');
+ assert.equal(await supporting.getAttribute('aria-describedby'),await fieldError.getAttribute('id'),'the adjacent error describes the supporting-services field');
+ assert.ok((await fieldError.innerText()).includes(await supporting.evaluate(e=>document.getElementById(e.getAttribute('aria-labelledby')).textContent)),'the error names its field');
+ assert.equal(createRequests.length,0,'invalid create never reaches the write door');assert.deepEqual(ok(await call(owner.page,'/api/status')),statusBefore,'invalid create saves no business service');
+ // The create disclosure closes after a successful create. Each refusal must
+ // capture its own initiating action, including the disabled manual-status action.
+ const captureRefusal=async (name,target)=>{
+  for(const width of [1440,390]){
+   await owner.page.setViewportSize({width,height:1000});
+   await target.scrollIntoViewIfNeeded();
+   await owner.page.screenshot({path:`${captureDirectory}/refusal-${name}-${width}.png`});
+  }
+  await owner.page.setViewportSize({width:1440,height:1000});
+ };
+ await captureRefusal('supporting-service',createBusiness);
+ await supporting.selectOption('synthetic-oncall-61');await expect(fieldError).toHaveCount(0);
+ // A real server-side length refusal is also visible beside the initiating action.
+ await statusPanel.getByLabel('Business-service name',{exact:true}).fill('Checkout '.repeat(15));
+ const refused=owner.page.waitForResponse(response=>new URL(response.url()).pathname==='/api/status'&&response.request().method()==='POST');
+ await createBusiness.click();const refusedReply=await refused;assert.equal(refusedReply.status(),400);
+ const reason=(await refusedReply.json()).error;assert.ok(reason,'the server returns its reason');
+ const createForm=createBusiness.locator('xpath=ancestor::form');await expect(createForm.getByRole('alert')).toBeVisible();
+ assert.ok((await createForm.getByRole('alert').innerText()).includes(reason),'the page shows the server refusal reason');
+ assert.equal(await statusPanel.getByText('Saved',{exact:true}).count(),0);assert.deepEqual(ok(await call(owner.page,'/api/status')),statusBefore);
+ await expect(statusPanel.getByLabel('Business-service name',{exact:true})).toHaveValue('Checkout '.repeat(15));
+ await captureRefusal('server-create',createBusiness);owner.page.off('request',observeCreate);
+ await statusPanel.getByLabel('Business-service name',{exact:true}).fill('Checkout')
  await statusPanel.getByLabel('Communications owner',{exact:true}).selectOption(rosaRecord.id)
  await statusPanel.getByRole('group',{name:'Stakeholder audience',exact:true}).getByRole('checkbox',{name:sam.name,exact:true}).check()
  await statusPanel.getByRole('button',{name:'Create business service',exact:true}).click()
@@ -404,8 +534,13 @@ try {
   await page.screenshot({path:`${captureDirectory}/${(/^(oc068|oc058)-/.test(screen))?screen:'oc061-'+screen}-${width}.png`,fullPage:true})
  }
  for(const width of [1440])await statusCapture(owner.page,'derived-status',width)
+ const beforeOverride=ok(await call(owner.page,'/api/status'));
  await checkout.getByText('Manage internal status',{exact:true}).click()
  await checkout.getByLabel('Status set by hand',{exact:true}).selectOption('operational')
+ const setStatus=checkout.getByRole('button',{name:'Set status',exact:true});await expect(setStatus).toBeDisabled();
+ const reasonHint=await setStatus.getAttribute('aria-describedby');assert.ok(reasonHint);await expect(checkout.locator(`[id="${reasonHint}"]`)).toBeVisible();
+ await captureRefusal('status-reason',setStatus);
+ assert.deepEqual(ok(await call(owner.page,'/api/status')),beforeOverride,'a missing reason saves no manual status');
  await checkout.getByLabel('Reason',{exact:true}).fill('Alternate gateway is processing payments')
  await checkout.getByRole('button',{name:'Set status',exact:true}).click()
  await checkout.getByText(/Manual override: operational/).waitFor()
@@ -714,7 +849,6 @@ const {default:AxeBuilder}=await import('@axe-core/playwright')
 const {ownerDoor}=await import('./worker.mjs')
 const {chromium}=await import('@playwright/test')
 const {automationRuntime,recordOwnedProcesses}=await import('./worker.mjs')
-const {autonomousCoordination}=await import('./agent-policy-fixture.mjs')
 let receiverStatus=403;
 const runtime=await automationRuntime(()=>new Response(null,{status:receiverStatus})),proof=process.env.ONCALL_BROWSER_EVIDENCE??resolve('../evidence/browser');
 let browser;
@@ -731,17 +865,74 @@ try {
   const context=await browser.newContext({viewport:{width,height:1000}}),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   const at=cookie.indexOf('=');await context.addCookies([{name:cookie.slice(0,at),value:cookie.slice(at+1),url:runtime.origin,httpOnly:true,sameSite:'Lax'}]);
   await page.goto(runtime.origin+'/settings/integrations');const panel=page.locator('#response-api');await panel.locator(':scope > details > summary').nth(0).click();await panel.getByRole('heading',{name:'API clients',exact:true}).waitFor();
-  if(width===1440){await panel.getByText('No API clients configured.',{exact:true}).waitFor();for(const emptyWidth of [1440]){await page.setViewportSize({width:emptyWidth,height:1000});await panel.screenshot({path:join(proof,'automation-empty-'+emptyWidth+'.png')});}await page.setViewportSize({width,height:1000});}
+  const notice=panel.getByLabel('API client policy',{exact:true});
+  const captureClients=async name=>{
+   for(const proofWidth of [1440,390]){
+    await page.setViewportSize({width:proofWidth,height:1000});
+    await panel.screenshot({path:join(proof,'automation-'+name+'-'+proofWidth+'.png')});
+   }
+   await page.setViewportSize({width,height:1000});
+  };
+  const prerequisite=await req('/api/automation');assert.equal(prerequisite.value.policy.state,'unset');
+  await expect(notice.getByRole('link')).toHaveAttribute('href',prerequisite.value.policy.setupUrl);
+  await captureClients('policy-unset');
+  const granted=await req('/api/command',{type:'declare',service:'synthetic-oncall-browser',title:'Synthetic granted incident',severity:'warning',summary:'Granted service record'});
+  assert.equal(granted.status,200);
+  assert.equal((await req('/api/command',{type:'service',id:'synthetic-oncall-private',name:'Synthetic other service',environment:'test',owner:owner.id,runbook:[],pager:''})).status,200);
+  const foreign=await req('/api/command',{type:'declare',service:'synthetic-oncall-private',title:'Synthetic foreign incident',severity:'warning',summary:'Outside the client grant'});
+  assert.equal(foreign.status,200);
   if(await panel.getByRole('button',{name:'Add client',exact:true}).isVisible())await panel.getByRole('button',{name:'Add client',exact:true}).click();
   await panel.getByLabel('Name',{exact:true}).fill('Synthetic browser client '+width);
-  await panel.getByLabel('Incidents',{exact:true}).selectOption('write');await panel.getByRole('button',{name:'Create client',exact:true}).click();await panel.getByText('Synthetic browser client '+width,{exact:true}).first().waitFor();
-  const createdKey=await panel.getByLabel('Private key',{exact:true}).inputValue();assert.ok(createdKey);await panel.getByRole('button',{name:'Done',exact:true}).click();if(width===1440){const unset=await runtime.request('/api/v1/incidents',undefined,'',{authorization:'Bearer '+createdKey});assert.equal(unset.status,403);assert.equal(unset.value.error.code,'policy_unset');await autonomousCoordination(runtime,cookie);}
-  assert.equal((await runtime.request('/api/v1/incidents',undefined,'',{authorization:'Bearer '+createdKey})).status,200);
+  await panel.getByLabel('Incidents',{exact:true}).selectOption('read');await panel.getByRole('button',{name:'Create client',exact:true}).click();await panel.getByText('Synthetic browser client '+width,{exact:true}).first().waitFor();
+  const createdKey=await panel.getByLabel('Private key',{exact:true}).inputValue();assert.ok(createdKey);await panel.getByRole('button',{name:'Done',exact:true}).click();
+  const read=key=>runtime.request('/api/v1/incidents',undefined,'',{authorization:'Bearer '+key});
+  const unset=await read(createdKey);assert.equal(unset.status,403);assert.equal(unset.value.error.code,'policy_unset');
+  await expect(notice.getByRole('status')).toHaveText(unset.value.error.message);
+  assert.equal(new URL(await notice.getByRole('link').getAttribute('href'),runtime.origin).href,unset.value.fields.setup_url);
+  assert.equal((await runtime.request('/api/v1/analytics',undefined,'',{authorization:'Bearer '+createdKey})).status,403);
+  await captureClients('client-pending');
+  // Follow the page's prerequisite and make explicit choices in its existing form.
+  await notice.getByRole('link').click();await page.waitForURL(runtime.origin+'/agents');
+  const choices=page.locator('[data-policy-class]');
+  await choices.first().waitFor();
+  assert.ok(await choices.count()>0);
+  for(const choice of await choices.all())await choice.selectOption('autonomous');
+  await page.getByRole('radio',{name:'No',exact:true}).check();
+  const savedPolicy=page.waitForResponse(r=>new URL(r.url()).pathname==='/agents/api/policy'&&r.request().method()==='PUT');
+  // The policy document reloads after saving; finish that navigation before leaving it.
+  await Promise.all([page.waitForNavigation({waitUntil:'load'}),page.getByRole('button',{name:'Save policy',exact:true}).click()]);assert.equal((await savedPolicy).status(),200);
+  const grantedRead=await read(createdKey);assert.equal(grantedRead.status,200);
+  assert.deepEqual(grantedRead.value.data.map(row=>row.id),[granted.value.id]);
+  assert.ok(!JSON.stringify(grantedRead.value).includes(foreign.value.id),'the same key reads only its granted service');
+  assert.equal((await runtime.request('/api/v1/analytics',undefined,'',{authorization:'Bearer '+createdKey})).status,403);
+  await page.goto(runtime.origin+'/settings/integrations');await panel.locator(':scope > details > summary').first().click();
+  assert.equal((await req('/api/automation')).value.policy.state,'set');
+  const client=(await req('/api/automation')).value.clients.find(c=>c.name==='Synthetic browser client '+width);
+  const clientRow=panel.locator('.integration-rows > li').filter({hasText:client.name}),actions=clientRow.locator('.integration-client-actions');
+  // Real pointer clicks, without a preliminary row hover or forced action.
+  await actions.locator('summary').click();await expect(actions.getByRole('button',{name:'Rotate '+client.name,exact:true})).toBeVisible();
+  await captureClients('client-actions');
+  const rotate=async()=>{
+   if(!await actions.evaluate(el=>el.open))await actions.locator('summary').click();
+   await actions.getByRole('button',{name:'Rotate '+client.name,exact:true}).click();
+   await panel.getByRole('button',{name:'Rotate key',exact:true}).click();
+   await panel.getByLabel('Private key',{exact:true}).waitFor();
+   const key=await panel.getByLabel('Private key',{exact:true}).inputValue();
+   await panel.getByRole('button',{name:'Done',exact:true}).click();return key;
+  };
+  const rotatedKey=await rotate();assert.notEqual(rotatedKey,createdKey);
+  assert.equal((await read(createdKey)).status,401);assert.equal((await read(rotatedKey)).status,200);
   // A stale lifecycle write is a real server conflict and must be announced.
-  const clients=(await req('/api/automation')).value.clients,client=clients.find(c=>c.name==='Synthetic browser client '+width);
-  await req('/api/automation/clients/'+client.id+'/revoke',{revision:client.revision});
-  await panel.locator('li').filter({hasText:client.name}).hover();await panel.locator('li').filter({hasText:client.name}).getByText('Client actions',{exact:true}).click();await panel.getByRole('button',{name:'Revoke '+client.name,exact:true}).click();await panel.getByRole('button',{name:'Revoke key',exact:true}).click();await page.getByRole('alert').filter({hasText:'Revision conflict'}).waitFor();
+  const current=(await req('/api/automation')).value.clients.find(c=>c.id===client.id);
+  await req('/api/automation/clients/'+client.id+'/revoke',{revision:current.revision});
+  await actions.getByRole('button',{name:'Revoke '+client.name,exact:true}).click();await panel.getByRole('button',{name:'Revoke key',exact:true}).click();await page.getByRole('alert').filter({hasText:'Revision conflict'}).waitFor();
   await page.screenshot({path:join(proof,'automation-conflict-'+width+'.png'),fullPage:true});
+  await page.reload();await panel.locator(':scope > details > summary').first().click();
+  const renewedKey=await rotate();assert.equal((await read(renewedKey)).status,200);
+  await actions.getByRole('button',{name:'Revoke '+client.name,exact:true}).click();
+  const revoked=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/automation/clients/'+client.id+'/revoke'&&r.request().method()==='POST');
+  await panel.getByRole('button',{name:'Revoke key',exact:true}).click();assert.equal((await revoked).status(),200);
+  assert.equal((await read(renewedKey)).status,401);
   await page.reload();await panel.locator(':scope > details > summary').nth(2).click();await panel.getByRole('heading',{name:'Outbox',exact:true}).waitFor();assert.equal(await panel.locator('input').evaluateAll((inputs,key)=>inputs.some(input=>input.value===key),createdKey),false);
   // Approved recipient and actual refusal produce a durable terminal outcome on screen.
   const key=randomBytes(32).toString('hex'),created=await req('/api/automation/clients',{name:'Synthetic sending client '+width,key,services:['synthetic-oncall-browser'],permissions:['incidents:read','incidents:write']});assert.equal(created.status,201);
@@ -791,7 +982,7 @@ try {
   assert.equal((await denied.request.get(runtime.origin+'/api/automation')).status(),403);
   await deniedPage.screenshot({path:join(proof,'automation-denied-'+width+'.png'),fullPage:true});await denied.close();
  }
- console.log('PASS OC-053 settings management, restore refusal and permanent machine attribution after reassignment at 1440');
+ console.log('PASS OC-053 API client policy setup, granted service read, pointer rotation/revocation, stale management refusal, outbox and permanent machine attribution at 1440; client screens at 1440 and 390');
 }finally{await browser?.close();await runtime.close();}
 
 }

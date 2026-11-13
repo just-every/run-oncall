@@ -94,15 +94,31 @@
       ]
     },
     {
+      "name": "oncall.alerts.list",
+      "scope": "incidents:read",
+      "readOnly": true,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "OC-001",
+        "OC-002",
+        "OC-059"
+      ]
+    },
+    {
       "name": "oncall.analytics.read",
       "scope": "analytics:read",
       "readOnly": true,
       "classes": [
-        "standard"
+        "standard",
+        "sensitive"
       ],
       "clauses": [
-        "OC-030",
-        "OC-053"
+        "OC-037",
+        "OC-044",
+        "OC-054"
       ]
     },
     {
@@ -565,6 +581,18 @@
         "OC-041"
       ],
       "sponsorEscalation": false
+    },
+    {
+      "name": "oncall.triage.list",
+      "scope": "incidents:read",
+      "readOnly": true,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "OC-060"
+      ]
     }
   ],
   "notTools": [
@@ -1769,6 +1797,21 @@
       ]
     },
     {
+      "id": "analytics-response",
+      "tool": "oncall.analytics.read",
+      "args": {
+        "view": "response"
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        }
+      ]
+    },
+    {
       "id": "imports",
       "tool": "oncall.imports.read",
       "args": {},
@@ -2760,6 +2803,68 @@
           "externalDeletion": "not-requested"
         }
       }
+    },
+    {
+      "id": "alerts-list-standard",
+      "tool": "oncall.alerts.list",
+      "args": {
+        "service": "agent-foreign-service",
+        "state": "recovered",
+        "limit": 100
+      },
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "alerts-list-sensitive",
+      "tool": "oncall.alerts.list",
+      "args": {
+        "service": "agent-service",
+        "limit": 100
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        }
+      ]
+    },
+    {
+      "id": "triage-list-standard",
+      "tool": "oncall.triage.list",
+      "args": {
+        "kind": "alerts",
+        "service": "agent-foreign-service",
+        "status": "resolved",
+        "limit": 100
+      },
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "triage-list-sensitive",
+      "tool": "oncall.triage.list",
+      "args": {
+        "kind": "alerts",
+        "service": "agent-service",
+        "limit": 100
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        }
+      ]
     }
   ],
   "verification": {

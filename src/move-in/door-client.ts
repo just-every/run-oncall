@@ -24,7 +24,7 @@ function sentence(code: string, vendor: string): string {
 
 export class DoorRefusal extends Error {
  code: string
- constructor(message: string, code: string, public status?: number) { super(message); this.code = code }
+ constructor(message: string, code: string, public status?: number, public details?: unknown) { super(message); this.code = code }
 }
 
 export function doorClient(vendor: string) {
@@ -35,7 +35,7 @@ export function doorClient(vendor: string) {
   // Oncall's own refusals carry a sentence and a code, and a session or request refusal is a sentence: both show as written.
   // The door's carry only its snake_case code, which the screen puts into words.
   const code = value.code ?? value.error ?? `http_${response.status}`
-  throw new DoorRefusal(typeof value.error === 'string' && (value.code || !/^[a-z][a-z0-9_]*$/.test(value.error)) ? value.error : sentence(code, vendor), code, response.status)
+  throw new DoorRefusal(typeof value.error === 'string' && (value.code || !/^[a-z][a-z0-9_]*$/.test(value.error)) ? value.error : sentence(code, vendor), code, response.status, value.details)
  }
 }
 type Door = ReturnType<typeof doorClient>

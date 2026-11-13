@@ -13,7 +13,7 @@ import assert from 'node:assert/strict'
 import {ownerDoor,localWorker} from './worker.mjs'
 import {localPart,mail,recoveryRules} from './email-fixtures.mjs'
 import {checkpointRoundTrip,checkpointErasureCli} from './checkpoint-cli.mjs'
-import {autonomousPolicy,canonical} from '../src/modules/agent-door/conformance/crypto.mjs'
+import {autonomousPolicy,heldPolicy,canonical} from '../src/modules/agent-door/conformance/crypto.mjs'
 const isolated=await isolatedEntrypoint(import.meta.url);if(isolated!==null)process.exit(isolated)
 
 
@@ -34,17 +34,100 @@ export function transferDoor(m) {
  }
  const call=(action,input,token=grant(action))=>m.request('/api/rer/import/'+action,input,undefined,{Authorization:'Bearer '+token})
  const ok=r=>{assert.equal(r.status,200,JSON.stringify(r.value));return r.value}
- let plan,approval,pendingJob,oldGrant
+ let plan,approval,pendingJob,oldGrant,policyRevision=0,agentHistory,agentApprovals,agentKey,agentState
+ const agentTables=['agent_door_audit','agent_door_calls','agent_door_reviews','agent_door_events']
+ const history=sql=>Object.fromEntries(agentTables.map(table=>[table,sql('SELECT * FROM '+table+' ORDER BY '+(table==='agent_door_calls'?'agent,key':table==='agent_door_reviews'?'id':'sequence'))]))
+ const agentCall=async(name,args)=>{
+  const response=await m.request('/mcp',{jsonrpc:'2.0',id:randomUUID(),method:'tools/call',params:{name,arguments:args,_meta:{'io.modelcontextprotocol/protocolVersion':'2026-07-28'}}},undefined,{Authorization:'Bearer '+agentKey,Accept:'application/json, text/event-stream','MCP-Protocol-Version':'2026-07-28','Mcp-Method':'tools/call','Mcp-Name':name})
+  assert.equal(response.status,200,JSON.stringify(response.value));assert.equal(response.value.error,undefined);return response.value.result
+ }
  return {
   async configure() {
    const vars={RER_OWNER_CLAIM_PUBLIC_KEYS:JSON.stringify({[kid]:publicKey.export({format:'jwk'})}),RER_OWNER_CLAIM_ISSUER:issuer,RER_OWNER_CLAIM_INSTALLATION_ID:installationId}
    await appendFile('.dev.vars','\n'+Object.entries(vars).map(([k,v])=>k+'='+v).join('\n')+'\n',{mode:0o600})
   },
-  async choosePolicy(cookie) {
-   const now=Math.floor(Date.now()/1000),document=autonomousPolicy(),business='transfer-coordination',revision=1
+  async choosePolicy(cookie,document=autonomousPolicy()) {
+   const now=Math.floor(Date.now()/1000),business='transfer-coordination',revision=++policyRevision
    const revision_signature=jwt('rer-agent-policy-revision+jwt',{business,revision,document_sha256:hash(canonical(document))})
-   const policy=jwt('rer-agent-policy+jwt',{v:1,iss:issuer,aud:m.origin,sub:installationId,business,seq:1,revision,paused:false,catalogue:document.catalogue,document,revision_signature,iat:now,exp:now+300})
+   const policy=jwt('rer-agent-policy+jwt',{v:1,iss:issuer,aud:m.origin,sub:installationId,business,seq:revision,revision,paused:false,catalogue:document.catalogue,document,revision_signature,iat:now,exp:now+300})
    ok(await m.request('/api/rer/agent-policy',{policy},cookie))
+  },
+  async personSession(cookie) {
+   const member=ok(await m.request('/api/session',undefined,cookie)).member,password='synthetic-oncall-528-password'
+   ok(await m.request('/api/password',{member:member.id,password},cookie))
+   const login=await m.request('/api/login',{name:member.name,password})
+   assert.equal(ok(login).member.id,member.id,'the emitted Worker uses a real native person session, never a dev credential')
+   return login.cookie
+  },
+  async prepareAgents(cookie,key,sql) {
+   agentKey=key
+   cookie=await this.personSession(cookie)
+   await m.close();await m.startHttp({outboundLedger:'.rer/local/agent-transfer-outbound.jsonl'})
+   await this.choosePolicy(cookie,heldPolicy())
+   const created=await agentCall('oncall.incidents.declare',{service:'transfer',title:'Synthetic portable agent custody',summary:'Native history retained without execution authority',severity:'warning',idempotency_key:randomUUID()})
+   assert.equal(created.isError,false);assert.ok(created._meta['com.runeditrun/review'].id)
+   let target=created.structuredContent
+   target=ok(await m.request('/api/command',{type:'transition',incident:target.id,revision:target.revision,state:'acknowledged',summary:'Person accepts portable custody'},cookie))
+   target=ok(await m.request('/api/command',{type:'transition',incident:target.id,revision:target.revision,state:'recovered',summary:'Person observed recovery',evidence:'https://example.test/synthetic-oncall-526'},cookie))
+   agentApprovals=[]
+   for(const state of ['pending','executing']){
+    const args={incident:target.id,revision:target.revision,summary:'Synthetic portable agent resolution',idempotency_key:randomUUID()}
+    const prepared=await agentCall('oncall.incidents.resolve',args)
+    assert.equal(prepared.resultType,'input_required');assert.equal(prepared._meta['com.runeditrun/decision'].disposition,'approval')
+    const id=prepared._meta['com.runeditrun/approval'].id,view=ok(await m.request('/agents/api/approvals/'+id,undefined,cookie)).approval
+    assert.equal(view.state,'pending');assert.deepEqual(view.approvals,[])
+    // Capture the second real approval at an interrupted execution boundary.
+    if(state==='executing')sql("UPDATE agent_door_approvals SET state='executing' WHERE id='"+id+"'")
+    agentApprovals.push({id,args,view,row:sql("SELECT * FROM agent_door_approvals WHERE id='"+id+"'")[0]})
+   }
+   sql("UPDATE agent_door_state SET decision_lock='synthetic-oncall-527',decision_until="+(Date.now()+3600000)+" WHERE id=1")
+   assert.deepEqual(await m.outboundRequests(),[],'agent preparation makes no outbound request')
+   return cookie
+  },
+  captureAgents(sql) {
+   agentState=sql('SELECT * FROM agent_door_state')[0]
+   assert.equal(agentState.local_paused,0,'the exported agent door is active, so receiving Pause cannot be inherited from the source')
+   assert.deepEqual(agentApprovals.map(({id})=>sql("SELECT * FROM agent_door_approvals WHERE id='"+id+"'")[0]),agentApprovals.map(({row})=>row),'both pending and in-flight approvals remain unconsumed at export')
+   agentHistory=history(sql)
+   for(const table of agentTables)assert.ok(agentHistory[table].length>0,table+' holds real agent history before export')
+  },
+  async assertAgentsInactive(cookie,key,client,sql) {
+   assert.deepEqual(history(sql),agentHistory,'portable restore retains populated agent audit, calls, reviews and events byte for byte')
+   assert.deepEqual(sql('SELECT * FROM agent_door_state')[0],{...agentState,local_paused:1,decision_lock:null,decision_until:null},'policy records survive without their source admission lease')
+   const policy=ok(await m.request('/agents/api/state',undefined,cookie))
+   assert.equal(policy.paused.local,true,'the receiving agent door starts paused')
+   for(const {id,row} of agentApprovals)assert.deepEqual(sql("SELECT * FROM agent_door_approvals WHERE id='"+id+"'")[0],{...row,state:'expired',version:row.version+1},'restored pending and executing approvals become explicit expired history')
+   // Provisioning a fresh local credential must not itself resume agent work.
+   const clientBefore=ok(await m.request('/api/state',undefined,cookie)).apiClients.find(row=>row.id===client)
+   ok(await m.request('/api/automation/clients/'+client+'/rotate',{revision:clientBefore.revision,key},cookie))
+   const native=async()=>({application:ok(await m.request('/api/state',undefined,cookie)),paging:ok(await m.request('/api/paging/state',undefined,cookie))})
+   const before=await native()
+   const paused=await agentCall('oncall.incidents.receipt',{key:'synthetic-oncall-portable'})
+   assert.equal(paused.isError,true);assert.equal(paused._meta['com.runeditrun/error'].code,'agents_paused')
+   assert.equal((await m.request('/agents/api/pause',{paused:false})).status,401,'anonymous callers cannot resume restored agents')
+   const approvalRows=()=>agentApprovals.map(({id})=>sql("SELECT * FROM agent_door_approvals WHERE id='"+id+"'")[0])
+   const expired=approvalRows()
+   const refuseApprovals=async()=>{
+    for(const {id,view} of agentApprovals){
+     const refused=await m.request('/agents/api/approvals/'+id+'/approve',{revision:view.revision,summary_sha256:view.summary_sha256},cookie)
+     assert.equal(refused.status,409);assert.equal(refused.value.code,'approval_expired')
+     assert.equal(ok(await m.request('/agents/api/approvals/'+id,undefined,cookie)).approval.state,'expired')
+    }
+    assert.deepEqual(approvalRows(),expired,'refused old approvals cannot be marked or executed')
+    assert.deepEqual(await native(),before,'agent pause and approval refusals preserve native and paging records')
+   }
+   await refuseApprovals()
+   ok(await m.request('/agents/api/pause',{paused:false},cookie))
+   await this.choosePolicy(cookie)
+   const resumed=await agentCall('oncall.incidents.receipt',{key:'synthetic-oncall-portable'})
+   assert.equal(resumed.isError,false);assert.equal(resumed.structuredContent.data.operation.client,client,'only the signed-in owner resume enables a valid agent receipt read')
+   await refuseApprovals()
+   for(const {args} of agentApprovals){const replay=await agentCall('oncall.incidents.resolve',args);assert.equal(replay.isError,true)}
+   for(const table of agentTables){const restored=history(sql)[table];for(const row of agentHistory[table])assert.deepEqual(restored.find(item=>item.id===row.id&&item.key===row.key),row,'receiving activity never rewrites retained '+table)}
+   assert.deepEqual(await native(),before,'resuming and replaying old approvals never repeats a native action or paging effect')
+   assert.deepEqual(await m.outboundRequests(),[],'restored agent calls and approvals make zero outbound requests')
+   ok(await m.request('/agents/api/pause',{paused:true},cookie))
+   console.log('PROBE OC-052 agent restore: real held MCP pending and in-flight approvals -> expired; exact audit, call, review and event history; agents_paused after fresh credential provisioning; anonymous resume refused; owner resume permits read; old approvals and replay cannot resolve; native and paging unchanged; zero outbound requests')
   },
   async prepare(cookie) {
    ok(await m.request('/auth/settings/imports',{enabled:true},cookie))
@@ -125,8 +208,11 @@ export async function managedSeed(bindings={}){
  // Serve the real Vite/Worker HTTP entry without a second process injecting cron
  // requests. Transfer tests control trigger delivery explicitly while comparing
  // exact snapshots; production scheduling is exercised by the automation journey.
- async function startHttp(){
-  const key=await readDevKey(process.cwd()),child=spawn(process.execPath,['node_modules/vite/bin/vite.js','dev','--host','127.0.0.1','--port',String(port),'--strictPort'],{env:{...env,RER_DEV_ORIGIN:origin,RER_DEV_KEY:key,RER_DEV_IDENTITY:'on'},stdio:['ignore','pipe','pipe']});children.push(child);console.log('Owned transfer HTTP runtime PID',child.pid)
+ let outboundLedger
+ async function startHttp(options={}){
+  outboundLedger=options.outboundLedger
+  if(outboundLedger)await writeFile(outboundLedger,'',{mode:0o600})
+  const key=await readDevKey(process.cwd()),child=spawn(process.execPath,outboundLedger?['tests/worker-server.mjs','dist/server/wrangler.json','.wrangler/state',String(port),join(process.cwd(),'.dev.vars'),outboundLedger]:['node_modules/vite/bin/vite.js','dev','--host','127.0.0.1','--port',String(port),'--strictPort'],{env:{...env,RER_DEV_ORIGIN:origin,RER_DEV_KEY:key,RER_DEV_IDENTITY:'on'},stdio:['ignore','pipe','pipe']});children.push(child);console.log('Owned transfer HTTP runtime PID',child.pid)
   let output='';for(const stream of [child.stdout,child.stderr])stream.on('data',c=>output+=c)
   for(let n=0;n<240;n++){
    if(child.exitCode!==null||child.signalCode!==null)throw Error(safe(output).split(key).join('[redacted]').slice(-1400))
@@ -144,7 +230,7 @@ export async function managedSeed(bindings={}){
    child.kill('SIGTERM');await exited
   }
  }
- return {port,origin,command,start,preview,startHttp,owner,request,close,get commandOutcomes(){return [...commandOutcomes]},get openLink(){return openLink}}
+ return {port,origin,command,start,preview,startHttp,owner,request,close,outboundRequests:async()=>{assert.ok(outboundLedger);return (await readFile(outboundLedger,'utf8')).split('\n').filter(Boolean).map(line=>JSON.parse(line))},get commandOutcomes(){return [...commandOutcomes]},get openLink(){return openLink}}
 }
 
 
@@ -365,6 +451,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  assert.equal((await req('/api/routing/keys',{id:'portable-alertmanager',name:'Portable Alertmanager',provider:'alertmanager',scope:['transfer'],owner:member.id,revision:reauthorized.intakeSources.find(s=>s.id==='portable-alertmanager').revision,key:monitoringKey})).status,200)
  assert.equal((await req('/api/routing/keys',{id:'portable-native',name:'Portable native monitor',provider:'native',authentication:'signed',scope:['transfer','upstream'],owner:member.id,revision:reauthorized.intakeSources.find(s=>s.id==='portable-native').revision,key:nativeRoutedKey})).status,200)
  await business.prepare(cookie)
+ cookie=await business.prepareAgents(cookie,apiKey,sql)
  statusBusiness=ok(await req('/api/status')).services.find(row=>row.name==='Checkout');ok(await req('/api/status',{action:'activate',id:statusBusiness.id,revision:statusBusiness.revision}))
  const oldCookie=cookie
  const source=await readFile('tests/fixtures/opsgenie.json','utf8'),door=ownerDoor(m,cookie),preview=ok(await door.preview('opsgenie',source)),job=ok(await door.apply('opsgenie',preview)).job;assert.equal(job.state,'completed')
@@ -469,6 +556,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  console.log('PROBE OC-018 build: pinned rer build after removing dist -> exit 0, production Worker and client assets, no dev identity or private settings, exact settings restoration')
  await m.preview();await m.close()
  console.log('Managed production preview refuses anonymous state and carries no dev identity')
+ business.captureAgents(sql)
  await m.command(['export','--output',archive,'--non-interactive'])
  const exportedArchive=await readFile(archive)
  assert.ok(exportedArchive.includes('Preserve authored history'),'the archive holds readable authored records')
@@ -487,7 +575,9 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  assert.deepEqual(targetSchema(),emptyTarget,'invalid transfer preserves the uninitialized target before migrations')
  await m.command(['import','--input',invalidRecords,'--yes','--non-interactive'],1)
  assert.equal(sql('SELECT COUNT(*) AS n FROM oc_members UNION ALL SELECT COUNT(*) FROM move_in_objects')[0].n,0,'valid-checksum invalid product records never publish')
+ const portableImportStarted=Date.now()
  await m.command(['import','--input',archive,'--yes','--non-interactive'])
+ const portableImportCompleted=Date.now()
  assert.deepEqual(sql('SELECT id,bytes,request_sha256,prefix FROM oc_native_prefixes ORDER BY id'),prefixesBefore,'portable reset/import preserves exact native custody')
  assert.equal(sql(`SELECT json_extract(data,'$.details.nativePrefix.value') AS prefix FROM oc_intake_receipts WHERE id='${legacyPrefix.id}'`)[0].prefix,legacyPrefix.prefix,'portable restore preserves the archived legacy row without rewriting it')
  assert.equal(sql('SELECT COUNT(*) AS n FROM credentials UNION ALL SELECT COUNT(*) FROM sessions UNION ALL SELECT COUNT(*) FROM operator_members UNION ALL SELECT COUNT(*) FROM oc_audit_identities').every(r=>r.n===0),true,'credentials, authority and audit identity associations do not travel')
@@ -499,7 +589,51 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  sql("INSERT INTO credentials VALUES('"+member.id+"','fixture-salt','fixture-password-digest')")
  assert.equal((await req('/api/identity-link',{confirm:true,adminMapping:member.id})).status,409,'held password data cannot be claimed by a new native owner')
  sql('DELETE FROM credentials')
- ok(await req('/api/identity-link',{confirm:true,adminMapping:member.id}));assert.deepEqual(ok(await req('/api/state')),{...prior,policies:prior.policies.map(p=>p.workflow?{...p,workflow:{...p.workflow,held:true}}:p),triage:prior.triage.map(r=>r.rule?{...r,rule:{...r.rule,state:'interrupted',outcome:'interrupted',lease:null,leaseUntil:null,revision:r.rule.revision+1}}:r),scheduleRecords:prior.scheduleRecords.map(row=>({...row,active:false,data:row.kind==='subscription'?{...row.data,hash:null}:row.data})),incidents:prior.incidents.map(i=>({...i,...(i.manualPage?{manualPage:{...i.manualPage,obligations:i.manualPage.obligations.map(o=>o.state==='recorded'?{...o,state:'stopped',outcome:'Restored inactive; no sender'}:o)}}:{}),...(i.responderRequests?{responderRequests:i.responderRequests.map(r=>({...r,status:r.status==='pending'?'held':r.status,obligation:r.obligation.state==='recorded'?{...r.obligation,state:'stopped',outcome:'Restored inactive; no sender'}:r.obligation,notice:r.notice?{...r.notice,state:'stopped'}:null}))}:{})})),members:prior.members.map(member=>member.role==='stakeholder'?{...member,active:false}:member),businessServices:prior.businessServices.map(service=>({...service,active:false,...(service.emailLists?{emailLists:service.emailLists.map(list=>({...list,active:false}))}:{}),subscriptions:service.subscriptions.map(row=>({...row,active:false})),notices:service.notices.map(row=>({...row,state:'stopped'}))})),changeSources:prior.changeSources.map(source=>({...source,active:false})),intakeSources:prior.intakeSources.map(source=>({...source,active:false})),emailAddresses:prior.emailAddresses.map(address=>({...address,active:false})),apiClients:prior.apiClients.map(c=>({...c,active:false})),apiEndpoints:prior.apiEndpoints.map(e=>({...e,active:false})),apiOutbox:prior.apiOutbox.map(o=>({...o,authorized:false}))},'all relational coordination and attribution restored with source definitions explicitly inactive')
+ // Choose the retained identity through the same owner entry as a restored installation.
+ {
+  const {chromium}=await import('@playwright/test')
+  const browser=await chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM_PATH,args:['--no-sandbox']})
+  try {
+   const context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage()
+   await page.goto(m.openLink)
+   await page.waitForURL(url=>url.pathname==='/signin/local'&&url.searchParams.get('restore')==='1')
+   const picker=page.getByRole('combobox',{name:'Archived administrator'})
+   await picker.locator('option').nth(1).waitFor({state:'attached'})
+   const administrators=ok(await req('/api/identity-link/administrators')).administrators
+   const options=await picker.locator('option').evaluateAll(rows=>rows.filter(row=>row.value).map(row=>({id:row.value,text:row.textContent})))
+   assert.equal(options.length,administrators.length,'every archived administrator remains selectable')
+   for(const admin of administrators){
+    const option=options.find(row=>row.id===admin.id)
+    assert.ok(option?.text.includes(admin.name),'the hidden option value retains the named administrator identity')
+    assert.doesNotMatch(option.text,/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i,'visible administrator choices contain no database UUID')
+   }
+   await picker.selectOption(member.id)
+   assert.doesNotMatch(await page.locator('.oc-door-restore').innerText(),/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i,'selected identity details also contain no UUID')
+   const evidence=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(evidence,{recursive:true})
+   for(const width of [1440,390]){
+    await page.setViewportSize({width,height:1000})
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'restored owner entry fits the viewport')
+    await page.screenshot({path:evidence+'/restored-owner-'+width+'.png',fullPage:true})
+   }
+   await page.getByRole('checkbox',{name:'I confirm this is my archived administrator identity.'}).check()
+   const submitted=page.waitForRequest(request=>request.method()==='POST'&&new URL(request.url()).pathname==='/api/identity-link')
+   await page.getByRole('button',{name:'Confirm restored owner mapping'}).click()
+   assert.equal((await submitted).postDataJSON().adminMapping,member.id,'mapping submits the selected hidden identity unchanged')
+   await page.locator('.oncall-frame').waitFor()
+   const session=await context.request.get(m.origin+'/api/session');assert.equal(session.status(),200)
+   assert.equal((await session.json()).member.id,member.id,'the browser maps to the chosen archived administrator')
+   await context.close()
+  }finally{await browser.close()}
+ }
+ const receivingState=ok(await req('/api/state'))
+ const heldOutbox=prior.apiOutbox.map(item=>{
+  if(!['queued','sending','failed'].includes(item.status))return {...item,authorized:false}
+  const status=item.status==='sending'?'uncertain':'interrupted',entry=receivingState.apiOutbox.find(row=>row.id===item.id).history.at(-1)
+  assert.deepEqual(Object.keys(entry).sort(),['at','reason','status'])
+  assert.ok(Date.parse(entry.at)>=portableImportStarted&&Date.parse(entry.at)<=portableImportCompleted,'newly pending response work records its restore hold during import')
+  return {...item,authorized:false,status,revision:item.revision+1,lease:null,leaseUntil:null,history:[...item.history,{at:entry.at,status,reason:'restore-requires-authorization'}]}
+ })
+ assert.deepEqual(receivingState,{...prior,policies:prior.policies.map(p=>p.workflow?{...p,workflow:{...p.workflow,held:true}}:p),triage:prior.triage.map(r=>r.rule?{...r,rule:{...r.rule,state:'interrupted',outcome:'interrupted',lease:null,leaseUntil:null,revision:r.rule.revision+1}}:r),scheduleRecords:prior.scheduleRecords.map(row=>({...row,active:false,data:row.kind==='subscription'?{...row.data,hash:null}:row.data})),incidents:prior.incidents.map(i=>({...i,...(i.deadlines?{deadlines:i.deadlines.map(d=>({...d,...(d.state==='pending'?{state:'held',outcome:'Restored inactive; deadline will not resume'}:{}),...(d.obligation?{obligation:{...d.obligation,state:'stopped'}}:{})}))}:{}),...(i.manualPage?{manualPage:{...i.manualPage,obligations:i.manualPage.obligations.map(o=>o.state==='recorded'?{...o,state:'stopped',outcome:'Restored inactive; no sender'}:o)}}:{}),...(i.responderRequests?{responderRequests:i.responderRequests.map(r=>({...r,status:r.status==='pending'?'held':r.status,obligation:r.obligation.state==='recorded'?{...r.obligation,state:'stopped',outcome:'Restored inactive; no sender'}:r.obligation,notice:r.notice?{...r.notice,state:'stopped'}:null}))}:{})})),members:prior.members.map(member=>member.role==='stakeholder'?{...member,active:false}:member),businessServices:prior.businessServices.map(service=>({...service,active:false,...(service.emailLists?{emailLists:service.emailLists.map(list=>({...list,active:false}))}:{}),subscriptions:service.subscriptions.map(row=>({...row,active:false})),notices:service.notices.map(row=>({...row,state:'stopped'}))})),changeSources:prior.changeSources.map(source=>({...source,active:false})),intakeSources:prior.intakeSources.map(source=>({...source,active:false})),emailAddresses:prior.emailAddresses.map(address=>({...address,active:false})),apiClients:prior.apiClients.map(c=>({...c,active:false})),apiEndpoints:prior.apiEndpoints.map(e=>({...e,active:false})),apiOutbox:heldOutbox},'all relational coordination and attribution restored with source definitions explicitly inactive')
  assert.deepEqual(ok(await req('/api/state')).teams,prior.teams,'public teams and membership authority survive portable restore');assert.equal(ok(await req('/api/state')).services.find(service=>service.id==='transfer').team,portableTeam.id);
  assert.equal(ok(await req('/api/state')).services.find(service=>service.id==='upstream').owner,'','OC-023 portable restore keeps unassigned ownership without mapping it to the receiving owner');
  assert.equal(ok(await req('/api/state')).businessServices[0].active,false);assert.ok(ok(await req('/api/state')).businessServices[0].subscriptions.every(row=>!row.active));assert.ok(ok(await req('/api/state')).businessServices[0].notices.every(row=>row.state==='stopped'));assert.equal(ok(await req('/api/state')).members.find(row=>row.id===stakeholder.id).active,false)
@@ -542,6 +676,9 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
   assert.deepEqual(restoredImports[table],expected,table+' retains every import/provenance/plan/approval field, with restored in-flight work explicitly interrupted')
  }
  await business.assertInactive(cookie,oldCookie,sql)
+ cookie=await business.personSession(cookie)
+ await m.close();await m.startHttp({outboundLedger:'.rer/local/agent-transfer-outbound.jsonl'})
+ await business.assertAgentsInactive(cookie,apiKey,apiClient.id,sql)
  console.log('OC-052 portable restore: complete import history preserved and restored pending Business execution refused')
  assert.equal((await req('/api/delivery',{})).status,409)
  // Restored entity IDs do not recover the source installation's audit labels.

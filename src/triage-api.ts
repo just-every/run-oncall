@@ -121,6 +121,13 @@ export function installTriage(api: any, deps: Dependencies) {
             changed=command(proposed,actor,{type:input.action==='acknowledge'?'bulk-acknowledge':input.action==='resolve'?'bulk-resolve':input.action,
               incident:item.id,revision:item.revision,operationId:id,reason:payload.reason,evidence:payload.evidence,member:payload.member,priority:payload.priority,urgency:payload.urgency,...(input.action==='snooze'?{minutes:payload.minutes}:{})},at,context);
           }
+          // An unchanged incident has no timeline entry for this operation. Keep
+          // its no-op as an explicit skipped receipt rather than an attributed
+          // success that archive validation would later reject.
+          if(item.kind!=='alert'&&['reassign','set-priority','set-urgency'].includes(input.action)&&changed.revision===item.revision){
+            const field=input.action==='reassign'?'assignment':input.action==='set-priority'?'priority':'urgency';
+            fail(`No ${field} change needed`,409);
+          }
           for(const incident of proposed.incidents)for(const entry of incident.timeline)if(!beforeEntries.has(entry.id))entry.operationId=id;
           result={id:item.id,ok:true,revision:changed.revision,...(input.action==='orchestrate'?{kind:'workflow' as const,step:item.step,incident:changed.id}:item.kind==='alert'?{kind:'alert' as const}:{})};
           (proposed.triage!.find(r => r.id === id) as BulkOperation).results.push(result);

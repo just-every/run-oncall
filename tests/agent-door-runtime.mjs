@@ -24,6 +24,32 @@ export async function agentEffectSnapshot({db,http}){
  return {application,records};
 }
 
+/** Read tools may retain agent decisions, approvals and reviews, never native effects. */
+export async function agentReadSnapshot({db,http}) {
+ const response=await http('/api/state');assert.equal(response.status,200);
+ const names=(await db.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name").all()).results
+  .map(row=>row.name).filter(name=>/^(oc_|paging_|workspace_|sources$|sessions$|credentials$|operator_members$)/.test(name));
+ const rows=await db.batch(names.map(name=>db.prepare('SELECT * FROM "'+name.replaceAll('"','""')+'"')));
+ return {application:await response.json(),records:Object.fromEntries(rows.map((row,index)=>[names[index],row.results
+  .sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))]))};
+}
+
+/** Read decision custody may append value-free audit, never native effects. */
+export function assertAgentReadUnchanged(before,after){
+ assert.deepEqual(after.application,before.application,'Reads preserve application records and revisions');
+ for(const [name,rows] of Object.entries(before.records)){
+  if(['oc_admin_audit','oc_audit_clock','oc_audit_identities'].includes(name))continue;
+  assert.deepEqual(after.records[name],rows,'Reads preserve native table '+name);
+ }
+ const prior=new Map(before.records.oc_admin_audit.map(row=>[row.id,row]));
+ for(const [id,row] of prior)assert.deepEqual(after.records.oc_admin_audit.find(row=>row.id===id),row,'Existing permanent audit is immutable');
+ for(const row of after.records.oc_admin_audit.filter(row=>!prior.has(row.id))){
+  assert.equal(row.kind,'agent-door.persistence','Only documented read decision custody appends native audit');
+  for(const family of ['workspace','paging','handoff'])assert.equal(row[family+'_before'],row[family+'_after']);
+ }
+ for(const row of before.records.oc_audit_identities)assert.deepEqual(after.records.oc_audit_identities.find(value=>value.kind===row.kind&&value.entity_id===row.entity_id),row);
+}
+
 /** Real emitted Worker, native D1 and native owner lifecycle; only paid egress is replaced. */
 export async function agentRuntime({clock}={}){
  let platformTime=clock;
