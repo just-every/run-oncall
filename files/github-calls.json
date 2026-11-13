@@ -1,0 +1,57 @@
+[
+  {
+    "number": 1,
+    "at": 1794537913.8161893,
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-oncall/actions/runs?head_sha=cc64205ca532de3ac8022838ecdd07cfa5bfae73&per_page=100",
+      "--jq",
+      "{workflow_runs:[.workflow_runs[] | {id,name,status,conclusion,head_sha,head_branch,event,html_url}]}"
+    ]
+  },
+  {
+    "number": 2,
+    "at": 1794538213.8412313,
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43354284655",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "number": 3,
+    "at": 1794538513.8413668,
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43354284655",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "number": 4,
+    "at": 1794538813.823745,
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43354284655",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "number": 5,
+    "at": 1794539113.8247535,
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43354284655",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  }
+]

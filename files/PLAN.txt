@@ -1,0 +1,6 @@
+1. Configure fleet credentials, identity, hooks and toolchain; clone only just-every/run-oncall and branch from main.
+2. Read repository guidance and confirm the unchanged main intake shard fails on the dated analytics password session.
+3. Audit all test clock injection sites and fixed date constructors. Replace expiring frozen starts and dependent observation dates, preserving assertions, real SQLite session expiry, and historical calendar examples.
+4. Run the intake shard and typecheck on the committed candidate. Run the three fixed journeys once under a local 30-day forward wall-clock shift including SQLite.
+5. Refresh main before publishing, using rebase only before any product push; regenerate/check the source lock if locked paths change. Preserve newer main judgments. Inspect all candidate identities and trailers. Push only the named product branch through the fleet guard.
+6. Observe exact-SHA Verify through bounded REST polling. Save full non-secret reports and receipts outside the product clone; publish the explicit packet on evidence/main-oncall-session-clock-1. Clean up the clone after successful custody and report READY/PUSHED honestly.

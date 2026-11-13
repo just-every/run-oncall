@@ -1,0 +1,23 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-session-clock-1",
+  "head": "cc64205ca532de3ac8022838ecdd07cfa5bfae73",
+  "run_id": 43354284655,
+  "url": "https://github.com/just-every/run-oncall/actions/runs/43354284655",
+  "status": "completed",
+  "conclusion": "success",
+  "ci_commands_used": 5,
+  "ci_command_budget": 10,
+  "observation_started_at": 1794537913.8161893,
+  "last_observation_at": 1794539113.8247535,
+  "poll_spacing_seconds": [
+    300.025,
+    300.0,
+    299.982,
+    300.001
+  ],
+  "discovery_command": "gh api repos/just-every/run-oncall/actions/runs?head_sha=cc64205ca532de3ac8022838ecdd07cfa5bfae73&per_page=100",
+  "poll_command": "gh api repos/just-every/run-oncall/actions/runs/43354284655 --jq '{status,conclusion,head_sha,html_url}'",
+  "failed_job_log_commands": 0,
+  "workflow_reruns": 0
+}

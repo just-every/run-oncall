@@ -1,0 +1,27 @@
+Calendar probe runtime v22.20.0 host UTC 2026-12-13T02:43:46.395Z
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+(node:7811) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Owned runtime processes [["7811","7810","node"],["7819","7811","esbuild"],["7829","7811","workerd"],["7835","7811","ps"]]
+SQLite wall clock {"ms":1797129829998,"utc":"2026-12-13 02:43:49"}
+START shifted journey alertReads 2026-12-13T02:43:50.012Z
+Owned runtime processes [["7811","7810","node"],["7819","7811","esbuild"],["7836","7811","workerd"],["7842","7811","ps"]]
+PROBE SURFACE-001 1 autonomous: MCP oncall.alerts.list -> six scoped alerts across three stable pages with native, compatible and monitoring observations and retained routing versions; recovered low filter, sensitive policy parity, truncation without bytes, foreign and unrouted non-disclosure, permission refusal, unchanged native records and permanent audit, zero outbound requests; tools/list and served guide include the row
+PROBE SURFACE-001 1 held: MCP oncall.alerts.list -> six scoped alerts across three stable pages with native, compatible and monitoring observations and retained routing versions; recovered low filter, sensitive policy parity, truncation without bytes, foreign and unrouted non-disclosure, permission refusal, unchanged native records and permanent audit, zero outbound requests; tools/list and served guide include the row
+PASS scoped alerts and retained observations: both company policies, native D1 admissions, stable bounded pages, filters, class computation, denied and revoked credentials, zero native effects and zero outbound requests
+PASS shifted journey alertReads
+START shifted journey analyticsReads 2026-12-13T02:43:55.591Z
+Owned runtime processes [["7811","7810","node"],["7819","7811","esbuild"],["7843","7811","workerd"],["7849","7811","ps"]]
+PROBE SURFACE-001 1 autonomous: analytics MCP response equals native report; one-service cohort 2, measured MTTA 60s, 3600 primary and backup seconds, 3 triggers; full readiness equals native item by item; scoped readiness and foreign service refuse without disclosure; REST counts unchanged, computed policy parity, documented read audit only and zero outbound requests
+PROBE SURFACE-001 1 held: analytics MCP response equals native report; one-service cohort 2, measured MTTA 60s, 3600 primary and backup seconds, 3 triggers; full readiness equals native item by item; scoped readiness and foreign service refuse without disclosure; REST counts unchanged, computed policy parity, documented read audit only and zero outbound requests
+PASS scoped response analytics and readiness: both policies, native reports and fixed nonempty figures, service isolation before totals, permission and revocation refusal, unchanged native state, zero outbound requests
+PASS shifted journey analyticsReads
+START shifted journey triageReads 2026-12-13T02:44:01.011Z
+Owned runtime processes [["7811","7810","node"],["7819","7811","esbuild"],["7898","7811","workerd"],["7904","7811","ps"]]
+PROBE SURFACE-001 1 autonomous: MCP triage search and filters -> exactly three scoped incidents and three alert-only items with sponsor mine, snoozed status past due, stable cursor pages and scoped totals; foreign merged text and unrouted records absent; policy parity, current guide, no native effects and zero outbound requests
+PROBE SURFACE-001 1 held: MCP triage search and filters -> exactly three scoped incidents and three alert-only items with sponsor mine, snoozed status past due, stable cursor pages and scoped totals; foreign merged text and unrouted records absent; policy parity, current guide, no native effects and zero outbound requests
+PASS scoped triage reads: populated native D1 and emitted MCP, both policies, all native query fields, sponsor attribution, allowlisted records, cursor revision and principal and grant refusals, revoked and insufficient credentials, unchanged deadlines and paging and permanent audit; zero outbound requests
+PASS shifted journey triageReads
+PASS 30-day future calendar: three unchanged public-door journeys; host, emitted Worker and SQLite shifted; monotonic timers unchanged.

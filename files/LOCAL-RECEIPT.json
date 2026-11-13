@@ -1,0 +1,52 @@
+{
+  "runtime": "Node 22.20.0",
+  "package_manager": "pnpm 10.12.4",
+  "timezone": "UTC",
+  "main_head": "809d67a8fbf255ee13e8531e4246a1ffbddf2fa4",
+  "unchanged_main_intake": {
+    "command": "TZ=UTC node scripts/verify-oncall.mjs intake",
+    "runtime": "Node 24.19.0",
+    "exit_code": 1,
+    "log": "main-intake.log",
+    "expected_failure": "analyticsFixture at tests/oncall-agent-fixtures.mjs:284:11; 401 !== 200"
+  },
+  "node22_reproduction": {
+    "command": "node ../packet/baseline-analytics.mjs",
+    "exit_code": 0,
+    "expected_failure_confirmed": true,
+    "log": "main-analytics-diagnostic-node22.log",
+    "issued_expiry_utc": "2026-11-13T00:02:00Z",
+    "sqlite_wall_clock_valid": false
+  },
+  "candidate_intake": {
+    "command": "TZ=UTC node scripts/verify-oncall.mjs intake",
+    "exit_code": 0,
+    "log": "candidate-intake.log",
+    "status": "passed"
+  },
+  "candidate_typecheck": {
+    "command": "pnpm run typecheck",
+    "exit_code": 0,
+    "log": "candidate-typecheck.log",
+    "status": "passed"
+  },
+  "future_fixtures": {
+    "command": "LD_PRELOAD=/tmp/oncall-clock-shift.so ONCALL_PROBE_CLOCK_SHIFT_SECONDS=2592000 node ../packet/future-fixtures.mjs",
+    "exit_code": 0,
+    "log": "future-fixtures.log",
+    "status": "passed",
+    "fixture_functions": [
+      "alertReads",
+      "analyticsReads",
+      "triageReads"
+    ],
+    "wall_clock_shift_days": 30
+  },
+  "published_head": "cc64205ca532de3ac8022838ecdd07cfa5bfae73",
+  "tested_fixture_sha256": {
+    "tests/oncall-agent-alerts.mjs": "f0f9a6414de4b55e79c05f8e1eaa868172babb0c39a0d0dc7e56be584b4b1e06",
+    "tests/oncall-agent-analytics.mjs": "d972f37206bf0b795f63722f752464930a24b1aaf829b4a7ca7b474407599a26",
+    "tests/oncall-agent-triage.mjs": "bc7e345501c1ed127187ee9d3e26980e62bb6dfdc99be4127343d28fb0a96aa8"
+  },
+  "main_refresh_changed_base": false
+}

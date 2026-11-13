@@ -1,0 +1,47 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-session-clock-1",
+  "head": "cc64205ca532de3ac8022838ecdd07cfa5bfae73",
+  "base_main": "809d67a8fbf255ee13e8531e4246a1ffbddf2fa4",
+  "push_status": "success",
+  "push_attempts": 1,
+  "published_product_heads": 1,
+  "product_files": [
+    "sources.lock.json",
+    "tests/oncall-agent-alerts.mjs",
+    "tests/oncall-agent-analytics.mjs",
+    "tests/oncall-agent-triage.mjs"
+  ],
+  "changed_file_sha256": {
+    "sources.lock.json": "20db42d643ab0c310f8ea35af4c5b73026275fe865317800755973f553da833f",
+    "tests/oncall-agent-alerts.mjs": "f0f9a6414de4b55e79c05f8e1eaa868172babb0c39a0d0dc7e56be584b4b1e06",
+    "tests/oncall-agent-analytics.mjs": "d972f37206bf0b795f63722f752464930a24b1aaf829b4a7ca7b474407599a26",
+    "tests/oncall-agent-triage.mjs": "bc7e345501c1ed127187ee9d3e26980e62bb6dfdc99be4127343d28fb0a96aa8"
+  },
+  "working_tree_clean": true,
+  "contract_changes": 0,
+  "clause_status_changes": 0,
+  "new_tests": 0,
+  "deleted_tests": 0,
+  "weakened_assertions": 0,
+  "clause_counts_before": {
+    "done": 25,
+    "partial": 36,
+    "missing": 27
+  },
+  "clause_counts_after": {
+    "done": 25,
+    "partial": 36,
+    "missing": 27
+  },
+  "calendar_frozen_starts_before": 3,
+  "calendar_frozen_starts_after": 0,
+  "related_fixed_observation_timestamps_before": 2,
+  "related_fixed_observation_timestamps_after": 0,
+  "exact_sha_verify": {
+    "run_id": 43354284655,
+    "conclusion": "success",
+    "head": "cc64205ca532de3ac8022838ecdd07cfa5bfae73",
+    "url": "https://github.com/just-every/run-oncall/actions/runs/43354284655"
+  }
+}

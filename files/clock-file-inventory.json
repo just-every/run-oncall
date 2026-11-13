@@ -1,0 +1,11 @@
+{
+  "source_extensions": {
+    ".mjs": 49,
+    ".json": 22,
+    ".md": 1,
+    ".txt": 2,
+    ".ics": 1
+  },
+  "javascript_sources_all_mjs": true,
+  "other_source_clock_search_matches": 0
+}

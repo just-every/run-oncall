@@ -1,0 +1,20 @@
+[
+  {
+    "path": "tests/oncall-agent-alerts.mjs",
+    "assertion_lines_before": 58,
+    "assertion_lines_after": 58,
+    "identical": true
+  },
+  {
+    "path": "tests/oncall-agent-analytics.mjs",
+    "assertion_lines_before": 49,
+    "assertion_lines_after": 49,
+    "identical": true
+  },
+  {
+    "path": "tests/oncall-agent-triage.mjs",
+    "assertion_lines_before": 40,
+    "assertion_lines_after": 40,
+    "identical": true
+  }
+]

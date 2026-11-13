@@ -1,0 +1,4 @@
+
+> @just-every/oncall@0.5.10 typecheck /home/agent/rer-consolidation/work/main-oncall-session-clock-1/run-oncall
+> tsc --noEmit
+

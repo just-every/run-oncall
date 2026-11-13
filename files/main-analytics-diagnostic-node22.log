@@ -1,0 +1,22 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Baseline runtime v22.20.0 2026-11-13T02:32:23.282Z
+(node:3164) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Owned runtime processes [["3164","3163","node"],["3176","3164","esbuild"],["3185","3164","workerd"],["3191","3164","ps"]]
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+401 !== 200
+
+    at analyticsFixture (file:///home/agent/rer-consolidation/work/main-oncall-session-clock-1/run-oncall/tests/oncall-agent-fixtures.mjs:284:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///home/agent/rer-consolidation/work/main-oncall-session-clock-1/packet/baseline-analytics.mjs:9:2 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 401,
+  expected: 200,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+Session expiry diagnostic [{"expires":1794528120000,"expires_utc":"2026-11-13 00:02:00","sqlite_now_ms":1794537146019,"wall_clock_valid":0,"current_sessions":1}]

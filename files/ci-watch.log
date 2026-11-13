@@ -1,0 +1,24 @@
+GITHUB_CALL 1 exit=0 file=ci-discovery.json
+{"workflow_runs":[{"conclusion":null,"event":"push","head_branch":"cloud/main-oncall-session-clock-1","head_sha":"cc64205ca532de3ac8022838ecdd07cfa5bfae73","html_url":"https://github.com/just-every/run-oncall/actions/runs/43354284655","id":43354284655,"name":"Verify","status":"in_progress"}]}
+
+CI status=in_progress conclusion=None run=43354284655
+CI wait seconds=299
+GITHUB_CALL 2 exit=0 file=ci-run-43354284655.json
+{"conclusion":null,"head_sha":"cc64205ca532de3ac8022838ecdd07cfa5bfae73","html_url":"https://github.com/just-every/run-oncall/actions/runs/43354284655","status":"in_progress"}
+
+CI status=in_progress conclusion=None run=43354284655
+CI wait seconds=299
+GITHUB_CALL 3 exit=0 file=ci-run-43354284655.json
+{"conclusion":null,"head_sha":"cc64205ca532de3ac8022838ecdd07cfa5bfae73","html_url":"https://github.com/just-every/run-oncall/actions/runs/43354284655","status":"in_progress"}
+
+CI status=in_progress conclusion=None run=43354284655
+CI wait seconds=299
+GITHUB_CALL 4 exit=0 file=ci-run-43354284655.json
+{"conclusion":null,"head_sha":"cc64205ca532de3ac8022838ecdd07cfa5bfae73","html_url":"https://github.com/just-every/run-oncall/actions/runs/43354284655","status":"in_progress"}
+
+CI status=in_progress conclusion=None run=43354284655
+CI wait seconds=299
+GITHUB_CALL 5 exit=0 file=ci-run-43354284655.json
+{"conclusion":"success","head_sha":"cc64205ca532de3ac8022838ecdd07cfa5bfae73","html_url":"https://github.com/just-every/run-oncall/actions/runs/43354284655","status":"completed"}
+
+CI status=completed conclusion=success run=43354284655

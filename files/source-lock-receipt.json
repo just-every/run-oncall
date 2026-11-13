@@ -1,0 +1,15 @@
+{
+  "write_command": "node scripts/edition-authoring/cli.mjs lock",
+  "write_exit_code": 0,
+  "check_command": "node scripts/edition-authoring/cli.mjs check",
+  "check_exit_code": 0,
+  "changed_locked_paths": [
+    "tests/oncall-agent-alerts.mjs",
+    "tests/oncall-agent-analytics.mjs",
+    "tests/oncall-agent-triage.mjs"
+  ],
+  "generated_views_changed": false,
+  "head": "cc64205ca532de3ac8022838ecdd07cfa5bfae73",
+  "final_lock_sha256": "20db42d643ab0c310f8ea35af4c5b73026275fe865317800755973f553da833f",
+  "regenerated_after_main_refresh": true
+}
