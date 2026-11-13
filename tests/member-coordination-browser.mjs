@@ -10,8 +10,9 @@ import {localWorker} from './worker.mjs'
 // /signin/local, coordinate, reload and read attributed history; signed-out and
 // revoked sessions get no workspace; paging refuses.
 const worker=await localWorker({}, {clock:true})
+const focusedClients=process.env.ONCALL_MEMBER_JOURNEY==='api-clients';
 const focusedSaves=process.env.ONCALL_MEMBER_JOURNEY==='incident-saves';
-if(process.env.ONCALL_MEMBER_JOURNEY&&!focusedSaves)throw Error('Unknown member coordination journey');
+if(process.env.ONCALL_MEMBER_JOURNEY&&!focusedSaves&&!focusedClients)throw Error('Unknown member coordination journey');
 const captureDirectory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser'
 await mkdir(captureDirectory,{recursive:true})
 const responder={name:'Rosa Responder',password:'synthetic-responder-testing-password'},viewer={name:'Vic Viewer',password:'synthetic-viewer-testing-password'}
@@ -241,6 +242,7 @@ async function incidentHandoff(ownerPage) {
  console.log('PASS incident handoff: responder prepares, reviews and downloads exact unsent JSON; lost-response retry commits once; viewer inspects without actions; current-role refusal, source-drift export conflict and replacement; admin reviews; screens captured at 1440 and 390');
 }
 try {
+ if(!focusedClients){
  const claimed=await worker.request('/auth/bootstrap',{token:worker.vars.SETUP_TOKEN,displayName:'Oncall lead'},undefined,{'CF-Connecting-IP':'127.0.0.1'})
  assert.equal(claimed.status,303,JSON.stringify(claimed.value))
  browser=await chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM_PATH??process.env.CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox','--use-mock-keychain','--password-store=basic']})
@@ -761,13 +763,14 @@ try {
  assert.deepEqual(errors,[])
  console.log('OC-018 real hosted member coordination persists after reload: on the emitted production Worker a password member acknowledged and noted an incident, reloaded at 1440 and kept attribution; a viewer read it; signed-out, anonymous and revoked sessions got no workspace; paging refused (409)')
  }
+}
 } finally {
  await browser?.close()
  await worker.close()
 }
 
 // Finish identity management with owner correction, sign-out and honest mail availability.
-if(!focusedSaves){
+if(!focusedSaves&&!focusedClients){
 const {default:assert}=await import('node:assert/strict')
 const {mkdir,readFile}=await import('node:fs/promises')
 const {chromium}=await import('@playwright/test')
@@ -922,7 +925,7 @@ try {
   assert.equal(foreign.status,200);
   if(await panel.getByRole('button',{name:'Add client',exact:true}).isVisible())await panel.getByRole('button',{name:'Add client',exact:true}).click();
   await panel.getByLabel('Name',{exact:true}).fill('Synthetic browser client '+width);
-  await panel.getByLabel('Incidents',{exact:true}).selectOption('read');await panel.getByRole('button',{name:'Create client',exact:true}).click();await panel.getByText('Synthetic browser client '+width,{exact:true}).first().waitFor();
+  await panel.getByLabel('Incidents',{exact:true}).selectOption('write');await panel.getByLabel('Responders',{exact:true}).selectOption('read');await panel.getByRole('button',{name:'Create client',exact:true}).click();await panel.getByText('Synthetic browser client '+width,{exact:true}).first().waitFor();
   const createdKey=await panel.getByLabel('Private key',{exact:true}).inputValue();assert.ok(createdKey);await panel.getByRole('button',{name:'Done',exact:true}).click();
   const read=key=>runtime.request('/api/v1/incidents',undefined,'',{authorization:'Bearer '+key});
   const unset=await read(createdKey);assert.equal(unset.status,403);assert.equal(unset.value.error.code,'policy_unset');
@@ -940,11 +943,49 @@ try {
   const savedPolicy=page.waitForResponse(r=>new URL(r.url()).pathname==='/agents/api/policy'&&r.request().method()==='PUT');
   // The policy document reloads after saving; finish that navigation before leaving it.
   await Promise.all([page.waitForNavigation({waitUntil:'load'}),page.getByRole('button',{name:'Save policy',exact:true}).click()]);assert.equal((await savedPolicy).status(),200);
+  // Reopen the saved choices and change just Sensitive information.
+  const policy=async()=> (await runtime.request('/agents/api/policy',undefined,cookie)).value.document;
+  const originalPolicy=await policy();
+  await page.reload();await page.locator('[data-guided-policy] > summary').click();
+  for(const rule of originalPolicy.rules)await expect(page.locator('[data-policy-class="'+rule.class+'"]')).toHaveValue(rule.do);
+  await expect(page.getByRole('radio',{name:'No',exact:true})).toBeChecked();
+  const saveGuided=async()=>Promise.all([page.waitForNavigation({waitUntil:'load'}),page.getByRole('button',{name:'Save policy',exact:true}).click()]);
+  await page.getByLabel('Sensitive information',{exact:true}).selectOption('approval');await saveGuided();
+  const changedPolicy=await policy();
+  assert.deepEqual(changedPolicy,{...originalPolicy,rules:originalPolicy.rules.map(rule=>rule.class==='sensitive'?{...rule,do:'approval',approver:['role:owner'],wait:'P1D'}:rule)},'changing one answer preserves every other saved policy setting');
+  await page.locator('[data-guided-policy] > summary').click();
+  await expect(page.getByLabel('Sensitive information',{exact:true})).toHaveValue('approval');
+  for(const proofWidth of [1440,390]){
+   await page.setViewportSize({width:proofWidth,height:1000});
+   if(proofWidth===1440){assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));assert.deepEqual((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations.filter(v=>['serious','critical'].includes(v.impact)),[]);}
+   await page.screenshot({path:join(proof,'automation-guided-policy-'+proofWidth+'.png'),fullPage:true});
+  }
+  await page.setViewportSize({width,height:1000});
+  await page.getByLabel('Sensitive information',{exact:true}).selectOption('autonomous');await saveGuided();assert.deepEqual(await policy(),originalPolicy,'removing approval preserves the original choices and removes only its approval settings');
+  // A document with a scoped exception cannot be flattened into these choices.
+  await page.locator('[data-policy-editor] > summary').click();
+  const customPolicy={...originalPolicy,rules:[...originalPolicy.rules,{id:'scoped-sensitive',class:'sensitive',do:'blocked',agent:'synthetic-oncall-1'}]};
+  await page.getByLabel('Policy document',{exact:true}).fill(JSON.stringify(customPolicy));
+  await Promise.all([page.waitForNavigation(),page.getByRole('button',{name:'Save policy document',exact:true}).click()]);
+  assert.equal(await page.locator('[data-policy-class]').count(),0);assert.equal(await page.locator('[data-policy-editor]').evaluate(el=>el.open),true);
+  assert.deepEqual(JSON.parse(await page.getByLabel('Policy document',{exact:true}).inputValue()),customPolicy);
+  await page.getByLabel('Policy document',{exact:true}).fill(JSON.stringify(originalPolicy));await Promise.all([page.waitForNavigation(),page.getByRole('button',{name:'Save policy document',exact:true}).click()]);
   const grantedRead=await read(createdKey);assert.equal(grantedRead.status,200);
   assert.deepEqual(grantedRead.value.data.map(row=>row.id),[granted.value.id]);
   assert.ok(!JSON.stringify(grantedRead.value).includes(foreign.value.id),'the same key reads only its granted service');
   assert.equal((await runtime.request('/api/v1/analytics',undefined,'',{authorization:'Bearer '+createdKey})).status,403);
   await page.goto(runtime.origin+'/settings/integrations');await panel.locator(':scope > details > summary').first().click();
+  // Finish the documented acknowledgment using only public API reads for IDs.
+  await panel.getByRole('link',{name:'API reference',exact:true}).click();await page.waitForURL(runtime.origin+'/docs/response-api');
+  const reference=page.locator('.docs-article');await reference.waitFor();
+  const publicRead=path=>runtime.request('/api/v1/'+path,undefined,'',{authorization:'Bearer '+createdKey});
+  const responders=await publicRead('responders');assert.equal(responders.status,200);
+  const responsible=responders.value.data.find(row=>row.name==='Synthetic Browser Owner');assert.ok(responsible);
+  const currentIncident=await publicRead('incidents/'+grantedRead.value.data[0].id);assert.equal(currentIncident.status,200);
+  const acknowledged=await runtime.request('/api/v1/incidents',{type:'transition',incident:currentIncident.value.id,revision:currentIncident.value.revision,state:'acknowledged',member:responsible.id,summary:'Public API responsibility'},'',{authorization:'Bearer '+createdKey,'idempotency-key':'synthetic-oncall-public-ack'});assert.equal(acknowledged.status,201);
+  const result=await publicRead('incidents/'+acknowledged.value.entity);assert.equal(result.value.assignee,responsible.id);assert.equal(result.value.commander,responsible.id);assert.equal(result.value.timeline.at(-1).actor,acknowledged.value.client);
+  for(const proofWidth of [1440,390]){await page.setViewportSize({width:proofWidth,height:1000});await page.locator('#version-1-http-reference').scrollIntoViewIfNeeded();await page.screenshot({path:join(proof,'automation-reference-'+proofWidth+'.png'),fullPage:true});}
+  await page.setViewportSize({width,height:1000});await page.goto(runtime.origin+'/settings/integrations');await panel.locator(':scope > details > summary').first().click();
   assert.equal((await req('/api/automation')).value.policy.state,'set');
   const client=(await req('/api/automation')).value.clients.find(c=>c.name==='Synthetic browser client '+width);
   const clientRow=panel.locator('.integration-rows > li').filter({hasText:client.name}),actions=clientRow.locator('.integration-client-actions');
@@ -1021,7 +1062,7 @@ try {
   assert.equal((await denied.request.get(runtime.origin+'/api/automation')).status(),403);
   await deniedPage.screenshot({path:join(proof,'automation-denied-'+width+'.png'),fullPage:true});await denied.close();
  }
- console.log('PASS OC-053 API client policy setup, granted service read, pointer rotation/revocation, stale management refusal, outbox and permanent machine attribution at 1440; client screens at 1440 and 390');
+ console.log('PASS OC-053 API client saved guided policy editing and public responder acknowledgment, granted service read, pointer rotation/revocation, stale management refusal, outbox and permanent machine attribution at 1440; client screens at 1440 and 390');
 }finally{await browser?.close();await runtime.close();}
 
 }

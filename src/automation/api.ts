@@ -153,6 +153,7 @@ export function installVersionedApi(api:any,deps:Deps) {
  const projectService=(s:any,c:Client)=>({...s,dependencies:(s.dependencies??[]).filter((id:string)=>c.services.includes(id))});
  async function records(c:any,family:string,state:State,client:Client) {
   const services=state.services.filter(s=>client.services.includes(s.id)),incidents=state.incidents.filter(i=>!i.mergedInto&&incidentWithinServices(state,i,client.services));
+  if(family==='responders')return state.members.filter(member=>member.active&&['admin','responder'].includes(member.role)).map(({id,name})=>({id,name}));
   if(family==='services')return services.map(s=>projectService(s,client));
   if(family==='incidents')return incidents;
   if(family==='actions')return state.incidents.filter(i=>client.services.includes(i.service)).flatMap(i=>i.actions.map(a=>({...a,incident:i.id,service:i.service,revision:i.revision})));
@@ -167,10 +168,10 @@ export function installVersionedApi(api:any,deps:Deps) {
   }
   return fail('Unknown API family',404);
  }
- for(const family of ['services','schedules','incidents','actions','analytics','integrations']) {
+ for(const family of ['services','schedules','incidents','actions','analytics','integrations','responders']) {
   api.get('/api/v1/'+family,async(c:any)=>{
    const {state,client}=await context(c,family+':read');const refused=restRefusal(await invokeRestRead(c.env,c.req.raw,family));if(refused)return refused;let rows=(await records(c,family,state,client)).sort((a:any,b:any)=>a.id.localeCompare(b.id));
-   const service=c.req.query('service');if(service){allowed(client,service);rows=rows.filter((r:any)=>(family==='services'?r.id:r.service??(r.services?.includes(service)&&service))===service);}
+   const service=c.req.query('service');if(service){allowed(client,service);rows=rows.filter((r:any)=>(family==='responders'?service:family==='services'?r.id:r.service??(r.services?.includes(service)&&service))===service);}
    const limit=Number(c.req.query('limit')??25);if(!Number.isSafeInteger(limit)||limit<1||limit>100)fail('Page limit must be 1–100');
    const version=await changeHash(JSON.stringify(rows)),scope=await changeHash(JSON.stringify([client.id,client.revision,family,service??null]));let offset=0;
    const cursor=c.req.query('cursor');if(cursor){try{const value=JSON.parse(atob(cursor));const sig=await changeHmac(runtimeBindings(c.env).SESSION_SECRET,JSON.stringify(value.slice(0,3)));if(value.length!==4||value[0]!==scope||value[1]!==version||value[3]!==sig||!Number.isSafeInteger(value[2])||value[2]<0||value[2]>rows.length)fail('Cursor expired or belongs to another scope',409);offset=value[2];}catch(e){if(e instanceof Fault)throw e;fail('Invalid cursor');}}

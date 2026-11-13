@@ -142,6 +142,12 @@ The fixture IDs below belong to `agent-surface.json`. `tests/agent-door.mjs` exe
 | --- | --- | --- | --- |
 | `oncall.privacy.erase` | `privacy:write` | `destructive`, `access`, `security`, `live` | `destructive`: `tests/agent-door.mjs` (`erase`, `erase-client`); `access`: `tests/agent-door.mjs` (`erase-client`); `security`: `tests/agent-door.mjs` (`erase-client`); `live`: `tests/agent-door.mjs` (`erase`) |
 
+### Responders
+
+| Tool | Scope | Possible risk classes | Computed class checks |
+| --- | --- | --- | --- |
+| `oncall.responders.list` | `responders:read` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`responders-list`); `sensitive`: `tests/agent-door.mjs` (`responders-list`) |
+
 ### Reviews
 
 | Tool | Scope | Possible risk classes | Computed class checks |

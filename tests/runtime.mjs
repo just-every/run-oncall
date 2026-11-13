@@ -1688,7 +1688,7 @@ try {
  const setup=await runtime.request('/api/setup',{name:'Synthetic Owner',password:'synthetic-oncall-owner-password'});cookie=setup.cookie;const admin=ok(setup).member;
  const service=ok(await owner('/api/command',{type:'service',id:'synthetic-oncall-service',name:'Synthetic service',environment:'test',owner:admin.id,runbook:['Inspect'],pager:''}));
  const foreign=ok(await owner('/api/command',{type:'service',id:'synthetic-oncall-foreign',name:'Hidden service',environment:'test',owner:admin.id,runbook:[],pager:''}));
- const allPermissions=['services:read','services:write','schedules:read','schedules:write','incidents:read','incidents:write','actions:read','actions:write','analytics:read','integrations:read'];
+ const allPermissions=['services:read','services:write','schedules:read','schedules:write','incidents:read','incidents:write','actions:read','actions:write','analytics:read','integrations:read','responders:read'];
  const client=ok(await owner('/api/automation/clients',{name:'Synthetic client',key:apiKey,services:[service.id],permissions:allPermissions}),201);
  for(const url of ['http://8.8.8.8/a','https://127.0.0.1/a','https://10.0.0.1/a','https://169.254.169.254/a','https://localhost/a','https://8.8.8.8/a?token=bad','https://user@8.8.8.8/a'])ok(await owner('/api/automation/endpoints',{name:'Unsafe',key:receiverKey,client:client.id,services:[service.id],url,approve:true}),400);
  const receiverApiKey=randomBytes(32).toString('hex'),receiverClient=ok(await owner('/api/automation/clients',{name:'Receiving access',key:receiverApiKey,services:[service.id],permissions:['incidents:read']}),201);
@@ -1721,7 +1721,14 @@ try {
  const memberB=ok(await owner('/api/members',{name:'synthetic-oncall-responder-b',role:'responder',password:'synthetic-oncall-responder-password'}),201);
  const transition=async(type,extra)=>{const response=ok(await api('incidents',{type,incident:incident.id,revision:incident.revision,...extra}),201);incident=(await state()).incidents.find(row=>row.id===response.entity);return response;};
  ok(await api('incidents',{type:'transition',incident:incident.id,revision:incident.revision,state:'acknowledged',summary:'Machine acknowledgment'}),400);
- await transition('transition',{state:'acknowledged',member:memberA.id,summary:'Client assigns explicit responsibility; no human response claim'});
+ const inactiveResponder=ok(await owner('/api/members',{name:'synthetic-oncall-1-inactive',role:'responder',password:'synthetic-oncall-1-password'}),201);
+ ok(await owner('/api/command',{type:'member',id:inactiveResponder.id,role:'responder',active:false}));
+ const responderPage=ok(await api('responders?limit=100'));
+ assert.deepEqual(responderPage.data,(await state()).members.filter(row=>row.active&&['admin','responder'].includes(row.role)).map(({id,name})=>({id,name})).sort((a,b)=>a.id.localeCompare(b.id)),'lookup returns exactly eligible names and IDs without contacts, roles, passwords or inactive members');
+ ok(await api('responders',undefined,receiverApiKey),403);
+ ok(await api('responders?service='+foreign.id),404);
+ const selectedResponder=responderPage.data.find(row=>row.name===memberA.name);assert.ok(selectedResponder);
+ await transition('transition',{state:'acknowledged',member:selectedResponder.id,summary:'Client assigns explicit responsibility; no human response claim'});
  assert.equal(incident.assignee,memberA.id);assert.equal(incident.commander,memberA.id);assert.equal(incident.timeline.at(-1).actor,client.id);
  const acknowledgment=structuredClone(incident.timeline.at(-1));assert.equal(acknowledgment.lifecycle.member,memberA.id);
  const machineFacts=ok(await owner('/api/audit/export')).rows.filter(r=>r.kind==='automation.incidents'&&r.outcome==='accepted');assert.equal(machineFacts.length,2);assert.equal(machineFacts[0].actor,machineFacts[1].actor);assert.notEqual(machineFacts[1].actor,ok(await owner('/api/audit/export')).rows.find(r=>r.kind==='command.service').actor);

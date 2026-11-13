@@ -399,6 +399,18 @@
       "sponsorEscalation": false
     },
     {
+      "name": "oncall.responders.list",
+      "scope": "responders:read",
+      "readOnly": true,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "OC-053"
+      ]
+    },
+    {
       "name": "oncall.reviews.read",
       "scope": "incidents:read",
       "readOnly": true,
@@ -2857,6 +2869,19 @@
         "service": "agent-service",
         "limit": 100
       },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        }
+      ]
+    },
+    {
+      "id": "responders-list",
+      "tool": "oncall.responders.list",
+      "args": {},
       "expect": [
         {
           "class": "standard"

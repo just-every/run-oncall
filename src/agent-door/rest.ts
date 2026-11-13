@@ -38,6 +38,7 @@ export async function invokeRestRead(env: Bindings, request: Request, family: st
     : family === 'incidents' ? id ? 'incidents.read' : 'incidents.list'
     : family === 'schedules' ? 'schedules.read'
     : family === 'actions' ? 'actions.list'
+    : family === 'responders' ? 'responders.list'
     : family === 'analytics' ? 'analytics.read' : 'integrations.read'
   return door.invoke(`oncall.${tool}`, id && ['services', 'incidents', 'schedules'].includes(family) ? { id } : {}, who)
 }
