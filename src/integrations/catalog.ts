@@ -1,3 +1,5 @@
+import { nativeName } from './native-name';
+export { nativeName } from './native-name';
 import type { State } from '../family/response-operations/domain';
 import type { IntakeRun } from '../intake/CompatibleTest';
 
@@ -15,7 +17,6 @@ export const newIdentity = (prefix: string) => prefix + '-' + privateKey(6);
 export const sourcePath = (id: string) => '/settings/integrations/' + encodeURIComponent(id);
 export const addPath = (kind: string) => '/settings/integrations/new/' + kind;
 export const shortTime = (value: string) => new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(value));
-export const nativeName = (id: string) => /-[a-f0-9]{12}$/.test(id) ? id.slice(0, -13) : /^[a-f0-9-]{32,}$/i.test(id) ? 'Events source' : id.replaceAll('-', ' ');
 export function sourcesFrom(state: State, native: NativeDefinition[], canReadNative = true): SourceRecord[] {
   const configured=new Set(native.map(s=>s.id));
   const history=[...new Map(state.events.filter(e=>!e.source.startsWith('intake:')&&!e.source.startsWith('email:')&&!configured.has(e.source)).map(e=>[e.source,e])).values()];

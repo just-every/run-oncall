@@ -1,9 +1,10 @@
-import {useState,useEffect,useRef} from 'react';
+import {useState,useEffect,useRef,useId} from 'react';
 import type {ScheduleReview} from './review';
 
 export function ReviewedChange({review,busy,onApply,focusOnOpen=true}:{review:ScheduleReview;busy:boolean;onApply:()=>void;focusOnOpen?:boolean}) {
  const [confirmed,setConfirmed]=useState(false),[shown,setShown]=useState(80);
- const panel=useRef<HTMLElement>(null);
+ const panel=useRef<HTMLElement>(null), hintId=useId();
+ const hint=busy?'Applying reviewed change…':!confirmed?'Select “I reviewed these assignments and gaps” to enable applying this change.':null;
  useEffect(()=>{if(!focusOnOpen)return;const heading=panel.current?.querySelector<HTMLElement>('h2');heading?.focus();heading?.scrollIntoView({block:'nearest'});},[]);
  const rows=[...review.intervals].sort((a,b)=>Number(b.after===null)-Number(a.after===null)||a.start-b.start||a.role.localeCompare(b.role));
  const name=(id:string|null)=>id===null?'Coverage gap':review.members.find(m=>m.id===id)?.name??'Unavailable member';
@@ -23,7 +24,8 @@ export function ReviewedChange({review,busy,onApply,focusOnOpen=true}:{review:Sc
   </div>)}</div>
   {shown<rows.length&&<button type="button" onClick={()=>setShown(n=>n+80)}>Show more spans</button>}
   <label style={{display:"flex",alignItems:"center",gap:"0.5rem",margin:"1rem 0"}}><input type="checkbox" style={{width:"auto",minHeight:"auto",flexShrink:0}} checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/><span>I reviewed these assignments and gaps</span></label>
-  <button type="button" disabled={busy||!confirmed} onClick={onApply}>Apply reviewed change</button>
+  <button type="button" aria-describedby={hint?hintId:undefined} disabled={busy||!confirmed} onClick={onApply}>Apply reviewed change</button>
+  {hint&&<p id={hintId} role="status">{hint}</p>}
   <details><summary>About this review</summary><p>Applying changes the whole rota; only the coverage in this range is shown. Existing slots stay in the proposal, and unavailable people show as gaps. A changed rota or workspace needs a fresh review. Paging stays off.</p></details>
  </section>;
 }

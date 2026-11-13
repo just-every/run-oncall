@@ -5,9 +5,10 @@ import { nativeAccess, nativeActor, nativeAudit, nativeCall, persistNative } fro
 import { protectedRecords } from './resources'
 import { pagingSnapshot } from '../paging-store'
 import { responseContext } from '../manual-pages/context'
+import { assignmentRule, responseTargets } from '../manual-pages/model'
 import { auditIdentity } from '../audit-store'
 import { incidentWithinServices } from '../incident-workflows/scope'
-import { expireAgentDeadline } from './deadlines'
+import { deadlineUpdateService, expireAgentDeadline } from './deadlines'
 
 const string = (maxLength = 3000): JsonSchema => ({ type: 'string', minLength: 1, maxLength })
 const revision: JsonSchema = { type: 'integer', minimum: 0 }
@@ -31,7 +32,7 @@ const operations: Operation[] = [
   { name: 'incidents.declare', title: 'Declare an incident', description: 'Declare native coordination with a copied runbook. Paging remains off. Revision is the current workspace revision.', scope: 'incidents:write', clauses: ['OC-004', 'OC-005'],
     properties: { service: string(100), revision, title: string(300), summary: string(), severity: { enum: ['critical', 'warning', 'info'] }, alerts: { type: 'array', items: string(100), maxItems: 200, uniqueItems: true } }, required: ['service', 'title', 'summary', 'severity'],
     input: a => ({ type: 'declare', service: a.service, title: a.title, summary: a.summary, severity: a.severity, alerts: a.alerts ?? [] }) },
-  { name: 'incidents.update', title: 'Update an incident', description: 'Reassign responsibility, change a coordination role, or record mitigation/recovery with native lifecycle rules and current revision.', scope: 'incidents:write', clauses: ['OC-004', 'OC-053'],
+  { name: 'incidents.update', title: 'Update an incident', description: 'Reassign responsibility, change a coordination role, record mitigation or recovery, record a manual page, snooze, cancel pending deadlines, or explicitly expire a due deadline at the current revision. Paging remains OFF.', scope: 'incidents:write', clauses: ['OC-004', 'OC-053'],
     properties: { incident: string(100), revision, change: { enum: ['reassign', 'assign-role', 'transition', 'manual-page', 'snooze', 'cancel-deadline', 'expire-deadline'] }, service: string(100),title:string(300),severity:{enum:['critical','warning','info']},urgency:{enum:['high','low']},priority:{enum:['P1','P2','P3','P4','P5']},policy:string(100),users:{type:'array',items:string(100),maxItems:100},description:string(3000),incidentType:string(100),operationId:string(100),deadline:string(100),minutes:{type:'integer',minimum:1},state: { enum: ['mitigating', 'recovered'] }, summary: string(), evidence: string(2000), member, role: { enum: ['commander', 'scribe', 'communications', 'assignee'] }, reason: string() }, required: ['change'],
     input: a => ({...Object.fromEntries((updateFields[String(a.change)]??[]).filter(key=>a[key]!==undefined).map(key=>[key,a[key]])),type:a.change}) },
   { name: 'incidents.acknowledge', title: 'Acknowledge for a named responder', description: 'Record the agent acknowledgment naming an active human responder. This is attributed to the agent, not a human attestation.', scope: 'incidents:write', clauses: ['OC-004', 'OC-053'],
@@ -55,26 +56,44 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
   return operations.map(operation => {
     const access = async (args: Args, ctx: ToolContext) => {
       const current = await nativeAccess(env, ctx, operation.scope)
-      const incident = args.incident === undefined ? undefined : current.state.incidents.find(row => row.id === args.incident)
+      const manualPage = operation.name === 'incidents.update' && args.change === 'manual-page'
+      const incident = manualPage || args.incident === undefined ? undefined : current.state.incidents.find(row => row.id === args.incident)
       if(incident&&!incidentWithinServices(current.state,incident,current.services))fail('Record not found in this client scope',404)
-      const service = operation.name === 'incidents.declare'||args.change==='manual-page' ? args.service : incident?.service
+      const service = operation.name === 'incidents.declare' || manualPage ? args.service : incident?.service
       if (typeof service !== 'string' || !current.services.includes(service) || !current.state.services.some(row => row.id === service)) fail('Record not found in this client scope', 404)
-      return { current, incident }
+      let manual
+      if (manualPage) {
+        const snapshot = await pagingSnapshot(env.DB)
+        if (snapshot.workspace.revision !== current.state.revision) fail('Native revision changed; reload before applying', 409)
+        const context = responseContext(snapshot, ctx.now())
+        const targets = responseTargets(current.state, args, service, context, false)
+        const assignment = assignmentRule(current.state, service)
+        const services = [...new Set([service, ...targets.filter(target => target.kind !== 'user').map(target => target.id),
+          ...(targets.some(target => target.kind === 'user') && assignment.mode === 'escalate' && context.policies.some(policy => policy.service === assignment.policy) ? [assignment.policy] : [])])].sort()
+        if (services.some(id => !current.services.includes(id))) fail('Record not found in this client scope', 404)
+        manual = { pagingRevision: snapshot.revision, services }
+      }
+      return { current, incident, manual }
     }
     return defineTool({
       name: `oncall.${operation.name}`, title: operation.title, description: operation.description,
-      scope: operation.scope, readOnly: false, classes: operation.name === 'incidents.resolve' ? ['commitment', 'sensitive'] : operation.name === 'incidents.declare' ? ['standard'] : ['standard', 'sensitive'], clauses: operation.clauses, untrusted: true,
+      scope: operation.scope, readOnly: false, classes: operation.name === 'incidents.resolve' ? ['commitment', 'sensitive'] : operation.name === 'incidents.declare' ? ['standard'] : operation.name === 'incidents.update' ? ['standard', 'sensitive', 'live'] : ['standard', 'sensitive'], clauses: operation.clauses, untrusted: true,
       inputSchema: { type: 'object', additionalProperties: false, properties: operation.properties, required: operation.required },
       outputSchema: { type: 'object', properties: { id: string(100), revision: { type: 'integer', minimum: 1 } }, required: ['id', 'revision'] },
-      classify: (args, ctx) => nativeCall(async () => {
-        const { incident } = await access(args, ctx)
+      classify: (args, ctx, completed) => nativeCall(async () => {
+        const { incident, manual } = await access(args, ctx)
+        const deadlineChange = operation.name === 'incidents.update' && ['snooze', 'cancel-deadline', 'expire-deadline'].includes(String(args.change))
+        // Completed facts come only from Base's exact committed call; native
+        // sponsorship and service scope still gate the replay above.
+        if (deadlineChange && completed) return [...completed]
+        const deadlineService = deadlineChange ? await deadlineUpdateService(env, args, ctx) : null
         const count = protectedRecords(incident) + Number(typeof args.evidence === 'string' && !!args.evidence)
         // Resolution is a binding coordination decision for one native incident.
         // It moves no money: XXX denotes no currency, never a caller's valuation.
         const primary = operation.name === 'incidents.resolve'
           ? { class: 'commitment' as const, facts: { measure: 0, currency: 'XXX', counterparty: 'internal' as const } }
           : { class: 'standard' as const, facts: { measure: 1 } }
-        return [primary, ...(count ? [{ class: 'sensitive' as const, facts: { measure: count, kind: 'personal_or_incident_evidence' } }] : [])]
+        return [primary, ...(count ? [{ class: 'sensitive' as const, facts: { measure: count, kind: 'personal_or_incident_evidence' } }] : []), ...(manual || deadlineService ? [{ class: 'live' as const, facts: { measure: 1, service: manual ? manual.services.join(', ') : deadlineService! } }] : [])]
       }),
       target: (args, ctx) => nativeCall(async () => {
         const { current, incident } = await access(args, ctx)
@@ -84,10 +103,17 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
       }),
       revision: (args, ctx) => nativeCall(async () => { const { current, incident } = await access(args, ctx); return incident?.revision ?? current.state.revision }),
       summary: (args, ctx) => nativeCall(async () => {
-        const { current, incident } = await access(args, ctx)
+        const { current, incident, manual } = await access(args, ctx)
         const target = incident ?? current.state.services.find(row => row.id === args.service)!
         const action = incident?.actions.find(row => row.id === args.action)
-        return { target: { id: target.id, name: 'title' in target ? target.title : target.name }, items: [operation.title, `Revision ${args.revision}`, ...(action ? [action.title] : []), ...Object.entries(operation.input(args)).filter(([key, value]) => !['type', 'incident', 'revision'].includes(key) && value !== undefined).map(([key, value]) => `${key}: ${typeof value === 'string' ? value : JSON.stringify(value)}`)] }
+        const deadlinePaging = operation.name === 'incidents.update' && ['snooze', 'cancel-deadline', 'expire-deadline'].includes(String(args.change))
+          ? (await pagingSnapshot(env.DB)).revision : undefined
+        const deadlineSummary = operation.name === 'incidents.update' ? ({
+          snooze: 'Record a snooze; paging OFF',
+          'cancel-deadline': 'Cancel pending re-trigger deadlines; paging OFF',
+          'expire-deadline': 'Record due re-trigger expiry; paging OFF',
+        } as Record<string, string>)[String(args.change)] : undefined
+        return { target: { id: target.id, name: 'title' in target ? target.title : target.name }, items: [operation.title, ...(deadlineSummary ? [deadlineSummary, `Paging revision ${deadlinePaging}`] : []), manual ? `Native revision ${current.state.revision}:${manual.pagingRevision}` : `Revision ${args.revision}`, ...(action ? [action.title] : []), ...Object.entries(operation.input(args)).filter(([key, value]) => !['type', 'incident', 'revision'].includes(key) && value !== undefined).map(([key, value]) => `${key}: ${typeof value === 'string' ? value : JSON.stringify(value)}`)] }
       }),
       run: (args, ctx) => nativeCall(async () => {
         if(operation.name==='incidents.update'&&args.change==='expire-deadline')return expireAgentDeadline(env,args,ctx)

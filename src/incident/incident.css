@@ -12,6 +12,9 @@
 .incident-title-row h1 { font-size: 26px; line-height: 1.2; }
 .incident-icon { width: 44px; height: 44px; min-width: 44px; padding: 0; font-size: 24px; line-height: 1; }
 .incident-meta { margin: 10px 0 0; color: var(--oc-muted); font-size: 14px; }
+.incident-head .incident-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px .35em; }
+.incident-head .incident-meta > * + *::before { content: none; }
+.incident-meta-field { max-width: 100%; }
 .incident-state { padding: 2px 6px; border-radius: 5px; }
 .incident-people { display: flex; flex-wrap: wrap; align-items: start; gap: 12px 24px; }
 .incident-person { position: relative; min-width: 0; }
@@ -101,6 +104,7 @@ body:has(.incident-sheet[open], .incident-people-dialog[open]) { overflow: hidde
   .incident-body { gap: 12px; }
   .incident-runbook, .incident-timeline { padding: 14px; }
   .incident-timeline .event { padding-bottom: 12px; }
+  .incident-timeline .event time { flex: 0 1 auto; min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
   .incident-timeline .composer form { margin-top: 12px; }
   .incident-timeline .composer .field { margin-bottom: 12px; }
   .incident-timeline .composer textarea { min-height: 64px; }

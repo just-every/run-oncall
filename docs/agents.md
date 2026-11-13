@@ -17,6 +17,20 @@ Open Agents (`/agents`) to inspect decisions, pending approvals, reviews and Pau
 
 The MCP endpoint is `/mcp`. Discovery and protected-resource metadata describe the current registry. Both supported protocol versions expose the same tools: `2026-07-28` and `2025-11-25`. Tools expose the coordination journey. This installation declares only tools, policy, pause, audit and idempotency. Public resource reads, specialist prompts, retained event listing and subscriptions are undeclared and refuse with `capability_not_declared`. Native authorization, short-lived owner-bound tokens, approval and consent checks remain mandatory. Existing `/api/v1` clients use the same policy admission and retain their native service and action scopes, operation keys and ETags.
 
+## Read alerts
+
+Use `oncall.alerts.list` with the existing `incidents:read` permission. Optional `service`, `state` (`active` or `recovered`) and `urgency` (`high` or `low`) filters narrow the current service grants. Each page accepts `limit` from 1 to 100, defaulting to 50. Follow `data.nextCursor` with the same filters and credential; no cursor means the final page. Alerts are ordered by ID, and their observations by acceptance time then ID. A cursor whose anchor is no longer visible is refused.
+
+Each alert includes its native identity, original severity and priority, current state and urgency, suppression, owner and retained observations. Policy and routing versions describe admission, even after the live rules change. Imported text is untrusted. Service-less unrouted alerts, foreign records, source payloads, truncated prefixes and routing member snapshots are excluded. Incomplete observations expose their flags without their retained bytes. Reads compute standard and, when retained personal or incident evidence is present, sensitive using the same rule as incident reads. Company policy may require approval before returning sensitive content. Reads retain decision audit and any policy-required approval or review; they send no outbound request and create no native coordination or paging effect.
+
+## Read analytics
+
+Use `oncall.analytics.read` with `analytics:read`. With no arguments it returns the existing per-service incident, open and unfinished follow-up counts. Set `view` to `response` for the native response report, scheduled load and alert noise. Optional `from`, `to` and `at` timestamps use the native report rules; `at` cannot be later than now. An optional `service` must be in the caller's current grants. Incidents, alerts and schedules are scoped before any totals or responder hours are computed. Service-less unrouted alerts are excluded. Scheduled hours do not establish worked hours or delivered interruptions.
+
+Set `view` to `readiness`, with no other filters, to read release and deployment identity, the release matrix, workspace signals, the US installation checklist and the pager-coverage statement. This view is available only when current grants cover every workspace service; a narrower caller receives no report or counts. Unavailable measurements remain explicitly unavailable and the report retains `complete: false`. Neither a healthy report nor local configuration establishes paging readiness.
+
+These reads compute standard and add sensitive only for retained personal or incident evidence under the existing incident-read rule. Company policy may require review or approval. They retain read-decision custody, create no native coordination or paging effect and send no outbound request. Usage and cost figures are not shipped; team load is not modelled.
+
 ## People and credentials
 
 Business supplies signed owner and teammate person IDs. The installation owner uses Business people (`/agents/people`) to link an applied teammate ID to an existing local workspace account. Matching an email address is insufficient. Oncall creates no invitation or password from a Business roster. A local role promotion does not make someone a Business policy editor.
@@ -48,11 +62,17 @@ The fixture IDs below belong to `agent-surface.json`. `tests/agent-door.mjs` exe
 | `oncall.actions.receipt` | `actions:write` | `standard` | `standard`: `tests/agent-door.mjs` (`actions-receipt`) |
 | `oncall.actions.submit` | `actions:write` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`submit`, `second-submit`); `sensitive`: `tests/agent-door.mjs` (`submit`, `second-submit`) |
 
+### Alerts
+
+| Tool | Scope | Possible risk classes | Computed class checks |
+| --- | --- | --- | --- |
+| `oncall.alerts.list` | `incidents:read` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`alerts-list-standard`, `alerts-list-sensitive`); `sensitive`: `tests/agent-door.mjs` (`alerts-list-sensitive`) |
+
 ### Analytics
 
 | Tool | Scope | Possible risk classes | Computed class checks |
 | --- | --- | --- | --- |
-| `oncall.analytics.read` | `analytics:read` | `standard` | `standard`: `tests/agent-door.mjs` (`analytics`) |
+| `oncall.analytics.read` | `analytics:read` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`analytics`, `analytics-response`); `sensitive`: `tests/agent-door.mjs` (`analytics-response`) |
 
 ### Automation
 
@@ -102,7 +122,7 @@ The fixture IDs below belong to `agent-surface.json`. `tests/agent-door.mjs` exe
 | `oncall.incidents.read` | `incidents:read` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`incident-read`, `erase-read`); `sensitive`: `tests/agent-door.mjs` (`incident-read`, `erase-read`) |
 | `oncall.incidents.receipt` | `incidents:write` | `standard` | `standard`: `tests/agent-door.mjs` (`incidents-receipt`) |
 | `oncall.incidents.resolve` | `incidents:write` | `commitment`, `sensitive` | `commitment`: `tests/agent-door.mjs` (`resolve`); `sensitive`: `tests/agent-door.mjs` (`resolve`) |
-| `oncall.incidents.update` | `incidents:write` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`recover`); `sensitive`: `tests/agent-door.mjs` (`recover`) |
+| `oncall.incidents.update` | `incidents:write` | `standard`, `sensitive`, `live` | `standard`: `tests/agent-door.mjs` (`incident-snooze`, `incident-cancel-deadline`, `manual-page`, `recover`); `sensitive`: `tests/agent-door.mjs` (`recover`); `live`: `tests/agent-door.mjs` (`incident-snooze`, `incident-cancel-deadline`, `manual-page`) |
 
 ### Integrations
 
@@ -155,6 +175,12 @@ The fixture IDs below belong to `agent-surface.json`. `tests/agent-door.mjs` exe
 | --- | --- | --- | --- |
 | `oncall.teams.update` | `teams:write` | `standard`, `access` | `standard`: `tests/agent-door.mjs` (`team-create`); `access`: `tests/agent-door.mjs` (`team-manager`) |
 
+### Triage
+
+| Tool | Scope | Possible risk classes | Computed class checks |
+| --- | --- | --- | --- |
+| `oncall.triage.list` | `incidents:read` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`triage-list-standard`, `triage-list-sensitive`); `sensitive`: `tests/agent-door.mjs` (`triage-list-sensitive`) |
+
 ## Current resource templates
 
 No resource templates are exposed. The template listing is empty because resources are undeclared.
@@ -172,7 +198,7 @@ Resolving a recovered incident is a `commitment`, including when company policy 
 
 Approvals show the saved target, proposed change, native revision and exact summary. A changed revision or coverage digest requires a fresh review. The actual approver is recorded separately from the agent preparer. An agent confirmation is never a person's decision. Review offers Undo only when a real native reversal exists.
 
-This checkout uses published rer 0.2.90. Completed schedule updates and overrides retain native receipt custody in the same transaction as the change. An exact retry rechecks current native authority and company policy before Base returns its saved approval receipt. A new key cannot reuse a consumed native revision or review digest. A subsequent schedule, membership, erasure or workspace change requires fresh review. Installation-bound agent custody and replay receipts are excluded from portable exports; local erasure clears retained schedule receipts.
+This checkout uses published rer 0.2.90. Completed schedule updates and overrides retain native receipt custody in the same transaction as the change. An exact retry rechecks current native authority and company policy before Base returns its saved approval receipt. A new key cannot reuse a consumed native revision or review digest. A subsequent schedule, membership, erasure or workspace change requires fresh review. Installation-bound replay receipts and private relay custody are excluded from portable exports; agent audit, call, review and event history is retained. Portable restore pauses the receiving agent door, clears admission leases and expires pending or in-flight approvals before publication. A signed-in owner must resume the door, and restored approvals cannot authorize execution. Local erasure clears retained schedule receipts.
 
 Minimal response events contain operation, type, service, incident, revision, state and time. Endpoint credentials are never returned through tools or resources. Uncertain transport is not receiver receipt and is never automatically resent. Native quotas and outbox custody remain in force.
 

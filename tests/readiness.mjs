@@ -1,11 +1,49 @@
 import assert from 'node:assert/strict'
 import {readFile} from 'node:fs/promises'
 
+// The public report must compute dependencies from its release matrix and the
+// contract register, without allowing local credentials to certify live setup.
+export async function assertInstallationChecklist(report) {
+ const ownership={
+  hosting:[['OC-018'],['coordination'],['R-1']],
+  mail:[['OC-018'],['hosted-mail'],['R-1','R-2']],
+  'us-sending':[['OC-026','OC-066'],['paging'],['R-5']],
+  push:[['OC-029'],['ios','android'],['R-7']],
+  'native-apps':[['OC-029'],['ios','android'],['R-7']],
+  bridges:[['OC-035'],['bridges'],['R-12','R-6']],
+  chat:[['OC-034','OC-067'],['chat-slack','chat-microsoft-teams'],['R-12']],
+  standby:[['OC-028','OC-047','OC-054'],['standby','drills'],['R-8']],
+  handsets:[['OC-026','OC-029','OC-035','OC-064','OC-066','OC-071','OC-080','OC-082'],['cutover'],['R-6']],
+  'reference-load':[['OC-064','OC-054'],['reference-load'],['R-6']],
+  'regulated-data':[['OC-044'],['regulated-data'],[]],
+  '911':[['OC-044'],['us-emergency'],[]],
+ };
+ const contract=await readFile('CONTRACT.md','utf8');
+ const register=new Map(contract.split('## Field proof register\n')[1].split('\n## ')[0].split('\n').filter(line=>/^\| R-\d+ \|/.test(line)).map(line=>{
+  const [id,,,state,date]=line.split('|').slice(1,-1).map(cell=>cell.trim());
+  return [id,{id,state,date:date||null}];
+ }));
+ assert.equal(report.installation.country,'US');
+ assert.match(report.installation.reviewedOn,/^\d{4}-\d{2}-\d{2}$/);
+ assert.deepEqual(report.installation.items.map(item=>item.id).sort(),Object.keys(ownership).sort(),'all US prerequisites are reported exactly once');
+ for(const item of report.installation.items){
+  const [clauses,matrix,proof]=ownership[item.id];
+  assert.deepEqual(item.clauses,clauses);
+  const rows=matrix.map(id=>{const row=report.matrix.find(row=>row.id===id);assert.ok(row);return {id,state:row.state};});
+  assert.deepEqual(item.matrix,rows,'dependency evidence retains each actual matrix state');
+  const priority=['off','not-built','unproven-live','working-here'];
+  assert.equal(item.state,rows.map(row=>row.state).sort((a,b)=>priority.indexOf(a)-priority.indexOf(b))[0]);
+  assert.deepEqual(item.fieldProof,proof.map(id=>register.get(id)),'field state and date come from the actual contract register');
+  assert.equal(item.completion,item.id==='911'?'guidance-only':'not-done','unverified installation steps never become complete');
+  assert.ok(item.requirement.length>0);
+ }
+}
+
 // OC-054: real durable doors plus isolated source loss; no database fixture writes.
 export async function readinessHealth(deployment) {
  const {localWorker}=await import('./worker.mjs');
  const {randomBytes,createHash}=await import('node:crypto');
- const runtime=await localWorker({RER_DEPLOY_SOURCE:deployment.sourceSha,RER_DEPLOY_FINGERPRINT:deployment.fingerprint},{clock:true,fetchSource:`let providerMode='normal',providerCalls=[],pkceChallenge='',pkceValid=true,revoked=false;
+ const runtime=await localWorker({RER_DEPLOY_SOURCE:deployment.sourceSha,RER_DEPLOY_FINGERPRINT:deployment.fingerprint},{clock:true,outboundLedger:true,fetchSource:`let providerMode='normal',providerCalls=[],pkceChallenge='',pkceValid=true,revoked=false;
  globalThis.fetch=async(input)=>{providerCalls.push(String(input instanceof Request?input.url:input));throw Error('Unexpected readiness outbound call');};`});
  try {
   const at=Date.now();await runtime.time(at);
@@ -26,10 +64,10 @@ export async function readinessHealth(deployment) {
    roles[role]={member,cookie:login.cookie};
    assert.equal((await call('/api/readiness',undefined,login.cookie)).status,role==='stakeholder'?403:200);
   }
-  const baseline=await value('/api/readiness');assert.equal(baseline.complete,true);assert.deepEqual(baseline.release.deployment,deployment);
+  const baseline=await value('/api/readiness');assert.equal(baseline.complete,true);await assertInstallationChecklist(baseline);assert.deepEqual(baseline.release.deployment,deployment);
   const pkg=JSON.parse(await readFile('package.json','utf8'));assert.equal(baseline.release.version,pkg.version);assert.equal(baseline.release.package,pkg.name);
   assert.equal(new Set(baseline.matrix.map(row=>row.id)).size,baseline.matrix.length);
-  for(const row of baseline.matrix){assert.ok(['working-here','off','not-built','unproven-live'].includes(row.state));assert.ok(['maintained-journey','dated-owner-evidence','none'].includes(row.evidence.kind));if(row.id!=='coordination')assert.notEqual(row.state,'working-here');if(row.observation){assert.equal(row.observation.configured,0);assert.equal(row.observation.active,0);assert.equal(row.observation.lastAcceptedAt,null);}}
+  for(const row of baseline.matrix){assert.ok(['working-here','off','not-built','unproven-live'].includes(row.state));assert.ok(['maintained-journey','dated-owner-evidence','none'].includes(row.evidence.kind));if(!['coordination','us-emergency'].includes(row.id))assert.notEqual(row.state,'working-here');if(row.observation){assert.equal(row.observation.configured,0);assert.equal(row.observation.active,0);assert.equal(row.observation.lastAcceptedAt,null);}}
   for(const row of baseline.signals){assert.ok(['ok','degraded','failing','unavailable'].includes(row.state));assert.equal(row.observedAt,new Date(at).toISOString());assert.ok(row.ageSeconds===null||row.ageSeconds>=0);}
   assert.equal(baseline.pagerCoverage.state,'unproven');assert.equal(baseline.pagerCoverage.paging,'off');assert.equal((await value('/health')).storage,'available');
   const before=digest();await value('/api/readiness');await value('/api/readiness');assert.equal(digest(),before,'healthy readiness reads change zero rows, revisions, sessions, keys or permanent-audit entries');
@@ -52,6 +90,12 @@ export async function readinessHealth(deployment) {
   incident=await value('/api/command',{type:'transition',incident:incident.id,revision:incident.revision,state:'acknowledged',summary:'Synthetic responder accepts coordination'});
   incident=await value('/api/command',{type:'snooze',incident:incident.id,revision:incident.revision,minutes:1});
   const busy=await value('/api/readiness'),state=await value('/api/state');
+  for(const [as,status] of [['',401],[roles.stakeholder.cookie,403]]){
+   const denied=await call('/api/readiness',undefined,as);assert.equal(denied.status,status);
+   assert.deepEqual(Object.keys(denied.value),['error'],'refused reads disclose no populated checklist, release identity or health data');
+   assert.deepEqual(await value('/api/state'),state,'refused report reads leave populated paging and application records unchanged');
+  }
+  await assertInstallationChecklist(busy);assert.deepEqual(busy.installation,baseline.installation,'configuring real local sources never promotes installation completion or field proof');
   const intake=signal(busy,'intake');assert.equal(intake.state,'degraded');assert.equal(intake.values.lastAdmittedAt,new Date(at).toISOString());assert.ok(intake.values.recentRefusals>signal(baseline,'intake').values.recentRefusals);assert.ok(intake.values.keysAtAllowance>0);assert.ok(intake.values.keysThrottledLastMinute>0);
   const events=busy.matrix.find(row=>row.id==='events');assert.equal(events.observation.configured,1);assert.equal(events.observation.active,1);assert.equal(events.observation.lastAcceptedAt,new Date(at).toISOString());assert.equal(events.state,'unproven-live');
   const compatibleRow=busy.matrix.find(row=>row.id==='pagerduty');assert.equal(compatibleRow.state,'unproven-live');assert.equal(compatibleRow.observation.configured,1);assert.equal(compatibleRow.observation.active,1);assert.equal(compatibleRow.observation.lastAcceptedAt,new Date(at).toISOString());
@@ -63,7 +107,7 @@ export async function readinessHealth(deployment) {
   const queued=await value('/api/state'),readOnly=digest();await value('/api/readiness');assert.equal(digest(),readOnly,'readiness observes overdue work without firing a deadline or dispatching a queue');assert.deepEqual((await value('/api/state')).apiOutbox,queued.apiOutbox);
   runtime.sql('ALTER TABLE oc_key_rate_usage RENAME TO synthetic_oncall_540_fault');
   try {
-   const partial=await value('/api/readiness',undefined,503);assert.equal(partial.complete,false);assert.equal(signal(partial,'intake').state,'unavailable');assert.deepEqual(signal(partial,'intake').values,{});assert.equal(signal(partial,'intake').ageSeconds,null);
+   const partial=await value('/api/readiness',undefined,503);assert.equal(partial.complete,false);await assertInstallationChecklist(partial);assert.equal(signal(partial,'intake').state,'unavailable');assert.deepEqual(signal(partial,'intake').values,{});assert.equal(signal(partial,'intake').ageSeconds,null);
    for(const row of overdue.signals.filter(row=>row.id!=='intake'))assert.deepEqual(signal(partial,row.id),row,'one unreadable source never hides another signal');
    assert.equal(partial.pagerCoverage.state,'unproven');assert.equal((await value('/health')).storage,'available','web storage can remain healthy during a signal outage');
   } finally {runtime.sql('ALTER TABLE synthetic_oncall_540_fault RENAME TO oc_key_rate_usage');}
@@ -79,9 +123,15 @@ export async function readinessHealth(deployment) {
   await value('/api/intake/sources/'+adapterId+'/revoke',{revision:adapter.revision});const inactive=(await value('/api/readiness')).matrix.find(row=>row.id==='pagerduty');assert.equal(inactive.observation.configured,1);assert.equal(inactive.observation.active,0);assert.equal(inactive.observation.lastAcceptedAt,new Date(at).toISOString());
   await runtime.time(at+180000);await value('/api/command',{type:'acknowledgment-timeout',service:service.id,baseVersion:0,minutes:0});
   const editedConfiguration=signal(await value('/api/readiness'),'configuration');assert.equal(editedConfiguration.values.policyChangedAt,new Date(at+180000).toISOString());assert.equal(editedConfiguration.values.serviceChangedAt,new Date(at+180000).toISOString());assert.equal(editedConfiguration.values.scheduleChangedAt,new Date(at).toISOString(),'service policy edits never invent a schedule change');
-  await value('/api/command',{type:'member',id:roles.viewer.member.id,role:'viewer',active:false});assert.equal((await call('/api/readiness',undefined,roles.viewer.cookie)).status,401);
-  await runtime.time(at+13*3600000);assert.equal((await call('/api/readiness',undefined,roles.responder.cookie)).status,401,'expired sessions cannot inspect readiness');
+  await value('/api/command',{type:'member',id:roles.viewer.member.id,role:'viewer',active:false});
+  const revokedRead=await call('/api/readiness',undefined,roles.viewer.cookie);assert.equal(revokedRead.status,401);
+  assert.deepEqual(Object.keys(revokedRead.value),['error'],'revoked sessions disclose no populated installation checklist or deployment identity');
+  await runtime.time(at+13*3600000);
+  const expiredRead=await call('/api/readiness',undefined,roles.responder.cookie);assert.equal(expiredRead.status,401,'expired sessions cannot inspect readiness');
+  assert.deepEqual(Object.keys(expiredRead.value),['error'],'expired sessions disclose no populated installation checklist or deployment identity');
+  assert.deepEqual(await runtime.outboundRequests(),[],'readiness and fixture setup make zero outbound requests at the Worker network edge');
   const network=await runtime.request('/__provider_calls');assert.equal(network.status,200);assert.deepEqual(network.value.calls,[],'readiness and setup/state changes make zero outbound calls');
+  console.log('PROBE OC-044 acceptance 1 checklist: protected GET /api/readiness -> every US dependency matches release matrix and actual field register; account steps remain not done; populated queued-work reads preserve all durable tables and revisions with zero outbound requests');
   console.log('PASS OC-054 readiness: release identity, closed matrix states, dynamic source/revocation observations; independent durable signals, zero-write reads, public-door queued delivery/refused intake/overdue deadline; isolated 503 and restored signal; admin/responder/viewer access and signed-out/stakeholder/expired/revoked refusal; storage never proves pager coverage; zero outbound calls');
  } finally {await runtime.close();}
 }

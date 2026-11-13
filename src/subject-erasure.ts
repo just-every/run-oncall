@@ -7,7 +7,7 @@ import { eraseBusinessMember } from './business-status/model'
 import { refers,mentions,scrub,indirect } from './move-in/erasure'
 import { relatedSelection } from './modules/import-kit/src/d1/erasure-related'
 import { targetIdentity } from './modules/import-kit/src/d1/erasure-index'
-import { prepareNativeImportCustodyErasure,importErasureContext } from './move-in/native-erasure'
+import { prepareNativeImportCustodyErasure,importErasureContext,importedIntegrationRoot } from './move-in/native-erasure'
 import type { D1ImportContext } from './modules/import-kit/src/d1/types'
 import { changeErasureIdentity } from './changes/identity'
 import { auditIdentity, auditKind, ownerCustodyRefusal } from './audit-store'
@@ -266,6 +266,9 @@ export async function eraseSubject({secret,db,state,actor,guard,input,kind,id,im
   } else if(kind==='email') {
    const address=state.emailAddresses?.find(row=>row.id===id)
    if(!address)fail('Unknown email integration',404)
+   const root=await importedIntegrationRoot(db,'emailAddress',id)
+   if(root){imported=await prepareNativeImportCustodyErasure(db,importContext,{kind:'integration',id:root.id});remember('move_in_objects');identities.push(root.id)
+    statements.push(guardStatement(db,"EXISTS(SELECT 1 FROM move_in_objects WHERE kind='integration' AND id=? AND revision=? AND data=?)",root.id,root.revision,root.data),db.prepare("DELETE FROM move_in_objects WHERE kind='integration' AND id=?").bind(root.id))}
    await removeSignalSource('email:'+id)
    remove('emailQuarantine','oc_email_quarantine',row=>row.address===id)
    remove('emailSamples','oc_email_samples',row=>row.address===id)

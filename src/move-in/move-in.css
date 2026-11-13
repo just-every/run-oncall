@@ -37,3 +37,7 @@
 .move-in-workspace .move-in-step > details { margin: 0; padding: 0; }
 .move-in-workspace summary::before { content: '›'; margin-right: 8px; font-size: 18px; }
 .move-in-workspace details[open] > summary::before { content: '⌄'; }
+
+.move-in-workspace .move-in-review { list-style: none; padding: 0; margin: 0; }
+.move-in-workspace .move-in-review > li { padding: 12px 0; border-bottom: 1px solid var(--oc-line); }
+.move-in-workspace .move-in-review p { margin: 8px 0 0; }
