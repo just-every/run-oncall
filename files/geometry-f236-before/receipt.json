@@ -1,0 +1,746 @@
+{
+  "head": "6e0a080362a31c787910b6870c673523353f71e7",
+  "tree": "948708f91a227610e844e800a7764b636587d0e9",
+  "runnerUTC": "2026-11-13T08:20:25.953Z",
+  "browserTime": "2026-10-30T12:00:00.000Z",
+  "timezone": "UTC",
+  "locale": "en-US",
+  "overrideHours": 9,
+  "snapshots": [
+    {
+      "name": "overview-1440",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "now": "2026-10-30T12:00:00.000Z",
+      "zone": "UTC",
+      "root": {
+        "clientWidth": 1158,
+        "rectWidth": 1160,
+        "paddingLeft": "22px",
+        "paddingRight": "22px",
+        "contentWidth": 1114
+      },
+      "scroll": {
+        "clientWidth": 1114,
+        "scrollWidth": 1119,
+        "rectWidth": 1114,
+        "paddingLeft": "4px",
+        "paddingRight": "4px"
+      },
+      "axis": {
+        "width": 1111,
+        "minWidth": "1111px"
+      },
+      "hintVisible": false,
+      "list": false,
+      "dates": [
+        {
+          "text": "29 Oct",
+          "datetime": "2026-10-29T12:00:00.000Z"
+        },
+        {
+          "text": "30 Oct",
+          "datetime": "2026-10-30T12:00:00.000Z"
+        },
+        {
+          "text": "31 Oct",
+          "datetime": "2026-10-31T12:00:00.000Z"
+        },
+        {
+          "text": "1 Nov",
+          "datetime": "2026-11-01T12:00:00.000Z"
+        },
+        {
+          "text": "2 Nov",
+          "datetime": "2026-11-02T12:00:00.000Z"
+        },
+        {
+          "text": "3 Nov",
+          "datetime": "2026-11-03T12:00:00.000Z"
+        },
+        {
+          "text": "4 Nov",
+          "datetime": "2026-11-04T12:00:00.000Z"
+        }
+      ],
+      "people": [
+        {
+          "text": "Product browser ownerProduct browser owner",
+          "label": "Product browser owner · Oct 29, 2026, 12:00 PM UTC (GMT+0) – Nov 1, 2026, 12:00 PM UTC (GMT+0)"
+        },
+        {
+          "text": "Rosalind Campbell 1440R1",
+          "label": "Rosalind Campbell 1440 · Nov 1, 2026, 12:00 PM UTC (GMT+0) – Nov 1, 2026, 09:00 PM UTC (GMT+0)"
+        },
+        {
+          "text": "Product browser ownerProduct browser owner",
+          "label": "Product browser owner · Nov 1, 2026, 09:00 PM UTC (GMT+0) – Nov 5, 2026, 12:00 PM UTC (GMT+0)"
+        },
+        {
+          "text": "Schedule colleague 1440Schedule colleague 1440",
+          "label": "Schedule colleague 1440 · Oct 29, 2026, 12:00 PM UTC (GMT+0) – Nov 5, 2026, 12:00 PM UTC (GMT+0)"
+        },
+        {
+          "text": "Product browser ownerProduct browser owner",
+          "label": "Product browser owner · Oct 29, 2026, 12:00 PM UTC (GMT+0) – Nov 1, 2026, 12:00 PM UTC (GMT+0)"
+        },
+        {
+          "text": "Rosalind Campbell 1440R1",
+          "label": "Rosalind Campbell 1440 · Nov 1, 2026, 12:00 PM UTC (GMT+0) – Nov 1, 2026, 09:00 PM UTC (GMT+0)"
+        },
+        {
+          "text": "Product browser ownerProduct browser owner",
+          "label": "Product browser owner · Nov 1, 2026, 09:00 PM UTC (GMT+0) – Nov 5, 2026, 12:00 PM UTC (GMT+0)"
+        },
+        {
+          "text": "Schedule colleague 1440Schedule colleague 1440",
+          "label": "Schedule colleague 1440 · Oct 29, 2026, 12:00 PM UTC (GMT+0) – Nov 5, 2026, 12:00 PM UTC (GMT+0)"
+        }
+      ],
+      "pageOverflow": false
+    },
+    {
+      "name": "rota-1440",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "now": "2026-10-30T12:00:00.000Z",
+      "zone": "UTC",
+      "root": {
+        "clientWidth": 914,
+        "rectWidth": 916,
+        "paddingLeft": "22px",
+        "paddingRight": "22px",
+        "contentWidth": 870
+      },
+      "scroll": {
+        "clientWidth": 870,
+        "scrollWidth": 2090,
+        "rectWidth": 870,
+        "paddingLeft": "4px",
+        "paddingRight": "4px"
+      },
+      "axis": {
+        "width": 2082,
+        "minWidth": "2082px"
+      },
+      "hintVisible": true,
+      "list": false,
+      "dates": [
+        {
+          "text": "30 Oct",
+          "datetime": "2026-10-30T12:00:00.000Z"
+        },
+        {
+          "text": "31 Oct",
+          "datetime": "2026-10-31T12:00:00.000Z"
+        },
+        {
+          "text": "1 Nov",
+          "datetime": "2026-11-01T12:00:00.000Z"
+        },
+        {
+          "text": "2 Nov",
+          "datetime": "2026-11-02T12:00:00.000Z"
+        },
+        {
+          "text": "3 Nov",
+          "datetime": "2026-11-03T12:00:00.000Z"
+        },
+        {
+          "text": "4 Nov",
+          "datetime": "2026-11-04T12:00:00.000Z"
+        },
+        {
+          "text": "5 Nov",
+          "datetime": "2026-11-05T12:00:00.000Z"
+        },
+        {
+          "text": "6 Nov",
+          "datetime": "2026-11-06T12:00:00.000Z"
+        },
+        {
+          "text": "7 Nov",
+          "datetime": "2026-11-07T12:00:00.000Z"
+        },
+        {
+          "text": "8 Nov",
+          "datetime": "2026-11-08T12:00:00.000Z"
+        },
+        {
+          "text": "9 Nov",
+          "datetime": "2026-11-09T12:00:00.000Z"
+        },
+        {
+          "text": "10 Nov",
+          "datetime": "2026-11-10T12:00:00.000Z"
+        },
+        {
+          "text": "11 Nov",
+          "datetime": "2026-11-11T12:00:00.000Z"
+        },
+        {
+          "text": "12 Nov",
+          "datetime": "2026-11-12T12:00:00.000Z"
+        }
+      ],
+      "people": [
+        {
+          "text": "Product browser ownerProduct browser owner",
+          "label": "Product browser owner · Oct 30, 2026, 12:00 PM UTC (GMT+0) – Nov 1, 2026, 12:00 PM UTC (GMT+0)"
+        },
+        {
+          "text": "Rosalind Campbell 1440R1",
+          "label": "Rosalind Campbell 1440 · Nov 1, 2026, 12:00 PM UTC (GMT+0) – Nov 1, 2026, 09:00 PM UTC (GMT+0)"
+        },
+        {
+          "text": "Product browser ownerProduct browser owner",
+          "label": "Product browser owner · Nov 1, 2026, 09:00 PM UTC (GMT+0) – Nov 5, 2026, 12:00 PM UTC (GMT+0)"
+        },
+        {
+          "text": "Schedule colleague 1440Schedule colleague 1440",
+          "label": "Schedule colleague 1440 · Nov 5, 2026, 12:00 PM UTC (GMT+0) – Nov 12, 2026, 12:00 PM UTC (GMT+0)"
+        },
+        {
+          "text": "Product browser ownerPO",
+          "label": "Product browser owner · Nov 12, 2026, 12:00 PM UTC (GMT+0) – Nov 13, 2026, 12:00 PM UTC (GMT+0)"
+        },
+        {
+          "text": "Schedule colleague 1440Schedule colleague 1440",
+          "label": "Schedule colleague 1440 · Oct 30, 2026, 12:00 PM UTC (GMT+0) – Nov 1, 2026, 12:00 PM UTC (GMT+0)"
+        },
+        {
+          "text": "Schedule colleague 1440S1",
+          "label": "Schedule colleague 1440 · Nov 1, 2026, 12:00 PM UTC (GMT+0) – Nov 1, 2026, 09:00 PM UTC (GMT+0)"
+        },
+        {
+          "text": "Schedule colleague 1440Schedule colleague 1440",
+          "label": "Schedule colleague 1440 · Nov 1, 2026, 09:00 PM UTC (GMT+0) – Nov 5, 2026, 12:00 PM UTC (GMT+0)"
+        },
+        {
+          "text": "Product browser ownerProduct browser owner",
+          "label": "Product browser owner · Nov 5, 2026, 12:00 PM UTC (GMT+0) – Nov 12, 2026, 12:00 PM UTC (GMT+0)"
+        },
+        {
+          "text": "Schedule colleague 1440S1",
+          "label": "Schedule colleague 1440 · Nov 12, 2026, 12:00 PM UTC (GMT+0) – Nov 13, 2026, 12:00 PM UTC (GMT+0)"
+        }
+      ],
+      "pageOverflow": false
+    },
+    {
+      "name": "overview-390",
+      "viewport": {
+        "width": 390,
+        "height": 1000
+      },
+      "now": "2026-10-30T12:00:00.000Z",
+      "zone": "UTC",
+      "root": {
+        "clientWidth": 356,
+        "rectWidth": 358,
+        "paddingLeft": "18px",
+        "paddingRight": "18px",
+        "contentWidth": 320
+      },
+      "scroll": null,
+      "axis": null,
+      "hintVisible": false,
+      "list": true,
+      "dates": [
+        {
+          "text": "Oct 29, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-10-29T12:00:00.000Z"
+        },
+        {
+          "text": "Nov 1, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-01T12:00:00.000Z"
+        },
+        {
+          "text": "Nov 1, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-01T12:00:00.000Z"
+        },
+        {
+          "text": "Nov 1, 2026, 09:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-01T21:00:00.000Z"
+        },
+        {
+          "text": "Nov 1, 2026, 09:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-01T21:00:00.000Z"
+        },
+        {
+          "text": "Nov 5, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-05T12:00:00.000Z"
+        },
+        {
+          "text": "Oct 29, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-10-29T12:00:00.000Z"
+        },
+        {
+          "text": "Nov 5, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-05T12:00:00.000Z"
+        },
+        {
+          "text": "Oct 29, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-10-29T12:00:00.000Z"
+        },
+        {
+          "text": "Nov 1, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-01T12:00:00.000Z"
+        },
+        {
+          "text": "Nov 1, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-01T12:00:00.000Z"
+        },
+        {
+          "text": "Nov 1, 2026, 09:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-01T21:00:00.000Z"
+        },
+        {
+          "text": "Nov 1, 2026, 09:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-01T21:00:00.000Z"
+        },
+        {
+          "text": "Nov 5, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-05T12:00:00.000Z"
+        },
+        {
+          "text": "Oct 29, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-10-29T12:00:00.000Z"
+        },
+        {
+          "text": "Nov 5, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-05T12:00:00.000Z"
+        }
+      ],
+      "people": [
+        {
+          "text": "Product browser owner",
+          "label": null
+        },
+        {
+          "text": "Rosalind Campbell 1440",
+          "label": null
+        },
+        {
+          "text": "Product browser owner",
+          "label": null
+        },
+        {
+          "text": "Schedule colleague 1440",
+          "label": null
+        },
+        {
+          "text": "Product browser owner",
+          "label": null
+        },
+        {
+          "text": "Rosalind Campbell 1440",
+          "label": null
+        },
+        {
+          "text": "Product browser owner",
+          "label": null
+        },
+        {
+          "text": "Schedule colleague 1440",
+          "label": null
+        }
+      ],
+      "pageOverflow": false
+    },
+    {
+      "name": "rota-390",
+      "viewport": {
+        "width": 390,
+        "height": 1000
+      },
+      "now": "2026-10-30T12:00:00.000Z",
+      "zone": "UTC",
+      "root": {
+        "clientWidth": 356,
+        "rectWidth": 358,
+        "paddingLeft": "18px",
+        "paddingRight": "18px",
+        "contentWidth": 320
+      },
+      "scroll": null,
+      "axis": null,
+      "hintVisible": false,
+      "list": true,
+      "dates": [
+        {
+          "text": "Oct 30, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-10-30T12:00:00.000Z"
+        },
+        {
+          "text": "Nov 1, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-01T12:00:00.000Z"
+        },
+        {
+          "text": "Nov 1, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-01T12:00:00.000Z"
+        },
+        {
+          "text": "Nov 1, 2026, 09:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-01T21:00:00.000Z"
+        },
+        {
+          "text": "Nov 1, 2026, 09:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-01T21:00:00.000Z"
+        },
+        {
+          "text": "Nov 5, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-05T12:00:00.000Z"
+        },
+        {
+          "text": "Nov 5, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-05T12:00:00.000Z"
+        },
+        {
+          "text": "Nov 12, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-12T12:00:00.000Z"
+        },
+        {
+          "text": "Nov 12, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-12T12:00:00.000Z"
+        },
+        {
+          "text": "Nov 13, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-13T12:00:00.000Z"
+        },
+        {
+          "text": "Oct 30, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-10-30T12:00:00.000Z"
+        },
+        {
+          "text": "Nov 1, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-01T12:00:00.000Z"
+        },
+        {
+          "text": "Nov 1, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-01T12:00:00.000Z"
+        },
+        {
+          "text": "Nov 1, 2026, 09:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-01T21:00:00.000Z"
+        },
+        {
+          "text": "Nov 1, 2026, 09:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-01T21:00:00.000Z"
+        },
+        {
+          "text": "Nov 5, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-05T12:00:00.000Z"
+        },
+        {
+          "text": "Nov 5, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-05T12:00:00.000Z"
+        },
+        {
+          "text": "Nov 12, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-12T12:00:00.000Z"
+        },
+        {
+          "text": "Nov 12, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-12T12:00:00.000Z"
+        },
+        {
+          "text": "Nov 13, 2026, 12:00 PM UTC (GMT+0)",
+          "datetime": "2026-11-13T12:00:00.000Z"
+        }
+      ],
+      "people": [
+        {
+          "text": "Product browser owner",
+          "label": null
+        },
+        {
+          "text": "Rosalind Campbell 1440",
+          "label": null
+        },
+        {
+          "text": "Product browser owner",
+          "label": "Product browser owner · Nov 1, 2026, 09:00 PM UTC (GMT+0) – Nov 5, 2026, 12:00 PM UTC (GMT+0)"
+        },
+        {
+          "text": "Schedule colleague 1440",
+          "label": null
+        },
+        {
+          "text": "Product browser owner",
+          "label": "Product browser owner · Nov 12, 2026, 12:00 PM UTC (GMT+0) – Nov 13, 2026, 12:00 PM UTC (GMT+0)"
+        },
+        {
+          "text": "Schedule colleague 1440",
+          "label": null
+        },
+        {
+          "text": "Schedule colleague 1440",
+          "label": null
+        },
+        {
+          "text": "Schedule colleague 1440",
+          "label": null
+        },
+        {
+          "text": "Product browser owner",
+          "label": "Product browser owner · Nov 5, 2026, 12:00 PM UTC (GMT+0) – Nov 12, 2026, 12:00 PM UTC (GMT+0)"
+        },
+        {
+          "text": "Schedule colleague 1440",
+          "label": null
+        }
+      ],
+      "pageOverflow": false
+    }
+  ],
+  "originalAssertions": [
+    {
+      "width": 1440,
+      "pass": false,
+      "message": "scrolling timeline advertises more dates\n\nfalse !== true\n"
+    },
+    {
+      "width": 390,
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "chromium": "154.0.8037.57",
+  "publicCoverage": {
+    "at": "2026-10-30T12:00:00.000Z",
+    "rotas": [
+      {
+        "id": "rota-baf27b72",
+        "name": "Primary service rota",
+        "service": {
+          "id": "synthetic-oncall-1",
+          "name": "Checkout"
+        },
+        "zone": "UTC",
+        "rhythm": {
+          "every": 7,
+          "weekday": "Thursday",
+          "time": "12:00"
+        },
+        "now": {
+          "primary": {
+            "id": "b2374263-ce6f-4409-aab1-cf079c9108b0",
+            "name": "Product browser owner"
+          },
+          "backup": {
+            "id": "5367884e-2f3c-4b19-b402-88e9efea2259",
+            "name": "Schedule colleague 1440"
+          },
+          "until": "2026-11-01T12:00:00.000Z"
+        },
+        "next": {
+          "at": "2026-11-01T12:00:00.000Z",
+          "primary": {
+            "id": "9633bcb9-2fd1-4d0a-ba25-9db5419b1315",
+            "name": "Rosalind Campbell 1440"
+          },
+          "backup": {
+            "id": "5367884e-2f3c-4b19-b402-88e9efea2259",
+            "name": "Schedule colleague 1440"
+          }
+        },
+        "gaps": [],
+        "week": [
+          {
+            "role": "primary",
+            "member": {
+              "id": "b2374263-ce6f-4409-aab1-cf079c9108b0",
+              "name": "Product browser owner"
+            },
+            "from": "2026-10-29T12:00:00.000Z",
+            "to": "2026-11-01T12:00:00.000Z"
+          },
+          {
+            "role": "primary",
+            "member": {
+              "id": "9633bcb9-2fd1-4d0a-ba25-9db5419b1315",
+              "name": "Rosalind Campbell 1440"
+            },
+            "from": "2026-11-01T12:00:00.000Z",
+            "to": "2026-11-01T21:00:00.000Z"
+          },
+          {
+            "role": "primary",
+            "member": {
+              "id": "b2374263-ce6f-4409-aab1-cf079c9108b0",
+              "name": "Product browser owner"
+            },
+            "from": "2026-11-01T21:00:00.000Z",
+            "to": "2026-11-05T12:00:00.000Z"
+          },
+          {
+            "role": "backup",
+            "member": {
+              "id": "5367884e-2f3c-4b19-b402-88e9efea2259",
+              "name": "Schedule colleague 1440"
+            },
+            "from": "2026-10-29T12:00:00.000Z",
+            "to": "2026-11-05T12:00:00.000Z"
+          }
+        ]
+      },
+      {
+        "id": "rota-6cec1db0",
+        "name": "Secondary service rota",
+        "service": {
+          "id": "synthetic-oncall-1",
+          "name": "Checkout"
+        },
+        "zone": "UTC",
+        "rhythm": {
+          "every": 7,
+          "weekday": "Thursday",
+          "time": "12:00"
+        },
+        "now": {
+          "primary": {
+            "id": "b2374263-ce6f-4409-aab1-cf079c9108b0",
+            "name": "Product browser owner"
+          },
+          "backup": {
+            "id": "5367884e-2f3c-4b19-b402-88e9efea2259",
+            "name": "Schedule colleague 1440"
+          },
+          "until": "2026-11-01T12:00:00.000Z"
+        },
+        "next": {
+          "at": "2026-11-01T12:00:00.000Z",
+          "primary": {
+            "id": "9633bcb9-2fd1-4d0a-ba25-9db5419b1315",
+            "name": "Rosalind Campbell 1440"
+          },
+          "backup": {
+            "id": "5367884e-2f3c-4b19-b402-88e9efea2259",
+            "name": "Schedule colleague 1440"
+          }
+        },
+        "gaps": [],
+        "week": [
+          {
+            "role": "primary",
+            "member": {
+              "id": "b2374263-ce6f-4409-aab1-cf079c9108b0",
+              "name": "Product browser owner"
+            },
+            "from": "2026-10-29T12:00:00.000Z",
+            "to": "2026-11-01T12:00:00.000Z"
+          },
+          {
+            "role": "primary",
+            "member": {
+              "id": "9633bcb9-2fd1-4d0a-ba25-9db5419b1315",
+              "name": "Rosalind Campbell 1440"
+            },
+            "from": "2026-11-01T12:00:00.000Z",
+            "to": "2026-11-01T21:00:00.000Z"
+          },
+          {
+            "role": "primary",
+            "member": {
+              "id": "b2374263-ce6f-4409-aab1-cf079c9108b0",
+              "name": "Product browser owner"
+            },
+            "from": "2026-11-01T21:00:00.000Z",
+            "to": "2026-11-05T12:00:00.000Z"
+          },
+          {
+            "role": "backup",
+            "member": {
+              "id": "5367884e-2f3c-4b19-b402-88e9efea2259",
+              "name": "Schedule colleague 1440"
+            },
+            "from": "2026-10-29T12:00:00.000Z",
+            "to": "2026-11-05T12:00:00.000Z"
+          }
+        ]
+      }
+    ],
+    "unrostered": []
+  },
+  "savedSchedules": [
+    {
+      "id": "rota-baf27b72",
+      "name": "Primary service rota",
+      "service": "synthetic-oncall-1",
+      "revision": 1,
+      "timezone": "UTC",
+      "validFrom": "2026-10-28T12:00:00.000Z",
+      "validUntil": null,
+      "primary": {
+        "anchorLocal": "2026-10-29T12:00",
+        "periodDays": 7,
+        "members": [
+          "b2374263-ce6f-4409-aab1-cf079c9108b0",
+          "5367884e-2f3c-4b19-b402-88e9efea2259"
+        ],
+        "ambiguity": "earlier"
+      },
+      "backup": {
+        "anchorLocal": "2026-10-29T12:00",
+        "periodDays": 7,
+        "members": [
+          "5367884e-2f3c-4b19-b402-88e9efea2259",
+          "b2374263-ce6f-4409-aab1-cf079c9108b0"
+        ],
+        "ambiguity": "earlier"
+      },
+      "overrides": [
+        {
+          "id": "synthetic-oncall-7302",
+          "role": "primary",
+          "start": "2026-11-01T12:00:00.000Z",
+          "end": "2026-11-01T21:00:00.000Z",
+          "member": "9633bcb9-2fd1-4d0a-ba25-9db5419b1315"
+        }
+      ]
+    },
+    {
+      "id": "rota-6cec1db0",
+      "name": "Secondary service rota",
+      "service": "synthetic-oncall-1",
+      "revision": 1,
+      "timezone": "UTC",
+      "validFrom": "2026-10-28T12:00:00.000Z",
+      "validUntil": null,
+      "primary": {
+        "anchorLocal": "2026-10-29T12:00",
+        "periodDays": 7,
+        "members": [
+          "b2374263-ce6f-4409-aab1-cf079c9108b0",
+          "5367884e-2f3c-4b19-b402-88e9efea2259"
+        ],
+        "ambiguity": "earlier"
+      },
+      "backup": {
+        "anchorLocal": "2026-10-29T12:00",
+        "periodDays": 7,
+        "members": [
+          "5367884e-2f3c-4b19-b402-88e9efea2259",
+          "b2374263-ce6f-4409-aab1-cf079c9108b0"
+        ],
+        "ambiguity": "earlier"
+      },
+      "overrides": [
+        {
+          "id": "synthetic-oncall-7302",
+          "role": "primary",
+          "start": "2026-11-01T12:00:00.000Z",
+          "end": "2026-11-01T21:00:00.000Z",
+          "member": "9633bcb9-2fd1-4d0a-ba25-9db5419b1315"
+        }
+      ]
+    }
+  ],
+  "outboundCount": 0,
+  "pass": false
+}

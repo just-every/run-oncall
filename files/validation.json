@@ -1,0 +1,124 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-timeline-hint-1",
+  "head": "37fd6d2446588971e8c611b826461d01eb192a0d",
+  "base": "bd21a32ed14a7edec11570867039545f2b1dd010",
+  "pr": null,
+  "changes": [
+    "src/on-call/WeekBands.tsx",
+    "sources.lock.json"
+  ],
+  "working_source_sha256": {
+    "src/on-call/WeekBands.tsx": "8db023ce54b50331782de6c8bf2b572f3737cd50f48c0bcbfd388b4eae9ca1ec",
+    "sources.lock.json": "ae44869b140d5be24672692cd5698540f21b8e633e85f348f032a1dfc5e84507",
+    "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac",
+    "tests/product-browser-journey.mjs": "4892c9571af4bc1922802ec5cb094d4098a2370b5abf3d20a1d1e66e287f0600",
+    "tests/product-browser.mjs": "774d31276a2ac5e601f11bcdfb22f828d62bdce3276c0d97b47d19ce94e756f1"
+  },
+  "local_checks": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log": "oncall-build-after.log"
+    },
+    {
+      "command": "ONCALL_PRODUCT_JOURNEY=rota-timeline ONCALL_CHROMIUM_PATH=/usr/bin/chromium cloud_run node tests/product-browser.mjs",
+      "exit": 0,
+      "log": "oncall-after-focused.log"
+    },
+    {
+      "command": "ONCALL_BROWSER_EVIDENCE=<packet>/geometry-after cloud_run node <packet>/timeline-probe.mjs",
+      "exit": 0,
+      "log": "oncall-geometry-after.log",
+      "receipt": "geometry-after/receipt.json"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "oncall-typecheck-final.log"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "log": "oncall-contract-check.log",
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "note": "Generated last; one source hash changed."
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "oncall-lock-check-final.log"
+    },
+    {
+      "command": "cloud_run pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "log": "oncall-firstparty-check.log"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "git diff --exit-code origin/main -- CONTRACT.md ACCEPTANCE.md docs/CLAIMS.md tests/product-browser-journey.mjs tests/product-browser.mjs",
+      "exit": 0
+    }
+  ],
+  "initial_main": "4eab299d2ca0113ef0c27743bb22e4c14e200237",
+  "provided_sources": {
+    "f235": "39e3c24ab627122b9b38ada8d2af3c45d4a8cbdd",
+    "f236": "6e0a080362a31c787910b6870c673523353f71e7"
+  },
+  "before": {
+    "unchanged_focused_runs_passed": 3,
+    "boundary_desktop_runs_failed": 3,
+    "boundary_phone_runs_passed": 3
+  },
+  "after": {
+    "unchanged_focused_runs_passed": 1,
+    "boundary_desktop_runs_passed": 1,
+    "boundary_phone_runs_passed": 1,
+    "application_errors": 0,
+    "outbound_requests": 0
+  },
+  "clauses": {
+    "claim": "OC-009 PARTIAL points=none",
+    "status_changes": [],
+    "counts_before": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "counts_after": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "product_push": {
+    "status": "pushed",
+    "attempts": 1,
+    "receipt": "product-push.txt",
+    "remote_readback": "product-remote-ref.txt"
+  },
+  "ci": {
+    "conclusion": "success",
+    "head_sha": "37fd6d2446588971e8c611b826461d01eb192a0d",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43393246829",
+    "status": "completed",
+    "run_id": 43393246829,
+    "observed_at": "2026-11-13T08:46:43Z",
+    "github_calls_used": 5
+  },
+  "evidence_publication": "separate evidence ref; terminal EVIDENCE line supplies exact head",
+  "blockers": [],
+  "diagnostic_worktrees": "Removed after their actual before receipts and logs were retained; no diagnostic merge was committed or pushed.",
+  "ready": true,
+  "product_cleanup": "The clean product clone is removed after evidence publication and verified readback, as required; terminal return records completion."
+}

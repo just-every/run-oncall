@@ -1,0 +1,26 @@
+{
+  "note": "Working source hashes after source/main merges; main WeekBands includes proposed repair at this point. Before repair hashes are identical across the three refs, as separately logged.",
+  "sources": {
+    "main": {
+      "src/on-call/WeekBands.tsx": "8db023ce54b50331782de6c8bf2b572f3737cd50f48c0bcbfd388b4eae9ca1ec",
+      "src/on-call/on-call.css": "3df7715de7efb19ff854b3c610c9028423ccd3f5c9b1d9b6fd744a4a28f78fcf",
+      "tests/product-browser-journey.mjs": "4892c9571af4bc1922802ec5cb094d4098a2370b5abf3d20a1d1e66e287f0600",
+      "tests/product-browser.mjs": "d66a51d537ffe7760e1bde32ae356ac59dea8193749062786aa65f052841dc4a",
+      "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    "f235": {
+      "src/on-call/WeekBands.tsx": "d766ada1df0be0b4cc8889853d20762066f79bcbd0aa7ea3a64a8a6b10c7734d",
+      "src/on-call/on-call.css": "3df7715de7efb19ff854b3c610c9028423ccd3f5c9b1d9b6fd744a4a28f78fcf",
+      "tests/product-browser-journey.mjs": "7dd869737a79513ebe2f6184ef8661acffe6861afd2c69dae6c44b26ed958111",
+      "tests/product-browser.mjs": "186d4e2080ffab3463f4ee3a207ef41c781a23008c23586c828ec10046000358",
+      "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    "f236": {
+      "src/on-call/WeekBands.tsx": "d766ada1df0be0b4cc8889853d20762066f79bcbd0aa7ea3a64a8a6b10c7734d",
+      "src/on-call/on-call.css": "3df7715de7efb19ff854b3c610c9028423ccd3f5c9b1d9b6fd744a4a28f78fcf",
+      "tests/product-browser-journey.mjs": "4892c9571af4bc1922802ec5cb094d4098a2370b5abf3d20a1d1e66e287f0600",
+      "tests/product-browser.mjs": "d66a51d537ffe7760e1bde32ae356ac59dea8193749062786aa65f052841dc4a",
+      "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    }
+  }
+}

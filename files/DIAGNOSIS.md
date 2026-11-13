@@ -1,0 +1,11 @@
+# Observed shared defect
+
+The unchanged focused rota-timeline journey passed on main and both f235 and f236 merged with main, using its existing twelve-hour cover. That isolated fixture does not cross the defective overview boundary on this runner. No test assertion or fixture was changed in the candidate.
+
+A separate diagnostic uses the same real setup/member/service/schedule HTTP doors and the same two weekly rotas, changing only the saved cover duration to a normal nine-hour work shift. It invokes the existing exported `rotaTimelineScreens` assertion directly. At UTC 2026-10-30T12:00, en-US, Chromium 154.0.8037.57, 1440x1000, overview axisWidth=1111, measured card content width=1114, scroll clientWidth=1114, scrollWidth=1119. The scroll container has 4px left and right padding and border-box sizing: its available content width is 1106, so 1111px of axis overflows by 5px despite fitting the 1114px card used by the old condition. The original assertion fails unchanged with “scrolling timeline advertises more dates”. There is no time, date, API or viewport mismatch.
+
+The rota detail already advertises its much larger overflow (2090 scrollWidth versus 870 clientWidth). At 390 both overview and detail use dated lists with the full cover name; the original phone assertions pass. The before receipts retain real saved schedules and computed public coverage, not intercepted or fabricated app responses. Outbound requests: zero.
+
+The repair observes the actual scroll viewport and axis, computes scrollWidth > clientWidth after layout, and updates when either changes size or the component changes list/axis mode. It retains the timeline, its content, all original behavioral assertions and the phone list. Contract judgments and generated views remain unchanged. This is a main-wide boundary defect shared by the source integrations; no feature branch is integrated into the candidate.
+
+Main advanced while reproductions ran, from 4eab299d2ca0113ef0c27743bb22e4c14e200237 to bd21a32ed14a7edec11570867039545f2b1dd010. The candidate incorporated that main update before final build/checks. Its ten changed files do not alter WeekBands, the timeline fixture or its assertion; all newer main assertions are retained. The source reproduction worktrees were merged with the originally recorded main 4eab299.

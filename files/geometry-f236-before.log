@@ -1,0 +1,71 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+{
+  "pass": false,
+  "originalAssertions": [
+    {
+      "width": 1440,
+      "pass": false,
+      "message": "scrolling timeline advertises more dates\n\nfalse !== true\n"
+    },
+    {
+      "width": 390,
+      "pass": true
+    }
+  ],
+  "geometry": [
+    {
+      "name": "overview-1440",
+      "scroll": {
+        "clientWidth": 1114,
+        "scrollWidth": 1119,
+        "rectWidth": 1114,
+        "paddingLeft": "4px",
+        "paddingRight": "4px"
+      },
+      "axis": {
+        "width": 1111,
+        "minWidth": "1111px"
+      },
+      "hintVisible": false,
+      "list": false
+    },
+    {
+      "name": "rota-1440",
+      "scroll": {
+        "clientWidth": 870,
+        "scrollWidth": 2090,
+        "rectWidth": 870,
+        "paddingLeft": "4px",
+        "paddingRight": "4px"
+      },
+      "axis": {
+        "width": 2082,
+        "minWidth": "2082px"
+      },
+      "hintVisible": true,
+      "list": false
+    },
+    {
+      "name": "overview-390",
+      "scroll": null,
+      "axis": null,
+      "hintVisible": false,
+      "list": true
+    },
+    {
+      "name": "rota-390",
+      "scroll": null,
+      "axis": null,
+      "hintVisible": false,
+      "list": true
+    }
+  ]
+}
+Worker diagnostics (test failure):
+[stderr] [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+[stderr] 
+[stderr] 
+[stdout] Using secrets defined in ../../../../../../tmp/oncall-flow-s7ulig/local.env
+

@@ -1,0 +1,20 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Worker diagnostics (test failure):
+[stderr] [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+[stderr] 
+[stderr] 
+[stdout] Using secrets defined in ../../../../../../tmp/oncall-flow-7aaNVd/local.env
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+page.waitForFunction: Timeout 30000ms exceeded.
+    at /home/agent/rer-consolidation/work/sd-oncall-timeline-hint-1/packet/timeline-probe.mjs:57:15 {
+  log: [],
+  name: 'TimeoutError'
+}
+
+Node.js v24.19.0
