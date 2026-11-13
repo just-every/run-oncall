@@ -1,0 +1,19 @@
+{
+  "observed_at": "2026-11-13T18:29:22Z",
+  "api_call": 6,
+  "endpoint": "repos/just-every/run-oncall/actions/runs?head_sha=8adae6c836f2fabda29e8a091b052450410c8ca5&per_page=100",
+  "result": {
+    "total_count": 1,
+    "workflow_runs": [
+      {
+        "conclusion": null,
+        "event": "push",
+        "head_sha": "8adae6c836f2fabda29e8a091b052450410c8ca5",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43482317147",
+        "id": 43482317147,
+        "name": "Verify",
+        "status": "in_progress"
+      }
+    ]
+  }
+}

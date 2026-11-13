@@ -1,0 +1,3 @@
+## 0.5.13 · 2026-11-13
+
+Local launch guidance now explains how to open Oncall from the terminal on your own computer and how to make rer available in later terminals. Archive exports show the data size on disk without treating it as the final archive size or estimating completion before the total is known. Restore rejects an archive that predates a recorded erasure before staging its contents. Agent policy-change events include the covered classes and a digest identifying the adopted policy document, without exposing its rules or call facts. This patch uses rer 0.2.113 and adds no migration. Back up first, keep applied migrations unchanged and keep the existing pager active: paging stays OFF.

@@ -1,0 +1,33 @@
+{
+  "product_branch": "cloud/sd-oncall-release-0-5-13",
+  "head": "8adae6c836f2fabda29e8a091b052450410c8ca5",
+  "base_head": "551efe44531c876c101ec928b5a93f857976e132",
+  "paths": [
+    "CHANGELOG.md",
+    "README.md",
+    "RELEASE.json",
+    "RELEASE.md",
+    "package.json",
+    "seed.json",
+    "sources.lock.json"
+  ],
+  "rer_pin": "0.2.113",
+  "new_version": "0.5.13",
+  "checks": {
+    "pnpm install --frozen-lockfile": "PASS",
+    "pnpm run typecheck": "PASS",
+    "pnpm exec rer check --profile first-party": "PASS",
+    "release metadata agreement and scope reader": "PASS",
+    "node scripts/edition-authoring/cli.mjs lock": "PASS",
+    "node scripts/edition-authoring/cli.mjs check": "PASS",
+    "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check": "PASS",
+    "node src/base/contract-docs.mjs check": "PASS",
+    "installed release inspectSource HEAD": "PASS",
+    "git diff --check origin/main..HEAD": "PASS",
+    "every candidate author/committer/trailer check": "PASS"
+  },
+  "local_full_suite": "NOT RUN: version-only lease requires affected metadata checks and typecheck only",
+  "browser_proof": "NOT RUN: no UI edits",
+  "publication_scan": "DEFERRED: fleet Mac lander owns full-history scan; cloud task is not authorized to run it",
+  "pr": "not required by this repository/brief; direct fleet branch landing"
+}

@@ -1,0 +1,27 @@
+{
+  "recorded_at": "2026-11-13T18:40:00Z",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-release-0-5-13",
+  "head": "8adae6c836f2fabda29e8a091b052450410c8ca5",
+  "tree": "47a62e960277edb146fb519ad7e6ae7e8f55d77f",
+  "version": "0.5.13",
+  "rer_pin": "0.2.113",
+  "base_head": "551efe44531c876c101ec928b5a93f857976e132",
+  "product_push": "success, first attempt; exact remote branch readback matched",
+  "verify": {
+    "conclusion": "success",
+    "head_sha": "8adae6c836f2fabda29e8a091b052450410c8ca5",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43482317147",
+    "status": "completed",
+    "id": 43482317147
+  },
+  "github_api_calls_used": 8,
+  "pr_url": null,
+  "clauses_changed": [],
+  "new_migrations": 0,
+  "new_tests": 0,
+  "blockers": [],
+  "status": "READY",
+  "publication": "NOT PERFORMED; metadata candidate only",
+  "next_owner": "fleet guarded lander, then authorized release producer/signing/publication"
+}

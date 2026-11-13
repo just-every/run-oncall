@@ -1,0 +1,29 @@
+{
+  "observed_at": "2026-11-13T18:21:36Z",
+  "repository": "just-every/run-oncall",
+  "base_head": "551efe44531c876c101ec928b5a93f857976e132",
+  "base_verify": {
+    "id": 43476288068,
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "base_run_site": {
+    "id": 43476288093,
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "latest_release": {
+    "tag": "v0.5.12",
+    "title": "Oncall 0.5.12",
+    "draft": false,
+    "published_at": "2026-11-13T15:39:37Z",
+    "url": "https://github.com/just-every/run-oncall/releases/tag/v0.5.12"
+  },
+  "v0_5_13_tag_matching_refs": [],
+  "competing_release_branch_ls_remote": "no matches",
+  "github_api_calls_used": 3,
+  "delta_commits": [
+    "4fa65b7023d8443bdea2e1aed9e46ca4a2467b56",
+    "551efe44531c876c101ec928b5a93f857976e132"
+  ]
+}

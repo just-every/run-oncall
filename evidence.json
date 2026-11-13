@@ -1,0 +1,172 @@
+{
+  "files": [
+    {
+      "blob": "8c6a9eda8737c4752dcc7dc2c990f91d7fd56b43",
+      "bytes": 1634,
+      "path": "PLAN.md",
+      "sha256": "17fc443e7a7dc506d7bb61be2600512dae3ae746342dab020f5015bd7affa1ec"
+    },
+    {
+      "blob": "b1131f8a750d97daa3ed1b21f2ec404bdf8b96eb",
+      "bytes": 6773,
+      "path": "REPORT.md",
+      "sha256": "471051c91672774c0d5582496454faa5039dbbcd670e91129f9a25237e46c2cd"
+    },
+    {
+      "blob": "9a22bc1191feaf6fd94bea580543ac3cb77647df",
+      "bytes": 37,
+      "path": "candidate-ci-discovery.json",
+      "sha256": "fc5753fa7f5380199fb73c07a084e2125b722a06993132cdf348bc7e41367728"
+    },
+    {
+      "blob": "55bfeff023c4ae17dc59e12f86f446b1960e6b53",
+      "bytes": 85,
+      "path": "candidate-identities.log",
+      "sha256": "148bad84b5b174568017df50d58e073566703d43c6c9fe7fa6f1af04420adf55"
+    },
+    {
+      "blob": "16c3e904ff8cee5d80bf6ba334d3d58f58ce41f7",
+      "bytes": 165,
+      "path": "candidate-message.log",
+      "sha256": "764d6d7e5d378a58bb5723e9d50eb1ddcbd15592479f9c44e23bf9c247039a1c"
+    },
+    {
+      "blob": "1e6f92bf0c64330a184ec36cef69c47d3d435f6a",
+      "bytes": 559,
+      "path": "ci-call-6.json",
+      "sha256": "770ce1dc6b779ebd7f85f5c756b701b3703007b5d20e498bafe2f5133ca90675"
+    },
+    {
+      "blob": "67d2a4e3b279e83f6d18b6786f4b099da91f3433",
+      "bytes": 347,
+      "path": "ci-call-7.json",
+      "sha256": "576979d604d253b4b7118da2f225acaca826eb32d8c77e94aaaf7576f1339ef4"
+    },
+    {
+      "blob": "5a3b0f9c1ca405237c175b0ef8d824268e711418",
+      "bytes": 350,
+      "path": "ci-call-8.json",
+      "sha256": "310752604e3ca25bbd401e38e973957e22aa7abe3acb58689ec7f9d225f1268f"
+    },
+    {
+      "blob": "c922465dddca90de27b06312ae0f277178b3397f",
+      "bytes": 464,
+      "path": "ci-receipt.json",
+      "sha256": "183ebdc596a8e96883a5feb5ad564ad0ebb637b03fbfc1d08dda4eb470da62dc"
+    },
+    {
+      "blob": "90bf5927abc051bc77c6b4da0fa17dbb541f1c36",
+      "bytes": 155,
+      "path": "committed-source-check.log",
+      "sha256": "88ceced0cd95fdfc4629e35c614767cc9acd47e25fe955b5a18d97f86abbf267"
+    },
+    {
+      "blob": "b59d39532e8a030ff74f6339019ab7870ef51548",
+      "bytes": 70,
+      "path": "contract-view-check.log",
+      "sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "blob": "490e705176ad50130e2bbe63e1f3e7746faa053c",
+      "bytes": 582,
+      "path": "counts.json",
+      "sha256": "a9e8ec2faebf14df170af853899fcb2c1e32c033e89c8c98281f76c7ebaee0bd"
+    },
+    {
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "path": "metadata-check.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "blob": "9475481699372d9ae865fb7d1988092dce5c6f80",
+      "bytes": 7291,
+      "path": "metadata-diff.patch",
+      "sha256": "20699baf4bc9abebacc139ae4027b54ad29551fcf85eda20c400327303150d04"
+    },
+    {
+      "blob": "0e33ff4b43a50fc3e0fd8ce7f7f0038aa10d6d43",
+      "bytes": 808,
+      "path": "preflight-receipt.json",
+      "sha256": "f7fb628809b5e79c3f13b87c8b574e63b76079654f17c877927ad5472a0187a3"
+    },
+    {
+      "blob": "f2bc1b666cc276b0058e7e8b3c70d658509a1a09",
+      "bytes": 548,
+      "path": "product-commit.log",
+      "sha256": "85904ddd803d2d932244f4780bbdee0e755d17e077df943c631dfd7f10e28206"
+    },
+    {
+      "blob": "dbc14df45779ea9aa911f114b77524291518cec8",
+      "bytes": 947,
+      "path": "product-push.log",
+      "sha256": "b5deb534a42f8cba5a68ba564b46eb2dda14d84de9682e9012319fa239daff99"
+    },
+    {
+      "blob": "68f8d2a28efdb70e845aff540b531eca867c4bc4",
+      "bytes": 83,
+      "path": "product-remote-readback.log",
+      "sha256": "dd104578350e2cf313571b3f76f2b55a01a5d489c81d9c5f2bf20cfc12211688"
+    },
+    {
+      "blob": "6da4eb1dd145a243bdc72af94728b54644cc6cf3",
+      "bytes": 174,
+      "path": "release-metadata-check.log",
+      "sha256": "62463ef7076f0fd8d8c7cdf09772fd198f14894305ba9dbc4f741b756a5b72ab"
+    },
+    {
+      "blob": "616c38f15e69f9da8d1c262cdb4fb42ef35eb150",
+      "bytes": 703,
+      "path": "release-notes.md",
+      "sha256": "db641581e3b250d202891b5fc9afe8474449c59529788740f323b9e7378e5ea3"
+    },
+    {
+      "blob": "fe51488c7066f6687ef680d6bfaa4f7768ef205c",
+      "bytes": 3,
+      "path": "release-ownership-check.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "blob": "4c26df594c19dc33c543ddff3d58493e3f2762ff",
+      "bytes": 276042,
+      "path": "source-lock-generation.json",
+      "sha256": "e6b7ca5fe02da297ff4006ac97c8c8c0ac14d1691dbcaa4255aadf89998da09a"
+    },
+    {
+      "blob": "fca2e5079d4418cf70fe3fdab09f757c70b0413e",
+      "bytes": 276056,
+      "path": "source-lock-installed-check.json",
+      "sha256": "a62ea5c07df2227cce0696f9b1f85631ac244c8c6a47cc63b9fbe7da1a23db00"
+    },
+    {
+      "blob": "fca2e5079d4418cf70fe3fdab09f757c70b0413e",
+      "bytes": 276056,
+      "path": "source-lock-vendored-check.json",
+      "sha256": "a62ea5c07df2227cce0696f9b1f85631ac244c8c6a47cc63b9fbe7da1a23db00"
+    },
+    {
+      "blob": "7cb2b95ab8d7d9c9422ad548fea37e294f8606c3",
+      "bytes": 975,
+      "path": "terminal-receipt.json",
+      "sha256": "ad17f814d193136d232b82b57bdd7f5922a829daf0ebb3f4fc645f94b10ef412"
+    },
+    {
+      "blob": "c73328822ac62dfccf4d4c79f13584c87daccceb",
+      "bytes": 232,
+      "path": "typecheck.log",
+      "sha256": "55498fbd70510b601d63bf158a91f93ce4a23c3a6c895c3a0d1d4a67c2ffe209"
+    },
+    {
+      "blob": "3e142cd88b504135c7342907ecc2f09d7dcd67a9",
+      "bytes": 1348,
+      "path": "validation-receipt.json",
+      "sha256": "48ed1ef0306c8c7d4237f8ea28732a135941cfb0f9c31125202b865fd62a9e0f"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-release-0-5-13",
+  "product_head": "8adae6c836f2fabda29e8a091b052450410c8ca5",
+  "ref": "refs/heads/evidence/sd-oncall-release-0-5-13",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-release-0-5-13"
+}

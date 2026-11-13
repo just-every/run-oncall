@@ -1,0 +1,31 @@
+{
+  "before": {
+    "version": "0.5.12",
+    "clauses": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "test_files": 77,
+    "migration_files": 67
+  },
+  "after": {
+    "version": "0.5.13",
+    "clauses": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "test_files": 77,
+    "migration_files": 67
+  },
+  "tests_added": 0,
+  "tests_removed": 0,
+  "tests_changed": 0,
+  "clauses_changed": 0,
+  "metadata_paths_changed": 7,
+  "source_lock_files_before": 1669,
+  "source_lock_files_after": 1669
+}
