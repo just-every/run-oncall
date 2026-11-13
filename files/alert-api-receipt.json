@@ -1,0 +1,65 @@
+{
+  "github_api_calls": 10,
+  "alerts": [
+    {
+      "attempt": 1,
+      "number": 3,
+      "status": 403,
+      "error": "Resource not accessible by integration"
+    },
+    {
+      "attempt": 1,
+      "number": 4,
+      "status": 403,
+      "error": "Resource not accessible by integration"
+    },
+    {
+      "attempt": 2,
+      "number": 3,
+      "status": 403,
+      "error": "Resource not accessible by integration"
+    },
+    {
+      "attempt": 2,
+      "number": 4,
+      "status": 403,
+      "error": "Resource not accessible by integration"
+    },
+    {
+      "attempt": 3,
+      "number": 3,
+      "status": 403,
+      "error": "Resource not accessible by integration"
+    },
+    {
+      "attempt": 3,
+      "number": 4,
+      "status": 403,
+      "error": "Resource not accessible by integration"
+    },
+    {
+      "attempt": 4,
+      "number": 3,
+      "status": 403,
+      "error": "Resource not accessible by integration"
+    },
+    {
+      "attempt": 4,
+      "number": 4,
+      "status": 403,
+      "error": "Resource not accessible by integration"
+    },
+    {
+      "attempt": 5,
+      "number": 3,
+      "status": 403,
+      "error": "Resource not accessible by integration"
+    },
+    {
+      "attempt": 5,
+      "number": 4,
+      "status": 403,
+      "error": "Resource not accessible by integration"
+    }
+  ]
+}

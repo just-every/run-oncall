@@ -1,0 +1,58 @@
+{
+  "files": [
+    {
+      "blob": "827e5bf1b39863a7293509b89fde1624982fdccd",
+      "bytes": 6376,
+      "path": "REPORT.md",
+      "sha256": "629e0a5dcefc65f10343f9649c21eb0a628edcab2aaecd1095a29323a7ca8f6d"
+    },
+    {
+      "blob": "559a63d75acf387db0ba5e7ac1d033eee5d2504b",
+      "bytes": 1337,
+      "path": "alert-api-receipt.json",
+      "sha256": "0ba8f3a0ef75c86a4efc35dff4825ad20d38d360d7570f54871602a9eef723cc"
+    },
+    {
+      "blob": "d1c131141946e61e50a40d6f56bc214612c98e34",
+      "bytes": 2572,
+      "path": "historical-fix.diff",
+      "sha256": "e4ec8860dd90cf91eb1c158177c0b7c4bbea98ba27103b7813c022f3964d4041"
+    },
+    {
+      "blob": "69ce7811782580f435ae24cd6978b588459bffae",
+      "bytes": 332,
+      "path": "mail-regression.log",
+      "sha256": "cb868ba78d71f1f102fc4aa946d784afc22d8a5345a372203992a3e8f204f365"
+    },
+    {
+      "blob": "961739907c1a422ccb7e58b3ca1896c2cd8e2070",
+      "bytes": 4203,
+      "path": "mail-regression.test.mjs",
+      "sha256": "f6f25014d75b3054594b1fc0d64932f3f93f12f2491d315c46e9b6883e41a2f2"
+    },
+    {
+      "blob": "b835cd2b371e7448f140b9e8ae6e808b34a91e66",
+      "bytes": 547,
+      "path": "result.json",
+      "sha256": "8d94559f435fcc6698966782f1a0fa5c2d8579b69c8f9c30b40b49af7f2e5829"
+    },
+    {
+      "blob": "b94b5d5eb594ce229ea3819e9de20b2a2facd225",
+      "bytes": 1515,
+      "path": "source-provenance.json",
+      "sha256": "43a148e70143d9ae61d2eff5ede6d6188f43e9ed9b94d5ded0abc4e9653a02d0"
+    },
+    {
+      "blob": "5149182683d1ba6a05547a669972335f62840bf8",
+      "bytes": 780,
+      "path": "validation-receipt.json",
+      "sha256": "36b4b7802f5591b3fb7493d285882ccee09a87f76f73a537b983fb5bfeb13511"
+    }
+  ],
+  "product_branch": "cloud/gr-mt-oncall-code-7",
+  "product_head": "8adae6c836f2fabda29e8a091b052450410c8ca5",
+  "ref": "refs/heads/evidence/gr-mt-oncall-code-7",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "gr-mt-oncall-code-7"
+}

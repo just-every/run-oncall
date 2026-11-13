@@ -1,0 +1,7 @@
+{
+  "status": "no-change",
+  "sha": "8adae6c836f2fabda29e8a091b052450410c8ca5",
+  "summary": "Both reported polynomial ReDoS regexes are already removed on current main: mailbox parsing uses bounded string operations and inbound headers split at the colon before linear name validation.",
+  "tests": "cloud_run node mail-regression.test.mjs <checkout>: 2 public mail API regression probes passed, 0 failed; git ancestry and clean-tree checks passed; no product source changed, so typecheck/full suite/branch Verify not run.",
+  "security": true
+}

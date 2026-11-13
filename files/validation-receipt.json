@@ -1,0 +1,23 @@
+{
+  "repository": "just-every/run-oncall",
+  "head": "8adae6c836f2fabda29e8a091b052450410c8ca5",
+  "disposition": "no-change",
+  "command": "cloud_run node $HOME/rer-consolidation/work/gr-mt-oncall-code-7/packet/mail-regression.test.mjs <checkout>",
+  "node": "v24.19.0",
+  "pnpm": "10.12.4",
+  "tests": 2,
+  "passed": 2,
+  "failed": 0,
+  "public_doors": [
+    "serializeSendGridMessage",
+    "normalizeInbound"
+  ],
+  "network_effects": "none; mail probes only used deterministic serialization and in-memory MIME streams",
+  "new_product_commits": 0,
+  "new_product_tests": 0,
+  "contract_changes": 0,
+  "ci_run_ids": [],
+  "typecheck": "not run: no source changes",
+  "publication_scan": "not run: no product candidate or product push",
+  "output_file": "mail-regression.log"
+}

@@ -1,0 +1,40 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/gr-mt-oncall-code-7",
+  "head": "8adae6c836f2fabda29e8a091b052450410c8ca5",
+  "origin_main": "8adae6c836f2fabda29e8a091b052450410c8ca5",
+  "tree": "47a62e960277edb146fb519ad7e6ae7e8f55d77f",
+  "working_tree_status": "",
+  "already_fixed_commits": [
+    "12d7521ad0eaf40f2e77fce624f45bbbe90e0388",
+    "c74afdf560b73bcdc8ccf7a3440f876bfa0f6c39"
+  ],
+  "new_product_commits": 0,
+  "files": [
+    {
+      "path": "src/modules/mail/src/core/validation.mjs",
+      "sha256": "742a3ca756c15a6e7973ab48cd3c46ee697ab62d44b78ceae59a8fb7ec524f4d",
+      "blob": "747d308550b7f8531c95c12186f28d916c3f7f27"
+    },
+    {
+      "path": "src/modules/mail/src/inbound/headers.mjs",
+      "sha256": "7f97376f6817e84940503dcc29d9e99ad4490d3260c142700538ec941b8bfc4f",
+      "blob": "17071c76be79e2e2230717222595807139b9a247"
+    },
+    {
+      "path": "src/modules/mail/src/inbound/index.mjs",
+      "sha256": "6defd48ac74f7a267f63d84f5b7cc8c1acfecfb26940df1a200088aa8be9f824",
+      "blob": "11b07af9b6c2604efb1d8eb55128484baa56064e"
+    },
+    {
+      "path": "src/modules/mail/src/inbound/bytes.mjs",
+      "sha256": "cf6d59fff8c693a2833d0015f134d5c2559ec749aeb69b292b38585be7b7db7f",
+      "blob": "91721bb0c2a838425b9e54f68cbe0932d33634f3"
+    },
+    {
+      "path": "src/modules/mail/src/inbound/multipart.mjs",
+      "sha256": "3696b971db5cf7a8c43eae84faca32123645293dcf97304382359be501d19cca",
+      "blob": "333a14406fc29fa0094e257f0465ac4d706f47fb"
+    }
+  ]
+}
