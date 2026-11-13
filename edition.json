@@ -16,7 +16,7 @@
         ],
         "origin": {
           "repository": "https://github.com/runeditrun/base.git",
-          "revision": "398bdd222401a60ac2d0732454f6a947b3033029",
+          "revision": "c2efb501cbc148c2aee4d5e1107ebdba81469006",
           "path": "foundation/runtime"
         }
       }
@@ -48,7 +48,7 @@
         ],
         "origin": {
           "repository": "https://github.com/runeditrun/base.git",
-          "revision": "398bdd222401a60ac2d0732454f6a947b3033029",
+          "revision": "c2efb501cbc148c2aee4d5e1107ebdba81469006",
           "path": ".",
           "paths": [
             "modules/demo"
