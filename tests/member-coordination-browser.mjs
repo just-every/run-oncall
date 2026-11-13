@@ -537,10 +537,29 @@ try {
  await captureRefusal('server-create',createBusiness);owner.page.off('request',observeCreate);
  await statusPanel.getByLabel('Business-service name',{exact:true}).fill('Checkout')
  await statusPanel.getByLabel('Communications owner',{exact:true}).selectOption(rosaRecord.id)
- await statusPanel.getByRole('group',{name:'Stakeholder audience',exact:true}).getByRole('checkbox',{name:sam.name,exact:true}).check()
  await statusPanel.getByRole('button',{name:'Create business service',exact:true}).click()
  const checkout=statusPanel.getByRole('article',{name:'Checkout',exact:true})
  await checkout.getByText('Derived status: operational',{exact:true}).waitFor()
+ // Grant an existing service's audience after creation, then subscribe that stakeholder.
+ await checkout.getByText('Manage internal status',{exact:true}).click();
+ const audience=checkout.getByRole('group',{name:'Stakeholder audience',exact:true});
+ assert.ok(!(await checkout.getByLabel('Subscriber',{exact:true}).locator('option').evaluateAll(rows=>rows.map(row=>row.value))).includes(sam.id));
+ await audience.getByRole('checkbox',{name:sam.name,exact:true}).check();
+ await expect(audience.getByRole('status')).toHaveText('Saved');
+ await checkout.getByLabel('Subscriber',{exact:true}).selectOption(sam.id);
+ await checkout.getByRole('button',{name:'Subscribe member',exact:true}).click();
+ assert.equal(ok(await call(owner.page,'/api/status')).services.find(row=>row.name==='Checkout').subscriptions.find(row=>row.member===sam.id).active,true);
+ await owner.page.reload();
+ await checkout.getByText('Manage internal status',{exact:true}).click();
+ await expect(audience.getByRole('checkbox',{name:sam.name,exact:true})).toBeChecked();
+ for(const width of [1440,390]){await owner.page.setViewportSize({width,height:1000});await audience.scrollIntoViewIfNeeded();await owner.page.screenshot({path:`${captureDirectory}/audience-saved-${width}.png`,fullPage:true});}
+ await owner.page.setViewportSize({width:1440,height:1000});
+ await audience.getByRole('checkbox',{name:sam.name,exact:true}).uncheck();await expect(audience.getByRole('status')).toHaveText('Saved');
+ assert.ok(!(await checkout.getByLabel('Subscriber',{exact:true}).locator('option').evaluateAll(rows=>rows.map(row=>row.value))).includes(sam.id));
+ assert.equal(ok(await call(owner.page,'/api/status')).services.find(row=>row.name==='Checkout').subscriptions.find(row=>row.member===sam.id).active,false);
+ await audience.getByRole('checkbox',{name:sam.name,exact:true}).check();await expect(audience.getByRole('status')).toHaveText('Saved');
+ await checkout.getByText('Manage internal status',{exact:true}).click();
+ console.log('PASS existing service audience: grant, subscribe, reload, revoke and regrant through the browser');
  const statusIncident=ok(await call(owner.page,'/api/command',{type:'declare',service:'synthetic-oncall-61',severity:'warning',title:'Private gateway timeouts',summary:'Customer payment attempts delayed',alerts:[]}))
  await focusWorkspace(owner.page)
  await checkout.getByText('Derived status: degraded',{exact:true}).waitFor()
