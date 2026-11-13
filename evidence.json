@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "03957395a2d3ad3196851d6ad21d01f6e514f7d1",
+      "bytes": 5351,
+      "path": "REPORT.md",
+      "sha256": "a0ecbec507449608bcb5a35c6407125adaedd969a9cc63565823909cdfe2df65"
+    },
+    {
+      "blob": "874723f81eb43a3964d431c43d1a2ed64d2fbc9e",
+      "bytes": 5063,
+      "path": "alert-api-receipt.json",
+      "sha256": "dfa5bbdebefcb2ecc0aed31db30c7b12100ae387aea7a10a4e0bbb87407c7528"
+    },
+    {
+      "blob": "2dab53310b5651d3ea40d3fb020c993f8ce0acec",
+      "bytes": 4034,
+      "path": "logout-reviewed.mjs",
+      "sha256": "d2760dc2d9143094ddf9a883cf54f98ed7818c471e7ca99d5e195f524b2ae8b1"
+    },
+    {
+      "blob": "0d7f6f2d10616c990de6590d97b3edaa4179ceb1",
+      "bytes": 2731,
+      "path": "prior-fix.patch",
+      "sha256": "e361122a0e21767a9c7301e4329a245a988daedf3be9ea754dc133f99dab51d3"
+    },
+    {
+      "blob": "d6fa9f868b39d1233d5700f85b2b14d5bb3956e4",
+      "bytes": 734,
+      "path": "result.json",
+      "sha256": "f00582976a79874c1eebb8eb755619cb8c97e3d232c82083872d241f95b43f02"
+    },
+    {
+      "blob": "f06bcaa772ed139920395f286ca5922987596a25",
+      "bytes": 1689,
+      "path": "review-receipt.json",
+      "sha256": "c7d0fd1f4f4a41be45d1f65ac066b44834bb23469dc8ee33c4ae52408a7e8019"
+    }
+  ],
+  "product_branch": "cloud/gr-mt-oncall-code-6",
+  "product_head": "8adae6c836f2fabda29e8a091b052450410c8ca5",
+  "ref": "refs/heads/evidence/gr-mt-oncall-code-6",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "gr-mt-oncall-code-6"
+}

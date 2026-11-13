@@ -1,0 +1,7 @@
+{
+  "status": "no-change",
+  "sha": "8adae6c836f2fabda29e8a091b052450410c8ca5",
+  "summary": "Already fixed on current main: fd84e75e555e3952ec98841b19a94a30ea3be462 replaced both exact array-membership fence checks with Object.hasOwn(c.events,FENCE_EVENT); logout.mjs contains no URL substring sanitization or redirect logic.",
+  "tests": "PASS: node --check src/modules/dependencies/logout.mjs; node src/base/contract-docs.mjs check; node scripts/edition-authoring/cli.mjs check; git merge-base --is-ancestor fd84e75e555e3952ec98841b19a94a30ea3be462 origin/main; git diff --exit-code. No product changes, so typecheck/runtime suite/branch Verify not run. GitHub CodeQL alert metadata inaccessible (HTTP 403).",
+  "security": true
+}

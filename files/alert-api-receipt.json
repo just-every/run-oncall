@@ -1,0 +1,132 @@
+{
+  "github_calls": 10,
+  "checked_at": "2026-11-13T20:22:46.283385+00:00",
+  "attempts": [
+    {
+      "alert": 13,
+      "attempt": 1,
+      "exit": 1,
+      "http_status": 403,
+      "body": {
+        "message": "Resource not accessible by integration",
+        "documentation_url": "https://docs.github.com/rest/code-scanning/code-scanning#get-a-code-scanning-alert",
+        "status": "403"
+      }
+    },
+    {
+      "alert": 14,
+      "attempt": 1,
+      "exit": 1,
+      "http_status": 403,
+      "body": {
+        "message": "Resource not accessible by integration",
+        "documentation_url": "https://docs.github.com/rest/code-scanning/code-scanning#get-a-code-scanning-alert",
+        "status": "403"
+      }
+    },
+    {
+      "alert": 13,
+      "attempt": 2,
+      "exit": 1,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-oncall/code-scanning/alerts/13",
+        "--jq",
+        "{number,state,rule:.rule.id,most_recent_instance,html_url,fixed_at}"
+      ],
+      "output": "{\"message\":\"Resource not accessible by integration\",\"documentation_url\":\"https://docs.github.com/rest/code-scanning/code-scanning#get-a-code-scanning-alert\",\"status\":\"403\"}gh: Resource not accessible by integration (HTTP 403)\n"
+    },
+    {
+      "alert": 14,
+      "attempt": 2,
+      "exit": 1,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-oncall/code-scanning/alerts/14",
+        "--jq",
+        "{number,state,rule:.rule.id,most_recent_instance,html_url,fixed_at}"
+      ],
+      "output": "{\"message\":\"Resource not accessible by integration\",\"documentation_url\":\"https://docs.github.com/rest/code-scanning/code-scanning#get-a-code-scanning-alert\",\"status\":\"403\"}gh: Resource not accessible by integration (HTTP 403)\n"
+    },
+    {
+      "alert": 13,
+      "attempt": 3,
+      "exit": 1,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-oncall/code-scanning/alerts/13",
+        "--jq",
+        "{number,state,rule:.rule.id,most_recent_instance,html_url,fixed_at}"
+      ],
+      "output": "{\"message\":\"Resource not accessible by integration\",\"documentation_url\":\"https://docs.github.com/rest/code-scanning/code-scanning#get-a-code-scanning-alert\",\"status\":\"403\"}gh: Resource not accessible by integration (HTTP 403)\n"
+    },
+    {
+      "alert": 14,
+      "attempt": 3,
+      "exit": 1,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-oncall/code-scanning/alerts/14",
+        "--jq",
+        "{number,state,rule:.rule.id,most_recent_instance,html_url,fixed_at}"
+      ],
+      "output": "{\"message\":\"Resource not accessible by integration\",\"documentation_url\":\"https://docs.github.com/rest/code-scanning/code-scanning#get-a-code-scanning-alert\",\"status\":\"403\"}gh: Resource not accessible by integration (HTTP 403)\n"
+    },
+    {
+      "alert": 13,
+      "attempt": 4,
+      "exit": 1,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-oncall/code-scanning/alerts/13",
+        "--jq",
+        "{number,state,rule:.rule.id,most_recent_instance,html_url,fixed_at}"
+      ],
+      "output": "{\"message\":\"Resource not accessible by integration\",\"documentation_url\":\"https://docs.github.com/rest/code-scanning/code-scanning#get-a-code-scanning-alert\",\"status\":\"403\"}gh: Resource not accessible by integration (HTTP 403)\n"
+    },
+    {
+      "alert": 14,
+      "attempt": 4,
+      "exit": 1,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-oncall/code-scanning/alerts/14",
+        "--jq",
+        "{number,state,rule:.rule.id,most_recent_instance,html_url,fixed_at}"
+      ],
+      "output": "{\"message\":\"Resource not accessible by integration\",\"documentation_url\":\"https://docs.github.com/rest/code-scanning/code-scanning#get-a-code-scanning-alert\",\"status\":\"403\"}gh: Resource not accessible by integration (HTTP 403)\n"
+    },
+    {
+      "alert": 13,
+      "attempt": 5,
+      "exit": 1,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-oncall/code-scanning/alerts/13",
+        "--jq",
+        "{number,state,rule:.rule.id,most_recent_instance,html_url,fixed_at}"
+      ],
+      "output": "{\"message\":\"Resource not accessible by integration\",\"documentation_url\":\"https://docs.github.com/rest/code-scanning/code-scanning#get-a-code-scanning-alert\",\"status\":\"403\"}gh: Resource not accessible by integration (HTTP 403)\n"
+    },
+    {
+      "alert": 14,
+      "attempt": 5,
+      "exit": 1,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-oncall/code-scanning/alerts/14",
+        "--jq",
+        "{number,state,rule:.rule.id,most_recent_instance,html_url,fixed_at}"
+      ],
+      "output": "{\"message\":\"Resource not accessible by integration\",\"documentation_url\":\"https://docs.github.com/rest/code-scanning/code-scanning#get-a-code-scanning-alert\",\"status\":\"403\"}gh: Resource not accessible by integration (HTTP 403)\n"
+    }
+  ]
+}

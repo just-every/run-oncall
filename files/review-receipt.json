@@ -1,0 +1,46 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/gr-mt-oncall-code-6",
+  "head": "8adae6c836f2fabda29e8a091b052450410c8ca5",
+  "origin_main": "8adae6c836f2fabda29e8a091b052450410c8ca5",
+  "fix_commit": "fd84e75e555e3952ec98841b19a94a30ea3be462",
+  "fix_is_ancestor": true,
+  "product_diff": "",
+  "worktree_status": "",
+  "logout_sha256": "d2760dc2d9143094ddf9a883cf54f98ed7818c471e7ca99d5e195f524b2ae8b1",
+  "checks": [
+    {
+      "command": "node --check src/modules/dependencies/logout.mjs",
+      "exit": 0,
+      "result": "Syntax check passed"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "result": "Contract prose: 0 errors, 0 warnings. Contract documents are current."
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "result": "ok: true; source lock current"
+    },
+    {
+      "command": "git merge-base --is-ancestor fd84e75e555e3952ec98841b19a94a30ea3be462 origin/main",
+      "exit": 0,
+      "result": "Prior exact-claim-key fix is already on main"
+    },
+    {
+      "command": "git diff --exit-code",
+      "exit": 0,
+      "result": "No product edits"
+    }
+  ],
+  "typecheck": "NOT RUN: no changed files or new product commit; dependencies not installed",
+  "runtime_tests": "NOT RUN: no changed product; existing shipped tests contain no dedicated backchannel logout journey",
+  "verify_runs": [],
+  "new_commits": 0,
+  "changed_files": 0,
+  "clause_status_changes": [],
+  "publication_scan": "NOT RUN: no product changes or product publication; scanner not shipped in VM",
+  "product_push": "NOT RUN: no-change result; branch has no candidate commits"
+}
