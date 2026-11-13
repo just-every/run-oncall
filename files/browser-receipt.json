@@ -1,0 +1,75 @@
+{
+  "journeys": [
+    "senderSetupBrowser",
+    "eventsSourceBrowser"
+  ],
+  "assertionWidth": 1440,
+  "visualWidths": [
+    1440,
+    390
+  ],
+  "sampleScreensVisuallyInspected": 6,
+  "guideProof": {
+    "pages": [
+      "/docs/getting-started",
+      "/docs/changes"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "overflow": false
+  },
+  "files": [
+    {
+      "path": "browser/events-readable-bearer-source-1440.png",
+      "sha256": "3c5d44e43f19085df23f47d783f5c2445cfff05ef93abadd70da3796f6a8b5bc",
+      "bytes": 186019
+    },
+    {
+      "path": "browser/events-readable-bearer-source-390.png",
+      "sha256": "350085e701b36aa2f5aa6f022acc9b20784175f805763eb1df3d9e593337d74b",
+      "bytes": 127762
+    },
+    {
+      "path": "browser/events-readable-signed-source-1440.png",
+      "sha256": "30b776f3af1673ee495b10d4643c7ec929c6da0b2ca1ab5df004e09fb3e4c4d7",
+      "bytes": 171994
+    },
+    {
+      "path": "browser/events-readable-signed-source-390.png",
+      "sha256": "5bc11ebc942f19e4aec60469c7d66d9019c67fbb2015d1d156a798f581354caf",
+      "bytes": 101937
+    },
+    {
+      "path": "browser/guide-changes-1440.png",
+      "sha256": "cb0849e5fd3349de4338d26f8393a9d121692af18cb7ca09a79777b725bb55e3",
+      "bytes": 3881099
+    },
+    {
+      "path": "browser/guide-changes-390.png",
+      "sha256": "8c5362c4fc6f92e1962982b62f0b98050385d650f2aa04f5e05af930b1cbcac8",
+      "bytes": 2533393
+    },
+    {
+      "path": "browser/guide-getting-started-1440.png",
+      "sha256": "b4136877ce831247573b3ce6fbeb8ae9beec5c0cd03e91d95e33fd97bd151b01",
+      "bytes": 5123379
+    },
+    {
+      "path": "browser/guide-getting-started-390.png",
+      "sha256": "65e4ded7345ae520555124069a31cba061e18a7244c0de2c6e1dc8e7423084f0",
+      "bytes": 3251761
+    },
+    {
+      "path": "browser/sender-change-recipe-1440.png",
+      "sha256": "7b8309282add39e04a4b05a9057431d44af455372fb9c50e49a076ee72bb0bec",
+      "bytes": 172732
+    },
+    {
+      "path": "browser/sender-change-recipe-390.png",
+      "sha256": "f401f94daf14bd52f1f8d1414deef8ab434a5897f495af710b2d36462d1bbb59",
+      "bytes": 123515
+    }
+  ]
+}

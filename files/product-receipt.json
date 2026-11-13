@@ -1,0 +1,27 @@
+{
+  "branch": "cloud/main-oncall-recipes-toolchain-1-c1",
+  "head": "8e18f79b63ec045d3efcc625e6f994aca8319e88",
+  "base": "cc64205ca532de3ac8022838ecdd07cfa5bfae73",
+  "parents": [
+    "cc64205ca532de3ac8022838ecdd07cfa5bfae73"
+  ],
+  "commitsAboveBase": 1,
+  "originalHead": "8b21d6ea781a11d750e5434cb3d107b534d01215",
+  "sourceMergeBase": "809d67a8fbf255ee13e8531e4246a1ffbddf2fa4",
+  "contractDocuments": {
+    "CONTRACT.md": {
+      "identicalToMain": true,
+      "sha256": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    "ACCEPTANCE.md": {
+      "identicalToMain": true,
+      "sha256": "875e11f85ca8473511fe5defbbdd5d6457f248e48fcbbe6796d86194701c62c3"
+    },
+    "docs/CLAIMS.md": {
+      "identicalToMain": true,
+      "sha256": "8c57d53cb2bd436176cc5b556bd1a4ca786848e4ee2d310bed277fe8faf7d440"
+    }
+  },
+  "compatibilityFixes": [],
+  "newTestRegistrations": 0
+}

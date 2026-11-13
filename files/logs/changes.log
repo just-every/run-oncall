@@ -1,0 +1,9 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PROBE OC-023 dependency import: protected Preview and Apply -> additions, removals, retained unresolved references, conflict choices, stale and concurrent refusals, atomic rollback and effect-free retries passed
+PASS OC-023 public teams and Backstage ownership: manager coverage, zero-write preview/refusals, atomic provenance, explicit conflict choice with history, manual ownership and repeat safety
+PASS OC-023 ownerless services: visibility, unmatched ownership, copied runbook, audit rollback and archive/handoff restore
+PASS OC-065 retention: populated 1,000-record cap, deterministic oldest-first eviction, incident protection, refusal and audit rollback
+PASS OC-065 Argo CD/Terraform signatures, scope, replay, no obligations, audit rollback
+Change context: authenticated native/PD/GitHub/GitLab intake, replay, scope, dependencies, privacy, rotation/revoke, archive pause and restart passed

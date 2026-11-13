@@ -1,0 +1,23 @@
+{
+  "origin/main": {
+    "clauseStatuses": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34
+    },
+    "contractBlob": "3d812d8596ccd09e24655ae5fd32b7a04c471fb7"
+  },
+  "HEAD": {
+    "clauseStatuses": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34
+    },
+    "contractBlob": "3d812d8596ccd09e24655ae5fd32b7a04c471fb7"
+  },
+  "testRegistrationsAdded": 0,
+  "existingBrowserJourneysExtended": [
+    "senderSetupBrowser",
+    "eventsSourceBrowser"
+  ]
+}

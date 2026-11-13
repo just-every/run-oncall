@@ -1,0 +1,40 @@
+{
+  "productHead": "8e18f79b63ec045d3efcc625e6f994aca8319e88",
+  "nodeAndNpxOnPath": false,
+  "privateNode": "22.20.0",
+  "globalInstallerRer": "0.2.112",
+  "checkoutRer": "0.2.108",
+  "steps": [
+    {
+      "command": "curl -fsSL https://runeditrun.com/install.sh | sh",
+      "exit": 0
+    },
+    {
+      "command": "export PATH=\"$HOME/.local/bin:$PATH\"",
+      "exit": 0
+    },
+    {
+      "command": "rer install just-every/run-oncall --dir oncall-hosted",
+      "exit": 0
+    },
+    {
+      "command": "rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0
+    },
+    {
+      "command": "curl --version",
+      "exit": 0
+    },
+    {
+      "command": "openssl version",
+      "exit": 0
+    }
+  ],
+  "initialAttempt": {
+    "exit": 3,
+    "step": "rer install, fetching pnpm 10.12.4",
+    "diagnostic": "pnpm could not be fetched (fetch failed)",
+    "isolatedPrivateNodeFetchCause": "ECONNREFUSED"
+  },
+  "cloudNetworkAdaptation": "Scoped NODE_OPTIONS preload uses installed undici EnvHttpProxyAgent with inherited proxy and CA trust. The installer private Node 22 does not support NODE_USE_ENV_PROXY; the isolated registry probe returned HTTP 200 with this adapter. No repository or installer source was edited."
+}

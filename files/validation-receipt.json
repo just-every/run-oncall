@@ -1,0 +1,67 @@
+{
+  "head": "8e18f79b63ec045d3efcc625e6f994aca8319e88",
+  "checks": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log": "logs/build.log",
+      "sha256": "6cd2f7e0250cd7b96d61ea28ea352553618d6f2a19f176d69b9ba665ab132f4c"
+    },
+    {
+      "command": "cloud_run pnpm run typecheck",
+      "exit": 0,
+      "log": "logs/typecheck.log",
+      "sha256": "3c53ddc3624245045b2879be40a5ab1bc296fa50dd4125c82a69572b247652d2"
+    },
+    {
+      "command": "cloud_run env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_PRODUCT_JOURNEY=sender-setup node tests/product-browser.mjs",
+      "exit": 0,
+      "log": "logs/sender-browser.log",
+      "sha256": "8019f27c8d023a2f41c2dcd7523285bec2c48d78692d15474dff8dbd8d989f97"
+    },
+    {
+      "command": "cloud_run env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_PRODUCT_JOURNEY=events-source node tests/product-browser.mjs",
+      "exit": 0,
+      "log": "logs/events-browser.log",
+      "sha256": "6a0d1883efe5ef51d8b256862edc571222ec9d965e7b1948370b388aa3388205"
+    },
+    {
+      "command": "cloud_run env ONCALL_RUNTIME_PART=machines node tests/runtime.mjs",
+      "exit": 0,
+      "log": "logs/intake-machines.log",
+      "sha256": "dd487a29f38b4b16e30435973733726c322dd14b1b18975b52e53e37092a8115"
+    },
+    {
+      "command": "cloud_run node tests/intake.mjs",
+      "exit": 0,
+      "log": "logs/intake.log",
+      "sha256": "5e3b64bc7e52a8e86a98a2bd9c3cfceec7e3b34ba81df8d2b2376029bf460b4d"
+    },
+    {
+      "command": "cloud_run node tests/routing.mjs",
+      "exit": 0,
+      "log": "logs/routing.log",
+      "sha256": "c2266157a5f1b6c10563a496ee176298ca707e2d03bd84bf2eb2e99a236912cf"
+    },
+    {
+      "command": "cloud_run node tests/changes.mjs",
+      "exit": 0,
+      "log": "logs/changes.log",
+      "sha256": "c8e33bcc62d2ab226899d729ffb3520cde7d56473c1011c07221e0d87b055a78"
+    }
+  ],
+  "sourceLock": {
+    "regenerate": "node scripts/edition-authoring/cli.mjs lock",
+    "check": "node scripts/edition-authoring/cli.mjs check",
+    "exit": 0
+  },
+  "contractCheck": {
+    "command": "node src/base/contract-docs.mjs check",
+    "exit": 0
+  },
+  "analyticsFixture": "PASS scoped response analytics and readiness under both policies (intake machines)",
+  "setup": {
+    "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+    "exit": 0
+  }
+}
