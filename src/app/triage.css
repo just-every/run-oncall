@@ -28,3 +28,11 @@
 .response-controls details > label { margin: 14px 0; }
 @media (max-width: 760px) { .triage-chips button { min-height: 44px; } }
 @media (min-width: 600px) and (max-width: 899px) { .triage-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.bulk-results { min-width: 0; margin-top: 16px; }
+.bulk-results-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.bulk-results-heading p { margin: 0; font-weight: 600; }
+.triage-bulk .bulk-result-list { list-style: none; padding: 0; margin: 10px 0 0; max-height: 280px; overflow: auto; overscroll-behavior: contain; }
+.bulk-result-list li { display: grid; gap: 2px; padding: 8px 0; font-size: 14px; line-height: 1.4; overflow-wrap: anywhere; }
+.bulk-result-list li + li { border-top: 1px solid var(--app-line); }
+.bulk-result-context { color: var(--oc-muted); font-size: 13px; }

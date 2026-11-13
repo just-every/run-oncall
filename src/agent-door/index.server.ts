@@ -19,7 +19,7 @@ export function oncallTools(env: Bindings) {
     }},run:(args:Record<string,unknown>,ctx:ToolContext)=>runNativeOperation(env,tool.name,args,ctx,()=>tool.run(args,ctx))}
   })
 }
-export const oncallCapabilities = ['tools', 'policy', 'pause', 'audit', 'idempotency'] as const
+export const oncallCapabilities = ['tools', 'resources', 'policy', 'pause', 'audit', 'idempotency'] as const
 
 export const oncallNotTools = [
   { clauses: ['OC-029'], reason: 'device' as const },

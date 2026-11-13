@@ -1,3 +1,4 @@
+import {emailSettings} from './email-settings'
 import {addressRanges} from './address-match'
 import {pagerdutyContacts,pagerdutyEvidence} from './pagerduty-mapping'
 import {mappingPayload,importedContacts,opsFamily} from './vendor-formats'
@@ -7,6 +8,8 @@ import { validateSchedule } from '../family/response-operations/schedules'
 import { mailbox, mapSchedule, type Mapped } from './rotations'
 import type { Vendor } from './source'
 
+// A semantic adapter change must re-review unchanged saved source on catch-up.
+export const MOVE_IN_MAPPING_VERSION='oncall-move-in-2'
 type MappingRecord=Pick<SourceRecord,'kind'|'sourceId'|'payload'|'location'>
 export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:number):ImportMapping {
  source={records:source.records.map(row=>({...row,payload:mappingPayload(vendor,row.kind,row.payload)}))}
@@ -68,7 +71,7 @@ export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:numbe
   }catch(e){errors.set(row.sourceId,`Timeline equivalence: ${(e as Error).message}`)}
  }
  const effect=(kind:string,id:string,value:any):MappingResult=>({effects:[{targetKind:kind,targetId:id,value:{...value,paused:true,paging:false,login:false}}]})
- const adapter:ImportMapping={version:'oncall-move-in-1',map(record){
+ const adapter:ImportMapping={version:MOVE_IN_MAPPING_VERSION,map(record){
   const value=mappingPayload(vendor,record.kind,record.payload),label=value?.fullName??value?.name??value?.summary??value?.username??value?.email??record.sourceId
   try {
    if(record.kind==='users') {
@@ -83,12 +86,15 @@ export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:numbe
     // Keep personal labels in erasable journal custody, not in a new native identity.
     const id=record.sourceId,kind=value.type??value.kind??'unknown'
     if(!/^[a-zA-Z0-9_-]{1,80}$/.test(id)||typeof kind!=='string'||!/^[a-zA-Z0-9_-]{1,80}$/.test(kind))throw Error('integration identifier or kind cannot be represented safely; original retained for resolution')
+    const email=emailSettings(vendor,value)
+    if(email)return {...effect('integration',`${vendor}:${id}`,{sourceId:id,vendor,kind,provider:'email',active:false,emailSettings:email,...(vendor==='pagerduty'&&(value._service??value.service)?{serviceSource:{namespace:vendor,kind:'services',sourceId:String((value._service??value.service).id)}}:{})}),unmapped:email.differences.map(d=>({field:d.field,reason:`Integration ${label} (${id}): ${d.reason}`,original:d.original}))}
     const provider=vendor==='splunk'&&kind==='REST'?'splunk':(vendor==='jsm'||vendor==='opsgenie')&&kind==='API'?'opsgenie':vendor==='pagerduty'&&['generic_events_api_inbound_integration','events_api_v1_inbound_integration','events_api_v2_inbound_integration'].includes(kind)?'pagerduty':null
     if(vendor==='pagerduty'&&!provider)return {effects:[],rejection:kind==='email_inbound_integration'
-     ?`Integration ${label} (${id}, ${kind}): email modes and rules need OC-070 and the inherited OC-038 import; recreate and review the email receiving mode. Original retained; no delivery is activated.`
+     ?`Integration ${label} (${id}, ${kind}): email receiving modes and rules are not imported; recreate and review the email receiving mode. Original retained; no delivery is activated.`
      :`Integration ${label} (${id}, ${kind}): vendor-hosted or unsupported integration; recreate it as the matching Oncall source or use the generic webhook and change its URL. Original retained; no endpoint is activated.`}
     return {...effect('integration',`${vendor}:${id}`,{sourceId:id,vendor,kind,provider,active:false,incumbentKey:'not supplied',...(vendor==='pagerduty'&&value._service?{serviceSource:{namespace:vendor,kind:'services',sourceId:String(value._service.id)}}:{})}),unmapped:[{field:'integration',reason:`Inactive ${kind} integration ${id}; incumbent key: not supplied. No endpoint or send authority is activated. Original settings and labels remain in the journal.`}]}
    }
+   if(record.kind==='integration_actions'&&vendor==='opsgenie')return {effects:[],unmapped:[{field:'integration_actions',reason:'Saved actions are reviewed with their parent email integration; originals remain in import custody.'}]}
    if(record.kind==='schedules') {
     if(errors.has(record.sourceId))throw Error(errors.get(record.sourceId))
     const mapped=schedules.get(record.sourceId);if(!mapped)throw Error('missing rotation definitions')

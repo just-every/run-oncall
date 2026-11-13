@@ -1,6 +1,6 @@
 import {focusWorkspace,openIncidentAction,openWorkspaceSection} from './keyboard.mjs'
 import assert from 'node:assert/strict'
-import {mkdir} from 'node:fs/promises'
+import {mkdir,readFile} from 'node:fs/promises'
 import {chromium,expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import {localWorker} from './worker.mjs'
@@ -125,6 +125,101 @@ async function incidentSaves(page) {
  assert.deepEqual((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations.filter(row=>['serious','critical'].includes(row.impact)),[]);
  console.log('PASS incident saves: persistent runbook and review Saved states, failed-save alerts and Retry, phone header without leading separators, draft edits without timeline entries, exactly one attributed accepted review; changed screens captured at 1440 and 390');
 }
+// Extend the member incident journey through retained handoff actions, rather
+// than introducing another browser registration or repeating it at phone width.
+async function incidentHandoff(ownerPage) {
+ const req=async(path,data)=>ok(await call(ownerPage,path,data));
+ const created=await req('/api/command',{type:'declare',service:'checkout',title:'Synthetic handoff incident',summary:'Checkout confirmations are delayed',severity:'warning'});
+ let incident=await req('/api/command',{type:'transition',incident:created.id,revision:created.revision,state:'acknowledged',summary:'Investigating checkout confirmations'});
+ const member=await open(1440);const responderRecord=await passwordSignIn(member.page,responder);
+ const page=member.page;
+ await openIncident(page,incident.id);await openIncidentAction(page,'Handoff draft');
+ const panel=page.getByRole('dialog',{name:'Handoff draft',exact:true});
+ const capture=async(name,target=page)=>{
+  for(const width of [1440,390]){
+   await target.setViewportSize({width,height:1000});
+   await target.evaluate(()=>window.scrollTo(0,0));
+   await target.getByRole('dialog',{name:'Handoff draft',exact:true}).evaluate(element=>{element.scrollTop=0;});
+   await target.screenshot({path:`${captureDirectory}/handoff-${name}-${width}.png`,fullPage:false});
+  }
+  await target.setViewportSize({width:1440,height:1000});
+ };
+ await panel.getByLabel('Intended audience',{exact:true}).selectOption('customer');
+ const title='Checkout update for customers',summary='Checkout confirmations are delayed. Responders are investigating.\nNext update after the database check.';
+ await panel.getByLabel('Title',{exact:true}).fill(title);await panel.getByLabel('Summary',{exact:true}).fill(summary);
+ await capture('prepare');
+ // A response lost after commit retries the same prepare identity exactly once.
+ let lose=true;
+ const lost=async route=>{const response=await route.fetch();if(lose){lose=false;await route.abort();}else await route.fulfill({response});};
+ await page.route('**/api/handoffs/prepare',lost);
+ await panel.getByRole('button',{name:'Prepare copy',exact:true}).click();
+ await expect(panel.getByRole('button',{name:'Retry action',exact:true})).toBeVisible();
+ await expect(panel.getByLabel('Summary',{exact:true})).toHaveValue(summary);
+ await panel.getByRole('button',{name:'Retry action',exact:true}).click();
+ await expect(panel.getByRole('button',{name:'Review exact copy',exact:true})).toBeVisible();
+ await page.unroute('**/api/handoffs/prepare',lost);
+ let records=(await req('/api/handoffs')).records.filter(record=>record.source.incident.id===incident.id);
+ assert.equal(records.length,1);assert.equal(records[0].history.length,1);assert.equal(records[0].history[0].actor.id,responderRecord.id);
+ const saved=panel.getByRole('article',{name:'Saved handoff copy'});
+ await expect(saved.getByRole('heading',{name:title,exact:true})).toBeVisible();await expect(saved.locator('.handoff-summary')).toHaveText(summary);
+ assert.deepEqual(records[0].payload,{audience:'customer',title,summary,evidenceLinks:[],impactLinks:[]});
+ await capture('prepared');
+ lose=true;await page.route('**/api/handoffs/*/review',lost);
+ await panel.getByRole('button',{name:'Review exact copy',exact:true}).click();
+ await expect(panel.getByRole('button',{name:'Retry action',exact:true})).toBeVisible();
+ await expect(panel.getByRole('button',{name:'Review exact copy',exact:true})).toBeDisabled();
+ await panel.getByRole('button',{name:'Retry action',exact:true}).click();
+ await expect(panel.getByRole('button',{name:'Export reviewed copy',exact:true})).toBeVisible();
+ await page.unroute('**/api/handoffs/*/review',lost);
+ let record=(await req('/api/handoffs/'+records[0].id)).record;
+ const approval=record.history.at(-1);assert.equal(record.history.length,2,'lost review response retry appends one review');assert.equal(approval.type,'reviewed');assert.equal(approval.actor.id,responderRecord.id);
+ await expect(saved.getByText(/Reviewed by/)).toContainText(responderRecord.name);
+ assert.equal(await saved.locator('time').last().getAttribute('datetime'),new Date(approval.at).toISOString());
+ await capture('reviewed');
+ const download=page.waitForEvent('download');await panel.getByRole('button',{name:'Export reviewed copy',exact:true}).click();
+ const file=await download,packet=JSON.parse(await readFile(await file.path(),'utf8'));
+ assert.deepEqual(packet,(await call(page,'/api/handoffs/'+record.id+'/export')).value);
+ assert.deepEqual(packet.record,record);assert.equal(packet.transport,'unsent');assert.equal(packet.publication,'not-published');assert.deepEqual(packet.providerActions,[]);
+ // The existing viewer can inspect exact saved copy, with no action controls.
+ const readOnly=await open(1440);await passwordSignIn(readOnly.page,viewer);await openIncident(readOnly.page,incident.id);await openIncidentAction(readOnly.page,'Handoff draft');
+ const viewerPanel=readOnly.page.getByRole('dialog',{name:'Handoff draft',exact:true});
+ await expect(viewerPanel.locator('.handoff-summary')).toHaveText(summary);
+ assert.equal(await viewerPanel.getByRole('button').count(),1,'viewer has only the existing Close control');
+ assert.equal(await viewerPanel.locator('form').count(),0);
+ await capture('viewer',readOnly.page);await readOnly.context.close();
+ // Current role is rechecked by the public door even while an old panel is open.
+ await req('/api/command',{type:'member',id:responderRecord.id,role:'viewer',active:true});
+ await panel.getByRole('button',{name:'Prepare again',exact:true}).click();
+ await panel.getByRole('button',{name:'Prepare copy',exact:true}).click();
+ await expect(panel.getByRole('alert')).toBeVisible();
+ assert.equal((await req('/api/handoffs')).records.filter(row=>row.source.incident.id===incident.id).length,1);
+ await req('/api/command',{type:'member',id:responderRecord.id,role:'responder',active:true});
+ await panel.getByRole('button',{name:'Cancel',exact:true}).click();
+ // Mutate the source after review, then exercise the actual HTTP export conflict.
+ incident=await req('/api/command',{type:'note',incident:incident.id,revision:incident.revision,text:'Database checks changed the current incident context.'});
+ const conflict=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/handoffs/'+record.id+'/export');
+ await panel.getByRole('button',{name:'Export reviewed copy',exact:true}).click();assert.equal((await conflict).status(),409);
+ await expect(panel.getByRole('button',{name:'Export reviewed copy',exact:true})).toHaveCount(0);
+ await expect(panel.getByRole('button',{name:'Prepare again',exact:true})).toBeVisible();
+ assert.equal((await req('/api/handoffs/'+record.id)).eligibility.eligible,false);
+ await capture('stale');
+ await panel.getByRole('button',{name:'Prepare again',exact:true}).click();
+ await panel.getByLabel('Summary',{exact:true}).fill('Current database checks show checkout confirmations recovering.');
+ await panel.getByRole('button',{name:'Prepare copy',exact:true}).click();await expect(panel.getByRole('button',{name:'Review exact copy',exact:true})).toBeVisible();
+ records=(await req('/api/handoffs')).records.filter(row=>row.source.incident.id===incident.id);
+ assert.equal(records.length,2);assert.equal(records[1].supersedes,record.id);assert.equal(records[1].source.incident.revision,incident.revision);
+ assert.deepEqual(records[0],record,'the old reviewed record is unchanged');
+ // Administrator review uses the same panel and existing actions.
+ await openIncident(ownerPage,incident.id);await openIncidentAction(ownerPage,'Handoff draft');
+ const adminPanel=ownerPage.getByRole('dialog',{name:'Handoff draft',exact:true});
+ await adminPanel.getByRole('button',{name:'Review exact copy',exact:true}).click();await expect(adminPanel.getByRole('button',{name:'Export reviewed copy',exact:true})).toBeVisible();
+ assert.equal((await req('/api/handoffs/'+records[1].id)).record.history.at(-1).actor.role,'admin');
+ await adminPanel.getByRole('button',{name:'Close',exact:true}).click();
+ assert.deepEqual((await new AxeBuilder({page}).include('.incident-sheet').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations.filter(row=>['serious','critical'].includes(row.impact)),[]);
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ await member.context.close();
+ console.log('PASS incident handoff: responder prepares, reviews and downloads exact unsent JSON; lost-response retry commits once; viewer inspects without actions; current-role refusal, source-drift export conflict and replacement; admin reviews; screens captured at 1440 and 390');
+}
 try {
  const claimed=await worker.request('/auth/bootstrap',{token:worker.vars.SETUP_TOKEN,displayName:'Oncall lead'},undefined,{'CF-Connecting-IP':'127.0.0.1'})
  assert.equal(claimed.status,303,JSON.stringify(claimed.value))
@@ -157,6 +252,7 @@ try {
  const afterRetry=ok(await call(owner.page,'/api/state'));assert.equal(afterRetry.audit.length,beforeRetry+1,'Retry adds exactly one audit row');assert.equal(afterRetry.services.find(s=>s.id==='checkout').owner,rosaRecord.id);
  console.log('OC4 autosave: menu departure retains owner after reload; offline retains input; Retry audit +1');
  await incidentSaves(owner.page);
+ await incidentHandoff(owner.page);
  if(!focusedSaves){
  // OC-023 public-team forms use the existing Team section at both widths.
  for(const width of [1440]){
@@ -803,7 +899,8 @@ try {
   for(const choice of await choices.all())await choice.selectOption('autonomous');
   await page.getByRole('radio',{name:'No',exact:true}).check();
   const savedPolicy=page.waitForResponse(r=>new URL(r.url()).pathname==='/agents/api/policy'&&r.request().method()==='PUT');
-  await page.getByRole('button',{name:'Save policy',exact:true}).click();assert.equal((await savedPolicy).status(),200);
+  // The policy document reloads after saving; finish that navigation before leaving it.
+  await Promise.all([page.waitForNavigation({waitUntil:'load'}),page.getByRole('button',{name:'Save policy',exact:true}).click()]);assert.equal((await savedPolicy).status(),200);
   const grantedRead=await read(createdKey);assert.equal(grantedRead.status,200);
   assert.deepEqual(grantedRead.value.data.map(row=>row.id),[granted.value.id]);
   assert.ok(!JSON.stringify(grantedRead.value).includes(foreign.value.id),'the same key reads only its granted service');
