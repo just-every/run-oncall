@@ -7,10 +7,10 @@
       "sha256": "ad0d8005f38cb23fbf0ce91d3347cd6ceadc02fb5fc44f4800dce7eacf8d1262"
     },
     {
-      "blob": "546d87e79c39527a2d32f9a54cc2352a9125599e",
-      "bytes": 6101,
+      "blob": "8b5ec5c292ed292fbe9fbee72e11bdd07fdf7a22",
+      "bytes": 7649,
       "path": "REPORT.md",
-      "sha256": "fb75de872ebb79997ea3c1939f2ed7a2b9fd3a2e718243e3c96f8c90a77ee0e1"
+      "sha256": "f9790802ce983266777a1a8a62535840271105b8795a66a9d790ac7565dc38fd"
     },
     {
       "blob": "ffaf9714efc6b2aca69116e76d48d4426d65aab3",
@@ -109,6 +109,18 @@
       "sha256": "f1840e6540f2d1bb27b6074f562577cbfbb63217cffdf5341a8dc764b4fdfb84"
     },
     {
+      "blob": "f496f9a1f392c16e9b9e372b311122d783cd2de3",
+      "bytes": 179,
+      "path": "ci-poll-5.json",
+      "sha256": "593a681b3c0543946170feea7252ce0ff10055cd49c4add9a3857d42bfeb5336"
+    },
+    {
+      "blob": "130924cbbc788e2dfdfed96c714c2dd3e58bcbe3",
+      "bytes": 323,
+      "path": "ci-receipt.json",
+      "sha256": "74908ac979d6e6feaf86cb635354e4546b46ab46a754ba6999fc411a3f38b0f3"
+    },
+    {
       "blob": "d7dc6e915ffab1aff4d79adb15944e1ebd5e399a",
       "bytes": 179,
       "path": "cloud-proxy-adapter.cjs",
@@ -121,10 +133,16 @@
       "sha256": "9cc9c2add9a431261d71c2973a7e90f16a6054a0aa3996845e0d8ab26f656a12"
     },
     {
-      "blob": "fe8a38aaafbfa1492ed9acb95425dd6a79b88a5b",
-      "bytes": 273,
+      "blob": "120d1a76eb6133d910dcb6fe5a2c89b4407fbaf8",
+      "bytes": 367,
       "path": "credential-refresh-receipt.json",
-      "sha256": "c06688e9fbec6bcd70b8f0bfc62bdf49b7b7c759efd8cd1d312d0f6f6cae8315"
+      "sha256": "41fcb23450ab13565afe56a671c00bedbbb371786386b4f0bcf3bd8ff4d77905"
+    },
+    {
+      "blob": "e9a569e4814f009028243be4c83b302c91e35939",
+      "bytes": 141,
+      "path": "evidence-transfer-1.txt",
+      "sha256": "9188b66fcc3a6de43fcc9370ad843b4f2a9aeb1fc786e767c20d9f960a780bce"
     },
     {
       "blob": "93f7740dc2a66ec8aef6fa0b138f9e27e6834cb7",

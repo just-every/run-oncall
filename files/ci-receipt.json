@@ -1,0 +1,11 @@
+{
+  "conclusion": "success",
+  "head_sha": "8e18f79b63ec045d3efcc625e6f994aca8319e88",
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/43362541255",
+  "status": "completed",
+  "run_id": 43362541255,
+  "gh_calls_used": 5,
+  "failed_jobs_read": 0,
+  "reruns": 0,
+  "scope": "exact product SHA; Verify"
+}
