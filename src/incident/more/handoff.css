@@ -1,0 +1,15 @@
+.handoff-panel { display: grid; gap: 20px; }
+.handoff-panel p { margin: 0; }
+.handoff-panel .field { margin: 0; }
+.handoff-panel .field > span { display: block; margin-bottom: 6px; }
+.handoff-boundary { color: var(--oc-muted); line-height: 1.5; }
+.handoff-copy, .handoff-form { display: grid; gap: 16px; min-width: 0; }
+.handoff-copy { border: 1px solid var(--oc-line); border-radius: 12px; padding: 16px; }
+.handoff-copy :is(h3,h4,ul), .handoff-form h3 { margin: 0; }
+.handoff-copy h3 { font-size: 20px; }
+.handoff-copy a { overflow-wrap: anywhere; }
+.handoff-summary { white-space: pre-wrap; overflow-wrap: anywhere; }
+.handoff-state { color: var(--oc-muted); }
+.handoff-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.handoff-panel :is(select,input,textarea) { font: inherit; color: var(--oc-ink); background: var(--oc-paper); border: 1px solid var(--oc-line); border-radius: 10px; padding: 10px 12px; }
+.handoff-panel textarea { resize: vertical; }

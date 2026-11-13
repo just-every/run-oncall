@@ -455,11 +455,12 @@ try{
    const expected=classes.flatMap(cls=>[cls,'tests/agent-door.mjs',...runtime.context.surface.journey.filter(step=>step.tool===name[0]&&step.expect.some(item=>item.class===cls)).map(step=>step.id)]);
    assert.deepEqual(checks,expected,`${name[0]} rendered class references match maintained coverage`);
   }
-  assert.deepEqual(templates.result.resourceTemplates,[]);
-  assert.equal(discovery.result.capabilities.resources,undefined);
+  assert.deepEqual(templates.result.resourceTemplates.map(row=>row.uriTemplate),[...runtime.context.surface.resources].sort());
+  assert.deepEqual(discovery.result.capabilities.resources,{subscribe:false,listChanged:false});
   assert.ok(!rows.some(([names])=>names[0]==='oncall.events.list'));
   await page.getByRole('heading',{name:'Current resource templates',exact:true}).waitFor();
-  await page.getByText('No resource templates are exposed.',{exact:false}).waitFor();
+  const renderedResources=await page.locator('.docs-article li code').allTextContents();
+  for(const {uriTemplate} of templates.result.resourceTemplates)assert.ok(renderedResources.includes(uriTemplate),'The guide lists '+uriTemplate);
   await page.getByRole('heading',{name:'Target capabilities',exact:true}).waitFor();
   const inventoryRegion=page.locator('.docs-table').filter({has:page.getByRole('columnheader',{name:'Computed class checks',exact:true})}).first();
   await inventoryRegion.focus();
@@ -468,7 +469,7 @@ try{
   assert.ok(await inventoryRegion.evaluate(region=>region.contains(document.activeElement)||region===document.activeElement),'The complete inventory remains keyboard scrollable');
   assert.deepEqual(await native(),before);assert.deepEqual(await (await http('/api/paging/state')).json(),paging);
   assert.deepEqual(await runtime.outboundRequests(),edge);
-  console.log(`PROBE BASE-AGENT-013 rendered ${label}: /docs/agents -> complete ${rows.length}-tool class, scope and fixture inventory agrees with MCP; resources empty; native and paging unchanged; zero outbound requests`);
+  console.log(`PROBE BASE-AGENT-013 rendered ${label}: /docs/agents -> complete ${rows.length}-tool class, scope and fixture inventory agrees with MCP; ${templates.result.resourceTemplates.length} resource templates; native and paging unchanged; zero outbound requests`);
  }
  assert.equal((await runtime.adopt()).status,200);
  await capture('guide','/docs/agents',async()=>{await page.locator('.docs-article').waitFor()});
