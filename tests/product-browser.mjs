@@ -509,10 +509,28 @@ async function changeAndSigningBrowser(page,context){
  console.log('PASS OC-065/030 templates, dependency, retention and protected signing settings at 1440; overflow, axe and hydration');
 }
 
+// Execute the displayed recipe in a sender shell with only its documented tools.
+// The bin contains no node, npx or package manager, even on hosts with system Node.
+async function runSenderRecipe(sample,key,commands='sh send.sh') {
+ const {tmpdir}=await import('node:os'),{spawn,execFileSync}=await import('node:child_process');
+ const {mkdtemp,writeFile,symlink,rm}=await import('node:fs/promises'),{join}=await import('node:path');
+ const dir=await mkdtemp(join(tmpdir(),'oncall-send-'));
+ try {
+  for(const name of ['sh','curl','openssl','date','od','tr','awk'])await symlink(execFileSync('/usr/bin/which',[name],{encoding:'utf8'}).trim(),join(dir,name));
+  await writeFile(join(dir,'send.sh'),sample);
+  // Substitute only the private environment setting, as the sender does. Run the copied invocation unchanged.
+  commands=commands.replace(/^export ONCALL_SOURCE_KEY=.*\n/,'');
+  return await new Promise((resolve,reject)=>{
+   const child=spawn('/bin/sh',['-eu','-c',commands],{cwd:dir,env:{...process.env,PATH:dir,ONCALL_SOURCE_KEY:key}});let out='';
+   child.stdout.on('data',d=>out+=d);child.stderr.resume();child.on('error',reject);
+   child.on('close',code=>code===0?resolve(out):reject(Error('Copied sender recipe failed with no Node on PATH: '+code)));
+  });
+ } finally {await rm(dir,{recursive:true,force:true});}
+}
+
 // A newcomer finishes sender setup from the page alone: the change-event recipe runs as written, and a refused
 // Alertmanager batch is explained, counted and fixable on the integration page without leaving it.
 async function senderSetupBrowser(page,context,origin,request,token){
- const {tmpdir}=await import('node:os'),{spawn}=await import('node:child_process'),{mkdtemp,writeFile}=await import('node:fs/promises'),{join}=await import('node:path');
  await context.grantPermissions(['clipboard-read','clipboard-write']);
  const proof=async(label)=>{
   for(const width of [1440,390]){
@@ -523,19 +541,16 @@ async function senderSetupBrowser(page,context,origin,request,token){
   }
   await page.setViewportSize({width:1440,height:1000});
  };
- const run=(file,key)=>new Promise((resolve,reject)=>{const child=spawn(process.execPath,[file],{env:{...process.env,ONCALL_SOURCE_KEY:key}});let out='';child.stdout.on('data',d=>out+=d);child.stderr.resume();child.on('error',reject);child.on('close',code=>code===0?resolve(out):reject(Error('send.mjs exited '+code+': '+out)));});
  // Change events: the sample is a recipe, and the saved file runs with only the documented steps.
  const changeKey=token(),changeId='synthetic-oncall-recipe';
  await request('/api/changes/sources',{id:changeId,name:'Synthetic recipe source',provider:'native',service:'synthetic-oncall-1',repository:'',mode:'signed',revision:0,key:changeKey});
  await page.goto(origin+'/settings/integrations/'+encodeURIComponent('change:'+changeId));
  await page.getByText('Sample request',{exact:true}).click();
- const recipe=page.locator('details').filter({has:page.getByLabel('Sample request',{exact:true})});
- for(const text of ['send.mjs','ONCALL_SOURCE_KEY','node send.mjs','Node 22 or newer'])assert.ok((await recipe.innerText()).includes(text)||(await recipe.locator('pre').allInnerTexts()).join('').includes(text),'recipe names '+text);
  const sample=await page.getByLabel('Sample request',{exact:true}).inputValue();assert.ok(!sample.includes(changeKey),'sample never embeds the secret');
  await page.getByRole('button',{name:'Copy sample request',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),sample);
- await page.getByRole('button',{name:'Copy run commands',exact:true}).click();assert.match(await page.evaluate(()=>navigator.clipboard.readText()),/export ONCALL_SOURCE_KEY=.*\nnode send\.mjs$/);
- const dir=await mkdtemp(join(tmpdir(),'oncall-send-')),file=join(dir,'send.mjs');await writeFile(file,sample);
- assert.match(await run(file,changeKey),/^201 /,'the copied file sends one change when run as the recipe says');
+ await page.getByRole('button',{name:'Copy run commands',exact:true}).click();const commands=await page.evaluate(()=>navigator.clipboard.readText());
+ const receipt=JSON.parse(await runSenderRecipe(sample,changeKey,commands));assert.ok(receipt.id,'the copied recipe sends one change with no Node on PATH');assert.equal(receipt.duplicate,false);assert.equal(receipt.service,'synthetic-oncall-1');
+ assert.ok((await request('/api/state')).changes.some(change=>change.id===receipt.id),'the accepted change is retained');
  await page.reload();await page.getByText('Sample request',{exact:true}).click();await proof('sender-change-recipe');
  // Alertmanager: a 200-alert group exceeds the default event allowance, is counted, and is fixed from its own page.
  const key=token(),id='synthetic-oncall-batch',now=new Date().toISOString();
@@ -812,8 +827,7 @@ async function eventsSourceBrowser(page,context) {
   assert.equal(await details.getByRole('link',{name:'Services',exact:true}).getAttribute('href'),'/settings/services');
   await page.getByRole('button',{name:'Copy sample request',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),example);
   await proof(sample===source?'readable-bearer-source':'readable-signed-source');
-  const {spawn}=await import('node:child_process');
-  const output=await new Promise((resolve,reject)=>{const child=spawn('bash',['-e','-o','pipefail','-c',example],{env:{...process.env,ONCALL_SOURCE_KEY:sample.key}});let text='';child.stdout.on('data',data=>text+=data);child.stderr.resume();child.on('error',reject);child.on('close',code=>code===0?resolve(text):reject(Error('Copied Events API command failed: '+code)));});
+  const output=await runSenderRecipe(example,sample.key);
   const receipt=JSON.parse(output);assert.equal(receipt.service,service);assert.ok(receipt.id);
   const sendBody=async(value)=>{
    const raw=JSON.stringify(value),headers={'content-type':'application/json'};
@@ -872,7 +886,7 @@ try {
   } finally { await worker.time(selectedTime) }
  }
  const focused=process.env.ONCALL_PRODUCT_JOURNEY;
- if(focused&&!['response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused))throw Error('Unknown focused product journey');
+ if(focused&&!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused))throw Error('Unknown focused product journey');
  const triageProof={snapshot:()=>durableSnapshot(worker),outbound:()=>worker.outboundRequests()};
  const setTime=async at=>{selectedTime=at;await worker.time(at);if(at===null)await page.clock.setSystemTime(new Date());else await page.clock.setFixedTime(new Date(at));};
  if(focused==='rota-timeline'){
@@ -891,6 +905,12 @@ try {
  }
  if(focused==='imported-email')await importedEmailBrowser(page,context);
  if(focused==='events-source')await eventsSourceBrowser(page,context);
+ if(focused==='sender-setup'){
+  const request=async(path,data)=>{const r=await worker.request(path,data,owner.cookie);assert.ok(r.status>=200&&r.status<300,JSON.stringify(r.value));return r.value;};
+  const actor=(await request('/api/session')).member;
+  await request('/api/command',{type:'service',id:'synthetic-oncall-1',name:'Synthetic checkout',environment:'test',owner:actor.id,runbook:[],pager:''});
+  await senderSetupBrowser(page,context,worker.origin,request,()=>randomBytes(32).toString('hex'));
+ }
  if(focused==='response-policy')await responsePolicyBrowser(page,context);
  if(focused==='support-start')await supportStartBrowser(page,context,{setTime,proof:triageProof});
  if(focused==='roles'){
@@ -901,7 +921,7 @@ try {
  if(focused==='move-in-guide')await providerExport(page,context,1440,triageProof);
  if(['limitations','readiness'].includes(focused))await limitationsBrowser(page,context);
  if(focused==='triage')await triageFiltersBrowser(page,context,{setTime,proof:triageProof});
- if(!['response-policy','imported-email','events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused)){
+ if(!['sender-setup','response-policy','imported-email','events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused)){
  await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime,triageProof})
  if(focused!=='accessibility'){
  await incompleteIntakeBrowser(page,context)
@@ -912,12 +932,12 @@ try {
  console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440; overflow, axe and hydration checked')
  }
  }
- if(!['response-policy','imported-email','events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused))await readinessBrowser(page,context)
+ if(!['sender-setup','response-policy','imported-email','events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused))await readinessBrowser(page,context)
  if(!focused)await importedEmailBrowser(page,context)
  if(!focused)await responseReportBrowser(browser)
  if(!focused)await eventsSourceBrowser(page,context)
  assert.deepEqual(errors,[],'no browser application errors')
- console.log(focused==='response-policy'?'Emitted Worker response-policy journey passed at 1440':focused==='imported-email'?'Emitted Worker saved email import journey passed at 1440; changed states captured at 1440 and 390':focused==='rota-timeline'?'Emitted Worker rota timeline passed: readable phone lists and compact accessible desktop slices on overview and rota pages':focused==='readable-times'?'Emitted Worker readable-times journey passed at 1440 in Australia/Brisbane with an America/New_York rota; changed rota and readiness screens captured at 1440 and 390':focused==='events-source'?'Emitted Worker Events source journey passed at 1440; screens captured at 1440 and 390':focused==='support-start'?'Emitted Worker support-start browser journey passed at 1440; screens captured at 1440 and 390':focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
+ console.log(focused==='sender-setup'?'Emitted Worker sender setup journey passed at 1440; screens captured at 1440 and 390':focused==='response-policy'?'Emitted Worker response-policy journey passed at 1440':focused==='imported-email'?'Emitted Worker saved email import journey passed at 1440; changed states captured at 1440 and 390':focused==='rota-timeline'?'Emitted Worker rota timeline passed: readable phone lists and compact accessible desktop slices on overview and rota pages':focused==='readable-times'?'Emitted Worker readable-times journey passed at 1440 in Australia/Brisbane with an America/New_York rota; changed rota and readiness screens captured at 1440 and 390':focused==='events-source'?'Emitted Worker Events source journey passed at 1440; screens captured at 1440 and 390':focused==='support-start'?'Emitted Worker support-start browser journey passed at 1440; screens captured at 1440 and 390':focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
 } catch(error) {
  if(page){
   await page.screenshot({path:'evidence/browser/product-failure.png',fullPage:true,mask:[page.locator('[aria-label="New private calendar URL"]'),page.locator('.one-time-secret input')]})
@@ -928,4 +948,4 @@ try {
 } finally {
  try {await browser?.close()} finally {await worker.close()}
 }
-if(!['response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');
+if(!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');
