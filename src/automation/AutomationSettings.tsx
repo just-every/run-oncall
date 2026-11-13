@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { InlineConfirm } from '../app/autosave/InlineConfirm';
 import { Form } from '../forms';
 import { ClientCreate,permissionAreas } from './ClientCreate';
+import { ClientPolicyNotice } from './ClientPolicyNotice';
 import { OneTimeSecret } from '../integrations/OneTimeSecret';
 import { privateKey, shortTime, type IntegrationProps } from '../integrations/catalog';
 import '../integrations/integrations.css';
@@ -16,8 +17,9 @@ export function AutomationSettings({state,admin,busy,run}:IntegrationProps) {
  return <section className="panel padded integrations" id="response-api" aria-label="API clients, recipients and outbox">
   {!admin&&<p>An administrator manages clients, recipients and delivery failures.</p>}
   <details><summary>API clients ({clients.length})</summary><h2>API clients</h2>
+   {admin&&<ClientPolicyNotice revision={state.revision}/>}
    {!clients.length&&<p>No API clients configured.</p>}
-   <ul className="integration-rows">{clients.map(c=><li key={c.id}><strong>{c.name}</strong><p>{c.services.map(id=>state.services.find(s=>s.id===id)?.name??'Service unavailable').join(', ')}{!c.active?' · Inactive':''}</p><details><summary>Permissions</summary><ul>{permissionAreas.filter(([area])=>c.permissions.includes(area+':read')).map(([area,label])=><li key={area}>{label} · {c.permissions.includes(area+':write')?'Read and change':'Read'}</li>)}</ul></details>{admin&&<details className="integration-entry-actions"><summary>Client actions</summary><button disabled={busy} onClick={()=>setAction({kind:'clients',id:c.id,verb:'rotate'})}>Rotate {c.name}</button><button disabled={busy||!c.active} onClick={()=>setAction({kind:'clients',id:c.id,verb:'revoke'})}>Revoke {c.name}</button></details>}</li>)}</ul>
+   <ul className="integration-rows">{clients.map(c=><li key={c.id}><strong>{c.name}</strong><p>{c.services.map(id=>state.services.find(s=>s.id===id)?.name??'Service unavailable').join(', ')}{!c.active?' · Inactive':''}</p><details><summary>Permissions</summary><ul>{permissionAreas.filter(([area])=>c.permissions.includes(area+':read')).map(([area,label])=><li key={area}>{label} · {c.permissions.includes(area+':write')?'Read and change':'Read'}</li>)}</ul></details>{admin&&<details className="integration-entry-actions integration-client-actions"><summary>Client actions</summary><button disabled={busy} onClick={()=>setAction({kind:'clients',id:c.id,verb:'rotate'})}>Rotate {c.name}</button><button disabled={busy||!c.active} onClick={()=>setAction({kind:'clients',id:c.id,verb:'revoke'})}>Revoke {c.name}</button></details>}</li>)}</ul>
    {admin&&<>{clientForm||!clients.length?<ClientCreate state={state} busy={busy} run={run} onDone={()=>setClientForm(false)}/>:<button type="button" onClick={()=>setClientForm(true)}>Add client</button>}</>}
    <a className="integration-link" href="/docs/response-api">API reference</a>
   </details>

@@ -9,6 +9,9 @@ import { readMoveInJournal } from '../move-in/journal'
 import { targets } from '../move-in/target'
 import { protectedRecords } from './resources'
 import { changeHash } from '../changes/credentials'
+import { listAlerts } from './alert-tools'
+import { listTriage } from './triage-tools'
+import { readAnalytics } from './analytics-tools'
 
 export const string = { type: 'string', minLength: 1, maxLength: 200 } as const
 export const input = (properties: Record<string, JsonSchema> = {}, required: string[] = []) => ({ type: 'object' as const, properties, required, additionalProperties: false })
@@ -59,6 +62,22 @@ export function readTools(env: Bindings): ToolDefinition[] {
     read('services.read', 'services:read', ['OC-003', 'OC-005', 'OC-053'], id, serviceRead),
     read('incidents.list', 'incidents:read', ['OC-003', 'OC-053'], list, incidents, 'computed'),
     read('incidents.read', 'incidents:read', ['OC-003', 'OC-004', 'OC-053'], id, incidents, 'computed'),
+    read('alerts.list', 'incidents:read', ['OC-001', 'OC-002', 'OC-059'], input({
+      service: string, state: { enum: ['active', 'recovered'] }, urgency: { enum: ['high', 'low'] },
+      limit: { type: 'integer', minimum: 1, maximum: 100 }, cursor: { type: 'string', minLength: 1, maxLength: 512 },
+    }), (args, ctx) => listAlerts(env, args, ctx), 'computed'),
+    read('triage.list', 'incidents:read', ['OC-060'], input({
+      q: { type: 'string', maxLength: 600 }, kind: { enum: ['incidents', 'alerts'] },
+      status: { enum: ['triggered', 'snoozed', 'declared', 'acknowledged', 'mitigating', 'recovered', 'resolved', 'open'] },
+      severity: { enum: ['critical', 'warning', 'info'] }, urgency: { enum: ['high', 'low'] },
+      priority: { enum: ['P1', 'P2', 'P3', 'P4', 'P5', 'unset'] },
+      service: string, assignee: string, mine: { enum: ['true'] },
+      ...Object.fromEntries(['createdAfter', 'createdBefore', 'updatedAfter', 'updatedBefore']
+        .map(key => [key, { type: 'string' as const, format: 'date-time' as const }])),
+      sort: { enum: ['created', 'updated', 'urgency', 'priority'] },
+      limit: { type: 'integer', minimum: 1, maximum: 100 },
+      cursor: { type: 'string', minLength: 1, maxLength: 512 },
+    }), (args, ctx) => listTriage(env, args, ctx), 'computed'),
     read('changes.read', 'services:read', ['OC-065'], input({ service: string, at: { type: 'string', format: 'date-time' }, hours: { type: 'integer', minimum: 1, maximum: 168 } }, ['service', 'at', 'hours']), async (args, ctx) => {
       const access = await nativeAccess(env, ctx, 'services:read', args.service)
       const state = { ...access.state, services: access.state.services.filter(row => access.services.includes(row.id)), changes: access.state.changes?.filter(row => access.services.includes(row.service)) }
@@ -85,13 +104,10 @@ export function readTools(env: Bindings): ToolDefinition[] {
       const native=(await env.DB.prepare('SELECT id,scopes FROM sources').all<{id:string;scopes:string}>()).results
       return [...(state.intakeSources??[]).filter(row=>access.services.includes(row.service)).map(row=>({id:'intake:'+row.id,service:row.service,active:row.active,provider:row.provider})),...(state.changeSources??[]).filter(row=>access.services.includes(row.service)).map(row=>({id:'change:'+row.id,service:row.service,active:row.active,provider:row.provider})),...(state.emailAddresses??[]).filter(row=>access.services.includes(row.service)).map(row=>({id:'email:'+row.id,service:row.service,active:row.active,provider:'email'})),...native.filter(row=>{const grants=JSON.parse(row.scopes) as string[];return grants.length>0&&grants.every(id=>access.services.includes(id))}).map(row=>({id:'native:'+row.id,services:JSON.parse(row.scopes),active:true,provider:'native'}))]
     }),
-    read('analytics.read', 'analytics:read', ['OC-030', 'OC-053'], list, async (_args, ctx) => {
-      const access = await nativeAccess(env, ctx, 'analytics:read')
-      return access.state.services.filter(row => access.services.includes(row.id)).map(service => {
-        const rows = access.state.incidents.filter(row => row.service === service.id && incidentWithinServices(access.state, row, access.services))
-        return { service: service.id, incidents: rows.length, open: rows.filter(row => row.state !== 'resolved').length, followups: rows.flatMap(row => row.actions).filter(row => !row.done).length }
-      })
-    }),
+    read('analytics.read', 'analytics:read', ['OC-037', 'OC-044', 'OC-054'], input({
+      view: { enum: ['response', 'readiness'] }, service: string,
+      ...Object.fromEntries(['from', 'to', 'at'].map(key => [key, { type: 'string' as const, format: 'date-time' as const }])),
+    }), (args, ctx) => readAnalytics(env, args, ctx), 'computed'),
     read('automation.read', 'integrations:read', ['OC-053'], input({id:string,kind:{enum:['client','endpoint']},incident:string,endpoint:string}), async (args, ctx) => {
       const access = await nativeAccess(env, ctx, 'integrations:read', undefined, true)
       if(args.id){

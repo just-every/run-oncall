@@ -1,6 +1,6 @@
 # Response API and signed outbound events
 
-An administrator configures service-account clients and approved recipients under **Alerts & events → Response API and outbound events**. Paging remains OFF. These APIs coordinate response beside your existing pager; they do not execute runbooks, production actions, AI requests or Terraform plans.
+An administrator configures service-account clients and approved recipients under **Settings → Integrations → API clients**. Paging remains OFF. These APIs coordinate response beside your existing pager; they do not execute runbooks, production actions, AI requests or Terraform plans.
 
 ## Client lifecycle and authority
 
@@ -9,6 +9,12 @@ Generate a random key with at least 32 characters, copy it into your client's pr
 Use `Authorization: Bearer <private-key>` on `/api/v1/…`. Cookie-only requests are refused. Session-protected management remains under `/api/automation`; it requires same-origin requests and a current administrator. Tokens do not enter those doors.
 
 Each permission is explicit: `services:read`, `services:write`, `schedules:read`, `schedules:write`, `incidents:read`, `incidents:write`, `actions:read`, `actions:write`, `analytics:read`, `integrations:read`. Service grants name existing service IDs. A client can update granted services; an administrator creates services and expands grants by provisioning a new client. Direct IDs, filters, pagination, linked alerts and dependencies cannot widen a grant. Client and endpoint metadata is administrator-only.
+
+### Agent policy prerequisite
+
+**Set agent policy before API clients can read or change records.** Grants alone do not open the API: service-account requests follow the same agent policy as other agent doors. In a standalone installation, an owner or administrator follows **Set agent policy** from the API client page to **Agent policy** at `/agents`, chooses an answer for every displayed class and the paid-AI question, then saves the policy. For a Business-managed installation, that link opens the Business policy settings; the Business owner sets it there. No answer is chosen automatically. Choose the decisions your installation requires; a blocked or approval decision still restricts a request even after setup is complete.
+
+The client page shows whether the policy is unset, set, paused or expired before and after client creation. After saving a policy that allows the read, use the same key with `GET /api/v1/incidents`: it returns only incidents in the client's granted services. Policy setup never expands a permission or service grant.
 
 ## Version 1 HTTP reference
 
@@ -32,6 +38,8 @@ For example, send this body to `POST /api/v1/incidents` with the authorization a
 Use the returned `entity` to read the incident. To acknowledge, send its current revision, `type: "transition"`, `state: "acknowledged"`, a summary and the explicitly selected responsible member. The timeline attributes the action to the service-account ID and records the named responder separately. Later reassignment, a new commander or resolution leaves that acknowledgment entry intact. The permanent audit keeps the service-account actor and a random pseudonymous reference to the named member, never the member’s display name. Subject erasure severs the member association and scrubs the timeline reference without rewriting the permanent audit fact. This is a machine coordination action, never proof that the person responded. Recovery still requires an evidence URL and resolution a summary; service-account attribution does not turn evidence into independent verification.
 
 Errors use `{error: {code, message}}`: 400 `invalid_request`, 401 `invalid_token`, 403 `insufficient_scope`, 404 `not_found`, 409 `conflict`, 413 `request_too_large`, 429 `rate_or_capacity_limit`, 503 `storage_unavailable`. Each client has 60 requests per minute, with `Retry-After` on exhaustion. JSON bodies are bounded to 64 KiB. State, idempotency receipt, enqueue and permanent audit commit in one storage transaction; a storage failure confirms no success. After a lost response, retry the same key.
+
+The shared agent door can also return 403 `policy_unset` with the message **Set agent policy before API clients can read or change records.** Follow `fields.setup_url` to the supported policy setup described above. A paused installation returns 403 `agents_paused`; a blocked decision returns 403 `policy_blocked`; an expired Business policy returns 503 `policy_unavailable`. An operation waiting for approval returns 202 `approval_required` with its approval details. These decisions apply within the client's existing grants; an ungranted read remains 403 `insufficient_scope`, and a revoked key remains 401 `invalid_token`.
 
 ## Recipient approval and signing
 

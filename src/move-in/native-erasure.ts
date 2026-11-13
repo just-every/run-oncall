@@ -33,3 +33,11 @@ export async function prepareNativeImportCustodyErasure(db:D1Database,context:D1
   counts(){if(!receipt)throw Error('Erasure commit has no custody receipt');return {state:'complete',stores:receipt.stores}}
  }
 }
+
+/** Native activated email and compatible intake share the same import root.
+ * Resolve only one binding; an ambiguous root is never partially erased. */
+export async function importedIntegrationRoot(db:D1Database,binding:'emailAddress'|'intakeSource',id:string) {
+ const roots=(await db.prepare(`SELECT id,revision,data FROM move_in_objects WHERE kind='integration' AND json_extract(data,'$.${binding}')=?`).bind(id).all<{id:string;revision:string;data:string}>()).results
+ if(roots.length>1)fail('Conflicting imported integration bindings; nothing was erased. Resolve the retained import custody first.',409)
+ return roots[0]
+}
