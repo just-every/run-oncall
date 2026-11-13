@@ -1,3 +1,4 @@
+import {StakeholderAudience, StatusAudience} from './StatusAudience';
 import {useViewAnchor} from '../app/useViewAnchor';
 import { useEffect, useState } from 'react';
 import { Field, Form } from '../forms';
@@ -63,6 +64,7 @@ export function StatusPanel({actor, state}: {actor: Member; state?: State | null
       <StatusSubscription actorId={actor.id} service={service} onServices={receiveServices}/>
       {service.notices.length > 0 && <div aria-label="Recorded impact obligations"><h4>Recorded impact obligations</h4>{service.notices.map((record: any) => <p key={record.id}>{record.businessName} · {record.phase?`impact ${record.phase} · `:''}{record.derivedStatus} · {record.channel} · {record.state} · no sender · non-automatic · paging OFF. {record.approvedUpdate === null && 'No approved update is available.'}</p>)}</div>}
       {(admin || actor.id === service.communicationsOwner) && <details><summary>Manage internal status</summary>
+        {admin && state && <StatusAudience service={service} actorId={actor.id} members={state.members} onServices={receiveServices}/>}
         <ManualStatus service={service} busy={busy} save={save}/>
         {state && <Form inlineValidation busy={busy} label="Subscribe member" onSubmit={data => save({...data,action:'subscribe',id:service.id,revision:service.revision,active:data.active==='true'})}>
           <Field name="member" label="Subscriber">{state.members.filter(member => member.active && (member.role !== 'stakeholder' || service.audience.includes(member.id))).map(member => <option key={member.id} value={member.id}>{member.name}</option>)}</Field>
@@ -82,7 +84,7 @@ export function StatusPanel({actor, state}: {actor: Member; state?: State | null
       <Field name="name" label="Business-service name" />{state.teams?.length===1?<><span>Owning team: {state.teams[0].name}</span><input type="hidden" name="owningTeam" value={state.teams[0].name}/></>:state.teams?.length?<Field name="owningTeam" label="Owning team">{state.teams.map(team=><option value={team.name} key={team.id}>{team.name}</option>)}</Field>:<Field name="owningTeam" label="Owning team"/>}
       <Field name="supporting" label="Supporting technical services" multiple>{state.services.map(service=><option key={service.id} value={service.id}>{service.name}</option>)}</Field>
       <Field name="communicationsOwner" label="Communications owner">{state.members.filter(member=>member.active&&['admin','responder'].includes(member.role)).map(member=><option key={member.id} value={member.id}>{member.name}</option>)}</Field>
-      {!!state.members.some(member=>member.active&&member.role==='stakeholder')&&<fieldset className="status-audience"><legend>Stakeholder audience</legend>{state.members.filter(member=>member.active&&member.role==='stakeholder').map(member=><label className="status-audience-choice" key={member.id}><input type="checkbox" name="audience" value={member.id} checked={audience.includes(member.id)} onChange={e=>setAudience(current=>e.target.checked?[...current,member.id]:current.filter(id=>id!==member.id))}/><span>{member.name}</span></label>)}</fieldset>}
+      <StakeholderAudience members={state.members} value={audience} onChange={setAudience}/>
       <Field name="highUrgencyImpact" label="High-urgency alert impact"><option value="false">Declared incidents only</option><option value="true">Declared incidents and high-urgency alerts</option></Field>
     </Form></details>}
   </section>;
