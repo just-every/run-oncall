@@ -5,7 +5,7 @@ import { approvalDoor, type approvalView } from './approvals.ts'
 import { businessRole, matchingRefs } from './people.ts'
 import { policyState, publicState, unanswered, declaredClasses, setupUrl } from './policy-store.ts'
 import { CATALOGUE, classDefinition, type ClassId } from './policy/catalogue.ts'
-import { SCHEMA } from './policy/document.ts'
+import { SCHEMA, canonical, type PolicyDocument, type Disposition } from './policy/document.ts'
 import { reviewDoor, type reviewView } from './reviews.ts'
 import type { ApprovalDisplaySummary, Person, PolicyState, Runtime } from './types.ts'
 import { pageScript, pageStyle } from './page-style.ts'
@@ -75,12 +75,23 @@ function shell(rt: Runtime, title: string, content: string, status = 200, curren
   })
 }
 
-const choice = (cls: ClassId) => `<div class="field" data-policy-question="${cls}"><label for="choice-${cls}">${escape(className(cls))}</label><p id="help-${cls}" class="meta">${escape(classDefinition(cls).when)}</p><select id="choice-${cls}" data-policy-class="${cls}" aria-describedby="help-${cls}" aria-errormessage="error-${cls}"><option value="">Choose…</option>${(['autonomous', 'review', 'approval', 'blocked'] as const).map(value => `<option value="${value}">${answers[value]}</option>`).join('')}</select><p id="error-${cls}" class="field-error" hidden>Choose an answer.</p></div>`
-const paidAI = '<fieldset class="field" data-paid-ai aria-describedby="error-paid-ai"><legend>Can agents use paid AI?</legend><label class="choice"><input type="radio" name="paidAI" value="no"> No</label><label class="choice"><input type="radio" name="paidAI" value="yes"> Yes</label><p id="error-paid-ai" class="field-error" hidden></p></fieldset>'
+const choice = (cls: ClassId, saved?: Disposition) => `<div class="field" data-policy-question="${cls}"><label for="choice-${cls}">${escape(className(cls))}</label><p id="help-${cls}" class="meta">${escape(classDefinition(cls).when)}</p><select id="choice-${cls}" data-policy-class="${cls}" aria-describedby="help-${cls}" aria-errormessage="error-${cls}"><option value="">Choose…</option>${(['autonomous', 'review', 'approval', 'blocked'] as const).map(value => `<option value="${value}"${saved === value ? ' selected' : ''}>${answers[value]}</option>`).join('')}</select><p id="error-${cls}" class="field-error" hidden>Choose an answer.</p></div>`
+const paidAI = (saved: boolean) => '<fieldset class="field" data-paid-ai aria-describedby="error-paid-ai"><legend>Can agents use paid AI?</legend><label class="choice"><input type="radio" name="paidAI" value="no"' + (saved ? ' checked' : '') + '> No</label><label class="choice"><input type="radio" name="paidAI" value="yes"> Yes</label><p id="error-paid-ai" class="field-error" hidden></p></fieldset>'
+
+/** Only offer choices when they can preserve the complete saved document. */
+function guidedPolicy(document: PolicyDocument, classes: ClassId[]): boolean {
+  if (document.rules.length !== classes.length || classes.some(cls => document.rules.filter(rule => rule.class === cls).length !== 1)) return false
+  const expected = { schema: SCHEMA, catalogue: CATALOGUE,
+    rules: document.rules.map(rule => ({ id: rule.id, class: rule.class, do: rule.do,
+      ...(rule.do === 'approval' ? { approver: ['role:owner'], wait: 'P1D' } : {}) })),
+    reviewers: ['role:owner'], spend: { none: true } }
+  return canonical(document) === canonical(expected)
+}
 
 function setup(rt: Runtime, state: PolicyState, owner: boolean): string {
   const missing = unanswered(rt, state), current = publicState(rt, state), classes = declaredClasses(rt)
   const quick = owner && !rt.options.trust && !state.document
+  const editable = !!state.document && guidedPolicy(state.document, classes)
   let content = '<h2 id="policy-title">Agent policy</h2>'
   if (quick) content += '<p>Choose what agents may do. They wait until every answer is set.</p>'
   else {
@@ -91,8 +102,9 @@ function setup(rt: Runtime, state: PolicyState, owner: boolean): string {
   if (rt.options.trust) content += `<p>Managed in Business.${state.expires !== null ? ` Valid until ${time(state.expires)}.` : ''}</p><a href="${escape(setupUrl(rt, state))}">Manage policy in Business</a>`
   else if (owner) {
     const draft = state.document ?? { schema: SCHEMA, catalogue: CATALOGUE, rules: [], reviewers: ['role:owner'], spend: { none: true } }
-    if (quick) content += `<form action="/agents/api/policy" method="post" data-json-action data-create-policy data-method="PUT" novalidate>${classes.map(choice).join('')}${paidAI}<p><button type="submit">Save policy</button></p></form>`
-    content += `<details data-policy-editor><summary>Edit policy document</summary><form action="/agents/api/policy" method="post" data-json-action data-method="PUT"><label for="policy-document">Policy document</label><p id="policy-help" class="meta">Each declared class needs an unscoped rule: autonomous, review, approval or blocked. Review rules need reviewers; approval rules need approvers and a wait such as P1D. For paid AI, set spend caps; they are not enforced here. Saving applies the policy at once.</p><textarea id="policy-document" name="document" rows="16" spellcheck="false" aria-describedby="policy-help" required>${pretty(draft)}</textarea><p class="meta">Example rules</p><pre>${pretty([
+    if (quick || editable) content += `${editable ? '<details data-guided-policy><summary>Edit policy</summary>' : ''}<form action="/agents/api/policy" method="post" data-json-action data-create-policy data-method="PUT" novalidate>${state.document ? `<input type="hidden" name="policy-base" value="${pretty(state.document)}">` : ''}${classes.map(cls => choice(cls, state.document?.rules.find(rule => rule.class === cls)?.do)).join('')}${paidAI(editable)}<p><button type="submit">Save policy</button></p></form>${editable ? '</details>' : ''}`
+    if (state.document && !editable) content += '<p>This policy uses settings the guided choices cannot express. Edit the policy document below to keep those settings.</p>'
+    content += `<details data-policy-editor${state.document && !editable ? ' open' : ''}><summary>Edit policy document (advanced)</summary><form action="/agents/api/policy" method="post" data-json-action data-method="PUT"><label for="policy-document">Policy document</label><p id="policy-help" class="meta">Each declared class needs an unscoped rule: autonomous, review, approval or blocked. Review rules need reviewers; approval rules need approvers and a wait such as P1D. For paid AI, set spend caps; they are not enforced here. Saving applies the policy at once.</p><textarea id="policy-document" name="document" rows="16" spellcheck="false" aria-describedby="policy-help" required>${pretty(draft)}</textarea><p class="meta">Example rules</p><pre>${pretty([
       { id: 'internal-work', class: 'standard', do: 'review' },
       { id: 'external-approval', class: 'external', do: 'approval', approver: ['role:owner'], wait: 'P1D' },
       { id: 'no-deletion', class: 'destructive', do: 'blocked' },

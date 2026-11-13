@@ -99,6 +99,11 @@ export function readTools(env: Bindings): ToolDefinition[] {
       const access=await nativeAccess(env,ctx,'actions:read')
       return access.state.incidents.filter(row=>incidentWithinServices(access.state,row,access.services)).flatMap(incident=>incident.actions.map(action=>({...action,incident:incident.id,service:incident.service,revision:incident.revision})))
     },'computed'),
+    read('responders.list', 'responders:read', ['OC-053'], list, async (_args, ctx) => {
+      const access = await nativeAccess(env, ctx, 'responders:read')
+      return access.state.members.filter(member => member.active && ['admin', 'responder'].includes(member.role))
+        .map(({ id, name }) => ({ id, name }))
+    }, true),
     read('integrations.read','integrations:read',['OC-053'],list,async(_args,ctx)=>{
       const access=await nativeAccess(env,ctx,'integrations:read'),state=access.state
       const native=(await env.DB.prepare('SELECT id,scopes FROM sources').all<{id:string;scopes:string}>()).results
