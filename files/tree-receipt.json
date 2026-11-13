@@ -1,0 +1,50 @@
+{
+  "source-lock": {
+    "exit": 0
+  },
+  "contract-docs": {
+    "exit": 0,
+    "output": "Contract prose: 0 errors, 0 warnings.\nContract documents are current.\n"
+  },
+  "diff-whitespace": {
+    "exit": 0,
+    "output": ""
+  },
+  "head": "c5b917c34bc977ed82cf8b2b481f2da8f33779b2",
+  "base": "cc64205ca532de3ac8022838ecdd07cfa5bfae73",
+  "commit_count": 1,
+  "contract_files": {
+    "CONTRACT.md": {
+      "identical_to_origin_main": true,
+      "sha256": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    "ACCEPTANCE.md": {
+      "identical_to_origin_main": true,
+      "sha256": "875e11f85ca8473511fe5defbbdd5d6457f248e48fcbbe6796d86194701c62c3"
+    },
+    "docs/CLAIMS.md": {
+      "identical_to_origin_main": true,
+      "sha256": "8c57d53cb2bd436176cc5b556bd1a4ca786848e4ee2d310bed277fe8faf7d440"
+    }
+  },
+  "carry_files_identical_to_original": true,
+  "carry_conflicts": 0,
+  "additional_carry_fixes": 0,
+  "build": {
+    "command": "cloud_run npx -y @runeditrun/rer build",
+    "exit": 0
+  },
+  "new_test_registrations": 0,
+  "clause_counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "clause_counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  }
+}

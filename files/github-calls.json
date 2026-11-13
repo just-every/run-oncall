@@ -1,0 +1,42 @@
+[
+  {
+    "call": 1,
+    "at": 1794542344.050398,
+    "args": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs?head_sha=c5b917c34bc977ed82cf8b2b481f2da8f33779b2&per_page=100",
+      "--jq",
+      "{workflow_runs: [.workflow_runs[] | {id,name,status,conclusion,head_sha,html_url}]}"
+    ]
+  },
+  {
+    "call": 2,
+    "at": 1794542645.0756476,
+    "args": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43362464763",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "call": 3,
+    "at": 1794542946.6595366,
+    "args": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43362464763",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "call": 4,
+    "at": 1794543248.2706223,
+    "args": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43362464763",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  }
+]

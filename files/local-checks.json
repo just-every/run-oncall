@@ -1,0 +1,76 @@
+{
+  "head": "c5b917c34bc977ed82cf8b2b481f2da8f33779b2",
+  "checks": [
+    {
+      "name": "typecheck",
+      "command": [
+        "pnpm",
+        "run",
+        "typecheck"
+      ],
+      "head": "c5b917c34bc977ed82cf8b2b481f2da8f33779b2",
+      "exit": 0,
+      "seconds": 11.76,
+      "log": "typecheck.log"
+    },
+    {
+      "name": "bulk-browser",
+      "command": [
+        "node",
+        "/tmp/oncall-bulk-proof.mjs"
+      ],
+      "head": "c5b917c34bc977ed82cf8b2b481f2da8f33779b2",
+      "exit": 0,
+      "seconds": 54.8,
+      "log": "bulk-browser.log"
+    },
+    {
+      "name": "triage-bulk",
+      "command": [
+        "env",
+        "ONCALL_TRIAGE_PART=bulk",
+        "node",
+        "tests/triage.mjs"
+      ],
+      "head": "c5b917c34bc977ed82cf8b2b481f2da8f33779b2",
+      "exit": 0,
+      "seconds": 24.45,
+      "log": "triage-bulk.log"
+    },
+    {
+      "name": "intake-machines",
+      "command": [
+        "env",
+        "ONCALL_RUNTIME_PART=machines",
+        "node",
+        "tests/runtime.mjs"
+      ],
+      "head": "c5b917c34bc977ed82cf8b2b481f2da8f33779b2",
+      "exit": 0,
+      "seconds": 444.11,
+      "log": "intake-machines.log"
+    },
+    {
+      "name": "intake",
+      "command": [
+        "node",
+        "tests/intake.mjs"
+      ],
+      "head": "c5b917c34bc977ed82cf8b2b481f2da8f33779b2",
+      "exit": 0,
+      "seconds": 68.46,
+      "log": "intake.log"
+    },
+    {
+      "name": "routing",
+      "command": [
+        "node",
+        "tests/routing.mjs"
+      ],
+      "head": "c5b917c34bc977ed82cf8b2b481f2da8f33779b2",
+      "exit": 0,
+      "seconds": 113.88,
+      "log": "routing.log"
+    }
+  ]
+}
