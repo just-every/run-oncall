@@ -1,0 +1,64 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PASS source recovery timeline: owner-given source name, no internal codes and unchanged stored history at 1440; all Australia/Brisbane timestamp lines inside the card without clipping or sideways scroll at 390
+Product browser failure at /on-call
+Skip to content
+Oncall
+On call
+Incidents
+1
+Alerts
+2
+Reviews
+Status
+Settings
+PR
+Product browser owner
+admin
+⌄
+Existing pager authoritative · paging OFF · schedules and coordination
+On call
+New rota
+
+Checkout API latency above 2 seconds · 2 active alerts
+
+Checkout events
+
+No rota
+
+New rota
+This week
+
+Times shown in UTC
+
+12 Nov
+13 Nov
+14 Nov
+15 Nov
+16 Nov
+17 Nov
+18 Nov
+Worker diagnostics (test failure):
+[stderr] [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+[stderr] 
+[stderr] 
+[stdout] Using secrets defined in ../../../../../../tmp/oncall-flow-R3taHa/local.env
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+locator.innerText: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('list', { name: 'Allowance refusals', exact: true })[22m
+
+    at eventsSourceBrowser (/home/agent/rer-consolidation/work/main-oncall-test-event-results-1/run-oncall/tests/product-browser.mjs:885:91)
+    at async file:///home/agent/rer-consolidation/work/main-oncall-test-event-results-1/run-oncall/tests/product-browser.mjs:955:31 {
+  log: [
+    "  - waiting for getByRole('list', { name: 'Allowance refusals', exact: true })"
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v24.19.0

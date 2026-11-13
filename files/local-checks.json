@@ -1,0 +1,71 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-test-event-results-1",
+  "head": "b9e47fa70881e514b14d3ffed5a224bc7d1c6b5f",
+  "base": "809d67a8fbf255ee13e8531e4246a1ffbddf2fa4",
+  "localChecks": {
+    "build": {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    "typecheck": {
+      "command": "cloud_run pnpm run typecheck",
+      "exit": 0
+    },
+    "browser": {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_PRODUCT_JOURNEY=events-source ONCALL_BROWSER_EVIDENCE=<packet>/browser cloud_run node tests/product-browser.mjs",
+      "exit": 0,
+      "receipt": "browser/test-event-receipt.json"
+    },
+    "sourceLock": {
+      "commands": [
+        "node scripts/edition-authoring/cli.mjs lock",
+        "node scripts/edition-authoring/cli.mjs check"
+      ],
+      "exit": 0
+    },
+    "contractDocs": {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    "diffHygiene": {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  },
+  "localChecksTiming": "Local checks ran on the candidate source changes before commit; source lock generated last. Exact-SHA branch Verify is tracked separately.",
+  "counts": {
+    "verifyCommandsBefore": 16,
+    "verifyCommandsAfter": 16,
+    "addedRegistrations": 0,
+    "contractStatusBefore": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34
+    },
+    "contractStatusAfter": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34
+    },
+    "activeCompatibleAlertsBeforeFix": 1,
+    "activeCompatibleAlertsAfterFix": 0,
+    "provedCompatibleGenerations": 2
+  },
+  "contractChanges": [],
+  "productPush": {
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/main-oncall-test-event-results-1",
+    "exit": 0,
+    "attempts": 1,
+    "receipt": "push.log"
+  },
+  "publicationScan": "Deferred to fleet Mac landing as instructed; product diff checked for credential-shaped literals locally.",
+  "pr": null,
+  "verify": {
+    "conclusion": null,
+    "head_sha": "b9e47fa70881e514b14d3ffed5a224bc7d1c6b5f",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43354439663",
+    "id": 43354439663,
+    "status": "in_progress"
+  }
+}

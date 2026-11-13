@@ -1,0 +1,10 @@
+{
+  "privateKeyCleared": true,
+  "sameFormState": [
+    "recovered"
+  ],
+  "afterReturn": {
+    "active": 1,
+    "lastOutcome": "no-effect"
+  }
+}

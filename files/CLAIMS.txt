@@ -1,0 +1,5 @@
+CLAIM OC-055 PARTIAL points=none tests=tests/product-browser.mjs#eventsSourceBrowser
+CLAIM OC-084 PARTIAL points=none tests=tests/product-browser.mjs#eventsSourceBrowser
+DEFAULT OC-055: Carry an explicit, visible editable dedup_key; retain it from the last protected trigger when returning to the source. The receiver owns compatible generations.
+GAP OC-055: This bounded test-form regression does not establish whole incumbent monitor, cross-vendor, routed-scope or paging acceptance points.
+GAP OC-084: This bounded native form regression covers refusal diagnostics and rotation; whole-key, timed-window, routed, email and capacity acceptance remain outside this round.

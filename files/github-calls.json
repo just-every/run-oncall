@@ -1,0 +1,27 @@
+[
+  {
+    "at": 1794537980.3198838,
+    "args": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs?head_sha=b9e47fa4&per_page=100",
+      "--jq",
+      ".workflow_runs[] | {id,name,status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "at": 1794538280.4033494,
+    "args": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs?head_sha=b9e47fa70881e514b14d3ffed5a224bc7d1c6b5f&per_page=100"
+    ]
+  },
+  {
+    "at": 1794538580.3848758,
+    "args": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43354439663",
+      "--jq",
+      "{id,status,conclusion,head_sha,html_url}"
+    ]
+  }
+]

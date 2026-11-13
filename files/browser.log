@@ -1,0 +1,7 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PASS source recovery timeline: owner-given source name, no internal codes and unchanged stored history at 1440; all Australia/Brisbane timestamp lines inside the card without clipping or sideways scroll at 390
+PASS test-event results: compatible same-form and returned-form recoveries leave zero active alerts, explicit outage key and in-memory private key retained; native allowance and rotated key refusals explain retry or allowance settings, wrong keys explain authentication, refused requests preserve events and alerts; changed screens captured at 1440/390.
+PASS OC-001 Events source recovery: Critical Trigger -> navigate Alerts -> Warning Recover with retained key/generation; one recovered alert, active 1 to 0, nav/list/detail agree, declared incident stays open. Detail-page readable source samples copied and executed for bearer and signed, alerts visible, legacy ID retries deduplicated and mismatched identities refused; changed screens captured once at 1440/390.
+Emitted Worker Events source journey passed at 1440; screens captured at 1440 and 390

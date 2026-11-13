@@ -1,0 +1,17 @@
+{
+  "privateKeyCleared": true,
+  "sameFormState": [
+    "recovered"
+  ],
+  "afterReturn": {
+    "active": 1,
+    "lastOutcome": "no-effect"
+  },
+  "baseline": "809d67a8fbf255ee13e8531e4246a1ffbddf2fa4",
+  "allowance": {
+    "acceptedFirstStatus": 201,
+    "nextStatus": 429,
+    "immediate": "The receiver refused this test. Check the private key and sender settings.",
+    "source": "reproduction-allowance.log"
+  }
+}
