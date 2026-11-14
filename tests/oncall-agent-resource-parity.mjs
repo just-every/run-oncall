@@ -18,7 +18,7 @@ async function json(http,path,input,status=200){
 /** Compare populated MCP records with the same sponsor's protected native doors. */
 export async function resourceParity({browserProof=false}={}){
  const runtime=await agentRuntime({clock:null});let browser;
- const evidence=process.env.ONCALL_BROWSER_EVIDENCE;
+ const evidence=process.env.ONCALL_BROWSER_EVIDENCE??(browserProof?'evidence/browser':undefined);
  const receipt={journey:'resourceParity',head:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),observationAt:new Date(observed).toISOString(),from,to,cases:[],screens:[]};
  try{
   // Establish real sessions before freezing platform time; SQLite's session
@@ -45,13 +45,10 @@ export async function resourceParity({browserProof=false}={}){
   for(let n=0;n<2;n++)assert.equal((await mail(runtime,local,'Synthetic month repeated alert',{body:'Retained customer observation'})).status,200);
   await json(runtime.http,'/api/command',{type:'transition',incident:fixture.own.id,revision:fixture.own.revision,state:'acknowledged',summary:'A real human records the response'});
   await runtime.time(observed);
-  const changeSource='synthetic-oncall-parity-change',changeKey='synthetic-oncall-parity-change-credential';
-  await json(runtime.http,'/api/changes/sources',{id:changeSource,name:'Synthetic current deployment',provider:'native',service:'agent-service',repository:'',mode:'bearer',revision:0,key:changeKey},201);
-  const changeResponse=await runtime.request(runtime.origin+'/api/changes/ingress/'+changeSource,{method:'POST',headers:{Origin:runtime.origin,'Content-Type':'application/json',Authorization:'Bearer '+changeKey},body:JSON.stringify({eventId:'synthetic-oncall-parity-deployment',summary:'Synthetic deployment at the observation time',timestamp:new Date(observed).toISOString(),author:'Synthetic release engineer',links:[]})});
-  assert.equal(changeResponse.status,201);await changeResponse.body?.cancel();
+  const changes=await prepareRecentChanges(runtime,fixture.owner);
   if(browserProof){
    const {chromium}=await import('@playwright/test');
-   browser=await chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM_PATH??'/usr/bin/chromium',args:['--no-sandbox','--use-mock-keychain','--password-store=basic']});
+   browser=await chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM_PATH??process.env.CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox','--use-mock-keychain','--password-store=basic']});
    assert.ok(evidence,'Browser proof needs an explicit evidence directory');await mkdir(evidence,{recursive:true});
   }
   for(const [mode,policy] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
@@ -72,6 +69,8 @@ export async function resourceParity({browserProof=false}={}){
     assert.equal(report.generatedAt,to);assert.equal(report.cohort.from,from);assert.equal(report.cohort.to,to);
     assert.ok(report.load.responders.some(r=>r.primarySeconds>0));assert.ok(report.noise.triggers>=2);assert.ok(report.noise.repeatedAlerts>0);
     assert.deepEqual(report.incidents.map(i=>i.id).sort(),[fixture.own.id,boundary[1].id,boundary[2].id].sort());
+    const recent=await json(p.http,changes.path);
+    assertRecentChanges(recent,changes);
     const alert=native.alerts.find(a=>a.id===fixture.emailAlert.id);
     assert.ok(alert?.events.length);
     const cases=[
@@ -80,16 +79,18 @@ export async function resourceParity({browserProof=false}={}){
      {kind:'services',id:'agent-service',expected:native.services.find(s=>s.id==='agent-service'),path:'/settings/services/agent-service'},
      {kind:'schedules',id:fixture.importedSchedule.id,expected:paging.schedules.find(s=>s.id===fixture.importedSchedule.id),path:'/on-call/'+fixture.importedSchedule.id},
      {kind:'handoffs',id:fixture.ownHandoff.id,expected:handoff.record,path:'/incidents/'+fixture.own.id},
-     {kind:'changes',id:native.changes.find(c=>c.source===changeSource).id,expected:native.changes.find(c=>c.source===changeSource),path:'/settings/services/agent-service'},
+     {kind:'changes',id:native.changes.find(c=>c.source===changes.rootSource).id,expected:native.changes.find(c=>c.source===changes.rootSource),path:'/settings/services/agent-service'},
+     {kind:'service-changes',id:'agent-service',uri:'oncall://services/agent-service/changes',expected:recent,path:'/settings/services/agent-service'},
      {kind:'reports',id:fixture.ownPeriod,expected:report,path:'/reviews'},
     ];
     const before=await agentReadSnapshot(runtime);
     for(const c of cases){
      assert.ok(c.expected,c.kind+' must have actual native records');
-     const uri='oncall://'+c.kind+'/'+encodeURIComponent(c.id);
+     const uri=c.uri??'oncall://'+c.kind+'/'+encodeURIComponent(c.id);
      const read=await runtime.completeResource(uri,{bearer,personHttp:p.http});
      assert.equal(read.content.uri,uri);assert.equal(read.content.mimeType,'application/json');
      assert.equal(read.content._meta['com.runeditrun/untrusted'],true);
+     if(c.kind==='service-changes')assert.deepEqual(read.initial.decision.classes.map(({class:kind,facts})=>({class:kind,facts})),[{class:'standard',facts:{measure:1}},{class:'sensitive',facts:{measure:recent.items.length,kind:'personal_or_incident_evidence'}}],'Populated authors retain the existing standard and sensitive classes');
      const sensitive=read.initial.decision.classes.some(row=>row.class==='sensitive');
      assert.equal(read.initial.decision.revision,runtime.context.revision);
      assert.equal(read.initial.decision.disposition,mode==='held'?(sensitive?'approval':'review'):'autonomous');
@@ -116,7 +117,7 @@ export async function resourceParity({browserProof=false}={}){
      assert.equal((await json(p.http,'/api/state')).revision,native.revision);
      assertAgentReadUnchanged(before,await agentReadSnapshot(runtime));
      assert.deepEqual(await runtime.outboundRequests(),[]);
-     receipt.cases.push({role:p.member.role,mode,template:c.kind,workspaceRevision:native.revision,schedulingRevision:paging.revision,disposition:read.initial.decision.disposition,fields:Object.keys(read.value).sort(),equal:true,nativeRecord:c.expected,resourceRecord:read.value});
+     receipt.cases.push({role:p.member.role,mode,template:c.kind,workspaceRevision:native.revision,schedulingRevision:paging.revision,disposition:read.initial.decision.disposition,fields:Object.keys(read.value).sort(),equal:true,...(c.kind==='service-changes'?{nativeDoor:changes.path,permittedServices:permitted}:{}),nativeRecord:c.expected,resourceRecord:read.value});
      console.log(`PROBE BASE-AGENT-003 2 ${mode} ${p.member.role} ${c.kind}: native protected record equals every resource field at workspace revision ${native.revision}; paging and permanent state-changing audit unchanged; zero outbound requests`);
     }
     const admission=await runtime.db.prepare('SELECT sponsor FROM agent_door_agents WHERE id=?').bind(p.agent).first();
@@ -143,11 +144,62 @@ export async function resourceParity({browserProof=false}={}){
     }
    }
   }
-  assert.equal(receipt.cases.length,28);
+  assert.equal(receipt.cases.length,32);
   assert.deepEqual(await runtime.outboundRequests(),[]);
   if(evidence){await mkdir(evidence,{recursive:true});await writeFile(evidence+'/resource-parity.json',JSON.stringify(receipt,null,2)+'\n');}
   return receipt;
  }finally{try{await browser?.close()}finally{await runtime.close()}}
+}
+
+/** Native ingress receipts identify the records; only protected HTTP is the parity oracle. */
+async function prepareRecentChanges(runtime,owner){
+ const root='agent-service',dependency='synthetic-oncall-parity-dependency',decoy='synthetic-oncall-parity-decoy';
+ for(const [id,name] of [[dependency,'Settlement database'],[decoy,'Unrelated build worker']])
+  await json(runtime.http,'/api/command',{type:'service',id,name,environment:'production',owner:owner.id,runbook:[],pager:''});
+ const service=(await json(runtime.http,'/api/state')).services.find(row=>row.id===root);
+ await json(runtime.http,'/api/command',{...service,type:'service',dependencies:[dependency]});
+ const sources={};
+ for(const [id,label] of [[root,'root'],[dependency,'dependency'],[decoy,'decoy']]){
+  const source='synthetic-oncall-parity-'+label+'-change',key='synthetic-oncall-parity-'+label+'-credential';
+  await json(runtime.http,'/api/changes/sources',{id:source,name:'Synthetic '+label+' deployment',provider:'native',service:id,repository:'',mode:'bearer',revision:0,key},201);
+  sources[id]={source,key};
+ }
+ const start=observed-24*3600000,receipts=[];
+ // Admit out of chronological order, including tied times and both inclusive
+ // edges. Decoys are permitted services, so membership cannot hide a bad join.
+ for(const [service,label,at,included] of [
+  [root,'current release',observed,true],
+  [dependency,'dependency migration',observed-3600000,true],
+  [root,'before lookback',start-1,false],
+  [dependency,'lookback boundary',start,true],
+  [root,'tied rollback',observed-3600000,true],
+  [root,'inside lookback',start+1,true],
+  [dependency,'after observation',observed+1,false],
+  [decoy,'unrelated deployment',observed,false],
+ ]){
+  const {source,key}=sources[service],eventId='synthetic-oncall-parity-'+label.replaceAll(' ','-');
+  const payload={eventId,summary:'Synthetic '+label,timestamp:new Date(at).toISOString(),author:'Synthetic '+(service===dependency?'database operator':'release engineer'),links:['https://evidence.example.invalid/'+eventId],custom_details:{environment:'production',revision:eventId,context:'Retained '+label+' context'}};
+  const response=await runtime.request(runtime.origin+'/api/changes/ingress/'+source,{method:'POST',headers:{Origin:runtime.origin,'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify(payload)});
+  assert.equal(response.status,201);const receipt=await response.json();
+  receipts.push({...receipt,payload,at,included,source,dependency:service===dependency});
+ }
+ const expected=receipts.filter(row=>row.included).sort((a,b)=>b.at-a.at||a.id.localeCompare(b.id));
+ return {path:'/api/changes/recent?'+new URLSearchParams({service:root,at:new Date(observed).toISOString(),hours:'24'}),rootSource:sources[root].source,expected,excluded:receipts.filter(row=>!row.included),from:new Date(start).toISOString(),to:new Date(observed).toISOString(),root,dependency};
+}
+
+function assertRecentChanges(recent,fixture){
+ assert.deepEqual({service:recent.service,from:recent.from,to:recent.to,hours:recent.hours},{service:fixture.root,from:fixture.from,to:fixture.to,hours:24});
+ assert.deepEqual(recent.items.map(row=>row.id),fixture.expected.map(row=>row.id),'Native query includes both exact boundaries, sorts by time then ID and excludes unrelated and outside-window records');
+ for(const expected of fixture.expected){
+  const actual=recent.items.find(row=>row.id===expected.id);
+  assert.equal(actual.eventId,expected.payload.eventId);assert.equal(actual.source,expected.source);assert.equal(actual.provider,'native');
+  assert.equal(actual.service,expected.service);assert.equal(actual.dependency,expected.dependency);
+  assert.equal(actual.serviceName,expected.dependency?'Settlement database':'Payments API');
+  assert.equal(actual.summary,expected.payload.summary);assert.equal(actual.author,expected.payload.author);
+  assert.deepEqual(actual.links,expected.payload.links);assert.deepEqual(actual.details,expected.payload.custom_details);
+  assert.equal(actual.occurredAt,expected.payload.timestamp);assert.equal(actual.acceptedAt,expected.acceptedAt);
+ }
+ for(const excluded of fixture.excluded)assert.ok(!recent.items.some(row=>row.id===excluded.id));
 }
 
 async function captureViews(browser,runtime,person,mode,cases,report,receipt){
@@ -158,7 +210,7 @@ async function captureViews(browser,runtime,person,mode,cases,report,receipt){
   await page.clock.setFixedTime(observed);
   for(const width of [1440,390]){
    await page.setViewportSize({width,height:1000});
-   const screens=[...new Map(cases.filter(c=>!['handoffs','changes'].includes(c.kind)).map(c=>[c.path,c])).values(),{...cases.find(c=>c.kind==='handoffs'),path:cases[0].path}];
+   const screens=[...new Map(cases.filter(c=>!['handoffs','changes','service-changes'].includes(c.kind)).map(c=>[c.path,c])).values(),{...cases.find(c=>c.kind==='handoffs'),path:cases[0].path}];
    for(const screen of screens){
     const {path,kind}=screen;
     if(kind==='reports')await runtime.time(Date.parse(to));
@@ -179,11 +231,25 @@ async function captureViews(browser,runtime,person,mode,cases,report,receipt){
      await page.getByText(screen.expected.payload.summary,{exact:true}).waitFor();
     }else if(kind==='services'){
      await page.getByRole('heading',{name:screen.expected.name,exact:true,level:2}).waitFor();
-     const changes=page.locator('details.recent-changes');
-     if(await changes.count()){
-      await changes.locator('summary').click();
-      await changes.getByText(cases.find(c=>c.kind==='changes').expected.summary,{exact:true}).waitFor();
+     const changes=page.locator('details.recent-changes'),expected=cases.find(c=>c.kind==='service-changes').expected;
+     const loaded=page.waitForResponse(r=>r.url().includes('/api/changes/recent?')&&r.status()===200);
+     await changes.locator('summary').first().click();
+     const response=await loaded;
+     await changes.getByText(expected.items[0].summary,{exact:true}).waitFor();
+     if(width===1440){
+      assert.deepEqual(await response.json(),expected,'Recent changes renders the same protected native response and fixed 24-hour window');
+      assert.deepEqual(await changes.locator('.change-list > li > strong').allTextContents(),expected.items.map(row=>row.summary),'The native view retains root and direct-dependency order');
+      for(const item of expected.items){
+       const row=changes.locator('.change-list > li').filter({has:page.getByText(item.summary,{exact:true})});
+       assert.ok((await row.innerText()).includes(item.author));
+       if(item.dependency)await row.getByText('Dependency · '+item.serviceName,{exact:true}).waitFor();
+       if(Object.keys(item.details).length){
+        await row.getByText('Retained context',{exact:true}).click();
+        for(const value of Object.values(item.details))await row.getByText(value,{exact:true}).waitFor();
+       }
+      }
      }
+
     }else if(kind==='incidents')await page.getByRole('heading',{name:screen.expected.title,exact:true,level:1}).waitFor();
     else if(kind==='schedules')await page.getByRole('heading',{name:screen.expected.name,exact:true,level:1}).waitFor();
     else if(kind==='alerts')await page.getByRole('article',{name:'Alert details',exact:true}).waitFor();
@@ -193,7 +259,7 @@ async function captureViews(browser,runtime,person,mode,cases,report,receipt){
      assert.equal(current.id,person.member.id);assert.equal(current.role,person.member.role);
     }
     const name=`parity-${mode}-${person.member.role}-${kind}-${width}.png`;
-    await page.screenshot({path:process.env.ONCALL_BROWSER_EVIDENCE+'/'+name,fullPage:true});
+    await page.screenshot({path:(process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser')+'/'+name,fullPage:true});
     receipt.screens.push({role:person.member.role,mode,path,kind,width,file:name});
     console.log(`Browser proof ${mode} ${person.member.role} ${kind} ${width}: actual native view captured`);
     if(kind==='reports')await runtime.time(observed);

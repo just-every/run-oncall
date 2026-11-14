@@ -515,3 +515,6 @@ try{
  if(page){await page.screenshot({path:`${directory}/agent-door-failure.png`,fullPage:true});console.error('Agent browser failed at',new URL(page.url()).pathname)}
  throw error;
 }finally{try{await browser?.close()}finally{await runtime.close()}}
+
+// Reuse the same two-role parity journey in push Verify's browser invocation.
+await (await import('./oncall-agent-resource-parity.mjs')).resourceParity({browserProof:true});
