@@ -80,6 +80,9 @@ export async function readableNamesBrowser(page,context,{source,service,serviceN
  await page.goto(origin+'/settings/readiness');await page.locator('.readiness-release dd').first().waitFor();
  assert.equal(await page.locator('.readiness-release dd').first().innerText(),'Oncall '+readiness.release.version,'release label uses the actual build version');
  assert.ok(!(await page.locator('.readiness-release').innerText()).includes(readiness.release.package),'default release label omits the implementation package');
+ const authority=page.locator('[data-readiness-signal="authority"]');
+ for(const raw of Object.values(readiness.signals.find(signal=>signal.id==='authority').values).filter(value=>typeof value==='string'))assert.ok(!(await authority.innerText()).includes(raw),'readiness presents words instead of stored enum tokens');
+ assert.deepEqual((await request('/api/readiness')).signals.find(signal=>signal.id==='authority').values,readiness.signals.find(signal=>signal.id==='authority').values,'reading readiness preserves raw health values');
  await proof('readiness');
  console.log('PASS readableNamesBrowser: native/routed setup and allowance/refusal audit use display names; copied sender accepted; raw audit unchanged; actual Oncall release version; desktop assertions, 1440/390 proof.');
 }
