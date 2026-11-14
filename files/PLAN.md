@@ -1,0 +1,13 @@
+# sd-oncall-c-f244 execution plan
+
+Scope: correct only the ten clause metadata associations selected in acceptance 1 of SURFACE-001. Preserve all classes, classification facts, scopes, schemas, actions, capabilities and authority. Preserve shared-factory dispatch, schedule create and schedule override associations. No permanent inventory test. No Contract judgment edits.
+
+1. Read the launcher and seed instructions, current Contract clause and Agent surface table, existing emitted Worker discovery journey and guide inventory coverage. Check current main workflows and shared-file predecessor ancestry, especially f232.
+2. Capture a one-off before receipt through the existing agentRuntime discovery path under autonomous and held policies, using real emitted Worker HTTP and D1. Compare all ten associations against current Contract rows, retain native and paging records apart from documented value-free read custody, and require zero outbound requests.
+3. Change only clause metadata in the five named registry sources. Regenerate the manifest and guide using the documented writer. Capture the after receipt through the same door, comparing every other emitted descriptor and the preserved associations with the before receipt.
+4. Run the touched native agent journey, conformance journey, agent browser journey and typecheck. Inspect the served guide at desktop and phone widths. Run the first-party check. Do not add test registrations or alter assertions.
+5. Generate Contract views and check them, restore the generated views from main, then regenerate and check the source lock last. Inspect staged Contract changes, identities, trailers and changed prose. Commit and push the first real coherent save through the fleet guard.
+6. Fetch current main before the final candidate; merge after any published save, preserving all newer judgments. Regenerate as required and create an honest final candidate without a skip marker. Push with identity and trailer checks. Discover exact-head Verify through REST and poll within the shared call budget and interval. Report the actual state without claiming an unobserved green run.
+7. Publish the complete selected non-secret report, before and after receipts, probe source and local check receipts through the separate evidence branch. Keep product custody separate. Retain SURFACE-001 MISSING in Contract and claim only bounded partial progress, naming all held remainder. Leave landing, publication scanning and main Run site to the fleet.
+
+Current acceptance coverage: point 1 is incomplete beyond this ten-association subset because unshipped operations and class judgments remain held; points 2 and 3 remain incomplete. No whole acceptance or clause promotion is authorized.

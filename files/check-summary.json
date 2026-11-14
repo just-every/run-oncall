@@ -1,0 +1,190 @@
+{
+  "tag": "sd-oncall-c-f244",
+  "base": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+  "branch": "cloud/sd-oncall-c-f244",
+  "scope": "SURFACE-001 acceptance 1, ten Core clause metadata associations only",
+  "before": {
+    "autonomousMismatches": 10,
+    "heldMismatches": 10,
+    "tools": 42
+  },
+  "after": {
+    "autonomousMismatches": 0,
+    "heldMismatches": 0,
+    "tools": 42
+  },
+  "descriptorComparison": "All emitted descriptors equal before receipt after omitting only clause metadata; all five guard descriptors equal in full",
+  "guardAssociations": [
+    "automation.dispatch",
+    "schedules.create",
+    "schedules.override",
+    "changes.read",
+    "analytics.read"
+  ],
+  "nativeAndPagingUnchanged": true,
+  "permittedAudit": "Only existing documented value-free read custody, with equal workspace, paging and handoff revisions",
+  "outboundRequests": 0,
+  "countsBefore": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "countsAfter": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "judgment": "SURFACE-001 MISSING retained; partial implementation report only; no whole acceptance closed",
+  "mainVerify": {
+    "id": 43589736078,
+    "head": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "mainRunSite": {
+    "id": 43589735969,
+    "head": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "mainNightly": {
+    "id": 43592091764,
+    "head": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "f232ServicePredecessor": {
+    "head": "3df91c93581e6ce92acc300d652d5792a7ecdf47",
+    "ancestorOfMain": true
+  },
+  "testsAdded": 0,
+  "testsRemoved": 0,
+  "assertionsChanged": 0,
+  "migrationsChanged": false,
+  "guideRegenerated": true,
+  "guideByteChange": false,
+  "typecheckExit": 0,
+  "firstPartyExit": 0,
+  "publicationScan": {
+    "status": "not run in cloud",
+    "complete": false,
+    "historyScanned": false,
+    "findings": null,
+    "custody": "fleet lander required"
+  },
+  "head": "183eef356bf1fd5eec173f2e5cbf27f3564ca0f7",
+  "productPushed": true,
+  "productPushAttempts": 1,
+  "productFiles": [
+    "agent-surface.json",
+    "sources.lock.json",
+    "src/agent-door/automation-tools.ts",
+    "src/agent-door/coordination-tools.ts",
+    "src/agent-door/management-tools.ts",
+    "src/agent-door/schedule-tools.ts",
+    "src/agent-door/service-tools.ts"
+  ],
+  "candidateVerify": {
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "183eef356bf1fd5eec173f2e5cbf27f3564ca0f7",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43602106066",
+    "id": 43602106066,
+    "name": "Verify",
+    "status": "in_progress"
+  },
+  "githubCalls": 2,
+  "browser": {
+    "guideWidths": [
+      1440,
+      390
+    ],
+    "fits": true,
+    "seriousOrCriticalAxeFindings": 0,
+    "undersizedControls": 0,
+    "assertionWidth": 1440,
+    "screenshotsInspected": true
+  },
+  "mechanical": {
+    "lock": {
+      "command": "node scripts/edition-authoring/cli.mjs lock and check",
+      "exit": 0
+    },
+    "views": {
+      "command": "node src/base/contract-docs.mjs write and check",
+      "exit": 0,
+      "restoredFromMain": true
+    },
+    "ledger": {
+      "command": null,
+      "exit": 0,
+      "reason": "No migration changes"
+    }
+  },
+  "conformance": {
+    "exit": 0,
+    "passed": 9765,
+    "total": 9765,
+    "adoption": "passed"
+  },
+  "localChecks": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0,
+      "receipt": "setup completed; private installer log excluded"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "receipt": "Explicit production build completed"
+    },
+    {
+      "command": "node surface-probe.mjs before",
+      "exit": 0,
+      "receipt": "before.json"
+    },
+    {
+      "command": "node surface-probe.mjs after",
+      "exit": 0,
+      "receipt": "after.json"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "receipt": "typecheck.log"
+    },
+    {
+      "name": "first-party",
+      "command": "npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "name": "agent-flow",
+      "command": "node tests/oncall-agent-flow.mjs",
+      "exit": 0
+    },
+    {
+      "name": "lock-check",
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "name": "agent-browser",
+      "command": "node tests/agent-door-browser.mjs",
+      "exit": 0
+    },
+    {
+      "name": "agent-conformance",
+      "command": "node tests/agent-door.mjs",
+      "exit": 0
+    }
+  ],
+  "exactCandidateAfterProbe": {
+    "head": "183eef356bf1fd5eec173f2e5cbf27f3564ca0f7",
+    "autonomousMismatches": 0,
+    "heldMismatches": 0,
+    "exit": 0
+  }
+}

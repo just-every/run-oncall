@@ -1,0 +1,21 @@
+{
+  "base": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+  "files": {
+    "agent-surface.json": "eaa8ea971994d66a36fc00af829e118e0c72407aa468505bf12842ffe79cd9be",
+    "sources.lock.json": "5ba28832ffdc7f4a9c3f46336c199d3d50032e7a7f6a32e648d66ec96f5f93a6",
+    "src/agent-door/automation-tools.ts": "89ef9dbf7e427ab523b0b19ac9844cbb662c7e72d5b31229a91dbbc0d9642eff",
+    "src/agent-door/coordination-tools.ts": "40f8b367eb6bfe0222939876a2dd0019044a223162f673a292be24a38530755b",
+    "src/agent-door/management-tools.ts": "763675d9a41f3fb8647be5786eff9c06186c19b60291ff2dffc3c63dc28eb4a1",
+    "src/agent-door/schedule-tools.ts": "a5341ed021896ac2200d55e3acb8c411a57a103792fd25ca989af4c0f064e806",
+    "src/agent-door/service-tools.ts": "fa123cb0ae899d6c365bafe1cb95c63785899788ba75a342f7948b2b5cb1d18a",
+    "docs/agents.md": "7d11a66a717b57ebdad238031060e2a4e92ea4ac361d5f7d8fd0ed021240e03d",
+    "tests/oncall-agent-flow.mjs": "63b4484f32be0581a907382874299ed30ef380cfdaf19453ecb54625f5700989",
+    "tests/agent-door-browser.mjs": "bce50e2516dbadd0b442c1e82a82ca4c07ca266a1f04a396672123c24d80aed0",
+    "tests/agent-door-runtime.mjs": "0673bbf78ff017b9aba082e315ffc91fadbd0ba9c13fa00a6951bec69bd1e227",
+    "scripts/write-agent-surface.mjs": "640c960906beb3d06685f5795a102d4fcc627b4b56d81819295dc966bba99c6f"
+  },
+  "note": "Source and test hashes bind local proof to the candidate tree. The final receipt checks equality after committing.",
+  "candidate": "183eef356bf1fd5eec173f2e5cbf27f3564ca0f7",
+  "sourceAndTestBytesEqualOnCandidate": true,
+  "tree": "0d78e235a937b0b16ffc2196bfd568fd33db9983"
+}

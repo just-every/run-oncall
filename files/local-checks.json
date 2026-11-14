@@ -1,0 +1,65 @@
+{
+  "head": "183eef356bf1fd5eec173f2e5cbf27f3564ca0f7",
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0,
+      "receipt": "setup completed; private installer log excluded"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "receipt": "Explicit production build completed"
+    },
+    {
+      "command": "node surface-probe.mjs before",
+      "exit": 0,
+      "receipt": "before.json"
+    },
+    {
+      "command": "node surface-probe.mjs after",
+      "exit": 0,
+      "receipt": "after.json"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "receipt": "typecheck.log"
+    },
+    {
+      "name": "first-party",
+      "command": "npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "name": "agent-flow",
+      "command": "node tests/oncall-agent-flow.mjs",
+      "exit": 0
+    },
+    {
+      "name": "lock-check",
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "name": "agent-browser",
+      "command": "node tests/agent-door-browser.mjs",
+      "exit": 0
+    },
+    {
+      "name": "agent-conformance",
+      "command": "node tests/agent-door.mjs",
+      "exit": 0
+    }
+  ],
+  "conformance": {
+    "passed": 9765,
+    "total": 9765,
+    "adoption": "passed"
+  },
+  "fullLocalVerify": "not run; touched journeys and existing branch CI per cloud brief",
+  "sourceBinding": "tested-tree.json",
+  "assertionsChanged": false,
+  "testsAdded": 0,
+  "testsRemoved": 0
+}

@@ -1,0 +1,7 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Owned runtime processes [["3985","3984","MainThread"],["3994","3985","esbuild"],["4003","3985","workerd"],["4009","3985","ps"]]
+PROBE SURFACE-001 1 after autonomous: emitted Worker discovery and complete tools listing -> 42 tools, 0 selected mismatches; five guard associations checked; native and paging retained; value-free read audit only; zero outbound requests
+PROBE SURFACE-001 1 after held: emitted Worker discovery and complete tools listing -> 42 tools, 0 selected mismatches; five guard associations checked; native and paging retained; value-free read audit only; zero outbound requests
+EXACT_CANDIDATE 183eef356bf1fd5eec173f2e5cbf27f3564ca0f7
