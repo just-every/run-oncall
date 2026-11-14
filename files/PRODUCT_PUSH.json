@@ -1,0 +1,11 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f248",
+  "head": "772967384968f665f6e8363fc1b1e3d00b6fae86",
+  "remoteHead": "772967384968f665f6e8363fc1b1e3d00b6fae86",
+  "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-oncall-c-f248",
+  "exit": 0,
+  "identityAudit": "all candidate authors, committers and trailers passed, including side parents",
+  "force": false,
+  "mainPushed": false
+}

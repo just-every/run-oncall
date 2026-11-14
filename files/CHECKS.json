@@ -1,0 +1,81 @@
+{
+  "head": "772967384968f665f6e8363fc1b1e3d00b6fae86",
+  "recordedAt": "2026-11-14T18:12:30.833408+00:00",
+  "checks": [
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "head": "772967384968f665f6e8363fc1b1e3d00b6fae86",
+      "log_sha256": "14cee29b7bd19487e15f4013d4fb85016e022ef21d230676971a6490c88436d2"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "head": "772967384968f665f6e8363fc1b1e3d00b6fae86",
+      "log_sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "command": "git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md",
+      "exit": 0,
+      "head": "772967384968f665f6e8363fc1b1e3d00b6fae86",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "head": "772967384968f665f6e8363fc1b1e3d00b6fae86",
+      "log_sha256": "5ee30cec83ccbf606910ed5527b85db981f2abb54c7f9c5ddff0cfee182b3999"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "head": "772967384968f665f6e8363fc1b1e3d00b6fae86",
+      "log_sha256": "a84490baffecb9ae34c04d50b85f506c1c97876058a5b65e34fa4dc844255000"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "head": "772967384968f665f6e8363fc1b1e3d00b6fae86",
+      "log_sha256": "cb9b1e3b0c10b535449919065b35fc5b2cb57105d4987b3cf21aa64ab94e2227"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "head": "772967384968f665f6e8363fc1b1e3d00b6fae86",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": "git diff --exit-code",
+      "exit": 0,
+      "head": "772967384968f665f6e8363fc1b1e3d00b6fae86",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": "git diff origin/main...HEAD -- CONTRACT.md",
+      "exit": 0,
+      "head": "772967384968f665f6e8363fc1b1e3d00b6fae86",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": "cloud_run perl -e 'alarm 1200; exec @ARGV' -- env ONCALL_RUNTIME_PART=machines node tests/runtime.mjs",
+      "exit": 0,
+      "head": "772967384968f665f6e8363fc1b1e3d00b6fae86",
+      "log_sha256": "8df1182d844616d227fd670745289a83ad304def80dacbdca0497da7152a0294",
+      "headAtStart": "f264a370463fb3c86177ff0a110b3fb7d0812e90",
+      "headAtEnd": "772967384968f665f6e8363fc1b1e3d00b6fae86",
+      "note": "Only receipt metadata changed during this invocation; runtime entry and production sources are unchanged."
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "head": "772967384968f665f6e8363fc1b1e3d00b6fae86",
+      "log_sha256": "2d6a5ec2115ad7b40ee9f503865359827e1c039ea48ed60c4afb674d3de6c40e"
+    },
+    {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=/home/agent/rer-consolidation/work/sd-oncall-c-f248/browser cloud_run perl -e 'alarm 1200; exec @ARGV' -- node tests/agent-door-browser.mjs",
+      "exit": 0,
+      "head": "772967384968f665f6e8363fc1b1e3d00b6fae86",
+      "log_sha256": "169a1bd1cea5ddc4d724fef56234f5ab172e7a0749131aa0f877afbf34aac8eb"
+    }
+  ]
+}

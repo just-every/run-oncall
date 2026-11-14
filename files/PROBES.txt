@@ -1,0 +1,151 @@
+Actual stdout excerpts from f248-machines.log
+PROBE BASE-AGENT-003 3 autonomous oncall://alerts/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://services/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://incidents/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://incidents/{id}/review-material: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://actions/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://changes/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://services/{id}/changes: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://schedules/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://schedules/{id}/coverage: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://handoffs/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://reports/{period}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://members/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://teams/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://automation/clients/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://automation/endpoints/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://erasures/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://automation/outbox/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 1,4,6 autonomous: 17 scoped templates, policy-appropriate reads, customer and imported text marked, native-only fence unmarked; native records and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-003 3 held oncall://alerts/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://services/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://incidents/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://incidents/{id}/review-material: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://actions/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://changes/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://services/{id}/changes: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://schedules/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://schedules/{id}/coverage: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://handoffs/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://reports/{period}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://members/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://teams/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://automation/clients/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://automation/endpoints/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://erasures/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://automation/outbox/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 1,4,6 held: 17 scoped templates, policy-appropriate reads, customer and imported text marked, native-only fence unmarked; native records and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-003 authority: revoked scoped bearer -> 401; erased incident and handoff links -> Resource unavailable; captured note -> not_found; native and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin incidents: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin alerts: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin services: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin schedules: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin handoffs: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin changes: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin service-changes: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin reports: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer incidents: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer alerts: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer services: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer schedules: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer handoffs: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer changes: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer service-changes: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer reports: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin incidents: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin alerts: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin services: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin schedules: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin handoffs: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin changes: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin service-changes: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin reports: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer incidents: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer alerts: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer services: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer schedules: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer handoffs: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer changes: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer service-changes: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer reports: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+Actual stdout excerpts from f248-agent-browser.log
+PROBE BASE-AGENT-003 2 autonomous admin incidents: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin alerts: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin services: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin schedules: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin handoffs: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin changes: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin service-changes: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin reports: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+Browser proof autonomous admin incidents 1440: actual native view captured
+Browser proof autonomous admin alerts 1440: actual native view captured
+Browser proof autonomous admin services 1440: actual native view captured
+Browser proof autonomous admin schedules 1440: actual native view captured
+Browser proof autonomous admin reports 1440: actual native view captured
+Browser proof autonomous admin handoffs 1440: actual native view captured
+Browser proof autonomous admin incidents 390: actual native view captured
+Browser proof autonomous admin alerts 390: actual native view captured
+Browser proof autonomous admin services 390: actual native view captured
+Browser proof autonomous admin schedules 390: actual native view captured
+Browser proof autonomous admin reports 390: actual native view captured
+Browser proof autonomous admin handoffs 390: actual native view captured
+PROBE BASE-AGENT-003 2 autonomous viewer incidents: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer alerts: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer services: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer schedules: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer handoffs: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer changes: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer service-changes: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer reports: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+Browser proof autonomous viewer incidents 1440: actual native view captured
+Browser proof autonomous viewer alerts 1440: actual native view captured
+Browser proof autonomous viewer services 1440: actual native view captured
+Browser proof autonomous viewer schedules 1440: actual native view captured
+Browser proof autonomous viewer reports 1440: actual native view captured
+Browser proof autonomous viewer handoffs 1440: actual native view captured
+Browser proof autonomous viewer incidents 390: actual native view captured
+Browser proof autonomous viewer alerts 390: actual native view captured
+Browser proof autonomous viewer services 390: actual native view captured
+Browser proof autonomous viewer schedules 390: actual native view captured
+Browser proof autonomous viewer reports 390: actual native view captured
+Browser proof autonomous viewer handoffs 390: actual native view captured
+PROBE BASE-AGENT-003 2 held admin incidents: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin alerts: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin services: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin schedules: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin handoffs: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin changes: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin service-changes: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin reports: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+Browser proof held admin incidents 1440: actual native view captured
+Browser proof held admin alerts 1440: actual native view captured
+Browser proof held admin services 1440: actual native view captured
+Browser proof held admin schedules 1440: actual native view captured
+Browser proof held admin reports 1440: actual native view captured
+Browser proof held admin handoffs 1440: actual native view captured
+Browser proof held admin incidents 390: actual native view captured
+Browser proof held admin alerts 390: actual native view captured
+Browser proof held admin services 390: actual native view captured
+Browser proof held admin schedules 390: actual native view captured
+Browser proof held admin reports 390: actual native view captured
+Browser proof held admin handoffs 390: actual native view captured
+PROBE BASE-AGENT-003 2 held viewer incidents: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer alerts: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer services: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer schedules: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer handoffs: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer changes: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer service-changes: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer reports: native protected record equals every resource field at workspace revision 53; paging and permanent state-changing audit unchanged; zero outbound requests
+Browser proof held viewer incidents 1440: actual native view captured
+Browser proof held viewer alerts 1440: actual native view captured
+Browser proof held viewer services 1440: actual native view captured
+Browser proof held viewer schedules 1440: actual native view captured
+Browser proof held viewer reports 1440: actual native view captured
+Browser proof held viewer handoffs 1440: actual native view captured
+Browser proof held viewer incidents 390: actual native view captured
+Browser proof held viewer alerts 390: actual native view captured
+Browser proof held viewer services 390: actual native view captured
+Browser proof held viewer schedules 390: actual native view captured
+Browser proof held viewer reports 390: actual native view captured
+Browser proof held viewer handoffs 390: actual native view captured

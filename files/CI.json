@@ -1,0 +1,14 @@
+{
+  "id": 43625299142,
+  "name": "Verify",
+  "event": "push",
+  "status": "in_progress",
+  "conclusion": null,
+  "head_sha": "772967384968f665f6e8363fc1b1e3d00b6fae86",
+  "head_branch": "cloud/sd-oncall-c-f248",
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/43625299142",
+  "created_at": "2026-11-14T18:12:34Z",
+  "updated_at": "2026-11-14T18:12:49Z",
+  "observedAt": "2026-11-14T18:27:56.123978+00:00",
+  "githubCallsUsed": 5
+}
