@@ -46,6 +46,8 @@ export async function resourceParity({browserProof=false}={}){
   await json(runtime.http,'/api/command',{type:'transition',incident:fixture.own.id,revision:fixture.own.revision,state:'acknowledged',summary:'A real human records the response'});
   await runtime.time(observed);
   const changes=await prepareRecentChanges(runtime,fixture.owner);
+  const identify=({id,eventId,source,service,at})=>({id,eventId,source,service,occurredAt:new Date(at).toISOString()});
+  receipt.recentChanges={nativeDoor:changes.path,from:changes.from,to:changes.to,hours:24,included:changes.expected.map(identify),excluded:changes.excluded.map(identify)};
   if(browserProof){
    const {chromium}=await import('@playwright/test');
    browser=await chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM_PATH??process.env.CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox','--use-mock-keychain','--password-store=basic']});
@@ -117,7 +119,7 @@ export async function resourceParity({browserProof=false}={}){
      assert.equal((await json(p.http,'/api/state')).revision,native.revision);
      assertAgentReadUnchanged(before,await agentReadSnapshot(runtime));
      assert.deepEqual(await runtime.outboundRequests(),[]);
-     receipt.cases.push({role:p.member.role,mode,template:c.kind,workspaceRevision:native.revision,schedulingRevision:paging.revision,disposition:read.initial.decision.disposition,fields:Object.keys(read.value).sort(),equal:true,...(c.kind==='service-changes'?{nativeDoor:changes.path,permittedServices:permitted}:{}),nativeRecord:c.expected,resourceRecord:read.value});
+     receipt.cases.push({role:p.member.role,agent:p.agent,sponsor:p.member.id,scopes,mode,template:c.kind,workspaceRevision:native.revision,schedulingRevision:paging.revision,disposition:read.initial.decision.disposition,fields:Object.keys(read.value).sort(),equal:true,...(c.kind==='service-changes'?{nativeDoor:changes.path,permittedServices:permitted}:{}),nativeRecord:c.expected,resourceRecord:read.value});
      console.log(`PROBE BASE-AGENT-003 2 ${mode} ${p.member.role} ${c.kind}: native protected record equals every resource field at workspace revision ${native.revision}; paging and permanent state-changing audit unchanged; zero outbound requests`);
     }
     const admission=await runtime.db.prepare('SELECT sponsor FROM agent_door_agents WHERE id=?').bind(p.agent).first();
