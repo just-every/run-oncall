@@ -1,0 +1,13 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f250",
+  "head": "4af169eb4b7cd5ee3a0bc9867edf6e51a9ac2a8f",
+  "main": "96d1b7a9ee6ed01fce1effbb889991a4a8a66d01",
+  "shallow": "false",
+  "changed_files": [
+    "sources.lock.json",
+    "tests/oncall-agent-resource-parity.mjs"
+  ],
+  "status_changes": "",
+  "patch_sha256": "5447846e3cd0e66f4266d8aa82125b9c56dc2eaf9540e23123b1d9e72a628078"
+}

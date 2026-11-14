@@ -1,0 +1,9 @@
+{
+  "head": "4d14b380111c77ab635448286a876a66db804055",
+  "command": "ONCALL_RUNTIME_PART=machines cloud_run timeout 1800 node tests/runtime.mjs",
+  "exit": 0,
+  "elapsed_seconds": 548.4,
+  "log": "runtime-machines.log",
+  "log_sha256": "240c433aa50f3949279d33700cb74ca0b6aeaced78691099dcf51aa4d00b6fee",
+  "completion": "Runtime machines completed (548.4s)"
+}

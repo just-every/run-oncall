@@ -1,0 +1,14 @@
+{
+  "name": "typecheck",
+  "head": "4d14b380111c77ab635448286a876a66db804055",
+  "command": [
+    "pnpm",
+    "run",
+    "typecheck"
+  ],
+  "exit": 0,
+  "started": "2026-11-14T20:21:53.991431+00:00",
+  "ended": "2026-11-14T20:21:57.254932+00:00",
+  "log": "typecheck.log",
+  "log_sha256": "81d0b4f0ac8c311f8ba2565673ac6ae02c5f0e1647ed9e0b63ba38b7abfd8c0c"
+}

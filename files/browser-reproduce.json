@@ -1,0 +1,13 @@
+{
+  "name": "browser-reproduce",
+  "head": "4d14b380111c77ab635448286a876a66db804055",
+  "command": [
+    "node",
+    "tests/agent-door-browser.mjs"
+  ],
+  "exit": 0,
+  "started": "2026-11-14T20:25:07.514490+00:00",
+  "ended": "2026-11-14T20:27:30.332480+00:00",
+  "log": "browser-reproduce.log",
+  "log_sha256": "b0559c553885d0e2ef41046aea17f5c6773b1a11300ca1732aa29ddf501f18bd"
+}

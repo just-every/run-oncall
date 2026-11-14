@@ -1,0 +1,13 @@
+{
+  "name": "final-runtime",
+  "head": "4af169eb4b7cd5ee3a0bc9867edf6e51a9ac2a8f",
+  "command": [
+    "node",
+    "tests/oncall-agent-resource-parity.mjs"
+  ],
+  "exit": 0,
+  "started": "2026-11-14T20:28:04.124859+00:00",
+  "ended": "2026-11-14T20:28:20.622238+00:00",
+  "log": "final-runtime.log",
+  "log_sha256": "938b1bd74268876a6e79fd0a6ac459b76fe06d5f63635d6ab0afdfeaf730a5fc"
+}

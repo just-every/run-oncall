@@ -1,0 +1,9 @@
+{
+  "head": "4af169eb4b7cd5ee3a0bc9867edf6e51a9ac2a8f",
+  "execution": "cloud",
+  "status": "NOT RUN",
+  "complete": false,
+  "historyScanned": null,
+  "findings": null,
+  "reason": "Publication scan is assigned to the Mac lander by the cloud adaptation."
+}

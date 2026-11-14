@@ -1,0 +1,13 @@
+{
+  "name": "browser-entry",
+  "head": "4d14b380111c77ab635448286a876a66db804055",
+  "command": [
+    "node",
+    "tests/agent-door-browser.mjs"
+  ],
+  "exit": 1,
+  "started": "2026-11-14T20:21:58.178523+00:00",
+  "ended": "2026-11-14T20:24:13.142783+00:00",
+  "log": "browser-entry.log",
+  "log_sha256": "863999a0ef41037937589d12b3375bf0330f248df4a46fe9ac20deda4aeb4858"
+}

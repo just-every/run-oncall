@@ -1,0 +1,63 @@
+{
+  "head": "4af169eb4b7cd5ee3a0bc9867edf6e51a9ac2a8f",
+  "checks": [
+    {
+      "name": "final-runtime",
+      "head": "4af169eb4b7cd5ee3a0bc9867edf6e51a9ac2a8f",
+      "command": [
+        "node",
+        "tests/oncall-agent-resource-parity.mjs"
+      ],
+      "exit": 0,
+      "started": "2026-11-14T20:28:04.124859+00:00",
+      "ended": "2026-11-14T20:28:20.622238+00:00",
+      "log": "final-runtime.log",
+      "log_sha256": "938b1bd74268876a6e79fd0a6ac459b76fe06d5f63635d6ab0afdfeaf730a5fc"
+    },
+    {
+      "name": "final-typecheck",
+      "head": "4af169eb4b7cd5ee3a0bc9867edf6e51a9ac2a8f",
+      "command": [
+        "pnpm",
+        "run",
+        "typecheck"
+      ],
+      "exit": 0,
+      "started": "2026-11-14T20:28:20.676422+00:00",
+      "ended": "2026-11-14T20:28:23.111870+00:00",
+      "log": "final-typecheck.log",
+      "log_sha256": "81d0b4f0ac8c311f8ba2565673ac6ae02c5f0e1647ed9e0b63ba38b7abfd8c0c"
+    },
+    {
+      "name": "final-first-party",
+      "head": "4af169eb4b7cd5ee3a0bc9867edf6e51a9ac2a8f",
+      "command": [
+        "pnpm",
+        "exec",
+        "rer",
+        "check",
+        "--profile",
+        "first-party"
+      ],
+      "exit": 0,
+      "started": "2026-11-14T20:28:23.162144+00:00",
+      "ended": "2026-11-14T20:28:23.920582+00:00",
+      "log": "final-first-party.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "final-browser-entry",
+      "head": "4af169eb4b7cd5ee3a0bc9867edf6e51a9ac2a8f",
+      "command": [
+        "node",
+        "tests/agent-door-browser.mjs"
+      ],
+      "exit": 0,
+      "started": "2026-11-14T20:28:23.971688+00:00",
+      "ended": "2026-11-14T20:30:44.594358+00:00",
+      "log": "final-browser-entry.log",
+      "log_sha256": "b87882c69af29256a871d06a7f0bddf0b5b0c86bccf3dc5feafa2f29e9cb84fd"
+    }
+  ],
+  "supplementaryMachines": "runtime-machines.json; preceding head, browser-only wait is the sole later source change"
+}
