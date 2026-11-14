@@ -1029,7 +1029,8 @@ try{
  await staleCommunicationsExpectedRevision(runtime);
  await staleCommunicationsNativeRevision(runtime);
  await transitionReplay(runtime);
- await roleClearReplay(runtime);
+ for(const [role,label] of [['scribe','Scribe'],['communications','Communications'],['commander','Commander']])
+  await roleClearReplay(runtime,role,label);
  await specialist({request:runtime.request,origin:runtime.origin,cookie:runtime.cookie,fixtures:runtime.fixtures,tool});
  const events=await tool('oncall.events.list',{limit:200});assert.equal(code(events),'capability_not_declared');assert.equal(events.result.structuredContent,undefined);
  assert.ok((await audit()).rows.some(row=>row.agent.id===runtime.context.agentId&&row.outcome==='done'));

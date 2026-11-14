@@ -180,15 +180,21 @@ export async function agedReplayRetention(){
     await complete('oncall.incidents.update',{change:'assign-role',role,incident:target.id,revision:target.revision,member:responder.id,
      reason:'Synthetic retained '+role+' reason',idempotency_key:randomUUID()},'assign-role '+role);
    }
-   let clear=await ordinary('Scribe clear');
-   clear=await command({type:'transition',incident:clear.id,revision:clear.revision,state:'acknowledged',summary:'Synthetic human acknowledgment before clear'});
-   clear=await command({type:'reassign',incident:clear.id,revision:clear.revision,member:responder.id,reason:'Synthetic explicit assignee before clear'});
-   for(const [role,member] of [['scribe',responder.id],['communications',owner.id]])
-    clear=await command({type:'assign-role',incident:clear.id,revision:clear.revision,role,member,reason:'Synthetic populated companion responsibility'});
-   assert.equal(clear.commander,owner.id);assert.equal(clear.communications,owner.id);assert.equal(clear.assignee,responder.id);
-   assert.equal(clear.recovery,'');assert.deepEqual(clear.alerts,[]);assert.deepEqual(clear.actions,[]);
-   await complete('oncall.incidents.update',{change:'assign-role',role:'scribe',member:null,incident:clear.id,revision:clear.revision,
-    reason:'Synthetic retained Scribe clear reason',idempotency_key:randomUUID()},'assign-role Scribe clear');
+   for(const [role,label] of [['scribe','Scribe'],['communications','Communications'],['commander','Commander']]){
+    let clear=await ordinary(label+' clear');
+    clear=await command({type:'transition',incident:clear.id,revision:clear.revision,state:'acknowledged',summary:'Synthetic human acknowledgment before clear'});
+    const assignee=role==='commander'?owner:responder;
+    clear=await command({type:'reassign',incident:clear.id,revision:clear.revision,member:responder.id,reason:'Synthetic explicit assignee before clear'});
+    if(role==='commander')clear=await command({type:'reassign',incident:clear.id,revision:clear.revision,member:owner.id,reason:'Synthetic distinct explicit assignee before clear'});
+    for(const [field,member] of [['scribe',role==='scribe'?responder.id:owner.id],['communications',role==='communications'?responder.id:owner.id],...(role==='commander'?[['commander',responder.id]]:[])])
+     clear=await command({type:'assign-role',incident:clear.id,revision:clear.revision,role:field,member,reason:'Synthetic populated companion responsibility'});
+    assert.equal(clear[role],responder.id);assert.equal(clear.assignee,assignee.id);
+    for(const companion of ['commander','scribe','communications'].filter(value=>value!==role))assert.equal(clear[companion],owner.id);
+    if(role==='commander')assert.notEqual(clear.assignee,clear.commander,'Explicit assignee is independent of the lead fallback');
+    assert.equal(clear.state,'acknowledged');assert.equal(clear.recovery,'');assert.deepEqual(clear.alerts,[]);assert.deepEqual(clear.actions,[]);
+    await complete('oncall.incidents.update',{change:'assign-role',role,member:null,incident:clear.id,revision:clear.revision,
+     reason:'Synthetic retained '+label+' clear reason',idempotency_key:randomUUID()},'assign-role '+label+' clear');
+   }
    let mitigation=await ordinary('mitigation');
    mitigation=await command({type:'transition',incident:mitigation.id,revision:mitigation.revision,state:'acknowledged',summary:'Synthetic initial human acknowledgment'});
    for(const [role,member] of [['scribe',responder.id],['communications',owner.id]])

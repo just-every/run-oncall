@@ -142,51 +142,61 @@ try{
  const team=[{id:randomUUID(),email:'mira@example.invalid',name:'Mira Patel',role:'member',invite:1},{id:randomUUID(),email:'jordan@example.invalid',name:'Jordan Davis',role:'admin',invite:1}];
  await runtime.settings(team,2);
  assert.equal((await http('/api/rer/people-link',{businessId:team[0].id,memberId:responder.id,revision:2})).status,303);
- // Show the saved null Scribe through the ordinary incident page.
- for(const [mode,policy] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
-  assert.equal((await runtime.adopt(policy)).status,200);
-  const command=async input=>{const response=await http('/api/command',input);assert.equal(response.status,200);return response.json()};
-  const owner=(await (await http('/api/workspace')).json()).member;
-  let target=await command({type:'declare',service:'agent-service',title:'Synthetic saved Scribe clear '+mode,
-   summary:'Ordinary coordination without protected evidence',severity:'warning',alerts:[]});
-  target=await command({type:'transition',incident:target.id,revision:target.revision,state:'acknowledged',summary:'Synthetic human acknowledgment'});
-  target=await command({type:'reassign',incident:target.id,revision:target.revision,member:responder.id,reason:'Synthetic explicit assignee'});
-  for(const [role,member] of [['scribe',responder.id],['communications',owner.id]])
-   target=await command({type:'assign-role',incident:target.id,revision:target.revision,role,member,reason:'Synthetic companion responsibility'});
-  const reason='Synthetic saved Scribe clear '+mode,edge=await runtime.outboundRequests();
-  const answer=await tool('oncall.incidents.update',{change:'assign-role',role:'scribe',member:null,
-   incident:target.id,revision:target.revision,reason,idempotency_key:randomUUID()});
-  assert.equal(answer.result.isError,false);assert.deepEqual(answer.decision.classes.map(row=>row.class),['standard']);
-  const saved=answer.result.structuredContent;
-  assert.deepEqual(saved,{...target,scribe:null,revision:target.revision+1,timeline:saved.timeline});
-  await page.goto(runtime.origin+'/incidents/'+saved.id);
-  await page.getByRole('button',{name:'Lead: '+owner.name,exact:true}).waitFor();
-  await page.getByRole('button',{name:'Assignee: '+responder.name,exact:true}).waitFor();
-  const people=await openIncidentAction(page,'People and priority');
-  assert.equal(await people.getByRole('combobox',{name:'Scribe',exact:true}).inputValue(),'');
-  assert.equal(await people.getByRole('combobox',{name:'Communications',exact:true}).inputValue(),owner.id);
-  await people.getByRole('button',{name:'Close',exact:true}).click();
-  const readable='Scribe is now unassigned. Previously '+responder.name+'. Reason: '+reason;
-  const timeline=page.getByRole('region',{name:'Timeline',exact:true});await timeline.waitFor();
-  const entry=timeline.getByRole('listitem').filter({hasText:readable});
-  await entry.getByText(readable,{exact:true}).waitFor();
-  await entry.getByText('Responder assistant for Alex Chen',{exact:true}).waitFor();
-  if(mode==='held'){
-   await capture('scribe-cleared-timeline','/incidents/'+saved.id,async()=>{
-    await page.getByRole('region',{name:'Timeline',exact:true}).getByText(readable,{exact:true}).waitFor();
-   });
-   await capture('scribe-cleared-people','/incidents/'+saved.id,async()=>{
-    const people=await openIncidentAction(page,'People and priority');
-    await people.getByRole('combobox',{name:'Scribe',exact:true}).waitFor();
-    await people.getByRole('button',{name:'Close',exact:true}).focus();
-    await page.getByRole('tooltip',{name:'Close dialog',exact:true}).waitFor();
-   });
+ // Show each saved null response role through the ordinary incident page.
+ for(const [role,label,timelineLabel] of [['scribe','Scribe','Scribe'],['communications','Communications','Communications lead'],['commander','Lead','Lead']]){
+  for(const [mode,policy] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
+   assert.equal((await runtime.adopt(policy)).status,200);
+   const command=async input=>{const response=await http('/api/command',input);assert.equal(response.status,200);return response.json()};
+   const owner=(await (await http('/api/workspace')).json()).member,assignee=role==='commander'?owner:responder;
+   let target=await command({type:'declare',service:'agent-service',title:'Synthetic saved '+label+' clear '+mode,
+    summary:'Ordinary coordination without protected evidence',severity:'warning',alerts:[]});
+   target=await command({type:'transition',incident:target.id,revision:target.revision,state:'acknowledged',summary:'Synthetic human acknowledgment'});
+   target=await command({type:'reassign',incident:target.id,revision:target.revision,member:responder.id,reason:'Synthetic explicit assignee'});
+   if(role==='commander')target=await command({type:'reassign',incident:target.id,revision:target.revision,member:owner.id,reason:'Synthetic distinct explicit assignee'});
+   for(const [field,member] of [['scribe',role==='scribe'?responder.id:owner.id],['communications',role==='communications'?responder.id:owner.id],...(role==='commander'?[['commander',responder.id]]:[])])
+    target=await command({type:'assign-role',incident:target.id,revision:target.revision,role:field,member,reason:'Synthetic companion responsibility'});
+   assert.equal(target[role],responder.id);assert.equal(target.assignee,assignee.id);
+   if(role==='commander')assert.notEqual(target.assignee,target.commander);
+   const reason='Synthetic saved '+label+' clear '+mode,edge=await runtime.outboundRequests();
+   const answer=await tool('oncall.incidents.update',{change:'assign-role',role,member:null,
+    incident:target.id,revision:target.revision,reason,idempotency_key:randomUUID()});
+   assert.equal(answer.result.isError,false);assert.deepEqual(answer.decision.classes.map(row=>row.class),['standard']);
+   const saved=answer.result.structuredContent;
+   assert.deepEqual(saved,{...target,[role]:null,revision:target.revision+1,timeline:saved.timeline});
+   const lead='Lead: '+(role==='commander'?'Unassigned':owner.name),assigned='Assignee: '+assignee.name;
+   await page.goto(runtime.origin+'/incidents/'+saved.id);
+   await page.getByRole('button',{name:lead,exact:true}).waitFor();
+   await page.getByRole('button',{name:assigned,exact:true}).waitFor();
+   const people=await openIncidentAction(page,'People and priority');
+   assert.equal(await people.getByRole('combobox',{name:'Scribe',exact:true}).inputValue(),role==='scribe'?'':owner.id);
+   assert.equal(await people.getByRole('combobox',{name:'Communications',exact:true}).inputValue(),role==='communications'?'':owner.id);
+   await people.getByRole('button',{name:'Close',exact:true}).click();
+   const readable=timelineLabel+' is now unassigned. Previously '+responder.name+'. Reason: '+reason;
+   const timeline=page.getByRole('region',{name:'Timeline',exact:true});await timeline.waitFor();
+   const entry=timeline.getByRole('listitem').filter({hasText:readable});
+   await entry.getByText(readable,{exact:true}).waitFor();
+   await entry.getByText('Responder assistant for Alex Chen',{exact:true}).waitFor();
+   if(mode==='held'){
+    await capture(role+'-cleared-timeline','/incidents/'+saved.id,async()=>{
+     await page.getByRole('button',{name:lead,exact:true}).waitFor();
+     await page.getByRole('button',{name:assigned,exact:true}).waitFor();
+     const entry=page.getByRole('region',{name:'Timeline',exact:true}).getByRole('listitem').filter({hasText:readable});
+     await entry.getByText(readable,{exact:true}).waitFor();
+     await entry.getByText('Responder assistant for Alex Chen',{exact:true}).waitFor();
+    });
+    await capture(role+'-cleared-people','/incidents/'+saved.id,async()=>{
+     const people=await openIncidentAction(page,'People and priority');
+     await people.getByRole('combobox',{name:'Scribe',exact:true}).waitFor();
+     await people.getByRole('button',{name:'Close',exact:true}).focus();
+     await page.getByRole('tooltip',{name:'Close dialog',exact:true}).waitFor();
+    });
+   }
+   assert.deepEqual((await native()).incidents.find(row=>row.id===saved.id),saved,'Reading the saved incident creates no native effect');
+   assert.deepEqual(await runtime.outboundRequests(),edge);
   }
-  assert.deepEqual((await native()).incidents.find(row=>row.id===saved.id),saved,'Reading the saved incident creates no native effect');
-  assert.deepEqual(await runtime.outboundRequests(),edge);
+  console.log('PROBE BASE-AGENT-012 '+label+' clear browser: autonomous and held MCP -> saved Unassigned '+label+', preserved companion roles and explicit assignee, attributed assign-role timeline; changed incident shown at 1440 and 390; zero outbound requests');
  }
  assert.equal((await runtime.adopt()).status,200);
- console.log('PROBE BASE-AGENT-012 Scribe clear browser: autonomous and held MCP -> saved Unassigned Scribe, preserved companion roles and explicit assignee, attributed assign-role timeline; changed incident shown at 1440 and 390; zero outbound requests');
  async function setLocal(paused){
   await page.goto(runtime.origin+'/agents');
   const response=page.waitForResponse(answer=>new URL(answer.url()).pathname==='/agents/api/pause'&&answer.request().method()==='POST');

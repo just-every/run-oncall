@@ -3,8 +3,8 @@ import {randomUUID} from 'node:crypto';
 import {agentEffectSnapshot} from './agent-door-runtime.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 
-/** Clearing a populated Scribe keeps its original outcome across conflicts and response loss. */
-export async function roleClearReplay(runtime){
+/** Clearing a populated response role keeps its original outcome across conflicts and response loss. */
+export async function roleClearReplay(runtime,role='scribe',label='Scribe'){
  const {db,http,tool,adopt,context}=runtime,name='oncall.incidents.update';
  const rows=async(sql,...values)=>(await db.prepare(sql).bind(...values).all()).results;
  const read=async path=>{const response=await http(path);assert.equal(response.status,200);return response.json()};
@@ -15,28 +15,31 @@ export async function roleClearReplay(runtime){
  const owner=(await read('/api/workspace')).member;
  const responder=(await read('/api/state')).members.find(row=>row.active&&row.role==='responder');
  assert.ok(responder);assert.notEqual(responder.id,owner.id);
- const service='synthetic-oncall-scribe-clear';
- await command({type:'service',id:service,name:'Synthetic Scribe clear coordination',environment:'production',owner:owner.id,runbook:['Synthetic retained response steps'],pager:''});
+ const service='synthetic-oncall-'+role+'-clear';
+ const assignee=role==='commander'?owner:responder;
+ await command({type:'service',id:service,name:'Synthetic '+label+' clear coordination',environment:'production',owner:owner.id,runbook:['Synthetic retained response steps'],pager:''});
  const credential='synthetic-oncall-'+randomUUID();
- const client=await http('/api/automation/clients',{name:'Synthetic Scribe clear scope',key:credential,
+ const client=await http('/api/automation/clients',{name:'Synthetic '+label+' clear scope',key:credential,
   services:[service],permissions:['services:read','incidents:read','incidents:write']});
  assert.equal(client.status,201);await client.json();
  const observed=[];
  async function target(label,targetService=service){
-  let incident=await command({type:'declare',service:targetService,title:'Synthetic Scribe clear '+label,
+  let incident=await command({type:'declare',service:targetService,title:'Synthetic '+role+' clear '+label,
    summary:'Ordinary coordination without protected evidence',severity:'warning',alerts:[]});
   incident=await command({type:'transition',incident:incident.id,revision:incident.revision,state:'acknowledged',summary:'Synthetic human acknowledgment'});
   incident=await command({type:'reassign',incident:incident.id,revision:incident.revision,member:responder.id,reason:'Synthetic explicit assignee'});
-  for(const [role,member] of [['scribe',responder.id],['communications',owner.id]])
-   incident=await command({type:'assign-role',incident:incident.id,revision:incident.revision,role,member,reason:'Synthetic companion responsibility'});
+  if(role==='commander')incident=await command({type:'reassign',incident:incident.id,revision:incident.revision,member:owner.id,reason:'Synthetic distinct explicit assignee'});
+  for(const [field,member] of [['scribe',role==='scribe'?responder.id:owner.id],['communications',role==='communications'?responder.id:owner.id],...(role==='commander'?[['commander',responder.id]]:[])])
+   incident=await command({type:'assign-role',incident:incident.id,revision:incident.revision,role:field,member,reason:'Synthetic companion responsibility'});
   assert.equal(incident.state,'acknowledged');assert.equal(incident.recovery,'');
   assert.deepEqual(incident.alerts,[]);assert.deepEqual(incident.actions,[]);
-  assert.equal(incident.commander,owner.id);assert.equal(incident.assignee,responder.id);
-  assert.equal(incident.scribe,responder.id);assert.equal(incident.communications,owner.id);
+  assert.equal(incident.assignee,assignee.id);assert.equal(incident[role],responder.id);
+  for(const companion of ['commander','scribe','communications'].filter(value=>value!==role))assert.equal(incident[companion],owner.id);
+  if(role==='commander')assert.notEqual(incident.assignee,incident.commander,'Explicit assignee is independent of the lead fallback');
   return incident;
  }
- const argumentsFor=incident=>({change:'assign-role',role:'scribe',member:null,incident:incident.id,revision:incident.revision,
-  reason:'Synthetic literal Scribe clear <retain this text> & coordination',idempotency_key:randomUUID()});
+ const argumentsFor=incident=>({change:'assign-role',role,member:null,incident:incident.id,revision:incident.revision,
+  reason:'Synthetic literal '+label+' clear <retain this text> & coordination',idempotency_key:randomUUID()});
  async function bookkeeping(before){
   const after=await permanent();assert.deepEqual(after.slice(0,before.length),before);
   for(const row of after.slice(before.length)){
@@ -66,9 +69,9 @@ export async function roleClearReplay(runtime){
   assert.equal(call.state,'done');assert.equal(saved.outcome,'done');assert.equal(saved.decision.id,call.decision_id);
   assert.deepEqual(saved.decision.classes.map(row=>row.class),['standard']);assert.equal(saved.decision.disposition,disposition);
   assert.equal(result.timeline.length,incident.timeline.length+1);assert.deepEqual(result.timeline.slice(0,-1),incident.timeline);
-  assert.deepEqual(result,{...incident,scribe:null,revision:incident.revision+1,timeline:result.timeline},'All companion roles and every other field survive');
+  assert.deepEqual(result,{...incident,[role]:null,revision:incident.revision+1,timeline:result.timeline},'All companion roles and every other field survive');
   const entry=result.timeline.at(-1);
-  assert.equal(entry.kind,'assign-role');assert.equal(entry.text,'scribe: '+responder.name+' → Unassigned: '+args.reason);
+  assert.equal(entry.kind,'assign-role');assert.equal(entry.text,role+': '+responder.name+' → Unassigned: '+args.reason);
   assert.equal(result.timeline.filter(row=>row.kind==='assign-role').length,incident.timeline.filter(row=>row.kind==='assign-role').length+1);
   assert.equal(entry.lifecycle,undefined);
   assert.equal(entry.actor,context.agentId);assert.notEqual(entry.actor,responder.id);assert.notEqual(entry.actor,owner.id);
@@ -80,7 +83,7 @@ export async function roleClearReplay(runtime){
   assert.deepEqual(after.application,{...before.application,revision:before.application.revision+1,
    incidents:before.application.incidents.map(row=>row.id===incident.id?result:row)});
   const commits=after.records.oc_admin_audit.filter(row=>!before.records.oc_admin_audit.some(prior=>prior.id===row.id));
-  assert.equal(commits.length,1,'Exactly one native state-changing audit commits Scribe clear');
+  assert.equal(commits.length,1,'Exactly one native state-changing audit commits '+label+' clear');
   const [commit]=commits;assert.equal(commit.kind,'incidents.update');assert.equal(commit.outcome,'accepted');
   assert.equal(commit.workspace_before,before.application.revision);assert.equal(commit.workspace_after,after.application.revision);
   assert.equal(commit.paging_before,commit.paging_after);assert.equal(commit.handoff_before,commit.handoff_after);
@@ -99,7 +102,7 @@ export async function roleClearReplay(runtime){
    assert.equal((await read('/agents/api/reviews')).reviews.find(row=>row.id===review.id).state,'open');
   }else assert.equal(saved.review,undefined);
   for(const table of Object.keys(before.records).filter(table=>!['oc_incidents','workspace_control','oc_admin_audit','oc_audit_identities','agent_door_calls','agent_door_reviews','agent_door_events','agent_door_usage'].includes(table)))
-   assert.deepEqual(after.records[table],before.records[table],'Scribe clear preserves '+table);
+   assert.deepEqual(after.records[table],before.records[table],label+' clear preserves '+table);
   for(const prior of before.records.agent_door_usage)assert.deepEqual(after.records.agent_door_usage.find(row=>row.decision_id===prior.decision_id),prior);
   const usage=after.records.agent_door_usage.filter(row=>!before.records.agent_door_usage.some(prior=>prior.decision_id===row.decision_id));
   assert.equal(usage.length,1);assert.equal(usage[0].decision_id,call.decision_id);assert.equal(usage[0].agent,context.agentId);
@@ -149,7 +152,7 @@ export async function roleClearReplay(runtime){
   assert.deepEqual(first.result.structuredContent,completion.saved.result);
   assert.deepEqual(first.result._meta['com.runeditrun/review'],completion.saved.review);
   const immediate=await replay(completion,first.body.id);
-  const changed={...args,reason:'Another schema-valid Scribe clear reason'};
+  const changed={...args,reason:'Another schema-valid '+label+' clear reason'};
   assert.deepEqual({...changed,reason:args.reason},args,'Only the schema-valid reason changes, keeping the original key and completed revision');
   const priorConflict=await audits(),permanentBefore=await permanent();
   const conflict=await tool(name,changed);error(conflict,{code:'idempotency_conflict'});
@@ -157,14 +160,14 @@ export async function roleClearReplay(runtime){
   assert.deepEqual(await snapshot(),completion.after);assert.deepEqual(await calls(args.idempotency_key),completion.retained);
   await attempt(priorConflict,conflict,changed,'refused','idempotency_conflict');await bookkeeping(permanentBefore);
   await replay(completion,conflict.body.id);
-  console.log('PROBE BASE-AGENT-012 acceptance 1 and 3 '+mode+' Scribe clear: standard-only populated Scribe to null once, companion fields retained; new RPC id returns equal original result; original key and revision with changed reason -> isError idempotency_conflict in metadata and text without private result; original arguments still replay; zero outbound requests');
+  console.log('PROBE BASE-AGENT-012 acceptance 1 and 3 '+mode+' '+label+' clear: standard-only populated role to null once, companion fields retained; new RPC id returns equal original result; original key and revision with changed reason -> isError idempotency_conflict in metadata and text without private result; original arguments still replay; zero outbound requests');
   const lostTarget=await target('lost response '+mode),lostArgs=argumentsFor(lostTarget),lostBefore=await snapshot(),lostPrior=await audits();
   const lost=await runtime.discardToolResponse(name,lostArgs);
   assert.equal(lost.status,200);assert.equal(lost.discarded,true);assert.equal(lost.aborted,true);assert.equal(lost.bodyRead,false);
   // Establish native call and outcome from D1 before retrying the unread response.
   const lostCompletion=await committed(lostTarget,lostArgs,lostBefore,lostPrior,mode,disposition);
   await replay(lostCompletion,lost.id);
-  console.log('PROBE BASE-AGENT-012 acceptance 2 '+mode+' Scribe clear: real MCP response destroyed at headers without reading body; D1 proves completed original call, outcome and one native Scribe clear; new RPC id recovers original result and review; zero outbound requests');
+  console.log('PROBE BASE-AGENT-012 acceptance 2 '+mode+' '+label+' clear: real MCP response destroyed at headers without reading body; D1 proves completed original call, outcome and one native role clear; new RPC id recovers original result and review; zero outbound requests');
   for(const diagnostic of ['expected','native']){
    const current=await target(diagnostic+' revision '+mode),fresh=argumentsFor(current);
    const stale=diagnostic==='expected'?{...fresh,expected_revision:current.revision-1}:{...fresh,revision:current.revision-1};
@@ -184,7 +187,7 @@ export async function roleClearReplay(runtime){
    const recovered=await committed(current,corrected,baseline,correctedPrior,mode,disposition);
    assert.deepEqual(accepted.result.structuredContent,recovered.saved.result);
    await replay(recovered,accepted.body.id);
-   console.log('PROBE BASE-AGENT-012 acceptance 4 '+mode+' Scribe clear '+diagnostic+' revision: stale '+diagnostic+' revision -> revision_conflict and exact parent current_revision '+returned+' in metadata and text without private result; fresh key corrected from diagnostic clears Scribe once; exact retry adds no effect or review; zero outbound requests');
+   console.log('PROBE BASE-AGENT-012 acceptance 4 '+mode+' '+label+' clear '+diagnostic+' revision: stale '+diagnostic+' revision -> revision_conflict and exact parent current_revision '+returned+' in metadata and text without private result; fresh key corrected from diagnostic clears the role once; exact retry adds no effect or review; zero outbound requests');
    const foreign=await target('private '+diagnostic+' '+mode,'agent-foreign-service'),privateBefore=await snapshot(),denials=[];
    for(const id of [foreign.id,'synthetic-oncall-'+randomUUID()]){
     const deniedArgs={...stale,incident:id,idempotency_key:randomUUID()},priorDenial=await audits(),permanentDenial=await permanent();
