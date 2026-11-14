@@ -1,0 +1,31 @@
+{
+  "mergedMain": "c682f802d4ae3e34caa65c5c99e9c2b45f715844",
+  "results": [
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "output": "Wrote 0 contract documents.\n"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "output": "Contract prose: 0 errors, 0 warnings.\nContract documents are current.\n"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "outputSummary": "Edition source and tool integrity accepted"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "outputSummary": "Edition source and tool integrity accepted"
+    }
+  ],
+  "viewsRestored": true,
+  "ledger": {
+    "command": null,
+    "reason": "No migration changed"
+  },
+  "head": "59e3196adebd1edc3764a8dc8da0d7604e88ccd3"
+}

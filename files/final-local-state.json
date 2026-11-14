@@ -1,0 +1,18 @@
+{
+  "head": "59e3196adebd1edc3764a8dc8da0d7604e88ccd3",
+  "productCheckoutClean": true,
+  "allRecordedLocalCommandsPassed": true,
+  "checks": 8,
+  "scopeOnlyDiff": [
+    "sources.lock.json",
+    "src/agent-door/resources.ts",
+    "tests/agent-door-runtime.mjs",
+    "tests/oncall-agent-flow.mjs",
+    "tests/oncall-agent-resource-parity.mjs",
+    "tests/oncall-agent-resources.mjs"
+  ],
+  "contractStatusChanged": false,
+  "newPermanentTestRegistration": false,
+  "fullLocalVerifyRun": false,
+  "fullVerifyDoor": "Exact-head push Verify"
+}

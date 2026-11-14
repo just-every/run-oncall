@@ -1,0 +1,97 @@
+shards (intake)	Run this shard	﻿2026-11-14T14:44:24.7747016Z ##[group]Run node scripts/verify-oncall.mjs "$SHARD"
+shards (intake)	Run this shard	2026-11-14T14:44:24.7747485Z [36;1mnode scripts/verify-oncall.mjs "$SHARD"[0m
+shards (intake)	Run this shard	2026-11-14T14:44:24.7765921Z shell: /usr/bin/bash -e {0}
+[non-secret environment block omitted from evidence]
+shards (intake)	Run this shard	2026-11-14T14:44:24.7768336Z ##[endgroup]
+shards (intake)	Run this shard	2026-11-14T14:44:24.8137634Z > pnpm run verify:app
+shards (intake)	Run this shard	2026-11-14T14:44:25.0910455Z 
+shards (intake)	Run this shard	2026-11-14T14:44:25.0911690Z > @just-every/oncall@0.5.14 verify:app /home/runner/work/run-oncall/run-oncall
+shards (intake)	Run this shard	2026-11-14T14:44:25.0912751Z > node tests/verify.mjs
+shards (intake)	Run this shard	2026-11-14T14:44:25.0912961Z 
+shards (intake)	Run this shard	2026-11-14T14:44:26.0644464Z (node:2631) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (intake)	Run this shard	2026-11-14T14:44:26.0645934Z (Use `node --trace-warnings ...` to show where the warning was created)
+shards (intake)	Run this shard	2026-11-14T14:44:26.6739000Z Owned runtime processes [["2631","2619","node"],["2642","2631","workerd"],["2647","2631","ps"]]
+shards (intake)	Run this shard	2026-11-14T14:44:28.2026258Z PROBE OC-052 denied-AI: emitted Worker native lifecycle -> resolved with attributed note; outbound attempts=0
+shards (intake)	Run this shard	2026-11-14T14:44:28.2699175Z PROBE OC-052 public-embed: anonymous incident and foreign-origin embed GET -> no incident disclosure; owner embed=404
+shards (intake)	Run this shard	2026-11-14T14:44:29.3151954Z PROBE OC-052 arbitrary-upload: anonymous multipart POST refused and owner POST=404; all non-audit durable tables unchanged; outbound attempts=0
+shards (intake)	Run this shard	2026-11-14T14:44:30.3475432Z {"witness":"automation-erasure-fence","path":"/api/recovery/restore","status":409,"labelReturned":false}
+shards (intake)	Run this shard	2026-11-14T14:44:30.3901241Z {"witness":"automation-erasure-fence","path":"/api/recovery/restore","status":409,"labelReturned":false}
+shards (intake)	Run this shard	2026-11-14T14:44:30.4198773Z {"witness":"automation-erasure-fence","path":"/api/restore","status":409,"labelReturned":false}
+shards (intake)	Run this shard	2026-11-14T14:44:30.6047482Z PASS OC-053 erasure fence: legacy journal and native custody refuse stale archive/checkpoints atomically; current checkpoint restores and retains custody
+shards (intake)	Run this shard	2026-11-14T14:44:31.1770361Z PASS OC-040 member recipient custody: local access revoked, queued work removed, named deletion open item and zero outbound calls without consent
+shards (intake)	Run this shard	2026-11-14T14:44:31.4739462Z oncall request failure Error
+shards (intake)	Run this shard	2026-11-14T14:44:32.2526450Z Owned runtime processes [["2631","2619","node"],["2648","2631","workerd"],["2653","2631","ps"]]
+shards (intake)	Run this shard	2026-11-14T14:44:33.4137722Z oncall request failure Error
+shards (intake)	Run this shard	2026-11-14T14:44:34.0859133Z Owned runtime processes [["2631","2619","node"],["2654","2631","workerd"],["2659","2631","ps"]]
+shards (intake)	Run this shard	2026-11-14T14:44:34.5157817Z PASS OC-040 expired-lease clearance: live refusal, admin approval/revision, expired and uncertain leases, atomic audit rollback, clear/clear and clear/erase 200/409, restart before committed erasure and zero external calls
+shards (intake)	Run this shard	2026-11-14T14:44:35.0785740Z Owned runtime processes [["2631","2619","node"],["2660","2631","workerd"],["2665","2631","ps"]]
+shards (intake)	Run this shard	2026-11-14T14:44:37.2574661Z PASS OC-053 management denial: anonymous/token-only 401, viewer/responder 403 across read, create, rotate, revoke, dispatch and replay; token has no session/export/audit door
+shards (intake)	Run this shard	2026-11-14T14:44:38.5970540Z PASS OC-053 permanent named responder: service-account acknowledgment names A; reassignment and new commander B and resolution preserve timeline and pseudonymous audit attribution
+shards (intake)	Run this shard	2026-11-14T14:44:40.6776477Z Owned runtime processes [["2631","2619","node"],["2668","2631","workerd"],["2673","2631","ps"]]
+shards (intake)	Run this shard	2026-11-14T14:44:43.4725274Z Owned runtime processes [["2631","2619","node"],["2674","2631","workerd"],["2679","2631","ps"]]
+shards (intake)	Run this shard	2026-11-14T14:44:45.9782586Z Owned runtime processes [["2631","2619","node"],["2680","2631","workerd"],["2685","2631","ps"]]
+shards (intake)	Run this shard	2026-11-14T14:45:20.4471365Z Owned runtime processes [["2631","2619","node"],["2695","2631","workerd"],["2700","2631","ps"]]
+shards (intake)	Run this shard	2026-11-14T14:45:21.7393702Z Owned runtime processes [["2631","2619","node"],["2701","2631","workerd"],["2706","2631","ps"]]
+shards (intake)	Run this shard	2026-11-14T14:45:22.7963142Z Owned runtime processes [["2631","2619","node"],["2707","2631","workerd"],["2712","2631","ps"]]
+shards (intake)	Run this shard	2026-11-14T14:45:23.8599143Z Owned runtime processes [["2631","2619","node"],["2714","2631","workerd"],["2719","2631","ps"]]
+shards (intake)	Run this shard	2026-11-14T14:45:25.1669654Z Owned runtime processes [["2631","2619","node"],["2720","2631","workerd"],["2725","2631","ps"]]
+shards (intake)	Run this shard	2026-11-14T14:45:26.2559851Z Owned runtime processes [["2631","2619","node"],["2726","2631","workerd"],["2731","2631","ps"]]
+shards (intake)	Run this shard	2026-11-14T14:45:26.3866118Z PASS OC-053 creator demotion/removal: next read/write and origin/endpoint/receiver dispatch refused, no authority transfer, restart, inactive responder acknowledgment refused
+shards (intake)	Run this shard	2026-11-14T14:45:27.6579722Z PASS OC-053 named-responder erasure: timeline association scrubbed, permanent pseudonymous audit fact unchanged, no reassigned label
+shards (intake)	Run this shard	2026-11-14T14:45:28.0776915Z PROBE OC-042 acceptance-1: protected setup and emitted Worker dispatch -> 25 POST requests only to https://8.8.8.8/events; all three redirect targets receive zero requests; authority refusals add zero requests; exact frozen seven-field payloads and archive credential exclusion pass
+shards (intake)	Run this shard	2026-11-14T14:45:28.7016549Z Owned runtime processes [["2631","2619","node"],["2726","2631","workerd"],["2732","2631","workerd"],["2737","2631","ps"]]
+shards (intake)	Run this shard	2026-11-14T14:45:30.5288261Z PASS OC-053 lifetime API receipts: full history refuses new machine mutation, identical authorized retry retains receipt, human coordination continues
+shards (intake)	Run this shard	2026-11-14T14:45:30.5499044Z PASS OC-053 scoped API, atomic signed outbox, receipt uncertainty, replay, revocation and inactive native restore
+shards (intake)	Run this shard	2026-11-14T14:45:31.1211660Z Owned runtime processes [["2631","2619","node"],["2738","2631","workerd"],["2744","2631","ps"]]
+shards (intake)	Run this shard	2026-11-14T14:45:33.2160399Z {"witness":"human-capacity","request":"/api/command","type":"assign-role","status":200,"before":{"incidentRevision":1,"events":1001},"after":{"incidentRevision":2,"events":1002,"acceptedAuditFacts":1,"outcome":"queued","reason":"domain-commit"}}
+shards (intake)	Run this shard	2026-11-14T14:47:08.0262189Z {"witness":"human-capacity","request":"/api/command","type":"transition","status":200,"before":{"incidentRevision":1002,"events":2002},"after":{"incidentRevision":1003,"events":2003,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+shards (intake)	Run this shard	2026-11-14T14:47:08.6981509Z {"witness":"human-capacity","request":"/api/command","type":"reassign","status":200,"before":{"incidentRevision":1003,"events":2003},"after":{"incidentRevision":1004,"events":2004,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+shards (intake)	Run this shard	2026-11-14T14:47:09.2495230Z {"witness":"human-capacity","request":"/api/command","type":"assign-role","status":200,"before":{"incidentRevision":1004,"events":2004},"after":{"incidentRevision":1005,"events":2005,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+shards (intake)	Run this shard	2026-11-14T14:47:09.8197571Z {"witness":"human-capacity","request":"/api/command","type":"action","status":200,"before":{"incidentRevision":1005,"events":2005},"after":{"incidentRevision":1006,"events":2006,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+shards (intake)	Run this shard	2026-11-14T14:47:10.3764309Z {"witness":"human-capacity","request":"/api/command","type":"complete","status":200,"before":{"incidentRevision":1006,"events":2006},"after":{"incidentRevision":1007,"events":2007,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+shards (intake)	Run this shard	2026-11-14T14:47:10.9345954Z {"witness":"human-capacity","request":"/api/command","type":"accept-action","status":200,"before":{"incidentRevision":1007,"events":2007},"after":{"incidentRevision":1008,"events":2008,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+shards (intake)	Run this shard	2026-11-14T14:47:11.6105082Z {"witness":"human-capacity","request":"/api/command","type":"transition","status":200,"before":{"incidentRevision":1009,"events":2008},"after":{"incidentRevision":1010,"events":2009,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+shards (intake)	Run this shard	2026-11-14T14:47:13.8158793Z oncall request failure Error
+shards (intake)	Run this shard	2026-11-14T14:47:14.9819998Z Owned runtime processes [["2631","2619","node"],["2760","2631","workerd"],["2765","2631","ps"]]
+shards (intake)	Run this shard	2026-11-14T14:47:16.6314961Z Owned runtime processes [["2631","2619","node"],["2760","2631","workerd"],["2766","2631","workerd"],["2771","2631","ps"]]
+shards (intake)	Run this shard	2026-11-14T14:47:19.0511693Z PASS OC-053 human capacity: retained history >1000, full unfinished backlog, all human event paths, multi-recipient boundary, storage rollback, restart, stable replay and inactive checkpoint restore
+shards (intake)	Run this shard	2026-11-14T14:47:19.6472622Z Owned runtime processes [["2631","2619","node"],["2772","2631","workerd"],["2777","2631","ps"]]
+shards (intake)	Run this shard	2026-11-14T14:47:21.1731737Z OC-068 API manual page: explicit incident-write scope, real policy override, repeated-key single incident, conflicting/cross-scope/read-only refusals and recorded-only obligation
+shards (intake)	Run this shard	2026-11-14T14:47:43.7500506Z Worker diagnostics (startup exited):
+shards (intake)	Run this shard	2026-11-14T14:47:43.7501779Z [stdout] Using secrets defined in ../../../../../tmp/oncall-flow-0CKM0d/local.env
+shards (intake)	Run this shard	2026-11-14T14:47:43.7503426Z [stderr] (node:3149) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (intake)	Run this shard	2026-11-14T14:47:43.7504561Z [stderr] (Use `node --trace-warnings ...` to show where the warning was created)
+shards (intake)	Run this shard	2026-11-14T14:47:43.7505931Z [stderr] *** Fatal uncaught kj::Exception: kj/async-io-unix.c++:941: failed: ::bind(sockfd, &addr.generic, addrlen): Address already in use; toString() = 127.0.0.1:38553
+shards (intake)	Run this shard	2026-11-14T14:47:43.7523120Z [stdout] stack: /home/runner/work/run-oncall/run-oncall/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@569f006 /home/runner/work/run-oncall/run-oncall/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@569edd9 /home/runner/work/run-oncall/run-oncall/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@569d12c /home/runner/work/run-oncall/run-oncall/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@248676c /home/runner/work/run-oncall/run-oncall/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@24870c1 /home/runner/work/run-oncall/run-oncall/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@2487bed /home/runner/work/run-oncall/run-oncall/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@24891ba /home/runner/work/run-oncall/run-oncall/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@23bda69 /home/runner/work/run-oncall/run-oncall/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a67d35 /home/runner/work/run-oncall/run-oncall/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a68286 /home/runner/work/run-oncall/run-oncall/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a65cbe /home/runner/work/run-oncall/run-oncall/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a65abe /home/runner/work/run-oncall/run-oncall/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@23a4d6c /lib/x86_64-linux-gnu/libc.so.6@2a1c9 /lib/x86_64-linux-gnu/libc.so.6@2a28a /home/runner/work/run-oncall/run-oncall/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@23a4024
+shards (intake)	Run this shard	2026-11-14T14:47:43.7534238Z [stderr] /home/runner/work/run-oncall/run-oncall/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@22.18.6/node_modules/miniflare/dist/src/index.js:65097
+shards (intake)	Run this shard	2026-11-14T14:47:43.7535671Z [stderr]       throw new MiniflareCoreError(
+shards (intake)	Run this shard	2026-11-14T14:47:43.7536226Z [stderr]             ^
+shards (intake)	Run this shard	2026-11-14T14:47:43.7536603Z [stderr] 
+shards (intake)	Run this shard	2026-11-14T14:47:43.7538290Z [stderr] MiniflareCoreError [ERR_ADDRESS_IN_USE]: Address already in use (127.0.0.1:38553). Please check that you are not already running a server on this address or specify a different port with --port.
+shards (intake)	Run this shard	2026-11-14T14:47:43.7541602Z [stderr]     at StartupLogBuffer.handleStartupFailure (/home/runner/work/run-oncall/run-oncall/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@22.18.6/node_modules/miniflare/dist/src/index.js:65097:13)
+shards (intake)	Run this shard	2026-11-14T14:47:43.7544920Z [stderr]     at Runtime.updateConfig (/home/runner/work/run-oncall/run-oncall/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@22.18.6/node_modules/miniflare/dist/src/index.js:65184:24)
+shards (intake)	Run this shard	2026-11-14T14:47:43.7546908Z [stderr]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+shards (intake)	Run this shard	2026-11-14T14:47:43.7549247Z [stderr]     at async #assembleAndUpdateConfig (/home/runner/work/run-oncall/run-oncall/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@22.18.6/node_modules/miniflare/dist/src/index.js:82869:30)
+shards (intake)	Run this shard	2026-11-14T14:47:43.7552415Z [stderr]     at async /home/runner/work/run-oncall/run-oncall/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@22.18.6/node_modules/miniflare/dist/src/index.js:81664:7
+shards (intake)	Run this shard	2026-11-14T14:47:43.7555099Z [stderr]     at async Mutex.runWith (/home/runner/work/run-oncall/run-oncall/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@22.18.6/node_modules/miniflare/dist/src/index.js:54769:16)
+shards (intake)	Run this shard	2026-11-14T14:47:43.7558020Z [stderr]     at async #waitForReady (/home/runner/work/run-oncall/run-oncall/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@22.18.6/node_modules/miniflare/dist/src/index.js:82994:5)
+shards (intake)	Run this shard	2026-11-14T14:47:43.7560413Z [stderr]     at async file:///home/runner/work/run-oncall/run-oncall/tests/worker-server.mjs:48:5 {
+shards (intake)	Run this shard	2026-11-14T14:47:43.7561459Z [stderr]   code: 'ERR_ADDRESS_IN_USE',
+shards (intake)	Run this shard	2026-11-14T14:47:43.7562035Z [stderr]   cause: undefined
+shards (intake)	Run this shard	2026-11-14T14:47:43.7562488Z [stderr] }
+shards (intake)	Run this shard	2026-11-14T14:47:43.7562904Z [stderr] 
+shards (intake)	Run this shard	2026-11-14T14:47:43.7563305Z [stderr] Node.js v22.20.0
+shards (intake)	Run this shard	2026-11-14T14:47:43.7563598Z 
+shards (intake)	Run this shard	2026-11-14T14:47:43.7564108Z file:///home/runner/work/run-oncall/run-oncall/tests/worker.mjs:149
+shards (intake)	Run this shard	2026-11-14T14:47:43.7566795Z   for(let n=0;n<240;n++){if(startupError)throw Error('Worker process could not start');if(worker.exitCode!==null){diagnostics.report('startup exited');throw Error('Worker exited before readiness')};try{if((await fetch(origin+'/health')).ok)return}catch{}await new Promise(r=>setTimeout(r,250))}
+shards (intake)	Run this shard	2026-11-14T14:47:43.7568886Z                                                                                                                                                              ^
+shards (intake)	Run this shard	2026-11-14T14:47:43.7569252Z 
+shards (intake)	Run this shard	2026-11-14T14:47:43.7569988Z Error: Worker exited before readiness
+shards (intake)	Run this shard	2026-11-14T14:47:43.7570900Z     at start (file:///home/runner/work/run-oncall/run-oncall/tests/worker.mjs:149:158)
+shards (intake)	Run this shard	2026-11-14T14:47:43.7572072Z     at async localWorker (file:///home/runner/work/run-oncall/run-oncall/tests/worker.mjs:178:6)
+shards (intake)	Run this shard	2026-11-14T14:47:43.7573451Z     at async automationJourney (file:///home/runner/work/run-oncall/run-oncall/tests/runtime.mjs:2023:19)
+shards (intake)	Run this shard	2026-11-14T14:47:43.7574208Z     at async file:///home/runner/work/run-oncall/run-oncall/tests/runtime.mjs:23:1
+shards (intake)	Run this shard	2026-11-14T14:47:43.7574534Z 
+shards (intake)	Run this shard	2026-11-14T14:47:43.7574639Z Node.js v22.20.0
+shards (intake)	Run this shard	2026-11-14T14:47:43.8131817Z  ELIFECYCLE  Command failed with exit code 1.
+shards (intake)	Run this shard	2026-11-14T14:47:43.8337474Z ##[error]Process completed with exit code 1.

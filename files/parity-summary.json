@@ -1,0 +1,33 @@
+{
+  "head": "59e3196adebd1edc3764a8dc8da0d7604e88ccd3",
+  "observationAt": "2026-11-04T12:00:00.000Z",
+  "from": "2026-10-01T00:00:00.000Z",
+  "to": "2026-11-01T00:00:00.000Z",
+  "cases": 28,
+  "screens": 48,
+  "roles": [
+    "admin",
+    "viewer"
+  ],
+  "policies": [
+    "autonomous",
+    "held"
+  ],
+  "templates": [
+    "alerts",
+    "changes",
+    "handoffs",
+    "incidents",
+    "reports",
+    "schedules",
+    "services"
+  ],
+  "allEqual": true,
+  "revisions": [
+    41
+  ],
+  "screenWidths": [
+    390,
+    1440
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f246-pc1",
+  "head": "59e3196adebd1edc3764a8dc8da0d7604e88ccd3",
+  "parents": [
+    "ee920fafd3321e45e731e49fdc7427a9d1e4dfec",
+    "c682f802d4ae3e34caa65c5c99e9c2b45f715844"
+  ],
+  "originalSavedHead": "ee920fafd3321e45e731e49fdc7427a9d1e4dfec",
+  "mergedMain": "c682f802d4ae3e34caa65c5c99e9c2b45f715844",
+  "fullHistory": true,
+  "sourceLockSha256": "7c414a11a3b387f84026957bd21507efc9c9f3db557a52e8a85a5ebea59aaa29",
+  "contractUnchangedFromMain": true,
+  "generatedViewsUnchangedFromMain": true,
+  "countsBefore": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "countsAfter": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "sourceStatus": "MISSING",
+  "reportedStatus": "PARTIAL",
+  "selectedPoint": 2,
+  "publicationScan": {
+    "commit": "59e3196adebd1edc3764a8dc8da0d7604e88ccd3",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "status": "Not run in cloud; guarded fleet lander must establish the exact-head result"
+  },
+  "candidateMainEquality": false,
+  "candidateRunSite": "Pending guarded landing; no cloud main push",
+  "pr": null
+}

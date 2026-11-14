@@ -1,0 +1,56 @@
+[
+  {
+    "time": "2026-11-14T15:23:12.161901+00:00",
+    "head": "ee920fafd3321e45e731e49fdc7427a9d1e4dfec",
+    "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+    "exit": 0
+  },
+  {
+    "time": "2026-11-14T15:23:12.189267+00:00",
+    "head": "ee920fafd3321e45e731e49fdc7427a9d1e4dfec",
+    "command": "cloud_run node scripts/verify-oncall-build.mjs (first-party check, pinned production build, typecheck)",
+    "exit": 0
+  },
+  {
+    "time": "2026-11-14T15:31:23.571903+00:00",
+    "head": "ee920fafd3321e45e731e49fdc7427a9d1e4dfec",
+    "command": "CI=true WRANGLER_SEND_METRICS=false SHARD=intake cloud_run timeout 1200 node scripts/verify-oncall.mjs intake",
+    "exit": 0,
+    "log": "intake-reproduction.log",
+    "logSha256": "5f47df74db6b9e4c9f9eb0b91ccaa0c724b93de7aa236dfff9fbc788283ee3c6"
+  },
+  {
+    "time": "2026-11-14T15:32:29.949285+00:00",
+    "head": "59e3196adebd1edc3764a8dc8da0d7604e88ccd3",
+    "command": "cloud_run npx -y @runeditrun/rer build",
+    "exit": 0
+  },
+  {
+    "time": "2026-11-14T15:32:41.858217+00:00",
+    "head": "59e3196adebd1edc3764a8dc8da0d7604e88ccd3",
+    "command": "pnpm run typecheck",
+    "exit": 0
+  },
+  {
+    "time": "2026-11-14T15:32:42.773286+00:00",
+    "head": "59e3196adebd1edc3764a8dc8da0d7604e88ccd3",
+    "command": "cloud_run pnpm exec rer check --profile first-party",
+    "exit": 0
+  },
+  {
+    "time": "2026-11-14T15:33:28.848509+00:00",
+    "head": "59e3196adebd1edc3764a8dc8da0d7604e88ccd3",
+    "command": "cloud_run timeout 1200 node tests/oncall-agent-resource-parity.mjs --browser",
+    "exit": 0,
+    "log": "candidate-browser.log",
+    "logSha256": "8e8450215cddcb9a41a6a14cfc23d93bd595ec9b0525c5df78d69ad91d08b8c0"
+  },
+  {
+    "time": "2026-11-14T15:38:17.579345+00:00",
+    "head": "59e3196adebd1edc3764a8dc8da0d7604e88ccd3",
+    "command": "CI=true cloud_run timeout 1200 node tests/oncall-agent-flow.mjs",
+    "exit": 0,
+    "log": "candidate-flow.log",
+    "logSha256": "9e69cc9373ab635463b640ad9414381b1e200ac1517a511620a9460efe107e70"
+  }
+]
