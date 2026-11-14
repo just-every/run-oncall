@@ -1,0 +1,5 @@
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> @just-every/oncall@0.5.14 typecheck /home/agent/rer-consolidation/work/sd-oncall-release-0-5-14-meta-fix-1/run-oncall
+> tsc --noEmit
+

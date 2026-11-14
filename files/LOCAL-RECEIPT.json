@@ -1,0 +1,90 @@
+{
+  "tag": "sd-oncall-release-0-5-14-meta-fix-1",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-release-0-5-14-meta-fix-1",
+  "head": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+  "base": "54e2434253aeb8510759b15e3589ae2643d02abd",
+  "timestamp": "2026-11-14T10:51:09.176732+00:00",
+  "productPush": "PASS",
+  "remoteHeadVerified": true,
+  "checkoutClean": true,
+  "checks": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "log": "metadata-check.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "log": "contract-docs-check.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "Committed metadata validation via rer inspectSource and releaseMessage (read-only imports)",
+      "exit": 0,
+      "log": "committed-metadata-validation.json"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "diff": {
+    "files": [
+      "RELEASE.json",
+      "sources.lock.json"
+    ],
+    "insertions": 2,
+    "deletions": 2,
+    "releaseOtherBytesPreserved": true,
+    "onlyLockEntryChanged": "RELEASE.json"
+  },
+  "before": {
+    "version": "0.5.14",
+    "previousVersion": "0.5.12",
+    "clauses": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "after": {
+    "version": "0.5.14",
+    "previousVersion": "0.5.13",
+    "clauses": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "clauseStatusChanges": [],
+  "testsAdded": 0,
+  "testsDeleted": 0,
+  "producerInvocations": 0,
+  "tagsCreated": 0,
+  "tagPushes": 0,
+  "releasePublications": 0,
+  "deployments": 0,
+  "paging": "OFF",
+  "publicationScan": "Fleet lander owns full-history scan; not run in cloud",
+  "pr": null
+}

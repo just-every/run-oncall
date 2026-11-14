@@ -1,0 +1,9 @@
+{
+  "status": "completed",
+  "conclusion": "success",
+  "head": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+  "run_id": 43587169224,
+  "url": "https://github.com/just-every/run-oncall/actions/runs/43587169224",
+  "taskGithubApiCalls": 7,
+  "observedAt": "2026-11-14T11:11:30.970230+00:00"
+}
