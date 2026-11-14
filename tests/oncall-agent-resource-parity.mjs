@@ -440,6 +440,7 @@ async function captureReviewMaterial(page,screen,person,width){
  const material=screen.expected,dialog=page.getByRole('dialog',{name:material.title,exact:true});
  await dialog.waitFor();
  const body=dialog.locator('.review-material-body');
+ await body.waitFor();
  for(const detail of await body.locator('details').all())if(!await detail.evaluate(node=>node.open))await detail.locator('summary').click();
  await body.getByText(material.notice,{exact:true}).waitFor();
  if(material.accepted)await dialog.locator('.review-meta').filter({hasText:'Accepted by'}).first().waitFor();
