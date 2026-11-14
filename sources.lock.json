@@ -6700,7 +6700,7 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "09415bacd40060fc6f54d657edfd3e8ff026f4342d45a9bf6fa9ef0e1ec1198b",
+      "sha256": "bcd0bdb3f7702de51780e80d329724e182cc53423aee6b5fc7abdd1860595c62",
       "executable": false
     },
     "tests/product-browser.mjs": {
