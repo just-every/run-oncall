@@ -224,7 +224,12 @@ export async function focusedRoleClearReplay(){
    text:'Synthetic unrelated retained note',idempotency_key:randomUUID()});
   assert.equal(noted.status,200);assert.equal(noted.result.isError,false);
   assert.deepEqual(await runtime.outboundRequests(),[]);
+  const originals=(await runtime.db.prepare('SELECT * FROM agent_door_calls ORDER BY agent,key').all()).results;
+  assert.equal(originals.length,2,'Both unrelated native mutations retain their original calls');
   for(const [role,label] of [['scribe','Scribe'],['communications','Communications'],['commander','Commander']])
    await roleClearReplay(runtime,role,label);
+  const retained=(await runtime.db.prepare('SELECT * FROM agent_door_calls ORDER BY agent,key').all()).results;
+  for(const call of originals)assert.deepEqual(retained.find(row=>row.agent===call.agent&&row.key===call.key),call,
+   'The complete matrix and its final policy restoration retain unrelated outcomes and their original expiry');
  }finally{await runtime.close()}
 }

@@ -6676,7 +6676,7 @@
       "executable": false
     },
     "tests/oncall-agent-role-clear-replay.mjs": {
-      "sha256": "c307fd20db20c09098f95d5305ef83049896d434176461286c4e4cfee45a4ca1",
+      "sha256": "2fb0d66b959615c7e5959185a8361e3893c09c6e7da6d7641607184506aba5c0",
       "executable": false
     },
     "tests/oncall-agent-role-replay.mjs": {
