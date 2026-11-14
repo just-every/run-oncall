@@ -1,6 +1,6 @@
 {
   "limit": 10,
-  "calls": 4,
+  "calls": 6,
   "operations": [
     {
       "call": 1,
@@ -26,7 +26,33 @@
       "run": 43602784077,
       "source": "candidate-runs-final.json",
       "observed_at": "2026-11-14T14:13:19Z"
+    },
+    {
+      "call": 5,
+      "operation": "candidate run status",
+      "run": 43602784077,
+      "source": "candidate-runs-final.json",
+      "observed_at": "2026-11-14T14:18:20.332310+00:00",
+      "exit": 0
+    },
+    {
+      "call": 6,
+      "operation": "candidate run status",
+      "run": 43602784077,
+      "source": "candidate-runs-final.json",
+      "observed_at": "2026-11-14T14:23:21.595675+00:00",
+      "exit": 0
     }
   ],
-  "next_candidate_status_not_before": "2026-11-14T14:13:07Z"
+  "watcher_status": "completed",
+  "final_status": {
+    "conclusion": "success",
+    "head_sha": "92be1b36796181d3a1cde56004f2ae38900900a8",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43602784077",
+    "status": "completed",
+    "id": 43602784077,
+    "name": "Verify",
+    "event": "push",
+    "observed_at": "2026-11-14T14:23:21.595675+00:00"
+  }
 }

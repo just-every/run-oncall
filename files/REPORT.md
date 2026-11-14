@@ -1,11 +1,11 @@
-sd-oncall-c-f245 actual report, generated 2026-11-14T14:16:20.625816+00:00.
+sd-oncall-c-f245 actual report, generated 2026-11-14T14:24:28.853364+00:00.
 
 Repository: just-every/run-oncall. Product branch: cloud/sd-oncall-c-f245.
 Candidate: 92be1b36796181d3a1cde56004f2ae38900900a8.
 Rechecked origin main: 4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b. Main is an ancestor of the product branch; main does not equal this unlanded candidate.
 Published save: c0f996974256f96bad77fba641c7277c979cf154.
 PR: none. Verify has a pre-main push entry point for this branch; no workflow or PR change was needed.
-Exact candidate Verify: 43602784077, event push, status in_progress, conclusion pending, head 92be1b36796181d3a1cde56004f2ae38900900a8.
+Exact candidate Verify: 43602784077, event push, status completed, conclusion success, head 92be1b36796181d3a1cde56004f2ae38900900a8.
 URL: https://github.com/just-every/run-oncall/actions/runs/43602784077.
 
 Counts before and after: 26 DONE, 41 PARTIAL, 34 MISSING, 101 total, unchanged. BASE-AGENT-012 stays MISSING in CONTRACT.md. The bounded implementation claim is PARTIAL, with no complete acceptance point promoted.
@@ -78,7 +78,7 @@ DONE-RIDERS review of this deliberately incomplete clause:
 | --- | --- | --- |
 | 1 | FAIL for full-clause DONE; selected scope PASS | Seven cases exhaust the selected POINT; the whole-clause matrix and job authority remain unproved. Shared aged replay assertions above reach every selected outcome. |
 | 2 | PASS for selected scope | Real seeded records, exact original effects and outcomes, distinct responder, open owned work, stale original revisions and ETag, strict zero duplicate effects; lines 35 to 140. |
-| 3 | PENDING | Existing push Verify loads tests/runtime.mjs, whose machines part imports the single helper invocation. Exact-SHA run 43602784077 is in_progress, pending. Outside-Verify exact-SHA clock receipt is in RECEIPT.json. |
+| 3 | PASS | Existing push Verify loads tests/runtime.mjs, whose machines part imports the single helper invocation. Exact-SHA run 43602784077 is completed, success. Outside-Verify exact-SHA clock receipt is in RECEIPT.json. |
 | 4 | PASS locally | RECEIPT.json binds the final build and machines journey to 92be1b36796181d3a1cde56004f2ae38900900a8; no relevant source byte changed afterwards. |
 | 5 | INSPECTED, unchanged | No receiving clause or acceptance text edited; existing Base inheritance and owning-clause holds retained. |
 | 6 | Mechanical PASS; judgment remains reserved | Contract generator write and check pass. All 101 parent rows and counts remain unchanged. No judgment cell or generated view committed. |

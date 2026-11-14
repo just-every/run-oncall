@@ -1,10 +1,16 @@
 {
   "files": [
     {
-      "blob": "46bfd35a5b02d674c9a22828ca65dda9228d4213",
-      "bytes": 1048,
+      "blob": "b324372afe43a2a2cb93c728a1e8c1880ca2457e",
+      "bytes": 5442,
+      "path": "EVIDENCE-PUBLICATION-INITIAL.log",
+      "sha256": "ad88c9c84bfebb9c9d16444133ca9bcbef2987ac82a4eee8322f1a809d31e044"
+    },
+    {
+      "blob": "f57cea9ac4f4a272c75df1cecf049288de480501",
+      "bytes": 1088,
       "path": "PACKET-CHECK.json",
-      "sha256": "34b3c4637f08662564cca9b421442514d105dcb56fe7c8ef8b3f780d89ab238c"
+      "sha256": "103b8654c2d5eb25c383bd7d100ce620172cd7260462e45a2f9eac8e7d779e87"
     },
     {
       "blob": "c17930b7ff2a4f72965da051f996f2100a651daa",
@@ -25,16 +31,16 @@
       "sha256": "0fa7ff2ddcb2d171a5b139b622cab81086790cbc9c9ea9d74cad0c03213768e6"
     },
     {
-      "blob": "efb2a134993058db7c4c511e19f76d069e31c297",
-      "bytes": 2116,
+      "blob": "43322ea2e8a97b4e982e0a830b33de529d91aa72",
+      "bytes": 2477,
       "path": "RECEIPT.json",
-      "sha256": "a1ea6b5264dece10247e2658cdb2757d6e4f2937da2d7591c64b2be9a177d55e"
+      "sha256": "a188244669e5bee3c1e25732de947eec4ee7ab7c59d3231db6ae7bd9e3b2baab"
     },
     {
-      "blob": "abba0d51e4f85c493f7b955c3cc97259e13057b9",
-      "bytes": 15957,
+      "blob": "da8ed2f47b89259eb2db0fdc0cce6c10928f88b0",
+      "bytes": 15950,
       "path": "REPORT.md",
-      "sha256": "037bd441668b93f0c7ed58d40b2aa1b62100476a24ed5d4344af10a3d0b0ddd2"
+      "sha256": "c5b13e23743ead380daeca07ad258bba1e7e68e54736e4d33bcd9334fd241548"
     },
     {
       "blob": "0ba0c68e74af6e11691625328121b20ec64650b2",
@@ -49,10 +55,10 @@
       "sha256": "e9b16cd03349d51578aac708043c86ef8ef12348f32d7d371054dd3c351d5bb7"
     },
     {
-      "blob": "98b3054667cdad417b71e260f75908879c666c4d",
-      "bytes": 294,
+      "blob": "0a0ba6c0a004ca61c91cdcb6f645ddf3601cf0df",
+      "bytes": 309,
       "path": "candidate-runs-final.json",
-      "sha256": "98f8dc49274f7ef4bbaf67f200e9beb9bbb02358573a03025c18fa2fa30d5ca6"
+      "sha256": "9d0f2300df2ca2f69512575f3ee01d28ede4578b54231093e17754654a0d247b"
     },
     {
       "blob": "0ef4ef3523755b24ef50b771ce37b3f0300d9015",
@@ -79,10 +85,10 @@
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
-      "blob": "fd70d1ae00d86b58be63a8ebb7d791b9b5a92609",
-      "bytes": 785,
+      "blob": "d2ac53931dc43ca43d3d484f0bbb13f4201c8c3c",
+      "bytes": 1536,
       "path": "github-budget.json",
-      "sha256": "3168379451d0b71177dd7acc65de45eb31e540a2aea4d61f6d4432576d6469c3"
+      "sha256": "9a7a72c5dab128ed84bab6c9eceeb1023cbc4288185a72d94bec2b842d0e076d"
     },
     {
       "blob": "7537a66daf82a22d50b498c909c6b3a3f0b5bb9c",
