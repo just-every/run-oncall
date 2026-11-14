@@ -49,22 +49,27 @@ function fields(record: Record<string, unknown>): string {
   return entries.length ? `<dl class="fields">${entries.map(([key, value]) => `<div${isIdentifier(key) ? ' class="id"' : ''}><dt>${escape(words(key))}</dt><dd>${fieldValue(value)}</dd></div>`).join('')}</dl>` : '<p>None</p>'
 }
 
-function actionSummary(summary: ApprovalDisplaySummary | undefined): string {
+async function actionSummary(rt: Runtime, tool: string, summary: ApprovalDisplaySummary | undefined): Promise<string> {
   if (!summary) return '<p data-approval-summary class="muted">No details were recorded.</p>'
   const native = summary.nativeTarget
   const record = (id?: string) => native && native.id !== id ? `<p class="id">${escape(words(native.kind))} ${escape(native.id)}</p>` : ''
   if ('arguments' in summary) return `<div data-approval-summary>${fields(summary.arguments)}${record()}</div>`
   if ('uri' in summary) return `<div data-approval-summary><p class="id">${escape(summary.uri)}</p>${record()}</div>`
-  const { target } = summary, lines: string[] = []
+  const presentation = await rt.options.presentSummary?.(tool, summary)
+  const shown = presentation ?? summary
+  const { target } = shown, lines: string[] = []
   if (target?.name || target?.email) lines.push(`<p class="target">${escape(target.name ?? target.email)}${target.name && target.email ? ` <span class="meta">${escape(target.email)}</span>` : ''}</p>`)
-  const recipients = summary.recipients?.filter(recipient => recipient !== target?.email) ?? []
+  const recipients = shown.recipients?.filter(recipient => recipient !== target?.email) ?? []
   if (recipients.length) lines.push(`<p>To ${escape(list(recipients))}</p>`)
-  if (summary.amount) lines.push(`<p>Amount ${escape(money(summary.amount))}</p>`)
-  if (summary.payee) lines.push(`<p>Pays ${escape(summary.payee)}</p>`)
-  if (summary.role) lines.push(`<p>Role: ${escape(summary.role)}</p>`)
-  if (summary.items?.length) lines.push(`<ul class="items">${summary.items.map(item => `<li>${escape(item)}</li>`).join('')}</ul>`)
-  if (target?.id) lines.push(`<p class="id">ID ${escape(target.id)}</p>`)
-  return `<div data-approval-summary>${lines.join('')}${record(target?.id)}</div>`
+  if (shown.amount) lines.push(`<p>Amount ${escape(money(shown.amount))}</p>`)
+  if (shown.payee) lines.push(`<p>Pays ${escape(shown.payee)}</p>`)
+  if (shown.role) lines.push(`<p>Role: ${escape(shown.role)}</p>`)
+  const items = shown.items
+  if (items?.length) lines.push(`<ul class="items">${items.map(item => `<li>${escape(item)}</li>`).join('')}</ul>`)
+  const details = (target?.id ? `<p class="id">ID ${escape(target.id)}</p>` : '') + record(target?.id)
+    + (presentation && summary.items?.length ? `<ul>${summary.items.map(item => `<li>${escape(item)}</li>`).join('')}</ul>` : '')
+  if (details) lines.push(`<details><summary>Request details</summary>${details}</details>`)
+  return `<div data-approval-summary>${lines.join('')}</div>`
 }
 
 function shell(rt: Runtime, title: string, content: string, status = 200, current = false): Response {
@@ -113,16 +118,16 @@ function setup(rt: Runtime, state: PolicyState, owner: boolean): string {
   return `<section aria-labelledby="policy-title">${content}</section>`
 }
 
-function reviewFeed(rt: Runtime, items: Review[]): string {
+async function reviewFeed(rt: Runtime, items: Review[]): Promise<string> {
   const visible = items.filter(item => item.state === 'open' || item.state === 'flagged')
   if (!visible.length) return ''
-  return `<section aria-labelledby="reviews-title"><h2 id="reviews-title">To review</h2><ul class="stack">${visible.map(item => `<li data-review-id="${escape(item.id)}" data-review-state="${escape(item.state)}"><p class="row-title">${escape(actionName(rt, item.tool, uriOf(item.summary)))}${item.state === 'flagged' ? ' <span class="tag">Flagged</span>' : ''}</p><p class="meta">${escape(attribution(item))} · ${escape(item.classes.map(factsSentence).join('; '))}</p>${actionSummary(item.summary)}<div class="actions">${action(`/agents/api/reviews/${encodeURIComponent(item.id)}/reviewed`, 'Mark reviewed', 'data-review-action="reviewed"')}${action(`/agents/api/reviews/${encodeURIComponent(item.id)}/flag`, 'Flag', 'class="secondary" data-review-action="flag"')}${item.undo.available ? action(`/agents/api/reviews/${encodeURIComponent(item.id)}/undo`, 'Undo', 'class="secondary" data-review-action="undo"') : ''}</div></li>`).join('')}</ul></section>`
+  return `<section aria-labelledby="reviews-title"><h2 id="reviews-title">To review</h2><ul class="stack">${(await Promise.all(visible.map(async item => `<li data-review-id="${escape(item.id)}" data-review-state="${escape(item.state)}"><p class="row-title">${escape(actionName(rt, item.tool, uriOf(item.summary)))}${item.state === 'flagged' ? ' <span class="tag">Flagged</span>' : ''}</p><p class="meta">${escape(attribution(item))} · ${escape(item.classes.map(factsSentence).join('; '))}</p>${await actionSummary(rt, item.tool, item.summary)}<div class="actions">${action(`/agents/api/reviews/${encodeURIComponent(item.id)}/reviewed`, 'Mark reviewed', 'data-review-action="reviewed"')}${action(`/agents/api/reviews/${encodeURIComponent(item.id)}/flag`, 'Flag', 'class="secondary" data-review-action="flag"')}${item.undo.available ? action(`/agents/api/reviews/${encodeURIComponent(item.id)}/undo`, 'Undo', 'class="secondary" data-review-action="undo"') : ''}</div></li>`))).join('')}</ul></section>`
 }
 
-function approvalFeed(rt: Runtime, items: Approval[]): string {
+async function approvalFeed(rt: Runtime, items: Approval[]): Promise<string> {
   const pending = items.filter(item => item.state === 'pending')
   if (!pending.length) return ''
-  return `<section aria-labelledby="approvals-title"><h2 id="approvals-title">Waiting for approval</h2><ul class="stack">${pending.map(item => `<li><a class="row-title" href="/agents/approvals/${segment(item.id)}" data-approval-id="${escape(item.id)}">${escape(actionName(rt, item.tool, uriOf(item.summary)))}</a><p class="meta">${escape(attribution(item))} · expires ${time(item.expires_at)}</p>${actionSummary(item.summary)}</li>`).join('')}</ul></section>`
+  return `<section aria-labelledby="approvals-title"><h2 id="approvals-title">Waiting for approval</h2><ul class="stack">${(await Promise.all(pending.map(async item => `<li><a class="row-title" href="/agents/approvals/${segment(item.id)}" data-approval-id="${escape(item.id)}">${escape(actionName(rt, item.tool, uriOf(item.summary)))}</a><p class="meta">${escape(attribution(item))} · expires ${time(item.expires_at)}</p>${await actionSummary(rt, item.tool, item.summary)}</li>`))).join('')}</ul></section>`
 }
 
 function activity(rt: Runtime, rows: AuditRow[]): string {
@@ -155,7 +160,7 @@ async function dashboard(rt: Runtime, request: Request, person: Person): Promise
   let content = `<div class="heading"><div><h1>Agents</h1><p data-agents-state>${paused ? 'Agents are paused.' : 'Agents are on.'}</p>${state.paused ? '<p>Paused in Business.</p>' : ''}</div>${role === 'owner' ? `<div class="actions">${action('/agents/api/pause', state.localPaused ? 'Resume agents' : 'Pause agents', 'data-agents-pause', `<input type="hidden" name="paused" value="${!state.localPaused}">`)}</div>` : ''}</div>`
   if (canAudit && await pendingRetirement(rt.options.db, state.document)) content += `<p data-policy-retirement>${escape(retirementNotice)} <a href="${escape(rt.options.trust ? setupUrl(rt, state) : '#policy-title')}">${rt.options.trust ? 'Manage policy in Business' : 'Edit policy'}</a></p>`
   if (!complete) content += policy
-  content += approvalFeed(rt, approvals.approvals) + reviewFeed(rt, reviews.reviews) || '<section aria-label="Waiting for you"><p>Nothing is waiting for you.</p></section>'
+  content += (await approvalFeed(rt, approvals.approvals)) + (await reviewFeed(rt, reviews.reviews)) || '<section aria-label="Waiting for you"><p>Nothing is waiting for you.</p></section>'
   if (recent) content += activity(rt, recent.results.map(record => JSON.parse(record.row) as AuditRow))
   if (counts) content += countTable(counts.results, weekStart)
   if (complete) content += policy
@@ -182,7 +187,7 @@ async function approvalPage(rt: Runtime, request: Request, person: Person, id: s
   })
   let content = `<h1>${escape(name)}</h1><p class="lead">${escape(attribution(approval))}</p><section aria-label="Request"><p class="state" data-approval-state="${escape(approval.state)}"${approval.code ? ` data-approval-code="${escape(approval.code)}"` : ''}><strong>${escape(approvalStatus(approval.state, approval.code, waiting, eligible.length > 0))}</strong>${approval.state === 'pending' ? ` · expires ${time(approval.expires_at)}` : ''}</p>`
   if (marks.length) content += `<p class="meta">Approved by ${marks.map(mark => `${escape(mark.name ?? 'a person')}, ${time(mark.at)}`).join('; ')}</p>`
-  content += actionSummary(approval.summary)
+  content += await actionSummary(rt, approval.tool, approval.summary)
   if (approval.state === 'pending' && waiting) content += `<div class="actions">${action(`/agents/api/approvals/${encodeURIComponent(id)}/approve`, 'Approve', 'data-approval-action="approve"', evidence)}${action(`/agents/api/approvals/${encodeURIComponent(id)}/reject`, 'Decline', 'class="secondary" data-approval-action="reject"', evidence)}</div>`
   content += `<details><summary>Details</summary><dl class="fields"><div><dt>Policy</dt><dd>${rules.length ? escape(rules.join('; ')) : 'No rule was recorded.'}</dd></div><div><dt>Who decides</dt><dd>${escape(await approverNames(rt, approval.approvers))}</dd></div><div><dt>Policy version</dt><dd>${escape(approval.revision ?? 'Not set')}</dd></div><div class="id"><dt>Action</dt><dd>${escape(approval.tool)}</dd></div></dl></details></section>`
   return shell(rt, name, content + zone)

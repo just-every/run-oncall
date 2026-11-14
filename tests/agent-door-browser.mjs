@@ -273,6 +273,40 @@ try{
   {class:'sensitive',facts:{measure:2,kind:'personal_or_incident_evidence'}},
  ]);
  await capture('resolution-pending',approvalPath,async()=>{await page.locator('[data-approval-state="pending"]').waitFor()});
+ // Default cards are decisions, while deliberately opened details retain
+ // the exact native identity and revision used by the approval fence.
+ await page.setViewportSize({width:1440,height:1000});
+ for (const path of ['/agents',approvalPath]) {
+  await page.goto(runtime.origin+path);
+  const summary=page.locator('[data-approval-summary]').filter({hasText:resolutionTarget.title});
+  await summary.waitFor();
+  const visible=await summary.innerText();
+  for(const raw of [resolutionTarget.id,'Revision '+resolutionTarget.revision,'state: resolved','summary:']) assert.ok(!visible.includes(raw),'default approval omits internal identity and field dumps');
+  assert.ok(visible.includes(resolveArgs.summary),'the proposed authored change stays visible');
+  assert.ok(visible.includes(resolutionBefore.services.find(row=>row.id===resolutionTarget.service).name),'the target service is named');
+  assert.ok((await page.locator('body').innerText()).includes('Responder assistant for Alex Chen'),'the requesting agent and sponsor are named');
+ }
+ const details=page.locator('[data-approval-summary] details');await details.locator(':scope > summary').click();
+ assert.ok((await details.innerText()).includes(resolutionTarget.id),'deliberate details retain the native identity');
+ assert.ok((await details.innerText()).includes('Revision '+resolutionTarget.revision),'deliberate details retain the saved revision');
+ await details.locator(':scope > summary').click();
+ const filterPath='/incidents?triage_status=recovered&triage_service='+encodeURIComponent(resolutionTarget.service)+'&triage_priority=unset&triage_urgency=low';
+ await page.goto(runtime.origin+filterPath);await page.locator('.triage-filters summary').click();
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'readable filters fit desktop');
+ assert.deepEqual((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations.filter(row=>['serious','critical'].includes(row.impact)),[],'readable filters have no serious/critical accessibility findings');
+ for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:`${directory}/agent-door-readable-filters-${width}.png`,fullPage:true});}
+ await page.setViewportSize({width:1440,height:1000});
+ const filters=page.locator('.triage-filters');
+ for(const name of ['Incident status','Filter urgency','Filter priority','Filter severity']){
+  const options=await filters.getByLabel(name,{exact:true}).locator('option').evaluateAll(rows=>rows.map(row=>({value:row.value,text:row.textContent})));
+  for(const option of options.filter(row=>row.value&&!/^P[1-5]$/.test(row.value)))assert.notEqual(option.text,option.value,'filter options present words instead of wire enums');
+ }
+ const chips=await page.getByRole('list',{name:'Applied filters',exact:true}).innerText();
+ assert.ok(!chips.includes('unset')&&!chips.includes('recovered')&&!chips.includes('low'),'applied filters use the same readable values');
+ const matching=await (await http('/api/triage?status=recovered&service='+encodeURIComponent(resolutionTarget.service)+'&priority=unset&urgency=low')).json();
+ assert.ok(matching.items.some(row=>row.id===resolutionTarget.id),'readable filters still select the native incident');
+ await page.locator('.incident').filter({hasText:resolutionTarget.title}).waitFor();
+ assert.deepEqual(await native(),resolutionBefore,'reading cards and filters preserves native values');
  await page.goto(runtime.origin+approvalPath);
  await page.getByRole('button',{name:'Approve',exact:true}).click();
  await page.locator('[data-approval-state="executed"]').waitFor();
@@ -299,6 +333,8 @@ try{
  await capture('resolution-executed',approvalPath,async()=>{await page.locator('[data-approval-state="executed"]').waitFor()});
  await capture('resolution-timeline','/incidents/'+resolutionTarget.id,async()=>{
   await page.getByRole('region',{name:'Timeline',exact:true}).waitFor();
+  if(await page.getByRole('button',{name:/^Earlier entries/}).count())await page.getByRole('button',{name:/^Earlier entries/}).click();
+  if((await page.viewportSize()).width===1440){const headings=await page.locator('.event-line strong').allTextContents();for(const raw of ['transition','complete','incident deadline'])assert.ok(!headings.includes(raw),'timeline headings describe activity');}
   await page.getByText('Responder assistant for Alex Chen',{exact:true}).first().waitFor();
  });
  assert.equal((await runtime.adopt()).status,200);

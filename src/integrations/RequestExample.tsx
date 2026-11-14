@@ -32,12 +32,14 @@ curl --fail-with-body ${quote(endpoint)} \\
     <p>Set <code>ONCALL_SOURCE_KEY</code> to the private key in your sender’s environment, then paste this request into a macOS, Linux or WSL terminal. It uses curl{mode === 'signed' ? ', OpenSSL and standard shell tools' : ''}; no Node.js is needed. Check <code>curl --version</code>{mode === 'signed' && <> and <code>openssl version</code></>} first.</p>
     {routed ? <p>This sample is ready for {service.name}. The key’s published routing rules choose the service for each event.</p> : <p>This sample is ready to send events to {service.name}. Its service value is already filled in.</p>}
     <details><summary>Request identifiers</summary>
-    {routed ? <p>The source value is this key’s ID, <code>{source}</code>, the same text as the end of the URL. The service value is only a hint: this key’s published routing rules choose the allowed service, so you can keep {service.name}’s internal ID from <a href="/settings/services">Services</a> or use another allowed service’s.</p> : <p>The service value is {service.name}’s internal ID, copied from <a href="/settings/services">Services</a>. The source ID in the URL was assigned when this source was created.</p>}
+    {routed ? <p>The source value is this key’s ID, <code>{source}</code>, the same text as the end of the URL. The service value is only a hint: this key’s published routing rules choose the allowed service, so you can keep {service.name}’s internal ID from <a href="/settings/services">Services</a> or use another allowed service’s.</p> : <p>The service value is already filled in for {service.name}. The source ID in the URL was assigned when this source was created.</p>}
     </details>
-    <label className="field"><span>Sample request</span><textarea aria-label="Sample request" readOnly value={example} rows={12} spellCheck={false} /></label>
     <button type="button" disabled={!origin || !source} onClick={async () => {
       try { await navigator.clipboard.writeText(example); setCopied('Copied'); }
-      catch { setCopied('Select the request above and copy it.'); }
+      catch { setCopied('Open the request below and copy it.'); }
     }}>Copy sample request</button><p role="status">{copied}</p>
+    <details><summary>View request code</summary>
+    <label className="field"><span>Sample request</span><textarea aria-label="Sample request" readOnly value={example} rows={12} spellCheck={false} /></label>
+    </details>
   </details>;
 }

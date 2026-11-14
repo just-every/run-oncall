@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import {deadlineActor} from '../incident-deadlines/model';
 import {NoteBox} from './NoteBox';
-import {memberName, shortTime, timelineText, type IncidentProps} from './types';
+import {memberName, shortTime, timelineText, timelineHeading, type IncidentProps} from './types';
 
 export function Timeline({incident, state, canEdit, busy, mutate}: IncidentProps) {
   const [earlier, setEarlier] = useState(false);
@@ -11,7 +11,7 @@ export function Timeline({incident, state, canEdit, busy, mutate}: IncidentProps
     <h3>Timeline</h3>
     <ol className="events">{shown.map(entry => <li className="event" key={entry.id}>
       <span className="event-symbol" aria-hidden />
-      <div><div className="event-line"><strong>{['assign-role', 'reassign'].includes(entry.kind) ? 'People updated' : entry.kind.replaceAll('-', ' ')}</strong><time dateTime={entry.at}>{shortTime(entry.at)}</time></div>
+      <div><div className="event-line"><strong>{timelineHeading(entry.kind)}</strong><time dateTime={entry.at}>{shortTime(entry.at)}</time></div>
         <p>{timelineText(entry, state)}</p>
         {entry.lifecycle?.member !== undefined && <p className="named-responder">Named responder: <strong>{entry.lifecycle.member === null ? 'Erased member' : memberName(state, entry.lifecycle.member)}</strong></p>}
         <small>{entry.metadata?.agent?.label ?? (entry.actor === deadlineActor ? 'Deadline scheduler' : memberName(state, entry.actor))}</small>

@@ -749,6 +749,9 @@ async function eventsSourceBrowser(page,context) {
   assert.equal(new URL(url).origin,origin);assert.ok(new URL(url).pathname.startsWith('/api/ingress/'));
   await page.getByRole('button',{name:'Copy ingress URL',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),url);
   const example=await page.getByLabel('Sample request',{exact:true}).inputValue();assert.ok(!example.includes(key),'sample never embeds the secret');
+  assert.ok(!(await page.locator('.integrations').innerText()).includes(service),'source-created recipe names its service without exposing its internal identity');
+  assert.equal(await page.getByLabel('Sample request',{exact:true}).isVisible(),false,'raw request code opens deliberately');
+  assert.equal(JSON.parse(example.match(/'({\n[\s\S]*\n})'/)[1].replaceAll("'\\''","'")).service,service,'copied request already supplies the service');
   await page.getByRole('button',{name:'Copy sample request',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),example);
   if(mode==='bearer')await proof('created');
   const path=new URL(await page.getByRole('link',{name:'Open source',exact:true}).getAttribute('href'),origin).pathname;
@@ -864,8 +867,10 @@ async function eventsSourceBrowser(page,context) {
   assert.ok(body.key.includes(serviceName)&&!body.key.includes(service),'dedup key describes the named service');
   assert.ok(body.generation.includes(body.observedAt)&&body.eventId.includes(body.generation),'sample observation and lifecycle IDs use a readable timestamp');
   assert.ok(!body.eventId.includes(service)&&!/[a-f0-9]{8}-[a-f0-9]{4}-/i.test(body.eventId),'event identity contains no internal UUID');
-  assert.ok((await details.locator('p').allTextContents()).some(text=>text.includes(serviceName)&&text.includes('internal ID')),'required service ID is explained beside the sample');
-  assert.equal(await details.getByRole('link',{name:'Services',exact:true,includeHidden:true}).getAttribute('href'),'/settings/services');
+  assert.equal(await details.getByLabel('Sample request',{exact:true}).isVisible(),false,'raw request code is deliberate');
+  await details.getByText('View request code',{exact:true}).click();
+  assert.equal(await details.getByLabel('Sample request',{exact:true}).isVisible(),true,'advanced request code is available for inspection');
+  await details.getByText('View request code',{exact:true}).click();
   const setupText=await details.innerText();
   assert.ok(setupText.includes(serviceName),'the ready-to-copy sample names its service');
   assert.ok(!setupText.includes(service)&&!setupText.includes(sample.source),'default explanation omits internal identities');

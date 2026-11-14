@@ -100,6 +100,8 @@ export interface AgentDoorOptions {
   tools: ToolDefinition[]; resources?: ResourceDefinition[]
   prompts?: Array<{ name: string; title?: string; description: string; clauses?: string[]; messages(args: Record<string, string>): unknown[] }>
   notTools?: Array<{ clauses: string[]; reason: 'device' | 'screen' | 'connector' | 'import-door' | 'installation' }>
+  /** Presentation only; never changes saved approval evidence or its digest. */
+  presentSummary?(tool: string, summary: ApprovalDisplaySummary): Promise<ApprovalSummary | undefined>
   people: PeopleAdapter
   localCredentials?(request: Request): Promise<{ sponsor: { id: string }; agent: Agent; scopes: string[]; clientId?: string } | null>
   nativeProof?: {

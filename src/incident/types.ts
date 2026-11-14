@@ -33,6 +33,18 @@ export const memberName = (state: State, id: string | null | undefined) => {
   return attributed?.label??(id?id.startsWith('api-')?'Service account':'Erased member':'Unassigned');
 };
 
+export const timelineHeading = (kind: string) => ({
+  declared: 'Incident declared', transition: 'Status changed', note: 'Note added',
+  action: 'Follow-up created', complete: 'Follow-up evidence submitted',
+  'accept-action': 'Follow-up accepted', review: 'Review accepted', runbook: 'Runbook updated',
+  reassign: 'People updated', 'assign-role': 'People updated',
+  'set-priority': 'Priority changed', 'set-urgency': 'Urgency changed', 'set-severity': 'Severity changed',
+  'incident-deadline': 'Deadline', 'deadline-cancelled': 'Deadline cancelled', 'deadline-fired': 'Deadline reached',
+  'source-recovery': 'Source recovered', 'bulk-acknowledge': 'Status changed', 'bulk-resolve': 'Status changed',
+  merge: 'Incidents merged', split: 'Incident split', 'manual-page': 'Coordination recorded',
+  'request-responders': 'Responders requested', 'respond-request': 'Responder replied', 'cancel-request': 'Responder request cancelled',
+}[kind] ?? 'Incident updated');
+
 export function timelineText(entry: Entry, state: State) {
   // Only format generated workflow prefixes. Authored notes and reasons remain
   // literal text, and the retained timeline is never changed.
