@@ -1,0 +1,82 @@
+{
+  "tag": "gr-mt-oncall-code-8",
+  "repository": "just-every/run-oncall",
+  "product_branch": "cloud/gr-mt-oncall-code-8",
+  "product_head": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+  "origin_main": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+  "working_tree_clean": true,
+  "new_product_commits": 0,
+  "product_branch_pushed": false,
+  "pr": null,
+  "ci_run_ids": [],
+  "checks": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0,
+      "note": "Dependencies installed; no tracked changes."
+    },
+    {
+      "command": "pnpm exec tsc --noEmit",
+      "node": "22.20.0",
+      "pnpm": "10.12.4",
+      "exit": 0,
+      "output": "typecheck.log (empty stdout/stderr)"
+    },
+    {
+      "command": "cloud_run node /tmp/rer-saved-export-probe.mjs",
+      "node": "22.20.0",
+      "exit": 0,
+      "receipt": "render-receipt.json",
+      "probe_source": "saved-export-probe.mjs"
+    },
+    {
+      "command": "git diff --exit-code origin/main --",
+      "exit": 0
+    },
+    {
+      "command": "git status --porcelain",
+      "exit": 0,
+      "output": ""
+    }
+  ],
+  "counts": {
+    "new_product_commits": {
+      "before": 0,
+      "after": 0
+    },
+    "changed_product_files": {
+      "before": 0,
+      "after": 0
+    },
+    "saved_response_guides": {
+      "before": 3,
+      "after": 3
+    },
+    "new_test_registrations": {
+      "before": 0,
+      "after": 0
+    },
+    "contract_summary": {
+      "before": {
+        "done": 26,
+        "partial": 41,
+        "missing": 34,
+        "total": 101
+      },
+      "after": {
+        "done": 26,
+        "partial": 41,
+        "missing": 34,
+        "total": 101
+      }
+    }
+  },
+  "clause_status_changes": [],
+  "limits": [
+    "CodeQL alert state and original analyzed SHA inaccessible: five API attempts all HTTP 403 Resource not accessible by integration.",
+    "No claim that GitHub has closed or dismissed alert 17.",
+    "Direct-component probe is supplementary evidence, not a full application journey.",
+    "No product publication scan or branch Verify run: no product candidate or product push."
+  ],
+  "timestamp_utc": "2026-11-14T13:51:19.097088+00:00"
+}

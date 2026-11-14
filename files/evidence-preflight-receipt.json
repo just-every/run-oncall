@@ -1,0 +1,11 @@
+{
+  "first_attempt": {
+    "status": "failed_before_remote_push",
+    "stage": "supplementary candidate-identity audit local fetch",
+    "git_exit": 128,
+    "diagnostic": "local partial-clone upload-pack could not materialize promised historical blobs; lazy fetching disabled; bad pack header",
+    "HTTP_status": "not applicable; local Git transport"
+  },
+  "correction": "The candidate identity audit reads already-present commit objects through a temporary Git object alternate; no historical blob materialization or product ref change is needed. The required evidence entrypoint is retried with the same explicit packet.",
+  "product_unchanged": true
+}

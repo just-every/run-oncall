@@ -1,0 +1,74 @@
+{
+  "kind": "Supplementary direct-component render probe; not a full application journey",
+  "width": 1440,
+  "node": "v22.20.0",
+  "react": "19.2.8",
+  "supportedVendors": [
+    {
+      "vendor": "splunk",
+      "detailsExpand": true,
+      "sourceLinkCorrect": true,
+      "guidancePresent": true,
+      "activeHTMLNodes": 0,
+      "links": [
+        {
+          "label": "Vendor format documentation",
+          "href": "https://portal.victorops.com/public/api-docs.html"
+        },
+        {
+          "label": "Opsgenie migration readiness checklist",
+          "href": "/docs/move-in#opsgenie-migration-readiness-checklist"
+        },
+        {
+          "label": "Source-specific assumptions and remaining gaps",
+          "href": "/docs/move-in#splunk-saved-responses"
+        }
+      ]
+    },
+    {
+      "vendor": "jsm",
+      "detailsExpand": true,
+      "sourceLinkCorrect": true,
+      "guidancePresent": true,
+      "activeHTMLNodes": 0,
+      "links": [
+        {
+          "label": "Vendor format documentation",
+          "href": "https://developer.atlassian.com/cloud/jira/service-desk-ops/rest/v2/api-group-schedules/"
+        },
+        {
+          "label": "Opsgenie migration readiness checklist",
+          "href": "/docs/move-in#opsgenie-migration-readiness-checklist"
+        },
+        {
+          "label": "Source-specific assumptions and remaining gaps",
+          "href": "/docs/move-in#jsm-saved-responses"
+        }
+      ]
+    },
+    {
+      "vendor": "betterstack",
+      "detailsExpand": true,
+      "sourceLinkCorrect": true,
+      "guidancePresent": true,
+      "activeHTMLNodes": 0,
+      "links": [
+        {
+          "label": "Vendor format documentation",
+          "href": "https://betterstack.com/docs/uptime/api/list-all-existing-on-call-calendars/"
+        },
+        {
+          "label": "Opsgenie migration readiness checklist",
+          "href": "/docs/move-in#opsgenie-migration-readiness-checklist"
+        },
+        {
+          "label": "Source-specific assumptions and remaining gaps",
+          "href": "/docs/move-in#betterstack-saved-responses"
+        }
+      ]
+    }
+  ],
+  "unknownAndMarkupVendorInputsRenderNothing": 3,
+  "outboundRequests": 0,
+  "pass": true
+}

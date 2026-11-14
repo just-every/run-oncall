@@ -1,0 +1,38 @@
+{
+  "path": "src/move-in/SavedExportHelp.tsx",
+  "sha256": "d7d8c4b6b4a02051f9b35360bf305596299c9da711efa65ac8cba735ce49625d",
+  "domReadOrHTMLSinkFindings": [],
+  "trace": [
+    {
+      "path": "src/move-in/ConnectStep.tsx",
+      "line": 20,
+      "operation": "file-source select passes event.target.value to fileVendor"
+    },
+    {
+      "path": "src/move-in/MoveIn.tsx",
+      "line": 115,
+      "operation": "fileVendor is setVendor; selected value retained as vendor state"
+    },
+    {
+      "path": "src/move-in/ConnectStep.tsx",
+      "line": 22,
+      "operation": "ExportHelp receives vendor as a prop"
+    },
+    {
+      "path": "src/move-in/ExportHelp.tsx",
+      "line": 17,
+      "operation": "saved-response vendors render SavedExportHelp"
+    },
+    {
+      "path": "src/move-in/SavedExportHelp.tsx",
+      "line": 9,
+      "operation": "vendor selects compile-time guide; unknown vendor returns null"
+    },
+    {
+      "path": "src/move-in/SavedExportHelp.tsx",
+      "line": 19,
+      "operation": "vendor is concatenated into a relative fragment href attribute through React, never interpreted as HTML"
+    }
+  ],
+  "pass": true
+}

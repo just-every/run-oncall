@@ -1,0 +1,7 @@
+{
+  "status": "no-change",
+  "sha": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+  "summary": "No change: current default-branch SavedExportHelp renders fixed guidance as React text and vendor only as a relative href attribute; the reported DOM-text-to-HTML flow does not exist at the supplied location.",
+  "tests": "Node 22.20.0 / pnpm 10.12.4: pnpm exec tsc --noEmit PASS (exit 0); direct SavedExportHelp AST/render probe PASS for all three saved-response vendors at 1440, unknown/markup inputs render nothing and zero outbound requests. No touched tests or product changes; full application Verify not run. Code-scanning API read denied HTTP 403 on five bounded attempts.",
+  "security": true
+}
