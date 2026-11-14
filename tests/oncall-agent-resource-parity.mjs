@@ -55,6 +55,8 @@ export async function resourceParity({browserProof=false}={}){
   }
   for(const [mode,policy] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
    assert.equal((await runtime.adopt(policy)).status,200);
+   const review=await prepareReviewMaterial(runtime,people,changes,mode);
+   receipt.reviewMaterial??=[];receipt.reviewMaterial.push(review.receipt);
    for(const p of people){
     const native=await json(p.http,'/api/state'),paging=await json(p.http,'/api/paging/state');
     assert.equal(native.members.find(m=>m.id===p.member.id).role,p.member.role);
@@ -75,6 +77,9 @@ export async function resourceParity({browserProof=false}={}){
     assertRecentChanges(recent,changes);
     const alert=native.alerts.find(a=>a.id===fixture.emailAlert.id);
     assert.ok(alert?.events.length);
+    const materialPath='/api/reviews/'+review.incident.id+'/material';
+    const material=await json(p.http,materialPath);
+    assertReviewMaterial(material,review,native,observed);
     const cases=[
      {kind:'incidents',id:fixture.own.id,expected:native.incidents.find(i=>i.id===fixture.own.id),path:'/incidents/'+fixture.own.id},
      {kind:'alerts',id:alert.id,expected:alert,path:'/alerts/'+alert.id},
@@ -84,6 +89,7 @@ export async function resourceParity({browserProof=false}={}){
      {kind:'changes',id:native.changes.find(c=>c.source===changes.rootSource).id,expected:native.changes.find(c=>c.source===changes.rootSource),path:'/settings/services/agent-service'},
      {kind:'service-changes',id:'agent-service',uri:'oncall://services/agent-service/changes',expected:recent,path:'/settings/services/agent-service'},
      {kind:'reports',id:fixture.ownPeriod,expected:report,path:'/reviews'},
+     {kind:'review-material',id:review.incident.id,uri:'oncall://incidents/'+review.incident.id+'/review-material',expected:material,path:'/reviews/'+review.incident.id,nativeDoor:materialPath},
     ];
     const before=await agentReadSnapshot(runtime);
     for(const c of cases){
@@ -92,6 +98,12 @@ export async function resourceParity({browserProof=false}={}){
      const read=await runtime.completeResource(uri,{bearer,personHttp:p.http});
      assert.equal(read.content.uri,uri);assert.equal(read.content.mimeType,'application/json');
      assert.equal(read.content._meta['com.runeditrun/untrusted'],true);
+     if(c.kind==='review-material'){
+      assert.deepEqual(read.initial.decision.classes.map(row=>row.class),['standard','sensitive']);
+      assert.deepEqual(read.initial.decision.classes[0].facts,{measure:1});
+      assert.equal(read.initial.decision.classes[1].facts.kind,'personal_or_incident_evidence');
+      assert.ok(read.initial.decision.classes[1].facts.measure>0);
+     }
      if(c.kind==='service-changes')assert.deepEqual(read.initial.decision.classes.map(({class:kind,facts})=>({class:kind,facts})),[{class:'standard',facts:{measure:1}},{class:'sensitive',facts:{measure:recent.items.length,kind:'personal_or_incident_evidence'}}],'Populated authors retain the existing standard and sensitive classes');
      const sensitive=read.initial.decision.classes.some(row=>row.class==='sensitive');
      assert.equal(read.initial.decision.revision,runtime.context.revision);
@@ -119,7 +131,7 @@ export async function resourceParity({browserProof=false}={}){
      assert.equal((await json(p.http,'/api/state')).revision,native.revision);
      assertAgentReadUnchanged(before,await agentReadSnapshot(runtime));
      assert.deepEqual(await runtime.outboundRequests(),[]);
-     receipt.cases.push({role:p.member.role,agent:p.agent,sponsor:p.member.id,scopes,mode,template:c.kind,workspaceRevision:native.revision,schedulingRevision:paging.revision,disposition:read.initial.decision.disposition,fields:Object.keys(read.value).sort(),equal:true,...(c.kind==='service-changes'?{nativeDoor:changes.path,permittedServices:permitted}:{}),nativeRecord:c.expected,resourceRecord:read.value});
+     receipt.cases.push({role:p.member.role,agent:p.agent,sponsor:p.member.id,scopes,mode,template:c.kind,workspaceRevision:native.revision,schedulingRevision:paging.revision,disposition:read.initial.decision.disposition,fields:Object.keys(read.value).sort(),equal:true,...(['service-changes','review-material'].includes(c.kind)?{nativeDoor:c.nativeDoor??changes.path,permittedServices:permitted}:{}),nativeRecord:c.expected,resourceRecord:read.value});
      console.log(`PROBE BASE-AGENT-003 2 ${mode} ${p.member.role} ${c.kind}: native protected record equals every resource field at workspace revision ${native.revision}; paging and permanent state-changing audit unchanged; zero outbound requests`);
     }
     const admission=await runtime.db.prepare('SELECT sponsor FROM agent_door_agents WHERE id=?').bind(p.agent).first();
@@ -146,11 +158,102 @@ export async function resourceParity({browserProof=false}={}){
     }
    }
   }
-  assert.equal(receipt.cases.length,32);
+  assert.equal(receipt.cases.length,36);
   assert.deepEqual(await runtime.outboundRequests(),[]);
   if(evidence){await mkdir(evidence,{recursive:true});await writeFile(evidence+'/resource-parity.json',JSON.stringify(receipt,null,2)+'\n');}
   return receipt;
  }finally{try{await browser?.close()}finally{await runtime.close()}}
+}
+
+/** Populated review custody uses native intake, commands and a true Business agent. */
+async function prepareReviewMaterial(runtime,people,changes,mode){
+ const admin=people.find(p=>p.member.role==='admin'),viewer=people.find(p=>p.member.role==='viewer');
+ const start=observed-30*60000,source='synthetic-oncall-parity-review-'+mode,key=source+'-credential';
+ const evidence='https://evidence.example.invalid/'+source;
+ await runtime.time(start-60000);
+ await json(admin.http,'/api/sources',{id:source,key,scopes:['agent-service']});
+ async function signal(intent,at){
+  await runtime.time(at);
+  const response=await runtime.request(runtime.origin+'/api/ingress/'+source,{method:'POST',headers:{Origin:runtime.origin,'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify({source,eventId:source+'-'+intent,service:'agent-service',environment:'production',key:source,generation:source,intent,severity:'warning',title:'Checkout latency '+intent,observedAt:new Date(at-5000).toISOString(),evidence:evidence+'/'+intent})});
+  assert.equal(response.status,201,await response.clone().text());return response.json();
+ }
+ const trigger=await signal('trigger',start-60000);
+ const alert=(await json(admin.http,'/api/state')).alerts.find(row=>row.events.includes(trigger.id));assert.ok(alert);
+ await runtime.time(start);
+ let incident=await json(admin.http,'/api/command',{type:'declare',service:'agent-service',title:'Checkout latency review '+mode,summary:'Checkout latency rose during the database rollout; retain separate observations and human assessments.',severity:'warning',alerts:[alert.id]});
+ async function command(type,fields,at){
+  await runtime.time(at);incident=await json(admin.http,'/api/command',{type,incident:incident.id,revision:incident.revision,...fields});return incident;
+ }
+ await command('transition',{state:'acknowledged',summary:'The incident commander is investigating checkout latency.'},start+60000);
+ await command('note',{text:'The human operator retained the rollout dashboard and customer impact report.'},start+90000);
+ const note='The Business assistant correlated the retained rollout observations; this is coordination, not an accepted cause.';
+ await runtime.time(start+120000);
+ const bearer=await accessToken(runtime.context,{sub:admin.businessId,email:admin.email,act:{sub:admin.agent,name:'Synthetic parity assistant'},scope:[...scopes,'incidents:write'].join(' '),consent:'synthetic-oncall-parity-'+admin.agent});
+ const called=await runtime.tool('oncall.notes.add',{incident:incident.id,revision:incident.revision,text:note,idempotency_key:randomUUID()},{},bearer);
+ assert.equal(called.decision.disposition,mode==='held'?'review':'autonomous');
+ assert.equal(called.result?.isError,false,JSON.stringify(called.body));
+ incident=(await json(admin.http,'/api/state')).incidents.find(row=>row.id===incident.id);
+ const agentEntry=incident.timeline.find(row=>row.text===note);assert.ok(agentEntry?.metadata?.agent);
+ assert.equal(agentEntry.metadata.agent.agent.id,admin.agent);assert.equal(agentEntry.metadata.agent.for.id,admin.member.id);
+ const recovery=await signal('recover',start+180000);
+ incident=(await json(admin.http,'/api/state')).incidents.find(row=>row.id===incident.id);
+ await command('transition',{state:'recovered',summary:'The human verified the retained recovery dashboard.',evidence:evidence+'/human-recovery'},start+240000);
+ const actions=[];
+ for(const [label,priority,due] of [['completed','P1','2026-11-12'],['open later','P3','2026-11-10'],['submitted','P2','2026-11-09'],['open earlier','P2','2026-11-08']]){
+  await command('action',{title:'Checkout '+label+' follow-up',owner:admin.member.id,due,priority,completionPolicy:'human-review'},start+300000+actions.length*1000);
+  actions.push(incident.actions.at(-1));
+ }
+ for(const action of [actions[0],actions[2]])await command('complete',{action:action.id,evidence:evidence+'/'+action.id},start+360000);
+ // Human follow-up acceptance uses the actual signed-in administrator. It is
+ // independent of company policy approval for later agent resource reads.
+ await command('accept-action',{action:actions[0].id,reason:'The human checked the retained rollback validation.'},start+420000);
+ await command('transition',{state:'resolved',summary:'Checkout latency returned to normal; the remaining work stays open.'},start+480000);
+ const draft={text:'The review separates reported trigger and recovery, human assessments and assistant coordination.',rootCause:'Human assessment: the deployment increased connection pressure.',impact:'Checkout requests were delayed while the operator rolled back the deployment.'};
+ await command('review',draft,start+540000);
+ const draftMaterial=await json(admin.http,'/api/reviews/'+incident.id+'/material');
+ assert.equal(draftMaterial.accepted,null);assert.equal(draftMaterial.review,draft.text);
+ const beforeDenied=await agentReadSnapshot(runtime);
+ for(const input of [{type:'review',...draft},{type:'review',...draft,accept:true,materialRevision:incident.revision,materialWorkspaceRevision:draftMaterial.workspaceRevision},{type:'accept-action',action:actions[2].id,reason:'Viewer cannot accept retained evidence'}]){
+  await json(viewer.http,'/api/command',{incident:incident.id,revision:incident.revision,...input},403);
+ }
+ // Refusal audit is permitted, but every native application record and all
+ // permanent state-changing audit must remain identical.
+ const afterDenied=await agentReadSnapshot(runtime);
+ assert.deepEqual(afterDenied.application,beforeDenied.application);
+ for(const [table,rows] of Object.entries(beforeDenied.records))if(!['oc_admin_audit','oc_audit_clock','oc_audit_identities'].includes(table))assert.deepEqual(afterDenied.records[table],rows);
+ assert.deepEqual(afterDenied.records.oc_admin_audit.filter(row=>row.workspace_before!==row.workspace_after||row.paging_before!==row.paging_after||row.handoff_before!==row.handoff_after),beforeDenied.records.oc_admin_audit.filter(row=>row.workspace_before!==row.workspace_after||row.paging_before!==row.paging_after||row.handoff_before!==row.handoff_after));
+ await command('review',{...draft,accept:true,materialRevision:draftMaterial.incidentRevision,materialWorkspaceRevision:draftMaterial.workspaceRevision},start+600000);
+ const acceptance=incident.reviewAcceptance;assert.equal(acceptance.by,admin.member.id);
+ await runtime.time(observed);
+ assert.deepEqual(await runtime.outboundRequests(),[]);
+ return {incident,admin:admin.member,trigger,recovery,agentEntry,actions,draft,changes,
+  receipt:{mode,incident:incident.id,nativeDoor:'/api/reviews/'+incident.id+'/material',draftMaterial,acceptedBy:acceptance.by,acceptance,viewerRefusals:3,coordinationDecision:called.decision.id,coordinationDisposition:called.decision.disposition}};
+}
+
+function assertReviewMaterial(material,fixture,native,at){
+ const incident=native.incidents.find(row=>row.id===fixture.incident.id);assert.ok(incident);
+ assert.equal(material.incidentRevision,incident.revision);assert.equal(material.workspaceRevision,native.revision);
+ assert.equal(material.generatedAt,new Date(at).toISOString());assert.equal(material.title,incident.title);
+ assert.deepEqual(material.observations.map(row=>row.id),[fixture.trigger.id,fixture.recovery.id]);
+ assert.deepEqual(material.observations.map(row=>row.intent),['trigger','recover']);
+ for(const row of material.observations){assert.ok(row.evidence);assert.equal(row.classification,'reported source observation');assert.ok(Date.parse(row.at)<Date.parse(row.acceptedAt));}
+ for(const [key,seconds] of [['mtta',60],['sourceRecovery',180],['recovery',240],['mttr',480]]){
+  assert.equal(material.response[key].status,'measured');assert.equal(material.response[key].seconds,seconds);assert.ok(material.response[key].sourceEntryId);
+ }
+ const agent=material.assertions.find(row=>row.id===fixture.agentEntry.id);
+ assert.equal(agent.classification,'agent coordination record');assert.equal(agent.metadata.agent.agent.id,fixture.agentEntry.metadata.agent.agent.id);assert.equal(agent.actorName,agent.metadata.agent.label);
+ assert.ok(material.assertions.some(row=>row.actor===fixture.admin.id&&row.classification==='human assertion'));
+ assert.ok(material.assertions.some(row=>row.kind==='source-recovery'&&row.classification==='reported source observation'));
+ assert.ok(material.changes.some(row=>row.service===fixture.changes.root&&!row.dependency));
+ assert.ok(material.changes.some(row=>row.service===fixture.changes.dependency&&row.dependency));
+ assert.ok(!material.changes.some(row=>row.service==='synthetic-oncall-parity-decoy'));
+ assert.deepEqual(material.followups.map(row=>row.id),[fixture.actions[3].id,fixture.actions[2].id,fixture.actions[1].id,fixture.actions[0].id]);
+ const [open,submitted,later,completed]=material.followups;
+ assert.equal(open.done,false);assert.equal(open.submission,undefined);assert.equal(later.done,false);
+ assert.equal(submitted.done,false);assert.ok(submitted.submission.evidence);assert.equal(submitted.accepted,undefined);
+ assert.equal(completed.done,true);assert.equal(completed.accepted.by,fixture.admin.id);assert.equal(completed.evidence,completed.submission.evidence);
+ assert.deepEqual(material.accepted,incident.reviewAcceptance);assert.equal(material.accepted.rootCause,fixture.draft.rootCause);assert.equal(material.accepted.impact,fixture.draft.impact);
+ assert.equal(material.review,fixture.draft.text);assert.ok(material.missing.length);assert.match(material.notice,/Human acceptance is separate/);
 }
 
 /** Native ingress receipts identify the records; only protected HTTP is the parity oracle. */
@@ -227,6 +330,8 @@ async function captureViews(browser,runtime,person,mode,cases,report,receipt){
      const response=await ready;
      await page.locator('.review-snapshot').getByText(report.cohort.count+' incidents',{exact:true}).waitFor();
      if(width===1440)assert.deepEqual(await response.json(),report,'Rendered report consumes the exact same month and observation');
+    }else if(kind==='review-material'){
+     await captureReviewMaterial(page,screen,person,width);
     }else if(kind==='handoffs'){
      await openIncidentAction(page,'Handoff draft');
      await page.getByRole('article',{name:'Saved handoff copy',exact:true}).waitFor();
@@ -268,6 +373,34 @@ async function captureViews(browser,runtime,person,mode,cases,report,receipt){
    }
   }
  }finally{await context.close()}
+}
+
+async function captureReviewMaterial(page,screen,person,width){
+ const material=screen.expected,dialog=page.getByRole('dialog',{name:material.title,exact:true});
+ await dialog.waitFor();
+ const body=dialog.locator('.review-material-body');
+ for(const detail of await body.locator('details').all())if(!await detail.evaluate(node=>node.open))await detail.locator('summary').click();
+ await body.getByText(material.notice,{exact:true}).waitFor();
+ await dialog.locator('.review-meta').filter({hasText:'Accepted by'}).first().waitFor();
+ if(width===1440){
+  const response=await page.evaluate(async path=>(await fetch(path)).json(),screen.nativeDoor);
+  assert.deepEqual(response,material,'Review screen uses the same protected native material at fixed time and revisions');
+  assert.equal(await dialog.getByLabel('Review',{exact:true}).inputValue(),material.review);
+  assert.equal(await dialog.getByLabel('Root cause',{exact:true}).inputValue(),material.accepted.rootCause);
+  assert.equal(await dialog.getByLabel('Impact',{exact:true}).inputValue(),material.accepted.impact);
+  for(const label of ['Review','Root cause','Impact'])assert.equal(await dialog.getByLabel(label,{exact:true}).evaluate(node=>node.readOnly),person.member.role==='viewer');
+  assert.equal(await dialog.getByRole('button',{name:'Accept review',exact:true}).count(),person.member.role==='admin'?1:0);
+  for(const observation of material.observations)await body.getByText(observation.title,{exact:true}).waitFor();
+  for(const assertion of material.assertions)if(assertion.kind==='note')await body.getByText(assertion.text,{exact:true}).waitFor();
+  for(const change of material.changes)await body.getByText(change.summary,{exact:true}).waitFor();
+  const followups=body.locator('details').last();
+  const rows=await followups.locator('li').allTextContents();
+  assert.equal(rows.length,material.followups.length);
+  for(const [index,action] of material.followups.entries())assert.ok(rows[index].includes(action.title));
+  assert.deepEqual(await followups.getByRole('link',{name:'Evidence',exact:false}).evaluateAll(nodes=>nodes.map(node=>node.href)),material.followups.filter(row=>row.evidence).map(row=>row.evidence));
+  for(const missing of material.missing)await body.getByText(missing,{exact:true}).waitFor();
+  assert.equal(await body.locator('details:not([open])').count(),0);
+ }
 }
 
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)await resourceParity({browserProof:process.argv.includes('--browser')});

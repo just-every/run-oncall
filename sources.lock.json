@@ -6664,7 +6664,7 @@
       "executable": false
     },
     "tests/oncall-agent-resource-parity.mjs": {
-      "sha256": "2056db04321d0c02dfee82a3a99eb5127f2d16107b4164c4705e6fd4fa009371",
+      "sha256": "047b48d162140f73ef2cbd5562d17f359646fc67093f2b3d21842c229caf38a4",
       "executable": false
     },
     "tests/oncall-agent-resources.mjs": {
