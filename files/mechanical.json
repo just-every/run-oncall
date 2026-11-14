@@ -1,0 +1,45 @@
+{
+  "head": "ee920fafd3321e45e731e49fdc7427a9d1e4dfec",
+  "branch": "cloud/sd-oncall-c-f246",
+  "base": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+  "sourceLock": {
+    "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check",
+    "exit": 0,
+    "sha256": "e38205d54566c4e493408be2af5b2197437eb62570d61a059a18374178fa4d43"
+  },
+  "views": {
+    "write": "node src/base/contract-docs.mjs write",
+    "check": "node src/base/contract-docs.mjs check",
+    "exit": 0,
+    "restoredFromMain": true,
+    "committed": false
+  },
+  "ledger": {
+    "command": null,
+    "exit": 0,
+    "reason": "No migration change"
+  },
+  "statusCountsBefore": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "statusCountsAfter": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "statusRows": 101,
+  "contractDiff": "none",
+  "addedEmailShapedLiterals": 0,
+  "publishedSave": "df72e50766e64f177b01153923bffd53704a69f6",
+  "publicationScan": {
+    "status": "NOT_RUN_CLOUD",
+    "reason": "Reserved for fleet lander under the cloud assignment"
+  },
+  "mainVerify": 43589736078,
+  "mainRunSite": 43589735969,
+  "contractSha256": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac",
+  "finalMainRecheck": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+  "sourceAndTestTreeClean": true
+}

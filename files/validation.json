@@ -1,0 +1,45 @@
+{
+  "head": "ee920fafd3321e45e731e49fdc7427a9d1e4dfec",
+  "branch": "cloud/sd-oncall-c-f246",
+  "checks": [
+    {
+      "command": "node tests/oncall-agent-resource-parity.mjs --browser",
+      "head": "ee920fafd3321e45e731e49fdc7427a9d1e4dfec",
+      "exit": 0,
+      "caseCount": 28,
+      "screenCount": 48,
+      "log": "browser.log",
+      "receipt": "screens/resource-parity.json"
+    },
+    {
+      "command": "node /tmp/resource-journey.mjs (imports resourceJourney from tests/oncall-agent-resources.mjs)",
+      "head": "ee920fafd3321e45e731e49fdc7427a9d1e4dfec",
+      "exit": 0,
+      "log": "resource-regression.log"
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=machines node tests/runtime.mjs",
+      "headAtStart": "df72e50766e64f177b01153923bffd53704a69f6",
+      "headAtEnd": "ee920fafd3321e45e731e49fdc7427a9d1e4dfec",
+      "exit": 0,
+      "seconds": 414.2,
+      "log": "runtime-machines.log",
+      "note": "Started during final test-only work. Production source bytes unchanged; focused journey and resource regression rerun separately on committed candidate."
+    },
+    {
+      "command": "pnpm exec tsc --noEmit",
+      "head": "ee920fafd3321e45e731e49fdc7427a9d1e4dfec",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "npx -y @runeditrun/rer check --profile first-party",
+      "head": "ee920fafd3321e45e731e49fdc7427a9d1e4dfec",
+      "exit": 0,
+      "log": "first-party.log"
+    }
+  ],
+  "parityOutboundAssertedEmpty": true,
+  "nativeEffectsUnchanged": true,
+  "publishedSave": "df72e50766e64f177b01153923bffd53704a69f6"
+}

@@ -1,0 +1,12 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f246",
+  "head": "ee920fafd3321e45e731e49fdc7427a9d1e4dfec",
+  "remoteHead": "ee920fafd3321e45e731e49fdc7427a9d1e4dfec",
+  "pushCommand": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-oncall-c-f246",
+  "pushExit": 0,
+  "identities": "All two candidate commits including side parents use fleet author and committer; no trailers",
+  "main": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+  "mainChanged": false,
+  "pr": null
+}

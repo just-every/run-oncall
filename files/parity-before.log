@@ -1,0 +1,702 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Owned runtime processes [["1869","1868","MainThread"],["1878","1869","esbuild"],["1887","1869","workerd"],["1893","1869","ps"]]
+PROBE BASE-AGENT-003 2 autonomous admin incidents: native protected record equals every resource field at workspace revision 36; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin alerts: native protected record equals every resource field at workspace revision 36; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin services: native protected record equals every resource field at workspace revision 36; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin schedules: native protected record equals every resource field at workspace revision 36; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin handoffs: native protected record equals every resource field at workspace revision 36; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin changes: native protected record equals every resource field at workspace revision 36; paging and permanent state-changing audit unchanged; zero outbound requests
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: admin autonomous complete native reports
++ actual - expected
+... Skipped lines
+
+  {
+    aggregates: {
+      mtta: {
+        censored: 2,
+        histogram: [
+...
+    ],
+-   load: {
+-     acknowledged: 1,
+-     basis: [
+-       'Scheduled hours come from the current revision of each schedule (its rotations and overrides) and current membership, over the cohort range up to the observation time. They are scheduled hours, not worked hours.',
+-       'Earlier schedule revisions are not retained, so a schedule change recomputes past scheduled hours; the schedule revisions used are listed. A slot held by a member who is now inactive or not a responder counts as uncovered.',
+-       'Erased declaration cases have unknown acknowledgment state, shown separately from unacknowledged incidents. Shares use only observed retained acknowledgments; no erased case is attributed or treated as zero.',
+-       'Load is the first explicit acknowledgement of each cohort incident, the entry acknowledgement time is measured to. Unacknowledged incidents are counted as unattributed, never assigned to anyone.',
+-       'Load is normalised by scheduled primary hours, the role a page reaches first; backup hours are shown separately. Load to coverage is the share of acknowledgements divided by the share of primary hours: 1 means load in proportion to coverage. Without primary hours no rate is given.',
+-       "Outside coverage counts acknowledgements made while the responder held neither primary nor backup on a schedule of that incident's service. Overlapping schedules count each hour once.",
+-       'Teams are not modelled yet, so load is broken out by responder and by service.'
+-     ],
+-     from: '2026-10-01T00:00:00.000Z',
+-     responders: [
+-       {
+-         acknowledgementShare: 1,
+-         acknowledgements: 1,
+-         backupSeconds: 0,
+-         current: true,
+-         loadToCoverage: null,
+-         member: 'fc1c8b49-1a30-443f-870e-ef414e2f0211',
+-         name: 'Alex Chen',
+-         outsideCoverage: 1,
+-         per24PrimaryHours: null,
+-         primarySeconds: 0,
+-         primaryShare: null,
+-         unknownTime: 0
+-       }
+-     ],
+-     schedules: [
+-       {
+-         id: 'agent-schedule',
+-         name: 'Synthetic imported schedule text',
+-         revision: 2,
+-         service: 'agent-service',
+-         timezone: 'UTC'
+-       },
+-       {
+-         id: 'synthetic-oncall-resource-foreign-schedule',
+-         name: 'Agent coordination rota',
+-         revision: 1,
+-         service: 'agent-foreign-service',
+-         timezone: 'UTC'
+-       }
+-     ],
+-     schedulingRevision: 3,
+-     services: [
+-       {
+-         acknowledgements: 0,
+-         incidents: 0,
+-         name: 'Inventory worker',
+-         per24PrimaryHours: null,
+-         primarySeconds: 0,
+-         schedules: 1,
+-         service: 'agent-foreign-service',
+-         uncoveredPrimarySeconds: 2678400
+-       },
+-       {
+-         acknowledgements: 1,
+-         incidents: 3,
+-         name: 'Payments API',
+-         per24PrimaryHours: null,
+-         primarySeconds: 0,
+-         schedules: 1,
+-         service: 'agent-service',
+-         uncoveredPrimarySeconds: 2678400
+-       }
+-     ],
+-     through: '2026-11-01T00:00:00.000Z',
+-     unacknowledged: 2,
+-     unknownAcknowledgements: 0
+-   },
+-   noise: {
+-     alerts: 0,
+-     definition: 'Alerts with a trigger event accepted in the cohort range [from,to), suppressed alerts included. An alert repeats when it has more than one trigger in range; a source/service/key is noisy when it repeats or opens more than one alert generation in range. The 20 noisiest keys are listed; the counts cover all of them.',
+-     noisy: [],
+-     noisyKeys: 0,
+-     repeatedAlerts: 0,
+-     suppressedAlerts: 0,
+-     triggers: 0
+-   },
+    revision: 36
+  }
+
+    at resourceParity (file:///workspace/run-oncall/tests/oncall-agent-resource-parity.mjs:89:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///workspace/run-oncall/tests/oncall-agent-resource-parity.mjs:155:75 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: {
+    revision: 36,
+    generatedAt: '2026-11-01T00:00:00.000Z',
+    cohort: {
+      from: '2026-10-01T00:00:00.000Z',
+      to: '2026-11-01T00:00:00.000Z',
+      service: null,
+      observationAt: '2026-11-01T00:00:00.000Z',
+      count: 3,
+      erased: 0,
+      unassignableDeclarations: 0,
+      inclusion: 'createdAt declaration in UTC [from,to); every matching incident retained regardless of state, severity, service configuration or metric availability; endpoints observed through generatedAt'
+    },
+    definitions: {
+      mtta: 'Declaration to first explicit acknowledgement; resolution never implies acknowledgement',
+      mttr: 'Declaration to final resolution; unresolved incidents are right-censored at generatedAt',
+      recovery: 'Declaration to last evidenced human recovery attestation after any later mitigation; not independently verified recovery',
+      sourceRecovery: 'Declaration to acceptance of the last recovery event reported by the sources of every linked alert; censored while a linked alert is active, unknown without linked alerts',
+      statistics: 'Seconds; mean and nearest-rank p50/p90/p95 use measured values only. Total, measured, censored and unknown denominators remain visible. Histogram buckets are [fromSeconds,toSeconds), null upper bound means infinity',
+      censored: 'Seconds is an observed lower bound, not a completed duration; source identifies the declaration entry',
+      unknown: 'Seconds is null; no zero imputation. Invalid, future or pre-declaration endpoint timestamps are unknown',
+      source: 'Structured lifecycle metadata or explicitly legacy-derived transition entries; sourceAt retains original timezone text'
+    },
+    limitations: [
+      'Real page volume, real delivery/missed delivery and escalation latency are unavailable; synthetic paging is never real delivery evidence.',
+      'Reassignment latency and after-hours interruptions are unavailable. Coverage hours are scheduled from current schedules, not worked hours (see the load basis).',
+      'Imported-history provenance is unavailable; timeline source kind describes representation, not native versus imported origin.',
+      'Source-reported recovery is what the monitoring sources reported, as accepted by Oncall; neither it nor a human attestation is independent verification of recovery.',
+      'Explicitly erased incidents retain only an anonymous declaration case with service and timestamp: all durations are unknown and the denominator stays visible. Earlier erasures made before this capability cannot be reconstructed. Unassignable declaration timestamps are separately counted.'
+    ],
+    aggregates: {
+      mtta: {
+        total: 3,
+        measured: 1,
+        censored: 2,
+        unknown: 0,
+        mean: 300,
+        p50: 300,
+        p90: 300,
+        p95: 300,
+        histogram: [
+          { fromSeconds: 0, toSeconds: 60, count: 0 },
+          { fromSeconds: 60, toSeconds: 300, count: 0 },
+          { fromSeconds: 300, toSeconds: 900, count: 1 },
+          { fromSeconds: 900, toSeconds: 3600, count: 0 },
+          { fromSeconds: 3600, toSeconds: 14400, count: 0 },
+          { fromSeconds: 14400, toSeconds: 86400, count: 0 },
+          { fromSeconds: 86400, toSeconds: null, count: 0 }
+        ]
+      },
+      mttr: {
+        total: 3,
+        measured: 0,
+        censored: 3,
+        unknown: 0,
+        mean: null,
+        p50: null,
+        p90: null,
+        p95: null,
+        histogram: [
+          { fromSeconds: 0, toSeconds: 60, count: 0 },
+          { fromSeconds: 60, toSeconds: 300, count: 0 },
+          { fromSeconds: 300, toSeconds: 900, count: 0 },
+          { fromSeconds: 900, toSeconds: 3600, count: 0 },
+          { fromSeconds: 3600, toSeconds: 14400, count: 0 },
+          { fromSeconds: 14400, toSeconds: 86400, count: 0 },
+          { fromSeconds: 86400, toSeconds: null, count: 0 }
+        ]
+      },
+      recovery: {
+        total: 3,
+        measured: 0,
+        censored: 3,
+        unknown: 0,
+        mean: null,
+        p50: null,
+        p90: null,
+        p95: null,
+        histogram: [
+          { fromSeconds: 0, toSeconds: 60, count: 0 },
+          { fromSeconds: 60, toSeconds: 300, count: 0 },
+          { fromSeconds: 300, toSeconds: 900, count: 0 },
+          { fromSeconds: 900, toSeconds: 3600, count: 0 },
+          { fromSeconds: 3600, toSeconds: 14400, count: 0 },
+          { fromSeconds: 14400, toSeconds: 86400, count: 0 },
+          { fromSeconds: 86400, toSeconds: null, count: 0 }
+        ]
+      },
+      sourceRecovery: {
+        total: 3,
+        measured: 0,
+        censored: 0,
+        unknown: 3,
+        mean: null,
+        p50: null,
+        p90: null,
+        p95: null,
+        histogram: [
+          { fromSeconds: 0, toSeconds: 60, count: 0 },
+          { fromSeconds: 60, toSeconds: 300, count: 0 },
+          { fromSeconds: 300, toSeconds: 900, count: 0 },
+          { fromSeconds: 900, toSeconds: 3600, count: 0 },
+          { fromSeconds: 3600, toSeconds: 14400, count: 0 },
+          { fromSeconds: 14400, toSeconds: 86400, count: 0 },
+          { fromSeconds: 86400, toSeconds: null, count: 0 }
+        ]
+      }
+    },
+    incidents: [
+      {
+        id: 'fc41b889-7c38-4a1c-a6f5-cbc5a9fed32c',
+        title: 'Synthetic UTC month first',
+        service: 'agent-service',
+        serviceName: 'Payments API',
+        state: 'declared',
+        severity: 'warning',
+        incidentRevision: 1,
+        declaredAt: '2026-10-01T00:00:00.000Z',
+        href: '/incidents/fc41b889-7c38-4a1c-a6f5-cbc5a9fed32c',
+        mtta: {
+          status: 'censored',
+          seconds: 2678400,
+          sourceEntryId: 'f5d3d970-ca98-49a2-841f-c4a493883376',
+          sourceAt: '2026-10-01T00:00:00.000Z',
+          sourceKind: 'structured',
+          reason: 'No acknowledgement observed by generatedAt; seconds is a lower bound',
+          evidence: null
+        },
+        mttr: {
+          status: 'censored',
+          seconds: 2678400,
+          sourceEntryId: 'f5d3d970-ca98-49a2-841f-c4a493883376',
+          sourceAt: '2026-10-01T00:00:00.000Z',
+          sourceKind: 'structured',
+          reason: 'No final resolution observed by generatedAt; seconds is a lower bound',
+          evidence: null
+        },
+        recovery: {
+          status: 'censored',
+          seconds: 2678400,
+          sourceEntryId: 'f5d3d970-ca98-49a2-841f-c4a493883376',
+          sourceAt: '2026-10-01T00:00:00.000Z',
+          sourceKind: 'structured',
+          reason: 'No recovery attestation after the last mitigation; earlier recovery cannot establish final recovery',
+          evidence: null
+        },
+        sourceRecovery: {
+          status: 'unknown',
+          seconds: null,
+          sourceEntryId: null,
+          sourceAt: null,
+          sourceKind: null,
+          reason: 'No linked alerts; no source can observe recovery',
+          evidence: null
+        }
+      },
+      {
+        id: '58e13663-23fa-46fe-bad0-e09c8b9c97e3',
+        title: 'Synthetic customer resource',
+        service: 'agent-service',
+        serviceName: 'Payments API',
+        state: 'acknowledged',
+        severity: 'warning',
+        incidentRevision: 3,
+        declaredAt: '2026-10-15T12:00:00.000Z',
+        href: '/incidents/58e13663-23fa-46fe-bad0-e09c8b9c97e3',
+        mtta: {
+          status: 'measured',
+          seconds: 300,
+          sourceEntryId: '491921dc-7e55-4a9b-99bb-fd2741e14519',
+          sourceAt: '2026-10-15T12:05:00.000Z',
+          sourceKind: 'structured',
+          reason: 'Elapsed seconds from declaration to this timeline entry',
+          evidence: null
+        },
+        mttr: {
+          status: 'censored',
+          seconds: 1425600,
+          sourceEntryId: 'b69924c9-d24e-4a17-95e4-f84a84d78e39',
+          sourceAt: '2026-10-15T12:00:00.000Z',
+          sourceKind: 'structured',
+          reason: 'No final resolution observed by generatedAt; seconds is a lower bound',
+          evidence: null
+        },
+        recovery: {
+          status: 'censored',
+          seconds: 1425600,
+          sourceEntryId: 'b69924c9-d24e-4a17-95e4-f84a84d78e39',
+          sourceAt: '2026-10-15T12:00:00.000Z',
+          sourceKind: 'structured',
+          reason: 'No recovery attestation after the last mitigation; earlier recovery cannot establish final recovery',
+          evidence: null
+        },
+        sourceRecovery: {
+          status: 'unknown',
+          seconds: null,
+          sourceEntryId: null,
+          sourceAt: null,
+          sourceKind: null,
+          reason: 'No linked alerts; no source can observe recovery',
+          evidence: null
+        }
+      },
+      {
+        id: '925ecf1f-d05d-43e7-92f6-361995ee0be7',
+        title: 'Synthetic UTC month last',
+        service: 'agent-service',
+        serviceName: 'Payments API',
+        state: 'declared',
+        severity: 'warning',
+        incidentRevision: 1,
+        declaredAt: '2026-10-31T23:59:59.999Z',
+        href: '/incidents/925ecf1f-d05d-43e7-92f6-361995ee0be7',
+        mtta: {
+          status: 'censored',
+          seconds: 0.001,
+          sourceEntryId: 'f42bd407-48cc-4f89-ade1-ba9977f44e05',
+          sourceAt: '2026-10-31T23:59:59.999Z',
+          sourceKind: 'structured',
+          reason: 'No acknowledgement observed by generatedAt; seconds is a lower bound',
+          evidence: null
+        },
+        mttr: {
+          status: 'censored',
+          seconds: 0.001,
+          sourceEntryId: 'f42bd407-48cc-4f89-ade1-ba9977f44e05',
+          sourceAt: '2026-10-31T23:59:59.999Z',
+          sourceKind: 'structured',
+          reason: 'No final resolution observed by generatedAt; seconds is a lower bound',
+          evidence: null
+        },
+        recovery: {
+          status: 'censored',
+          seconds: 0.001,
+          sourceEntryId: 'f42bd407-48cc-4f89-ade1-ba9977f44e05',
+          sourceAt: '2026-10-31T23:59:59.999Z',
+          sourceKind: 'structured',
+          reason: 'No recovery attestation after the last mitigation; earlier recovery cannot establish final recovery',
+          evidence: null
+        },
+        sourceRecovery: {
+          status: 'unknown',
+          seconds: null,
+          sourceEntryId: null,
+          sourceAt: null,
+          sourceKind: null,
+          reason: 'No linked alerts; no source can observe recovery',
+          evidence: null
+        }
+      }
+    ]
+  },
+  expected: {
+    revision: 36,
+    generatedAt: '2026-11-01T00:00:00.000Z',
+    cohort: {
+      from: '2026-10-01T00:00:00.000Z',
+      to: '2026-11-01T00:00:00.000Z',
+      service: null,
+      observationAt: '2026-11-01T00:00:00.000Z',
+      count: 3,
+      erased: 0,
+      unassignableDeclarations: 0,
+      inclusion: 'createdAt declaration in UTC [from,to); every matching incident retained regardless of state, severity, service configuration or metric availability; endpoints observed through generatedAt'
+    },
+    definitions: {
+      mtta: 'Declaration to first explicit acknowledgement; resolution never implies acknowledgement',
+      mttr: 'Declaration to final resolution; unresolved incidents are right-censored at generatedAt',
+      recovery: 'Declaration to last evidenced human recovery attestation after any later mitigation; not independently verified recovery',
+      sourceRecovery: 'Declaration to acceptance of the last recovery event reported by the sources of every linked alert; censored while a linked alert is active, unknown without linked alerts',
+      statistics: 'Seconds; mean and nearest-rank p50/p90/p95 use measured values only. Total, measured, censored and unknown denominators remain visible. Histogram buckets are [fromSeconds,toSeconds), null upper bound means infinity',
+      censored: 'Seconds is an observed lower bound, not a completed duration; source identifies the declaration entry',
+      unknown: 'Seconds is null; no zero imputation. Invalid, future or pre-declaration endpoint timestamps are unknown',
+      source: 'Structured lifecycle metadata or explicitly legacy-derived transition entries; sourceAt retains original timezone text'
+    },
+    limitations: [
+      'Real page volume, real delivery/missed delivery and escalation latency are unavailable; synthetic paging is never real delivery evidence.',
+      'Reassignment latency and after-hours interruptions are unavailable. Coverage hours are scheduled from current schedules, not worked hours (see the load basis).',
+      'Imported-history provenance is unavailable; timeline source kind describes representation, not native versus imported origin.',
+      'Source-reported recovery is what the monitoring sources reported, as accepted by Oncall; neither it nor a human attestation is independent verification of recovery.',
+      'Explicitly erased incidents retain only an anonymous declaration case with service and timestamp: all durations are unknown and the denominator stays visible. Earlier erasures made before this capability cannot be reconstructed. Unassignable declaration timestamps are separately counted.'
+    ],
+    aggregates: {
+      mtta: {
+        total: 3,
+        measured: 1,
+        censored: 2,
+        unknown: 0,
+        mean: 300,
+        p50: 300,
+        p90: 300,
+        p95: 300,
+        histogram: [
+          { fromSeconds: 0, toSeconds: 60, count: 0 },
+          { fromSeconds: 60, toSeconds: 300, count: 0 },
+          { fromSeconds: 300, toSeconds: 900, count: 1 },
+          { fromSeconds: 900, toSeconds: 3600, count: 0 },
+          { fromSeconds: 3600, toSeconds: 14400, count: 0 },
+          { fromSeconds: 14400, toSeconds: 86400, count: 0 },
+          { fromSeconds: 86400, toSeconds: null, count: 0 }
+        ]
+      },
+      mttr: {
+        total: 3,
+        measured: 0,
+        censored: 3,
+        unknown: 0,
+        mean: null,
+        p50: null,
+        p90: null,
+        p95: null,
+        histogram: [
+          { fromSeconds: 0, toSeconds: 60, count: 0 },
+          { fromSeconds: 60, toSeconds: 300, count: 0 },
+          { fromSeconds: 300, toSeconds: 900, count: 0 },
+          { fromSeconds: 900, toSeconds: 3600, count: 0 },
+          { fromSeconds: 3600, toSeconds: 14400, count: 0 },
+          { fromSeconds: 14400, toSeconds: 86400, count: 0 },
+          { fromSeconds: 86400, toSeconds: null, count: 0 }
+        ]
+      },
+      recovery: {
+        total: 3,
+        measured: 0,
+        censored: 3,
+        unknown: 0,
+        mean: null,
+        p50: null,
+        p90: null,
+        p95: null,
+        histogram: [
+          { fromSeconds: 0, toSeconds: 60, count: 0 },
+          { fromSeconds: 60, toSeconds: 300, count: 0 },
+          { fromSeconds: 300, toSeconds: 900, count: 0 },
+          { fromSeconds: 900, toSeconds: 3600, count: 0 },
+          { fromSeconds: 3600, toSeconds: 14400, count: 0 },
+          { fromSeconds: 14400, toSeconds: 86400, count: 0 },
+          { fromSeconds: 86400, toSeconds: null, count: 0 }
+        ]
+      },
+      sourceRecovery: {
+        total: 3,
+        measured: 0,
+        censored: 0,
+        unknown: 3,
+        mean: null,
+        p50: null,
+        p90: null,
+        p95: null,
+        histogram: [
+          { fromSeconds: 0, toSeconds: 60, count: 0 },
+          { fromSeconds: 60, toSeconds: 300, count: 0 },
+          { fromSeconds: 300, toSeconds: 900, count: 0 },
+          { fromSeconds: 900, toSeconds: 3600, count: 0 },
+          { fromSeconds: 3600, toSeconds: 14400, count: 0 },
+          { fromSeconds: 14400, toSeconds: 86400, count: 0 },
+          { fromSeconds: 86400, toSeconds: null, count: 0 }
+        ]
+      }
+    },
+    incidents: [
+      {
+        id: 'fc41b889-7c38-4a1c-a6f5-cbc5a9fed32c',
+        title: 'Synthetic UTC month first',
+        service: 'agent-service',
+        serviceName: 'Payments API',
+        state: 'declared',
+        severity: 'warning',
+        incidentRevision: 1,
+        declaredAt: '2026-10-01T00:00:00.000Z',
+        href: '/incidents/fc41b889-7c38-4a1c-a6f5-cbc5a9fed32c',
+        mtta: {
+          status: 'censored',
+          seconds: 2678400,
+          sourceEntryId: 'f5d3d970-ca98-49a2-841f-c4a493883376',
+          sourceAt: '2026-10-01T00:00:00.000Z',
+          sourceKind: 'structured',
+          reason: 'No acknowledgement observed by generatedAt; seconds is a lower bound',
+          evidence: null
+        },
+        mttr: {
+          status: 'censored',
+          seconds: 2678400,
+          sourceEntryId: 'f5d3d970-ca98-49a2-841f-c4a493883376',
+          sourceAt: '2026-10-01T00:00:00.000Z',
+          sourceKind: 'structured',
+          reason: 'No final resolution observed by generatedAt; seconds is a lower bound',
+          evidence: null
+        },
+        recovery: {
+          status: 'censored',
+          seconds: 2678400,
+          sourceEntryId: 'f5d3d970-ca98-49a2-841f-c4a493883376',
+          sourceAt: '2026-10-01T00:00:00.000Z',
+          sourceKind: 'structured',
+          reason: 'No recovery attestation after the last mitigation; earlier recovery cannot establish final recovery',
+          evidence: null
+        },
+        sourceRecovery: {
+          status: 'unknown',
+          seconds: null,
+          sourceEntryId: null,
+          sourceAt: null,
+          sourceKind: null,
+          reason: 'No linked alerts; no source can observe recovery',
+          evidence: null
+        }
+      },
+      {
+        id: '58e13663-23fa-46fe-bad0-e09c8b9c97e3',
+        title: 'Synthetic customer resource',
+        service: 'agent-service',
+        serviceName: 'Payments API',
+        state: 'acknowledged',
+        severity: 'warning',
+        incidentRevision: 3,
+        declaredAt: '2026-10-15T12:00:00.000Z',
+        href: '/incidents/58e13663-23fa-46fe-bad0-e09c8b9c97e3',
+        mtta: {
+          status: 'measured',
+          seconds: 300,
+          sourceEntryId: '491921dc-7e55-4a9b-99bb-fd2741e14519',
+          sourceAt: '2026-10-15T12:05:00.000Z',
+          sourceKind: 'structured',
+          reason: 'Elapsed seconds from declaration to this timeline entry',
+          evidence: null
+        },
+        mttr: {
+          status: 'censored',
+          seconds: 1425600,
+          sourceEntryId: 'b69924c9-d24e-4a17-95e4-f84a84d78e39',
+          sourceAt: '2026-10-15T12:00:00.000Z',
+          sourceKind: 'structured',
+          reason: 'No final resolution observed by generatedAt; seconds is a lower bound',
+          evidence: null
+        },
+        recovery: {
+          status: 'censored',
+          seconds: 1425600,
+          sourceEntryId: 'b69924c9-d24e-4a17-95e4-f84a84d78e39',
+          sourceAt: '2026-10-15T12:00:00.000Z',
+          sourceKind: 'structured',
+          reason: 'No recovery attestation after the last mitigation; earlier recovery cannot establish final recovery',
+          evidence: null
+        },
+        sourceRecovery: {
+          status: 'unknown',
+          seconds: null,
+          sourceEntryId: null,
+          sourceAt: null,
+          sourceKind: null,
+          reason: 'No linked alerts; no source can observe recovery',
+          evidence: null
+        }
+      },
+      {
+        id: '925ecf1f-d05d-43e7-92f6-361995ee0be7',
+        title: 'Synthetic UTC month last',
+        service: 'agent-service',
+        serviceName: 'Payments API',
+        state: 'declared',
+        severity: 'warning',
+        incidentRevision: 1,
+        declaredAt: '2026-10-31T23:59:59.999Z',
+        href: '/incidents/925ecf1f-d05d-43e7-92f6-361995ee0be7',
+        mtta: {
+          status: 'censored',
+          seconds: 0.001,
+          sourceEntryId: 'f42bd407-48cc-4f89-ade1-ba9977f44e05',
+          sourceAt: '2026-10-31T23:59:59.999Z',
+          sourceKind: 'structured',
+          reason: 'No acknowledgement observed by generatedAt; seconds is a lower bound',
+          evidence: null
+        },
+        mttr: {
+          status: 'censored',
+          seconds: 0.001,
+          sourceEntryId: 'f42bd407-48cc-4f89-ade1-ba9977f44e05',
+          sourceAt: '2026-10-31T23:59:59.999Z',
+          sourceKind: 'structured',
+          reason: 'No final resolution observed by generatedAt; seconds is a lower bound',
+          evidence: null
+        },
+        recovery: {
+          status: 'censored',
+          seconds: 0.001,
+          sourceEntryId: 'f42bd407-48cc-4f89-ade1-ba9977f44e05',
+          sourceAt: '2026-10-31T23:59:59.999Z',
+          sourceKind: 'structured',
+          reason: 'No recovery attestation after the last mitigation; earlier recovery cannot establish final recovery',
+          evidence: null
+        },
+        sourceRecovery: {
+          status: 'unknown',
+          seconds: null,
+          sourceEntryId: null,
+          sourceAt: null,
+          sourceKind: null,
+          reason: 'No linked alerts; no source can observe recovery',
+          evidence: null
+        }
+      }
+    ],
+    load: {
+      schedulingRevision: 3,
+      from: '2026-10-01T00:00:00.000Z',
+      through: '2026-11-01T00:00:00.000Z',
+      schedules: [
+        {
+          id: 'agent-schedule',
+          name: 'Synthetic imported schedule text',
+          service: 'agent-service',
+          revision: 2,
+          timezone: 'UTC'
+        },
+        {
+          id: 'synthetic-oncall-resource-foreign-schedule',
+          name: 'Agent coordination rota',
+          service: 'agent-foreign-service',
+          revision: 1,
+          timezone: 'UTC'
+        }
+      ],
+      acknowledged: 1,
+      unacknowledged: 2,
+      unknownAcknowledgements: 0,
+      responders: [
+        {
+          member: 'fc1c8b49-1a30-443f-870e-ef414e2f0211',
+          name: 'Alex Chen',
+          current: true,
+          primarySeconds: 0,
+          backupSeconds: 0,
+          acknowledgements: 1,
+          outsideCoverage: 1,
+          unknownTime: 0,
+          per24PrimaryHours: null,
+          acknowledgementShare: 1,
+          primaryShare: null,
+          loadToCoverage: null
+        }
+      ],
+      services: [
+        {
+          service: 'agent-foreign-service',
+          name: 'Inventory worker',
+          schedules: 1,
+          incidents: 0,
+          acknowledgements: 0,
+          primarySeconds: 0,
+          uncoveredPrimarySeconds: 2678400,
+          per24PrimaryHours: null
+        },
+        {
+          service: 'agent-service',
+          name: 'Payments API',
+          schedules: 1,
+          incidents: 3,
+          acknowledgements: 1,
+          primarySeconds: 0,
+          uncoveredPrimarySeconds: 2678400,
+          per24PrimaryHours: null
+        }
+      ],
+      basis: [
+        'Scheduled hours come from the current revision of each schedule (its rotations and overrides) and current membership, over the cohort range up to the observation time. They are scheduled hours, not worked hours.',
+        'Earlier schedule revisions are not retained, so a schedule change recomputes past scheduled hours; the schedule revisions used are listed. A slot held by a member who is now inactive or not a responder counts as uncovered.',
+        'Erased declaration cases have unknown acknowledgment state, shown separately from unacknowledged incidents. Shares use only observed retained acknowledgments; no erased case is attributed or treated as zero.',
+        'Load is the first explicit acknowledgement of each cohort incident, the entry acknowledgement time is measured to. Unacknowledged incidents are counted as unattributed, never assigned to anyone.',
+        'Load is normalised by scheduled primary hours, the role a page reaches first; backup hours are shown separately. Load to coverage is the share of acknowledgements divided by the share of primary hours: 1 means load in proportion to coverage. Without primary hours no rate is given.',
+        "Outside coverage counts acknowledgements made while the responder held neither primary nor backup on a schedule of that incident's service. Overlapping schedules count each hour once.",
+        'Teams are not modelled yet, so load is broken out by responder and by service.'
+      ]
+    },
+    noise: {
+      alerts: 0,
+      triggers: 0,
+      repeatedAlerts: 0,
+      suppressedAlerts: 0,
+      noisyKeys: 0,
+      noisy: [],
+      definition: 'Alerts with a trigger event accepted in the cohort range [from,to), suppressed alerts included. An alert repeats when it has more than one trigger in range; a source/service/key is noisy when it repeats or opens more than one alert generation in range. The 20 noisiest keys are listed; the counts cover all of them.'
+    }
+  },
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

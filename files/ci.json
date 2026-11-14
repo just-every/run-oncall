@@ -1,0 +1,21 @@
+{
+  "head": "ee920fafd3321e45e731e49fdc7427a9d1e4dfec",
+  "runs": [
+    {
+      "id": 43603032653,
+      "name": "Verify",
+      "head_sha": "ee920fafd3321e45e731e49fdc7427a9d1e4dfec",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "event": "push",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43603032653"
+    }
+  ],
+  "githubCallsUsed": 8,
+  "lastDiscoveryEpoch": 1794665160.9765327,
+  "lastPollEpoch": 1794666366.3712244,
+  "assessment": "Intake shard cancelled; final coverage guard requires successful shards and failed on the cancellation. Six other shards and build succeeded. No failing product assertion established. No dispatch or rerun requested.",
+  "failedGuardJob": 132476364250,
+  "cancelledIntakeJob": 132472278311,
+  "terminalProductStatus": "PUSHED"
+}
