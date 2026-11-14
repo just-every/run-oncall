@@ -214,7 +214,7 @@ export function scheduleTools(env: Bindings): ToolDefinition[] {
     return {
       name: `oncall.schedules.${operation}`, title: operation === 'update' ? 'Apply a reviewed coordination schedule' : 'Add a coordination coverage override',
       description: operation === 'update' ? 'Update an existing schedule using the exact digest returned by oncall.schedules.review for the complete proposal, current workspace and range. A digest is change-review evidence, never person approval. Paging stays OFF.' : 'Append a native primary or backup override to an existing schedule at its exact native revision. Explicit empty coverage uses member:null. This changes coordination only; paging stays OFF.',
-      scope: 'schedules:write', readOnly: false, untrusted: true, classes: ['standard', 'sensitive', 'live'], clauses: ['OC-003', 'OC-011', 'OC-012', 'OC-024', 'OC-053'],
+      scope: 'schedules:write', readOnly: false, untrusted: true, classes: ['standard', 'sensitive', 'live'], clauses: operation === 'update' ? ['OC-011', 'OC-024', 'OC-077'] : ['OC-003', 'OC-011', 'OC-012', 'OC-024', 'OC-053'],
       inputSchema: operation === 'update' ? object({ ...reviewFields, digest: { type: 'string', pattern: '^[a-f0-9]{64}$' } }) : object({ id, revision, override }), outputSchema: { type: 'object' }, revisionType: 'integer',
       target: (args, ctx) => nativeCall(async () => ({ kind: 'schedule', id: (await savedSchedule(env, ctx, args, true)).schedule.id })),
       revision: (args, ctx) => nativeCall(async () => (await savedSchedule(env, ctx, args, true)).schedule.revision),
@@ -249,7 +249,7 @@ export function scheduleTools(env: Bindings): ToolDefinition[] {
     },
     {
       name: 'oncall.schedules.coverage', title: 'Preview coordination coverage', description: 'Read side-effect-free native coverage and gaps over [from,to), at most 366 elapsed days. Uses current members and calendar-day/DST rules; this is not paging or delivery evidence.',
-      scope: 'schedules:read', readOnly: true, untrusted: true, classes: ['standard', 'sensitive'], clauses: ['OC-003', 'OC-011', 'OC-012', 'OC-014', 'OC-024'],
+      scope: 'schedules:read', readOnly: true, untrusted: true, classes: ['standard', 'sensitive'], clauses: ['OC-014', 'OC-020', 'OC-076'],
       inputSchema: object({ id, from: clock, to: clock }), outputSchema: { type: 'object' },
       classify: (args, ctx) => nativeCall(async () => { const saved = await savedSchedule(env, ctx, args); preview(saved.schedule, saved.access.state.members, args.from as number, args.to as number); return readFacts(saved.access.state, [saved.schedule]) }),
       run: (args, ctx) => nativeCall(async () => { const saved = await savedSchedule(env, ctx, args); return { result: { id: saved.schedule.id, revision: saved.schedule.revision, from: args.from, to: args.to, coverage: preview(saved.schedule, saved.access.state.members, args.from as number, args.to as number), people: people(saved.access.state, [saved.schedule]), paging: 'OFF' } } }),
