@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 import {openIncidentAction} from './keyboard.mjs';
@@ -18,7 +19,7 @@ async function json(http,path,input,status=200){
 export async function resourceParity({browserProof=false}={}){
  const runtime=await agentRuntime({clock:null});let browser;
  const evidence=process.env.ONCALL_BROWSER_EVIDENCE;
- const receipt={journey:'resourceParity',observationAt:new Date(observed).toISOString(),from,to,cases:[],screens:[]};
+ const receipt={journey:'resourceParity',head:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),observationAt:new Date(observed).toISOString(),from,to,cases:[],screens:[]};
  try{
   // Establish real sessions before freezing platform time; SQLite's session
   // expiry also consults its own clock. No session or bearer enters evidence.
@@ -92,6 +93,19 @@ export async function resourceParity({browserProof=false}={}){
      const sensitive=read.initial.decision.classes.some(row=>row.class==='sensitive');
      assert.equal(read.initial.decision.revision,runtime.context.revision);
      assert.equal(read.initial.decision.disposition,mode==='held'?(sensitive?'approval':'review'):'autonomous');
+     assert.ok(read.initial.decision.classes.every(row=>row.do===(mode==='held'?(row.class==='standard'?'review':'approval'):'autonomous')));
+     if(mode==='held'&&sensitive){
+      const handle=read.initial.body.error.data.approval;
+      const {approval}=await json(p.http,'/agents/api/approvals/'+handle.id);
+      assert.equal(approval.state,'executed');assert.equal(approval.prepared_by.for.id,p.member.id);assert.equal(approval.prepared_by.agent.id,p.agent);
+      assert.deepEqual(approval.approvals.map(row=>row.person),[p.member.id],'The actual sponsor session approves its own held resource');
+     }else if(mode==='held'){
+      const handle=read.answer.result._meta['com.runeditrun/review'];assert.ok(handle?.id);
+      const {reviews}=await json(p.http,'/agents/api/reviews');
+      const review=reviews.find(row=>row.id===handle.id);assert.ok(review);
+      assert.equal(review.decision_id,read.initial.decision.id);assert.equal(review.state,'open');assert.equal(review.prepared_by.for,p.member.name);
+     }
+
      // Only the transport metadata and explicitly derived alert observations
      // are separate. Every record field, including nested fields, is compared.
      if(c.kind==='alerts'){
@@ -102,7 +116,7 @@ export async function resourceParity({browserProof=false}={}){
      assert.equal((await json(p.http,'/api/state')).revision,native.revision);
      assertAgentReadUnchanged(before,await agentReadSnapshot(runtime));
      assert.deepEqual(await runtime.outboundRequests(),[]);
-     receipt.cases.push({role:p.member.role,mode,template:c.kind,workspaceRevision:native.revision,schedulingRevision:paging.revision,disposition:read.initial.decision.disposition,fields:Object.keys(read.value).sort(),equal:true});
+     receipt.cases.push({role:p.member.role,mode,template:c.kind,workspaceRevision:native.revision,schedulingRevision:paging.revision,disposition:read.initial.decision.disposition,fields:Object.keys(read.value).sort(),equal:true,nativeRecord:c.expected,resourceRecord:read.value});
      console.log(`PROBE BASE-AGENT-003 2 ${mode} ${p.member.role} ${c.kind}: native protected record equals every resource field at workspace revision ${native.revision}; paging and permanent state-changing audit unchanged; zero outbound requests`);
     }
     const admission=await runtime.db.prepare('SELECT sponsor FROM agent_door_agents WHERE id=?').bind(p.agent).first();
@@ -111,8 +125,22 @@ export async function resourceParity({browserProof=false}={}){
      const refused=await runtime.mcp('resources/read',{uri:'oncall://reports/'+period},{},bearer);
      assert.equal(refused.body.error?.data?.code,'resource_unavailable');assert.equal(refused.result,undefined);
     }
-    if(browser)await captureViews(browser,runtime,p,mode,cases,report,reportPath,receipt);
     assertAgentReadUnchanged(before,await agentReadSnapshot(runtime));
+    if(browser){
+     // Native screens already retain value-free request observations. Compare
+     // all native effects and permanent state-changing audit separately from
+     // the stricter agent-only decision custody assertions above.
+     const nativeBefore=await agentReadSnapshot(runtime);
+     await captureViews(browser,runtime,p,mode,cases,report,receipt);
+     const after=await agentReadSnapshot(runtime),priorIds=new Set(nativeBefore.records.oc_admin_audit.map(row=>row.id));
+     for(const row of after.records.oc_admin_audit.filter(row=>!priorIds.has(row.id))){
+      assert.equal(row.kind,'urgency.request','Only the existing native urgency read appends observation audit');
+      for(const family of ['workspace','paging','handoff'])assert.equal(row[family+'_before'],row[family+'_after']);
+     }
+     // Audit observations above are native screen custody, never MCP reads.
+     // Keep every original audit and every state-changing row in the comparison.
+     assertAgentReadUnchanged(nativeBefore,{...after,records:{...after.records,oc_admin_audit:after.records.oc_admin_audit.filter(row=>priorIds.has(row.id))}});
+    }
    }
   }
   assert.equal(receipt.cases.length,28);
@@ -122,7 +150,7 @@ export async function resourceParity({browserProof=false}={}){
  }finally{try{await browser?.close()}finally{await runtime.close()}}
 }
 
-async function captureViews(browser,runtime,person,mode,cases,report,reportPath,receipt){
+async function captureViews(browser,runtime,person,mode,cases,report,receipt){
  const context=await browser.newContext({baseURL:runtime.origin,viewport:{width:1440,height:1000}});
  try{
   await context.addCookies(person.cookie.split('; ').map(pair=>{const at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:runtime.origin,httpOnly:true,sameSite:'Lax'}}));
@@ -150,14 +178,14 @@ async function captureViews(browser,runtime,person,mode,cases,report,reportPath,
      await page.getByRole('article',{name:'Saved handoff copy',exact:true}).waitFor();
      await page.getByText(screen.expected.payload.summary,{exact:true}).waitFor();
     }else if(kind==='services'){
-     await page.getByRole('heading',{name:screen.expected.name,exact:true}).waitFor();
+     await page.getByRole('heading',{name:screen.expected.name,exact:true,level:2}).waitFor();
      const changes=page.locator('details.recent-changes');
      if(await changes.count()){
       await changes.locator('summary').click();
       await changes.getByText(cases.find(c=>c.kind==='changes').expected.summary,{exact:true}).waitFor();
      }
-    }else if(kind==='incidents')await page.getByRole('heading',{name:screen.expected.title,exact:true}).waitFor();
-    else if(kind==='schedules')await page.getByRole('heading',{name:screen.expected.name,exact:true}).waitFor();
+    }else if(kind==='incidents')await page.getByRole('heading',{name:screen.expected.title,exact:true,level:1}).waitFor();
+    else if(kind==='schedules')await page.getByRole('heading',{name:screen.expected.name,exact:true,level:1}).waitFor();
     else if(kind==='alerts')await page.getByRole('article',{name:'Alert details',exact:true}).waitFor();
     if(width===1440){
      assert.equal(new URL(page.url()).pathname,path,'The active native role can open the corresponding screen');
@@ -167,6 +195,7 @@ async function captureViews(browser,runtime,person,mode,cases,report,reportPath,
     const name=`parity-${mode}-${person.member.role}-${kind}-${width}.png`;
     await page.screenshot({path:process.env.ONCALL_BROWSER_EVIDENCE+'/'+name,fullPage:true});
     receipt.screens.push({role:person.member.role,mode,path,kind,width,file:name});
+    console.log(`Browser proof ${mode} ${person.member.role} ${kind} ${width}: actual native view captured`);
     if(kind==='reports')await runtime.time(observed);
    }
   }
