@@ -26,7 +26,7 @@ export function coordinationSummary(operation: string, args: Record<string, unkn
   else if (operation === 'actions.create') {
     lines.push(`Create follow-up “${args.title}” for ${person(args.owner)}, due ${args.due}.`);
     if (args.priority) lines.push(`Priority ${args.priority}.`);
-    lines.push(args.completionPolicy === 'human-review' ? 'Completion requires human review.' : 'Completion requires evidence.');
+    lines.push(args.completionPolicy === 'evidence' ? 'Completion requires evidence.' : 'Completion requires human review.');
   } else if (operation === 'actions.submit') lines.push(`Submit completion evidence for “${incident?.actions.find(row => row.id === args.action)?.title ?? 'the follow-up'}”.`);
   for (const key of ['summary', 'text', 'reason', 'description']) if (typeof args[key] === 'string') lines.push(args[key]);
   if (typeof args.evidence === 'string') lines.push(`Evidence: ${args.evidence}`);

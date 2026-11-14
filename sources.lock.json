@@ -1692,7 +1692,7 @@
       "executable": false
     },
     "src/agent-door/coordination-summary.ts": {
-      "sha256": "197519144e0e0999abd00367e3fba8d85b1cd429a28bf919992cb632ee3c4fc5",
+      "sha256": "ad57065e90b3e96bff8ffacfe55894470d50cc9842a66631afbc59e946d6e0c2",
       "executable": false
     },
     "src/agent-door/coordination-tools.ts": {
