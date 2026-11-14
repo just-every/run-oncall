@@ -1,0 +1,821 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+(node:3718) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Owned runtime processes [["3718","3717","node"],["3726","3718","esbuild"],["3735","3718","workerd"],["3741","3718","ps"]]
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Policy renewal preserves retained native and call custody: agent_door_events
++ actual - expected
+... Skipped lines
+
+  [
+    {
+      event: '{"id":"2230eaa6d15b49e68d6033d69ce68ff0","type":"members.created","uri":"oncall://members/1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:15.970Z","native_revision":null}',
+      id: '2230eaa6d15b49e68d6033d69ce68ff0',
+      sequence: 1,
+...
+    {
++     event: '{"seq":1,"revision":1,"classes":[{"class":"standard"},{"class":"external"},{"class":"money"},{"class":"commitment"},{"class":"accounts"},{"class":"gated"},{"class":"access"},{"class":"security"},{"class":"destructive"},{"class":"sensitive"},{"class":"live"}],"decision":{"revision":1,"document_sha256":"7e09a41eccdbbfa16680181dff39b95a786f686f0090e5ddaabaf654354b646a"},"id":"a7269a2d-8fa9-43e0-a53b-764d0dd98265","type":"policy.adopted","uri":"http://127.0.0.1:43309/agents/policy/1","actor":{"kind":"business"},"at":"2026-11-15T14:00:00.000Z"}',
++     id: 'a7269a2d-8fa9-43e0-a53b-764d0dd98265',
++     sequence: 65,
++     uri: 'http://127.0.0.1:43309/agents/policy/1'
++   },
++   {
+      event: '{"id":"4db7db94517f883381fb3b94ce6d750d","type":"schedule.created","uri":"oncall://schedules/agent-schedule/coverage","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.177Z","native_revision":1}',
+      id: '4db7db94517f883381fb3b94ce6d750d',
+      sequence: 7,
+      uri: 'oncall://schedules/agent-schedule/coverage'
+    },
+
+    at agedReplayRetention (file:///home/agent/rer-consolidation/work/sd-oncall-c-f245/run-oncall/tests/oncall-agent-retention.mjs:187:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///tmp/f245-retention-run.mjs:2:1 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: [
+    {
+      sequence: 1,
+      id: '2230eaa6d15b49e68d6033d69ce68ff0',
+      uri: 'oncall://members/1f102cc1-97f8-4b8d-9ec5-2eb596335fdc',
+      event: '{"id":"2230eaa6d15b49e68d6033d69ce68ff0","type":"members.created","uri":"oncall://members/1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:15.970Z","native_revision":null}'
+    },
+    {
+      sequence: 10,
+      id: '980f460116840d5939153a1f2c4fe5e3',
+      uri: 'oncall://automation/clients/api-b07c0d56-5c88-402b-b144-75622f9e5069',
+      event: '{"id":"980f460116840d5939153a1f2c4fe5e3","type":"clients.created","uri":"oncall://automation/clients/api-b07c0d56-5c88-402b-b144-75622f9e5069","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.219Z","native_revision":1}'
+    },
+    {
+      sequence: 11,
+      id: '1caba5ba36e9e0eb6e5bf07791f270d4',
+      uri: 'oncall://automation/endpoints/b2bee59c-9759-4a33-a1c2-1efef1065b46',
+      event: '{"id":"1caba5ba36e9e0eb6e5bf07791f270d4","type":"endpoints.created","uri":"oncall://automation/endpoints/b2bee59c-9759-4a33-a1c2-1efef1065b46","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.231Z","native_revision":1}'
+    },
+    {
+      sequence: 12,
+      id: 'dd65b9073f0a98ea34a07a2972102664',
+      uri: 'oncall://automation/clients/api-687cf6b9-72f6-432a-9455-30c5c1f38f31',
+      event: '{"id":"dd65b9073f0a98ea34a07a2972102664","type":"clients.created","uri":"oncall://automation/clients/api-687cf6b9-72f6-432a-9455-30c5c1f38f31","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.246Z","native_revision":1}'
+    },
+    {
+      sequence: 13,
+      id: '889bceaca0f8a0c715c5ee77bbee2f46',
+      uri: 'oncall://automation/endpoints/5df69f60-3d87-44b8-a844-4eefb0448fb1',
+      event: '{"id":"889bceaca0f8a0c715c5ee77bbee2f46","type":"endpoints.created","uri":"oncall://automation/endpoints/5df69f60-3d87-44b8-a844-4eefb0448fb1","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.260Z","native_revision":1}'
+    },
+    {
+      sequence: 14,
+      id: 'a07b656a-a7bc-425b-aed6-8e31d90779b4',
+      uri: 'http://127.0.0.1:43309/agents/policy/1',
+      event: '{"seq":1,"revision":1,"classes":[{"class":"standard"},{"class":"external"},{"class":"money"},{"class":"commitment"},{"class":"accounts"},{"class":"gated"},{"class":"access"},{"class":"security"},{"class":"destructive"},{"class":"sensitive"},{"class":"live"}],"decision":{"revision":1,"document_sha256":"7e09a41eccdbbfa16680181dff39b95a786f686f0090e5ddaabaf654354b646a"},"id":"a07b656a-a7bc-425b-aed6-8e31d90779b4","type":"policy.adopted","uri":"http://127.0.0.1:43309/agents/policy/1","actor":{"kind":"business"},"at":"2026-11-14T14:00:00.000Z"}'
+    },
+    {
+      sequence: 15,
+      id: '8dc9446a-1a63-414c-901a-ec6d2f09fb39',
+      uri: 'oncall://incidents/4a30121b-d7f8-423e-b2e7-f1425ea35beb',
+      event: '{"incident":"4a30121b-d7f8-423e-b2e7-f1425ea35beb","revision":1,"id":"8dc9446a-1a63-414c-901a-ec6d2f09fb39","type":"incidents.declare","uri":"oncall://incidents/4a30121b-d7f8-423e-b2e7-f1425ea35beb","actor":{"kind":"agent","agent":{"id":"responder-1a33794d-2fc2-4cfc-afca-7fc7e4406681","name":"Responder assistant"},"for":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"},"label":"Responder assistant for Alex Chen"},"at":"2026-11-14T14:00:00.000Z"}'
+    },
+    {
+      sequence: 16,
+      id: '5cb64465-4d0c-4c36-b582-a87ea0c00b72',
+      uri: 'oncall://incidents/4a30121b-d7f8-423e-b2e7-f1425ea35beb',
+      event: '{"incident":"4a30121b-d7f8-423e-b2e7-f1425ea35beb","revision":2,"id":"5cb64465-4d0c-4c36-b582-a87ea0c00b72","type":"notes.add","uri":"oncall://incidents/4a30121b-d7f8-423e-b2e7-f1425ea35beb","actor":{"kind":"agent","agent":{"id":"responder-1a33794d-2fc2-4cfc-afca-7fc7e4406681","name":"Responder assistant"},"for":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"},"label":"Responder assistant for Alex Chen"},"at":"2026-11-14T14:00:00.000Z"}'
+    },
+    {
+      sequence: 17,
+      id: '5ba3733f76bfe618bc33f8cecb61589c',
+      uri: 'oncall://automation/outbox/e9f12877-946b-43e2-8cc1-389c7a14c92d',
+      event: '{"id":"5ba3733f76bfe618bc33f8cecb61589c","type":"automation.created","uri":"oncall://automation/outbox/e9f12877-946b-43e2-8cc1-389c7a14c92d","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:17.352Z","native_revision":1}'
+    },
+    {
+      sequence: 18,
+      id: '30d10aa5211657e0b2f929447950bb14',
+      uri: 'oncall://automation/outbox/072ac053-c517-4109-9db3-c22acd1de345',
+      event: '{"id":"30d10aa5211657e0b2f929447950bb14","type":"automation.created","uri":"oncall://automation/outbox/072ac053-c517-4109-9db3-c22acd1de345","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:17.352Z","native_revision":1}'
+    },
+    {
+      sequence: 19,
+      id: '46982a828522ca854347f175593f7e81',
+      uri: 'oncall://automation/outbox/cf183537-ef8e-44b0-b2f8-497966f39e8c',
+      event: '{"id":"46982a828522ca854347f175593f7e81","type":"automation.created","uri":"oncall://automation/outbox/cf183537-ef8e-44b0-b2f8-497966f39e8c","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:17.352Z","native_revision":1}'
+    },
+    {
+      sequence: 2,
+      id: 'f901b8ede82cc0f3d3398036986e6f30',
+      uri: 'oncall://members/860dd966-0ddd-412c-8ea1-cbe78a9cfe87',
+      event: '{"id":"f901b8ede82cc0f3d3398036986e6f30","type":"members.created","uri":"oncall://members/860dd966-0ddd-412c-8ea1-cbe78a9cfe87","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.005Z","native_revision":null}'
+    },
+    {
+      sequence: 20,
+      id: '11efdd02b5fe17bab16bde065f5ff5dc',
+      uri: 'oncall://incidents/730a56e1-33a0-4e00-b765-67ff7374d476',
+      event: '{"id":"11efdd02b5fe17bab16bde065f5ff5dc","type":"incidents.created","uri":"oncall://incidents/730a56e1-33a0-4e00-b765-67ff7374d476","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:17.352Z","native_revision":1}'
+    },
+    {
+      sequence: 21,
+      id: '0a0317c7-5012-4aa8-9a18-f9dd0a4f4792',
+      uri: 'oncall://incidents/730a56e1-33a0-4e00-b765-67ff7374d476',
+      event: '{"incident":"730a56e1-33a0-4e00-b765-67ff7374d476","revision":2,"id":"0a0317c7-5012-4aa8-9a18-f9dd0a4f4792","type":"incidents.acknowledge","uri":"oncall://incidents/730a56e1-33a0-4e00-b765-67ff7374d476","actor":{"kind":"agent","agent":{"id":"responder-1a33794d-2fc2-4cfc-afca-7fc7e4406681","name":"Responder assistant"},"for":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"},"label":"Responder assistant for Alex Chen"},"at":"2026-11-14T14:00:00.000Z"}'
+    },
+    {
+      sequence: 22,
+      id: '75a877fd543452a6175c1db9fcd88fc8',
+      uri: 'oncall://automation/outbox/affddedf-9bc1-49e0-842a-5c7beac4ffa1',
+      event: '{"id":"75a877fd543452a6175c1db9fcd88fc8","type":"automation.created","uri":"oncall://automation/outbox/affddedf-9bc1-49e0-842a-5c7beac4ffa1","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:17.843Z","native_revision":1}'
+    },
+    {
+      sequence: 23,
+      id: 'b5b32be16e9c8312b2fc3f2b721e5117',
+      uri: 'oncall://automation/outbox/34be0f84-e40e-436c-84c0-2ae6bd564810',
+      event: '{"id":"b5b32be16e9c8312b2fc3f2b721e5117","type":"automation.created","uri":"oncall://automation/outbox/34be0f84-e40e-436c-84c0-2ae6bd564810","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:17.843Z","native_revision":1}'
+    },
+    {
+      sequence: 24,
+      id: 'c36dd53836fe3e7dbfd7bd994e5c7e72',
+      uri: 'oncall://automation/outbox/1afb458b-7adb-42cb-9245-382512243abb',
+      event: '{"id":"c36dd53836fe3e7dbfd7bd994e5c7e72","type":"automation.created","uri":"oncall://automation/outbox/1afb458b-7adb-42cb-9245-382512243abb","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:17.843Z","native_revision":1}'
+    },
+    {
+      sequence: 25,
+      id: '29e6de443cac48ee621c0e512c2ee16a',
+      uri: 'oncall://incidents/96b03cb9-c578-4c9e-91a7-7cabd2125240',
+      event: '{"id":"29e6de443cac48ee621c0e512c2ee16a","type":"incidents.created","uri":"oncall://incidents/96b03cb9-c578-4c9e-91a7-7cabd2125240","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:17.844Z","native_revision":1}'
+    },
+    {
+      sequence: 26,
+      id: 'e98a7e1b-95ae-4cc0-9db4-87406b3b1fa4',
+      uri: 'oncall://incidents/96b03cb9-c578-4c9e-91a7-7cabd2125240',
+      event: '{"incident":"96b03cb9-c578-4c9e-91a7-7cabd2125240","revision":2,"id":"e98a7e1b-95ae-4cc0-9db4-87406b3b1fa4","type":"actions.create","uri":"oncall://incidents/96b03cb9-c578-4c9e-91a7-7cabd2125240","actor":{"kind":"agent","agent":{"id":"responder-1a33794d-2fc2-4cfc-afca-7fc7e4406681","name":"Responder assistant"},"for":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"},"label":"Responder assistant for Alex Chen"},"at":"2026-11-14T14:00:00.000Z"}'
+    },
+    {
+      sequence: 27,
+      id: 'a4c53dbe-5a0f-4c38-8f39-ccd67028d05f',
+      uri: 'oncall://actions/1c7c8c42-88b9-4a7b-9024-f2dc07e96642',
+      event: '{"incident":"96b03cb9-c578-4c9e-91a7-7cabd2125240","action":"1c7c8c42-88b9-4a7b-9024-f2dc07e96642","revision":2,"id":"a4c53dbe-5a0f-4c38-8f39-ccd67028d05f","type":"action.updated","uri":"oncall://actions/1c7c8c42-88b9-4a7b-9024-f2dc07e96642","actor":{"kind":"agent","agent":{"id":"responder-1a33794d-2fc2-4cfc-afca-7fc7e4406681","name":"Responder assistant"},"for":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"},"label":"Responder assistant for Alex Chen"},"at":"2026-11-14T14:00:00.000Z"}'
+    },
+    {
+      sequence: 28,
+      id: 'e6d6885d-041f-4097-be83-453c1792edb9',
+      uri: 'oncall://services/agent-service',
+      event: '{"id":"e6d6885d-041f-4097-be83-453c1792edb9","type":"service.changed","uri":"oncall://services/agent-service","actor":{"kind":"agent","agent":{"id":"responder-1a33794d-2fc2-4cfc-afca-7fc7e4406681","name":"Responder assistant"},"for":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"},"label":"Responder assistant for Alex Chen"},"at":"2026-11-14T14:00:00.000Z"}'
+    },
+    {
+      sequence: 29,
+      id: 'c0ff8dc6ad80b65c949400483a50dead',
+      uri: 'oncall://automation/outbox/2d29be9b-4a21-4ac7-b2d9-03778847bcb6',
+      event: '{"id":"c0ff8dc6ad80b65c949400483a50dead","type":"automation.created","uri":"oncall://automation/outbox/2d29be9b-4a21-4ac7-b2d9-03778847bcb6","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:18.808Z","native_revision":1}'
+    },
+    {
+      sequence: 3,
+      id: '63a87fe17f97ef4a429fdbb691b94d25',
+      uri: 'oncall://members/a4704eb5-819e-4dee-82c2-0012b7303449',
+      event: '{"id":"63a87fe17f97ef4a429fdbb691b94d25","type":"members.created","uri":"oncall://members/a4704eb5-819e-4dee-82c2-0012b7303449","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.033Z","native_revision":null}'
+    },
+    {
+      sequence: 30,
+      id: '9f1bc19d864251ef8f6ba13fa69aa03d',
+      uri: 'oncall://automation/outbox/64967e96-eb9a-4fb2-a974-24f68ef2180e',
+      event: '{"id":"9f1bc19d864251ef8f6ba13fa69aa03d","type":"automation.created","uri":"oncall://automation/outbox/64967e96-eb9a-4fb2-a974-24f68ef2180e","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:18.808Z","native_revision":1}'
+    },
+    {
+      sequence: 31,
+      id: '5a16b44a3b9dbfb568450622bd1dd63d',
+      uri: 'oncall://automation/outbox/55256d12-edc3-4b5d-aae9-6b21de54ad66',
+      event: '{"id":"5a16b44a3b9dbfb568450622bd1dd63d","type":"automation.created","uri":"oncall://automation/outbox/55256d12-edc3-4b5d-aae9-6b21de54ad66","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:18.808Z","native_revision":1}'
+    },
+    {
+      sequence: 32,
+      id: '038e5764f202e3182ba2ee5e9b2783e8',
+      uri: 'oncall://incidents/f9c4a788-59e6-4056-9b92-e713fa377a5d',
+      event: '{"id":"038e5764f202e3182ba2ee5e9b2783e8","type":"incidents.created","uri":"oncall://incidents/f9c4a788-59e6-4056-9b92-e713fa377a5d","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:18.809Z","native_revision":1}'
+    },
+    {
+      sequence: 33,
+      id: '095809c126a8cd49c2d4d0cdd114d36e',
+      uri: 'oncall://automation/outbox/ff17a904-7f55-427e-aa78-c2759c7e2ebf',
+      event: '{"id":"095809c126a8cd49c2d4d0cdd114d36e","type":"automation.created","uri":"oncall://automation/outbox/ff17a904-7f55-427e-aa78-c2759c7e2ebf","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:18.826Z","native_revision":1}'
+    },
+    {
+      sequence: 34,
+      id: '862fb993f2545da9b7ea065be3d6ae1d',
+      uri: 'oncall://automation/outbox/a1387ea9-d523-46c2-bfaf-579d1e70ecbc',
+      event: '{"id":"862fb993f2545da9b7ea065be3d6ae1d","type":"automation.created","uri":"oncall://automation/outbox/a1387ea9-d523-46c2-bfaf-579d1e70ecbc","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:18.826Z","native_revision":1}'
+    },
+    {
+      sequence: 35,
+      id: 'd94291755134ce944b0155feeca387f8',
+      uri: 'oncall://automation/outbox/6ad08317-a747-4460-b784-f5be2b629fc0',
+      event: '{"id":"d94291755134ce944b0155feeca387f8","type":"automation.created","uri":"oncall://automation/outbox/6ad08317-a747-4460-b784-f5be2b629fc0","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:18.826Z","native_revision":1}'
+    },
+    {
+      sequence: 36,
+      id: 'e6ad2a7bff5896c82992ea800c5b3b5b',
+      uri: 'oncall://incidents/f9c4a788-59e6-4056-9b92-e713fa377a5d',
+      event: '{"id":"e6ad2a7bff5896c82992ea800c5b3b5b","type":"incidents.updated","uri":"oncall://incidents/f9c4a788-59e6-4056-9b92-e713fa377a5d","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:18.826Z","native_revision":2}'
+    },
+    {
+      sequence: 37,
+      id: 'e51fa74f-84bb-4e95-9db1-a2ce4225f80a',
+      uri: 'oncall://incidents/f9c4a788-59e6-4056-9b92-e713fa377a5d',
+      event: '{"incident":"f9c4a788-59e6-4056-9b92-e713fa377a5d","revision":3,"id":"e51fa74f-84bb-4e95-9db1-a2ce4225f80a","type":"incidents.update","uri":"oncall://incidents/f9c4a788-59e6-4056-9b92-e713fa377a5d","actor":{"kind":"agent","agent":{"id":"responder-1a33794d-2fc2-4cfc-afca-7fc7e4406681","name":"Responder assistant"},"for":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"},"label":"Responder assistant for Alex Chen"},"at":"2026-11-14T14:00:00.000Z"}'
+    },
+    {
+      sequence: 38,
+      id: 'afb36ea2fe4269c3181c764cf1c9838e',
+      uri: 'oncall://automation/outbox/eaa318fc-a564-4301-b7d1-f9d7e0705f35',
+      event: '{"id":"afb36ea2fe4269c3181c764cf1c9838e","type":"automation.created","uri":"oncall://automation/outbox/eaa318fc-a564-4301-b7d1-f9d7e0705f35","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:19.261Z","native_revision":1}'
+    },
+    {
+      sequence: 39,
+      id: 'b7f5280574c92dc1669e1025c3f0b8f7',
+      uri: 'oncall://automation/outbox/04aa4ebe-96d8-4308-9e42-e73fb8848bf0',
+      event: '{"id":"b7f5280574c92dc1669e1025c3f0b8f7","type":"automation.created","uri":"oncall://automation/outbox/04aa4ebe-96d8-4308-9e42-e73fb8848bf0","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:19.261Z","native_revision":1}'
+    },
+    {
+      sequence: 4,
+      id: 'c8d5513a1249ad30cbac07140ee36248',
+      uri: 'oncall://members/ef30cc63-b9a4-46be-a328-858a46809a5d',
+      event: '{"id":"c8d5513a1249ad30cbac07140ee36248","type":"members.created","uri":"oncall://members/ef30cc63-b9a4-46be-a328-858a46809a5d","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.063Z","native_revision":null}'
+    },
+    {
+      sequence: 40,
+      id: 'e4516f1b3024d715ffc7fc20bc36bfd8',
+      uri: 'oncall://automation/outbox/12684e3c-384d-4664-87fe-cbaaf10211a0',
+      event: '{"id":"e4516f1b3024d715ffc7fc20bc36bfd8","type":"automation.created","uri":"oncall://automation/outbox/12684e3c-384d-4664-87fe-cbaaf10211a0","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:19.261Z","native_revision":1}'
+    },
+    {
+      sequence: 41,
+      id: '586b3a61c1a0b37f7eda22df1cd0f373',
+      uri: 'oncall://incidents/df676128-99a9-4952-b72b-fc379cf9edfb',
+      event: '{"id":"586b3a61c1a0b37f7eda22df1cd0f373","type":"incidents.created","uri":"oncall://incidents/df676128-99a9-4952-b72b-fc379cf9edfb","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:19.261Z","native_revision":1}'
+    },
+    {
+      sequence: 42,
+      id: '5e58d666-cbb7-43ed-a574-0acc2374de11',
+      uri: 'oncall://incidents/df676128-99a9-4952-b72b-fc379cf9edfb',
+      event: '{"incident":"df676128-99a9-4952-b72b-fc379cf9edfb","revision":2,"id":"5e58d666-cbb7-43ed-a574-0acc2374de11","type":"incidents.update","uri":"oncall://incidents/df676128-99a9-4952-b72b-fc379cf9edfb","actor":{"kind":"agent","agent":{"id":"responder-1a33794d-2fc2-4cfc-afca-7fc7e4406681","name":"Responder assistant"},"for":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"},"label":"Responder assistant for Alex Chen"},"at":"2026-11-14T14:00:00.000Z"}'
+    },
+    {
+      sequence: 43,
+      id: '4c56aadb76a454e6838d18d45227c4b4',
+      uri: 'oncall://automation/outbox/959b909a-89a9-4071-86e8-8c442bab3c65',
+      event: '{"id":"4c56aadb76a454e6838d18d45227c4b4","type":"automation.created","uri":"oncall://automation/outbox/959b909a-89a9-4071-86e8-8c442bab3c65","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:19.713Z","native_revision":1}'
+    },
+    {
+      sequence: 44,
+      id: 'b47c0700b65f539ced1561a306fc52ff',
+      uri: 'oncall://automation/outbox/40d29cc7-9886-4e61-8374-ad9e18627dcb',
+      event: '{"id":"b47c0700b65f539ced1561a306fc52ff","type":"automation.created","uri":"oncall://automation/outbox/40d29cc7-9886-4e61-8374-ad9e18627dcb","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:19.713Z","native_revision":1}'
+    },
+    {
+      sequence: 45,
+      id: '8732fbdd93f5c777511e18152574ea92',
+      uri: 'oncall://automation/outbox/538516c2-0cb8-4b34-8e98-5deae03e5333',
+      event: '{"id":"8732fbdd93f5c777511e18152574ea92","type":"automation.created","uri":"oncall://automation/outbox/538516c2-0cb8-4b34-8e98-5deae03e5333","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:19.713Z","native_revision":1}'
+    },
+    {
+      sequence: 46,
+      id: '9d0fc789ec85e83ec23673c49528a000',
+      uri: 'oncall://incidents/eb8e7212-b951-45cd-b547-daf747859441',
+      event: '{"id":"9d0fc789ec85e83ec23673c49528a000","type":"incidents.created","uri":"oncall://incidents/eb8e7212-b951-45cd-b547-daf747859441","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:19.713Z","native_revision":1}'
+    },
+    {
+      sequence: 47,
+      id: '9688ce20-7429-4b78-bfb7-ee88921ce572',
+      uri: 'oncall://incidents/eb8e7212-b951-45cd-b547-daf747859441',
+      event: '{"incident":"eb8e7212-b951-45cd-b547-daf747859441","revision":2,"id":"9688ce20-7429-4b78-bfb7-ee88921ce572","type":"incidents.update","uri":"oncall://incidents/eb8e7212-b951-45cd-b547-daf747859441","actor":{"kind":"agent","agent":{"id":"responder-1a33794d-2fc2-4cfc-afca-7fc7e4406681","name":"Responder assistant"},"for":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"},"label":"Responder assistant for Alex Chen"},"at":"2026-11-14T14:00:00.000Z"}'
+    },
+    {
+      sequence: 48,
+      id: '686c76c571d5045d4f5fdeb514f085f6',
+      uri: 'oncall://automation/outbox/94c81de0-268a-40ff-b28e-b5db0c7f83c5',
+      event: '{"id":"686c76c571d5045d4f5fdeb514f085f6","type":"automation.created","uri":"oncall://automation/outbox/94c81de0-268a-40ff-b28e-b5db0c7f83c5","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.104Z","native_revision":1}'
+    },
+    {
+      sequence: 49,
+      id: 'a147c4f07d146325ba9c661906471e5b',
+      uri: 'oncall://automation/outbox/e1445181-b76e-4d85-a776-2c6d9fe0582a',
+      event: '{"id":"a147c4f07d146325ba9c661906471e5b","type":"automation.created","uri":"oncall://automation/outbox/e1445181-b76e-4d85-a776-2c6d9fe0582a","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.104Z","native_revision":1}'
+    },
+    {
+      sequence: 5,
+      id: 'a47724179ce80cc239ef83fc4b2eb4f8',
+      uri: 'oncall://services/agent-service',
+      event: '{"id":"a47724179ce80cc239ef83fc4b2eb4f8","type":"services.created","uri":"oncall://services/agent-service","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.080Z","native_revision":null}'
+    },
+    {
+      sequence: 50,
+      id: '7274b44e0b37fa32375c0001eff861af',
+      uri: 'oncall://automation/outbox/bf60337e-2e5d-44b3-960c-805a75376c36',
+      event: '{"id":"7274b44e0b37fa32375c0001eff861af","type":"automation.created","uri":"oncall://automation/outbox/bf60337e-2e5d-44b3-960c-805a75376c36","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.104Z","native_revision":1}'
+    },
+    {
+      sequence: 51,
+      id: '65d88099c8329bf22020bbebd01a3ee9',
+      uri: 'oncall://incidents/e8d92ec9-2575-40ab-8bea-2ba605a356ef',
+      event: '{"id":"65d88099c8329bf22020bbebd01a3ee9","type":"incidents.created","uri":"oncall://incidents/e8d92ec9-2575-40ab-8bea-2ba605a356ef","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.105Z","native_revision":1}'
+    },
+    {
+      sequence: 52,
+      id: '7b21de5c126927c83f0289093eca0d38',
+      uri: 'oncall://automation/outbox/160e8023-2b1a-44f6-97e5-473f0b42ee66',
+      event: '{"id":"7b21de5c126927c83f0289093eca0d38","type":"automation.created","uri":"oncall://automation/outbox/160e8023-2b1a-44f6-97e5-473f0b42ee66","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.119Z","native_revision":1}'
+    },
+    {
+      sequence: 53,
+      id: '95d1e756c6e4e7aa331d56c24aab4f3e',
+      uri: 'oncall://automation/outbox/6e0962d8-3c23-4ce3-ba8e-eb48f301e6ff',
+      event: '{"id":"95d1e756c6e4e7aa331d56c24aab4f3e","type":"automation.created","uri":"oncall://automation/outbox/6e0962d8-3c23-4ce3-ba8e-eb48f301e6ff","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.119Z","native_revision":1}'
+    },
+    {
+      sequence: 54,
+      id: 'd8a185129a98492bee2dba15adabb984',
+      uri: 'oncall://automation/outbox/86c9c1ba-92a3-418c-8ef8-b9d198ad74f5',
+      event: '{"id":"d8a185129a98492bee2dba15adabb984","type":"automation.created","uri":"oncall://automation/outbox/86c9c1ba-92a3-418c-8ef8-b9d198ad74f5","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.119Z","native_revision":1}'
+    },
+    {
+      sequence: 55,
+      id: '5ec8a68334a1c07a772b640053df60b6',
+      uri: 'oncall://incidents/e8d92ec9-2575-40ab-8bea-2ba605a356ef',
+      event: '{"id":"5ec8a68334a1c07a772b640053df60b6","type":"incidents.updated","uri":"oncall://incidents/e8d92ec9-2575-40ab-8bea-2ba605a356ef","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.120Z","native_revision":2}'
+    },
+    {
+      sequence: 56,
+      id: '1f9a6582d55ec3bb55e0c5c2ac553a07',
+      uri: 'oncall://automation/outbox/b7946ec5-628e-413f-aaf1-73fba3893a02',
+      event: '{"id":"1f9a6582d55ec3bb55e0c5c2ac553a07","type":"automation.created","uri":"oncall://automation/outbox/b7946ec5-628e-413f-aaf1-73fba3893a02","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.132Z","native_revision":1}'
+    },
+    {
+      sequence: 57,
+      id: '8c6e3905cc8df6bc4b113ce92915e4cd',
+      uri: 'oncall://automation/outbox/f9cd0f79-ee5c-4ea3-9600-c51d5c8ef83e',
+      event: '{"id":"8c6e3905cc8df6bc4b113ce92915e4cd","type":"automation.created","uri":"oncall://automation/outbox/f9cd0f79-ee5c-4ea3-9600-c51d5c8ef83e","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.132Z","native_revision":1}'
+    },
+    {
+      sequence: 58,
+      id: '4aa11bc084090f8e6ae9a8283598ff14',
+      uri: 'oncall://automation/outbox/606cfb8e-76d8-449e-9a6c-1a5d73ff04e3',
+      event: '{"id":"4aa11bc084090f8e6ae9a8283598ff14","type":"automation.created","uri":"oncall://automation/outbox/606cfb8e-76d8-449e-9a6c-1a5d73ff04e3","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.132Z","native_revision":1}'
+    },
+    {
+      sequence: 59,
+      id: '454cd8ef9d1abcebe543036672a10551',
+      uri: 'oncall://incidents/e8d92ec9-2575-40ab-8bea-2ba605a356ef',
+      event: '{"id":"454cd8ef9d1abcebe543036672a10551","type":"incidents.updated","uri":"oncall://incidents/e8d92ec9-2575-40ab-8bea-2ba605a356ef","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.132Z","native_revision":3}'
+    },
+    {
+      sequence: 6,
+      id: '4e987a385a49fb74ad92bfe39eee9a7b',
+      uri: 'oncall://services/agent-foreign-service',
+      event: '{"id":"4e987a385a49fb74ad92bfe39eee9a7b","type":"services.created","uri":"oncall://services/agent-foreign-service","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.094Z","native_revision":null}'
+    },
+    {
+      sequence: 60,
+      id: '76626e9f413619cc1441a3a8004adfb7',
+      uri: 'oncall://automation/outbox/1818cedf-5751-411f-a976-b9eabb6fbf4e',
+      event: '{"id":"76626e9f413619cc1441a3a8004adfb7","type":"automation.created","uri":"oncall://automation/outbox/1818cedf-5751-411f-a976-b9eabb6fbf4e","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.144Z","native_revision":1}'
+    },
+    {
+      sequence: 61,
+      id: '4e9a67fbe1b8f17ef41d9dbac6e5fc61',
+      uri: 'oncall://automation/outbox/7a0f99f0-820b-4ac4-b6de-58a62a372b0d',
+      event: '{"id":"4e9a67fbe1b8f17ef41d9dbac6e5fc61","type":"automation.created","uri":"oncall://automation/outbox/7a0f99f0-820b-4ac4-b6de-58a62a372b0d","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.144Z","native_revision":1}'
+    },
+    {
+      sequence: 62,
+      id: 'a2e864cde37ea752bbdcbb9642b7724c',
+      uri: 'oncall://automation/outbox/8d0d375c-c863-46f0-a448-6bbba8848056',
+      event: '{"id":"a2e864cde37ea752bbdcbb9642b7724c","type":"automation.created","uri":"oncall://automation/outbox/8d0d375c-c863-46f0-a448-6bbba8848056","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.144Z","native_revision":1}'
+    },
+    {
+      sequence: 63,
+      id: 'ebbdc6b9282520ba511b736569cd9403',
+      uri: 'oncall://incidents/e8d92ec9-2575-40ab-8bea-2ba605a356ef',
+      event: '{"id":"ebbdc6b9282520ba511b736569cd9403","type":"incidents.updated","uri":"oncall://incidents/e8d92ec9-2575-40ab-8bea-2ba605a356ef","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.144Z","native_revision":4}'
+    },
+    {
+      sequence: 64,
+      id: 'f1a2699c-4305-43e2-9787-3ece5b030efc',
+      uri: 'oncall://incidents/e8d92ec9-2575-40ab-8bea-2ba605a356ef',
+      event: '{"incident":"e8d92ec9-2575-40ab-8bea-2ba605a356ef","revision":5,"id":"f1a2699c-4305-43e2-9787-3ece5b030efc","type":"incidents.update","uri":"oncall://incidents/e8d92ec9-2575-40ab-8bea-2ba605a356ef","actor":{"kind":"agent","agent":{"id":"responder-1a33794d-2fc2-4cfc-afca-7fc7e4406681","name":"Responder assistant"},"for":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"},"label":"Responder assistant for Alex Chen"},"at":"2026-11-14T14:00:00.000Z"}'
+    },
+    {
+      sequence: 65,
+      id: 'a7269a2d-8fa9-43e0-a53b-764d0dd98265',
+      uri: 'http://127.0.0.1:43309/agents/policy/1',
+      event: '{"seq":1,"revision":1,"classes":[{"class":"standard"},{"class":"external"},{"class":"money"},{"class":"commitment"},{"class":"accounts"},{"class":"gated"},{"class":"access"},{"class":"security"},{"class":"destructive"},{"class":"sensitive"},{"class":"live"}],"decision":{"revision":1,"document_sha256":"7e09a41eccdbbfa16680181dff39b95a786f686f0090e5ddaabaf654354b646a"},"id":"a7269a2d-8fa9-43e0-a53b-764d0dd98265","type":"policy.adopted","uri":"http://127.0.0.1:43309/agents/policy/1","actor":{"kind":"business"},"at":"2026-11-15T14:00:00.000Z"}'
+    },
+    {
+      sequence: 7,
+      id: '4db7db94517f883381fb3b94ce6d750d',
+      uri: 'oncall://schedules/agent-schedule/coverage',
+      event: '{"id":"4db7db94517f883381fb3b94ce6d750d","type":"schedule.created","uri":"oncall://schedules/agent-schedule/coverage","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.177Z","native_revision":1}'
+    },
+    {
+      sequence: 8,
+      id: '0e47dd5afff19e9da202531a0d6223be',
+      uri: 'oncall://automation/clients/api-50443a27-645a-46b0-b8bb-81cad89f3eea',
+      event: '{"id":"0e47dd5afff19e9da202531a0d6223be","type":"clients.created","uri":"oncall://automation/clients/api-50443a27-645a-46b0-b8bb-81cad89f3eea","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.193Z","native_revision":1}'
+    },
+    {
+      sequence: 9,
+      id: '627b7247f6168ef15e0940cf27a739f0',
+      uri: 'oncall://automation/endpoints/424b10c0-3171-491c-a382-b346bdf76580',
+      event: '{"id":"627b7247f6168ef15e0940cf27a739f0","type":"endpoints.created","uri":"oncall://automation/endpoints/424b10c0-3171-491c-a382-b346bdf76580","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.208Z","native_revision":1}'
+    }
+  ],
+  expected: [
+    {
+      sequence: 1,
+      id: '2230eaa6d15b49e68d6033d69ce68ff0',
+      uri: 'oncall://members/1f102cc1-97f8-4b8d-9ec5-2eb596335fdc',
+      event: '{"id":"2230eaa6d15b49e68d6033d69ce68ff0","type":"members.created","uri":"oncall://members/1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:15.970Z","native_revision":null}'
+    },
+    {
+      sequence: 10,
+      id: '980f460116840d5939153a1f2c4fe5e3',
+      uri: 'oncall://automation/clients/api-b07c0d56-5c88-402b-b144-75622f9e5069',
+      event: '{"id":"980f460116840d5939153a1f2c4fe5e3","type":"clients.created","uri":"oncall://automation/clients/api-b07c0d56-5c88-402b-b144-75622f9e5069","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.219Z","native_revision":1}'
+    },
+    {
+      sequence: 11,
+      id: '1caba5ba36e9e0eb6e5bf07791f270d4',
+      uri: 'oncall://automation/endpoints/b2bee59c-9759-4a33-a1c2-1efef1065b46',
+      event: '{"id":"1caba5ba36e9e0eb6e5bf07791f270d4","type":"endpoints.created","uri":"oncall://automation/endpoints/b2bee59c-9759-4a33-a1c2-1efef1065b46","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.231Z","native_revision":1}'
+    },
+    {
+      sequence: 12,
+      id: 'dd65b9073f0a98ea34a07a2972102664',
+      uri: 'oncall://automation/clients/api-687cf6b9-72f6-432a-9455-30c5c1f38f31',
+      event: '{"id":"dd65b9073f0a98ea34a07a2972102664","type":"clients.created","uri":"oncall://automation/clients/api-687cf6b9-72f6-432a-9455-30c5c1f38f31","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.246Z","native_revision":1}'
+    },
+    {
+      sequence: 13,
+      id: '889bceaca0f8a0c715c5ee77bbee2f46',
+      uri: 'oncall://automation/endpoints/5df69f60-3d87-44b8-a844-4eefb0448fb1',
+      event: '{"id":"889bceaca0f8a0c715c5ee77bbee2f46","type":"endpoints.created","uri":"oncall://automation/endpoints/5df69f60-3d87-44b8-a844-4eefb0448fb1","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.260Z","native_revision":1}'
+    },
+    {
+      sequence: 14,
+      id: 'a07b656a-a7bc-425b-aed6-8e31d90779b4',
+      uri: 'http://127.0.0.1:43309/agents/policy/1',
+      event: '{"seq":1,"revision":1,"classes":[{"class":"standard"},{"class":"external"},{"class":"money"},{"class":"commitment"},{"class":"accounts"},{"class":"gated"},{"class":"access"},{"class":"security"},{"class":"destructive"},{"class":"sensitive"},{"class":"live"}],"decision":{"revision":1,"document_sha256":"7e09a41eccdbbfa16680181dff39b95a786f686f0090e5ddaabaf654354b646a"},"id":"a07b656a-a7bc-425b-aed6-8e31d90779b4","type":"policy.adopted","uri":"http://127.0.0.1:43309/agents/policy/1","actor":{"kind":"business"},"at":"2026-11-14T14:00:00.000Z"}'
+    },
+    {
+      sequence: 15,
+      id: '8dc9446a-1a63-414c-901a-ec6d2f09fb39',
+      uri: 'oncall://incidents/4a30121b-d7f8-423e-b2e7-f1425ea35beb',
+      event: '{"incident":"4a30121b-d7f8-423e-b2e7-f1425ea35beb","revision":1,"id":"8dc9446a-1a63-414c-901a-ec6d2f09fb39","type":"incidents.declare","uri":"oncall://incidents/4a30121b-d7f8-423e-b2e7-f1425ea35beb","actor":{"kind":"agent","agent":{"id":"responder-1a33794d-2fc2-4cfc-afca-7fc7e4406681","name":"Responder assistant"},"for":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"},"label":"Responder assistant for Alex Chen"},"at":"2026-11-14T14:00:00.000Z"}'
+    },
+    {
+      sequence: 16,
+      id: '5cb64465-4d0c-4c36-b582-a87ea0c00b72',
+      uri: 'oncall://incidents/4a30121b-d7f8-423e-b2e7-f1425ea35beb',
+      event: '{"incident":"4a30121b-d7f8-423e-b2e7-f1425ea35beb","revision":2,"id":"5cb64465-4d0c-4c36-b582-a87ea0c00b72","type":"notes.add","uri":"oncall://incidents/4a30121b-d7f8-423e-b2e7-f1425ea35beb","actor":{"kind":"agent","agent":{"id":"responder-1a33794d-2fc2-4cfc-afca-7fc7e4406681","name":"Responder assistant"},"for":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"},"label":"Responder assistant for Alex Chen"},"at":"2026-11-14T14:00:00.000Z"}'
+    },
+    {
+      sequence: 17,
+      id: '5ba3733f76bfe618bc33f8cecb61589c',
+      uri: 'oncall://automation/outbox/e9f12877-946b-43e2-8cc1-389c7a14c92d',
+      event: '{"id":"5ba3733f76bfe618bc33f8cecb61589c","type":"automation.created","uri":"oncall://automation/outbox/e9f12877-946b-43e2-8cc1-389c7a14c92d","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:17.352Z","native_revision":1}'
+    },
+    {
+      sequence: 18,
+      id: '30d10aa5211657e0b2f929447950bb14',
+      uri: 'oncall://automation/outbox/072ac053-c517-4109-9db3-c22acd1de345',
+      event: '{"id":"30d10aa5211657e0b2f929447950bb14","type":"automation.created","uri":"oncall://automation/outbox/072ac053-c517-4109-9db3-c22acd1de345","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:17.352Z","native_revision":1}'
+    },
+    {
+      sequence: 19,
+      id: '46982a828522ca854347f175593f7e81',
+      uri: 'oncall://automation/outbox/cf183537-ef8e-44b0-b2f8-497966f39e8c',
+      event: '{"id":"46982a828522ca854347f175593f7e81","type":"automation.created","uri":"oncall://automation/outbox/cf183537-ef8e-44b0-b2f8-497966f39e8c","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:17.352Z","native_revision":1}'
+    },
+    {
+      sequence: 2,
+      id: 'f901b8ede82cc0f3d3398036986e6f30',
+      uri: 'oncall://members/860dd966-0ddd-412c-8ea1-cbe78a9cfe87',
+      event: '{"id":"f901b8ede82cc0f3d3398036986e6f30","type":"members.created","uri":"oncall://members/860dd966-0ddd-412c-8ea1-cbe78a9cfe87","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.005Z","native_revision":null}'
+    },
+    {
+      sequence: 20,
+      id: '11efdd02b5fe17bab16bde065f5ff5dc',
+      uri: 'oncall://incidents/730a56e1-33a0-4e00-b765-67ff7374d476',
+      event: '{"id":"11efdd02b5fe17bab16bde065f5ff5dc","type":"incidents.created","uri":"oncall://incidents/730a56e1-33a0-4e00-b765-67ff7374d476","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:17.352Z","native_revision":1}'
+    },
+    {
+      sequence: 21,
+      id: '0a0317c7-5012-4aa8-9a18-f9dd0a4f4792',
+      uri: 'oncall://incidents/730a56e1-33a0-4e00-b765-67ff7374d476',
+      event: '{"incident":"730a56e1-33a0-4e00-b765-67ff7374d476","revision":2,"id":"0a0317c7-5012-4aa8-9a18-f9dd0a4f4792","type":"incidents.acknowledge","uri":"oncall://incidents/730a56e1-33a0-4e00-b765-67ff7374d476","actor":{"kind":"agent","agent":{"id":"responder-1a33794d-2fc2-4cfc-afca-7fc7e4406681","name":"Responder assistant"},"for":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"},"label":"Responder assistant for Alex Chen"},"at":"2026-11-14T14:00:00.000Z"}'
+    },
+    {
+      sequence: 22,
+      id: '75a877fd543452a6175c1db9fcd88fc8',
+      uri: 'oncall://automation/outbox/affddedf-9bc1-49e0-842a-5c7beac4ffa1',
+      event: '{"id":"75a877fd543452a6175c1db9fcd88fc8","type":"automation.created","uri":"oncall://automation/outbox/affddedf-9bc1-49e0-842a-5c7beac4ffa1","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:17.843Z","native_revision":1}'
+    },
+    {
+      sequence: 23,
+      id: 'b5b32be16e9c8312b2fc3f2b721e5117',
+      uri: 'oncall://automation/outbox/34be0f84-e40e-436c-84c0-2ae6bd564810',
+      event: '{"id":"b5b32be16e9c8312b2fc3f2b721e5117","type":"automation.created","uri":"oncall://automation/outbox/34be0f84-e40e-436c-84c0-2ae6bd564810","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:17.843Z","native_revision":1}'
+    },
+    {
+      sequence: 24,
+      id: 'c36dd53836fe3e7dbfd7bd994e5c7e72',
+      uri: 'oncall://automation/outbox/1afb458b-7adb-42cb-9245-382512243abb',
+      event: '{"id":"c36dd53836fe3e7dbfd7bd994e5c7e72","type":"automation.created","uri":"oncall://automation/outbox/1afb458b-7adb-42cb-9245-382512243abb","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:17.843Z","native_revision":1}'
+    },
+    {
+      sequence: 25,
+      id: '29e6de443cac48ee621c0e512c2ee16a',
+      uri: 'oncall://incidents/96b03cb9-c578-4c9e-91a7-7cabd2125240',
+      event: '{"id":"29e6de443cac48ee621c0e512c2ee16a","type":"incidents.created","uri":"oncall://incidents/96b03cb9-c578-4c9e-91a7-7cabd2125240","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:17.844Z","native_revision":1}'
+    },
+    {
+      sequence: 26,
+      id: 'e98a7e1b-95ae-4cc0-9db4-87406b3b1fa4',
+      uri: 'oncall://incidents/96b03cb9-c578-4c9e-91a7-7cabd2125240',
+      event: '{"incident":"96b03cb9-c578-4c9e-91a7-7cabd2125240","revision":2,"id":"e98a7e1b-95ae-4cc0-9db4-87406b3b1fa4","type":"actions.create","uri":"oncall://incidents/96b03cb9-c578-4c9e-91a7-7cabd2125240","actor":{"kind":"agent","agent":{"id":"responder-1a33794d-2fc2-4cfc-afca-7fc7e4406681","name":"Responder assistant"},"for":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"},"label":"Responder assistant for Alex Chen"},"at":"2026-11-14T14:00:00.000Z"}'
+    },
+    {
+      sequence: 27,
+      id: 'a4c53dbe-5a0f-4c38-8f39-ccd67028d05f',
+      uri: 'oncall://actions/1c7c8c42-88b9-4a7b-9024-f2dc07e96642',
+      event: '{"incident":"96b03cb9-c578-4c9e-91a7-7cabd2125240","action":"1c7c8c42-88b9-4a7b-9024-f2dc07e96642","revision":2,"id":"a4c53dbe-5a0f-4c38-8f39-ccd67028d05f","type":"action.updated","uri":"oncall://actions/1c7c8c42-88b9-4a7b-9024-f2dc07e96642","actor":{"kind":"agent","agent":{"id":"responder-1a33794d-2fc2-4cfc-afca-7fc7e4406681","name":"Responder assistant"},"for":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"},"label":"Responder assistant for Alex Chen"},"at":"2026-11-14T14:00:00.000Z"}'
+    },
+    {
+      sequence: 28,
+      id: 'e6d6885d-041f-4097-be83-453c1792edb9',
+      uri: 'oncall://services/agent-service',
+      event: '{"id":"e6d6885d-041f-4097-be83-453c1792edb9","type":"service.changed","uri":"oncall://services/agent-service","actor":{"kind":"agent","agent":{"id":"responder-1a33794d-2fc2-4cfc-afca-7fc7e4406681","name":"Responder assistant"},"for":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"},"label":"Responder assistant for Alex Chen"},"at":"2026-11-14T14:00:00.000Z"}'
+    },
+    {
+      sequence: 29,
+      id: 'c0ff8dc6ad80b65c949400483a50dead',
+      uri: 'oncall://automation/outbox/2d29be9b-4a21-4ac7-b2d9-03778847bcb6',
+      event: '{"id":"c0ff8dc6ad80b65c949400483a50dead","type":"automation.created","uri":"oncall://automation/outbox/2d29be9b-4a21-4ac7-b2d9-03778847bcb6","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:18.808Z","native_revision":1}'
+    },
+    {
+      sequence: 3,
+      id: '63a87fe17f97ef4a429fdbb691b94d25',
+      uri: 'oncall://members/a4704eb5-819e-4dee-82c2-0012b7303449',
+      event: '{"id":"63a87fe17f97ef4a429fdbb691b94d25","type":"members.created","uri":"oncall://members/a4704eb5-819e-4dee-82c2-0012b7303449","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.033Z","native_revision":null}'
+    },
+    {
+      sequence: 30,
+      id: '9f1bc19d864251ef8f6ba13fa69aa03d',
+      uri: 'oncall://automation/outbox/64967e96-eb9a-4fb2-a974-24f68ef2180e',
+      event: '{"id":"9f1bc19d864251ef8f6ba13fa69aa03d","type":"automation.created","uri":"oncall://automation/outbox/64967e96-eb9a-4fb2-a974-24f68ef2180e","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:18.808Z","native_revision":1}'
+    },
+    {
+      sequence: 31,
+      id: '5a16b44a3b9dbfb568450622bd1dd63d',
+      uri: 'oncall://automation/outbox/55256d12-edc3-4b5d-aae9-6b21de54ad66',
+      event: '{"id":"5a16b44a3b9dbfb568450622bd1dd63d","type":"automation.created","uri":"oncall://automation/outbox/55256d12-edc3-4b5d-aae9-6b21de54ad66","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:18.808Z","native_revision":1}'
+    },
+    {
+      sequence: 32,
+      id: '038e5764f202e3182ba2ee5e9b2783e8',
+      uri: 'oncall://incidents/f9c4a788-59e6-4056-9b92-e713fa377a5d',
+      event: '{"id":"038e5764f202e3182ba2ee5e9b2783e8","type":"incidents.created","uri":"oncall://incidents/f9c4a788-59e6-4056-9b92-e713fa377a5d","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:18.809Z","native_revision":1}'
+    },
+    {
+      sequence: 33,
+      id: '095809c126a8cd49c2d4d0cdd114d36e',
+      uri: 'oncall://automation/outbox/ff17a904-7f55-427e-aa78-c2759c7e2ebf',
+      event: '{"id":"095809c126a8cd49c2d4d0cdd114d36e","type":"automation.created","uri":"oncall://automation/outbox/ff17a904-7f55-427e-aa78-c2759c7e2ebf","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:18.826Z","native_revision":1}'
+    },
+    {
+      sequence: 34,
+      id: '862fb993f2545da9b7ea065be3d6ae1d',
+      uri: 'oncall://automation/outbox/a1387ea9-d523-46c2-bfaf-579d1e70ecbc',
+      event: '{"id":"862fb993f2545da9b7ea065be3d6ae1d","type":"automation.created","uri":"oncall://automation/outbox/a1387ea9-d523-46c2-bfaf-579d1e70ecbc","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:18.826Z","native_revision":1}'
+    },
+    {
+      sequence: 35,
+      id: 'd94291755134ce944b0155feeca387f8',
+      uri: 'oncall://automation/outbox/6ad08317-a747-4460-b784-f5be2b629fc0',
+      event: '{"id":"d94291755134ce944b0155feeca387f8","type":"automation.created","uri":"oncall://automation/outbox/6ad08317-a747-4460-b784-f5be2b629fc0","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:18.826Z","native_revision":1}'
+    },
+    {
+      sequence: 36,
+      id: 'e6ad2a7bff5896c82992ea800c5b3b5b',
+      uri: 'oncall://incidents/f9c4a788-59e6-4056-9b92-e713fa377a5d',
+      event: '{"id":"e6ad2a7bff5896c82992ea800c5b3b5b","type":"incidents.updated","uri":"oncall://incidents/f9c4a788-59e6-4056-9b92-e713fa377a5d","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:18.826Z","native_revision":2}'
+    },
+    {
+      sequence: 37,
+      id: 'e51fa74f-84bb-4e95-9db1-a2ce4225f80a',
+      uri: 'oncall://incidents/f9c4a788-59e6-4056-9b92-e713fa377a5d',
+      event: '{"incident":"f9c4a788-59e6-4056-9b92-e713fa377a5d","revision":3,"id":"e51fa74f-84bb-4e95-9db1-a2ce4225f80a","type":"incidents.update","uri":"oncall://incidents/f9c4a788-59e6-4056-9b92-e713fa377a5d","actor":{"kind":"agent","agent":{"id":"responder-1a33794d-2fc2-4cfc-afca-7fc7e4406681","name":"Responder assistant"},"for":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"},"label":"Responder assistant for Alex Chen"},"at":"2026-11-14T14:00:00.000Z"}'
+    },
+    {
+      sequence: 38,
+      id: 'afb36ea2fe4269c3181c764cf1c9838e',
+      uri: 'oncall://automation/outbox/eaa318fc-a564-4301-b7d1-f9d7e0705f35',
+      event: '{"id":"afb36ea2fe4269c3181c764cf1c9838e","type":"automation.created","uri":"oncall://automation/outbox/eaa318fc-a564-4301-b7d1-f9d7e0705f35","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:19.261Z","native_revision":1}'
+    },
+    {
+      sequence: 39,
+      id: 'b7f5280574c92dc1669e1025c3f0b8f7',
+      uri: 'oncall://automation/outbox/04aa4ebe-96d8-4308-9e42-e73fb8848bf0',
+      event: '{"id":"b7f5280574c92dc1669e1025c3f0b8f7","type":"automation.created","uri":"oncall://automation/outbox/04aa4ebe-96d8-4308-9e42-e73fb8848bf0","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:19.261Z","native_revision":1}'
+    },
+    {
+      sequence: 4,
+      id: 'c8d5513a1249ad30cbac07140ee36248',
+      uri: 'oncall://members/ef30cc63-b9a4-46be-a328-858a46809a5d',
+      event: '{"id":"c8d5513a1249ad30cbac07140ee36248","type":"members.created","uri":"oncall://members/ef30cc63-b9a4-46be-a328-858a46809a5d","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.063Z","native_revision":null}'
+    },
+    {
+      sequence: 40,
+      id: 'e4516f1b3024d715ffc7fc20bc36bfd8',
+      uri: 'oncall://automation/outbox/12684e3c-384d-4664-87fe-cbaaf10211a0',
+      event: '{"id":"e4516f1b3024d715ffc7fc20bc36bfd8","type":"automation.created","uri":"oncall://automation/outbox/12684e3c-384d-4664-87fe-cbaaf10211a0","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:19.261Z","native_revision":1}'
+    },
+    {
+      sequence: 41,
+      id: '586b3a61c1a0b37f7eda22df1cd0f373',
+      uri: 'oncall://incidents/df676128-99a9-4952-b72b-fc379cf9edfb',
+      event: '{"id":"586b3a61c1a0b37f7eda22df1cd0f373","type":"incidents.created","uri":"oncall://incidents/df676128-99a9-4952-b72b-fc379cf9edfb","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:19.261Z","native_revision":1}'
+    },
+    {
+      sequence: 42,
+      id: '5e58d666-cbb7-43ed-a574-0acc2374de11',
+      uri: 'oncall://incidents/df676128-99a9-4952-b72b-fc379cf9edfb',
+      event: '{"incident":"df676128-99a9-4952-b72b-fc379cf9edfb","revision":2,"id":"5e58d666-cbb7-43ed-a574-0acc2374de11","type":"incidents.update","uri":"oncall://incidents/df676128-99a9-4952-b72b-fc379cf9edfb","actor":{"kind":"agent","agent":{"id":"responder-1a33794d-2fc2-4cfc-afca-7fc7e4406681","name":"Responder assistant"},"for":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"},"label":"Responder assistant for Alex Chen"},"at":"2026-11-14T14:00:00.000Z"}'
+    },
+    {
+      sequence: 43,
+      id: '4c56aadb76a454e6838d18d45227c4b4',
+      uri: 'oncall://automation/outbox/959b909a-89a9-4071-86e8-8c442bab3c65',
+      event: '{"id":"4c56aadb76a454e6838d18d45227c4b4","type":"automation.created","uri":"oncall://automation/outbox/959b909a-89a9-4071-86e8-8c442bab3c65","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:19.713Z","native_revision":1}'
+    },
+    {
+      sequence: 44,
+      id: 'b47c0700b65f539ced1561a306fc52ff',
+      uri: 'oncall://automation/outbox/40d29cc7-9886-4e61-8374-ad9e18627dcb',
+      event: '{"id":"b47c0700b65f539ced1561a306fc52ff","type":"automation.created","uri":"oncall://automation/outbox/40d29cc7-9886-4e61-8374-ad9e18627dcb","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:19.713Z","native_revision":1}'
+    },
+    {
+      sequence: 45,
+      id: '8732fbdd93f5c777511e18152574ea92',
+      uri: 'oncall://automation/outbox/538516c2-0cb8-4b34-8e98-5deae03e5333',
+      event: '{"id":"8732fbdd93f5c777511e18152574ea92","type":"automation.created","uri":"oncall://automation/outbox/538516c2-0cb8-4b34-8e98-5deae03e5333","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:19.713Z","native_revision":1}'
+    },
+    {
+      sequence: 46,
+      id: '9d0fc789ec85e83ec23673c49528a000',
+      uri: 'oncall://incidents/eb8e7212-b951-45cd-b547-daf747859441',
+      event: '{"id":"9d0fc789ec85e83ec23673c49528a000","type":"incidents.created","uri":"oncall://incidents/eb8e7212-b951-45cd-b547-daf747859441","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:19.713Z","native_revision":1}'
+    },
+    {
+      sequence: 47,
+      id: '9688ce20-7429-4b78-bfb7-ee88921ce572',
+      uri: 'oncall://incidents/eb8e7212-b951-45cd-b547-daf747859441',
+      event: '{"incident":"eb8e7212-b951-45cd-b547-daf747859441","revision":2,"id":"9688ce20-7429-4b78-bfb7-ee88921ce572","type":"incidents.update","uri":"oncall://incidents/eb8e7212-b951-45cd-b547-daf747859441","actor":{"kind":"agent","agent":{"id":"responder-1a33794d-2fc2-4cfc-afca-7fc7e4406681","name":"Responder assistant"},"for":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"},"label":"Responder assistant for Alex Chen"},"at":"2026-11-14T14:00:00.000Z"}'
+    },
+    {
+      sequence: 48,
+      id: '686c76c571d5045d4f5fdeb514f085f6',
+      uri: 'oncall://automation/outbox/94c81de0-268a-40ff-b28e-b5db0c7f83c5',
+      event: '{"id":"686c76c571d5045d4f5fdeb514f085f6","type":"automation.created","uri":"oncall://automation/outbox/94c81de0-268a-40ff-b28e-b5db0c7f83c5","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.104Z","native_revision":1}'
+    },
+    {
+      sequence: 49,
+      id: 'a147c4f07d146325ba9c661906471e5b',
+      uri: 'oncall://automation/outbox/e1445181-b76e-4d85-a776-2c6d9fe0582a',
+      event: '{"id":"a147c4f07d146325ba9c661906471e5b","type":"automation.created","uri":"oncall://automation/outbox/e1445181-b76e-4d85-a776-2c6d9fe0582a","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.104Z","native_revision":1}'
+    },
+    {
+      sequence: 5,
+      id: 'a47724179ce80cc239ef83fc4b2eb4f8',
+      uri: 'oncall://services/agent-service',
+      event: '{"id":"a47724179ce80cc239ef83fc4b2eb4f8","type":"services.created","uri":"oncall://services/agent-service","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.080Z","native_revision":null}'
+    },
+    {
+      sequence: 50,
+      id: '7274b44e0b37fa32375c0001eff861af',
+      uri: 'oncall://automation/outbox/bf60337e-2e5d-44b3-960c-805a75376c36',
+      event: '{"id":"7274b44e0b37fa32375c0001eff861af","type":"automation.created","uri":"oncall://automation/outbox/bf60337e-2e5d-44b3-960c-805a75376c36","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.104Z","native_revision":1}'
+    },
+    {
+      sequence: 51,
+      id: '65d88099c8329bf22020bbebd01a3ee9',
+      uri: 'oncall://incidents/e8d92ec9-2575-40ab-8bea-2ba605a356ef',
+      event: '{"id":"65d88099c8329bf22020bbebd01a3ee9","type":"incidents.created","uri":"oncall://incidents/e8d92ec9-2575-40ab-8bea-2ba605a356ef","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.105Z","native_revision":1}'
+    },
+    {
+      sequence: 52,
+      id: '7b21de5c126927c83f0289093eca0d38',
+      uri: 'oncall://automation/outbox/160e8023-2b1a-44f6-97e5-473f0b42ee66',
+      event: '{"id":"7b21de5c126927c83f0289093eca0d38","type":"automation.created","uri":"oncall://automation/outbox/160e8023-2b1a-44f6-97e5-473f0b42ee66","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.119Z","native_revision":1}'
+    },
+    {
+      sequence: 53,
+      id: '95d1e756c6e4e7aa331d56c24aab4f3e',
+      uri: 'oncall://automation/outbox/6e0962d8-3c23-4ce3-ba8e-eb48f301e6ff',
+      event: '{"id":"95d1e756c6e4e7aa331d56c24aab4f3e","type":"automation.created","uri":"oncall://automation/outbox/6e0962d8-3c23-4ce3-ba8e-eb48f301e6ff","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.119Z","native_revision":1}'
+    },
+    {
+      sequence: 54,
+      id: 'd8a185129a98492bee2dba15adabb984',
+      uri: 'oncall://automation/outbox/86c9c1ba-92a3-418c-8ef8-b9d198ad74f5',
+      event: '{"id":"d8a185129a98492bee2dba15adabb984","type":"automation.created","uri":"oncall://automation/outbox/86c9c1ba-92a3-418c-8ef8-b9d198ad74f5","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.119Z","native_revision":1}'
+    },
+    {
+      sequence: 55,
+      id: '5ec8a68334a1c07a772b640053df60b6',
+      uri: 'oncall://incidents/e8d92ec9-2575-40ab-8bea-2ba605a356ef',
+      event: '{"id":"5ec8a68334a1c07a772b640053df60b6","type":"incidents.updated","uri":"oncall://incidents/e8d92ec9-2575-40ab-8bea-2ba605a356ef","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.120Z","native_revision":2}'
+    },
+    {
+      sequence: 56,
+      id: '1f9a6582d55ec3bb55e0c5c2ac553a07',
+      uri: 'oncall://automation/outbox/b7946ec5-628e-413f-aaf1-73fba3893a02',
+      event: '{"id":"1f9a6582d55ec3bb55e0c5c2ac553a07","type":"automation.created","uri":"oncall://automation/outbox/b7946ec5-628e-413f-aaf1-73fba3893a02","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.132Z","native_revision":1}'
+    },
+    {
+      sequence: 57,
+      id: '8c6e3905cc8df6bc4b113ce92915e4cd',
+      uri: 'oncall://automation/outbox/f9cd0f79-ee5c-4ea3-9600-c51d5c8ef83e',
+      event: '{"id":"8c6e3905cc8df6bc4b113ce92915e4cd","type":"automation.created","uri":"oncall://automation/outbox/f9cd0f79-ee5c-4ea3-9600-c51d5c8ef83e","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.132Z","native_revision":1}'
+    },
+    {
+      sequence: 58,
+      id: '4aa11bc084090f8e6ae9a8283598ff14',
+      uri: 'oncall://automation/outbox/606cfb8e-76d8-449e-9a6c-1a5d73ff04e3',
+      event: '{"id":"4aa11bc084090f8e6ae9a8283598ff14","type":"automation.created","uri":"oncall://automation/outbox/606cfb8e-76d8-449e-9a6c-1a5d73ff04e3","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.132Z","native_revision":1}'
+    },
+    {
+      sequence: 59,
+      id: '454cd8ef9d1abcebe543036672a10551',
+      uri: 'oncall://incidents/e8d92ec9-2575-40ab-8bea-2ba605a356ef',
+      event: '{"id":"454cd8ef9d1abcebe543036672a10551","type":"incidents.updated","uri":"oncall://incidents/e8d92ec9-2575-40ab-8bea-2ba605a356ef","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.132Z","native_revision":3}'
+    },
+    {
+      sequence: 6,
+      id: '4e987a385a49fb74ad92bfe39eee9a7b',
+      uri: 'oncall://services/agent-foreign-service',
+      event: '{"id":"4e987a385a49fb74ad92bfe39eee9a7b","type":"services.created","uri":"oncall://services/agent-foreign-service","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.094Z","native_revision":null}'
+    },
+    {
+      sequence: 60,
+      id: '76626e9f413619cc1441a3a8004adfb7',
+      uri: 'oncall://automation/outbox/1818cedf-5751-411f-a976-b9eabb6fbf4e',
+      event: '{"id":"76626e9f413619cc1441a3a8004adfb7","type":"automation.created","uri":"oncall://automation/outbox/1818cedf-5751-411f-a976-b9eabb6fbf4e","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.144Z","native_revision":1}'
+    },
+    {
+      sequence: 61,
+      id: '4e9a67fbe1b8f17ef41d9dbac6e5fc61',
+      uri: 'oncall://automation/outbox/7a0f99f0-820b-4ac4-b6de-58a62a372b0d',
+      event: '{"id":"4e9a67fbe1b8f17ef41d9dbac6e5fc61","type":"automation.created","uri":"oncall://automation/outbox/7a0f99f0-820b-4ac4-b6de-58a62a372b0d","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.144Z","native_revision":1}'
+    },
+    {
+      sequence: 62,
+      id: 'a2e864cde37ea752bbdcbb9642b7724c',
+      uri: 'oncall://automation/outbox/8d0d375c-c863-46f0-a448-6bbba8848056',
+      event: '{"id":"a2e864cde37ea752bbdcbb9642b7724c","type":"automation.created","uri":"oncall://automation/outbox/8d0d375c-c863-46f0-a448-6bbba8848056","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.144Z","native_revision":1}'
+    },
+    {
+      sequence: 63,
+      id: 'ebbdc6b9282520ba511b736569cd9403',
+      uri: 'oncall://incidents/e8d92ec9-2575-40ab-8bea-2ba605a356ef',
+      event: '{"id":"ebbdc6b9282520ba511b736569cd9403","type":"incidents.updated","uri":"oncall://incidents/e8d92ec9-2575-40ab-8bea-2ba605a356ef","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:20.144Z","native_revision":4}'
+    },
+    {
+      sequence: 64,
+      id: 'f1a2699c-4305-43e2-9787-3ece5b030efc',
+      uri: 'oncall://incidents/e8d92ec9-2575-40ab-8bea-2ba605a356ef',
+      event: '{"incident":"e8d92ec9-2575-40ab-8bea-2ba605a356ef","revision":5,"id":"f1a2699c-4305-43e2-9787-3ece5b030efc","type":"incidents.update","uri":"oncall://incidents/e8d92ec9-2575-40ab-8bea-2ba605a356ef","actor":{"kind":"agent","agent":{"id":"responder-1a33794d-2fc2-4cfc-afca-7fc7e4406681","name":"Responder assistant"},"for":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"},"label":"Responder assistant for Alex Chen"},"at":"2026-11-14T14:00:00.000Z"}'
+    },
+    {
+      sequence: 7,
+      id: '4db7db94517f883381fb3b94ce6d750d',
+      uri: 'oncall://schedules/agent-schedule/coverage',
+      event: '{"id":"4db7db94517f883381fb3b94ce6d750d","type":"schedule.created","uri":"oncall://schedules/agent-schedule/coverage","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.177Z","native_revision":1}'
+    },
+    {
+      sequence: 8,
+      id: '0e47dd5afff19e9da202531a0d6223be',
+      uri: 'oncall://automation/clients/api-50443a27-645a-46b0-b8bb-81cad89f3eea',
+      event: '{"id":"0e47dd5afff19e9da202531a0d6223be","type":"clients.created","uri":"oncall://automation/clients/api-50443a27-645a-46b0-b8bb-81cad89f3eea","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.193Z","native_revision":1}'
+    },
+    {
+      sequence: 9,
+      id: '627b7247f6168ef15e0940cf27a739f0',
+      uri: 'oncall://automation/endpoints/424b10c0-3171-491c-a382-b346bdf76580',
+      event: '{"id":"627b7247f6168ef15e0940cf27a739f0","type":"endpoints.created","uri":"oncall://automation/endpoints/424b10c0-3171-491c-a382-b346bdf76580","actor":{"kind":"person","person":{"id":"1f102cc1-97f8-4b8d-9ec5-2eb596335fdc","name":"Alex Chen"}},"at":"2026-11-14T14:00:16.208Z","native_revision":1}'
+    }
+  ],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v22.20.0

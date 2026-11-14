@@ -1,0 +1,48 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f245",
+  "head": "92be1b36796181d3a1cde56004f2ae38900900a8",
+  "main": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+  "shallow": "false",
+  "commits": [
+    "92be1b36796181d3a1cde56004f2ae38900900a8 Prove aged replay retention for standard coordination writes",
+    "c0f996974256f96bad77fba641c7277c979cf154 Extract aged replay retention journey [skip ci]"
+  ],
+  "status": [],
+  "changed_files": [
+    "M\tsources.lock.json",
+    "M\ttests/oncall-agent-flow.mjs",
+    "A\ttests/oncall-agent-retention.mjs"
+  ],
+  "files": {
+    "tests/oncall-agent-retention.mjs": "94076043257e9fe131f45ccfbaab104e926e6d5ed51da56547f7fe978e70bfe7",
+    "tests/oncall-agent-flow.mjs": "76afb90441140706bed45dfe3271ab9686c8ec6eb9d0f3435e47c55523127368",
+    "sources.lock.json": "1cf1188610e60e2b2987d6ab116864b93528f1bf3f99becaf8e32fea278000a7"
+  },
+  "contract_and_views_unchanged": true,
+  "counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "clause": {
+    "id": "BASE-AGENT-012",
+    "source_status": "missing",
+    "claim": "PARTIAL",
+    "complete_acceptance_points": []
+  },
+  "publication_scan": {
+    "head": "92be1b36796181d3a1cde56004f2ae38900900a8",
+    "complete": "not_run_in_cloud",
+    "historyScanned": "unestablished",
+    "findings": "unestablished",
+    "custodian": "fleet lander"
+  }
+}

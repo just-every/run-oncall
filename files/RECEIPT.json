@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "tag": "sd-oncall-c-f245",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f245",
+  "head": "92be1b36796181d3a1cde56004f2ae38900900a8",
+  "base": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+  "started_at": "2026-11-14T14:02:14.154923+00:00",
+  "commands": [
+    {
+      "name": "build",
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "seconds": 8.13,
+      "log": "build.log",
+      "bytes": 16616,
+      "sha256": "401eb66cf96ae99f2208a10e9aefdba6d49f9f3fc336b6f3d9f4fab38ddfe329"
+    },
+    {
+      "name": "runtime-candidate",
+      "command": "timeout -k 10 1200 env ONCALL_RUNTIME_PART=machines node tests/runtime.mjs",
+      "exit": 0,
+      "seconds": 429.576,
+      "log": "runtime-candidate.log",
+      "bytes": 79975,
+      "sha256": "b1d1ef447eca7494f066e5f0ec20a76b19cfba84966bb9cc1ef29a95b0bed33e"
+    },
+    {
+      "name": "typecheck-candidate",
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "seconds": 2.89,
+      "log": "typecheck-candidate.log",
+      "bytes": 118,
+      "sha256": "056eeda5d9b9a4129eb5d7f74c05034cf5120f965aad17ab526bcff2a966290c"
+    },
+    {
+      "name": "first-party-candidate",
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "seconds": 0.916,
+      "log": "first-party-candidate.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "lock-candidate",
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "seconds": 0.227,
+      "log": "f245-lock-candidate.log",
+      "bytes": 276696,
+      "sha256": "1fcaf63565a3c3864a3a556d0d12984979a32b6ca1c610c76e8673a956eea921"
+    },
+    {
+      "name": "views-candidate",
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "seconds": 0.12,
+      "log": "views-candidate.log",
+      "bytes": 70,
+      "sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    }
+  ],
+  "completed_at": "2026-11-14T14:09:36.016303+00:00",
+  "status": "passed"
+}

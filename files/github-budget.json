@@ -1,0 +1,32 @@
+{
+  "limit": 10,
+  "calls": 4,
+  "operations": [
+    {
+      "call": 1,
+      "operation": "main exact-SHA runs discovery",
+      "source": "main-runs.json"
+    },
+    {
+      "call": 2,
+      "operation": "candidate exact-SHA runs discovery",
+      "source": "candidate-runs-initial.json",
+      "observed_at": "2026-11-14T14:02:46Z"
+    },
+    {
+      "call": 3,
+      "operation": "candidate run status",
+      "run": 43602784077,
+      "source": "candidate-runs-final.json",
+      "observed_at": "2026-11-14T14:08:07Z"
+    },
+    {
+      "call": 4,
+      "operation": "candidate run status",
+      "run": 43602784077,
+      "source": "candidate-runs-final.json",
+      "observed_at": "2026-11-14T14:13:19Z"
+    }
+  ],
+  "next_candidate_status_not_before": "2026-11-14T14:13:07Z"
+}

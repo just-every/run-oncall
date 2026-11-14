@@ -1,0 +1,69 @@
+{
+  "checked_at": "2026-11-14T14:01:37.584409+00:00",
+  "commands": [
+    {
+      "name": "typecheck",
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "seconds": 2.633,
+      "output_bytes": 118,
+      "output_sha256": "056eeda5d9b9a4129eb5d7f74c05034cf5120f965aad17ab526bcff2a966290c"
+    },
+    {
+      "name": "views-write",
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "seconds": 0.093,
+      "output_bytes": 28,
+      "output_sha256": "14cee29b7bd19487e15f4013d4fb85016e022ef21d230676971a6490c88436d2"
+    },
+    {
+      "name": "views-check",
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "seconds": 0.125,
+      "output_bytes": 70,
+      "output_sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "name": "views-restore",
+      "command": "git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md",
+      "exit": 0,
+      "seconds": 0.004,
+      "output_bytes": 0,
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "lock",
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "seconds": 0.234,
+      "output_bytes": 276682,
+      "output_sha256": "6e8b641d5ddd7dda403d49484501a8139c22257391270c273efd52d77e4dd48a"
+    },
+    {
+      "name": "lock-check",
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "seconds": 0.216,
+      "output_bytes": 276696,
+      "output_sha256": "1fcaf63565a3c3864a3a556d0d12984979a32b6ca1c610c76e8673a956eea921"
+    },
+    {
+      "name": "first-party",
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "seconds": 0.757,
+      "output_bytes": 0,
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "diff-check",
+      "command": "git diff --check",
+      "exit": 0,
+      "seconds": 0.005,
+      "output_bytes": 0,
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

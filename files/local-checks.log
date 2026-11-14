@@ -1,0 +1,33 @@
+> pnpm run typecheck
+
+> @just-every/oncall@0.5.14 typecheck /home/agent/rer-consolidation/work/sd-oncall-c-f245/run-oncall
+> tsc --noEmit
+
+exit=0
+
+> node src/base/contract-docs.mjs write
+Wrote 0 contract documents.
+exit=0
+
+> node src/base/contract-docs.mjs check
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+exit=0
+
+> git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md
+exit=0
+
+> node scripts/edition-authoring/cli.mjs lock
+Source lock command output retained locally; bytes=276682 sha256=6e8b641d5ddd7dda403d49484501a8139c22257391270c273efd52d77e4dd48a
+exit=0
+
+> node scripts/edition-authoring/cli.mjs check
+Source lock command output retained locally; bytes=276696 sha256=1fcaf63565a3c3864a3a556d0d12984979a32b6ca1c610c76e8673a956eea921
+exit=0
+
+> pnpm exec rer check --profile first-party
+exit=0
+
+> git diff --check
+exit=0
+

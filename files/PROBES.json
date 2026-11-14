@@ -1,0 +1,193 @@
+{
+  "head": "92be1b36796181d3a1cde56004f2ae38900900a8",
+  "complete": true,
+  "before_cases": 2,
+  "after_cases": 9,
+  "new_cases": 7,
+  "before_replay_observations": 8,
+  "after_replay_observations": 36,
+  "new_replay_observations": 28,
+  "source": "runtime-candidate.log",
+  "probes": [
+    {
+      "mode": "autonomous",
+      "case": "oncall.incidents.declare",
+      "elapsed_ms": 86400000
+    },
+    {
+      "mode": "autonomous",
+      "case": "oncall.notes.add",
+      "elapsed_ms": 86400000
+    },
+    {
+      "mode": "autonomous",
+      "case": "oncall.incidents.acknowledge",
+      "elapsed_ms": 86400000
+    },
+    {
+      "mode": "autonomous",
+      "case": "oncall.actions.create",
+      "elapsed_ms": 86400000
+    },
+    {
+      "mode": "autonomous",
+      "case": "oncall.services.update",
+      "elapsed_ms": 86400000
+    },
+    {
+      "mode": "autonomous",
+      "case": "reassign",
+      "elapsed_ms": 86400000
+    },
+    {
+      "mode": "autonomous",
+      "case": "assign-role scribe",
+      "elapsed_ms": 86400000
+    },
+    {
+      "mode": "autonomous",
+      "case": "assign-role communications",
+      "elapsed_ms": 86400000
+    },
+    {
+      "mode": "autonomous",
+      "case": "assign-role commander",
+      "elapsed_ms": 86400000
+    },
+    {
+      "mode": "autonomous",
+      "case": "oncall.incidents.declare",
+      "elapsed_ms": 86401000
+    },
+    {
+      "mode": "autonomous",
+      "case": "oncall.notes.add",
+      "elapsed_ms": 86401000
+    },
+    {
+      "mode": "autonomous",
+      "case": "oncall.incidents.acknowledge",
+      "elapsed_ms": 86401000
+    },
+    {
+      "mode": "autonomous",
+      "case": "oncall.actions.create",
+      "elapsed_ms": 86401000
+    },
+    {
+      "mode": "autonomous",
+      "case": "oncall.services.update",
+      "elapsed_ms": 86401000
+    },
+    {
+      "mode": "autonomous",
+      "case": "reassign",
+      "elapsed_ms": 86401000
+    },
+    {
+      "mode": "autonomous",
+      "case": "assign-role scribe",
+      "elapsed_ms": 86401000
+    },
+    {
+      "mode": "autonomous",
+      "case": "assign-role communications",
+      "elapsed_ms": 86401000
+    },
+    {
+      "mode": "autonomous",
+      "case": "assign-role commander",
+      "elapsed_ms": 86401000
+    },
+    {
+      "mode": "held",
+      "case": "oncall.incidents.declare",
+      "elapsed_ms": 86400000
+    },
+    {
+      "mode": "held",
+      "case": "oncall.notes.add",
+      "elapsed_ms": 86400000
+    },
+    {
+      "mode": "held",
+      "case": "oncall.incidents.acknowledge",
+      "elapsed_ms": 86400000
+    },
+    {
+      "mode": "held",
+      "case": "oncall.actions.create",
+      "elapsed_ms": 86400000
+    },
+    {
+      "mode": "held",
+      "case": "oncall.services.update",
+      "elapsed_ms": 86400000
+    },
+    {
+      "mode": "held",
+      "case": "reassign",
+      "elapsed_ms": 86400000
+    },
+    {
+      "mode": "held",
+      "case": "assign-role scribe",
+      "elapsed_ms": 86400000
+    },
+    {
+      "mode": "held",
+      "case": "assign-role communications",
+      "elapsed_ms": 86400000
+    },
+    {
+      "mode": "held",
+      "case": "assign-role commander",
+      "elapsed_ms": 86400000
+    },
+    {
+      "mode": "held",
+      "case": "oncall.incidents.declare",
+      "elapsed_ms": 86401000
+    },
+    {
+      "mode": "held",
+      "case": "oncall.notes.add",
+      "elapsed_ms": 86401000
+    },
+    {
+      "mode": "held",
+      "case": "oncall.incidents.acknowledge",
+      "elapsed_ms": 86401000
+    },
+    {
+      "mode": "held",
+      "case": "oncall.actions.create",
+      "elapsed_ms": 86401000
+    },
+    {
+      "mode": "held",
+      "case": "oncall.services.update",
+      "elapsed_ms": 86401000
+    },
+    {
+      "mode": "held",
+      "case": "reassign",
+      "elapsed_ms": 86401000
+    },
+    {
+      "mode": "held",
+      "case": "assign-role scribe",
+      "elapsed_ms": 86401000
+    },
+    {
+      "mode": "held",
+      "case": "assign-role communications",
+      "elapsed_ms": 86401000
+    },
+    {
+      "mode": "held",
+      "case": "assign-role commander",
+      "elapsed_ms": 86401000
+    }
+  ]
+}
