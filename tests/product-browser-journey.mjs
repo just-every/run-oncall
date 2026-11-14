@@ -231,7 +231,7 @@ export async function providerExport(page,context,width,proof) {
   await help.locator('summary').click()
   await help.getByRole('button',{name:/Copy .* export command/}).click()
   const copied=await page.evaluate(()=>navigator.clipboard.readText())
-  assert.equal(copied,await help.locator('pre code').innerText(),'copy control supplies the displayed runnable command')
+  assert.equal(copied,await help.locator('pre[aria-label] code').innerText(),'copy control supplies the displayed runnable command')
   const [download]=await Promise.all([page.waitForEvent('download'),help.getByRole('link',{name:'Download oncall-export.mjs',exact:true}).click()])
   const file=resolve('.rer/local',vendor+'-export.mjs')
   await download.saveAs(file)

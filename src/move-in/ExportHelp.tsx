@@ -8,7 +8,7 @@ const pdSetup = 'https://support.pagerduty.com/main/docs/api-access-keys'
 
 export function ExportHelp({vendor}:{vendor:string}) {
  const ops=vendor==='opsgenie',name=ops?'Opsgenie':'PagerDuty'
- const command=`cd ~/Downloads\nnode oncall-export.mjs ${vendor}`
+ const command=`cd ~/Downloads\nrer run --script ./oncall-export.mjs ${vendor}`
  const [copyStatus,setCopyStatus]=useState('')
  async function copyCommand() {
   try {await navigator.clipboard.writeText(command);setCopyStatus('Command copied')}
@@ -42,13 +42,15 @@ export function ExportHelp({vendor}:{vendor:string}) {
    <p>Use this REST API key. A service’s Events API integration key cannot read schedules. <a href={pdSetup} target="_blank" rel="noreferrer">Official key instructions</a>.</p>
   </>}
   <h3>2. Download and run the exporter</h3>
-  <p>You need <strong>Node.js 22 or later</strong>, an interactive terminal and internet access to {name}. No packages or API client are needed. Open Terminal on macOS/Linux, or PowerShell on Windows. Run <code>node --version</code>; if it is missing or below v22, install the current LTS from <a href="https://nodejs.org/en/download" target="_blank" rel="noreferrer">nodejs.org</a> and reopen your terminal.</p>
+  <p>Use <code>rer</code> from the Oncall installer in a macOS, Linux or WSL terminal with internet access to {name}. It supplies its own Node.js runtime; no separate Node install, packages or API client are needed. If <code>rer</code> is missing or does not recognize <code>--script</code>, install or update it first:</p>
+  <pre><code>curl -fsSL https://runeditrun.com/install.sh | sh</code></pre>
+  <p>If your terminal cannot find <code>rer</code> after installation, run <code>export PATH="$HOME/.local/bin:$PATH"</code> first.</p>
   <p><a href="/move-in/oncall-export.mjs.txt" download="oncall-export.mjs">Download oncall-export.mjs</a> and save it to your <strong>Downloads</strong> folder with that exact name. You can open it in a text editor to inspect it before running it.</p>
   <p>Copy these two lines into Terminal and press Enter:</p>
   <button type="button" onClick={copyCommand}>Copy {name} export command</button>
   <span role="status" className="move-in-export-copy-status">{copyStatus}</span>
   <pre aria-label={`${name} export command`}><code>{command}</code></pre>
-  <p>In Windows PowerShell, use <code>cd "$HOME\Downloads"</code> for the first line. If you saved the script elsewhere, change to that folder first. Keep the filename <code>oncall-export.mjs</code>, without a <code>.txt</code> suffix. Do not paste your key into a command.</p>
+  <p>On Windows, use WSL and change to the folder where you saved the download. If you saved the script elsewhere, change to that folder first. Keep the filename <code>oncall-export.mjs</code>, without a <code>.txt</code> suffix. Do not paste your key into a command.</p>
   <h3>3. Answer the terminal prompts</h3>
   <ol>
    <li><strong>Account region:</strong> enter <code>us</code> or <code>eu</code>. {ops?'Choose eu for an app.eu.opsgenie.com account; otherwise choose us.':'Choose eu when your PagerDuty address includes .eu.pagerduty.com; otherwise choose us.'}</li>

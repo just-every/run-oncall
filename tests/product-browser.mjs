@@ -754,6 +754,28 @@ async function eventsSourceBrowser(page,context) {
   const path=new URL(await page.getByRole('link',{name:'Open source',exact:true}).getAttribute('href'),origin).pathname;
   return {key,url,example,path,name:await page.getByRole('heading',{level:2}).innerText(),source:decodeURIComponent(new URL(url).pathname.split('/').at(-1))};
  };
+ // Compatible samples execute through the public receiver without Node on PATH.
+ const compatibleSample=async(key,kind)=>{
+  await page.getByText('Sample request',{exact:true}).click();
+  const sample=await page.getByLabel('Sample request',{exact:true}).inputValue();
+  assert.ok(!sample.includes(key),'compatible sample never embeds the private key');
+  await page.getByRole('button',{name:'Copy sample request',exact:true}).click();
+  assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),sample);
+  const response=JSON.parse(await runSenderRecipe(sample,key));
+  assert.ok(kind==='opsgenie'?response.requestId:kind==='splunk'?response.result==='success':response.status==='success','copied sample receives an incumbent-shaped success');
+  const state=await request('/api/state'),source=decodeURIComponent(new URL(page.url()).pathname.split('/').at(-1)).replace(/^intake:/,'');
+  assert.ok(state.events.some(event=>(event.source===source||event.source==='intake:'+source)&&event.service===service&&event.title==='Service latency is above normal'),'sample creates the event on its bound source and service');
+  await proof('compatible-sample-'+kind);
+ };
+ for(const kind of ['pagerduty','opsgenie','splunk']){
+  await page.goto(origin+'/settings/integrations/new/'+kind);
+  await page.getByLabel('Name',{exact:true}).fill('Synthetic compatible '+kind);
+  const select=page.getByLabel('Service',{exact:true});if(await select.count())await select.selectOption(service);
+  await page.getByRole('button',{name:'Create source',exact:true}).click();
+  const key=await page.getByLabel('Private key',{exact:true}).inputValue();
+  await page.getByRole('link',{name:'Open source',exact:true}).click();
+  await compatibleSample(key,kind);
+ }
  // Extend this existing source lifecycle journey through the compatible form.
  await page.goto(origin+'/settings/integrations/new/pagerduty');
  await page.getByLabel('Name',{exact:true}).fill('Harbour Checkout compatible');
