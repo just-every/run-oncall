@@ -9,6 +9,8 @@ import { reviewMaterial } from '../reviews/material'
 import { pagingSnapshot } from '../paging-store'
 import { handoffSnapshot } from '../handoff-store'
 import { responseReport } from '../reviews/report'
+import { coverageLoad } from '../reviews/load'
+import { alertNoise } from '../reviews/noise'
 import { ToolRefusal, type ClassAndFacts, type ResourceContext, type ResourceDefinition } from '../modules/agent-door/index.ts'
 import { nativeAccess, type NativeAccess } from './native'
 
@@ -123,7 +125,7 @@ export function oncallResources(env: Bindings): ResourceDefinition[] {
       const change = access.state.changes?.find(row => row.id === id && access.services.includes(row.service))
       return change ? { service: change.service, json: change } : null
     }),
-    resource(env, 'reports/{period}', 'Monthly native response report', 'analytics:read', (access, period) => {
+    resource(env, 'reports/{period}', 'Monthly native response report', 'analytics:read', async (access, period) => {
       if (!/^(20\d{2})-(0[1-9]|1[0-2])$/.test(period)) return null
       const from = period + '-01T00:00:00.000Z'
       const end = new Date(from)
@@ -131,9 +133,14 @@ export function oncallResources(env: Bindings): ResourceDefinition[] {
       // Reports use completed calendar months, with a stable observation time.
       // An empty scoped cohort gives no existence signal about another service.
       if (end.getTime() > observedAt) return null
-      const state = scopedState(access), to = end.toISOString()
+      const snapshot = await pagingSnapshot(env.DB)
+      if (snapshot.workspace.revision !== access.state.revision) return null
+      const state = scopedState({ ...access, state: snapshot.workspace }), to = end.toISOString()
       const report = responseReport(state, { from, to }, to)
-      return report.cohort.count ? { json: report } : null
+      const schedules = snapshot.archive.schedules.filter(row => access.services.includes(row.service))
+      return report.cohort.count ? { json: { ...report,
+        load: coverageLoad(state, { revision: snapshot.revision, schedules }, report),
+        noise: alertNoise(state, report) } } : null
     }),
     resource(env,'members/{id}','Native member','access:read',(access,id)=>{const member=access.state.members.find(row=>row.id===id);return member?{json:{people:[member]}}:null},true),
     resource(env,'teams/{id}','Public native team','access:read',(access,id)=>{const team=access.state.teams?.find(row=>row.id===id&&row.visibility==='public');return team?{json:team}:null},true),
