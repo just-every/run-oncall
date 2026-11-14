@@ -1,0 +1,12 @@
+{
+  "run_id": 43637941712,
+  "event": "push",
+  "observed_at": "2026-11-14T20:52:06Z",
+  "conclusion": "cancelled",
+  "head_sha": "4af169eb4b7cd5ee3a0bc9867edf6e51a9ac2a8f",
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/43637941712",
+  "status": "completed",
+  "github_calls_used": 8,
+  "rerun_or_dispatch": false,
+  "cause": "not established"
+}

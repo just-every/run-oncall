@@ -1,0 +1,25 @@
+{
+  "tag": "sd-oncall-c-f250",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f250",
+  "head": "4af169eb4b7cd5ee3a0bc9867edf6e51a9ac2a8f",
+  "handoff": "READY under the brief cancelled-CI cloud rule",
+  "local_checks": "passed",
+  "verify_run": 43637941712,
+  "verify_conclusion": "cancelled",
+  "contract_status": "MISSING retained",
+  "claim": "PARTIAL; bounded acceptance 2 review-material parity",
+  "counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "scan": "not run in cloud; fleet gate",
+  "landed": false,
+  "pr": null
+}

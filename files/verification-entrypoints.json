@@ -1,0 +1,31 @@
+{
+  "head": "4af169eb4b7cd5ee3a0bc9867edf6e51a9ac2a8f",
+  "entries": [
+    {
+      "file": "tests/product-browser.mjs",
+      "line": 1047,
+      "source": "if(!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');"
+    },
+    {
+      "file": "tests/runtime.mjs",
+      "line": 2108,
+      "source": "await import('./oncall-agent-flow.mjs');"
+    },
+    {
+      "file": "tests/oncall-agent-flow.mjs",
+      "line": 8,
+      "source": "import {resourceParity} from './oncall-agent-resource-parity.mjs';"
+    },
+    {
+      "file": "tests/oncall-agent-flow.mjs",
+      "line": 572,
+      "source": "await resourceParity();"
+    },
+    {
+      "file": "tests/agent-door-browser.mjs",
+      "line": 565,
+      "source": "await (await import('./oncall-agent-resource-parity.mjs')).resourceParity({browserProof:true});"
+    }
+  ],
+  "pushPlan": "scripts/verify-shards.json; intake runs runtime machines, browser runs product-browser.mjs"
+}

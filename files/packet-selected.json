@@ -395,5 +395,12 @@
   "preliminary/screens/parity-held-viewer-review-material-accepted-section-4-390.png",
   "preliminary/screens/parity-held-viewer-review-material-accepted-section-5-390.png",
   "preliminary/screens/parity-held-viewer-review-material-390.png",
-  "preliminary/screens/parity-held-viewer-handoffs-390.png"
+  "preliminary/screens/parity-held-viewer-handoffs-390.png",
+  "verification-entrypoints.json",
+  "final-ci-poll-1.json",
+  "final-ci-poll-2.json",
+  "final-ci-poll-3.json",
+  "final-ci-poll-4.json",
+  "final-ci-final.json",
+  "handoff.json"
 ]
