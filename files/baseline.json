@@ -1,0 +1,9 @@
+[
+  {
+    "probe": "native restore then preview owner link",
+    "path": "/signin/local",
+    "workspace": 0,
+    "mapping": 1,
+    "visible": "Open your restored workspace\n\nYour installation owner is signed in. Choose which administrator in the archive is you; this gives your owner account access to the restored team and data.\n\nOwner email sign-in\n·\nFirst-run setup\n\nMap an archived administrator after restore\n\nRestoring brings back your team identities, but no passwords or sign-in sessions. Link the new installation owner to your own archived administrator to open the restored workspace. This requires an archive restored into an empty installation; existing workspaces with password accounts keep their usual sign-in.\n\nAdministrator selection is only available for an unlinked credential-free restore.\n\nReload administrators\nUse a workspace password instead\n\nSample rota · illustrative names and times\n\nnow\nPriya Shah\nCheckout · Europe/London\nnext\nTom Okafor\nCheckout · Europe/London\nMon 09:00"
+  }
+]

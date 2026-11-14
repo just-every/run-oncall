@@ -1,0 +1,135 @@
+{
+  "clause": "OC-010",
+  "category": "local",
+  "outcome": "passed",
+  "recordedAt": "2026-11-14T02:10:54.172Z",
+  "provenance": {
+    "kind": "maintained-journey",
+    "journey": "tests/transfer.mjs: managed installation transfer",
+    "execution": "local",
+    "accountDeployment": false
+  },
+  "build": {
+    "sourceSha": "90bbf1e215eaa5e01ad72d2823f5d84bf2768759",
+    "fingerprint": "272662634a65e04f3a2c2688b8d56df8457bd2e969e6b0b56d68097c8d50ced6"
+  },
+  "observations": {
+    "commands": [
+      {
+        "verb": "setup",
+        "exitCode": 0,
+        "expectedExitCode": 0
+      },
+      {
+        "verb": "build",
+        "exitCode": 0,
+        "expectedExitCode": 0
+      },
+      {
+        "verb": "check",
+        "exitCode": 0,
+        "expectedExitCode": 0
+      },
+      {
+        "verb": "check",
+        "exitCode": 1,
+        "expectedExitCode": 1
+      },
+      {
+        "verb": "check",
+        "exitCode": 0,
+        "expectedExitCode": 0
+      },
+      {
+        "verb": "build",
+        "exitCode": 0,
+        "expectedExitCode": 0
+      },
+      {
+        "verb": "deploy",
+        "exitCode": 0,
+        "expectedExitCode": 0
+      },
+      {
+        "verb": "export",
+        "exitCode": 0,
+        "expectedExitCode": 0
+      },
+      {
+        "verb": "import",
+        "exitCode": 4,
+        "expectedExitCode": 4
+      },
+      {
+        "verb": "export",
+        "exitCode": 0,
+        "expectedExitCode": 0
+      },
+      {
+        "verb": "reset",
+        "exitCode": 0,
+        "expectedExitCode": 0
+      },
+      {
+        "verb": "import",
+        "exitCode": 2,
+        "expectedExitCode": 2
+      },
+      {
+        "verb": "import",
+        "exitCode": 1,
+        "expectedExitCode": 1
+      },
+      {
+        "verb": "import",
+        "exitCode": 0,
+        "expectedExitCode": 0
+      },
+      {
+        "verb": "setup",
+        "exitCode": 0,
+        "expectedExitCode": 0
+      },
+      {
+        "verb": "export",
+        "exitCode": 0,
+        "expectedExitCode": 0
+      },
+      {
+        "verb": "export",
+        "exitCode": 0,
+        "expectedExitCode": 0
+      },
+      {
+        "verb": "reset",
+        "exitCode": 0,
+        "expectedExitCode": 0
+      },
+      {
+        "verb": "import",
+        "exitCode": 1,
+        "expectedExitCode": 1
+      },
+      {
+        "verb": "import",
+        "exitCode": 4,
+        "expectedExitCode": 4
+      },
+      {
+        "verb": "import",
+        "exitCode": 0,
+        "expectedExitCode": 0
+      },
+      {
+        "verb": "reset",
+        "exitCode": 0,
+        "expectedExitCode": 0
+      }
+    ],
+    "populatedRestore": "passed",
+    "inactiveAuthority": "passed",
+    "erasureFences": "passed",
+    "invalidArchiveRefusals": "passed",
+    "currentArchiveRetainsErasure": true
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-restore-owner-1",
+  "head": "90bbf1e215eaa5e01ad72d2823f5d84bf2768759",
+  "local_typecheck": {
+    "command": "pnpm run typecheck",
+    "exit": 0,
+    "tree": "same product source as candidate; only test onboarding handling changed afterward"
+  },
+  "build": {
+    "command": "npx -y @runeditrun/rer build",
+    "exit": 0
+  },
+  "source_lock": {
+    "regenerate": "node scripts/edition-authoring/cli.mjs lock",
+    "check": "node scripts/edition-authoring/cli.mjs check",
+    "exit": 0
+  },
+  "test_registrations": {
+    "transfer_before": 1,
+    "transfer_after": 1,
+    "verify_lane_entries_before": 16,
+    "verify_lane_entries_after": 16
+  },
+  "files": {
+    "src/auth.server.ts": "0ca4aefdbd27ed282a3da1f478037adf529f830c65f05971c5e680fb882923d2",
+    "src/identity-link.ts": "d73153e49d1487a8757a6636912973bd832882df6b73a7a72576c0783d873335",
+    "src/landing/RestoredOwner.tsx": "b8713f99d7f26e3d91667dfaa537e363cce22fb04dbddb6a39f3f8b75d91a990",
+    "tests/transfer.mjs": "1d250071a375ae9cbfca40f73c3645ec9f3df7207365a541135c6e79b1538f9a",
+    "sources.lock.json": "2635f69e11533cc900f43244a22738b012b8e3757c98001eade786f5df91cb48"
+  },
+  "transfer": {
+    "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/transfer.mjs",
+    "exit": 0,
+    "head": "90bbf1e215eaa5e01ad72d2823f5d84bf2768759",
+    "receipt": "transfer-receipt.json"
+  },
+  "pushed": true
+}

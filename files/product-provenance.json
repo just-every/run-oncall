@@ -1,0 +1,12 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-restore-owner-1",
+  "head": "90bbf1e215eaa5e01ad72d2823f5d84bf2768759",
+  "origin_main_at_integration": "8adae6c836f2fabda29e8a091b052450410c8ca5",
+  "candidate_commits": [
+    "90bbf1e215eaa5e01ad72d2823f5d84bf2768759"
+  ],
+  "identities_and_trailers": "Run Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>",
+  "messages": "Preserve restored owner access and archived names",
+  "worktree_clean": true
+}
