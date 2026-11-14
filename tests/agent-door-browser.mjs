@@ -160,14 +160,28 @@ try{
   const saved=answer.result.structuredContent;
   assert.deepEqual(saved,{...target,scribe:null,revision:target.revision+1,timeline:saved.timeline});
   await page.goto(runtime.origin+'/incidents/'+saved.id);
+  await page.getByRole('button',{name:'Lead: '+owner.name,exact:true}).waitFor();
+  await page.getByRole('button',{name:'Assignee: '+responder.name,exact:true}).waitFor();
+  const people=await openIncidentAction(page,'People and priority');
+  assert.equal(await people.getByRole('combobox',{name:'Scribe',exact:true}).inputValue(),'');
+  assert.equal(await people.getByRole('combobox',{name:'Communications',exact:true}).inputValue(),owner.id);
+  await people.getByRole('button',{name:'Close',exact:true}).click();
+  const readable='Scribe is now unassigned. Previously '+responder.name+'. Reason: '+reason;
   const timeline=page.getByRole('region',{name:'Timeline',exact:true});await timeline.waitFor();
-  assert.equal(await page.getByRole('combobox',{name:'Scribe',exact:true}).inputValue(),'');
-  assert.equal(await page.getByRole('combobox',{name:'Communications',exact:true}).inputValue(),owner.id);
-  await timeline.getByText('scribe: '+responder.name+' → Unassigned: '+reason,{exact:true}).waitFor();
-  await timeline.getByText('Responder assistant for Alex Chen',{exact:true}).waitFor();
-  if(mode==='held')await capture('scribe-cleared','/incidents/'+saved.id,async()=>{
-   await page.getByRole('region',{name:'Timeline',exact:true}).getByText('scribe: '+responder.name+' → Unassigned: '+reason,{exact:true}).waitFor();
-  });
+  const entry=timeline.getByRole('listitem').filter({hasText:readable});
+  await entry.getByText(readable,{exact:true}).waitFor();
+  await entry.getByText('Responder assistant for Alex Chen',{exact:true}).waitFor();
+  if(mode==='held'){
+   await capture('scribe-cleared-timeline','/incidents/'+saved.id,async()=>{
+    await page.getByRole('region',{name:'Timeline',exact:true}).getByText(readable,{exact:true}).waitFor();
+   });
+   await capture('scribe-cleared-people','/incidents/'+saved.id,async()=>{
+    const people=await openIncidentAction(page,'People and priority');
+    await people.getByRole('combobox',{name:'Scribe',exact:true}).waitFor();
+    await people.getByRole('button',{name:'Close',exact:true}).focus();
+    await page.getByRole('tooltip',{name:'Close dialog',exact:true}).waitFor();
+   });
+  }
   assert.deepEqual((await native()).incidents.find(row=>row.id===saved.id),saved,'Reading the saved incident creates no native effect');
   assert.deepEqual(await runtime.outboundRequests(),edge);
  }
