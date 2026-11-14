@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
-import {agentEffectSnapshot} from './agent-door-runtime.mjs';
+import {agentRuntime,agentEffectSnapshot} from './agent-door-runtime.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 
 /** Clearing a populated response role keeps its original outcome across conflicts and response loss. */
@@ -203,4 +203,28 @@ export async function roleClearReplay(runtime,role='scribe',label='Scribe'){
  }
  assert.equal((await adopt()).status,200);
  return observed;
+}
+
+/** Bound the new role fixtures without changing Scribe's shared-runtime proof. */
+export async function additionalRoleClearReplay(){
+ const runtime=await agentRuntime({clock:null});
+ try{
+  assert.equal((await runtime.adopt()).status,200);
+  const workspace=await runtime.http('/api/workspace');assert.equal(workspace.status,200);
+  const owner=(await workspace.json()).member;
+  const service=await runtime.http('/api/command',{type:'service',id:'agent-foreign-service',
+   name:'Synthetic separate clear scope',environment:'production',owner:owner.id,runbook:[],pager:''});
+  assert.equal(service.status,200);await service.json();
+  // Preserve completed calls from other tools in every clear and replay baseline.
+  const declared=await runtime.tool('oncall.incidents.declare',{service:'agent-service',title:'Synthetic unrelated retained incident',
+   summary:'Synthetic independent coordination',severity:'warning',idempotency_key:randomUUID()});
+  assert.equal(declared.status,200);assert.equal(declared.result.isError,false);
+  const incident=declared.result.structuredContent;
+  const noted=await runtime.tool('oncall.notes.add',{incident:incident.id,revision:incident.revision,
+   text:'Synthetic unrelated retained note',idempotency_key:randomUUID()});
+  assert.equal(noted.status,200);assert.equal(noted.result.isError,false);
+  assert.deepEqual(await runtime.outboundRequests(),[]);
+  for(const [role,label] of [['communications','Communications'],['commander','Commander']])
+   await roleClearReplay(runtime,role,label);
+ }finally{await runtime.close()}
 }
