@@ -1,0 +1,18 @@
+{
+  "head": "d2e63dcafad4f91d65e64ebd9bb97438b75497cb",
+  "repository": "just-every/run-oncall",
+  "calls": [
+    {
+      "call": 1,
+      "epoch": 1794621792.4050865,
+      "at": "2026-11-14T02:03:12.405118+00:00",
+      "endpoint": "repos/just-every/run-oncall/actions/runs?head_sha=d2e63dcafad4f91d65e64ebd9bb97438b75497cb&per_page=100",
+      "exit": 0,
+      "id": 43544091167,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "d2e63dcafad4f91d65e64ebd9bb97438b75497cb",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43544091167"
+    }
+  ]
+}

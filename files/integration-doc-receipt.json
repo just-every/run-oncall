@@ -1,0 +1,156 @@
+{
+  "localOnly": true,
+  "viewportWidths": [
+    1440,
+    390
+  ],
+  "walkthroughs": [
+    {
+      "kind": "events",
+      "path": "/settings/integrations/native%3ADocs%20Events%20API-05678f5b3d3e",
+      "steps": [
+        "Settings",
+        "Integrations",
+        "Events API",
+        "Name",
+        "Authentication: HMAC signature",
+        "Create source",
+        "copy one-time authority (not retained)",
+        "Open source"
+      ],
+      "reference": "/docs/incidents#send-an-alert-event",
+      "actions": [
+        "Source actions",
+        "Rotate key",
+        "Rotate key now",
+        "replacement shown once (not retained)",
+        "Revoke key",
+        "Revoke key now",
+        "revocation accepted"
+      ]
+    },
+    {
+      "kind": "pagerduty",
+      "path": "/settings/integrations/intake%3Apagerduty-f0f4177f5e06",
+      "steps": [
+        "Settings",
+        "Integrations",
+        "Add integration",
+        "PagerDuty-compatible",
+        "Name",
+        "Create source",
+        "copy one-time authority (not retained)",
+        "Open source"
+      ],
+      "reference": "/docs/compatible-intake"
+    },
+    {
+      "kind": "opsgenie",
+      "path": "/settings/integrations/intake%3Aopsgenie-0d6a7d5f7134",
+      "steps": [
+        "Settings",
+        "Integrations",
+        "Add integration",
+        "Opsgenie-compatible",
+        "Name",
+        "Create source",
+        "copy one-time authority (not retained)",
+        "Open source"
+      ],
+      "reference": "/docs/compatible-intake"
+    },
+    {
+      "kind": "splunk",
+      "path": "/settings/integrations/intake%3Asplunk-0ac4313dcde5",
+      "steps": [
+        "Settings",
+        "Integrations",
+        "Add integration",
+        "Splunk-compatible",
+        "Name",
+        "Create source",
+        "copy one-time authority (not retained)",
+        "Open source"
+      ],
+      "reference": "/docs/compatible-intake"
+    },
+    {
+      "kind": "alertmanager",
+      "path": "/settings/integrations/intake%3Aalertmanager-a116f55f2667",
+      "steps": [
+        "Settings",
+        "Integrations",
+        "Add integration",
+        "Alertmanager",
+        "Name",
+        "Create source",
+        "copy one-time authority (not retained)",
+        "Open source"
+      ],
+      "reference": "/docs/monitoring-providers"
+    },
+    {
+      "kind": "grafana",
+      "path": "/settings/integrations/intake%3Agrafana-b80543071fe3",
+      "steps": [
+        "Settings",
+        "Integrations",
+        "Add integration",
+        "Grafana",
+        "Name",
+        "Create source",
+        "copy one-time authority (not retained)",
+        "Open source"
+      ],
+      "reference": "/docs/monitoring-providers"
+    },
+    {
+      "kind": "datadog",
+      "path": "/settings/integrations/intake%3Adatadog-5080f7560ca3",
+      "steps": [
+        "Settings",
+        "Integrations",
+        "Add integration",
+        "Datadog",
+        "Name",
+        "Create source",
+        "copy one-time authority (not retained)",
+        "Open source"
+      ],
+      "reference": "/docs/monitoring-providers"
+    },
+    {
+      "kind": "changes",
+      "path": "/settings/integrations/change%3Achanges-fcafc7094180",
+      "steps": [
+        "Settings",
+        "Integrations",
+        "Add integration",
+        "Change events",
+        "Name",
+        "Provider: GitHub",
+        "Repository or project",
+        "Create source",
+        "copy one-time authority (not retained)",
+        "Open source"
+      ],
+      "reference": "/docs/changes"
+    },
+    {
+      "kind": "email",
+      "path": "/settings/integrations/email%3Aemail-c7ec599394b0",
+      "steps": [
+        "Settings",
+        "Integrations",
+        "Add integration",
+        "Email",
+        "Name",
+        "Create address",
+        "copy one-time authority (not retained)",
+        "Open source"
+      ],
+      "reference": "/docs/compatible-intake#integration-email"
+    }
+  ],
+  "providerTransport": "No external monitoring, mail or vendor traffic. Documentation navigation and local source configuration only."
+}

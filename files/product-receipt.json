@@ -1,0 +1,29 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-docs-week-1",
+  "head": "d54fb7958cedddbce40483dd3d557db183842112",
+  "base": "8adae6c836f2fabda29e8a091b052450410c8ca5",
+  "commitCount": 2,
+  "productPush": "two successful guarded pushes; each on its first attempt",
+  "checkout": "clean",
+  "pullRequest": null,
+  "landing": "fleet-owned; no main push or deployment performed",
+  "clauseStatusChanges": [],
+  "beforeCounts": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "afterCounts": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "newTestRegistrations": 0,
+  "extendedJourneys": 1,
+  "priorPublishedHeads": [
+    "d2e63dcafad4f91d65e64ebd9bb97438b75497cb"
+  ]
+}

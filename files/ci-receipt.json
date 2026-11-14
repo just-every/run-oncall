@@ -1,0 +1,30 @@
+{
+  "head": "d54fb7958cedddbce40483dd3d557db183842112",
+  "repository": "just-every/run-oncall",
+  "calls": [
+    {
+      "call": 2,
+      "epoch": 1794621928.0597773,
+      "at": "2026-11-14T02:05:28.059787+00:00",
+      "endpoint": "repos/just-every/run-oncall/actions/runs?head_sha=d54fb7958cedddbce40483dd3d557db183842112&per_page=100",
+      "exit": 0,
+      "id": 43544263145,
+      "status": "queued",
+      "conclusion": null,
+      "head_sha": "d54fb7958cedddbce40483dd3d557db183842112",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43544263145"
+    },
+    {
+      "call": 3,
+      "epoch": 1794622229.3409667,
+      "at": "2026-11-14T02:10:29.340970+00:00",
+      "endpoint": "repos/just-every/run-oncall/actions/runs/43544263145",
+      "exit": 0,
+      "id": 43544263145,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "d54fb7958cedddbce40483dd3d557db183842112",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43544263145"
+    }
+  ]
+}

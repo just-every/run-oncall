@@ -1,0 +1,64 @@
+{
+  "checks": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_PRODUCT_JOURNEY=rota-timeline ONCALL_BROWSER_EVIDENCE=<packet>/schedule-journey node tests/product-browser.mjs",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "newTestRegistrations": 0,
+  "extendedJourney": "tests/product-browser-journey.mjs#productSchedule",
+  "newBehaviorAssertionWidth": 1440,
+  "browserProofWidths": [
+    1440,
+    390
+  ],
+  "fullLocalVerify": "not run: exact-SHA branch Verify is the full wall",
+  "fleetPublicationScan": "deferred to Mac lander; cannot run in this VM",
+  "changedLinesCredentialScan": "passed",
+  "testedImplementationHead": "d2e63dcafad4f91d65e64ebd9bb97438b75497cb",
+  "finalProductHead": "d54fb7958cedddbce40483dd3d557db183842112",
+  "finalHeadDifference": "Only the schedule guide timeline heading and its regenerated source-lock hash changed after the passing browser journey; final build and source-lock check passed.",
+  "integrationDocWalkthrough": {
+    "result": "passed",
+    "kinds": [
+      "events",
+      "pagerduty",
+      "opsgenie",
+      "splunk",
+      "alertmanager",
+      "grafana",
+      "datadog",
+      "changes",
+      "email"
+    ]
+  },
+  "additionalScheduleDocControls": {
+    "result": "passed",
+    "receipt": "rota-doc-controls-receipt.json",
+    "head": "d54fb7958cedddbce40483dd3d557db183842112"
+  }
+}

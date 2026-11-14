@@ -1,0 +1,61 @@
+{
+  "pagesSwept": 21,
+  "scope": [
+    "README.md",
+    "RUN-LOCALLY.md",
+    "docs/agents.md",
+    "docs/audit.md",
+    "docs/changes.md",
+    "docs/compatible-intake.md",
+    "docs/data.md",
+    "docs/getting-started.md",
+    "docs/incidents.md",
+    "docs/install.md",
+    "docs/limits.md",
+    "docs/monitoring-providers.md",
+    "docs/move-in.md",
+    "docs/overview.md",
+    "docs/readiness.md",
+    "docs/response-api.md",
+    "docs/reviews.md",
+    "docs/routed-intake.md",
+    "docs/schedules.md",
+    "docs/team.md",
+    "docs/urgency.md"
+  ],
+  "obsoleteNavigationBefore": 13,
+  "obsoleteNavigationAfter": 0,
+  "matches": [
+    {
+      "path": "docs/changes.md",
+      "before": 1,
+      "after": 0,
+      "remaining": []
+    },
+    {
+      "path": "docs/compatible-intake.md",
+      "before": 2,
+      "after": 0,
+      "remaining": []
+    },
+    {
+      "path": "docs/incidents.md",
+      "before": 6,
+      "after": 0,
+      "remaining": []
+    },
+    {
+      "path": "docs/monitoring-providers.md",
+      "before": 1,
+      "after": 0,
+      "remaining": []
+    },
+    {
+      "path": "docs/schedules.md",
+      "before": 3,
+      "after": 0,
+      "remaining": []
+    }
+  ],
+  "historicalEvidenceAndGeneratedContractViews": "Preserved; domain headings such as Schedules and API entity names remain valid."
+}

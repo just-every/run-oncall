@@ -1,0 +1,20 @@
+{
+  "steps": [
+    "Different backup order / Add backup person / Remove person",
+    "Move primary down/up",
+    "Every / Number of days",
+    "Ends (optional)",
+    "Repeated hand-over hour / Later",
+    "Reminders and swaps / Swap approval / Substitute acceptance only",
+    "Reminder lead minutes / 30 / autosave",
+    "Calendar feed / Calendar scope / My shifts / Create link / authenticated feed / Hide calendar URL / Revoke subscription / revoked feed refused",
+    "Request a swap / Substitute / Request / Cancel swap"
+  ],
+  "publicDoor": "local emitted Worker, native UI and protected HTTP readback",
+  "result": "passed",
+  "privateCalendarAuthority": "not recorded",
+  "screenshots": [
+    1440,
+    390
+  ]
+}
