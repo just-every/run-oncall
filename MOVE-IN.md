@@ -4,18 +4,18 @@ Oncall reads saved files only. Keep your existing pager authoritative. These tes
 
 ## Obtain the input
 
-In **Settings → Move in**, choose **PagerDuty** or **Opsgenie** to read schedules in the app. PagerDuty uses the installation’s optional OAuth app or a read-only key; Opsgenie uses a read-only key. Review writes no imported objects, and Import paused asks once. The app and generated exporter share `src/move-in/collect/` and read the same pages. The private fallback is under **No key? Use the exporter on your computer**, then **How to export from…**. Download **oncall-export.mjs** and save it in Downloads with that exact name, without a `.txt` suffix. The panel explains how to create a read-only provider key and run the tool; the same steps and official references are in [Save your export with the downloadable tool](docs/move-in.md#save-your-export-with-the-downloadable-tool). You need Node.js 22 or later, an interactive terminal and internet access to your provider. No npm packages, API client or manual JSON assembly are needed. Calendar and CSV downloads do not contain the required rotation settings.
+In **Settings → Move in**, choose **PagerDuty** or **Opsgenie** to read schedules in the app. PagerDuty uses the installation’s optional OAuth app or a read-only key; Opsgenie uses a read-only key. Review writes no imported objects, and Import paused asks once. The app and generated exporter share `src/move-in/collect/` and read the same pages. The private fallback is under **No key? Use the exporter on your computer**, then **How to export from…**. Download **oncall-export.mjs** and save it in Downloads with that exact name, without a `.txt` suffix. The panel explains how to create a read-only provider key and run the tool; the same steps and official references are in [Save your export with the downloadable tool](docs/move-in.md#save-your-export-with-the-downloadable-tool). Use the Oncall installer’s `rer` command in a macOS, Linux or WSL terminal with internet access to your provider. It supplies its own Node.js runtime; no separate Node installation is needed. No npm packages, API client or manual JSON assembly are needed. Calendar and CSV downloads do not contain the required rotation settings.
 
-Open Terminal on macOS/Linux or PowerShell on Windows, change to Downloads (`cd ~/Downloads`, or `cd "$HOME\Downloads"` in PowerShell), and run the command for your provider:
+Open Terminal on macOS/Linux or a WSL terminal on Windows, change to the folder where you saved the download (`cd ~/Downloads` on macOS/Linux), and run the command for your provider:
 
 ```sh
-node oncall-export.mjs opsgenie
+rer run --script ./oncall-export.mjs opsgenie
 ```
 
 or:
 
 ```sh
-node oncall-export.mjs pagerduty
+rer run --script ./oncall-export.mjs pagerduty
 ```
 
 Answer the region and UTC comparison-date prompts, then paste only the read-only key at the hidden key prompt. Opsgenie needs configuration access; PagerDuty needs a REST key, not an Events API key. The key stays in the tool's memory and never enters Oncall. The tool makes only GET requests, follows pagination, collects schedule details and comparison timelines, joins overrides to their schedules, and omits credential fields. PagerDuty includes overrides only for the chosen window. For named-zone PagerDuty equivalence evidence, choose a window that includes a clock change.

@@ -2,7 +2,7 @@
 import {localOrigin,privateSession,jsonInput,request,newExport} from './checkpoint-local.mjs'
 
 const help=`Private local paired recovery checkpoint; paging remains OFF.
-Usage: node scripts/checkpoint.mjs --origin URL --session-file FILE COMMAND
+Usage: rer run --script scripts/checkpoint.mjs --origin URL --session-file FILE COMMAND
 
   export NEW_FILE [--version 1|2]   Capture one consistent checkpoint (default v2)
   restore FILE --replace           Explicitly replace coordination and scheduling
