@@ -55,7 +55,7 @@ export async function resourceParity({browserProof=false}={}){
   }
   for(const [mode,policy] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
    assert.equal((await runtime.adopt(policy)).status,200);
-   const review=await prepareReviewMaterial(runtime,people,changes,mode);
+   const review=await prepareReviewMaterial(runtime,people,changes,mode,browser,receipt);
    receipt.reviewMaterial??=[];receipt.reviewMaterial.push(review.receipt);
    for(const p of people){
     const native=await json(p.http,'/api/state'),paging=await json(p.http,'/api/paging/state');
@@ -166,7 +166,7 @@ export async function resourceParity({browserProof=false}={}){
 }
 
 /** Populated review custody uses native intake, commands and a true Business agent. */
-async function prepareReviewMaterial(runtime,people,changes,mode){
+async function prepareReviewMaterial(runtime,people,changes,mode,browser,receipt){
  const admin=people.find(p=>p.member.role==='admin'),viewer=people.find(p=>p.member.role==='viewer');
  const start=observed-30*60000,source='synthetic-oncall-parity-review-'+mode,key=source+'-credential';
  const evidence='https://evidence.example.invalid/'+source;
@@ -212,6 +212,29 @@ async function prepareReviewMaterial(runtime,people,changes,mode){
  await command('review',draft,start+540000);
  const draftMaterial=await json(admin.http,'/api/reviews/'+incident.id+'/material');
  assert.equal(draftMaterial.accepted,null);assert.equal(draftMaterial.review,draft.text);
+ const draftComparisons=[];
+ for(const person of people){
+  const path='/api/reviews/'+incident.id+'/material',native=await json(person.http,path);
+  const token=await accessToken(runtime.context,{sub:person.businessId,email:person.email,act:{sub:person.agent,name:'Synthetic parity assistant'},scope:scopes.join(' '),consent:'synthetic-oncall-parity-'+person.agent});
+  const before=await agentReadSnapshot(runtime);
+  const read=await runtime.completeResource('oncall://incidents/'+incident.id+'/review-material',{bearer:token,personHttp:person.http});
+  assert.deepEqual(read.value,native,person.member.role+' '+mode+' every draft material field equals its protected native response');
+  assert.equal(read.value.accepted,null);assert.equal(read.value.generatedAt,new Date(start+540000).toISOString());
+  assert.equal(read.content._meta['com.runeditrun/untrusted'],true);
+  assert.deepEqual(read.initial.decision.classes.map(row=>row.class),['standard','sensitive']);
+  assert.equal(read.initial.decision.disposition,mode==='held'?'approval':'autonomous');
+  if(mode==='held'){
+   const {approval}=await json(person.http,'/agents/api/approvals/'+read.initial.body.error.data.approval.id);
+   assert.equal(approval.state,'executed');assert.equal(approval.prepared_by.for.id,person.member.id);assert.equal(approval.prepared_by.agent.id,person.agent);
+   assert.deepEqual(approval.approvals.map(row=>row.person),[person.member.id]);
+  }
+  assertAgentReadUnchanged(before,await agentReadSnapshot(runtime));
+  draftComparisons.push({role:person.member.role,sponsor:person.member.id,agent:person.agent,disposition:read.initial.decision.disposition,nativeRecord:native,resourceRecord:read.value,equal:true});
+  if(browser)await captureDraftMaterial(browser,runtime,person,mode,native,draft,path,receipt);
+  console.log(`PROBE BASE-AGENT-003 2 ${mode} ${person.member.role} draft review-material: every field equals protected native material; human acceptance absent after resource policy approval; native effects unchanged`);
+ }
+ // Approving a resource read cannot accept the human review or change its revision.
+ assert.deepEqual(await json(admin.http,'/api/reviews/'+incident.id+'/material'),draftMaterial);
  const beforeDenied=await agentReadSnapshot(runtime);
  for(const input of [{type:'review',...draft},{type:'review',...draft,accept:true,materialRevision:incident.revision,materialWorkspaceRevision:draftMaterial.workspaceRevision},{type:'accept-action',action:actions[2].id,reason:'Viewer cannot accept retained evidence'}]){
   await json(viewer.http,'/api/command',{incident:incident.id,revision:incident.revision,...input},403);
@@ -227,7 +250,7 @@ async function prepareReviewMaterial(runtime,people,changes,mode){
  await runtime.time(observed);
  assert.deepEqual(await runtime.outboundRequests(),[]);
  return {incident,admin:admin.member,trigger,recovery,agentEntry,actions,draft,changes,
-  receipt:{mode,incident:incident.id,nativeDoor:'/api/reviews/'+incident.id+'/material',draftMaterial,acceptedBy:acceptance.by,acceptance,viewerRefusals:3,coordinationDecision:called.decision.id,coordinationDisposition:called.decision.disposition}};
+  receipt:{mode,incident:incident.id,nativeDoor:'/api/reviews/'+incident.id+'/material',draftMaterial,acceptedBy:acceptance.by,acceptance,viewerRefusals:3,coordinationDecision:called.decision.id,coordinationDisposition:called.decision.disposition,draftComparisons}};
 }
 
 function assertReviewMaterial(material,fixture,native,at){
@@ -253,7 +276,7 @@ function assertReviewMaterial(material,fixture,native,at){
  assert.equal(submitted.done,false);assert.ok(submitted.submission.evidence);assert.equal(submitted.accepted,undefined);
  assert.equal(completed.done,true);assert.equal(completed.accepted.by,fixture.admin.id);assert.equal(completed.evidence,completed.submission.evidence);
  assert.deepEqual(material.accepted,incident.reviewAcceptance);assert.equal(material.accepted.rootCause,fixture.draft.rootCause);assert.equal(material.accepted.impact,fixture.draft.impact);
- assert.equal(material.review,fixture.draft.text);assert.ok(material.missing.length);assert.match(material.notice,/Human acceptance is separate/);
+ assert.equal(material.review,fixture.draft.text);assert.ok(material.missing.length);assert.ok(material.notice);
 }
 
 /** Native ingress receipts identify the records; only protected HTTP is the parity oracle. */
@@ -319,6 +342,7 @@ async function captureViews(browser,runtime,person,mode,cases,report,receipt){
    for(const screen of screens){
     const {path,kind}=screen;
     if(kind==='reports')await runtime.time(Date.parse(to));
+    const materialResponse=kind==='review-material'?page.waitForResponse(r=>new URL(r.url()).pathname===screen.nativeDoor&&r.status()===200):null;
     await page.goto(path);await page.locator('main').waitFor();
     if(kind==='reports'){
      await page.getByText('Response numbers',{exact:true}).click();
@@ -332,6 +356,8 @@ async function captureViews(browser,runtime,person,mode,cases,report,receipt){
      if(width===1440)assert.deepEqual(await response.json(),report,'Rendered report consumes the exact same month and observation');
     }else if(kind==='review-material'){
      await captureReviewMaterial(page,screen,person,width);
+     if(width===1440)assert.deepEqual(await (await materialResponse).json(),screen.expected,'Review screen consumes its exact native response');
+     await captureReviewSections(page,person,mode,width,receipt,'accepted');
     }else if(kind==='handoffs'){
      await openIncidentAction(page,'Handoff draft');
      await page.getByRole('article',{name:'Saved handoff copy',exact:true}).waitFor();
@@ -375,19 +401,54 @@ async function captureViews(browser,runtime,person,mode,cases,report,receipt){
  }finally{await context.close()}
 }
 
+async function captureDraftMaterial(browser,runtime,person,mode,material,draft,nativeDoor,receipt){
+ const context=await browser.newContext({baseURL:runtime.origin,viewport:{width:1440,height:1000}});
+ try{
+  await context.addCookies(person.cookie.split('; ').map(pair=>{const at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:runtime.origin,httpOnly:true,sameSite:'Lax'}}));
+  const page=await context.newPage();page.setDefaultTimeout(20000);await page.clock.setFixedTime(Date.parse(material.generatedAt));
+  const path='/reviews/'+material.incident;
+  for(const width of [1440,390]){
+   await page.setViewportSize({width,height:1000});
+   const materialResponse=page.waitForResponse(r=>new URL(r.url()).pathname===nativeDoor&&r.status()===200);
+   await page.goto(path);
+   await captureReviewMaterial(page,{expected:material,draft,nativeDoor},person,width);
+   if(width===1440){
+    assert.deepEqual(await (await materialResponse).json(),material,'Draft review screen consumes its exact native response');
+    assert.equal(await page.getByRole('dialog').locator('.review-meta').filter({hasText:'Accepted by'}).count(),0);
+   }
+   await captureReviewSections(page,person,mode,width,receipt,'draft');
+   const file=`parity-${mode}-${person.member.role}-review-material-draft-${width}.png`;
+   await page.screenshot({path:(process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser')+'/'+file,fullPage:true});
+   receipt.screens.push({role:person.member.role,mode,path,kind:'review-material',stage:'draft',width,file});
+   console.log(`Browser proof ${mode} ${person.member.role} draft review-material ${width}: expanded native view captured`);
+  }
+ }finally{await context.close()}
+}
+
+async function captureReviewSections(page,person,mode,width,receipt,stage){
+ const dialog=page.getByRole('dialog'),sections=dialog.locator('.review-material-body > details');
+ for(const [index,detail] of (await sections.all()).entries()){
+  await detail.locator('summary').scrollIntoViewIfNeeded();
+  const file=`parity-${mode}-${person.member.role}-review-material-${stage}-section-${index+1}-${width}.png`;
+  await page.screenshot({path:(process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser')+'/'+file,fullPage:true});
+  receipt.screens.push({role:person.member.role,mode,path:new URL(page.url()).pathname,kind:'review-material',stage,section:await detail.locator('summary').innerText(),width,file});
+ }
+ await dialog.evaluate(node=>node.scrollTop=0);
+}
+
 async function captureReviewMaterial(page,screen,person,width){
  const material=screen.expected,dialog=page.getByRole('dialog',{name:material.title,exact:true});
  await dialog.waitFor();
  const body=dialog.locator('.review-material-body');
  for(const detail of await body.locator('details').all())if(!await detail.evaluate(node=>node.open))await detail.locator('summary').click();
  await body.getByText(material.notice,{exact:true}).waitFor();
- await dialog.locator('.review-meta').filter({hasText:'Accepted by'}).first().waitFor();
+ if(material.accepted)await dialog.locator('.review-meta').filter({hasText:'Accepted by'}).first().waitFor();
  if(width===1440){
   const response=await page.evaluate(async path=>(await fetch(path)).json(),screen.nativeDoor);
   assert.deepEqual(response,material,'Review screen uses the same protected native material at fixed time and revisions');
   assert.equal(await dialog.getByLabel('Review',{exact:true}).inputValue(),material.review);
-  assert.equal(await dialog.getByLabel('Root cause',{exact:true}).inputValue(),material.accepted.rootCause);
-  assert.equal(await dialog.getByLabel('Impact',{exact:true}).inputValue(),material.accepted.impact);
+  assert.equal(await dialog.getByLabel('Root cause',{exact:true}).inputValue(),(material.accepted??screen.draft).rootCause);
+  assert.equal(await dialog.getByLabel('Impact',{exact:true}).inputValue(),(material.accepted??screen.draft).impact);
   for(const label of ['Review','Root cause','Impact'])assert.equal(await dialog.getByLabel(label,{exact:true}).evaluate(node=>node.readOnly),person.member.role==='viewer');
   assert.equal(await dialog.getByRole('button',{name:'Accept review',exact:true}).count(),person.member.role==='admin'?1:0);
   for(const observation of material.observations)await body.getByText(observation.title,{exact:true}).waitFor();
@@ -398,6 +459,18 @@ async function captureReviewMaterial(page,screen,person,width){
   assert.equal(rows.length,material.followups.length);
   for(const [index,action] of material.followups.entries())assert.ok(rows[index].includes(action.title));
   assert.deepEqual(await followups.getByRole('link',{name:'Evidence',exact:false}).evaluateAll(nodes=>nodes.map(node=>node.href)),material.followups.filter(row=>row.evidence).map(row=>row.evidence));
+  for(const [label,key] of [['Acknowledgement','mtta'],['Resolution','mttr'],['Human recovery attestation','recovery'],['Source-reported recovery','sourceRecovery']]){
+   const metric=body.locator('.response-metrics section').filter({has:page.getByRole('heading',{name:label,exact:true})});
+   await metric.getByText((material.response[key].seconds/60)+' min · measured',{exact:true}).waitFor();
+   if(material.response[key].evidence)assert.equal(await metric.getByRole('link').getAttribute('href'),material.response[key].evidence);
+  }
+  for(const assertion of material.assertions)if(assertion.review){
+   for(const value of [assertion.review.rootCause,assertion.review.impact,assertion.review.review])await body.getByText(value,{exact:true}).waitFor();
+  }
+  for(const label of ['Review actions','Close review']){
+   await dialog.getByRole('button',{name:label,exact:true}).focus();
+   await page.getByRole('tooltip',{name:label,exact:true}).waitFor();
+  }
   for(const missing of material.missing)await body.getByText(missing,{exact:true}).waitFor();
   assert.equal(await body.locator('details:not([open])').count(),0);
  }
