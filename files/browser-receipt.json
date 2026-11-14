@@ -1,0 +1,22 @@
+{
+  "head": "f7b5b5ea71e955081501bebf81a4f967459c8e34",
+  "door": "emitted Worker and native D1 incident",
+  "screens": [
+    {
+      "width": 1440,
+      "file": "mitigation-1440.png",
+      "path": "/incidents/21279f72-bc8b-40fb-a7e7-8c4f70fce85d",
+      "state": "mitigating",
+      "revision": 5
+    },
+    {
+      "width": 390,
+      "file": "mitigation-390.png",
+      "path": "/incidents/21279f72-bc8b-40fb-a7e7-8c4f70fce85d",
+      "state": "mitigating",
+      "revision": 5
+    }
+  ],
+  "assertionWidth": 1440,
+  "outboundRequests": []
+}

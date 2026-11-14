@@ -1,0 +1,22 @@
+{
+  "head": "f7b5b5ea71e955081501bebf81a4f967459c8e34",
+  "command": "ONCALL_RUNTIME_PART=machines node tests/runtime.mjs",
+  "exit": 0,
+  "node": "22.20.0",
+  "elapsed_seconds": 469.5,
+  "full_log_sha256": "6c2036741fb8cdc2b175683d91effc6a584a5e62a25ca157b50bdfcc6127fa59",
+  "selected_probe_count": 12,
+  "all_base_agent_012_probe_count": 106,
+  "aged_replay_cases_per_policy": 10,
+  "aged_replay_observations": 40,
+  "age_milliseconds": [
+    86400000,
+    86401000
+  ],
+  "selected_policies": [
+    "autonomous",
+    "held"
+  ],
+  "selected_outbound_requests": 0,
+  "invocation": "tests/runtime.mjs -> tests/oncall-agent-flow.mjs -> transitionReplay and agedReplayRetention"
+}

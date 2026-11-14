@@ -1,0 +1,77 @@
+{
+  "head": "f7b5b5ea71e955081501bebf81a4f967459c8e34",
+  "branch": "cloud/sd-oncall-c-f247",
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "commands": [
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "output_sha256": "e284bff4cff50112b8679f6be4814567206f7265200c23753ec7398c001deed7"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "output_sha256": "614462a81853cb30e8dbafcdb1dbc1ecd08e5256fe5fefe293dca8b61a787e95"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "output_sha256": "14cee29b7bd19487e15f4013d4fb85016e022ef21d230676971a6490c88436d2"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "output_sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "output_sha256": "02b02a983f3e6e4ea9ee3b6188351def2cb0bf3085ffd9926b79b006dacc2564"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "output_sha256": "492ae1263d4e37f29182e3a7847423e837896788ed4221268c1a7ec0781df8e6"
+    }
+  ],
+  "mechanical": "MECHANICAL lock=node scripts/edition-authoring/cli.mjs lock and check exit=0; views=node src/base/contract-docs.mjs write and check exit=0, generated views restored from origin/main; ledger=none exit=0",
+  "contract_diff": "",
+  "generated_views_diff": "",
+  "product_diff": " sources.lock.json                        |   8 +-\n tests/oncall-agent-flow.mjs              |   2 +\n tests/oncall-agent-retention.mjs         |  15 +++\n tests/oncall-agent-transition-replay.mjs | 198 +++++++++++++++++++++++++++++++\n 4 files changed, 221 insertions(+), 2 deletions(-)\n",
+  "no_assertions_removed": true,
+  "no_new_test_registration": true,
+  "migrations_changed": false,
+  "publication_scan": {
+    "complete": false,
+    "historyScanned": null,
+    "findings": null,
+    "reason": "Not run in cloud; required exact-SHA scan belongs to guarded lander"
+  },
+  "main": {
+    "head": "f85fa75f02cceee88fea4dfeadba2d5cfe3a1eec",
+    "verify": 43612399343,
+    "run_site": 43612399330
+  },
+  "ci_run": 43612831461,
+  "pr": null,
+  "counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "product_remote_verified_head": "f7b5b5ea71e955081501bebf81a4f967459c8e34",
+  "working_tree_clean": true,
+  "source_lock_terminal_check_exit": 0,
+  "contract_terminal_check_exit": 0
+}
