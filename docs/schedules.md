@@ -51,7 +51,7 @@ Schedule and override changes retain one **recorded obligation** for each affect
 
 ## Who is on now and next
 
-**On call** shows **Now**, **Next hand-over** and **Gaps this week** beside the **This week** timeline. The gap list and timeline cover the same seven elapsed days, from one day before the observation time to six days after it, including earlier uncovered hours. Open a rota for its **Now**, **Next** and **Shifts** view. The editor’s **Preview coverage** shows the resolved windows and gaps for its displayed range. Neither starts a timer or sends anything.
+**On call** shows **Now**, **Next hand-over** and **Gaps this week** beside the **This week** timeline. The gap list and timeline cover the same seven elapsed days, from one day before the observation time to six days after it, including earlier uncovered hours. Open a rota for its **Now** and **Next** panels and **Next two weeks** timeline. The editor’s **Preview coverage** shows the resolved windows and gaps for its displayed range. Neither starts a timer or sends anything.
 
 If both roles land on the same person at once, primary stays and backup shows as unavailable.
 
