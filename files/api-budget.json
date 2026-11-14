@@ -1,0 +1,15 @@
+{
+  "budget": 10,
+  "calls": [
+    {
+      "number": 1,
+      "purpose": "Initial exact-main runs discovery",
+      "head": "96d1b7a9ee6ed01fce1effbb889991a4a8a66d01"
+    },
+    {
+      "number": 2,
+      "purpose": "Exact candidate discovery",
+      "at": "2026-11-14T20:23:31.669784+00:00"
+    }
+  ]
+}

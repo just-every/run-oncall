@@ -1,0 +1,5 @@
+{
+  "head": "99e391e4cfd7e0cb6dea35b2c086f9777e3659ff",
+  "command": "cloud_run timeout 1800 env ONCALL_RUNTIME_PART=machines node tests/runtime.mjs",
+  "exit": 0
+}

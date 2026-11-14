@@ -1,0 +1,9 @@
+Observed before the first commit, while extending the existing focused fixture:
+Command: cloud_run timeout 1200 node /tmp/f251-focus.mjs
+Exit: 1
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+404 !== 200
+at command (file:///workspace/run-oncall/tests/oncall-agent-retention.mjs:21:87)
+at async agedReplayRetention (file:///workspace/run-oncall/tests/oncall-agent-retention.mjs:189:12)
+
+Cause: a native reassign to the current effective assignee returns changed:false. Treating that no-op response as the incident removed the fixture's incident ID for its next command. Commander setup now first assigns the responder explicitly, then assigns the owner explicitly before populating Commander with the different responder. The corrected focused run passed all retained and new role cases. No production behavior changed. This was fixture development, not a failed Verify repair.

@@ -1,0 +1,12 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f251",
+  "head": "99e391e4cfd7e0cb6dea35b2c086f9777e3659ff",
+  "verified_remote_head": "99e391e4cfd7e0cb6dea35b2c086f9777e3659ff",
+  "observed_main": "96d1b7a9ee6ed01fce1effbb889991a4a8a66d01",
+  "identity_commits_checked": 2,
+  "identity_and_trailers": "PASS",
+  "push_attempts": 1,
+  "forced": false,
+  "at": "2026-11-14T20:24:25.080822+00:00"
+}

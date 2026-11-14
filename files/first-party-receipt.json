@@ -1,0 +1,5 @@
+{
+  "head": "99e391e4cfd7e0cb6dea35b2c086f9777e3659ff",
+  "command": "cloud_run npx -y @runeditrun/rer check --profile first-party",
+  "exit": 0
+}

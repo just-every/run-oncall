@@ -1,0 +1,11 @@
+{
+  "head": "99e391e4cfd7e0cb6dea35b2c086f9777e3659ff",
+  "vendored_lock_exit": 0,
+  "vendored_check_exit": 0,
+  "installed_check_exit": 0,
+  "views_write_exit": 0,
+  "views_check_exit": 0,
+  "views_written": 0,
+  "generated_views_restored": true,
+  "ledger": "not applicable; migrations unchanged"
+}

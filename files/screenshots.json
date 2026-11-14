@@ -1,0 +1,106 @@
+{
+  "head": "99e391e4cfd7e0cb6dea35b2c086f9777e3659ff",
+  "files": [
+    {
+      "file": "screenshots/agent-door-scribe-cleared-timeline-1440.png",
+      "role": "scribe",
+      "view": "timeline",
+      "width": 1440,
+      "bytes": 197071,
+      "sha256": "f9f85c8dfacd71ec89046a848f07abc48b663201981d523168506de5423ddaff"
+    },
+    {
+      "file": "screenshots/agent-door-scribe-cleared-timeline-390.png",
+      "role": "scribe",
+      "view": "timeline",
+      "width": 390,
+      "bytes": 104861,
+      "sha256": "ebd00f80982337010cb5134e8d69cc159c937604634732773512a5546c9ade85"
+    },
+    {
+      "file": "screenshots/agent-door-scribe-cleared-people-1440.png",
+      "role": "scribe",
+      "view": "people",
+      "width": 1440,
+      "bytes": 184436,
+      "sha256": "9f5d64ff0799b52c5a39464b6d89a981cb0767f66cea667bc27a54fd03d501b9"
+    },
+    {
+      "file": "screenshots/agent-door-scribe-cleared-people-390.png",
+      "role": "scribe",
+      "view": "people",
+      "width": 390,
+      "bytes": 68061,
+      "sha256": "8dfacaa66a1dbb33c86999d02468d71fe48efd08d5105e02cf05045937982695"
+    },
+    {
+      "file": "screenshots/agent-door-communications-cleared-timeline-1440.png",
+      "role": "communications",
+      "view": "timeline",
+      "width": 1440,
+      "bytes": 235758,
+      "sha256": "f1b183cb5a21b297c25a1589e99c0658a4272cc0985e63a22661b2b77f3d84b2"
+    },
+    {
+      "file": "screenshots/agent-door-communications-cleared-timeline-390.png",
+      "role": "communications",
+      "view": "timeline",
+      "width": 390,
+      "bytes": 106816,
+      "sha256": "9a4fc18b3a744ee0f948ebf44f08276fa6d6bb3f179d96c738f090402bfc1a24"
+    },
+    {
+      "file": "screenshots/agent-door-communications-cleared-people-1440.png",
+      "role": "communications",
+      "view": "people",
+      "width": 1440,
+      "bytes": 222847,
+      "sha256": "a2819b1d50c39c5e2dd420ab420d831abbff9cba1a644427337d18010c4d8359"
+    },
+    {
+      "file": "screenshots/agent-door-communications-cleared-people-390.png",
+      "role": "communications",
+      "view": "people",
+      "width": 390,
+      "bytes": 69630,
+      "sha256": "ec203f1c181ff859488301e87aa6a726f743f4a7cb3ccc194e41f91557991616"
+    },
+    {
+      "file": "screenshots/agent-door-commander-cleared-timeline-1440.png",
+      "role": "commander",
+      "view": "timeline",
+      "width": 1440,
+      "bytes": 262701,
+      "sha256": "f9d7b8d42a04bd78f676203378e2050826fbe5ab8e84c0ef0fd7df4397880e4d"
+    },
+    {
+      "file": "screenshots/agent-door-commander-cleared-timeline-390.png",
+      "role": "commander",
+      "view": "timeline",
+      "width": 390,
+      "bytes": 103541,
+      "sha256": "8f984c83c2729c2d439f451338abb3401a8dfd7f0c07e6bfe695c30fd82e5243"
+    },
+    {
+      "file": "screenshots/agent-door-commander-cleared-people-1440.png",
+      "role": "commander",
+      "view": "people",
+      "width": 1440,
+      "bytes": 247820,
+      "sha256": "fe91487b6096c0412489f61bebb84a646fe456f4d5025e325fecc179dd9faab5"
+    },
+    {
+      "file": "screenshots/agent-door-commander-cleared-people-390.png",
+      "role": "commander",
+      "view": "people",
+      "width": 390,
+      "bytes": 71539,
+      "sha256": "90ec70e7ecfa7b4efc5130b51d247edb368895827336d801762e2e60d02fca0d"
+    }
+  ],
+  "visually_inspected": [
+    "communications at both widths and both views",
+    "commander at both widths and both views"
+  ],
+  "notes": "Saved Unassigned Communications and Lead, preserved companion roles and explicit assignee, attributed timeline and Close dialog tooltip observed."
+}
