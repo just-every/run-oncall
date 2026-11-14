@@ -3,7 +3,7 @@ import {randomBytes,randomUUID} from 'node:crypto';
 import {mkdir} from 'node:fs/promises';
 import {chromium} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import {agentRuntime,pauseMatrix} from './agent-door-runtime.mjs';
+import {agentRuntime,agentEffectSnapshot,pauseMatrix} from './agent-door-runtime.mjs';
 import {recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy,deadlineTarget} from './oncall-agent-fixtures.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
@@ -163,6 +163,7 @@ try{
    assert.equal(answer.result.isError,false);assert.deepEqual(answer.decision.classes.map(row=>row.class),['standard']);
    const saved=answer.result.structuredContent;
    assert.deepEqual(saved,{...target,[role]:null,revision:target.revision+1,timeline:saved.timeline});
+   const readingBefore=await agentEffectSnapshot(runtime);
    const lead='Lead: '+(role==='commander'?'Unassigned':owner.name),assigned='Assignee: '+assignee.name;
    await page.goto(runtime.origin+'/incidents/'+saved.id);
    await page.getByRole('button',{name:lead,exact:true}).waitFor();
@@ -192,6 +193,7 @@ try{
     });
    }
    assert.deepEqual((await native()).incidents.find(row=>row.id===saved.id),saved,'Reading the saved incident creates no native effect');
+   assert.deepEqual(await agentEffectSnapshot(runtime),readingBefore,'Saved-role page reads preserve all native records, revisions, timeline, state-changing audit, calls, outcomes, expiry, approvals, reviews and paging');
    assert.deepEqual(await runtime.outboundRequests(),edge);
   }
   console.log('PROBE BASE-AGENT-012 '+label+' clear browser: autonomous and held MCP -> saved Unassigned '+label+', preserved companion roles and explicit assignee, attributed assign-role timeline; changed incident shown at 1440 and 390; zero outbound requests');
