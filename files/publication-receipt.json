@@ -1,0 +1,45 @@
+{
+  "status": "PASS",
+  "complete": true,
+  "source": {
+    "commit": "fc88b51136d08cb6de1d584a38e7fc015a648daa",
+    "tree": "059d2f1979ceab4496b6e31167dd4701a9a237b8"
+  },
+  "publicBase": {
+    "ref": "https://github.com/just-every/run-oncall.git#main",
+    "commit": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b"
+  },
+  "guarantees": {
+    "historyScanned": true,
+    "visualRecognition": false,
+    "environmentChecked": true
+  },
+  "implementation": {
+    "version": "0.2.113",
+    "sha256": "c5f2d788f2f08764cd018e049b507c26f5ac01f651e2e8696398d89a5a886ffb",
+    "python": "3.12.14"
+  },
+  "diagnostics": null,
+  "command": [
+    "node",
+    "node_modules/@runeditrun/rer/scripts/publish-check.mjs",
+    "--repo",
+    "/home/agent/rer-consolidation/work/maint/gr-mt-oncall-dep-4/publication-tree",
+    "--ref",
+    "fc88b51136d08cb6de1d584a38e7fc015a648daa",
+    "--public-base",
+    "https://github.com/just-every/run-oncall.git#main",
+    "--env-file",
+    "/home/agent/.rer-cloud.env",
+    "--project",
+    "just-every/run-oncall",
+    "--repository",
+    "https://github.com/just-every/run-oncall",
+    "--timeout-seconds",
+    "900"
+  ],
+  "exit": 0,
+  "seconds": 183.03,
+  "findings": 0,
+  "pre_existing": 4
+}

@@ -1,0 +1,36 @@
+{
+  "repository": "just-every/run-oncall",
+  "head": "fc88b51136d08cb6de1d584a38e7fc015a648daa",
+  "workflow": "Verify",
+  "run": 43604217792,
+  "observations": [
+    {
+      "id": 43604217792,
+      "status": "queued",
+      "conclusion": null,
+      "head_sha": "fc88b51136d08cb6de1d584a38e7fc015a648daa",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43604217792",
+      "observed_at": "2026-11-14T14:19:17.513841+00:00"
+    },
+    {
+      "id": 43604217792,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "fc88b51136d08cb6de1d584a38e7fc015a648daa",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43604217792",
+      "observed_at": "2026-11-14T14:29:17.484329+00:00"
+    },
+    {
+      "id": 43604217792,
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "fc88b51136d08cb6de1d584a38e7fc015a648daa",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43604217792",
+      "observed_at": "2026-11-14T14:39:17.563027+00:00"
+    }
+  ],
+  "status": "completed",
+  "github_call_budget": 10,
+  "conclusion": "success",
+  "url": "https://github.com/just-every/run-oncall/actions/runs/43604217792"
+}

@@ -1,0 +1,11 @@
+{
+  "source": "installed @runeditrun/rer@0.2.113 Base publication scanner",
+  "gitleaks_version": "8.30.1",
+  "archive": "gitleaks_8.30.1_linux_x64.tar.gz",
+  "archive_sha256": "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb",
+  "archive_sha256_verified": true,
+  "download": "GitHub REST release asset 378332058 via gh api",
+  "source_ref": "HEAD",
+  "public_base": "https://github.com/just-every/run-oncall.git#main",
+  "environment_values_logged": false
+}

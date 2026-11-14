@@ -1,0 +1,3 @@
+{"label": "build", "command": ["npx", "-y", "@runeditrun/rer", "build"], "exit": 0, "started": "2026-11-14T14:08:15.549016+00:00", "seconds": 8.07, "head": "fc88b51136d08cb6de1d584a38e7fc015a648daa", "log": "build.log"}
+{"label": "typecheck", "command": ["pnpm", "run", "typecheck"], "exit": 0, "started": "2026-11-14T14:08:23.668192+00:00", "seconds": 11.43, "head": "fc88b51136d08cb6de1d584a38e7fc015a648daa", "log": "typecheck.log"}
+{"label": "runtime-core", "command": ["env", "ONCALL_RUNTIME_PART=core", "node", "tests/runtime.mjs"], "exit": 0, "started": "2026-11-14T14:08:58.632006+00:00", "seconds": 160.57, "head": "fc88b51136d08cb6de1d584a38e7fc015a648daa", "log": "runtime-core.log"}

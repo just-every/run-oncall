@@ -1,0 +1,29 @@
+{
+  "status": "FAIL",
+  "complete": true,
+  "source": {
+    "commit": "fc88b51136d08cb6de1d584a38e7fc015a648daa",
+    "tree": "059d2f1979ceab4496b6e31167dd4701a9a237b8"
+  },
+  "publicBase": {
+    "ref": "https://github.com/just-every/run-oncall.git#main",
+    "commit": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b"
+  },
+  "guarantees": {
+    "historyScanned": true,
+    "visualRecognition": false,
+    "environmentChecked": true
+  },
+  "implementation": {
+    "version": "0.2.113",
+    "sha256": "c5f2d788f2f08764cd018e049b507c26f5ac01f651e2e8696398d89a5a886ffb",
+    "python": "3.12.14"
+  },
+  "diagnostics": null,
+  "exit": 1,
+  "seconds": 191.32,
+  "findings": 1,
+  "pre_existing": 4,
+  "invocation_error": "repository argument supplied as a slug and project argument omitted; this scanner requires a repository URL and explicit project",
+  "corrected_without_product_change": true
+}

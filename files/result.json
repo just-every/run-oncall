@@ -1,0 +1,7 @@
+{
+  "status": "done",
+  "sha": "fc88b51136d08cb6de1d584a38e7fc015a648daa",
+  "summary": "Patched root and mail undici to 7.30.1 and root transitive zod to 4.6.7; Vite was already patched at 8.2.4. No unrelated package version changes. Named product branch pushed with complete passing publication scan and exact-SHA Verify success.",
+  "tests": "Node 22.20.0 / pnpm 10.12.4: root and mail frozen installs, unattended rer setup, rer build, typecheck, contract docs check, source lock regenerate/check and ONCALL_RUNTIME_PART=core runtime HTTP journey all passed. Publication scan COMPLETE/PASS, zero findings. Exact-SHA Verify 43604217792 completed/success.",
+  "security": true
+}

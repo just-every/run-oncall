@@ -1,0 +1,45 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/gr-mt-oncall-dep-4",
+  "head": "fc88b51136d08cb6de1d584a38e7fc015a648daa",
+  "tree": "059d2f1979ceab4496b6e31167dd4701a9a237b8",
+  "base": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+  "clean_product_checkout": true,
+  "source_lock_regenerate": {
+    "command": "node scripts/edition-authoring/cli.mjs lock",
+    "exit": 0
+  },
+  "source_lock_check": {
+    "command": "node scripts/edition-authoring/cli.mjs check",
+    "exit": 0
+  },
+  "frozen_installs": {
+    "root": 0,
+    "src/modules/mail": 0
+  },
+  "setup": {
+    "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+    "exit": 0
+  },
+  "identity": "fc88b51136d08cb6de1d584a38e7fc015a648daa\nRun Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>",
+  "pr": null,
+  "ci_runs": [
+    43604217792
+  ],
+  "product_push": "pushed",
+  "push_guard": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/gr-mt-oncall-dep-4",
+  "push_attempts": 1,
+  "main_drift": false,
+  "publication_scan": {
+    "status": "PASS",
+    "complete": true,
+    "findings": 0,
+    "commit": "fc88b51136d08cb6de1d584a38e7fc015a648daa",
+    "tree": "059d2f1979ceab4496b6e31167dd4701a9a237b8"
+  },
+  "remote_branch_head": "fc88b51136d08cb6de1d584a38e7fc015a648daa",
+  "ci": "completed/success",
+  "ci_url": "https://github.com/just-every/run-oncall/actions/runs/43604217792",
+  "ready": true,
+  "blockers": []
+}

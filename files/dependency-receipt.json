@@ -1,0 +1,66 @@
+{
+  "base": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+  "head": "fc88b51136d08cb6de1d584a38e7fc015a648daa",
+  "lockfiles": {
+    "pnpm-lock.yaml": {
+      "before": [
+        "undici@7.29.1",
+        "vite@8.2.4",
+        "zod@4.6.3"
+      ],
+      "after": [
+        "undici@7.30.1",
+        "vite@8.2.4",
+        "zod@4.6.7"
+      ],
+      "removed": [
+        "undici@7.29.1",
+        "zod@4.6.3"
+      ],
+      "added": [
+        "undici@7.30.1",
+        "zod@4.6.7"
+      ],
+      "unrelated_version_changes": []
+    },
+    "src/modules/mail/pnpm-lock.yaml": {
+      "before": [
+        "undici@7.29.1"
+      ],
+      "after": [
+        "undici@7.30.1"
+      ],
+      "removed": [
+        "undici@7.29.1"
+      ],
+      "added": [
+        "undici@7.30.1"
+      ],
+      "unrelated_version_changes": []
+    }
+  },
+  "vulnerable_lock_resolutions_before": 3,
+  "vulnerable_lock_resolutions_after": 0,
+  "listed_alerts": 9,
+  "already_patched_vite_alerts": 6,
+  "remaining_undici_zod_alerts_addressed": 3,
+  "new_tests": 0,
+  "deleted_tests": 0,
+  "modified_tests": 0,
+  "contract_changes": 0,
+  "clause_status_changes": [],
+  "contract_counts_before_after": {
+    "published": {
+      "done": 19,
+      "partial": 3,
+      "missing": 0,
+      "total": 22
+    },
+    "target_and_push_further": {
+      "done": 7,
+      "partial": 38,
+      "missing": 34,
+      "total": 79
+    }
+  }
+}
