@@ -10,6 +10,62 @@
       "number": 2,
       "purpose": "Exact candidate discovery",
       "at": "2026-11-14T20:23:31.669784+00:00"
+    },
+    {
+      "number": 3,
+      "purpose": "Exact candidate run observation",
+      "run_id": 43637232763,
+      "at": "2026-11-14T20:28:32.233848+00:00",
+      "exit": 0
+    },
+    {
+      "number": 4,
+      "purpose": "Exact candidate run observation",
+      "run_id": 43637232763,
+      "at": "2026-11-14T20:33:32.844740+00:00",
+      "exit": 0
+    },
+    {
+      "number": 5,
+      "purpose": "Exact candidate run observation",
+      "run_id": 43637232763,
+      "at": "2026-11-14T20:38:33.453765+00:00",
+      "exit": 0
+    },
+    {
+      "number": 6,
+      "purpose": "Exact candidate run observation",
+      "run_id": 43637232763,
+      "at": "2026-11-14T20:43:34.048375+00:00",
+      "exit": 0
+    },
+    {
+      "number": 7,
+      "purpose": "Completed cancelled run job diagnostics",
+      "at": "2026-11-14T20:48:35.019094+00:00",
+      "exit": 0
+    },
+    {
+      "number": 8,
+      "purpose": "Completed intake job log archive, once",
+      "run_id": 43637232763,
+      "job_id": 132577729744,
+      "at": "2026-11-14T20:49:21.619084+00:00",
+      "exit": 0
+    },
+    {
+      "number": 9,
+      "purpose": "Cancelled job full archive; log-failed returned no lines because no step had failure conclusion",
+      "run_id": 43637232763,
+      "job_id": 132577729744,
+      "at": "2026-11-14T20:50:15.970534+00:00",
+      "exit": 0
+    },
+    {
+      "number": 10,
+      "purpose": "Final exact-head CI discovery after repair",
+      "at": "2026-11-14T22:05:17.590952+00:00",
+      "exit": 0
     }
   ]
 }

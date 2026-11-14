@@ -1,0 +1,12 @@
+{
+  "head": "c6c0fd361cca4dcf0d662521b039f3160a25830f",
+  "views_write_exit": 0,
+  "views_check_exit": 0,
+  "generated_views_restored": true,
+  "lock_exit": 0,
+  "lock_check_exit": 0,
+  "ledger": "none; migrations unchanged",
+  "tracked_worktree_clean": true,
+  "contract_diff": "",
+  "at": "2026-11-14T22:03:22.293302+00:00"
+}

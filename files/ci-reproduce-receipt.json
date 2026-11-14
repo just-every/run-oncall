@@ -1,0 +1,16 @@
+{
+  "head": "99e391e4cfd7e0cb6dea35b2c086f9777e3659ff",
+  "job": 132577729744,
+  "command": "node scripts/verify-oncall.mjs intake",
+  "environment": {
+    "CI": "true",
+    "WRANGLER_SEND_METRICS": "false",
+    "PLAYWRIGHT_SKIP_BROWSER_GC": "1",
+    "node": "22.20.0"
+  },
+  "timeout_seconds": 748,
+  "exit": 124,
+  "kernel_wait_status": 31744,
+  "exit_observation": "Recovered actual exit from the owned timeout process after environment reconnection detached the command session",
+  "failure": "The operation was canceled. (CI); matching 748-second remaining command budget"
+}

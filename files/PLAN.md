@@ -14,3 +14,7 @@ Initial main: 96d1b7a9ee6ed01fce1effbb889991a4a8a66d01. Only BASE-AGENT-012 is t
 9. Write complete observed reports, acceptance mapping, all rider outcomes, probes and exact-head receipts here. Explicitly publish the non-secret packet only to the evidence ref. Report PARTIAL with selected points 1–4 bounded to the two new role-clear variants; keep the main MISSING judgment and all omitted matrices and authority holds unchanged.
 
 No additional plan rows or policy decisions are introduced. No new test registration is intended. The selected queue entry gains only its observed evidence; whole-clause promotion is excluded by the brief.
+
+## Executed integration and repair
+
+Merged main 4af169eb4b7cd5ee3a0bc9867edf6e51a9ac2a8f without rewriting published history. Its newer resource-parity tests remain intact. Reproduced the first candidate intake timeout and the same bounded command on initial main. First fixture repair still exceeded the command budget; second repair isolates all three retained role matrices in one real Worker, with unrelated original calls seeded through MCP and compared after policy restoration. The final candidate passes the full 748-second intake budget and the complete browser journey. No production or authority changes; no test assertions removed.

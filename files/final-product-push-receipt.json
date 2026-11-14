@@ -1,0 +1,14 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f251",
+  "head": "c6c0fd361cca4dcf0d662521b039f3160a25830f",
+  "verified_remote_head": "c6c0fd361cca4dcf0d662521b039f3160a25830f",
+  "observed_main": "4af169eb4b7cd5ee3a0bc9867edf6e51a9ac2a8f",
+  "identity_commits_checked": 6,
+  "identity_and_trailers": "PASS; all fleet identities, no trailers",
+  "push_guard": "cloud-push.py",
+  "push_attempts": 1,
+  "forced": false,
+  "history_full": true,
+  "at": "2026-11-14T22:03:23.006890+00:00"
+}

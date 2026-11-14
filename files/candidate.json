@@ -1,7 +1,7 @@
 {
   "repository": "just-every/run-oncall",
   "branch": "cloud/sd-oncall-c-f251",
-  "head": "99e391e4cfd7e0cb6dea35b2c086f9777e3659ff",
+  "head": "c6c0fd361cca4dcf0d662521b039f3160a25830f",
   "initial_main": "96d1b7a9ee6ed01fce1effbb889991a4a8a66d01",
   "save_head": "494405716c8fe7f8c829d872289efbfe73b82541",
   "counts_before": {
@@ -33,76 +33,57 @@
   "tests_deleted": 0,
   "source_files": {
     "docs/agents.md": "6bfd7cf99786892f05a9258db4a5cc42254c50a4a0b70007b64691f8e8abb288",
-    "sources.lock.json": "b078fce22fdbbea372b080fb7a285679875c2687ad3c10096ea594c5e315abc2",
+    "sources.lock.json": "771493bb5dc9451c73c9158e4a6e8a4ccd8b248a4d559169077560a10bacf732",
     "tests/agent-door-browser.mjs": "de149cd30ad2530ff14d9ff4b950599b8b58afe2c1b188a628cf74b33f7cef92",
-    "tests/oncall-agent-flow.mjs": "ace1b6168580ff8a95713e22daf37559af066e253cb72bfa2fbeb470fa90ecf9",
+    "tests/oncall-agent-flow.mjs": "85550b1398ec25c52d804f6e527f15090c1ab9992addd7d1966d7ac68d57d53a",
     "tests/oncall-agent-retention.mjs": "ef9961c652ffcb81e8e68b39a34d4a6a82fafc8e778f5c99736f809775bf2362",
-    "tests/oncall-agent-role-clear-replay.mjs": "2975aefb3c468702edef6b00ce64840be25fc0a6228d8c7d73ae0e869bebd1b1"
+    "tests/oncall-agent-role-clear-replay.mjs": "2fb0d66b959615c7e5959185a8361e3893c09c6e7da6d7641607184506aba5c0"
   },
   "checks": {
-    "focus": {
-      "command": "cloud_run timeout 1200 node /tmp/f251-focus.mjs",
+    "build_typecheck_first_party": {
+      "head": "c6c0fd361cca4dcf0d662521b039f3160a25830f",
+      "command": "cloud_run env CI=true WRANGLER_SEND_METRICS=false node scripts/verify-oncall-build.mjs",
       "exit": 0,
-      "note": "Disposable runner calls the committed helpers through the actual emitted Worker; original fixture no-op was corrected before any commit."
+      "log": "final-build.log"
     },
-    "build": {
-      "command": "cloud_run npx -y @runeditrun/rer build",
+    "intake": {
+      "head": "c6c0fd361cca4dcf0d662521b039f3160a25830f",
+      "command": "node scripts/verify-oncall.mjs intake",
+      "environment": {
+        "CI": "true",
+        "WRANGLER_SEND_METRICS": "false",
+        "PLAYWRIGHT_SKIP_BROWSER_GC": "1",
+        "node": "22.20.0"
+      },
+      "timeout_seconds": 748,
+      "repair_round": 2,
       "exit": 0
-    },
-    "typecheck": {
-      "command": "pnpm run typecheck",
-      "exit": 0
-    },
-    "views": {
-      "write_exit": 0,
-      "check_exit": 0,
-      "writes": 0,
-      "restored_from": "origin/main"
-    },
-    "lock": {
-      "command": "node scripts/edition-authoring/cli.mjs lock",
-      "exit": 0,
-      "check_exit": 0
-    },
-    "ledger": {
-      "command": null,
-      "reason": "No migration changes"
-    },
-    "first_party": {
-      "head": "99e391e4cfd7e0cb6dea35b2c086f9777e3659ff",
-      "command": "cloud_run npx -y @runeditrun/rer check --profile first-party",
-      "exit": 0
-    },
-    "runtime": {
-      "head": "99e391e4cfd7e0cb6dea35b2c086f9777e3659ff",
-      "command": "cloud_run timeout 1800 env ONCALL_RUNTIME_PART=machines node tests/runtime.mjs",
-      "exit": 0,
-      "seconds": 610.7
     },
     "browser": {
-      "head": "99e391e4cfd7e0cb6dea35b2c086f9777e3659ff",
-      "command": "cloud_run timeout 1800 env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=<task browser directory> node tests/agent-door-browser.mjs",
-      "exit": 0,
+      "head": "c6c0fd361cca4dcf0d662521b039f3160a25830f",
+      "command": "cloud_run timeout 1800 env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=<final browser directory> node tests/agent-door-browser.mjs",
       "widths": [
         1440,
         390
       ],
-      "assertion_width": 1440
+      "assertion_width": 1440,
+      "exit": 0
     },
     "mechanical": {
-      "head": "99e391e4cfd7e0cb6dea35b2c086f9777e3659ff",
-      "vendored_lock_exit": 0,
-      "vendored_check_exit": 0,
-      "installed_check_exit": 0,
+      "head": "c6c0fd361cca4dcf0d662521b039f3160a25830f",
       "views_write_exit": 0,
       "views_check_exit": 0,
-      "views_written": 0,
       "generated_views_restored": true,
-      "ledger": "not applicable; migrations unchanged"
+      "lock_exit": 0,
+      "lock_check_exit": 0,
+      "ledger": "none; migrations unchanged",
+      "tracked_worktree_clean": true,
+      "contract_diff": "",
+      "at": "2026-11-14T22:03:22.293302+00:00"
     }
   },
   "publication_scan": {
-    "commit": "99e391e4cfd7e0cb6dea35b2c086f9777e3659ff",
+    "commit": "c6c0fd361cca4dcf0d662521b039f3160a25830f",
     "status": "NOT RUN IN CLOUD",
     "complete": null,
     "historyScanned": null,
@@ -112,13 +93,14 @@
   "main_equality": false,
   "landing": "pending fleet gates",
   "candidate_verify": {
-    "id": 43637232763,
+    "id": 43644301573,
     "name": "Verify",
     "event": "push",
-    "status": "in_progress",
-    "conclusion": null,
-    "head_sha": "99e391e4cfd7e0cb6dea35b2c086f9777e3659ff",
-    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43637232763"
+    "status": "completed",
+    "conclusion": "cancelled",
+    "head_sha": "c6c0fd361cca4dcf0d662521b039f3160a25830f",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43644301573",
+    "head_branch": "cloud/sd-oncall-c-f251"
   },
   "pr": null,
   "test_registrations_note": "Existing assert-script and journey registrations retained; data matrices extended inside their existing helpers.",
@@ -138,13 +120,30 @@
   "product_push": {
     "repository": "just-every/run-oncall",
     "branch": "cloud/sd-oncall-c-f251",
-    "head": "99e391e4cfd7e0cb6dea35b2c086f9777e3659ff",
-    "verified_remote_head": "99e391e4cfd7e0cb6dea35b2c086f9777e3659ff",
-    "observed_main": "96d1b7a9ee6ed01fce1effbb889991a4a8a66d01",
-    "identity_commits_checked": 2,
-    "identity_and_trailers": "PASS",
+    "head": "c6c0fd361cca4dcf0d662521b039f3160a25830f",
+    "verified_remote_head": "c6c0fd361cca4dcf0d662521b039f3160a25830f",
+    "observed_main": "4af169eb4b7cd5ee3a0bc9867edf6e51a9ac2a8f",
+    "identity_commits_checked": 6,
+    "identity_and_trailers": "PASS; all fleet identities, no trailers",
+    "push_guard": "cloud-push.py",
     "push_attempts": 1,
     "forced": false,
-    "at": "2026-11-14T20:24:25.080822+00:00"
-  }
+    "history_full": true,
+    "at": "2026-11-14T22:03:23.006890+00:00"
+  },
+  "history_full": true,
+  "initial_evidence": {
+    "ref": "refs/heads/evidence/sd-oncall-c-f251",
+    "head": "4f2df1ac399b09c9f3535b7a659f89c6c0956a75",
+    "readback": "verified",
+    "files": 36
+  },
+  "merged_main": "4af169eb4b7cd5ee3a0bc9867edf6e51a9ac2a8f",
+  "prior_candidate_verify": {
+    "head": "99e391e4cfd7e0cb6dea35b2c086f9777e3659ff",
+    "id": 43637232763,
+    "conclusion": "cancelled",
+    "cause": "intake job time limit reproduced, repaired and exact final shard passed"
+  },
+  "handoff": "PUSHED; final Verify cancelled, no exact-head green claim"
 }

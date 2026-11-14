@@ -1,29 +1,29 @@
 {
-  "head": "99e391e4cfd7e0cb6dea35b2c086f9777e3659ff",
+  "head": "c6c0fd361cca4dcf0d662521b039f3160a25830f",
   "files": [
     {
       "file": "screenshots/agent-door-scribe-cleared-timeline-1440.png",
       "role": "scribe",
       "view": "timeline",
       "width": 1440,
-      "bytes": 197071,
-      "sha256": "f9f85c8dfacd71ec89046a848f07abc48b663201981d523168506de5423ddaff"
+      "bytes": 198125,
+      "sha256": "60845c73369802a07d1fd38de887c5562368911ece405e69a83e5a3b32737160"
     },
     {
       "file": "screenshots/agent-door-scribe-cleared-timeline-390.png",
       "role": "scribe",
       "view": "timeline",
       "width": 390,
-      "bytes": 104861,
-      "sha256": "ebd00f80982337010cb5134e8d69cc159c937604634732773512a5546c9ade85"
+      "bytes": 105179,
+      "sha256": "7d9a9226bd865a0471776b208650edbe38539c218a3f27fe61d3822676c06fda"
     },
     {
       "file": "screenshots/agent-door-scribe-cleared-people-1440.png",
       "role": "scribe",
       "view": "people",
       "width": 1440,
-      "bytes": 184436,
-      "sha256": "9f5d64ff0799b52c5a39464b6d89a981cb0767f66cea667bc27a54fd03d501b9"
+      "bytes": 184877,
+      "sha256": "09397cc3411b04460b37f6f90259d301b0838b466760c6a004aaac9ea7579d92"
     },
     {
       "file": "screenshots/agent-door-scribe-cleared-people-390.png",
@@ -38,24 +38,24 @@
       "role": "communications",
       "view": "timeline",
       "width": 1440,
-      "bytes": 235758,
-      "sha256": "f1b183cb5a21b297c25a1589e99c0658a4272cc0985e63a22661b2b77f3d84b2"
+      "bytes": 237100,
+      "sha256": "e27e650a403d41a088c07c51844f97b696e9ccd06c7ab96f0523a7e04bcb8976"
     },
     {
       "file": "screenshots/agent-door-communications-cleared-timeline-390.png",
       "role": "communications",
       "view": "timeline",
       "width": 390,
-      "bytes": 106816,
-      "sha256": "9a4fc18b3a744ee0f948ebf44f08276fa6d6bb3f179d96c738f090402bfc1a24"
+      "bytes": 107141,
+      "sha256": "e6351a6a6087f1301adb7e177b194b6f81b87d975400ac78fa9d4ee41d66f3be"
     },
     {
       "file": "screenshots/agent-door-communications-cleared-people-1440.png",
       "role": "communications",
       "view": "people",
       "width": 1440,
-      "bytes": 222847,
-      "sha256": "a2819b1d50c39c5e2dd420ab420d831abbff9cba1a644427337d18010c4d8359"
+      "bytes": 223677,
+      "sha256": "e992396729d6c419f3234a25cd70cfb215ad5ed809a812a43fe52b18f4548a08"
     },
     {
       "file": "screenshots/agent-door-communications-cleared-people-390.png",
@@ -70,37 +70,37 @@
       "role": "commander",
       "view": "timeline",
       "width": 1440,
-      "bytes": 262701,
-      "sha256": "f9d7b8d42a04bd78f676203378e2050826fbe5ab8e84c0ef0fd7df4397880e4d"
+      "bytes": 264449,
+      "sha256": "8e3d8be3864b4a759de2621931c37bd75bebfbf526df38079237ec29852a4d5f"
     },
     {
       "file": "screenshots/agent-door-commander-cleared-timeline-390.png",
       "role": "commander",
       "view": "timeline",
       "width": 390,
-      "bytes": 103541,
-      "sha256": "8f984c83c2729c2d439f451338abb3401a8dfd7f0c07e6bfe695c30fd82e5243"
+      "bytes": 103898,
+      "sha256": "9d6609e2543bf8a81c66195fa967cd8ecef26461a6c0fa36f49b68b52b98f734"
     },
     {
       "file": "screenshots/agent-door-commander-cleared-people-1440.png",
       "role": "commander",
       "view": "people",
       "width": 1440,
-      "bytes": 247820,
-      "sha256": "fe91487b6096c0412489f61bebb84a646fe456f4d5025e325fecc179dd9faab5"
+      "bytes": 249020,
+      "sha256": "391597944da516ccb926b867bed934d70f6f636430f2f6af8dab91185a8e378b"
     },
     {
       "file": "screenshots/agent-door-commander-cleared-people-390.png",
       "role": "commander",
       "view": "people",
       "width": 390,
-      "bytes": 71539,
-      "sha256": "90ec70e7ecfa7b4efc5130b51d247edb368895827336d801762e2e60d02fca0d"
+      "bytes": 71627,
+      "sha256": "4cf695488d0e8839b814def62582c8720cc9a7544a09dc057147a7dde393f43b"
     }
   ],
   "visually_inspected": [
-    "communications at both widths and both views",
-    "commander at both widths and both views"
+    "Communications people at 390 and timeline at 1440",
+    "Commander people at 1440 and timeline at 390"
   ],
-  "notes": "Saved Unassigned Communications and Lead, preserved companion roles and explicit assignee, attributed timeline and Close dialog tooltip observed."
+  "notes": "Saved Unassigned Communications and Lead, preserved companion roles and explicit assignee, attributed timeline and focused Close dialog tooltip observed."
 }

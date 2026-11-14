@@ -1,0 +1,5 @@
+{
+  "command": "gh run view 43637232763 --repo just-every/run-oncall --job 132577729744 --log-failed",
+  "exit": 0,
+  "stderr": ""
+}

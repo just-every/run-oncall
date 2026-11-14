@@ -1,0 +1,10 @@
+{
+  "head": "c6c0fd361cca4dcf0d662521b039f3160a25830f",
+  "command": "cloud_run timeout 1800 env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=<final browser directory> node tests/agent-door-browser.mjs",
+  "widths": [
+    1440,
+    390
+  ],
+  "assertion_width": 1440,
+  "exit": 0
+}

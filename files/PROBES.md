@@ -1,6 +1,8 @@
-# Actual runtime probes
+# Exact candidate public-door probes
 
-Candidate: 99e391e4cfd7e0cb6dea35b2c086f9777e3659ff
+Head: c6c0fd361cca4dcf0d662521b039f3160a25830f
+
+Actual emitted-Worker observations from final-intake.log. Each selected acceptance and retention point runs under both policies.
 
 PROBE BASE-AGENT-012 acceptance 1 autonomous assign-role Communications clear T+86400000ms: renewed same policy and fresh same-identity token; new RPC id -> original structured outcome; one original native effect and no duplicate held review; all replay-baseline records unchanged; linked attempt audit only; original expiry retained; zero outbound requests
 

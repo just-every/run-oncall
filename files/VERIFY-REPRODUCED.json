@@ -1,0 +1,10 @@
+{
+  "head": "99e391e4cfd7e0cb6dea35b2c086f9777e3659ff",
+  "job": 132577729744,
+  "command": "timeout 748 env CI=true WRANGLER_SEND_METRICS=false PLAYWRIGHT_SKIP_BROWSER_GC=1 node scripts/verify-oncall.mjs intake",
+  "test": "intake shard within its remaining CI command budget",
+  "exit": 124,
+  "failure": "The operation was canceled.",
+  "main_head": "96d1b7a9ee6ed01fce1effbb889991a4a8a66d01",
+  "main_exit": 0
+}

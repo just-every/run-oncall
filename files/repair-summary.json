@@ -1,0 +1,104 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f251",
+  "head": "c6c0fd361cca4dcf0d662521b039f3160a25830f",
+  "initial_candidate": "99e391e4cfd7e0cb6dea35b2c086f9777e3659ff",
+  "first_repair": "8576019d3e3d4cc1b15d0b1f5d022ac4c152958f",
+  "main_predecessor": "4af169eb4b7cd5ee3a0bc9867edf6e51a9ac2a8f",
+  "initial_reproduction": {
+    "head": "99e391e4cfd7e0cb6dea35b2c086f9777e3659ff",
+    "job": 132577729744,
+    "command": "node scripts/verify-oncall.mjs intake",
+    "environment": {
+      "CI": "true",
+      "WRANGLER_SEND_METRICS": "false",
+      "PLAYWRIGHT_SKIP_BROWSER_GC": "1",
+      "node": "22.20.0"
+    },
+    "timeout_seconds": 748,
+    "exit": 124,
+    "kernel_wait_status": 31744,
+    "exit_observation": "Recovered actual exit from the owned timeout process after environment reconnection detached the command session",
+    "failure": "The operation was canceled. (CI); matching 748-second remaining command budget"
+  },
+  "main_comparison": {
+    "head": "96d1b7a9ee6ed01fce1effbb889991a4a8a66d01",
+    "command": "node scripts/verify-oncall.mjs intake",
+    "environment": {
+      "CI": "true",
+      "WRANGLER_SEND_METRICS": "false",
+      "PLAYWRIGHT_SKIP_BROWSER_GC": "1",
+      "node": "22.20.0"
+    },
+    "timeout_seconds": 748,
+    "runner": "same cloud VM as candidate reproduction",
+    "exit": 0
+  },
+  "first_repair_result": {
+    "head": "8576019d3e3d4cc1b15d0b1f5d022ac4c152958f",
+    "command": "node scripts/verify-oncall.mjs intake",
+    "environment": {
+      "CI": "true",
+      "WRANGLER_SEND_METRICS": "false",
+      "PLAYWRIGHT_SKIP_BROWSER_GC": "1",
+      "node": "22.20.0"
+    },
+    "timeout_seconds": 748,
+    "repair_round": 1,
+    "exit": 124
+  },
+  "final_repair_round": 2,
+  "source_files": {
+    "docs/agents.md": "6bfd7cf99786892f05a9258db4a5cc42254c50a4a0b70007b64691f8e8abb288",
+    "sources.lock.json": "771493bb5dc9451c73c9158e4a6e8a4ccd8b248a4d559169077560a10bacf732",
+    "tests/agent-door-browser.mjs": "de149cd30ad2530ff14d9ff4b950599b8b58afe2c1b188a628cf74b33f7cef92",
+    "tests/oncall-agent-flow.mjs": "85550b1398ec25c52d804f6e527f15090c1ab9992addd7d1966d7ac68d57d53a",
+    "tests/oncall-agent-retention.mjs": "ef9961c652ffcb81e8e68b39a34d4a6a82fafc8e778f5c99736f809775bf2362",
+    "tests/oncall-agent-role-clear-replay.mjs": "2fb0d66b959615c7e5959185a8361e3893c09c6e7da6d7641607184506aba5c0"
+  },
+  "initial_verify": {
+    "conclusion": "cancelled",
+    "head_sha": "99e391e4cfd7e0cb6dea35b2c086f9777e3659ff",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43637232763",
+    "status": "completed",
+    "id": 43637232763,
+    "name": "Verify",
+    "event": "push"
+  },
+  "remaining_api_calls": 0,
+  "final_local_and_ci": {
+    "intake": {
+      "head": "c6c0fd361cca4dcf0d662521b039f3160a25830f",
+      "command": "node scripts/verify-oncall.mjs intake",
+      "environment": {
+        "CI": "true",
+        "WRANGLER_SEND_METRICS": "false",
+        "PLAYWRIGHT_SKIP_BROWSER_GC": "1",
+        "node": "22.20.0"
+      },
+      "timeout_seconds": 748,
+      "repair_round": 2,
+      "exit": 0
+    },
+    "browser": {
+      "head": "c6c0fd361cca4dcf0d662521b039f3160a25830f",
+      "command": "cloud_run timeout 1800 env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=<final browser directory> node tests/agent-door-browser.mjs",
+      "widths": [
+        1440,
+        390
+      ],
+      "assertion_width": 1440,
+      "exit": 0
+    },
+    "ci": {
+      "id": 43644301573,
+      "name": "Verify",
+      "event": "push",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head_sha": "c6c0fd361cca4dcf0d662521b039f3160a25830f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43644301573",
+      "head_branch": "cloud/sd-oncall-c-f251"
+    }
+  }
+}

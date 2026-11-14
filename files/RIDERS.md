@@ -6,8 +6,8 @@ No whole-clause DONE claim. Status judgments and counts remain unchanged. These 
 | --- | --- | --- |
 | 1 | FAIL for whole clause; selected outcomes locally exercised | R1–R9 in RUBRIC.md. Other mutating tools and variants, remaining response-loss and changed-argument matrices, other revision diagnostics and acceptance 5 remain omitted. |
 | 2 | PASS for selected scope | Populated acknowledged targets, distinct explicit assignee when clearing Commander, positive native effects and unsafe conflict and scoped refusals through MCP, with complete retained-effect comparison. |
-| 3 | PENDING exact-SHA Verify | Existing push intake and browser entries invoke both changed helpers. Actual run status and id are recorded in REPORT.md and CI receipt. No earlier SHA is substituted. |
-| 4 | PASS subject to actual candidate receipts | Source hashes and head are in candidate.json; runtime and browser receipts record their actual head. |
+| 3 | UNESTABLISHED exact-SHA Verify | Final push Verify 43644301573 on c6c0fd361cca4dcf0d662521b039f3160a25830f completed cancelled. Local final intake and browser receipts pass, but no green CI is claimed. |
+| 4 | PASS local exact-head receipts | Source hashes and head are in candidate.json; runtime and browser receipts record their actual head. |
 | 5 | INSPECTED, no inheritance change | BASE-AGENT-012 is the Base duty itself; no receiving clause or citation is changed. Existing inherited holds remain named. |
 | 6 | PASS mechanical; judgment custody retained | Contract generator write and check pass; generated views restored from main. CONTRACT.md is unchanged and its MISSING judgment, Gap and Evidence are reserved for the lander. |
 | 7 | PASS | No acceptance, ruling, ID map or coverage-map changes. |
