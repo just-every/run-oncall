@@ -44,7 +44,7 @@ No DONE claim is made. Results below distinguish selected proof from whole-claus
 | --- | --- | --- |
 | 1 | PASS selected; FAIL whole clause | R1 to R9 prove the selected null-Scribe outcomes. Other tool and operation variants and point 5 remain gaps. |
 | 2 | PASS selected | Real populated native incidents, accepted calls, conflicts and confidentiality refusals; snapshots compare retained native state and custody. |
-| 3 | CI recorded separately | The helper is invoked by runtime machines in Verify's intake shard; the browser block is imported by product-browser in Verify's browser shard. Exact-SHA event and conclusion are in CI.json. |
+| 3 | PASS exact candidate | The helper is invoked by runtime machines in Verify's intake shard; the browser block is imported by product-browser in Verify's browser shard. Exact-SHA event and conclusion are in CI.json. |
 | 4 | PASS local | Final candidate command receipts bind build, runtime machines, browser and typecheck to the full candidate SHA. |
 | 5 | UNCHANGED | This is direct BASE-AGENT-012 proof, not a receiving-clause inheritance rewrite. No clause text changed. |
 | 6 | PASS mechanical; judgments reserved | Generator write then check passes, generated views restored from main, source lock regenerated last and checked. Contract judgment cells are unchanged. |
@@ -84,3 +84,11 @@ This claim names only the planner-selected populated Scribe clear observations. 
 First Verify attempt: push run 43624929302 completed cancelled. Build, runtime, browser, triage, changes, hosted and transfer jobs passed. Intake job 132539106981 was cancelled after 15 minutes 18 seconds overall, with its Run this shard step cancelled after 13 minutes 24 seconds. The final coverage guard job 132543597958 failed because the intake shard was cancelled; full-push-proof was skipped. The single prescribed gh run view command for the cancelled intake job returned exit 0 and zero bytes, so it supplied no failing assertion. No direct job-log blob URL was requested, no blocked blob download was retried, and no product or workflow edit follows this observation. The exact intake command is being compared locally with pinned main before classifying a permitted infrastructure rerun.
 
 CI timing control: the exact failed-shard command, node scripts/verify-oncall.mjs intake, passed unchanged on candidate 5e250b90adc319fe7872d4ffd121397eade35377 in 480.01 seconds and on pinned main f7b5b5ea71e955081501bebf81a4f967459c8e34 in 460.21 seconds on this same VM. Both include the full runtime machines, intake and routing journeys. No assertion failure reproduced and no repair edit was made. The 15-minute CI job-budget cancellation is reported as infrastructure timing. GitHub accepted exactly one rerun-failed-jobs request on the unchanged run and head. Nine of ten GitHub calls are used; the remaining call is reserved for an exact-SHA result after the rerun execution window.
+
+## Final custody
+
+Final exact-SHA observation after the one permitted failed-job rerun: Verify 43624929302, event push, status completed, conclusion success, head 5e250b90adc319fe7872d4ffd121397eade35377. Ten GitHub calls used. CI URL: https://github.com/just-every/run-oncall/actions/runs/43624929302. No third dispatch, rerun or repair was attempted.
+
+The candidate is ready for the guarded fleet landing checks. There is no unresolved local product blocker. Publication scanning, main equality and Run site on the landed candidate remain fleet gates. BASE-AGENT-012 remains MISSING, with only the selected Scribe-clear observations claimed PARTIAL.
+
+CLAIM BASE-AGENT-012 PARTIAL points=1,2,3,4 tests=tests/oncall-agent-role-clear-replay.mjs#roleClearReplay; tests/oncall-agent-retention.mjs#agedReplayRetention; tests/agent-door-browser.mjs#saved Scribe clear

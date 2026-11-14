@@ -1,0 +1,194 @@
+{
+  "head": "5e250b90adc319fe7872d4ffd121397eade35377",
+  "branch": "cloud/sd-oncall-c-f249",
+  "repository": "just-every/run-oncall",
+  "clause": "BASE-AGENT-012",
+  "claim": "PARTIAL",
+  "selected_points": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "source_judgment": "MISSING retained",
+  "counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "ci": {
+    "id": 43624929302,
+    "name": "Verify",
+    "event": "push",
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "5e250b90adc319fe7872d4ffd121397eade35377",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43624929302"
+  },
+  "failed_job_reruns": 1,
+  "github_calls_used": 10,
+  "ready": true,
+  "local_checks": [
+    {
+      "command": [
+        "timeout",
+        "-k",
+        "5",
+        "1200",
+        "npx",
+        "-y",
+        "@runeditrun/rer",
+        "build"
+      ],
+      "exit": 0,
+      "head": "5e250b90adc319fe7872d4ffd121397eade35377",
+      "log": "/tmp/f249-build.log",
+      "name": "build",
+      "seconds": 6.36,
+      "started": "2026-11-14T18:05:27.799649+00:00"
+    },
+    {
+      "command": [
+        "timeout",
+        "-k",
+        "5",
+        "1200",
+        "env",
+        "ONCALL_RUNTIME_PART=machines",
+        "node",
+        "tests/runtime.mjs"
+      ],
+      "exit": 0,
+      "head": "5e250b90adc319fe7872d4ffd121397eade35377",
+      "log": "/tmp/f249-runtime-machines.log",
+      "name": "runtime-machines",
+      "seconds": 356.08,
+      "started": "2026-11-14T18:05:58.278965+00:00"
+    },
+    {
+      "command": [
+        "pnpm",
+        "run",
+        "typecheck"
+      ],
+      "exit": 0,
+      "head": "5e250b90adc319fe7872d4ffd121397eade35377",
+      "log": "/tmp/f249-typecheck.log",
+      "name": "typecheck",
+      "seconds": 2.09,
+      "started": "2026-11-14T18:11:54.393340+00:00"
+    },
+    {
+      "command": [
+        "pnpm",
+        "exec",
+        "rer",
+        "check",
+        "--profile",
+        "first-party"
+      ],
+      "exit": 0,
+      "head": "5e250b90adc319fe7872d4ffd121397eade35377",
+      "log": "/tmp/f249-first-party.log",
+      "name": "first-party",
+      "seconds": 0.46,
+      "started": "2026-11-14T18:11:56.509163+00:00"
+    },
+    {
+      "command": [
+        "timeout",
+        "-k",
+        "5",
+        "1200",
+        "node",
+        "tests/agent-door-browser.mjs"
+      ],
+      "exit": 0,
+      "head": "5e250b90adc319fe7872d4ffd121397eade35377",
+      "log": "/tmp/f249-browser.log",
+      "name": "browser",
+      "seconds": 57.26,
+      "started": "2026-11-14T18:11:57.003283+00:00"
+    }
+  ],
+  "ci_timing_control": {
+    "candidate": {
+      "command": [
+        "timeout",
+        "-k",
+        "5",
+        "1200",
+        "node",
+        "scripts/verify-oncall.mjs",
+        "intake"
+      ],
+      "exit": 0,
+      "head": "5e250b90adc319fe7872d4ffd121397eade35377",
+      "log": "/tmp/f249-intake-reproduction.log",
+      "name": "intake-reproduction",
+      "seconds": 480.01,
+      "started": "2026-11-14T18:35:21.197511+00:00"
+    },
+    "main": {
+      "command": [
+        "timeout",
+        "-k",
+        "5",
+        "1200",
+        "node",
+        "scripts/verify-oncall.mjs",
+        "intake"
+      ],
+      "exit": 0,
+      "head": "f7b5b5ea71e955081501bebf81a4f967459c8e34",
+      "log": "/tmp/f249-main-intake-control.log",
+      "name": "main-intake-control",
+      "seconds": 460.21,
+      "started": "2026-11-14T18:44:01.747392+00:00"
+    },
+    "same_runner": "this dedicated cloud VM",
+    "same_command": "node scripts/verify-oncall.mjs intake",
+    "source_changes_for_ci_repair": false,
+    "ci_repairs": 0,
+    "class": "CI job budget cancellation, not a reproduced assertion failure",
+    "allowed_failed_job_reruns_requested": 1,
+    "github_calls_used": 9,
+    "original_job": 132539106981,
+    "original_run": 43624929302,
+    "original_job_minutes": 15.3,
+    "configured_job_budget_minutes": 15,
+    "archive_command_exit": 0,
+    "archive_command_bytes": 0
+  },
+  "publication_scan": "pending guarded fleet lander",
+  "main_equality": "not landed by this cloud task",
+  "candidate_run_site": "pending guarded landing",
+  "product_commits": [
+    {
+      "head": "5e250b90adc319fe7872d4ffd121397eade35377",
+      "subject": "Verify saved Scribe clear in incident controls and timeline",
+      "author_name": "Run Edit Run fleet",
+      "author_email": "fleet@runeditrun.com",
+      "committer_name": "Run Edit Run fleet",
+      "committer_email": "fleet@runeditrun.com",
+      "message": "Verify saved Scribe clear in incident controls and timeline\n"
+    },
+    {
+      "head": "4e322f8ac45e676f21bbca9d99a8df551e28adfa",
+      "subject": "Prove populated Scribe clear replay and revision custody [skip ci]",
+      "author_name": "Run Edit Run fleet",
+      "author_email": "fleet@runeditrun.com",
+      "committer_name": "Run Edit Run fleet",
+      "committer_email": "fleet@runeditrun.com",
+      "message": "Prove populated Scribe clear replay and revision custody [skip ci]\n"
+    }
+  ],
+  "pr": null
+}
