@@ -1,0 +1,88 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-readable-states-1",
+  "head": "97ab38cfd3a0067072603585868d6506d02a69bc",
+  "tree": "fdaf148b3615c6296a6056fe20b72805f05afd69",
+  "productPush": "three normal candidate pushes; each succeeded first attempt; no force push",
+  "commitIdentity": "Run Edit Run fleet <fleet@runeditrun.com> for author and committer; no trailers",
+  "localChecks": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium cloud_run node tests/agent-door-browser.mjs",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_PRODUCT_JOURNEY=events-source ONCALL_CHROMIUM_PATH=/usr/bin/chromium cloud_run node tests/product-browser.mjs",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_PRODUCT_JOURNEY=triage ONCALL_CHROMIUM_PATH=/usr/bin/chromium cloud_run node tests/product-browser.mjs",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium cloud_run node tests/product-browser.mjs",
+      "exit": 0,
+      "checkedOutHead": "97ab38cfd3a0067072603585868d6506d02a69bc"
+    }
+  ],
+  "localTiming": "The complete touched product-browser script, including its agent-browser continuation, passed on final checked-out head 97ab38cfd3a0067072603585868d6506d02a69bc. It used the emitted Worker built from the same final application files before the test-only locator commit. Focused Events-source, triage and agent journeys also passed. Typecheck, contract generator and source-lock checks passed before the final commit. Exact-SHA CI validates the final candidate.",
+  "assertionWidth": 1440,
+  "proofWidths": [
+    1440,
+    390
+  ],
+  "contractStatusChanges": [],
+  "newRegistrations": 0,
+  "fullCloudPublicationScan": "Unavailable in cloud; fleet lander owns publication scan before landing. Candidate diff and all commit identity/trailers inspected.",
+  "recordedAt": "2026-11-14T02:46:03.374649+00:00",
+  "publicationCommits": [
+    "97ab38cfd3a0067072603585868d6506d02a69bc Check triage statuses within incident rows",
+    "35a5fd169576dce7ffa6a0cfefcacd2b3b808777 Describe the default follow-up review requirement accurately",
+    "62a15b6f9ec2c24724b6f448e0080047a755384c Make coordination decisions and status labels readable"
+  ],
+  "sourceLockCheck": true,
+  "screenshotsReviewed": [
+    "after-approval-390.png",
+    "after-filters-1440.png",
+    "after-timeline-1440.png",
+    "after-source-created-390.png"
+  ],
+  "scopeGap": "No native incident number exists; cards identify the actual saved title and named service. No fabricated number or data/API identity change.",
+  "testResultsRetained": {
+    "build.txt": "43a7b1caf17035e055b01d18861d58fa7011789f645a4f4c75b21c78079683df",
+    "typecheck.txt": "dbd1a48c1dd1bada77e8b63423e44f0258b032ed1d813d5bb1ac37faad4e9da8",
+    "agent-browser.txt": "0d7ad93b3ba37c4e5b4f9221a0d09b79564525db805da0f57e2e4710ded1cf52",
+    "events-source-browser.txt": "031ed2c921b9eb5c73ff1472e4073072c7c937741e13321a24ca06908e356a60",
+    "browser-proof.txt": "80c18dddf41e215cbf97d2a4515788c2dc7b4f6cdb6a454757bc4906b6178b6e",
+    "full-product-browser.txt": "b60bdf6b1315fca00b6115665eb59936c5072c1e73b91fa3d30e397030dcfbd5"
+  },
+  "priorCiFailure": "Run 43544785621, browser job 132294464019: hidden filter option matched an unscoped incident-row status locator. All four row-status assertions scoped to .incident-meta; full existing triage journey passes. No behavior assertion removed.",
+  "ci": {
+    "runId": 43546538381,
+    "head": "97ab38cfd3a0067072603585868d6506d02a69bc",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/just-every/run-oncall/actions/runs/43546538381",
+    "githubCalls": 8
+  },
+  "custody": "READY: product pushed and exact-SHA Verify success; no acceptance status or landing claim"
+}

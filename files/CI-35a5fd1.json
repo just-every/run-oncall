@@ -1,0 +1,49 @@
+{
+  "repository": "just-every/run-oncall",
+  "head": "35a5fd169576dce7ffa6a0cfefcacd2b3b808777",
+  "callsIncludingInitialEmptyShortShaDiscovery": 7,
+  "observations": [
+    {
+      "conclusion": null,
+      "head_sha": "35a5fd169576dce7ffa6a0cfefcacd2b3b808777",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43544785621",
+      "id": 43544785621,
+      "name": "Verify",
+      "status": "in_progress",
+      "observedAt": "2026-11-14T02:11:07.106745+00:00"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "35a5fd169576dce7ffa6a0cfefcacd2b3b808777",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43544785621",
+      "id": 43544785621,
+      "name": "Verify",
+      "status": "in_progress",
+      "observedAt": "2026-11-14T02:16:06.843717+00:00"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "35a5fd169576dce7ffa6a0cfefcacd2b3b808777",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43544785621",
+      "id": 43544785621,
+      "name": "Verify",
+      "status": "in_progress",
+      "observedAt": "2026-11-14T02:21:06.946811+00:00"
+    },
+    {
+      "conclusion": "failure",
+      "head_sha": "35a5fd169576dce7ffa6a0cfefcacd2b3b808777",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43544785621",
+      "id": 43544785621,
+      "name": "Verify",
+      "status": "completed",
+      "observedAt": "2026-11-14T02:26:06.970096+00:00"
+    }
+  ],
+  "runId": 43544785621,
+  "status": "completed",
+  "conclusion": "failure",
+  "url": "https://github.com/just-every/run-oncall/actions/runs/43544785621",
+  "failedJob": 132294464019,
+  "cause": "A triage row status locator matched the newly readable hidden filter option before the visible incident-row status."
+}

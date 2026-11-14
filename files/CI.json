@@ -1,0 +1,22 @@
+{
+  "repository": "just-every/run-oncall",
+  "head": "97ab38cfd3a0067072603585868d6506d02a69bc",
+  "callsIncludingInitialEmptyShortShaDiscovery": 8,
+  "priorFailedRun": 43544785621,
+  "priorFailedHead": "35a5fd169576dce7ffa6a0cfefcacd2b3b808777",
+  "observations": [
+    {
+      "conclusion": "success",
+      "head_sha": "97ab38cfd3a0067072603585868d6506d02a69bc",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43546538381",
+      "id": 43546538381,
+      "name": "Verify",
+      "status": "completed",
+      "observedAt": "2026-11-14T02:45:05.706851+00:00"
+    }
+  ],
+  "runId": 43546538381,
+  "status": "completed",
+  "conclusion": "success",
+  "url": "https://github.com/just-every/run-oncall/actions/runs/43546538381"
+}

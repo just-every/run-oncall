@@ -1,0 +1,179 @@
+shards (browser)	Run this shard	﻿2026-11-14T02:15:13.6678428Z ##[group]Run node scripts/verify-oncall.mjs "$SHARD"
+shards (browser)	Run this shard	2026-11-14T02:15:13.6678838Z [36;1mnode scripts/verify-oncall.mjs "$SHARD"[0m
+shards (browser)	Run this shard	2026-11-14T02:15:13.6695411Z shell: /usr/bin/bash -e {0}
+shards (browser)	Run this shard	2026-11-14T02:15:13.6695667Z env:
+shards (browser)	Run this shard	2026-11-14T02:15:13.6695852Z   CI: true
+shards (browser)	Run this shard	2026-11-14T02:15:13.6696061Z   WRANGLER_SEND_METRICS: false
+shards (browser)	Run this shard	2026-11-14T02:15:13.6696332Z   PLAYWRIGHT_SKIP_BROWSER_GC: 1
+shards (browser)	Run this shard	2026-11-14T02:15:13.6696688Z   PLAYWRIGHT_BROWSERS_PATH: /home/runner/work/_temp/ms-playwright
+shards (browser)	Run this shard	2026-11-14T02:15:13.6697046Z   SHARD: browser
+shards (browser)	Run this shard	2026-11-14T02:15:13.6697378Z   ONCALL_BROWSER_EVIDENCE: /home/runner/work/_temp/oncall-browser-evidence
+shards (browser)	Run this shard	2026-11-14T02:15:13.6697769Z ##[endgroup]
+shards (browser)	Run this shard	2026-11-14T02:15:13.7056188Z > pnpm run verify:app
+shards (browser)	Run this shard	2026-11-14T02:15:13.9682117Z 
+shards (browser)	Run this shard	2026-11-14T02:15:13.9682866Z > @just-every/oncall@0.5.13 verify:app /home/runner/work/run-oncall/run-oncall
+shards (browser)	Run this shard	2026-11-14T02:15:13.9683716Z > node tests/verify.mjs
+shards (browser)	Run this shard	2026-11-14T02:15:13.9683932Z 
+shards (browser)	Run this shard	2026-11-14T02:15:15.2757605Z (node:2861) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (browser)	Run this shard	2026-11-14T02:15:15.2759018Z (Use `node --trace-warnings ...` to show where the warning was created)
+shards (browser)	Run this shard	2026-11-14T02:15:38.5191859Z OC4 autosave: menu departure retains owner after reload; offline retains input; Retry audit +1
+shards (browser)	Run this shard	2026-11-14T02:15:46.6502839Z PASS review follow-up evidence: ordinary desktop pointer click, submission and human acceptance
+shards (browser)	Run this shard	2026-11-14T02:15:47.1235987Z PASS incident saves: persistent runbook and review Saved states, failed-save alerts and Retry, phone header without leading separators, draft edits without timeline entries, exactly one attributed accepted review; changed screens captured at 1440 and 390
+shards (browser)	Run this shard	2026-11-14T02:15:51.1018712Z PASS incident handoff: responder prepares, reviews and downloads exact unsent JSON; lost-response retry commits once; viewer inspects without actions; current-role refusal, source-drift export conflict and replacement; admin reviews; screens captured at 1440 and 390
+shards (browser)	Run this shard	2026-11-14T02:15:56.2598172Z PROBE OC-023 browser: Backstage dependency review, conflict choice, apply, lost-response Retry and reload -> rendered and HTTP state agree; screens captured at 1440 and 390
+shards (browser)	Run this shard	2026-11-14T02:16:02.1167444Z PASS existing service audience: grant, subscribe, reload, revoke and regrant through the browser
+shards (browser)	Run this shard	2026-11-14T02:16:02.5995754Z Member coordination derived-status at 1440: overflow, hydration and accessibility passed
+shards (browser)	Run this shard	2026-11-14T02:16:03.3875307Z Member coordination override-reason at 1440: overflow, hydration and accessibility passed
+shards (browser)	Run this shard	2026-11-14T02:16:04.5847791Z Member coordination stakeholder-status-and-refusals at 1440: overflow, hydration and accessibility passed
+shards (browser)	Run this shard	2026-11-14T02:16:04.6451614Z OC-061 browser: existing internal-status panel, derived degraded, attributed override and reason, stakeholder subscription and private-door refusals at 1440
+shards (browser)	Run this shard	2026-11-14T02:16:05.6130349Z Member coordination email-list-started at 1440: overflow, hydration and accessibility passed
+shards (browser)	Run this shard	2026-11-14T02:16:06.3572029Z Member coordination email-list-ended at 1440: overflow, hydration and accessibility passed
+shards (browser)	Run this shard	2026-11-14T02:16:07.0588632Z Member coordination email-list-unsubscribed at 1440: overflow, hydration and accessibility passed
+shards (browser)	Run this shard	2026-11-14T02:16:07.8128205Z Member coordination email-list-erasure-review at 1440: overflow, hydration and accessibility passed
+shards (browser)	Run this shard	2026-11-14T02:16:08.7685680Z Member coordination email-list-erasure-receipt at 1440: overflow, hydration and accessibility passed
+shards (browser)	Run this shard	2026-11-14T02:16:08.9296175Z OC-061 email-list browser: Settings authoring, started/ended recorded no-sender obligations, unsubscribe prevents future records and shared erasure receipt at 1440; overflow, axe and hydration passed
+shards (browser)	Run this shard	2026-11-14T02:16:10.3884207Z Member coordination role-team at 1440: overflow, hydration and accessibility passed
+shards (browser)	Run this shard	2026-11-14T02:16:11.8071761Z Member coordination role-services at 1440: overflow, hydration and accessibility passed
+shards (browser)	Run this shard	2026-11-14T02:16:13.2057986Z Member coordination role-routing at 1440: overflow, hydration and accessibility passed
+shards (browser)	Run this shard	2026-11-14T02:16:15.7038915Z Member coordination role-schedules at 1440: overflow, hydration and accessibility passed
+shards (browser)	Run this shard	2026-11-14T02:16:18.6577878Z Member coordination role-incidents at 1440: overflow, hydration and accessibility passed
+shards (browser)	Run this shard	2026-11-14T02:16:18.8856203Z OC-061 role selectors and tooltips: team, service, routing, schedule and incident/bulk screens at 1440 with own browser CPU rate 4; stakeholder excluded from response owners and keyboard tooltip immediate
+shards (browser)	Run this shard	2026-11-14T02:16:19.8593794Z Member coordination oc068-manual-page-form at 1440: overflow, hydration and accessibility passed
+shards (browser)	Run this shard	2026-11-14T02:16:21.7236004Z Member coordination oc068-requests-and-obligations at 1440: overflow, hydration and accessibility passed
+shards (browser)	Run this shard	2026-11-14T02:16:22.8795107Z Member coordination oc068-viewer-refusal at 1440: overflow, hydration and accessibility passed
+shards (browser)	Run this shard	2026-11-14T02:16:23.9429065Z Member coordination oc068-service-assignment-rule at 1440: overflow, hydration and accessibility passed
+shards (browser)	Run this shard	2026-11-14T02:16:24.0470683Z OC-068 browser: manual page urgency/target, recorded obligations, independent accepted and declined responder requests, viewer refusal and versioned assignment setting at 1440
+shards (browser)	Run this shard	2026-11-14T02:16:24.6849881Z Member coordination oc058-service-timeout at 1440: overflow, hydration and accessibility passed
+shards (browser)	Run this shard	2026-11-14T02:16:25.6664803Z Member coordination oc058-snooze-form at 1440: overflow, hydration and accessibility passed
+shards (browser)	Run this shard	2026-11-14T02:16:26.2331910Z Member coordination oc058-snoozed at 1440: overflow, hydration and accessibility passed
+shards (browser)	Run this shard	2026-11-14T02:16:27.5992334Z Member coordination oc058-expired-triggered at 1440: overflow, hydration and accessibility passed
+shards (browser)	Run this shard	2026-11-14T02:16:27.7134526Z OC-058 browser: timeout setting, snooze duration, persisted snoozed state and scheduled expiry back to triggered at 1440; paging OFF
+shards (browser)	Run this shard	2026-11-14T02:16:30.9302921Z OC-018 real hosted member coordination persists after reload: on the emitted production Worker a password member acknowledged and noted an incident, reloaded at 1440 and kept attribution; a viewer read it; signed-out, anonymous and revoked sessions got no workspace; paging refused (409)
+shards (browser)	Run this shard	2026-11-14T02:17:15.7577755Z Production sign-in browser flow passed at 1440: configured editable hints without a send, unconfigured mail refusal, sign-out and denied access without a session
+shards (browser)	Run this shard	2026-11-14T02:17:16.4404695Z Owned runtime processes [["2861","2849","node"],["4616","2861","workerd"],["4621","2861","ps"]]
+shards (browser)	Run this shard	2026-11-14T02:17:17.8267613Z Owned runtime processes [["2861","2849","node"],["4616","2861","workerd"],["4622","2861","chrome-headless"],["4624","4622","chrome-headless"],["4625","4622","chrome-headless"],["4646","4624","chrome-headless"],["4648","4622","chrome-headless"],["4655","2861","ps"]]
+shards (browser)	Run this shard	2026-11-14T02:17:17.8270835Z Browser driver PID 2861 runtime proof uses a fresh test-only context
+shards (browser)	Run this shard	2026-11-14T02:17:30.1546530Z PASS OC-053 API client saved guided policy editing and public responder acknowledgment, granted service read, pointer rotation/revocation, stale management refusal, outbox and permanent machine attribution at 1440; client screens at 1440 and 390
+shards (browser)	Run this shard	2026-11-14T02:17:30.2437310Z Journey completed: tests/member-coordination-browser.mjs (136.2s)
+shards (browser)	Run this shard	2026-11-14T02:17:31.4958056Z (node:4749) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (browser)	Run this shard	2026-11-14T02:17:31.4959487Z (Use `node --trace-warnings ...` to show where the warning was created)
+shards (browser)	Run this shard	2026-11-14T02:17:56.6852006Z OC-068 keyboard manual page: urgency, priority, replay-safe operation and recorded target obligation persisted
+shards (browser)	Run this shard	2026-11-14T02:18:01.4976471Z PROBE OC-009 declaration, acknowledgment and notes 1440: native keyboard incident and action dialog -> protected incident, commander and literal attributed note retained; focus, Tab containment, Escape return, labels, overflow and axe passed
+shards (browser)	Run this shard	2026-11-14T02:18:03.4161139Z PROBE OC-009 stale write 1440: second authenticated HTTP session wins -> real 409, alert announcement, editable losing draft and no saved claim; winning data unchanged
+shards (browser)	Run this shard	2026-11-14T02:18:03.5690729Z Workspace path / 200 /on-call hops 1
+shards (browser)	Run this shard	2026-11-14T02:18:03.6836708Z Workspace path /#incidents 200 /incidents hops 1
+shards (browser)	Run this shard	2026-11-14T02:18:03.7777273Z Workspace path /#alerts 200 /alerts hops 1
+shards (browser)	Run this shard	2026-11-14T02:18:03.8699467Z Workspace path /#services 200 /settings/services hops 1
+shards (browser)	Run this shard	2026-11-14T02:18:03.9701546Z Workspace path /#status 200 /status hops 1
+shards (browser)	Run this shard	2026-11-14T02:18:04.0789049Z Workspace path /#routing 200 /settings/routing hops 1
+shards (browser)	Run this shard	2026-11-14T02:18:04.1768526Z Workspace path /#schedules 200 /on-call hops 1
+shards (browser)	Run this shard	2026-11-14T02:18:04.2829591Z Workspace path /#move-in 200 /settings/move-in hops 1
+shards (browser)	Run this shard	2026-11-14T02:18:04.4040416Z Workspace path /#reviews 200 /reviews hops 1
+shards (browser)	Run this shard	2026-11-14T02:18:04.4970712Z Workspace path /#team 200 /settings/team hops 1
+shards (browser)	Run this shard	2026-11-14T02:18:04.6070694Z Workspace path /#archive 200 /settings/archive hops 1
+shards (browser)	Run this shard	2026-11-14T02:18:04.7143765Z Workspace path /services 200 /settings/services hops 1
+shards (browser)	Run this shard	2026-11-14T02:18:04.8036680Z Workspace path /routing 200 /settings/routing hops 1
+shards (browser)	Run this shard	2026-11-14T02:18:04.9038535Z Workspace path /schedules 200 /on-call hops 1
+shards (browser)	Run this shard	2026-11-14T02:18:05.0001956Z Workspace path /team 200 /settings/team hops 1
+shards (browser)	Run this shard	2026-11-14T02:18:05.1127153Z Workspace path /move-in 200 /settings/move-in hops 1
+shards (browser)	Run this shard	2026-11-14T02:18:05.2390180Z Workspace path /archive 200 /settings/archive hops 1
+shards (browser)	Run this shard	2026-11-14T02:18:05.3292100Z Workspace path /settings 200 /settings/services hops 1
+shards (browser)	Run this shard	2026-11-14T02:18:05.4496220Z Workspace path /?incident=27236fb8-b259-40f4-97ab-6bef15e852d9#incidents 200 /incidents/27236fb8-b259-40f4-97ab-6bef15e852d9 hops 1
+shards (browser)	Run this shard	2026-11-14T02:18:10.5457276Z PROBE OC-057 acceptance 8: emitted Settings saves New York weekdays 09:00–17:00 without holidays; warning admitted at 2026-11-03T08:00:00Z -> active low alert, visible not-automatic notice and next support start 2026-11-03T14:00:00Z; reload at 08:30Z retains urgency history, native records, paging jobs and receipts; zero outbound requests; screens captured at 1440 and 390
+shards (browser)	Run this shard	2026-11-14T02:18:57.9759365Z PASS OC-024 ordinary-member browser 1440: password sign-in, own-only picker, self-PTO and self-ICS review/apply, current consecutive revisions, effective gap, retained slots, visible stale refusal, axe; PTO screen captured at 1440
+shards (browser)	Run this shard	2026-11-14T02:18:57.9810710Z PASS OC-024 browser coverage rules 1440: long review, focused PTO and ICS outcomes, consecutive reviewed writes, visible stale refusal and no visible internal identifiers
+shards (browser)	Run this shard	2026-11-14T02:19:04.1831069Z PASS OC-025 browser 1440: band-selected swap, independent substitute acceptance after approval, effective override, autosaved approval/reminder, no-timer label, one-time feed dismissal, immediate revoke, recorded obligations, axe and overflow
+shards (browser)	Run this shard	2026-11-14T02:19:04.1834805Z PROBE OC-009 schedules, overrides and preview 1440: native keyboard create, narrow disclosure, cover preparation, review, Escape and confirmation -> protected saved assignments and preview agree; focus, dialog containment, labels, overflow and axe passed
+shards (browser)	Run this shard	2026-11-14T02:19:37.1707717Z Product browser failure at /incidents
+shards (browser)	Run this shard	2026-11-14T02:19:37.1774696Z Skip to content
+shards (browser)	Run this shard	2026-11-14T02:19:37.1779799Z Oncall
+shards (browser)	Run this shard	2026-11-14T02:19:37.1780182Z On call
+shards (browser)	Run this shard	2026-11-14T02:19:37.1780527Z Incidents
+shards (browser)	Run this shard	2026-11-14T02:19:37.1780872Z 50
+shards (browser)	Run this shard	2026-11-14T02:19:37.1781183Z Alerts
+shards (browser)	Run this shard	2026-11-14T02:19:37.1781492Z 4
+shards (browser)	Run this shard	2026-11-14T02:19:37.1781808Z Reviews
+shards (browser)	Run this shard	2026-11-14T02:19:37.1782126Z Status
+shards (browser)	Run this shard	2026-11-14T02:19:37.1782439Z Settings
+shards (browser)	Run this shard	2026-11-14T02:19:37.1782757Z PR
+shards (browser)	Run this shard	2026-11-14T02:19:37.1783131Z Product browser owner
+shards (browser)	Run this shard	2026-11-14T02:19:37.1783528Z admin
+shards (browser)	Run this shard	2026-11-14T02:19:37.1786453Z ⌄
+shards (browser)	Run this shard	2026-11-14T02:19:37.1786831Z Incidents
+shards (browser)	Run this shard	2026-11-14T02:19:37.1787745Z Existing pager authoritative · paging OFF · schedules and coordination
+shards (browser)	Run this shard	2026-11-14T02:19:37.1788405Z Incidents
+shards (browser)	Run this shard	2026-11-14T02:19:37.1788718Z Declare
+shards (browser)	Run this shard	2026-11-14T02:19:37.1789010Z Items
+shards (browser)	Run this shard	2026-11-14T02:19:37.1789346Z Declared incidents
+shards (browser)	Run this shard	2026-11-14T02:19:37.1789700Z Alert-only items
+shards (browser)	Run this shard	2026-11-14T02:19:37.1790060Z Search
+shards (browser)	Run this shard	2026-11-14T02:19:37.1790395Z Filter and sort incidents
+shards (browser)	Run this shard	2026-11-14T02:19:37.1790837Z Status: Triggered ×
+shards (browser)	Run this shard	2026-11-14T02:19:37.1791173Z Saved views
+shards (browser)	Run this shard	2026-11-14T02:19:37.1791976Z 10 matching incidents
+shards (browser)	Run this shard	2026-11-14T02:19:37.1792371Z Synthetic triage storm 9
+shards (browser)	Run this shard	2026-11-14T02:19:37.1792620Z 
+shards (browser)	Run this shard	2026-11-14T02:19:37.1793090Z Triage paymentsCriticalTriggeredNov 14, 2026, 02:19 AM UTC (GMT+0)
+shards (browser)	Run this shard	2026-11-14T02:19:37.1816431Z 
+shards (browser)	Run this shard	2026-11-14T02:19:37.1821473Z Synthetic triage storm 8
+shards (browser)	Run this shard	2026-11-14T02:19:37.1821949Z 
+shards (browser)	Run this shard	2026-11-14T02:19:37.1822686Z Triage paymentsCriticalTriggeredNov 14, 2026, 02:19 AM UTC (GMT+0)
+shards (browser)	Run this shard	2026-11-14T02:19:37.1823019Z 
+shards (browser)	Run this shard	2026-11-14T02:19:37.1823151Z Synthetic triage storm 7
+shards (browser)	Run this shard	2026-11-14T02:19:37.1823320Z 
+shards (browser)	Run this shard	2026-11-14T02:19:37.1823876Z Triage paymentsCriticalTriggeredNov 14, 2026, 02:19 AM UTC (GMT+0)
+shards (browser)	Run this shard	2026-11-14T02:19:37.1824393Z 
+shards (browser)	Run this shard	2026-11-14T02:19:37.1824603Z Synthetic triage storm 6
+shards (browser)	Run this shard	2026-11-14T02:19:37.1824876Z 
+shards (browser)	Run this shard	2026-11-14T02:19:37.1825367Z Triage paymentsCriticalTriggeredNov 14, 2026, 02:19 AM UTC (GMT+0)
+shards (browser)	Run this shard	2026-11-14T02:19:37.1825879Z 
+shards (browser)	Run this shard	2026-11-14T02:19:37.1826094Z Synthetic triage storm 5
+shards (browser)	Run this shard	2026-11-14T02:19:37.1826377Z 
+shards (browser)	Run this shard	2026-11-14T02:19:37.1826912Z Triage paymentsCriticalTriggeredNov 14, 2026, 02:19 AM UTC (GMT+0)
+shards (browser)	Run this shard	2026-11-14T02:19:37.1827422Z 
+shards (browser)	Run this shard	2026-11-14T02:19:37.1827636Z Synthetic triage storm 4
+shards (browser)	Run this shard	2026-11-14T02:19:37.1827897Z 
+shards (browser)	Run this shard	2026-11-14T02:19:37.1828351Z Triage paymentsCriticalTriggeredNov 14, 2026, 02:19 AM UTC (GMT+0)
+shards (browser)	Run this shard	2026-11-14T02:19:37.1828839Z 
+shards (browser)	Run this shard	2026-11-14T02:19:37.1829031Z Synthetic triage storm 3
+shards (browser)	Run this shard	2026-11-14T02:19:37.1829318Z 
+shards (browser)	Run this shard	2026-11-14T02:19:37.1829777Z Triage paymentsCriticalTriggeredNov 14, 2026, 02:19 AM UTC (GMT+0)
+shards (browser)	Run this shard	2026-11-14T02:19:37.1830267Z 
+shards (browser)	Run this shard	2026-11-14T02:19:37.1830455Z Synthetic triage storm 2
+shards (browser)	Run this shard	2026-11-14T02:19:37.1830706Z 
+shards (browser)	Run this shard	2026-11-14T02:19:37.1831154Z Triage paymentsCriticalTriggeredNov 14, 2026, 02:19 AM UTC (GMT+0)
+shards (browser)	Run this shard	2026-11-14T02:19:37.1832150Z 
+shards (browser)	Run this shard	2026-11-14T02:19:37.1832351Z Synthetic triage storm 1
+shards (browser)	Run this shard	2026-11-14T02:19:37.1832601Z 
+shards (browser)	Run this shard	2026-11-14T02:19:37.1833045Z Triage paymentsCriticalTriggeredNov 14, 2026, 02:19 AM UTC (GMT+0)
+shards (browser)	Run this shard	2026-11-14T02:19:37.1834039Z 
+shards (browser)	Run this shard	2026-11-14T02:19:37.1834178Z Synthetic triage storm 0
+shards (browser)	Run this shard	2026-11-14T02:19:37.1834329Z 
+shards (browser)	Run this shard	2026-11-14T02:19:37.1834582Z Triage paymentsCriticalTriggeredNov 14, 2026, 02:19 AM UTC (GMT+0)
+shards (browser)	Run this shard	2026-11-14T02:19:37.2457653Z Worker diagnostics (test failure):
+shards (browser)	Run this shard	2026-11-14T02:19:37.2458912Z [stdout] Using secrets defined in ../../../../../tmp/oncall-flow-nXpMS2/local.env
+shards (browser)	Run this shard	2026-11-14T02:19:37.2460366Z [stderr] (node:5128) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (browser)	Run this shard	2026-11-14T02:19:37.2461718Z [stderr] (Use `node --trace-warnings ...` to show where the warning was created)
+shards (browser)	Run this shard	2026-11-14T02:19:37.2462316Z 
+shards (browser)	Run this shard	2026-11-14T02:19:37.2477959Z node:internal/modules/run_main:123
+shards (browser)	Run this shard	2026-11-14T02:19:37.2478526Z     triggerUncaughtException(
+shards (browser)	Run this shard	2026-11-14T02:19:37.2480005Z     ^
+shards (browser)	Run this shard	2026-11-14T02:19:37.2480199Z 
+shards (browser)	Run this shard	2026-11-14T02:19:37.2480488Z locator.waitFor: Timeout 30000ms exceeded.
+shards (browser)	Run this shard	2026-11-14T02:19:37.2480970Z Call log:
+shards (browser)	Run this shard	2026-11-14T02:19:37.2482077Z   - waiting for getByRole('region', { name: 'Incident triage', exact: true }).getByText('Triggered', { exact: true }).first() to be visible
+shards (browser)	Run this shard	2026-11-14T02:19:37.2484254Z     64 × locator resolved to hidden <option value="triggered">Triggered</option>
+shards (browser)	Run this shard	2026-11-14T02:19:37.2484791Z 
+shards (browser)	Run this shard	2026-11-14T02:19:37.2485593Z     at triageFiltersBrowser (/home/runner/work/run-oncall/run-oncall/tests/product-browser-journey.mjs:961:59)
+shards (browser)	Run this shard	2026-11-14T02:19:37.2487189Z     at async productBrowserJourney (/home/runner/work/run-oncall/run-oncall/tests/product-browser-journey.mjs:1692:3)
+shards (browser)	Run this shard	2026-11-14T02:19:37.2488548Z     at async file:///home/runner/work/run-oncall/run-oncall/tests/product-browser.mjs:999:2 {
+shards (browser)	Run this shard	2026-11-14T02:19:37.2489069Z   log: [
+shards (browser)	Run this shard	2026-11-14T02:19:37.2489688Z     "  - waiting for getByRole('region', { name: 'Incident triage', exact: true }).getByText('Triggered', { exact: true }).first() to be visible",
+shards (browser)	Run this shard	2026-11-14T02:19:37.2490625Z     '    64 × locator resolved to hidden <option value="triggered">Triggered</option>'
+shards (browser)	Run this shard	2026-11-14T02:19:37.2491045Z   ],
+shards (browser)	Run this shard	2026-11-14T02:19:37.2491248Z   name: 'TimeoutError'
+shards (browser)	Run this shard	2026-11-14T02:19:37.2491477Z }
+shards (browser)	Run this shard	2026-11-14T02:19:37.2491576Z 
+shards (browser)	Run this shard	2026-11-14T02:19:37.2491667Z Node.js v22.20.0
+shards (browser)	Run this shard	2026-11-14T02:19:37.2861604Z  ELIFECYCLE  Command failed with exit code 1.
+shards (browser)	Run this shard	2026-11-14T02:19:37.3088203Z ##[error]Process completed with exit code 1.

@@ -1,0 +1,23 @@
+{
+  "registrationScope": "scripts/verify-shards.json CI assert-script invocations",
+  "beforeRegistrations": 16,
+  "afterRegistrations": 16,
+  "beforeUniqueScripts": 12,
+  "afterUniqueScripts": 12,
+  "newRegistrations": 0,
+  "contractStatusEdits": 0,
+  "newTests": 0,
+  "note": "Existing source and agent journeys extended. No test-budget.json exists; no cap increase requested. This is the CI script count, not an invented total of every assertion or nested journey.",
+  "rawFilterChoices": {
+    "before": 14,
+    "after": 0
+  },
+  "rawReadinessValues": {
+    "before": 2,
+    "after": 0
+  },
+  "approvalInternalArtifacts": {
+    "before": 4,
+    "after": 0
+  }
+}
