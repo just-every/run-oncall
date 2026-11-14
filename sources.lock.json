@@ -6664,11 +6664,11 @@
       "executable": false
     },
     "tests/oncall-agent-resource-parity.mjs": {
-      "sha256": "68ec310ac69318a1e6c1396ce411a2a080d1e309c6b7f13170c6059031617412",
+      "sha256": "1086a4e9ec1457f36a99f41c70c097efa8f4f6ac9bc254a1d264ada2a9f32beb",
       "executable": false
     },
     "tests/oncall-agent-resources.mjs": {
-      "sha256": "0838fa9bf7e0ae09edd6765b802d59ea4a4db1e201eec766b3dfa92cf9fa6bff",
+      "sha256": "8cf8c9bafd355a973fc0f23f5ea7a72df0dbacbd7d891def04da8d8984a823cb",
       "executable": false
     },
     "tests/oncall-agent-role-replay.mjs": {

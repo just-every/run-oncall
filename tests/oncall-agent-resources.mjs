@@ -52,7 +52,19 @@ export async function resourceJourney() {
     assert.equal(read.content.uri,uri(c.template,c.id));
     if(!c.authority&&!c.template.includes('automation/outbox')) {
      const scopedRead=await completeResource(uri(c.template,c.id),{bearer:f.readKey});
-     assert.deepEqual(scopedRead.value,read.value,'Scoped reader sees the same permitted native record');
+     if(c.template==='oncall://reports/{period}') {
+      const report=read.value;
+      const response=await http('/api/reports/response?'+new URLSearchParams({from:report.cohort.from,to:report.cohort.to,at:report.generatedAt,service:'agent-service',revision:String(report.revision),schedulingRevision:String(report.load.schedulingRevision)}));
+      assert.equal(response.status,200);
+      const permitted=await response.json();
+      assert.equal(permitted.cohort.service,'agent-service');
+      assert.equal(scopedRead.value.cohort.service,null,'A grant-scoped month has no explicit service query filter');
+      // The query-filter envelope differs from a grant scope; every native
+      // record and aggregate still agrees, including scoped coverage and noise.
+      assert.deepEqual(scopedRead.value,{...permitted,cohort:{...permitted.cohort,service:null}},'Scoped report equals the native permitted projection');
+      assert.ok(!scopedRead.value.load.schedules.some(row=>row.service==='agent-foreign-service'));
+      assert.ok(!scopedRead.value.load.services.some(row=>row.service==='agent-foreign-service'));
+     }else assert.deepEqual(scopedRead.value,read.value,'Scoped reader sees the same permitted native record');
     }
     if(c.template==='oncall://alerts/{id}')assert.deepEqual(read.value.events,ownAlert.events);
     if(c.template==='oncall://schedules/{id}')assert.deepEqual(read.value,f.importedSchedule);
