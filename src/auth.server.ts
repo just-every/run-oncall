@@ -122,8 +122,9 @@ export async function authResponse(request: Request, original: Bindings): Promis
   }
   // Only an explicit, successful new sign-in replaces the held workspace
   // cookie. Ordinary requests must still reject rotated/revoked sessions.
-  // Confirmation issues a native cookie on success; failed confirmations do not.
-  if (url.pathname === '/auth/confirm' && request.method === 'POST' && response?.status === 303 && response.headers.has('set-cookie')) {
+  // Email and private owner-link confirmation issue a new native session.
+  // Retire a restore cookie bound to the previous native session on either door.
+  if (['/auth/confirm', '/auth/owner-signin'].includes(url.pathname) && request.method === 'POST' && response?.status === 303 && response.headers.has('set-cookie')) {
    response = clearWorkspaceSession(response, request)
   }
   return brandDocumentResponse(response)

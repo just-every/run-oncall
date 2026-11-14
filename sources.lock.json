@@ -1968,7 +1968,7 @@
       "executable": false
     },
     "src/auth.server.ts": {
-      "sha256": "264609ad026dc9fee1fddd2adb1403761fd552f17ca2245683818fb18c55be6e",
+      "sha256": "0ca4aefdbd27ed282a3da1f478037adf529f830c65f05971c5e680fb882923d2",
       "executable": false
     },
     "src/automation/api.ts": {
@@ -2448,7 +2448,7 @@
       "executable": false
     },
     "src/identity-link.ts": {
-      "sha256": "460a7e4dd3b6e3fb4d80062b89864397d271bea5c2803ccf766154d94627e1ff",
+      "sha256": "d73153e49d1487a8757a6636912973bd832882df6b73a7a72576c0783d873335",
       "executable": false
     },
     "src/identity.ts": {
@@ -2804,7 +2804,7 @@
       "executable": false
     },
     "src/landing/RestoredOwner.tsx": {
-      "sha256": "3cd2dcebf054e757f7a9c09b643e2236ce178cb89dc8c98c3adbfec458045cfe",
+      "sha256": "b8713f99d7f26e3d91667dfaa537e363cce22fb04dbddb6a39f3f8b75d91a990",
       "executable": false
     },
     "src/landing/Section.tsx": {
@@ -6716,7 +6716,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "fbc057f2ac4c90b600640b2ddcf38fd79160b55de2f36a705ca96553635579f5",
+      "sha256": "1d250071a375ae9cbfca40f73c3645ec9f3df7207365a541135c6e79b1538f9a",
       "executable": false
     },
     "tests/triage.mjs": {
