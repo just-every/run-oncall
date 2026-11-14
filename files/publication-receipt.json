@@ -1,0 +1,9 @@
+{
+  "productHead": "ee920fafd3321e45e731e49fdc7427a9d1e4dfec",
+  "evidenceLine": "EVIDENCE repo=just-every/run-oncall ref=refs/heads/evidence/sd-oncall-c-f246 head=b731b8b04d4d50c254e44105e67cf167ed947386",
+  "remoteVerified": true,
+  "productCheckoutUnchanged": true,
+  "ciRun": 43603032653,
+  "ciConclusion": "cancelled",
+  "stage": "First evidence packet remotely verified; final packet adds this receipt and retains that evidence commit as parent."
+}
