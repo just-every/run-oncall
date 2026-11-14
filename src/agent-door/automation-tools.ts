@@ -20,7 +20,7 @@ export function automationTools(env: Bindings): ToolDefinition[] {
     return { current, item, endpoint, bound:!!binding }
   }
   return ['dispatch', 'replay'].map(action => ({
-    name: `oncall.automation.${action}`, title: `${action} a minimal response event`, description: 'Use an existing approved receiver and its frozen minimal event. Authenticated receiver acceptance is distinct from an uncertain network outcome. No paging.', scope: 'automation:write', readOnly: false, classes: ['external'], clauses: ['OC-006', 'OC-053'],
+    name: `oncall.automation.${action}`, title: `${action} a minimal response event`, description: 'Use an existing approved receiver and its frozen minimal event. Authenticated receiver acceptance is distinct from an uncertain network outcome. No paging.', scope: 'automation:write', readOnly: false, classes: ['external'], clauses: action === 'replay' ? ['OC-053'] : ['OC-006', 'OC-053'],
     inputSchema: { type: 'object', properties: { id: { type: 'string', minLength: 1, maxLength: 100 }, revision: { type: 'integer', minimum: 1 } }, required: ['id', 'revision'], additionalProperties: false },
     outputSchema: { type: 'object', properties: { operation: { type: 'object' }, paging: { const: 'OFF' } }, required: ['operation', 'paging'] },
     classify: (args, ctx) => nativeCall(async () => { await access(args, ctx); return [{ class: 'external', facts: { measure: 1, counterparty: 'known' } }] }),

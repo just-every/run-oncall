@@ -14,7 +14,7 @@ export function serviceTools(env: Bindings): ToolDefinition[] {
     return { current, old, etag: await changeHash(JSON.stringify(projected)) }
   }
   return [{
-    name: 'oncall.services.update', title: 'Update a service coordination record', description: 'Edit the existing native service record using its current projected ETag. Links and runbooks are inert; this never pages or executes a runbook.', scope: 'services:write', readOnly: false, classes: ['standard'], clauses: ['OC-003','OC-005','OC-053'], untrusted: true,
+    name: 'oncall.services.update', title: 'Update a service coordination record', description: 'Edit the existing native service record using its current projected ETag. Links and runbooks are inert; this never pages or executes a runbook.', scope: 'services:write', readOnly: false, classes: ['standard'], clauses: ['OC-023','OC-061'], untrusted: true,
     inputSchema: { type: 'object', properties: { id: {type:'string',minLength:1,maxLength:100}, etag:{type:'string',pattern:'^[a-f0-9]{64}$'},name:{type:'string',minLength:1,maxLength:200},environment:{type:'string',minLength:1,maxLength:100},owner:{type:['string','null'],maxLength:100},runbook:{type:'array',items:{type:'string',minLength:1,maxLength:500},maxItems:30},pager:{type:'string',maxLength:2000},dependencies:{type:'array',items:{type:'string'},maxItems:100} },required:['id','etag','name','environment','owner','runbook','pager'],additionalProperties:false },
     outputSchema:{type:'object',properties:{id:{type:'string'},etag:{type:'string'}},required:['id','etag']},revisionType:'string',revision: (args,ctx)=>nativeCall(async()=>(await get(args,ctx)).etag),
     classify:(args,ctx)=>nativeCall(async()=>{await get(args,ctx);return [{class:'standard',facts:{measure:1}}]}),
