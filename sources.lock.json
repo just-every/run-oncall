@@ -732,11 +732,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "d0bfe349201f0ba81970bf48f31ace356ab00622acb58d91f54ae855a04797c6",
+      "sha256": "95379aa0f515b430c7a111dcd6386053058c0d78dd5b156bfaedd6bc92bd9eae",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "491c4326aaa94fe8591f7ef12824cab9f4610eb4e667438414542e1633f5e91a",
+      "sha256": "b6aa5dfd7cf634bc68088065e02bbf51a977d60f664eb712711f2050c717f844",
       "executable": false
     },
     "public/brand/badge-rail-1x.webp": {
@@ -4432,11 +4432,11 @@
       "executable": false
     },
     "src/modules/mail/package.json": {
-      "sha256": "b6e2d1e285c44deffbec6ae94ab67599d8dda0aaa548066c415ec94418ffbd30",
+      "sha256": "887d3c7dbbeba0a38c924a17b396966245140642602d047e309cec29645c089f",
       "executable": false
     },
     "src/modules/mail/pnpm-lock.yaml": {
-      "sha256": "4b8846fd11bb799afabcb07e44e9a3297086144ef18521fcfc458718233941e6",
+      "sha256": "65eea51d3f37f0ee7a4fadbda7c9d6d177fd6bfa1df844aa50a5afacfcf872a5",
       "executable": false
     },
     "src/modules/mail/README.md": {
