@@ -1,0 +1,31 @@
+{
+  "complete": true,
+  "status": "PASS",
+  "new_findings": 0,
+  "pre_existing_findings": 4,
+  "source": {
+    "commit": "0684e81306080c794a65db39cdfab9e7e63ad23f",
+    "tree": "e34b7f3aa7bb133f187ebbf2f44681951749fc2f"
+  },
+  "public_base": {
+    "ref": "https://github.com/just-every/run-oncall.git#main",
+    "commit": "d54fb7958cedddbce40483dd3d557db183842112"
+  },
+  "scanner": {
+    "name": "gitleaks",
+    "version": "8.30.1"
+  },
+  "implementation": {
+    "sha256": "c5f2d788f2f08764cd018e049b507c26f5ac01f651e2e8696398d89a5a886ffb",
+    "python": "3.12.14"
+  },
+  "history_counts": {
+    "commits": 1140,
+    "trees": 1094,
+    "blobs": 6893,
+    "commitMessages": 1140,
+    "tagMessages": 20
+  },
+  "duration_seconds": 182.961132,
+  "notes": "Full report retained; published main is the explicitly fetched public baseline. Working files scanned from a clean detached worktree of the exact candidate."
+}

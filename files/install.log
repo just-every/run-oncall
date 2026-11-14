@@ -1,0 +1,20 @@
+Lockfile is up to date, resolution step is skipped
+Already up to date
+
+   ╭──────────────────────────────────────────╮
+   │                                          │
+   │   Update available! 10.12.4 → 12.18.0.   │
+   │   Changelog: https://pnpm.io/v/12.18.0   │
+   │     To update, run: pnpm add -g pnpm     │
+   │                                          │
+   ╰──────────────────────────────────────────╯
+
+
+Done in 4s using pnpm v10.12.4
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +12
+++++++++++++
+Progress: resolved 12, reused 6, downloaded 6, added 11, done
+
+Done in 5s using pnpm v10.12.4

@@ -1,0 +1,4 @@
+(node:5690) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Owned runtime processes [["5690","5689","node"],["5705","5690","workerd"],["5711","5690","ps"]]
+PASS Emitted Worker homepage, health and sign-in HTTP smoke

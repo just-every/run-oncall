@@ -1,0 +1,48 @@
+{
+  "before_vite": "8.2.2",
+  "after_vite": "8.2.4",
+  "removed_packages": [
+    "vite@8.2.2"
+  ],
+  "added_packages": [
+    "vite@8.2.4"
+  ],
+  "unrelated_version_changes": 0,
+  "before_vulnerable_vite_versions": 1,
+  "after_vulnerable_vite_versions": 0,
+  "advisories_addressed": [
+    "GHSA-r825-w8mm-5pxw",
+    "GHSA-587h-7wmj-h5pm",
+    "GHSA-698v-4r3x-3vcv"
+  ],
+  "dependabot_items": [
+    24,
+    23,
+    22,
+    21,
+    20,
+    19
+  ],
+  "alert_closure_verified": false,
+  "test_registrations_added": 0,
+  "test_registrations_removed": 0,
+  "contract_counts_before_after": {
+    "done": [
+      26,
+      26
+    ],
+    "partial": [
+      41,
+      41
+    ],
+    "missing": [
+      34,
+      34
+    ],
+    "total": [
+      101,
+      101
+    ]
+  },
+  "clause_status_changes": []
+}

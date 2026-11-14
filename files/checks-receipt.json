@@ -1,0 +1,84 @@
+{
+  "tag": "gr-mt-oncall-dep-3",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/gr-mt-oncall-dep-3",
+  "head": "0684e81306080c794a65db39cdfab9e7e63ad23f",
+  "base": "d54fb7958cedddbce40483dd3d557db183842112",
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "checks": [
+    {
+      "command": "pnpm install --lockfile-only; pnpm install --frozen-lockfile",
+      "result": "PASS; Vite is the only changed package version"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "result": "PASS; 67 migrations applied and local owner setup completed; private setup output excluded from packet"
+    },
+    {
+      "command": "cloud_run pnpm run typecheck",
+      "result": "PASS"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "result": "PASS; client and Worker production outputs built"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "result": "PASS; zero errors or warnings; generated documents current"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check",
+      "result": "PASS; source lock regenerated and valid"
+    },
+    {
+      "command": "cloud_run node <packet>/vite-smoke.mjs",
+      "result": "PASS; HTTP client injection, TypeScript transformation and missing-file editor refusal"
+    },
+    {
+      "command": "cloud_run node --input-type=module <automationRuntime HTTP smoke>",
+      "result": "INCOMPLETE; Miniflare bridge stalled before D1 access/requests; stopped only owned Node and workerd PIDs; no product assertion executed"
+    },
+    {
+      "command": "Base publish-check --repo <clean-worktree> --ref HEAD --public-base https://github.com/just-every/run-oncall.git#main --project just-every/run-oncall --repository https://github.com/just-every/run-oncall",
+      "result": "PASS; complete=true, findings=[]; four pre-existing baseline findings retained separately"
+    },
+    {
+      "command": "git log origin/main..HEAD --format=\"%an <%ae>%n%cn <%ce>%n%(trailers:only,unfold)\"",
+      "result": "PASS; all candidate identities are fleet, no trailers"
+    },
+    {
+      "command": "python3 <fleet>/.tools/cloud-push.py origin cloud/gr-mt-oncall-dep-3",
+      "result": "PASS; first attempt; product branch pushed"
+    },
+    {
+      "command": "cloud_run pnpm exec rer check --profile first-party",
+      "result": "PASS; exit 0"
+    },
+    {
+      "command": "cloud_run timeout -k 5 90 env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy node <packet>/worker-smoke.mjs",
+      "result": "PASS; emitted Worker homepage, health and sign-in HTTP responses; Miniflare and owned workerd disposed cleanly"
+    }
+  ],
+  "ci": {
+    "id": 43552637365,
+    "head_sha": "0684e81306080c794a65db39cdfab9e7e63ad23f",
+    "status": "in_progress",
+    "url": "https://github.com/just-every/run-oncall/actions/runs/43552637365",
+    "manual_gh_calls_to_date": 7,
+    "poll_interval_seconds": 600,
+    "ready": false
+  },
+  "product_files": [
+    "package.json",
+    "pnpm-lock.yaml",
+    "sources.lock.json"
+  ],
+  "contract_status_changes": [],
+  "notes": [
+    "The exploratory Vite smoke initially assumed HTTP 400 for a missing editor file; upstream middleware returns HTTP 500 with a missing-file explanation. Corrected the new scratch probe to assert request refusal and that explanation. No product test was modified or weakened.",
+    "No full local suite was run. Branch CI is the full wall. No UI change or browser proof is requested.",
+    "No deployment, PR, release or main push was performed.",
+    "The initial application smoke stall was caused by the cloud proxy environment on the loopback Miniflare bridge; re-running only the local probe without external proxy variables passed. Product source was unchanged."
+  ]
+}
