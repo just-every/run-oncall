@@ -958,12 +958,12 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
  await compare({q:prefix,service:services[1].id,urgency:'low'},storm.slice(30));
  await compare({q:prefix,urgency:'high'},storm.slice(0,20));
  await compare({q:prefix,status:'triggered'},storm.slice(0,10));
- await triage.getByText('Triggered',{exact:true}).first().waitFor();await capture('triggered');
+ await triage.locator('.incident-meta').getByText('Triggered',{exact:true}).first().waitFor();await capture('triggered');
  await compare({q:prefix,status:'declared'},storm.slice(0,10));
  await compare({q:prefix,status:'acknowledged'},[...storm.slice(10,30),...storm.slice(35,45)]);
  await compare({q:prefix,status:'resolved'},storm.slice(45));
  await compare({q:prefix,status:'snoozed'},storm.slice(30,35));
- await triage.getByText('Snoozed',{exact:true}).first().waitFor();await capture('snoozed');
+ await triage.locator('.incident-meta').getByText('Snoozed',{exact:true}).first().waitFor();await capture('snoozed');
  await page.reload();await compare({q:prefix,status:'snoozed'},storm.slice(30,35),{navigate:false});
  await compare({q:prefix,mine:'true'},storm.slice(10,40));
  await compare({q:prefix,mine:'true',service:services[1].id,urgency:'low',status:'snoozed'},storm.slice(30,35));
@@ -1004,9 +1004,9 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
   await bulk.getByRole('button',{name:'Clear selection',exact:true}).click();
  };
  await act(low[0],'acknowledge');await compare(query,[low[1]]);
- await compare({...query,status:'acknowledged'},[low[0]]);await triage.getByText('Acknowledged',{exact:true}).waitFor();await capture('low-acknowledged');
+ await compare({...query,status:'acknowledged'},[low[0]]);await triage.locator('.incident-meta').getByText('Acknowledged',{exact:true}).waitFor();await capture('low-acknowledged');
  await compare(query,[low[1]]);await act(low[1],'resolve');await compare(query,[]);
- await compare({...query,status:'resolved'},[low[1]]);await triage.getByText('Resolved',{exact:true}).waitFor();await capture('low-resolved');
+ await compare({...query,status:'resolved'},[low[1]]);await triage.locator('.incident-meta').getByText('Resolved',{exact:true}).waitFor();await capture('low-resolved');
  const after=(await call('/api/state')).alerts.filter(a=>a.source===source);
  for(const alert of after){const original=low.find(a=>a.id===alert.id);assert.equal(alert.state,'active');assert.equal(alert.urgency,'low');assert.deepEqual(alert.events,original.events);assert.equal(alert.coordination.history.length,1);assert.equal(alert.coordination.history[0].actor,actor.id);assert.ok(Number.isFinite(Date.parse(alert.coordination.history[0].at)));}
  assert.equal(after.find(a=>a.id===low[0].id).coordination.state,'acknowledged');assert.equal(after.find(a=>a.id===low[1].id).coordination.state,'closed');
