@@ -1,0 +1,16 @@
+{
+  "repository": "just-every/run-oncall",
+  "head": "f4654e755dbb7e580c51321a35cfb72f5b5e402c",
+  "calls": 2,
+  "observations": [
+    {
+      "id": 43544330214,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "f4654e755dbb7e580c51321a35cfb72f5b5e402c",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43544330214",
+      "observedAt": "2026-11-14T02:10:29Z"
+    }
+  ],
+  "runId": 43544330214
+}

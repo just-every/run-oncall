@@ -1,0 +1,127 @@
+{
+  "nodeOnPath": false,
+  "exporters": [
+    {
+      "vendor": "opsgenie",
+      "command": "cd ~/Downloads\nrer run --script ./oncall-export.mjs opsgenie",
+      "helpExit": 0,
+      "help": "Usage: rer run --script ./oncall-export.mjs opsgenie|pagerduty\nUses the Oncall installer’s runtime; requires rer and an interactive terminal. Prompts for us/eu region, UTC comparison dates (1–31 days), and a hidden read-only API key.\nGET requests only; no packages or uploads. Collects all accessible records, follows pagination and joins schedule details/overrides.\nSaves PROVIDER-export-DATE-TIME.json in the current folder only after collection, credential removal and the 512 KiB/500-object checks succeed.\nUpload that file under Settings → Move in → Other: from a file → Review. Paging stays OFF.\n",
+      "promptStarted": true,
+      "output": "Oncall opsgenie export: GET requests only. The API key stays in this process.\r\nAccount region (us/eu) [us]: ",
+      "providerRequests": 0,
+      "keyEntered": false
+    },
+    {
+      "vendor": "pagerduty",
+      "command": "cd ~/Downloads\nrer run --script ./oncall-export.mjs pagerduty",
+      "helpExit": 0,
+      "help": "Usage: rer run --script ./oncall-export.mjs opsgenie|pagerduty\nUses the Oncall installer’s runtime; requires rer and an interactive terminal. Prompts for us/eu region, UTC comparison dates (1–31 days), and a hidden read-only API key.\nGET requests only; no packages or uploads. Collects all accessible records, follows pagination and joins schedule details/overrides.\nSaves PROVIDER-export-DATE-TIME.json in the current folder only after collection, credential removal and the 512 KiB/500-object checks succeed.\nUpload that file under Settings → Move in → Other: from a file → Review. Paging stays OFF.\n",
+      "promptStarted": true,
+      "output": "Oncall pagerduty export: GET requests only. The API key stays in this process.\r\nAccount region (us/eu) [us]: ",
+      "providerRequests": 0,
+      "keyEntered": false
+    }
+  ],
+  "compatible": [
+    {
+      "provider": "pagerduty",
+      "sample": ": \"${ONCALL_SOURCE_KEY:?Set ONCALL_SOURCE_KEY privately first}\"\nkey_json=$(printf '%s' \"$ONCALL_SOURCE_KEY\" | od -An -v -tx1 | awk 'BEGIN{printf \"\\\"\"} {for(i=1;i<=NF;i++) printf \"\\\\u00%s\",$i} END{printf \"\\\"\"}')\ncurl --fail-with-body 'http://127.0.0.1:46231/v2/enqueue' \\\n  -H 'Content-Type: application/json' \\\n  --data-binary '{\"event_action\":\"trigger\",\"dedup_key\":\"receiver-check\",\"payload\":{\"summary\":\"Service latency is above normal\",\"source\":\"Oncall receiver check\",\"severity\":\"warning\"},\"routing_key\":'\"$key_json\"'}'",
+      "curlExit": 0,
+      "httpStatus": 202,
+      "body": {
+        "status": "success",
+        "message": "Event processed",
+        "dedup_key": "receiver-check"
+      },
+      "eventOnBoundService": true,
+      "keyEmbedded": false
+    },
+    {
+      "provider": "opsgenie",
+      "sample": ": \"${ONCALL_SOURCE_KEY:?Set ONCALL_SOURCE_KEY privately first}\"\ncurl --fail-with-body 'http://127.0.0.1:46231/v2/alerts' \\\n  -H 'Content-Type: application/json' \\\n  -H \"Authorization: GenieKey $ONCALL_SOURCE_KEY\" \\\n  --data-binary '{\n  \"alias\": \"receiver-check\",\n  \"message\": \"Service latency is above normal\",\n  \"priority\": \"P3\"\n}'",
+      "curlExit": 0,
+      "httpStatus": 202,
+      "body": {
+        "result": "Request will be processed",
+        "requestId": "f9a23bff-0380-4cdd-84b3-8380fab98e5d",
+        "took": 0
+      },
+      "eventOnBoundService": true,
+      "keyEmbedded": false
+    },
+    {
+      "provider": "splunk",
+      "sample": ": \"${ONCALL_SOURCE_KEY:?Set ONCALL_SOURCE_KEY privately first}\"\nkey_path=$(printf '%s' \"$ONCALL_SOURCE_KEY\" | od -An -v -tx1 | awk '{for(i=1;i<=NF;i++) printf \"%%%s\", $i}')\ncurl --fail-with-body 'http://127.0.0.1:46231/integrations/generic/20131114/alert/'\"$key_path\"'/oncall' \\\n  -H 'Content-Type: application/json' \\\n  --data-binary '{\n  \"entity_id\": \"receiver-check\",\n  \"entity_display_name\": \"Service latency is above normal\",\n  \"message_type\": \"WARNING\"\n}'",
+      "curlExit": 0,
+      "httpStatus": 200,
+      "body": {
+        "result": "success",
+        "entity_id": "receiver-check"
+      },
+      "eventOnBoundService": true,
+      "keyEmbedded": false
+    }
+  ],
+  "checkpoint": {
+    "command": "rer run --script scripts/checkpoint.mjs --help",
+    "exit": 0,
+    "output": "Private local paired recovery checkpoint; paging remains OFF.\nUsage: rer run --script scripts/checkpoint.mjs --origin URL --session-file FILE COMMAND\n\n  export NEW_FILE [--version 1|2]   Capture one consistent checkpoint (default v2)\n  restore FILE --replace           Explicitly replace coordination and scheduling\n                                   (v2 also restores reviewed handoffs)\n  --admin-mapping MEMBER_ID        Restore-only; explicit empty-target mapping\n  --help                          No authentication or network\n\nOrigin must be HTTP loopback, without credentials/path/query/fragment. Redirects\nare refused. Session file must be owned, regular, mode 0600, with no hard links.\nIt contains a held oncall_session_PORT cookie/token or the installation's local Base\nsession cookie and optional port-bound dev gate; all are retained after restores.\nNever put credentials in arguments, environment variables or shell history.\nExports use new mode-0600 files; existing files are refused. Restore serializes\naccess to the session file, keeps it unchanged on server refusal, and replaces\nit privately with the successful rotated session. See docs/checkpoints.md for\nrecovery after interrupted transport or local file failure. Server validation,\ncurrent-admin checks, atomic replacement and mapping rules are authoritative.\nNo login, provider, account, delivery or paging action is performed.\n"
+  },
+  "verification": {
+    "command": "rer run --script node_modules/@playwright/test/cli.js install chromium",
+    "exit": 0,
+    "browserInstalled": true
+  },
+  "screens": [
+    {
+      "file": "screens/export-opsgenie-1440.png",
+      "width": 1440,
+      "documentWidth": 1440
+    },
+    {
+      "file": "screens/export-opsgenie-390.png",
+      "width": 390,
+      "documentWidth": 390
+    },
+    {
+      "file": "screens/export-pagerduty-1440.png",
+      "width": 1440,
+      "documentWidth": 1440
+    },
+    {
+      "file": "screens/export-pagerduty-390.png",
+      "width": 390,
+      "documentWidth": 390
+    },
+    {
+      "file": "screens/compatible-pagerduty-1440.png",
+      "width": 1440,
+      "documentWidth": 1440
+    },
+    {
+      "file": "screens/compatible-pagerduty-390.png",
+      "width": 390,
+      "documentWidth": 390
+    },
+    {
+      "file": "screens/compatible-opsgenie-1440.png",
+      "width": 1440,
+      "documentWidth": 1440
+    },
+    {
+      "file": "screens/compatible-opsgenie-390.png",
+      "width": 390,
+      "documentWidth": 390
+    },
+    {
+      "file": "screens/compatible-splunk-1440.png",
+      "width": 1440,
+      "documentWidth": 1440
+    },
+    {
+      "file": "screens/compatible-splunk-390.png",
+      "width": 390,
+      "documentWidth": 390
+    }
+  ]
+}

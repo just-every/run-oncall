@@ -1,0 +1,50 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-runnable-samples-1",
+  "head": "f4654e755dbb7e580c51321a35cfb72f5b5e402c",
+  "base": "8adae6c836f2fabda29e8a091b052450410c8ca5",
+  "push": "successful",
+  "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/main-oncall-runnable-samples-1",
+  "identityCheck": "all origin/main..HEAD commits including side parents; fleet author/committer; no trailers",
+  "localChecks": {
+    "typecheck": "passed",
+    "build": "passed",
+    "events-source": "passed",
+    "move-in-guide": "passed",
+    "recipe-public-door-proof": "passed",
+    "source-lock": "passed",
+    "contract-documents": "passed"
+  },
+  "pr": null,
+  "publicationScan": "fleet Mac at landing; unavailable in this cloud",
+  "productTree": "0eefb8334a5ec94c08d397de7682f95eb33e02c2",
+  "changedFiles": [
+    "MOVE-IN.md",
+    "README.md",
+    "docs/checkpoints.md",
+    "docs/install.md",
+    "docs/move-in.md",
+    "docs/readiness.md",
+    "public/move-in/oncall-export.mjs.txt",
+    "scripts/checkpoint.mjs",
+    "scripts/exporter-cli.mjs",
+    "sources.lock.json",
+    "src/integrations/ProviderRequest.tsx",
+    "src/integrations/SourceTest.tsx",
+    "src/integrations/sender.ts",
+    "src/move-in/ExportHelp.tsx",
+    "src/routing/RoutedSenderSetup.tsx",
+    "tests/product-browser-journey.mjs",
+    "tests/product-browser.mjs"
+  ],
+  "generatedViewsUnchanged": true,
+  "workingTreeClean": true,
+  "browserScreens": {
+    "widths": [
+      1440,
+      390
+    ],
+    "count": 10,
+    "allDocumentWidthsMatchViewport": true
+  }
+}

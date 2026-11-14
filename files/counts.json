@@ -1,0 +1,16 @@
+{
+  "contractBefore": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "contractAfter": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "newTestRegistrations": 0,
+  "existingJourneysExtended": 2,
+  "reproducedFailuresBefore": 2,
+  "reproducedFailuresAfter": 0
+}

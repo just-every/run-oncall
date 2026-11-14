@@ -1,0 +1,18 @@
+{
+  "baselineHead": "8adae6c836f2fabda29e8a091b052450410c8ca5",
+  "exporter": {
+    "command": "cd ~/Downloads\nnode oncall-export.mjs opsgenie",
+    "nodeExit": 127,
+    "nodeError": "/bin/sh: 1: node: not found"
+  },
+  "compatible": {
+    "sample": "POST /v2/enqueue\n{\n  \"content-type\": \"application/json\"\n}\n\n{\n  \"routing_key\": \"YOUR_PRIVATE_KEY\",\n  \"event_action\": \"trigger\",\n  \"dedup_key\": \"receiver-check\",\n  \"payload\": {\n    \"summary\": \"Service latency is above normal\",\n    \"source\": \"Oncall receiver check\",\n    \"severity\": \"warning\"\n  }\n}",
+    "shellExit": 2,
+    "shellError": "/bin/sh: 1: POST: not found\n/bin/sh: 3: content-type:: not found\n/bin/sh: 7: routing_key:: not found\n/bin/sh: 8: event_action:: not found\n/bin/sh: 9: dedup_key:: not found\n/bin/sh: 10: payload:: not found\n/bin/sh: 11: summary:: not found\n/bin/sh: 12: source:: not found\n/bin/sh: 13: severity:: not found\n/bin/sh: 15: Syntax error: \"}\" unexpected"
+  },
+  "installer": {
+    "rer": "0.2.115",
+    "privateNode": "22.20.0",
+    "nodeOnPath": false
+  }
+}
