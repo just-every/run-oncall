@@ -1,0 +1,9 @@
+{
+  "product_branch": "cloud/gr-mt-oncall-dep-3",
+  "product_head": "0684e81306080c794a65db39cdfab9e7e63ad23f",
+  "bundle_path": "<home>/rer-consolidation/work/maint/gr-mt-oncall-dep-3/candidate.bundle",
+  "bundle_sha256": "5d4fd0bd0f6c81ad1729f168a8caf167ffa6a0fc7f84cc87ddc7a68e1a28a983",
+  "bundle_bytes": 22406891,
+  "verified": true,
+  "product_push": "succeeded; cloud branch only"
+}

@@ -58,16 +58,21 @@
     {
       "command": "cloud_run timeout -k 5 90 env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy node <packet>/worker-smoke.mjs",
       "result": "PASS; emitted Worker homepage, health and sign-in HTTP responses; Miniflare and owned workerd disposed cleanly"
+    },
+    {
+      "command": "gh api repos/just-every/run-oncall/actions/runs/43552637365 --jq {status,conclusion,head_sha,html_url}",
+      "result": "PASS; completed/success on exact product SHA 0684e81306080c794a65db39cdfab9e7e63ad23f"
     }
   ],
   "ci": {
-    "id": 43552637365,
+    "conclusion": "success",
     "head_sha": "0684e81306080c794a65db39cdfab9e7e63ad23f",
-    "status": "in_progress",
-    "url": "https://github.com/just-every/run-oncall/actions/runs/43552637365",
-    "manual_gh_calls_to_date": 7,
-    "poll_interval_seconds": 600,
-    "ready": false
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43552637365",
+    "id": 43552637365,
+    "name": "Verify",
+    "status": "completed",
+    "ready": true,
+    "manual_gh_calls": 9
   },
   "product_files": [
     "package.json",
@@ -79,6 +84,7 @@
     "The exploratory Vite smoke initially assumed HTTP 400 for a missing editor file; upstream middleware returns HTTP 500 with a missing-file explanation. Corrected the new scratch probe to assert request refusal and that explanation. No product test was modified or weakened.",
     "No full local suite was run. Branch CI is the full wall. No UI change or browser proof is requested.",
     "No deployment, PR, release or main push was performed.",
-    "The initial application smoke stall was caused by the cloud proxy environment on the loopback Miniflare bridge; re-running only the local probe without external proxy variables passed. Product source was unchanged."
+    "The initial application smoke stall was caused by the cloud proxy environment on the loopback Miniflare bridge; re-running only the local probe without external proxy variables passed. Product source was unchanged.",
+    "The first optional evidence readback had a transient Git ls-remote exit 128. A subsequent exact-ref read and complete fetch/manifest/file-hash verification succeeded. No credential change or product rewrite was needed."
   ]
 }

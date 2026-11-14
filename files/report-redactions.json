@@ -1,7 +1,8 @@
 {
   "redactions": "Only absolute checkout/home prefixes replaced with <checkout>/<home> for public report transport. Original non-secret outputs are retained outside the public packet. Results and all other content preserved.",
   "files": [
-    "typecheck.log",
-    "resolved-vite.json"
+    "bundle-verify.log",
+    "resolved-vite.json",
+    "typecheck.log"
   ]
 }

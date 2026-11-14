@@ -14,6 +14,12 @@ Base's maintained publication scanner was fetched read-only through gh api, with
 
 All candidate author/committer identities were inspected, with no trailers. The guarded product push succeeded on the first attempt. The branch has no skip-CI marker. No main push, deployment, release, PR or landing was performed. A separate evidence ref will carry this packet without changing the product branch.
 
-Contract clause status changes: none. Counts remain 26 DONE, 41 PARTIAL, 34 MISSING (101 total); no clause claims are made. Test registrations added/removed: 0/0. UI and generated acceptance views are unchanged. Default: leave unrelated dependency and product work for their existing lanes. The full branch Verify is pending; no READY claim is made until exact-SHA completion.
+Contract clause status changes: none. Counts remain 26 DONE, 41 PARTIAL, 34 MISSING (101 total); no clause claims are made. Test registrations added/removed: 0/0. UI and generated acceptance views are unchanged. Default: leave unrelated dependency and product work for their existing lanes. The full branch Verify completed successfully on the exact product SHA: run 43552637365, https://github.com/just-every/run-oncall/actions/runs/43552637365. The candidate is READY for the fleet; no landing has been performed.
 
 Public log copies replace absolute checkout/home prefixes with `<checkout>`/`<home>`; report-redactions.json lists affected files. No result or diagnostic was removed. Original non-secret logs are retained locally outside the public packet.
+
+Final CI evidence: `ci-final.json`, `ci-watch-1.json` through `ci-watch-3.json` and `ci-watch.log`. Nine manual GitHub API calls were used, including discovery and exact-SHA status reads. The publication scanner performed its own required repository visibility resolution. No workflow was dispatched or rerun.
+
+The initial evidence packet was fetched back successfully with manifest and all 28 file hashes verified after a transient readback failure; `initial-transfer-receipt.json` records that exact earlier evidence head. The terminal EVIDENCE line names the updated final packet, which includes the successful exact-SHA CI result. A verified product bundle is retained outside the clone; see `product-custody-receipt.json`.
+
+Blockers: none. No contract status changes, new acceptance claims, product test changes or UI changes. Final delivery: guarded cloud product branch plus separate report-only evidence ref; the fleet owns landing.
