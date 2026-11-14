@@ -21,11 +21,11 @@ including the Base session and optional dev gate cookie. Keep them together. The
 file accepts these cookies separated by `; `, without attributes such as Path
 or HttpOnly.
 
-With the real origin and private paths substituted:
+Run from the Oncall checkout with the installer’s `rer` command; it supplies Node, so no global `node` is needed. With the real origin and private paths substituted:
 
 ```sh
-node scripts/checkpoint.mjs --origin http://127.0.0.1:3000 --session-file /private/path/session export /private/path/checkpoint.json
-node scripts/checkpoint.mjs --origin http://127.0.0.1:3000 --session-file /private/path/session restore /private/path/checkpoint.json --replace
+rer run --script scripts/checkpoint.mjs --origin http://127.0.0.1:3000 --session-file /private/path/session export /private/path/checkpoint.json
+rer run --script scripts/checkpoint.mjs --origin http://127.0.0.1:3000 --session-file /private/path/session restore /private/path/checkpoint.json --replace
 ```
 
 Export requires a new destination and writes mode 0600. It reads all datasets

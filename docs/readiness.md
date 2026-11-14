@@ -120,7 +120,7 @@ installation cannot know an erasure fence it has never received; provide the
 later archive as the documented import journal when required.
 
 The separate [private paired checkpoint procedure](https://github.com/just-every/run-oncall/blob/main/docs/checkpoints.md)
-uses `node scripts/checkpoint.mjs --origin http://127.0.0.1:3000 --session-file SESSION_FILE export CHECKPOINT_FILE`
+uses `rer run --script scripts/checkpoint.mjs --origin http://127.0.0.1:3000 --session-file SESSION_FILE export CHECKPOINT_FILE`
 and the corresponding `restore CHECKPOINT_FILE --replace`. Its
 current-administrator session file must be private, mode 0600. Replacement is
 explicit and destructive. Follow that procedure's validation, rotated-cookie
