@@ -152,7 +152,6 @@
         "external"
       ],
       "clauses": [
-        "OC-006",
         "OC-053"
       ]
     },
@@ -176,7 +175,6 @@
         "access"
       ],
       "clauses": [
-        "OC-041",
         "OC-053"
       ],
       "widens": false,
@@ -221,7 +219,6 @@
         "access"
       ],
       "clauses": [
-        "OC-041",
         "OC-053"
       ],
       "widens": false,
@@ -289,7 +286,8 @@
       ],
       "clauses": [
         "OC-004",
-        "OC-005"
+        "OC-050",
+        "OC-056"
       ]
     },
     {
@@ -339,7 +337,8 @@
         "sensitive"
       ],
       "clauses": [
-        "OC-004"
+        "OC-004",
+        "OC-056"
       ]
     },
     {
@@ -353,7 +352,9 @@
       ],
       "clauses": [
         "OC-004",
-        "OC-053"
+        "OC-027",
+        "OC-050",
+        "OC-058"
       ]
     },
     {
@@ -391,10 +392,7 @@
         "live"
       ],
       "clauses": [
-        "OC-040",
-        "OC-041",
-        "OC-052",
-        "SURFACE-004"
+        "OC-040"
       ],
       "sponsorEscalation": false
     },
@@ -432,11 +430,9 @@
         "sensitive"
       ],
       "clauses": [
-        "OC-003",
-        "OC-011",
-        "OC-012",
         "OC-014",
-        "OC-024"
+        "OC-020",
+        "OC-076"
       ]
     },
     {
@@ -524,11 +520,9 @@
         "live"
       ],
       "clauses": [
-        "OC-003",
         "OC-011",
-        "OC-012",
         "OC-024",
-        "OC-053"
+        "OC-077"
       ]
     },
     {
@@ -575,9 +569,8 @@
         "standard"
       ],
       "clauses": [
-        "OC-003",
-        "OC-005",
-        "OC-053"
+        "OC-023",
+        "OC-061"
       ]
     },
     {

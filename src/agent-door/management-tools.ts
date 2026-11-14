@@ -128,7 +128,7 @@ function revokeTool(env: Bindings, kind: 'client' | 'endpoint'): ToolDefinition 
   return defineTool({
     name: `oncall.${plural}.update`, title: `Revoke an API ${kind}`,
     description: `Revoke an existing native ${kind} and delete its local credential in the same transaction. This only narrows authority. Creating, rotating or revealing secrets remains on person-only native screens. Revocation cannot recall bytes already sent.`,
-    scope: `${plural}:write`, readOnly: false, classes: ['access'], clauses: ['OC-041', 'OC-053'], untrusted: true,
+    scope: `${plural}:write`, readOnly: false, classes: ['access'], clauses: ['OC-053'], untrusted: true,
     widens: false, narrowing: { effect: 'revoke', target: 'id' },
     inputSchema: { type: 'object', additionalProperties: false, properties: { id: string() }, required: ['id'] }, outputSchema: revokedOutput,
     classify: (args, ctx) => nativeCall(async () => { await current(args, ctx); return [{ class: 'access', facts: { measure: 1, direction: 'narrows' } }] }),
@@ -178,7 +178,7 @@ function privacyTool(env: Bindings): ToolDefinition {
   return defineTool({
     name: 'oncall.privacy.erase', title: 'Erase a native subject',
     description: 'Irreversibly erase a native subject and its owned local and imported custody with the native transaction and counts receipt. Requires the exact confirmation “erase <id>” and current workspaceRevision; member erasure also requires explicit retained importedPeople selection and identitiesReviewed. The confirmation is an agent request, never a human approval. Own-sponsor erasure, owner-identity erasure and sending or uncertain delivery remain refused. External or standby deletion is not claimed. There is no Undo.',
-    scope: 'privacy:write', readOnly: false, classes: ['destructive', 'access', 'security', 'live'], clauses: ['OC-040', 'OC-041', 'OC-052', 'SURFACE-004'], untrusted: true,
+    scope: 'privacy:write', readOnly: false, classes: ['destructive', 'access', 'security', 'live'], clauses: ['OC-040'], untrusted: true,
     inputSchema: { type: 'object', additionalProperties: false, properties: { kind: { enum: erasureKinds }, id: string(), workspaceRevision: revision, confirmation: string(110), identitiesReviewed: { type: 'boolean' }, importedPeople: { type: 'array', items: string(254), maxItems: 1000, uniqueItems: true } }, required: ['kind', 'id', 'workspaceRevision', 'confirmation'] },
     outputSchema: erasureOutput,
     classify: (args, ctx, completed) => nativeCall(async () => {
