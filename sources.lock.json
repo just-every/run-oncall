@@ -200,7 +200,7 @@
       "executable": false
     },
     "docs/changes.md": {
-      "sha256": "425179cda763884d4555570b083b5f7774b6de805b6a0e9a3d971bc5e79a6b61",
+      "sha256": "b7c2d79ed1ed7b6b12f26606740700f479de0bd0a7933fbbae112c547741f2b3",
       "executable": false
     },
     "docs/checkpoints.md": {
@@ -212,7 +212,7 @@
       "executable": false
     },
     "docs/compatible-intake.md": {
-      "sha256": "ef6e5332ee5e53ba0423f029fe4c25a7a3c9c79403c613057c9d0953f63662c0",
+      "sha256": "4ea28d24b40e4a27615732bb7de74db0ed1c938e158ec729bbfdc13f810abda1",
       "executable": false
     },
     "docs/contract/acceptance-before-cleanup.md": {
@@ -252,7 +252,7 @@
       "executable": false
     },
     "docs/incidents.md": {
-      "sha256": "597851b7107c1e59d861baa2fb2e03b6fc1d8f6283db6c83e2a1ed4d673166af",
+      "sha256": "1d8adafa63860e8925930d4a31702aa2e534f265b96183af1eca4adb30748f79",
       "executable": false
     },
     "docs/install.md": {
@@ -264,7 +264,7 @@
       "executable": false
     },
     "docs/monitoring-providers.md": {
-      "sha256": "eca68508cbb29f7cba2370fc9b72b18e529dcd800ecd8879733bdbf94c05d232",
+      "sha256": "90f64fb85d5c859c3fa611ec46b5afbff3d2f91cb362b729f2fcaaba80d4231b",
       "executable": false
     },
     "docs/move-in.md": {
@@ -272,7 +272,7 @@
       "executable": false
     },
     "docs/overview.md": {
-      "sha256": "e924bc62eb0da27be57e0cb9b7bb1bf05952318dba9b554e89461178db372b0d",
+      "sha256": "63965ef185c7253089d794c869303ae224d41e281223c6d772a83a04f97a3570",
       "executable": false
     },
     "docs/readiness.md": {
@@ -292,7 +292,7 @@
       "executable": false
     },
     "docs/schedules.md": {
-      "sha256": "493d6a4a58665063edace498ebcbe6540687999aee4b7db5e3a7421747462a6a",
+      "sha256": "f80a24d60c93e2ce2ab362f6e9975c317919367497637fdd81ea742ce5b5bafc",
       "executable": false
     },
     "docs/site.json": {
@@ -5644,7 +5644,7 @@
       "executable": false
     },
     "src/on-call/read.ts": {
-      "sha256": "48eeffb2e84b8708892746a641c936ec3a53c949581a57611c81f7d04a55fa26",
+      "sha256": "dffc1802b2deeba42ecb6e9e0f8aa8b3333649961f52e3ef8c76bd59423fe363",
       "executable": false
     },
     "src/on-call/rota-steps/draft.ts": {
@@ -6688,7 +6688,7 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "4892c9571af4bc1922802ec5cb094d4098a2370b5abf3d20a1d1e66e287f0600",
+      "sha256": "66e4dd10f860ed284b0c85339b6abd5150d2c6ed45fdda8e5650462bfbe0318d",
       "executable": false
     },
     "tests/product-browser.mjs": {

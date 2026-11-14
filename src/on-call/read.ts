@@ -31,7 +31,7 @@ export function onCall(workspace: State, archive: Pick<PagingArchive, 'schedules
     const next = nextAt === null ? null : coverage(schedule, workspace.members, nextAt);
     const from = at - DAY, to = at + 7 * DAY, weekEnd = at + 6 * DAY;
     const values = preview(schedule, workspace.members, from, to);
-    const week: OnCallBand[] = [], gaps: OnCallRota['gaps'] = [];
+    const week: OnCallBand[] = [];
     for (const role of roles) for (let index = 0; index < values.length; index++) {
       const value = values[index], end = Math.min(to, values[index + 1]?.at ?? to);
       if (value.at < weekEnd) {
@@ -40,13 +40,8 @@ export function onCall(workspace: State, archive: Pick<PagingArchive, 'schedules
         if (previous?.role === role && previous.member?.id === band.member?.id && previous.to === band.from) previous.to = band.to;
         else week.push(band);
       }
-      if (!value[role] && end > at) {
-        const gap = {role, from: new Date(Math.max(at, value.at)).toISOString(), to: new Date(end).toISOString()};
-        const previous = gaps.at(-1);
-        if (previous?.role === role && previous.to === gap.from) previous.to = gap.to;
-        else gaps.push(gap);
-      }
     }
+    const gaps = week.filter(band => !band.member).map(({role, from, to}) => ({role, from, to}));
     const anchor = schedule.primary.anchorLocal;
     return [{id: schedule.id, name: schedule.name, service: {id: service.id, name: service.name}, zone: schedule.timezone,
       rhythm: {every: schedule.primary.periodDays, weekday: new Intl.DateTimeFormat('en-GB', {weekday: 'long', timeZone: 'UTC'}).format(new Date(anchor + 'Z')), time: anchor.slice(11, 16)},

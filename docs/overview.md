@@ -6,7 +6,7 @@ Oncall is 100% free and open source under the MIT license. You run it yourself, 
 
 ## What it keeps
 
-- **Schedules.** A primary and a backup rotation for each service, in the schedule's own time zone, with hand-overs at a set local time. Swaps cover a few hours without touching the rotation. See [Schedules and hand-overs](schedules.md).
+- **On call.** A primary and a backup rotation for each service, in the schedule's own time zone, with hand-overs at a set local time. Swaps cover a few hours without touching the rotation. See [Schedules and hand-overs](schedules.md).
 - **Now and next.** For each role, who is on call now, who takes over next and when. Your shifts can go into your own calendar through a private feed.
 - **Incidents.** Declare one, follow its runbook, add timeline notes, move it from declared to resolved, and give every follow-up an owner and a due date. See [Incidents and alerts](incidents.md).
 - **Alerts and events.** Signals from your monitoring stay separate from incidents, so a noisy alert never declares an incident on its own.

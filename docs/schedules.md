@@ -2,26 +2,18 @@
 
 A schedule says who is on call for one service, in two rotations: **primary** and **backup**. Oncall shows who is on now and when the next hand-over happens, in the schedule's own time zone.
 
-Open **Schedules** in the app. An admin creates and edits schedules; everyone else can read them.
+Open **On call** in the app. Workspace administrators and the service's team managers can create and edit rotas. Other permitted team members can read coverage; an active responder can manage their own PTO on their team's rota.
 
 ## Set the rotation
 
-Press **New schedule** and fill in:
+Choose **New rota** and follow the four steps:
 
-- **Schedule ID** and **Schedule name**: the ID is permanent, the name is what people read.
-- **Service**: the service this rota covers. Add the service first under **Services** if it is not there yet.
-- **Timezone (IANA)**: a named zone such as `Europe/London` or `America/New_York`, so hand-overs follow the local clock.
-- **Valid from (UTC)** and, if the schedule ends, **Valid until (UTC, optional)**.
+1. **Service and name**: enter the **Rota name** and select the **Service** if there is more than one. Add a missing service under **Settings → Services** first. Oncall assigns the permanent rota ID.
+2. **Who is on, in order**: select the primary people and use **Add person**, the up/down arrows or **Remove person** to arrange them. Backup follows the next primary person by default. Open **Different backup order** to choose it separately with **Add backup person**. Add a second person for backup cover when there is only one primary.
+3. **Hand-over**: choose **Time zone**, **Starts**, **Every**, **On** and **At**. A named IANA zone such as `Europe/London` keeps hand-overs on that local clock through daylight-saving changes. **Starts** and **At** set the first hand-over and the rota's start in that zone. **Every → Number of days** accepts 1–366 calendar days.
+4. **Check**: review the people, rhythm and coverage preview. Set **Ends (optional)** if the rota should finish; the date ends coverage at the hand-over time in the rota's zone. On a phone, expand **Preview coverage** to inspect the spans. Choose **Create rota** to save.
 
-Validity bounds take ISO 8601 UTC timestamps, such as `2026-10-15T07:00:00.000Z`. Override and coverage-preview date/time controls also use UTC, regardless of your device timezone; seconds and milliseconds are preserved.
-
-Then set each rotation:
-
-1. **Rotation anchor (local)**: the local date and time of the first hand-over, for example Monday 09:00. Enter the date and time on a clock in the schedule’s named zone. Hand-overs follow that zone through daylight-saving changes.
-2. **Interval (calendar days)**: how long each turn lasts, from 1 to 366 days. Seven days means a weekly rota.
-3. **Responders (in order)**: add people with **Add primary responder** or **Add backup responder** and put them in order with the arrows.
-
-Press **Save schedule** to create a schedule. For an existing schedule, the same button opens **Review schedule changes** using the **Preview from/to (UTC)** range. Review each previous and proposed holder, the rule that wins, every new gap and every previously uncovered interval that becomes covered. Clock transitions in the old and proposed named zones show their UTC instants and offsets. Check **I reviewed these assignments and gaps**, then press **Apply reviewed change**.
+For an existing rota, open it from **On call** and choose **Edit rota**. Make your changes through the same steps, then choose **Review change**. **Review schedule changes** shows each previous and proposed holder, the winning rule, every new gap and previously uncovered interval that becomes covered. Clock transitions in the old and proposed named zones show their UTC instants and offsets. Check **I reviewed these assignments and gaps**, then choose **Apply reviewed change**.
 
 Confirmation binds the complete proposal and evaluated range to the schedule revision and current membership snapshot. If a schedule or workspace changes, review again; an old confirmation cannot overwrite it. The preview covers at most 366 elapsed days, and states its range explicitly. It does not claim coverage outside that range. The unchanged ordinary override API remains an explicit administrator operation. No timer or delivery is created.
 
@@ -31,7 +23,7 @@ A rotation with no responders is shown as a gap in coverage, never filled in sil
 
 Hand-overs happen at the same local time on the clock, not after a fixed number of hours. A daily 09:00 hand-over in London stays at 09:00 when the clocks go back, so that one turn is 25 hours long.
 
-Twice a year a local time either repeats or does not exist. For the repeated hour, **Repeated time handling** chooses the **Earlier occurrence**, the **Later occurrence**, or **Reject**. A hand-over at a time that does not exist, or that you chose to reject, leaves the turns on either side visibly uncovered instead of guessing.
+Twice a year a local time either repeats or does not exist. For the repeated hour, the Check step’s **Repeated hand-over hour** chooses **Earlier**, **Later**, or **Leave a gap**. A hand-over at a time that does not exist, or that you chose to reject, leaves the turns on either side visibly uncovered instead of guessing.
 
 ## Coverage review limits
 
@@ -51,28 +43,28 @@ Layers, company dates and PTO live in the existing schedule document and travel 
 
 ## Swaps and cover
 
-To cover a few hours or days without touching the rotation, use **UTC override intervals** and press **Add interval**. Choose the role (primary or backup), the person, and the start and end in UTC. The start is included and the end is not, so one cover can end exactly when the next begins. Two covers for the same role cannot overlap. Choosing **Explicit coverage gap** as the responder leaves that time deliberately empty.
+To cover a few hours or days without changing the rotation, open **On call → your rota → Cover a shift**. Choose **Who**, **Role**, **From** and **To**, then **Review change**. These date/time inputs use the rota's named timezone printed at the top of the dialog; they are converted to UTC for storage. For an `Australia/Brisbane` rota, enter `2026-11-14 11:00` through `18:00` for `2026-11-14T01:00:00Z` through `08:00:00Z`, even if your device uses another zone. Read the displayed zone rather than assuming UTC or the device's zone. Keep the interval inside the rota's validity. Review the assignments and gaps, check **I reviewed these assignments and gaps**, then **Apply reviewed change**. The start is included and the end is not, so one cover can end exactly when the next begins. Two covers for the same role cannot overlap. Choosing **Nobody on call** for **Who** leaves that time deliberately empty.
 
-In **Shift coordination**, a current holder can request one named substitute for a future UTC interval of up to 31 days. Only the substitute accepts or declines. An administrator must approve first by default; **Settings → Swap approval** can select substitute acceptance without a second administrator decision. Acceptance checks the latest schedule, creates one override and refuses a new gap or overlap, including a change to the other role. Of competing accepts, one succeeds. The requester can cancel. Undecided requests show as **overdue** after their start and never resolve themselves.
+On the rota page, a current holder chooses **Request a swap**, selects **Shift to swap** when more than one is available, chooses a **Substitute** and presses **Request**. The selected future shift is shown in the rota’s zone and is limited to 31 days. Only the substitute accepts or declines. An administrator must approve first by default; the rota’s **Reminders and swaps → Swap approval** can select substitute acceptance without a second administrator decision. Acceptance checks the latest schedule, creates one override and refuses a new gap or overlap, including a change to the other role. Of competing accepts, one succeeds. The requester can cancel. Undecided requests show as **overdue** after their start and never resolve themselves.
 
-Schedule and override changes retain one **recorded obligation** for each affected configured responder and service owner. Without a verified channel it says **not deliverable**. Nothing is sent. **Settings → Reminder lead minutes / Reminder channel** saves your personal preference and shows a due time labelled **not sent (no timer)**. Team-manager rules and native mobile actions remain unbuilt.
+Schedule and override changes retain one **recorded obligation** for each affected configured responder and service owner. Without a verified channel it says **not deliverable**. Nothing is sent. The rota’s **Reminders and swaps → Reminder lead minutes / Reminder channel** saves your personal preference and shows a due time labelled **not sent (no timer)**. Team-manager rules and native mobile actions remain unbuilt.
 
 ## Who is on now and next
 
-**On call now and next** shows, for primary and backup, who is on now, who is next and the exact time of the next hand-over. **Preview coverage** shows every resolved window between two times you choose, with an explanation for each gap. Neither starts a timer or sends anything.
+**On call** shows **Now**, **Next hand-over** and **Gaps this week** beside the **This week** timeline. The gap list and timeline cover the same seven elapsed days, from one day before the observation time to six days after it, including earlier uncovered hours. Open a rota for its **Now**, **Next** and **Shifts** view. The editor’s **Preview coverage** shows the resolved windows and gaps for its displayed range. Neither starts a timer or sends anything.
 
 If both roles land on the same person at once, primary stays and backup shows as unavailable.
 
 ## Your calendar
 
-**Open private ICS feed (next 7 days)** downloads the next week of shifts, primary and backup separately, with the same hand-over times as the app. The download uses your own sign-in.
+On the rota page, **Calendar feed → Open private ICS feed** downloads the next week of shifts, primary and backup separately, with the same hand-over times as the app. The download uses your own sign-in.
 
-For a recurring feed, use **Shift coordination → Settings → Create calendar subscription**. Choose the selected schedule, its service, or only your own shifts. Copy the private URL when it appears: it is shown once and can be dismissed. Anyone holding it can read that scope's next 31 days of schedule windows, so keep it private. The feed omits responder contacts, alert content and credentials. Only the token hash is stored; the URL cannot be recovered later.
+For a recurring feed, use the rota’s **Calendar feed → Calendar scope → Create link**. Choose the selected schedule, its service, or only your own shifts. Copy the private URL when it appears: it is shown once and can be dismissed. Anyone holding it can read that scope's next 31 days of schedule windows, so keep it private. The feed omits responder contacts, alert content and credentials. Only the token hash is stored; the URL cannot be recovered later.
 
 You or a workspace administrator can revoke a subscription. The next read is refused immediately, while shift assignments and historical decisions stay unchanged. Up to 20 subscription records are retained per member, including revoked records. Restored subscription records are inactive and their hashes are cleared; create a new subscription when capacity permits. Google Calendar/Outlook viewing is still pending dated owner-role evidence; no real-provider viewing claim is made.
 
 ## Escalation policy as data
 
-**Escalation policy as data** stores how long to wait for the primary before the backup, as a record your team can read. Oncall never pages from it: see [What Oncall does not do](limits.md).
+On the rota page, expand **Paging is off**. **Escalation policy as data** stores how long to wait for the primary before the backup, as a record your team can read. Oncall never pages from it: see [What Oncall does not do](limits.md).
 
 Machine API schedule publication and explicit import adoption record the same schedule-change obligations atomically. The machine client remains the recorded creator and permanent audit actor; adoption records the current administrator. Neither path sends a notice.

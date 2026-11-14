@@ -571,11 +571,26 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  const anchor=new Date(now-86400000).toISOString().slice(0,10)+'T12:00';
  // OC-020 / OC-011: both rota rows are visible together; a four-step weekly create agrees with its zero-write preview.
  const fixtures=[];
- for(const index of [0,1])fixtures.push(await api('/api/paging/schedules',{id:'rota-'+crypto.randomUUID().replaceAll('-','').slice(0,8),name:['Primary service rota','Secondary service rota'][index],service:state.services[index%state.services.length].id,revision:0,timezone:'UTC',validFrom:new Date(now-2*86400000).toISOString(),validUntil:null,primary:{anchorLocal:anchor,periodDays:7,members:[session.member.id,second.id],ambiguity:'earlier'},backup:{anchorLocal:anchor,periodDays:7,members:[second.id,session.member.id],ambiguity:'earlier'},overrides:[{id:'synthetic-oncall-7302',role:'primary',start:new Date(now+2*86400000).toISOString(),end:new Date(now+2.5*86400000).toISOString(),member:relief.id}]}));
+ for(const index of [0,1])fixtures.push(await api('/api/paging/schedules',{id:'rota-'+crypto.randomUUID().replaceAll('-','').slice(0,8),name:['Primary service rota','Secondary service rota'][index],service:state.services[index%state.services.length].id,revision:0,timezone:'UTC',validFrom:new Date(now-(index===0?3*3600000:2*86400000)).toISOString(),validUntil:new Date(now+(index===0?5.5:6.5)*86400000).toISOString(),primary:{anchorLocal:anchor,periodDays:7,members:[session.member.id,second.id],ambiguity:'earlier'},backup:{anchorLocal:anchor,periodDays:7,members:[second.id,session.member.id],ambiguity:'earlier'},overrides:[{id:'synthetic-oncall-7302',role:'primary',start:new Date(now+2*86400000).toISOString(),end:new Date(now+2.5*86400000).toISOString(),member:relief.id}]}));
  await rotaTimelineScreens(page,width,fixtures[0].id,relief.name);
  await page.goto(origin+'/on-call');
  const onCall=await api('/api/on-call');
  for(const fixture of fixtures){const row=page.locator('[data-rota="'+fixture.id+'"]');await row.waitFor();const coverage=onCall.rotas.find(rota=>rota.id===fixture.id);assert.ok((await row.innerText()).includes(coverage.now.primary.name));assert.ok((await row.innerText()).includes(coverage.next.primary.name));assert.ok((await row.innerText()).includes(coverage.now.backup.name));}
+ if(width===1440){
+  const iso=at=>new Date(at).toISOString(),from=now-86400000,to=now+6*86400000;
+  const expected=['primary','backup'].flatMap(role=>[
+   {role,from:iso(from),to:fixtures[0].validFrom},
+   {role,from:fixtures[0].validUntil,to:iso(to)},
+  ]);
+  const first=onCall.rotas.find(rota=>rota.id===fixtures[0].id),second=onCall.rotas.find(rota=>rota.id===fixtures[1].id);
+  assert.deepEqual(first.gaps,expected,'the week summary retains earlier uncovered hours and clips later gaps to the displayed end');
+  assert.deepEqual(second.gaps,[],'a gap after the displayed week is excluded from its summary');
+  for(const rota of [first,second]){
+   assert.deepEqual(rota.gaps,rota.week.filter(band=>!band.member).map(({role,from,to})=>({role,from,to})),'summary and timeline describe the same coverage gaps');
+   const endpoints=await page.locator('[data-rota="'+rota.id+'"] .oc-rota-gaps time').evaluateAll(times=>times.map(time=>time.dateTime));
+   assert.deepEqual(endpoints,rota.gaps.flatMap(gap=>[gap.from,gap.to]),'the overview renders every gap with its exact displayed-week endpoints');
+  }
+ }
  const auditBefore=await api('/api/audit/export'),previewBefore=await api('/api/paging/state'),workspaceBefore=await api('/api/state'),previews=[];
  const observe=async response=>{if(new URL(response.url()).pathname!=='/api/paging/preview'||response.request().method()!=='POST')return;const input=response.request().postDataJSON();if(input?.schedule&&response.ok())previews.push({input,windows:await response.json()});};
  page.on('response',observe);
