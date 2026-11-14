@@ -5,6 +5,7 @@ import {readFile,access} from 'node:fs/promises';
 import {lexer} from 'marked';
 import {agentRuntime,agentEffectSnapshot,pauseMatrix,policyAdoption,consentRevocationMatrix} from './agent-door-runtime.mjs';
 import {resourceJourney} from './oncall-agent-resources.mjs';
+import {resourceParity} from './oncall-agent-resource-parity.mjs';
 import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
 import {manualPageClassification,deadlineClassification} from './oncall-agent-live.mjs';
 import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
@@ -567,6 +568,7 @@ async function staleCoordinationRevision(runtime){
  assert.equal((await adopt()).status,200);
 }
 await resourceJourney();
+await resourceParity();
 await (await import('./oncall-agent-alerts.mjs')).alertReads();
 await (await import('./oncall-agent-analytics.mjs')).analyticsReads();
 await (await import('./oncall-agent-triage.mjs')).triageReads();

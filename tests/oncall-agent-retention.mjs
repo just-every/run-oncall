@@ -89,6 +89,13 @@ export async function agedReplayRetention(){
        assert.equal(action.done,false);assert.equal(action.evidence,'');
        changed.actions=result.actions;
        assert.equal(entry.kind,'action');assert.ok(entry.text.includes(action.title));assert.ok(entry.text.includes(action.due));
+      }else if(args.change==='transition'){
+       assert.equal(args.state,'mitigating');assert.equal(prior.state,'acknowledged');
+       assert.equal(prior.recovery,'');assert.deepEqual(prior.alerts,[]);assert.deepEqual(prior.actions,[]);
+       changed.state='mitigating';
+       assert.equal(entry.kind,'transition');
+       assert.deepEqual(entry.lifecycle,{from:'acknowledged',to:'mitigating'});
+       assert.equal(entry.text,'acknowledged → mitigating: '+args.summary);
       }else if(args.change==='reassign'){
        assert.equal(prior.assignee,owner.id);assert.equal(result.assignee,responder.id);
        changed.assignee=responder.id;
@@ -170,6 +177,14 @@ export async function agedReplayRetention(){
     await complete('oncall.incidents.update',{change:'assign-role',role,incident:target.id,revision:target.revision,member:responder.id,
      reason:'Synthetic retained '+role+' reason',idempotency_key:randomUUID()},'assign-role '+role);
    }
+   let mitigation=await ordinary('mitigation');
+   mitigation=await command({type:'transition',incident:mitigation.id,revision:mitigation.revision,state:'acknowledged',summary:'Synthetic initial human acknowledgment'});
+   for(const [role,member] of [['scribe',responder.id],['communications',owner.id]])
+    mitigation=await command({type:'assign-role',incident:mitigation.id,revision:mitigation.revision,role,member,reason:'Synthetic retained companion responsibility'});
+   await complete('oncall.incidents.update',{change:'transition',state:'mitigating',incident:mitigation.id,revision:mitigation.revision,
+    summary:'Synthetic retained evidence-free mitigation',idempotency_key:randomUUID()},'transition mitigating');
+   // The focused transition journey covers immediate replay and response loss;
+   // this helper ages the same real call alongside the existing nine cases.
    const originalPolicy=await envelope(),effects=await snapshot(),ids=new Set(prepared.map(item=>item.first.body.id));
    for(const elapsed of [day,day+1000]){
     await runtime.time(started+elapsed);

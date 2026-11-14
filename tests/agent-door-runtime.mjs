@@ -72,6 +72,20 @@ export async function agentRuntime({clock}={}){
   async function http(path,input,method=input===undefined?'GET':'POST'){
    return request(runtime.origin+path,{method,redirect:'manual',headers:{Origin:runtime.origin,Cookie:cookie,'Content-Type':'application/json'},...(input===undefined?{}:{body:JSON.stringify(input)})});
   }
+  async function memberSession(name,role){
+   const password=randomBytes(32).toString('hex');
+   const created=await http('/api/members',{name,role,password});
+   assert.equal(created.status,201);
+   const member=await created.json();
+   const login=await request(runtime.origin+'/api/login',{method:'POST',headers:{Origin:runtime.origin,'Content-Type':'application/json'},body:JSON.stringify({name,password})});
+   assert.equal(login.status,200);
+   const memberCookie=login.headers.getSetCookie().map(value=>value.split(';',1)[0]).join('; ');
+   assert.ok(memberCookie&&memberCookie!==cookie);await login.body?.cancel();
+   const memberHttp=(path,input)=>request(runtime.origin+path,{method:input===undefined?'GET':'POST',redirect:'manual',headers:{Origin:runtime.origin,Cookie:memberCookie,'Content-Type':'application/json'},...(input===undefined?{}:{body:JSON.stringify(input)})});
+   const workspace=await memberHttp('/api/workspace');assert.equal(workspace.status,200);
+   assert.deepEqual((await workspace.json()).member,member,'The native session belongs to the actual active sponsor');
+   return {member,cookie:memberCookie,http:memberHttp};
+  }
   async function agentHttp(path,input,{withOwnerCookie=false}={}){
    const token=await accessToken(context,{act:{sub:context.agentId,name:'Responder assistant',specialist:'oncall-responder'}});
    return request(runtime.origin+path,{method:'POST',redirect:'manual',headers:{Origin:runtime.origin,Authorization:'Bearer '+token,'Content-Type':'application/json',...(withOwnerCookie?{Cookie:cookie}:{})},body:JSON.stringify(input)});
@@ -102,19 +116,19 @@ export async function agentRuntime({clock}={}){
    const {url,init}=await mcpRequest(method,params,overrides,bearer,transport),response=await request(url,init);
    const body=await response.json();return {status:response.status,headers:response.headers,body,message:body,result:body.result,decision:body.result?._meta?.['com.runeditrun/decision']??body.error?.data?._meta?.['com.runeditrun/decision']};
   }
-  async function completeResource(uri,{bearer,overrides={}}={}){
+  async function completeResource(uri,{bearer,overrides={},personHttp=http}={}){
    const initial=await mcp('resources/read',{uri},overrides,bearer);
    let answer=initial;
    if(initial.body.error?.data?.code==='approval_required'){
     assert.equal(initial.result,undefined,'Held resource content remains withheld');
     const handle=initial.body.error.data.approval;
-    const view=await http('/agents/api/approvals/'+handle.id);
+    const view=await personHttp('/agents/api/approvals/'+handle.id);
     assert.equal(view.status,200);
     const {approval}=await view.json();
     assert.equal(approval.decision_id,initial.decision.id);
     assert.equal(approval.revision,context.revision);
     assert.match(approval.summary_sha256,/^[a-f0-9]{64}$/);
-    const approved=await http('/agents/api/approvals/'+handle.id+'/approve',{revision:approval.revision,summary_sha256:approval.summary_sha256});
+    const approved=await personHttp('/agents/api/approvals/'+handle.id+'/approve',{revision:approval.revision,summary_sha256:approval.summary_sha256});
     assert.equal(approved.status,200);
     assert.equal((await approved.json()).approval.state,'executed');
     answer=await mcp('resources/read',{uri,requestState:initial.body.error.data.requestState},overrides,bearer);
@@ -146,7 +160,7 @@ export async function agentRuntime({clock}={}){
   const mcpWithToken=(token,method,params={})=>mcp(method,params,{},token);
   const tool=(name,args,overrides,bearer)=>mcp('tools/call',{name,arguments:args},overrides,bearer);
   await settings();
-  return {...runtime,request,http,agentHttp,cookie,context,settings,adopt,renewPolicy,mcp,mcpWithToken,tool,completeResource,discardToolResponse,fixtures,async time(at){await runtime.time(at);platformTime=at}};
+  return {...runtime,request,http,memberSession,agentHttp,cookie,context,settings,adopt,renewPolicy,mcp,mcpWithToken,tool,completeResource,discardToolResponse,fixtures,async time(at){await runtime.time(at);platformTime=at}};
  }catch(error){await runtime.close();throw error}
 }
 
