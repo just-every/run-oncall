@@ -9,7 +9,7 @@
     "inputFrom": "2026-11-14T11:00",
     "savedFrom": "2026-11-14T01:00:00.000Z"
   },
-  "summary": "Gaps this week\nPrimary · Nov 13, 2026, 12:00 PM Australia/Brisbane (GMT+10) – Nov 14, 2026, 09:00 AM Australia/Brisbane (GMT+10)\nBackup · Nov 13, 2026, 12:00 PM Australia/Brisbane (GMT+10) – Nov 14, 2026, 09:00 AM Australia/Brisbane (GMT+10)\nBackup · Nov 14, 2026, 11:00 AM Australia/Brisbane (GMT+10) – Nov 14, 2026, 06:00 PM Australia/Brisbane (GMT+10)",
+  "summary": "Gaps this week\nPrimary \u00b7 Nov 13, 2026, 12:00 PM Australia/Brisbane (GMT+10) \u2013 Nov 14, 2026, 09:00 AM Australia/Brisbane (GMT+10)\nBackup \u00b7 Nov 13, 2026, 12:00 PM Australia/Brisbane (GMT+10) \u2013 Nov 14, 2026, 09:00 AM Australia/Brisbane (GMT+10)\nBackup \u00b7 Nov 14, 2026, 11:00 AM Australia/Brisbane (GMT+10) \u2013 Nov 14, 2026, 06:00 PM Australia/Brisbane (GMT+10)",
   "gaps": [
     {
       "role": "primary",
@@ -46,5 +46,6 @@
       "from": "2026-11-14T01:00:00.000Z",
       "to": "2026-11-14T08:00:00.000Z"
     }
-  ]
+  ],
+  "productHead": "d54fb7958cedddbce40483dd3d557db183842112"
 }

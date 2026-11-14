@@ -3,5 +3,6 @@
   "rota": "Europe/London",
   "inputFrom": "2026-11-14T11:00",
   "storedFrom": "2026-11-14T11:00:00.000Z",
-  "conclusion": "Cover uses the displayed rota timezone, independently of the device timezone."
+  "conclusion": "Cover uses the displayed rota timezone, independently of the device timezone.",
+  "productHead": "d54fb7958cedddbce40483dd3d557db183842112"
 }

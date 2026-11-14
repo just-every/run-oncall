@@ -1,5 +1,7 @@
 # Oncall documentation and week-summary alignment
 
+Final result: all local touched checks passed and exact-SHA Verify 43544263145 completed successfully on d54fb7958cedddbce40483dd3d557db183842112. Product branch cloud/main-oncall-docs-week-1 is pushed. No PR was required or created. No builder blocker remains; the fleet owns the publication scan and landing.
+
 Task: main-oncall-docs-week-1. Repository: just-every/run-oncall. Product branch: cloud/main-oncall-docs-week-1. Base observed: 8adae6c836f2fabda29e8a091b052450410c8ca5 (v0.5.13).
 
 ## Plan and implementation
@@ -45,3 +47,7 @@ Final product SHA and exact-SHA Verify status are recorded in product-receipt.js
 Implementation journey tested on the tree published as d2e63dcafad4f91d65e64ebd9bb97438b75497cb. Final candidate d54fb7958cedddbce40483dd3d557db183842112 adds only the corrected “Next two weeks” guide heading and regenerated lock hash. Its final build and lock check passed; exact-SHA Verify is required separately. The first-head watcher was stopped after one discovery; final-head API accounting continues from call 2.
 
 Additional schedule walkthrough passed on the final candidate: Different backup order, Add backup person, reorder/remove, custom daily interval, optional end, repeated-hour Later, swap approval autosave, reminder autosave, private calendar creation/read/hide/revocation, and a future Request a swap followed by cancellation. See rota-doc-controls-receipt.json. Revoked feeds return 404 after the revoke commits. An already-assigned backup correctly refused a swap with 409 because substitution would introduce a coverage gap; an unassigned active substitute succeeded. No private calendar URL or generated key was retained. Final schedule guide screenshots were refreshed after the timeline-heading correction.
+
+The final-head local public-door On call/cover/timezone walkthrough also passed after the final build; after-walkthrough.json and timezone-receipt.json record d54fb7958cedddbce40483dd3d557db183842112. The short cover slices deliberately use the existing dense-timeline list fallback at desktop and phone widths; the existing product journey separately proved the desktop band view and phone list.
+
+Final CI: https://github.com/just-every/run-oncall/actions/runs/43544263145 — completed/success, exact head d54fb7958cedddbce40483dd3d557db183842112, observed 2026-11-14T02:25:33Z. Six GitHub API calls total (one superseded-head discovery, five final-head observations); one watcher at a time, at least 300 seconds between observations for a run. No failed-job log calls or reruns were needed. The initial run 43544091167 was observed in progress on d2e63dcafad4f91d65e64ebd9bb97438b75497cb before that head was superseded; its terminal state is not claimed. Both product pushes succeeded on the first guarded attempt, no force push, no published-history rewrite.

@@ -60,5 +60,21 @@
     "result": "passed",
     "receipt": "rota-doc-controls-receipt.json",
     "head": "d54fb7958cedddbce40483dd3d557db183842112"
+  },
+  "finalHeadPublicDoorWalkthrough": {
+    "head": "d54fb7958cedddbce40483dd3d557db183842112",
+    "result": "passed",
+    "proofWidths": [
+      1440,
+      390
+    ],
+    "denseTimeline": "uses the existing readable-list fallback at both widths for short cover intervals"
+  },
+  "ownedRuntimeAndBrowserProcessesStopped": true,
+  "exactShaVerify": {
+    "run": 43544263145,
+    "head": "d54fb7958cedddbce40483dd3d557db183842112",
+    "status": "completed",
+    "conclusion": "success"
   }
 }

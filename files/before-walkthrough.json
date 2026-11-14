@@ -9,7 +9,7 @@
     "inputFrom": "2026-11-14T11:00",
     "savedFrom": "2026-11-14T01:00:00.000Z"
   },
-  "summary": "Gaps this week\nBackup · Nov 14, 2026, 12:00 PM Australia/Brisbane (GMT+10) – Nov 14, 2026, 06:00 PM Australia/Brisbane (GMT+10)",
+  "summary": "Gaps this week\nBackup \u00b7 Nov 14, 2026, 12:00 PM Australia/Brisbane (GMT+10) \u2013 Nov 14, 2026, 06:00 PM Australia/Brisbane (GMT+10)",
   "gaps": [
     {
       "role": "backup",
@@ -36,5 +36,6 @@
       "from": "2026-11-14T01:00:00.000Z",
       "to": "2026-11-14T08:00:00.000Z"
     }
-  ]
+  ],
+  "productHead": "8adae6c836f2fabda29e8a091b052450410c8ca5"
 }

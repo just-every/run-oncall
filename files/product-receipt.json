@@ -25,5 +25,14 @@
   "extendedJourneys": 1,
   "priorPublishedHeads": [
     "d2e63dcafad4f91d65e64ebd9bb97438b75497cb"
-  ]
+  ],
+  "verify": {
+    "id": 43544263145,
+    "head": "d54fb7958cedddbce40483dd3d557db183842112",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/just-every/run-oncall/actions/runs/43544263145"
+  },
+  "githubApiCalls": 6,
+  "blockers": []
 }
