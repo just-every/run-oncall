@@ -205,8 +205,8 @@ export async function roleClearReplay(runtime,role='scribe',label='Scribe'){
  return observed;
 }
 
-/** Bound the new role fixtures without changing Scribe's shared-runtime proof. */
-export async function additionalRoleClearReplay(){
+/** Exercise every role with native custody and unrelated completed calls. */
+export async function focusedRoleClearReplay(){
  const runtime=await agentRuntime({clock:null});
  try{
   assert.equal((await runtime.adopt()).status,200);
@@ -224,7 +224,7 @@ export async function additionalRoleClearReplay(){
    text:'Synthetic unrelated retained note',idempotency_key:randomUUID()});
   assert.equal(noted.status,200);assert.equal(noted.result.isError,false);
   assert.deepEqual(await runtime.outboundRequests(),[]);
-  for(const [role,label] of [['communications','Communications'],['commander','Commander']])
+  for(const [role,label] of [['scribe','Scribe'],['communications','Communications'],['commander','Commander']])
    await roleClearReplay(runtime,role,label);
  }finally{await runtime.close()}
 }
