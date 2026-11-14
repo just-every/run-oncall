@@ -1,0 +1,19 @@
+{
+  "head": "5e250b90adc319fe7872d4ffd121397eade35377",
+  "run": 43624929302,
+  "job": 132539106981,
+  "command": [
+    "run",
+    "view",
+    "43624929302",
+    "--repo",
+    "just-every/run-oncall",
+    "--job",
+    "132539106981",
+    "--log-failed"
+  ],
+  "exit": 0,
+  "bytes": 0,
+  "log": "/tmp/f249-intake-ci-failed.log",
+  "note": "Read exactly once; no direct job-log blob URL requested"
+}

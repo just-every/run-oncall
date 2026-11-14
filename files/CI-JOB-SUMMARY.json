@@ -1,0 +1,93 @@
+[
+  {
+    "id": 132538544706,
+    "name": "plan",
+    "conclusion": "success",
+    "started_at": "2026-11-14T18:08:42Z",
+    "completed_at": "2026-11-14T18:08:53Z"
+  },
+  {
+    "id": 132538606998,
+    "name": "build",
+    "conclusion": "success",
+    "started_at": "2026-11-14T18:08:56Z",
+    "completed_at": "2026-11-14T18:10:37Z"
+  },
+  {
+    "id": 132538608708,
+    "name": "light",
+    "conclusion": "skipped",
+    "started_at": "2026-11-14T18:08:54Z",
+    "completed_at": "2026-11-14T18:08:54Z"
+  },
+  {
+    "id": 132539106925,
+    "name": "shards (runtime)",
+    "conclusion": "success",
+    "started_at": "2026-11-14T18:10:39Z",
+    "completed_at": "2026-11-14T18:14:57Z"
+  },
+  {
+    "id": 132539106981,
+    "name": "shards (intake)",
+    "conclusion": "cancelled",
+    "started_at": "2026-11-14T18:10:40Z",
+    "completed_at": "2026-11-14T18:25:58Z"
+  },
+  {
+    "id": 132539106985,
+    "name": "shards (browser)",
+    "conclusion": "success",
+    "started_at": "2026-11-14T18:10:39Z",
+    "completed_at": "2026-11-14T18:22:38Z"
+  },
+  {
+    "id": 132539107005,
+    "name": "shards (triage)",
+    "conclusion": "success",
+    "started_at": "2026-11-14T18:10:39Z",
+    "completed_at": "2026-11-14T18:16:55Z"
+  },
+  {
+    "id": 132539107011,
+    "name": "shards (changes)",
+    "conclusion": "success",
+    "started_at": "2026-11-14T18:10:39Z",
+    "completed_at": "2026-11-14T18:19:50Z"
+  },
+  {
+    "id": 132539107026,
+    "name": "shards (hosted)",
+    "conclusion": "success",
+    "started_at": "2026-11-14T18:10:39Z",
+    "completed_at": "2026-11-14T18:15:09Z"
+  },
+  {
+    "id": 132539107081,
+    "name": "shards (transfer)",
+    "conclusion": "success",
+    "started_at": "2026-11-14T18:10:39Z",
+    "completed_at": "2026-11-14T18:19:14Z"
+  },
+  {
+    "id": 132543597958,
+    "name": "verify",
+    "conclusion": "failure",
+    "started_at": "2026-11-14T18:26:00Z",
+    "completed_at": "2026-11-14T18:26:03Z"
+  },
+  {
+    "id": 132543599422,
+    "name": "full-push-proof",
+    "conclusion": "skipped",
+    "started_at": "2026-11-14T18:25:58Z",
+    "completed_at": "2026-11-14T18:25:58Z"
+  },
+  {
+    "id": 132543599511,
+    "name": "nightly-proof",
+    "conclusion": "skipped",
+    "started_at": "2026-11-14T18:25:58Z",
+    "completed_at": "2026-11-14T18:25:58Z"
+  }
+]

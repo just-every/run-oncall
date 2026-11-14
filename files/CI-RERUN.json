@@ -1,0 +1,14 @@
+{
+  "head": "5e250b90adc319fe7872d4ffd121397eade35377",
+  "run": 43624929302,
+  "command": [
+    "api",
+    "--method",
+    "POST",
+    "repos/just-every/run-oncall/actions/runs/43624929302/rerun-failed-jobs"
+  ],
+  "exit": 0,
+  "response": "{}",
+  "at_epoch": 1794681840.8300095,
+  "basis": "Intake cancelled at its 15-minute job budget, no failing assertion supplied by the prescribed one-time archive command; exact candidate intake command passed locally in 480.01 seconds; no product or workflow changes; one failed-job rerun only"
+}

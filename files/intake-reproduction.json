@@ -1,0 +1,17 @@
+{
+  "command": [
+    "timeout",
+    "-k",
+    "5",
+    "1200",
+    "node",
+    "scripts/verify-oncall.mjs",
+    "intake"
+  ],
+  "exit": 0,
+  "head": "5e250b90adc319fe7872d4ffd121397eade35377",
+  "log": "/tmp/f249-intake-reproduction.log",
+  "name": "intake-reproduction",
+  "seconds": 480.01,
+  "started": "2026-11-14T18:35:21.197511+00:00"
+}

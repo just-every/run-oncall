@@ -1,0 +1,16 @@
+{
+  "command": [
+    "timeout",
+    "-k",
+    "5",
+    "1200",
+    "node",
+    "scripts/verify-oncall-build.mjs"
+  ],
+  "exit": 0,
+  "head": "5e250b90adc319fe7872d4ffd121397eade35377",
+  "log": "/tmp/f249-ci-preparation.log",
+  "name": "ci-preparation",
+  "seconds": 7.72,
+  "started": "2026-11-14T18:35:13.437610+00:00"
+}

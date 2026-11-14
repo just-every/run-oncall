@@ -1,0 +1,17 @@
+{
+  "command": [
+    "timeout",
+    "-k",
+    "5",
+    "1200",
+    "node",
+    "scripts/verify-oncall.mjs",
+    "intake"
+  ],
+  "exit": 0,
+  "head": "f7b5b5ea71e955081501bebf81a4f967459c8e34",
+  "log": "/tmp/f249-main-intake-control.log",
+  "name": "main-intake-control",
+  "seconds": 460.21,
+  "started": "2026-11-14T18:44:01.747392+00:00"
+}
