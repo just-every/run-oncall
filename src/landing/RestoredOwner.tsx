@@ -45,6 +45,7 @@ function AdministratorPicker({ onLinked }: { onLinked: () => Promise<void> }) {
   const [attempt, setAttempt] = useState(0);
   const [selected, setSelected] = useState("");
   const [confirmed, setConfirmed] = useState(false);
+  const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     let current = true;
@@ -65,7 +66,7 @@ function AdministratorPicker({ onLinked }: { onLinked: () => Promise<void> }) {
     setBusy(true);
     setError("");
     try {
-      await request("/api/identity-link", { adminMapping: selected, confirm: confirmed });
+      await request("/api/identity-link", { adminMapping: selected, confirm: confirmed, displayName: name });
       await onLinked();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Mapping failed. Try again.");
@@ -85,6 +86,7 @@ function AdministratorPicker({ onLinked }: { onLinked: () => Promise<void> }) {
             <span id="restored-administrator-label">Archived administrator</span>
             <select aria-labelledby="restored-administrator-label" name="adminMapping" required value={selected} onChange={(event) => {
               setSelected(event.target.value);
+              setName(administrators.find((admin) => admin.id === event.target.value)?.name ?? "");
               setConfirmed(false);
             }}>
               <option value="" disabled>Choose your archived administrator</option>
@@ -93,6 +95,10 @@ function AdministratorPicker({ onLinked }: { onLinked: () => Promise<void> }) {
               </option>)}
             </select>
           </label>
+          {selected && <label className="field">
+            <span>Your name</span>
+            <input name="displayName" autoComplete="name" required maxLength={120} value={name} onChange={(event) => { setName(event.target.value); setConfirmed(false); }} />
+          </label>}
           {selected && <p className="oc-door-identity">{options.find((admin) => admin.id === selected)?.label}</p>}
           <label className="oc-door-confirm">
             <input type="checkbox" name="confirm" required checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />

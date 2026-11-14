@@ -197,9 +197,11 @@ export async function managedSeed(bindings={}){
   const run=spawnCommand(['preview','--foreground','--port',String(port),'--idle-timeout','120','--non-interactive'])
   for(let n=0;n<600;n++){
    if(run.child.exitCode!==null||run.child.signalCode!==null)throw Error(safe(run.output()).slice(-1400))
-   if(run.output().includes('RER_READY')){
+   const link=run.output().match(/RER_OPEN (http[^\s]+)/)?.[1]
+   if(run.output().includes('RER_READY')&&link){
+    openLink=link
     assert.equal((await fetch(origin+'/api/state')).status,401,'production preview carries no managed-dev owner identity')
-    await command(['preview','--stop']);return
+    return
    }
    await new Promise(resolve=>setTimeout(resolve,250))
   }
@@ -247,6 +249,41 @@ try{
  await m.command(['setup','--answers',answers,'--port',String(m.port),'--non-interactive']);await business.configure();await m.start()
  let cookie=await m.owner(),req=(path,input)=>m.request(path,input,cookie),member=ok(await req('/api/session')).member
  await developmentReadiness(req);
+ // A native restore cookie belongs to its surviving native session. Preview's
+ // private owner link starts a new session and must retire that old cookie.
+ ok(await req('/auth/display-name',{displayName:'Maya Chen'}));member=ok(await req('/api/session')).member
+ {
+  const {chromium}=await import('@playwright/test')
+  const browser=await chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM_PATH,args:['--no-sandbox']})
+  try {
+   const context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage()
+   await page.goto(m.openLink)
+   await page.waitForURL(url=>url.pathname==='/setup'||url.pathname==='/on-call'&&!url.hash)
+   if(new URL(page.url()).pathname==='/setup'){
+    await page.getByRole('checkbox').check();await page.getByRole('button',{name:'Finish setup'}).click()
+   }
+   await page.locator('.oncall-frame').waitFor()
+   const archiveResponse=await context.request.get(m.origin+'/api/archive'),nativeArchive=await archiveResponse.json()
+   assert.equal(archiveResponse.status(),200)
+   await page.goto(m.origin+'/settings/archive');await page.locator('.archive-restore > summary').click()
+   await page.getByLabel('Choose archive JSON').setInputFiles({name:'synthetic-oncall-restore.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(nativeArchive))})
+   await page.getByLabel('Type REPLACE to confirm').fill('REPLACE')
+   const restored=page.waitForResponse(r=>r.url().endsWith('/api/restore')&&r.request().method()==='POST')
+   await page.getByRole('button',{name:'Replace workspace with this archive',exact:true}).click();assert.equal((await restored).status(),200)
+   assert.ok((await context.cookies()).some(row=>row.name.startsWith('oncall_session_')),'native restore issued a workspace session')
+   await m.close();await m.command(['build','--non-interactive']);await m.preview()
+   await page.goto(m.openLink);await page.locator('.oncall-frame').waitFor()
+   const session=await context.request.get(m.origin+'/api/session');assert.equal(session.status(),200)
+   assert.equal((await session.json()).member.id,member.id,'preview owner opens the linked native archive identity')
+   assert.equal(await page.locator('.oc-door-restore').count(),0,'an already linked owner needs no mapping')
+   assert.equal((await context.cookies()).some(row=>row.name.startsWith('oncall_session_')),false,'native owner sign-in retires the prior restore cookie')
+   const proof=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(proof,{recursive:true})
+   for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:proof+'/native-restored-preview-'+width+'.png',fullPage:true})}
+   await context.close()
+  }finally{await browser.close();await m.close()}
+ }
+ await m.start();cookie=await m.owner()
+ console.log('PROBE OC-018 native restore: Settings archive replacement -> build -> preview private owner link in the same browser -> mapped workspace without administrator selection')
  ok(await req('/api/command',{type:'service',id:'transfer',name:'Transfer service',environment:'production',owner:member.id,runbook:['Retain this instruction'],pager:''}))
  ok(await req('/api/command',{type:'service',id:'upstream',name:'Upstream service',environment:'production',owner:null,runbook:[],pager:''}))
  const portableTeam=ok(await req('/api/teams',{id:'synthetic-oncall-145',name:'synthetic-oncall-145',visibility:'public',active:true,revision:0,members:[member.id],managers:[member.id]}));
@@ -616,7 +653,11 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  const restoredJob=JSON.parse(sql("SELECT data FROM paging_jobs WHERE id='held-pending'")[0].data);assert.equal(restoredJob.status,'paused');assert.equal(restoredJob.nextDue,null);assert.deepEqual(restoredJob.history.slice(0,-1),pending.history)
  await mkdir('.rer/local',{recursive:true,mode:0o700});await writeFile(answers,JSON.stringify({OWNER_EMAIL:'new-owner@example.test'}),{mode:0o600});await m.command(['setup','--answers',answers,'--port',String(m.port),'--non-interactive']);await business.configure();await m.start();cookie=await m.owner()
  assert.equal(ok(await req('/api/session')).member,null,'new Base owner cannot silently claim restored identities')
+ assert.equal((await m.request('/api/identity-link/administrators')).status,401,'anonymous callers cannot list archived administrators')
+ assert.equal((await m.request('/api/identity-link',{confirm:true,adminMapping:member.id})).status,401,'anonymous callers cannot map an archived administrator')
  assert.equal((await req('/api/identity-link',{confirm:true,adminMapping:'missing-admin'})).status,409)
+ assert.equal((await req('/api/identity-link',{confirm:false,adminMapping:member.id})).status,400,'mapping still requires confirmation')
+ assert.equal((await req('/api/identity-link',{confirm:true,adminMapping:member.id,displayName:' '})).status,400,'invalid edited names cannot consume the mapping')
  sql("INSERT INTO credentials VALUES('"+member.id+"','fixture-salt','fixture-password-digest')")
  assert.equal((await req('/api/identity-link',{confirm:true,adminMapping:member.id})).status,409,'held password data cannot be claimed by a new native owner')
  sql('DELETE FROM credentials')
@@ -639,6 +680,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
     assert.doesNotMatch(option.text,/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i,'visible administrator choices contain no database UUID')
    }
    await picker.selectOption(member.id)
+   assert.equal(await page.getByLabel('Your name',{exact:true}).inputValue(),member.name,'mapping starts with the archived authored name')
    assert.doesNotMatch(await page.locator('.oc-door-restore').innerText(),/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i,'selected identity details also contain no UUID')
    const evidence=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(evidence,{recursive:true})
    for(const width of [1440,390]){
@@ -652,7 +694,17 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
    assert.equal((await submitted).postDataJSON().adminMapping,member.id,'mapping submits the selected hidden identity unchanged')
    await page.locator('.oncall-frame').waitFor()
    const session=await context.request.get(m.origin+'/api/session');assert.equal(session.status(),200)
-   assert.equal((await session.json()).member.id,member.id,'the browser maps to the chosen archived administrator')
+   const mapped=(await session.json()).member
+   assert.equal(mapped.id,member.id,'the browser maps to the chosen archived administrator')
+   assert.equal(mapped.name,member.name,'explicit portable mapping preserves the archived name')
+   await page.reload();await page.locator('.oncall-frame').waitFor()
+   const workspace=await context.request.get(m.origin+'/api/state'),state=await workspace.json()
+   assert.equal(state.members.find(row=>row.id===member.id).name,member.name,'refresh never overwrites the archived name')
+   assert.equal(state.services.find(row=>row.id==='transfer').owner,member.id)
+   assert.ok(state.teams.find(row=>row.id===portableTeam.id).members.includes(member.id),'team and service ownership retain the named identity')
+   const paging=await context.request.get(m.origin+'/api/paging/state');assert.ok((await paging.json()).schedules.find(row=>row.id===schedule.id).primary.members.includes(member.id),'cover retains the same named holder')
+   const account=await context.request.get(m.origin+'/auth/session');assert.equal((await account.json()).operator.displayName,member.name,'the owner account adopts the confirmed archived name')
+   for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:evidence+'/restored-owner-workspace-'+width+'.png',fullPage:true})}
    await context.close()
   }finally{await browser.close()}
  }
