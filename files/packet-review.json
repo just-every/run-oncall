@@ -3,12 +3,12 @@
   "credentialPatternsAbsent": true,
   "regularFilesOnly": true,
   "screenshotsReviewed": true,
-  "basePublicationScan": "not available in cloud; fleet Mac performs landing scan",
+  "basePublicationScan": "fleet Mac landing gate; unavailable in cloud",
   "files": [
     {
       "path": "REPORT.md",
-      "bytes": 6072,
-      "sha256": "54cfb3257f7edde77143ac80be5f6d548a4eb147be9dda80b0b6e0caa073e377"
+      "bytes": 6926,
+      "sha256": "ce62c5053ceca51c9952da64d3e58c26c94527371db7fdaf71e343b130510d62"
     },
     {
       "path": "PLAN.md",
@@ -32,8 +32,13 @@
     },
     {
       "path": "product-receipt.json",
-      "bytes": 781,
-      "sha256": "143dd0f4899a0b42dc34a0e5eb103bada268b36190e400a758b937630aa983e4"
+      "bytes": 1868,
+      "sha256": "c0ba61e7ebdfb37fbd86463dd654023a92fd6c1949bf22e7457935775cacee71"
+    },
+    {
+      "path": "ci-receipt.json",
+      "bytes": 1311,
+      "sha256": "9368b44b64fcc02f1346d7776b5b1db031699d05343b50432b717698e7ad1f00"
     },
     {
       "path": "typecheck.log",
@@ -109,6 +114,11 @@
       "path": "screens/compatible-splunk-390.png",
       "bytes": 103182,
       "sha256": "252c6ac7edb07803615920fdbd10f2b3edaafb8a2fde5729e7dbd32e8cc0267c"
+    },
+    {
+      "path": "evidence-readback.json",
+      "bytes": 5573,
+      "sha256": "ff33beaf0a89e2d540e5a0dad4eeec32ab0dd80e17dbdd1dc8676d6211efc09b"
     }
   ]
 }
