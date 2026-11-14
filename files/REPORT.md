@@ -21,12 +21,12 @@ Acceptance proof register (bounded claims, no new requirements):
 
 DONE-RIDERS assessment (whole clause remains PARTIAL in this report; source judgment remains MISSING):
 
-1. PARTIAL: bounded seven-template role matrix is exercised; whole clause retains the omitted scope and byte-budget work above. Exact-head CI remains to be recorded.
+1. PARTIAL: bounded seven-template role matrix is exercised; whole clause retains the omitted scope and byte-budget work above. Exact-head CI result is recorded in the final observation below.
 2. PASS on the exact candidate: nonempty records originate through native, file-restore and email doors; expected records come from independent protected HTTP projections. Existing refusal and write-link tests remain.
 3. PARTIAL: HTTP parity and the original resource protections run inside the machines journey through push Verify. The standalone optional browser capture is separate local evidence, not presented as a new Verify registration.
 4. PASS: both the full integrated agent flow and the native browser parity journey passed on final head 59e3196adebd1edc3764a8dc8da0d7604e88ccd3 after merge and lock regeneration. Earlier full-shard reproduction is expressly bound to the saved head.
 5. UNCHANGED: no receiving clause text or inheritance is modified or newly claimed.
-6. MECHANICAL: judgment cells, evidence cells and counts remain main's; generated views will be written, checked and restored before committing.
+6. MECHANICAL: judgment cells, evidence cells and counts remain main's; generated views were written, checked and restored before committing.
 7. PASS INSPECTED: no acceptance sentence, coverage map or scope ruling is modified.
 8. PRESERVED: populated unauthorized versus missing equality, revocation, erasure and captured-write refusal remain in resourceJourney; held sensitive reads require actual sponsor approval.
 9. PASS BOUNDARY: signed Business fixtures are local receiving-door evidence only. There is no real account, federation, provider, hosted deployment, live paging, standby, device, real-phone or cutover claim.
@@ -57,3 +57,18 @@ GAP BASE-AGENT-003: The selected seven-template two-role matrix is complete. Pri
 Plan return: no cloud edit to the shipped plan. Only BASE-AGENT-003 acceptance 2's selected seven-template matrix gains observed proof. No other queue entry, hold, clause, acceptance text or source judgment changes. Counts remain 26 DONE, 41 PARTIAL, 34 MISSING before and after. No new policy default was needed. No local product blocker was found; the wider whole-clause dependencies above remain named.
 
 CI watcher observation 1: run 43610851220 remained in progress on the exact candidate at the first status read after the minimum polling interval. This was GitHub invocation 8 of 10; no duplicate run or dispatch was created. All local proof had already completed successfully.
+
+Final CI observation: push Verify 43610851220 on 59e3196adebd1edc3764a8dc8da0d7604e88ccd3 is completed with conclusion success. This is GitHub invocation 10 of 10. The final two status reads were separated by more than fourteen minutes; one watcher, no dispatch and no rerun.
+
+Exact-head Verify is green. DONE-RIDERS row 3 is satisfied for the selected HTTP parity and retained resource journeys through the machines shard; the optional native browser captures remain separate local evidence. The wider whole-clause scope and byte-budget gaps in rows 1 and 3 remain explicit, and no DONE judgment is claimed. Rows 2 and 4 have exact-candidate local runtime and browser receipts, row 6 mechanical checks pass, and row 11 remains the guarded lander's custody.
+
+Pre-ready result: selected seven-template matrix passed; original assertions preserved; authority, revocation, erasure and captured-write denials retained; no UI implementation changed; source lock fresh; contract generation current; exact-head push Verify green. Main equality, publication scan and Run site on the eventual landed head remain unestablished in this cloud task. The last observed main-only green Run site remains 43608889973 on 837f201d33195c56650447734513059f13ea5d34, not on the unlanded candidate.
+
+Publication scan record: commit=59e3196adebd1edc3764a8dc8da0d7604e88ccd3 complete=unestablished historyScanned=unestablished findings=unestablished. Cloud branch pushes defer the full-history publication scan to the guarded fleet; no scan result or landing result is claimed.
+
+Evidence return: the complete relevant non-secret packet is published only to refs/heads/evidence/sd-oncall-c-f246-pc1. The earlier packet preservation succeeded while CI was pending. Final publication updates that separate report tree, retaining product branch and index unchanged. All temporary native runtimes and browsers started by the journeys were closed; the product clone is removed after final evidence publication.
+
+POST lanes/fv/INBOX.md: FLAKE just-every/run-oncall run=43603032653 job=132481588707 ERR_ADDRESS_IN_USE at Worker startup; exact intake shard on ee920fafd3321e45e731e49fdc7427a9d1e4dfec passed; no product or harness repair made.
+POST lanes/sd/INBOX.md: sd-oncall-c-f246-pc1 BASE-AGENT-003 selected acceptance 2 seven-template two-role parity complete: 28 comparisons, 48 native screens; source MISSING retained; counts 26 DONE, 41 PARTIAL, 34 MISSING unchanged; branch cloud/sd-oncall-c-f246-pc1 head=59e3196adebd1edc3764a8dc8da0d7604e88ccd3 Verify=43610851220 success; wider Base, team, provider and release gaps retained.
+
+READY branch=cloud/sd-oncall-c-f246-pc1 head=59e3196adebd1edc3764a8dc8da0d7604e88ccd3

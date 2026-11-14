@@ -34,5 +34,14 @@
   },
   "candidateMainEquality": false,
   "candidateRunSite": "Pending guarded landing; no cloud main push",
-  "pr": null
+  "pr": null,
+  "verify": {
+    "id": 43610851220,
+    "event": "push",
+    "conclusion": "success",
+    "head_sha": "59e3196adebd1edc3764a8dc8da0d7604e88ccd3",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43610851220",
+    "status": "completed"
+  },
+  "githubCommandInvocations": 10
 }
