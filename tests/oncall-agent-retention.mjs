@@ -103,10 +103,13 @@ export async function agedReplayRetention(){
        assert.equal(entry.text,'assignee: '+owner.name+' → '+responder.name+': '+args.reason);
        assert.equal(result.timeline.filter(row=>row.kind==='reassign').length,prior.timeline.filter(row=>row.kind==='reassign').length+1);
       }else{
-       assert.equal(args.change,'assign-role');assert.equal(prior[args.role]??null,null);
-       assert.equal(result[args.role],responder.id);changed[args.role]=responder.id;
+       assert.equal(args.change,'assign-role');
+       const clearing=args.member===null;
+       if(clearing)assert.equal(prior[args.role],responder.id);
+       else assert.equal(prior[args.role]??null,null);
+       assert.equal(result[args.role],args.member);changed[args.role]=args.member;
        assert.equal(entry.kind,'assign-role');
-       assert.equal(entry.text,args.role+': Unassigned → '+responder.name+': '+args.reason);
+       assert.equal(entry.text,args.role+': '+(clearing?responder.name+' → Unassigned':'Unassigned → '+responder.name)+': '+args.reason);
        assert.equal(result.timeline.filter(row=>row.kind==='assign-role').length,prior.timeline.filter(row=>row.kind==='assign-role').length+1);
       }
       assert.deepEqual(result,{...prior,...changed},'Selected fields change once; every companion field survives');
@@ -177,6 +180,15 @@ export async function agedReplayRetention(){
     await complete('oncall.incidents.update',{change:'assign-role',role,incident:target.id,revision:target.revision,member:responder.id,
      reason:'Synthetic retained '+role+' reason',idempotency_key:randomUUID()},'assign-role '+role);
    }
+   let clear=await ordinary('Scribe clear');
+   clear=await command({type:'transition',incident:clear.id,revision:clear.revision,state:'acknowledged',summary:'Synthetic human acknowledgment before clear'});
+   clear=await command({type:'reassign',incident:clear.id,revision:clear.revision,member:responder.id,reason:'Synthetic explicit assignee before clear'});
+   for(const [role,member] of [['scribe',responder.id],['communications',owner.id]])
+    clear=await command({type:'assign-role',incident:clear.id,revision:clear.revision,role,member,reason:'Synthetic populated companion responsibility'});
+   assert.equal(clear.commander,owner.id);assert.equal(clear.communications,owner.id);assert.equal(clear.assignee,responder.id);
+   assert.equal(clear.recovery,'');assert.deepEqual(clear.alerts,[]);assert.deepEqual(clear.actions,[]);
+   await complete('oncall.incidents.update',{change:'assign-role',role:'scribe',member:null,incident:clear.id,revision:clear.revision,
+    reason:'Synthetic retained Scribe clear reason',idempotency_key:randomUUID()},'assign-role Scribe clear');
    let mitigation=await ordinary('mitigation');
    mitigation=await command({type:'transition',incident:mitigation.id,revision:mitigation.revision,state:'acknowledged',summary:'Synthetic initial human acknowledgment'});
    for(const [role,member] of [['scribe',responder.id],['communications',owner.id]])
@@ -184,7 +196,7 @@ export async function agedReplayRetention(){
    await complete('oncall.incidents.update',{change:'transition',state:'mitigating',incident:mitigation.id,revision:mitigation.revision,
     summary:'Synthetic retained evidence-free mitigation',idempotency_key:randomUUID()},'transition mitigating');
    // The focused transition journey covers immediate replay and response loss;
-   // this helper ages the same real call alongside the existing nine cases.
+   // this helper ages the same real call alongside the existing cases.
    const originalPolicy=await envelope(),effects=await snapshot(),ids=new Set(prepared.map(item=>item.first.body.id));
    for(const elapsed of [day,day+1000]){
     await runtime.time(started+elapsed);
