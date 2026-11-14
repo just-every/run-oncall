@@ -87,15 +87,15 @@
     "src/agent-door/service-tools.ts"
   ],
   "candidateVerify": {
-    "conclusion": null,
-    "event": "push",
+    "run_id": 43602106066,
+    "observed": 1794665706.4572625,
+    "conclusion": "success",
     "head_sha": "183eef356bf1fd5eec173f2e5cbf27f3564ca0f7",
     "html_url": "https://github.com/just-every/run-oncall/actions/runs/43602106066",
-    "id": 43602106066,
-    "name": "Verify",
-    "status": "in_progress"
+    "status": "completed",
+    "event": "push"
   },
-  "githubCalls": 2,
+  "githubCalls": 6,
   "browser": {
     "guideWidths": [
       1440,
@@ -186,5 +186,8 @@
     "autonomousMismatches": 0,
     "heldMismatches": 0,
     "exit": 0
-  }
+  },
+  "blockers": [],
+  "ready": true,
+  "reportStatus": "final"
 }

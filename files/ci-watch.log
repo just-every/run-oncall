@@ -1,0 +1,30 @@
+CI_WAIT run=43602106066 next_poll_seconds=159
+CI_WAIT run=43602106066 next_poll_seconds=109
+CI_WAIT run=43602106066 next_poll_seconds=59
+CI_WAIT run=43602106066 next_poll_seconds=9
+CI_POLL {"run_id": 43602106066, "observed": 1794664799.586951, "conclusion": null, "head_sha": "183eef356bf1fd5eec173f2e5cbf27f3564ca0f7", "html_url": "https://github.com/just-every/run-oncall/actions/runs/43602106066", "status": "in_progress"}
+CI_WAIT run=43602106066 next_poll_seconds=301
+CI_WAIT run=43602106066 next_poll_seconds=251
+CI_WAIT run=43602106066 next_poll_seconds=201
+CI_WAIT run=43602106066 next_poll_seconds=151
+CI_WAIT run=43602106066 next_poll_seconds=101
+CI_WAIT run=43602106066 next_poll_seconds=51
+CI_WAIT run=43602106066 next_poll_seconds=1
+CI_POLL {"run_id": 43602106066, "observed": 1794665101.9123747, "conclusion": null, "head_sha": "183eef356bf1fd5eec173f2e5cbf27f3564ca0f7", "html_url": "https://github.com/just-every/run-oncall/actions/runs/43602106066", "status": "in_progress"}
+CI_WAIT run=43602106066 next_poll_seconds=301
+CI_WAIT run=43602106066 next_poll_seconds=251
+CI_WAIT run=43602106066 next_poll_seconds=201
+CI_WAIT run=43602106066 next_poll_seconds=151
+CI_WAIT run=43602106066 next_poll_seconds=101
+CI_WAIT run=43602106066 next_poll_seconds=51
+CI_WAIT run=43602106066 next_poll_seconds=1
+CI_POLL {"run_id": 43602106066, "observed": 1794665404.167346, "conclusion": null, "head_sha": "183eef356bf1fd5eec173f2e5cbf27f3564ca0f7", "html_url": "https://github.com/just-every/run-oncall/actions/runs/43602106066", "status": "in_progress"}
+CI_WAIT run=43602106066 next_poll_seconds=301
+CI_WAIT run=43602106066 next_poll_seconds=251
+CI_WAIT run=43602106066 next_poll_seconds=201
+CI_WAIT run=43602106066 next_poll_seconds=151
+CI_WAIT run=43602106066 next_poll_seconds=101
+CI_WAIT run=43602106066 next_poll_seconds=51
+CI_WAIT run=43602106066 next_poll_seconds=1
+CI_POLL {"run_id": 43602106066, "observed": 1794665706.4572625, "conclusion": "success", "head_sha": "183eef356bf1fd5eec173f2e5cbf27f3564ca0f7", "html_url": "https://github.com/just-every/run-oncall/actions/runs/43602106066", "status": "completed"}
+CI_FINAL success

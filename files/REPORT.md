@@ -26,7 +26,7 @@ PROBE SURFACE-001 1 held: same public inputs under held company policy -> the sa
 | R1, acceptance 1 selected metadata subset | surface-probe.mjs; before.json and after.json, both policies; current Contract rows versus actual emitted metadata for all ten names | PASS, bounded subset only |
 | R2, preserved associations and non-metadata behavior | Probe compares all emitted descriptors outside clause metadata and five full guard descriptors | PASS |
 | R3, native custody and egress | Existing agentReadSnapshot and assertAgentReadUnchanged around real public reads; empty outbound ledger | PASS |
-| R4, rendered guide | Existing guide inventory journey and browser proof at 1440 and 390; screenshots retained separately | See local receipts |
+| R4, rendered guide | Existing guide inventory journey and browser proof at 1440 and 390; screenshots retained separately | PASS |
 | Acceptance 1, entire sentence | All table tools with Core clauses and classes; unshipped operations and held class judgments remain | UNMET, no whole-point claim |
 | Acceptance 2, entire sentence | Complete declared record types and listed events with record URIs remain omitted | UNMET, unchanged |
 | Acceptance 3, entire sentence | Full seed conformance and stranger-agent completion under both policies remain omitted | UNMET, unchanged |
@@ -39,7 +39,7 @@ No DONE claim is made. Each rider is nevertheless recorded against this bounded 
 | --- | --- | --- |
 | 1 | FAIL for the complete clause; PASS for selected metadata | Public probe covers all ten associations; remaining acceptance outcomes stay unproved |
 | 2 | PASS for selected subset | Real populated Worker and D1; observed before mismatches and after equality; preserved unsafe-path assertions in existing journeys |
-| 3 | Pending candidate Verify receipt | Existing runtime and browser journeys remain reachable through maintained Verify commands; no assertion moved or gated |
+| 3 | PASS, push Verify 43602106066 completed successfully on the exact candidate | Existing runtime and browser journeys remain reachable through maintained Verify commands; no assertion moved or gated |
 | 4 | PASS for source equality | Local receipts bind source hashes; no relevant byte changes after tested tree except generated lock |
 | 5 | INSPECTED | SURFACE-001 already cites BASE-AGENT-001, 002, 003, 010, 012 and 013; unchanged |
 | 6 | Retained main judgment | Contract cells and generated views are not builder-owned; generated write and check run, then views restored |
@@ -103,3 +103,11 @@ The selected metadata supplies no missing implementation or class judgment. In p
 Acceptance 1's unshipped or partial operations remain outside this round: bridges.create, triage.bulk, pages.create, policies.update, contacts.update, readiness.drill, swaps.respond, calendar.subscribe, routing.publish, intake.keys, members.update, sso.configure, handoffs.review, followups.update, updates.publish, archive.export, archive.restore, actions.update, actions.run, remediation.run, investigations.start, ownership.propose and incident escalation. Incident merge, paging history and handoff preparation retain the agent-for-sponsor authority prerequisite. Alerts replay retains RL-102, OC-085 cleanup and held-stack prerequisites and the OC-014 strategy hold. Saved triage views retain BASE-AGENT-008; person-only client and endpoint creation, registration and secret rotation retain OC-042. Analytics usage remains with OC-044.
 
 OC-045, OC-046, OC-048 and OC-049 retain agent and AI egress authority prerequisites. Team privacy remains held under OC-023. Live paging, provider accounts, independent standby and real-phone evidence remain external prerequisites. Prior alert, triage, analytics, BASE-AGENT-003 and BASE-AGENT-010 launches retain their existing scope; no queue entry, note, release prerequisite or authority hold is removed.
+
+The first report checkpoint was independently fetched through cloud_evidence.py and restored with verified manifest and file hashes at evidence head 07082aeb0f9c01dbac216f75f78e9755a946586b. Its manifest records product head 183eef356bf1fd5eec173f2e5cbf27f3564ca0f7. Final evidence publication will include the latest CI observation and retain separate product provenance.
+
+## Final CI and handoff
+
+Exact-candidate push Verify 43602106066 completed successfully on 183eef356bf1fd5eec173f2e5cbf27f3564ca0f7. Receipt: candidate-ci-final.json; URL: https://github.com/just-every/run-oncall/actions/runs/43602106066. GitHub core calls used: 6. No workflow dispatch or rerun was made. All local checks passed and no blocker remains for this bounded change. Full-history publication scanning, main landing and candidate Run site remain with the fleet. Counts stay 26 DONE, 41 PARTIAL and 34 MISSING; SURFACE-001 stays MISSING. No Contract judgment change is requested.
+
+READY branch=cloud/sd-oncall-c-f244 head=183eef356bf1fd5eec173f2e5cbf27f3564ca0f7

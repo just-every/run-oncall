@@ -1,0 +1,45 @@
+{
+  "calls": 6,
+  "polls": [
+    {
+      "run_id": 43602106066,
+      "observed": 1794664799.586951,
+      "conclusion": null,
+      "head_sha": "183eef356bf1fd5eec173f2e5cbf27f3564ca0f7",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43602106066",
+      "status": "in_progress"
+    },
+    {
+      "run_id": 43602106066,
+      "observed": 1794665101.9123747,
+      "conclusion": null,
+      "head_sha": "183eef356bf1fd5eec173f2e5cbf27f3564ca0f7",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43602106066",
+      "status": "in_progress"
+    },
+    {
+      "run_id": 43602106066,
+      "observed": 1794665404.167346,
+      "conclusion": null,
+      "head_sha": "183eef356bf1fd5eec173f2e5cbf27f3564ca0f7",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43602106066",
+      "status": "in_progress"
+    },
+    {
+      "run_id": 43602106066,
+      "observed": 1794665706.4572625,
+      "conclusion": "success",
+      "head_sha": "183eef356bf1fd5eec173f2e5cbf27f3564ca0f7",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43602106066",
+      "status": "completed"
+    }
+  ],
+  "latest": {
+    "run_id": 43602106066,
+    "observed": 1794665706.4572625,
+    "conclusion": "success",
+    "head_sha": "183eef356bf1fd5eec173f2e5cbf27f3564ca0f7",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43602106066",
+    "status": "completed"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "head": "183eef356bf1fd5eec173f2e5cbf27f3564ca0f7",
+  "tree": "0d78e235a937b0b16ffc2196bfd568fd33db9983",
+  "parents": [
+    "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b"
+  ],
+  "branch": "cloud/sd-oncall-c-f244",
+  "fullHistoryClone": true,
+  "commitCount": 1148,
+  "candidateMessage": "Align ten agent tool clause associations with the contract",
+  "author": {
+    "name": "Run Edit Run fleet",
+    "email": "fleet@runeditrun.com"
+  },
+  "committer": {
+    "name": "Run Edit Run fleet",
+    "email": "fleet@runeditrun.com"
+  },
+  "trailers": "",
+  "cleanProductCheckout": true,
+  "contractAndViewDiff": ""
+}

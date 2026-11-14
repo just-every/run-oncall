@@ -24,11 +24,17 @@
     "product-push.log",
     "candidate-ci-discovery.json",
     "guide-1440.png",
-    "guide-390.png"
+    "guide-390.png",
+    "product-provenance.json",
+    "candidate-ci-final.json",
+    "ci-watch.log",
+    "evidence-checkpoint-fetch.json"
   ],
   "regularFilesOnly": true,
   "credentialsSelected": false,
   "secretPatternCheck": "passed",
   "environmentDumpsSelected": false,
-  "privateGateMaterialSelected": false
+  "privateGateMaterialSelected": false,
+  "status": "final",
+  "head": "183eef356bf1fd5eec173f2e5cbf27f3564ca0f7"
 }
