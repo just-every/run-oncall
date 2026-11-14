@@ -1,0 +1,13 @@
+{
+  "command": [
+    "pnpm",
+    "run",
+    "typecheck"
+  ],
+  "exit": 0,
+  "head": "5e250b90adc319fe7872d4ffd121397eade35377",
+  "log": "/tmp/f249-typecheck.log",
+  "name": "typecheck",
+  "seconds": 2.09,
+  "started": "2026-11-14T18:11:54.393340+00:00"
+}

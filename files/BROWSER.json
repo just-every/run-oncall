@@ -1,0 +1,41 @@
+{
+  "head": "5e250b90adc319fe7872d4ffd121397eade35377",
+  "command_receipt": "browser.json",
+  "screens": [
+    {
+      "path": "agent-door-scribe-cleared-timeline-1440.png",
+      "sha256": "c449f1192f2247e214da1ef12f2154e2d8907b19d18cdb15324e8620c5c14d16",
+      "bytes": 196913
+    },
+    {
+      "path": "agent-door-scribe-cleared-timeline-390.png",
+      "sha256": "568248e4ae132995168fa6d1c189091e5cec4af77eb8def0674673bb9e0e68ae",
+      "bytes": 103964
+    },
+    {
+      "path": "agent-door-scribe-cleared-people-1440.png",
+      "sha256": "ae847724531657a31f5d9ecebba973b9f7a9c306283c9bf63987bb331b06b825",
+      "bytes": 184149
+    },
+    {
+      "path": "agent-door-scribe-cleared-people-390.png",
+      "sha256": "8dfacaa66a1dbb33c86999d02468d71fe48efd08d5105e02cf05045937982695",
+      "bytes": 68061
+    }
+  ],
+  "width_asserted": 1440,
+  "proof_widths": [
+    1440,
+    390
+  ],
+  "source_ui_changed": false,
+  "observed_scribe": "Unassigned",
+  "observed_communications": "Alex Chen",
+  "observed_lead": "Alex Chen",
+  "observed_assignee": "Mira Patel",
+  "timeline_actor": "Responder assistant for Alex Chen",
+  "tooltip": "Close dialog",
+  "fits": true,
+  "serious_or_critical_axe_findings": 0,
+  "controls_below_44px": 0
+}

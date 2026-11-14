@@ -1,0 +1,42 @@
+{
+  "head": "5e250b90adc319fe7872d4ffd121397eade35377",
+  "main": "f7b5b5ea71e955081501bebf81a4f967459c8e34",
+  "unchanged_files": [
+    {
+      "path": "tests/oncall-agent-role-replay.mjs",
+      "unchanged_from_main": true,
+      "sha256": "4a514f440831345834a12503e383e6554d5e44de9025ea5dccbf392696df86cf"
+    },
+    {
+      "path": "tests/oncall-agent-role-revisions.mjs",
+      "unchanged_from_main": true,
+      "sha256": "202cda030d43c94e9de49dac306068ff086f0f0a766f18c20d34bbd47aa09903"
+    },
+    {
+      "path": "tests/oncall-agent-transition-replay.mjs",
+      "unchanged_from_main": true,
+      "sha256": "4a19671b1f8c1ea8fc1b8cb5671cfc28e08ae93f56854fea2e08ae90c1c2d840"
+    },
+    {
+      "path": "tests/oncall-agent-communications-replay.mjs",
+      "unchanged_from_main": true,
+      "sha256": "837d4c3b26fa2deedf0678d1ff4006feefddcce25d940dd0b3810a6337583fc2"
+    },
+    {
+      "path": "tests/oncall-agent-communications-revisions.mjs",
+      "unchanged_from_main": true,
+      "sha256": "03bae2e1cc69f19159fe851f69380b6fa85d8608829e4599f65449798c0a8fce"
+    },
+    {
+      "path": "tests/agent-door-runtime.mjs",
+      "unchanged_from_main": true,
+      "sha256": "a829a182bb444cc39b353378aea16d8255832b167bb3cfec1452d54c7563d898"
+    },
+    {
+      "path": "tests/runtime.mjs",
+      "unchanged_from_main": true,
+      "sha256": "6f6be596471ba77e98d4dab1e8d9c9ec462cb0ec64e19c38076a33d6110ceac7"
+    }
+  ],
+  "retention_prior_cases": "all ten original cases retained; one clear added"
+}

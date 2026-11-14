@@ -1,0 +1,59 @@
+{
+  "head": "5e250b90adc319fe7872d4ffd121397eade35377",
+  "lock": {
+    "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check",
+    "exit": 0,
+    "source_lock_sha256": "22a1691b448dfeaeaf046645823fb51d966cbc59a6f3e7fa9b6483870fb35f8b"
+  },
+  "installed_lock_check": {
+    "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+    "exit": 0
+  },
+  "views": {
+    "write": "node src/base/contract-docs.mjs write",
+    "check": "node src/base/contract-docs.mjs check",
+    "exit": 0,
+    "write_output": "Wrote 0 contract documents.\n",
+    "check_output": "Contract prose: 0 errors, 0 warnings.\nContract documents are current.\n",
+    "restored_from": "origin/main",
+    "committed": false
+  },
+  "ledger": {
+    "command": null,
+    "exit": 0,
+    "reason": "No migration changed"
+  },
+  "contract_status_diff": "empty",
+  "counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "top_level_journey_registrations_added": 0,
+  "existing_assertions_removed": 0,
+  "new_helper_file": "tests/oncall-agent-role-clear-replay.mjs",
+  "publication_scan": {
+    "head": "5e250b90adc319fe7872d4ffd121397eade35377",
+    "status": "not run in cloud",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "owner": "guarded fleet lander"
+  },
+  "main_head_last_fetched": "f7b5b5ea71e955081501bebf81a4f967459c8e34",
+  "main_verify_run_ids": [
+    43615772348,
+    43612831461
+  ],
+  "main_run_site_id": 43615772258,
+  "main_ci_conclusion": "success",
+  "product_push": "confirmed by cloud push guard",
+  "pr": null
+}

@@ -1,0 +1,87 @@
+{
+  "head": "5e250b90adc319fe7872d4ffd121397eade35377",
+  "checks": [
+    {
+      "command": [
+        "timeout",
+        "-k",
+        "5",
+        "1200",
+        "npx",
+        "-y",
+        "@runeditrun/rer",
+        "build"
+      ],
+      "exit": 0,
+      "head": "5e250b90adc319fe7872d4ffd121397eade35377",
+      "log": "/tmp/f249-build.log",
+      "name": "build",
+      "seconds": 6.36,
+      "started": "2026-11-14T18:05:27.799649+00:00"
+    },
+    {
+      "command": [
+        "timeout",
+        "-k",
+        "5",
+        "1200",
+        "env",
+        "ONCALL_RUNTIME_PART=machines",
+        "node",
+        "tests/runtime.mjs"
+      ],
+      "exit": 0,
+      "head": "5e250b90adc319fe7872d4ffd121397eade35377",
+      "log": "/tmp/f249-runtime-machines.log",
+      "name": "runtime-machines",
+      "seconds": 356.08,
+      "started": "2026-11-14T18:05:58.278965+00:00"
+    },
+    {
+      "command": [
+        "pnpm",
+        "run",
+        "typecheck"
+      ],
+      "exit": 0,
+      "head": "5e250b90adc319fe7872d4ffd121397eade35377",
+      "log": "/tmp/f249-typecheck.log",
+      "name": "typecheck",
+      "seconds": 2.09,
+      "started": "2026-11-14T18:11:54.393340+00:00"
+    },
+    {
+      "command": [
+        "pnpm",
+        "exec",
+        "rer",
+        "check",
+        "--profile",
+        "first-party"
+      ],
+      "exit": 0,
+      "head": "5e250b90adc319fe7872d4ffd121397eade35377",
+      "log": "/tmp/f249-first-party.log",
+      "name": "first-party",
+      "seconds": 0.46,
+      "started": "2026-11-14T18:11:56.509163+00:00"
+    },
+    {
+      "command": [
+        "timeout",
+        "-k",
+        "5",
+        "1200",
+        "node",
+        "tests/agent-door-browser.mjs"
+      ],
+      "exit": 0,
+      "head": "5e250b90adc319fe7872d4ffd121397eade35377",
+      "log": "/tmp/f249-browser.log",
+      "name": "browser",
+      "seconds": 57.26,
+      "started": "2026-11-14T18:11:57.003283+00:00"
+    }
+  ],
+  "full_local_verify": "not run: touched journeys and typecheck locally; branch Verify supplies full coverage"
+}

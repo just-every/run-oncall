@@ -1,0 +1,10 @@
+# sd-oncall-c-f249 plan
+
+Scope: just-every/run-oncall, cloud/sd-oncall-c-f249. Base main f7b5b5ea71e955081501bebf81a4f967459c8e34.
+
+1. Read the full BASE-AGENT-012 clause and existing role, mitigation and retention journeys. Main's missing judgment and every prior proof and hold stay unchanged. The selected gap is populated Scribe to null within acceptances 1 to 4; point 5 and all other omitted variants stay outside this slice.
+2. Add one focused roleClearReplay helper through oncall-agent-flow and runtime. Under autonomous and held policies, prove one standard clear, immediate replay, changed-reason conflict, a separately lost real response, both revision diagnostics and identical private-target refusals. Compare native effects, audit attribution, original outcomes and expiry, approval and review custody, paging and outbound requests.
+3. Extend the existing retention role helper for null member, keeping all existing cases. Age the genuine completed call to exactly 24 hours and 24 hours plus one second. Before each aged baseline renew only the same signed policy and issue fresh identity-equivalent tokens.
+4. Show the saved null Scribe and attributed timeline in the existing incident view at 1440 and 390. Keep realistic Commander, Communications and explicit assignee witnesses. Extend the existing browser journey, without new production UI.
+5. Run focused emitted Worker coverage, the runtime machines shard, the existing agent browser journey, typecheck and first-party check. Regenerate and check views, restore generated views from main, regenerate and check the source lock last. No new migration and no production, copied Base, schema, classifier, capability or authority changes.
+6. Save to the named branch with fleet identity and hooks. Merge fresh main after publication; never rewrite published history. Push the final candidate, discover exact-SHA Verify through REST within the ten-call budget, and report its actual conclusion. Publish explicit non-secret report files separately to the evidence ref. Landing, main equality, full-history publication scanning and Run site on the landed candidate remain fleet gates.

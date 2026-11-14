@@ -1,0 +1,16 @@
+{
+  "command": [
+    "timeout",
+    "-k",
+    "5",
+    "1200",
+    "node",
+    "tests/agent-door-browser.mjs"
+  ],
+  "exit": 0,
+  "head": "5e250b90adc319fe7872d4ffd121397eade35377",
+  "log": "/tmp/f249-browser.log",
+  "name": "browser",
+  "seconds": 57.26,
+  "started": "2026-11-14T18:11:57.003283+00:00"
+}
