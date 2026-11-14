@@ -1,0 +1,35 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Fresh-clone tests/transfer.mjs: 4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Development HTTP door passed: configured owner reads release readiness from the Vite Worker
+PROBE OC-018 native restore: Settings archive replacement -> build -> preview private owner link in the same browser -> mapped workspace without administrator selection
+Owned transfer HTTP runtime PID 7180
+OC-052 populated checkpoint: complete CLI round trip and inactive receiving state passed; activation owns refusal, rollback and concurrency
+Owned transfer HTTP runtime PID 7467
+PROBE BASE-AGENT-006 point 5 CLI refusal: pinned rer check -> exit 1; oncall.access.read has an empty, duplicate or uncatalogued class: ["standard","sensitive","synthetic-oncall-162"].
+PROBE BASE-AGENT-006 point 5 CLI restoration: exact original declaration restored -> pinned rer check exit 0
+PROBE OC-018 build: pinned rer build after removing dist -> exit 0, production Worker and client assets, no dev identity or private settings, exact settings restoration
+Managed production preview refuses anonymous state and carries no dev identity
+PROBE OC-018 deploy dry-run: stopped dev and preview, no Cloudflare or mail credentials -> exit 0, local-only completion, no deployment record, clean production artifacts and exact private settings restoration
+OC-058 portable custody: absolute deadlines retain due times and attribution but restore held, without resumed execution
+OC-068 archive/checkpoint/portable custody: manual obligations and pending responder requests retained inactive without sender authority
+OC-025 portable custody: swaps, reminders, notice history and digest-only subscriptions restore inactive; capability access stays revoked
+OC-061 portable status custody: business services, overrides, subscriptions, obligations and stakeholder role restored inactive without authority
+Owned transfer HTTP runtime PID 9618
+PROBE OC-052 agent restore: real held MCP pending and in-flight approvals -> expired; exact audit, call, review and event history; agents_paused after fresh credential provisioning; anonymous resume refused; owner resume permits read; old approvals and replay cannot resolve; native and paging unchanged; zero outbound requests
+OC-052 portable restore: complete import history preserved and restored pending Business execution refused
+PROBE OC-041 portable labels: CLI restore, explicit owner mapping and protected incident note -> exact retained audit rows, absent old associations and fresh actor, subject and source labels
+{"witness":"CLI-erasure-fence","exit":1,"labelReturned":true}
+PASS OC-053 CLI erasure fence: older checkpoint refuses without dataset/session changes; current checkpoint restores
+OC-068 person erasure: manual targets, pending requests and local request text are severed atomically
+OC-058 person erasure: pending deadline authority is cancelled atomically with the subject fence; retained attribution never resumes a send
+{"witness":"CLI-erasure-fence","exit":1,"labelReturned":true}
+PASS OC-053 CLI erasure fence: older checkpoint refuses without dataset/session changes; current checkpoint restores
+OC-040 incident/member/integration portable erasure: later journal rejects the older installation archive; current import preserves anonymous member and absence of incident/key
+PASS OC-050 transfer: full template snapshots with completed checklist attribution and merged/split provenance survive checkpoint, portable inactive restore, erasure and current archive import without replay or authority. Paging remains OFF.
+{"clause":"OC-010","category":"local","outcome":"passed","recordedAt":"2026-11-14T13:19:37.614Z","provenance":{"kind":"maintained-journey","journey":"tests/transfer.mjs: managed installation transfer","execution":"local","accountDeployment":false},"build":{"sourceSha":"4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b","fingerprint":"c4d218a1c98027dc56a8960c1589294df5eab7edd36db74f730bc9fb96e757bf"},"observations":{"commands":[{"verb":"setup","exitCode":0,"expectedExitCode":0},{"verb":"build","exitCode":0,"expectedExitCode":0},{"verb":"check","exitCode":0,"expectedExitCode":0},{"verb":"check","exitCode":1,"expectedExitCode":1},{"verb":"check","exitCode":0,"expectedExitCode":0},{"verb":"build","exitCode":0,"expectedExitCode":0},{"verb":"deploy","exitCode":0,"expectedExitCode":0},{"verb":"export","exitCode":0,"expectedExitCode":0},{"verb":"import","exitCode":4,"expectedExitCode":4},{"verb":"export","exitCode":0,"expectedExitCode":0},{"verb":"reset","exitCode":0,"expectedExitCode":0},{"verb":"import","exitCode":2,"expectedExitCode":2},{"verb":"import","exitCode":1,"expectedExitCode":1},{"verb":"import","exitCode":0,"expectedExitCode":0},{"verb":"setup","exitCode":0,"expectedExitCode":0},{"verb":"export","exitCode":0,"expectedExitCode":0},{"verb":"export","exitCode":0,"expectedExitCode":0},{"verb":"reset","exitCode":0,"expectedExitCode":0},{"verb":"import","exitCode":1,"expectedExitCode":1},{"verb":"import","exitCode":4,"expectedExitCode":4},{"verb":"import","exitCode":0,"expectedExitCode":0},{"verb":"reset","exitCode":0,"expectedExitCode":0}],"populatedRestore":"passed","inactiveAuthority":[redacted],"erasureFences":"passed","invalidArchiveRefusals":"passed","currentArchiveRetainsErasure":true}}
+OC-041 accepted state and its audit entry commit together, survive subject erasure and export without secrets; OC-052 all current durable categories restore inactive without authority or replay: nonempty refusal, invalid-input rollback, full relational/history/journal restore, credential exclusion, paused timer, explicit new-owner mapping and held approval

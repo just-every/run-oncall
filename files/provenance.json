@@ -1,0 +1,10 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/gr-mt-oncall-ci-2",
+  "head": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+  "fresh_origin_main": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+  "working_tree": "clean",
+  "candidate_commits": 0,
+  "product_pushed": false,
+  "pr": null
+}

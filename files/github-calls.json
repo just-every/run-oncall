@@ -1,0 +1,56 @@
+[
+  {
+    "call": 1,
+    "command": "gh api repos/just-every/run-oncall/actions/runs/40217202732/jobs --jq <failed steps and conclusions>",
+    "result": "success; retained jobs receipt"
+  },
+  {
+    "call": 2,
+    "command": "gh api repos/just-every/run-oncall/actions/runs/40116798926/jobs --jq <failed steps and conclusions>",
+    "result": "success; retained jobs receipt"
+  },
+  {
+    "call": 3,
+    "command": "gh run view 40116798926 --repo just-every/run-oncall --job 120939633115 --log-failed",
+    "exit": 0,
+    "stdout_bytes": 0,
+    "stderr_bytes": 0,
+    "result": "empty output; no transport error or assertion content"
+  },
+  {
+    "call": 4,
+    "command": "gh run view 40217202732 --repo just-every/run-oncall --job 121240813211 --log-failed",
+    "exit": 0,
+    "stdout_bytes": 0,
+    "stderr_bytes": 0,
+    "result": "empty output; no transport error or assertion content"
+  },
+  {
+    "call": 5,
+    "command": "gh run view 40217202732 --repo just-every/run-oncall --job 121240813073 --log-failed",
+    "exit": 0,
+    "stdout_bytes": 0,
+    "stderr_bytes": 0,
+    "result": "empty output; no transport error or assertion content"
+  },
+  {
+    "call": 6,
+    "command": "gh api repos/just-every/run-oncall/actions/runs?head_sha=4d1fc62a&per_page=100 --jq <run fields>",
+    "result": "zero rows for mistaken abbreviated SHA; not accepted as evidence"
+  },
+  {
+    "call": 7,
+    "command": "gh api repos/just-every/run-oncall/actions/runs?head_sha=4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b&per_page=100 --jq <run fields>",
+    "result": "completed successful Verify, Nightly journeys and Run site on exact current main SHA"
+  },
+  {
+    "call": 8,
+    "command": "gh api repos/just-every/run-oncall/actions/runs/43592091764/jobs?per_page=100 --jq <job conclusions>",
+    "result": "build, all seven selected shards (including transfer, browser and triage), and aggregate successful"
+  },
+  {
+    "call": 9,
+    "command": "gh api repos/just-every/run-oncall/actions/runs/43589736078/jobs?per_page=100 --jq <job conclusions>",
+    "result": "plan and aggregate successful; build/shards skipped by the reuse plan, so full executed coverage is proven by Nightly journeys 43592091764 instead"
+  }
+]

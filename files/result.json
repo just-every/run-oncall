@@ -1,0 +1,7 @@
+{
+  "status": "no-change",
+  "sha": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+  "summary": "Current main already passes exact-SHA Verify and full Nightly journeys, with all seven shards green; local build, typecheck, triage and managed transfer pass. Historical failure logs returned no content, so a common original cause remains undetermined.",
+  "tests": "setup exit 0; npx -y @runeditrun/rer build exit 0; pnpm run typecheck exit 0; ONCALL_TRIAGE_PART=all node tests/triage.mjs exit 0; ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/transfer.mjs exit 0; exact-SHA Verify 43589736078 and full Nightly journeys 43592091764 completed/success.",
+  "security": true
+}

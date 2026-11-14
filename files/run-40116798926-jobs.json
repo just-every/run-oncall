@@ -1,0 +1,13 @@
+{"conclusion":"failure","id":120939633115,"name":"managed-browser","steps":[{"conclusion":"failure","name":"Run node tests/verify.mjs","number":8}]}
+{"conclusion":"success","id":120939633274,"name":"adoption-demo","steps":[]}
+{"conclusion":"success","id":120939633290,"name":"runtime","steps":[]}
+{"conclusion":"success","id":120939633296,"name":"intake","steps":[]}
+{"conclusion":"success","id":120939633313,"name":"changes","steps":[]}
+{"conclusion":"success","id":120939633317,"name":"product-browser","steps":[]}
+{"conclusion":"success","id":120939633332,"name":"triage","steps":[]}
+{"conclusion":"success","id":120939633354,"name":"reviews","steps":[]}
+{"conclusion":"success","id":120939633358,"name":"activation","steps":[]}
+{"conclusion":"success","id":120939633424,"name":"signin","steps":[]}
+{"conclusion":"success","id":120939633456,"name":"hosted","steps":[]}
+{"conclusion":"success","id":120939633481,"name":"transfer","steps":[]}
+{"conclusion":"failure","id":120941479430,"name":"verify","steps":[{"conclusion":"failure","name":"Require every verification lane","number":2}]}

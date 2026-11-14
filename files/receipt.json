@@ -1,0 +1,72 @@
+{
+  "tag": "gr-mt-oncall-ci-2",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/gr-mt-oncall-ci-2",
+  "head": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+  "product_commits": 0,
+  "product_push": false,
+  "pull_request": null,
+  "clause_status_changes": [],
+  "tests": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0,
+      "log": "setup.log"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log": "build.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "cloud_run env ONCALL_TRIAGE_PART=all node tests/triage.mjs",
+      "exit": 0,
+      "log": "triage.log"
+    },
+    {
+      "command": "cloud_run env TMPDIR=\"$HOME/rer-consolidation/work/maint/gr-mt-oncall-ci-2/tmp\" ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=\"$HOME/rer-consolidation/work/gr-mt-oncall-ci-2/packet/browser\" node tests/transfer.mjs",
+      "status": "passed",
+      "log": "transfer.log",
+      "exit": 0
+    }
+  ],
+  "ci": [
+    {
+      "run_id": 43589736078,
+      "workflow": "Verify",
+      "head_sha": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+      "status": "completed",
+      "conclusion": "success",
+      "coverage": "reuse"
+    },
+    {
+      "run_id": 43592091764,
+      "workflow": "Nightly journeys",
+      "head_sha": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+      "status": "completed",
+      "conclusion": "success",
+      "coverage": "build and all seven selected shards executed successfully"
+    },
+    {
+      "run_id": 43589735969,
+      "workflow": "Run site",
+      "head_sha": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "github_call_count": 9,
+  "github_call_budget": 10,
+  "historical_cause": "Unavailable: the three one-time failed-job log commands returned exit 0 and zero bytes; no HTTP error or assertion was returned.",
+  "security_scope": "No product bytes changed. Selected evidence contains synthetic local diagnostic output and non-secret CI metadata; raw settings and environment files are excluded.",
+  "status": "no-change",
+  "fresh_origin_main": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+  "working_tree": "clean",
+  "product_publication_scan": "not applicable: no product changes, commits or product push",
+  "health_receipt": "transfer-health-receipt.json"
+}
