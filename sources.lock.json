@@ -6644,7 +6644,7 @@
       "executable": false
     },
     "tests/oncall-agent-flow.mjs": {
-      "sha256": "76afb90441140706bed45dfe3271ab9686c8ec6eb9d0f3435e47c55523127368",
+      "sha256": "92f344875d981eab0c2579367b2c300335010f179d6fa218d799d0b96f798ae3",
       "executable": false
     },
     "tests/oncall-agent-incident-replay.mjs": {
@@ -6689,6 +6689,10 @@
     },
     "tests/oncall-agent-team-replay.mjs": {
       "sha256": "63b3da5e943350b4439ea7d2fb2a00178fca0e7f7444dbe36e3c30a4180e2fe0",
+      "executable": false
+    },
+    "tests/oncall-agent-transition-replay.mjs": {
+      "sha256": "4a19671b1f8c1ea8fc1b8cb5671cfc28e08ae93f56854fea2e08ae90c1c2d840",
       "executable": false
     },
     "tests/oncall-agent-transport.mjs": {
