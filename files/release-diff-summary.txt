@@ -1,0 +1,51 @@
+9e11ec73dc0f3ee12cba7e846a43ff63227d873f Upgrade Vite to 8.2.4 to fix launch-editor vulnerabilities
+b417d7fe46061e055ed946200317d36225f7b4a5 Check triage statuses within incident rows
+44ea2ea96a43a600a8d4e1cd127d2dc000ded244 Describe the default follow-up review requirement accurately
+f882ff90f679bb6d7f34b84e0e86a949bdc8c3f4 Make coordination decisions and status labels readable
+d21a61a6635cca536c972c139e1115567af26eef Make installer recipes and compatible samples runnable
+60581f8ab8d130c2ac34b09424467cd7689cd77a Preserve restored owner access and archived names
+d54fb7958cedddbce40483dd3d557db183842112 Name the rota detail timeline in schedule guidance
+d2e63dcafad4f91d65e64ebd9bb97438b75497cb Align on-call docs and weekly gap summary with current screens
+
+ MOVE-IN.md                             |  8 ++--
+ README.md                              |  4 +-
+ docs/changes.md                        |  4 +-
+ docs/checkpoints.md                    |  6 +--
+ docs/compatible-intake.md              |  4 +-
+ docs/incidents.md                      | 10 ++--
+ docs/install.md                        |  4 +-
+ docs/monitoring-providers.md           |  6 +--
+ docs/move-in.md                        | 13 +++--
+ docs/overview.md                       |  2 +-
+ docs/readiness.md                      |  2 +-
+ docs/schedules.md                      | 38 ++++++---------
+ package.json                           |  2 +-
+ pnpm-lock.yaml                         | 58 +++++++++++------------
+ public/move-in/oncall-export.mjs.txt   |  4 +-
+ scripts/checkpoint.mjs                 |  2 +-
+ scripts/exporter-cli.mjs               |  4 +-
+ sources.lock.json                      | 86 +++++++++++++++++++---------------
+ src/agent-door/coordination-summary.ts | 56 ++++++++++++++++++++++
+ src/agent-door/index.server.ts         |  2 +
+ src/app/TriageFilters.tsx              | 24 ++++++----
+ src/auth.server.ts                     |  5 +-
+ src/identity-link.ts                   | 25 ++++++++--
+ src/incident/Timeline.tsx              |  4 +-
+ src/incident/types.ts                  | 12 +++++
+ src/integrations/ProviderRequest.tsx   | 21 +++++++++
+ src/integrations/RequestExample.tsx    |  8 ++--
+ src/integrations/SourceTest.tsx        | 26 ++--------
+ src/integrations/sender.ts             | 42 +++++++++++++++++
+ src/landing/RestoredOwner.tsx          |  8 +++-
+ src/modules/agent-door/pages.ts        | 35 ++++++++------
+ src/modules/agent-door/types.ts        |  2 +
+ src/move-in/ExportHelp.tsx             |  8 ++--
+ src/on-call/read.ts                    |  9 +---
+ src/readiness/ReadinessPage.tsx        |  2 +-
+ src/routing/RoutedSenderSetup.tsx      | 14 ++----
+ tests/agent-door-browser.mjs           | 36 ++++++++++++++
+ tests/product-browser-journey.mjs      | 27 ++++++++---
+ tests/product-browser.mjs              | 31 +++++++++++-
+ tests/readable-names-browser.mjs       |  3 ++
+ tests/transfer.mjs                     | 58 +++++++++++++++++++++--
+ 41 files changed, 499 insertions(+), 216 deletions(-)

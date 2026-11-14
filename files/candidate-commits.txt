@@ -1,0 +1,7 @@
+commit 54e2434253aeb8510759b15e3589ae2643d02abd
+Author:     Run Edit Run fleet <fleet@runeditrun.com>
+AuthorDate: Sat Nov 14 04:59:29 2026 +0000
+Commit:     Run Edit Run fleet <fleet@runeditrun.com>
+CommitDate: Sat Nov 14 04:59:29 2026 +0000
+
+    Prepare Oncall 0.5.14 release metadata

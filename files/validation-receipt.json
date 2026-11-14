@@ -1,0 +1,125 @@
+{
+  "schema": 1,
+  "task": "sd-oncall-release-0-5-14",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-release-0-5-14",
+  "head": "54e2434253aeb8510759b15e3589ae2643d02abd",
+  "base": "9e11ec73dc0f3ee12cba7e846a43ff63227d873f",
+  "previous_tag": "v0.5.13",
+  "previous_tag_commit": "8adae6c836f2fabda29e8a091b052450410c8ca5",
+  "version_before": "0.5.13",
+  "version_after": "0.5.14",
+  "rer_pin_before": "0.2.113",
+  "rer_pin_after": "0.2.113",
+  "recorded_at": "2026-11-14T05:00:32Z",
+  "checks": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0,
+      "log": "dependency-install.log"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "log": "metadata-check.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "log": "source-lock-generate.json"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "source-lock-check.json"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "release metadata consistency and lease review",
+      "exit": 0,
+      "log": "metadata-consistency.txt"
+    },
+    {
+      "command": "git rebase origin/main",
+      "exit": 0,
+      "result": "already up to date; main unchanged"
+    },
+    {
+      "command": "candidate author, committer, trailers and full-message inspection",
+      "exit": 0,
+      "log": "candidate-commits.txt"
+    },
+    {
+      "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-oncall-release-0-5-14",
+      "exit": 0,
+      "log": "product-push.log",
+      "attempts": 1
+    }
+  ],
+  "scope": [
+    "CHANGELOG.md",
+    "README.md",
+    "RELEASE.json",
+    "RELEASE.md",
+    "package.json",
+    "seed.json",
+    "sources.lock.json"
+  ],
+  "counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101,
+    "migrations_added": 0
+  },
+  "counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101,
+    "migrations_added": 0
+  },
+  "clauses_changed": [],
+  "tests_added": 0,
+  "tests_modified": 0,
+  "tests_removed": 0,
+  "migrations_diff": [],
+  "product_push": "success",
+  "pr": null,
+  "not_run": [
+    "full local verify",
+    "local build",
+    "browser journeys",
+    "publication scan (fleet Mac owns this)",
+    "tag/sign/publish/deploy"
+  ],
+  "toolchain": {
+    "node": "24.19.0",
+    "pnpm": "10.12.4",
+    "declared_node": "22.20.0",
+    "note": "The provided toolchain script retains the newer VM Node; pnpm emitted an engine warning; typecheck passed."
+  },
+  "ci": {
+    "run_id": 43559330559,
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "54e2434253aeb8510759b15e3589ae2643d02abd",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43559330559",
+    "api_calls": 8,
+    "observed_at": "2026-11-14T05:20:21Z"
+  },
+  "product_state": "READY candidate; independent fleet landing and publication gates remain",
+  "dependencies_cleanup": {
+    "completed_at": "2026-11-14T05:21:15Z",
+    "path": "/workspace/run-oncall/node_modules",
+    "exists_after": false
+  }
+}

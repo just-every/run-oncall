@@ -1,0 +1,17 @@
+{
+  "head": "54e2434253aeb8510759b15e3589ae2643d02abd",
+  "api_calls": 8,
+  "verify": [
+    43559330559
+  ],
+  "initial_discovery": "failed exit=1; diagnostic not retained",
+  "next_read_not_before": "2026-11-14T05:25:21Z",
+  "credential_refresh": "completed; task-side Git setup reapplied",
+  "observed_at": "2026-11-14T05:20:21Z",
+  "last_verify": {
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "54e2434253aeb8510759b15e3589ae2643d02abd",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43559330559"
+  }
+}

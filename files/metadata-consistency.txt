@@ -1,0 +1,10 @@
+Release consistency and scope review: PASS
+Version: 0.5.13 -> 0.5.14 in package.json, seed.json, RELEASE.json, README.md and RELEASE.md.
+CHANGELOG.md current notes exactly match RELEASE.json publicReleaseNotes.
+Existing historical upgrade instructions retained verbatim at the end of the new instructions.
+Actual rer pin unchanged: 0.2.113. No package-lock.json exists; pnpm-lock.yaml remains unchanged.
+Actual v0.5.13..main delta: 8 commits, 41 files; migration-path changes: 0.
+Migration list: 0 -> 0. Breaking: false. Extension changes: 1 (prior release) -> 0 (current delta).
+Contract status changes: 0. Full target: 26 done / 41 partial / 34 missing / 101 total, unchanged.
+Exactly seven authorized metadata/reference/source-lock paths changed; no product, test, homepage or generated-view edits.
+Publication scan: deferred to the fleet Mac lander, per cloud authorization; not run or claimed here.

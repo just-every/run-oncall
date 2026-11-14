@@ -1,0 +1,59 @@
+{
+  "observed_at": "2026-11-14T05:02:16Z",
+  "main": "9e11ec73dc0f3ee12cba7e846a43ff63227d873f",
+  "main_runs": [
+    {
+      "id": 43557706963,
+      "name": "Run demo",
+      "status": "completed",
+      "conclusion": "skipped",
+      "head_sha": "9e11ec73dc0f3ee12cba7e846a43ff63227d873f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43557706963"
+    },
+    {
+      "id": 43557707042,
+      "name": "Verify",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "9e11ec73dc0f3ee12cba7e846a43ff63227d873f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43557707042"
+    },
+    {
+      "id": 43557707040,
+      "name": "Run site",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "9e11ec73dc0f3ee12cba7e846a43ff63227d873f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43557707040"
+    },
+    {
+      "id": 43557706788,
+      "name": "Push on main",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "9e11ec73dc0f3ee12cba7e846a43ff63227d873f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43557706788"
+    },
+    {
+      "id": 43556264993,
+      "name": "Verify",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "9e11ec73dc0f3ee12cba7e846a43ff63227d873f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43556264993"
+    }
+  ],
+  "latest_release": {
+    "tag_name": "v0.5.13",
+    "name": "Oncall 0.5.13",
+    "draft": false,
+    "published_at": "2026-11-13T19:42:50Z",
+    "html_url": "https://github.com/just-every/run-oncall/releases/tag/v0.5.13"
+  },
+  "v0.5.13_tag_object": "97b1b608247524f068178de4004fb738e95907e5",
+  "v0.5.13_commit": "8adae6c836f2fabda29e8a091b052450410c8ca5",
+  "v0.5.14_tag_before_edit": "absent",
+  "release_branch_before_edit": "absent",
+  "release_pr_before_edit": "none",
+  "api_calls_before_edit": 3
+}

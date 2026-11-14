@@ -1,0 +1,30 @@
+{
+  "selected": [
+    "REPORT.md",
+    "PLAN.md",
+    "validation-receipt.json",
+    "prerequisite-receipt.json",
+    "RELEASE-NOTES.md",
+    "release-diff-summary.txt",
+    "candidate.patch",
+    "metadata-consistency.txt",
+    "metadata-check.log",
+    "typecheck.log",
+    "dependency-install.log",
+    "source-lock-generate.json",
+    "source-lock-check.json",
+    "commit-identities.txt",
+    "candidate-commits.txt",
+    "product-push.log",
+    "main-runs.json",
+    "latest-release.json",
+    "open-prs.json",
+    "ci-watcher.json",
+    "candidate-runs-5.json",
+    "candidate-verify-6.json",
+    "candidate-verify-7.json",
+    "candidate-verify-8.json",
+    "packet-selection.json"
+  ],
+  "selection_note": "Complete explicit regular non-secret report and actual receipt selection at final exact-SHA green readback."
+}
