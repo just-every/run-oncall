@@ -6667,6 +6667,10 @@
       "sha256": "0838fa9bf7e0ae09edd6765b802d59ea4a4db1e201eec766b3dfa92cf9fa6bff",
       "executable": false
     },
+    "tests/oncall-agent-retention.mjs": {
+      "sha256": "94076043257e9fe131f45ccfbaab104e926e6d5ed51da56547f7fe978e70bfe7",
+      "executable": false
+    },
     "tests/oncall-agent-role-replay.mjs": {
       "sha256": "4a514f440831345834a12503e383e6554d5e44de9025ea5dccbf392696df86cf",
       "executable": false
