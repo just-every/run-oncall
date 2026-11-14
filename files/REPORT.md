@@ -5,7 +5,7 @@ Branch: cloud/sd-oncall-c-f248
 Candidate: 772967384968f665f6e8363fc1b1e3d00b6fae86
 Observed main: f7b5b5ea71e955081501bebf81a4f967459c8e34
 Product PR: none; the repository has a branch-push Verify entry point.
-CI: Verify 43625299142 event=push status=in_progress conclusion=None head=772967384968f665f6e8363fc1b1e3d00b6fae86
+CI: Verify 43625299142 event=push status=completed conclusion=success head=772967384968f665f6e8363fc1b1e3d00b6fae86
 
 Result and scope
 
@@ -68,7 +68,7 @@ DONE-RIDERS accounting
 
 1. Selected slice PASS through populated native HTTP, MCP and built views; whole clause UNMET because the retained parent outcomes remain. No DONE claim.
 2. PASS for selected proof: nonempty records, exact expected inclusions and exclusions, whole native response equality; the unsafe authority, revoked credential and erased capture regressions also pass in the existing resourceJourney.
-3. Verify 43625299142 event=push status=in_progress conclusion=None head=772967384968f665f6e8363fc1b1e3d00b6fae86. The runtime path is tests/runtime.mjs with ONCALL_RUNTIME_PART=machines, importing tests/oncall-agent-flow.mjs. The browser path is tests/product-browser.mjs importing tests/agent-door-browser.mjs, which calls resourceParity with browserProof true. Both are in push Verify.
+3. Verify 43625299142 event=push status=completed conclusion=success head=772967384968f665f6e8363fc1b1e3d00b6fae86. The runtime path is tests/runtime.mjs with ONCALL_RUNTIME_PART=machines, importing tests/oncall-agent-flow.mjs. The browser path is tests/product-browser.mjs importing tests/agent-door-browser.mjs, which calls resourceParity with browserProof true. Both are in push Verify.
 4. PASS: final native browser proof and resource-parity.json are bound to the exact candidate; the machine run's receipt-only revision distinction is disclosed above. No asserted production or runtime entry bytes differ.
 5. INSPECTED: no receiving clause or inherited duty text is edited or newly claimed.
 6. Mechanical PASS: contract generator write and check pass; generated views are restored from origin/main and not committed. Main's MISSING judgment and all 101 rows remain. No unsupported evidence-cell judgment is written.
