@@ -34,11 +34,11 @@ export async function coveredSwap(page,context,session,substitute,directory,capt
  await capture('swap-existing-cover');
  await sheet.getByRole('button',{name:'Close sheet',exact:true}).click();
  const saved=(await api('/api/paging/state')).schedules.find(row=>row.id===rota.id);
- const revised=await api('/api/paging/schedules',{...saved,primary:{...saved.primary,members:[session.member.id]}});
- await page.reload();await page.getByRole('button',{name:'Request a swap',exact:true}).click();sheet=page.getByRole('dialog');await sheet.getByLabel('Substitute',{exact:true}).selectOption(substitute.id);
+ const revised=await api('/api/paging/schedules',{...saved,id:rota.id+'-alternative',revision:0,primary:{...saved.primary,members:[session.member.id]}});
+ await page.goto(origin+'/on-call/'+revised.id);await page.getByRole('button',{name:'Request a swap',exact:true}).click();sheet=page.getByRole('dialog');await sheet.getByLabel('Substitute',{exact:true}).selectOption(substitute.id);
  await sheet.getByRole('button',{name:'Request',exact:true}).click();await sheet.waitFor({state:'detached'});
- const swap=(await api('/api/schedule-coordination')).records.find(row=>row.kind==='swap'&&row.data.schedule===rota.id);
+ const swap=(await api('/api/schedule-coordination')).records.find(row=>row.kind==='swap'&&row.data.schedule===revised.id);
  assert.ok(swap,'an uncovered alternative produces a real swap request');
  assert.ok(Date.parse(swap.data.start)>=Date.parse(revised.overrides[0].end),'the offered shift starts after existing cover');
- assert.deepEqual((await api('/api/paging/state')).schedules.find(row=>row.id===rota.id).overrides,revised.overrides,'requesting a swap leaves cover untouched');
+ assert.deepEqual((await api('/api/paging/state')).schedules.find(row=>row.id===revised.id).overrides,revised.overrides,'requesting a swap leaves cover untouched');
 }
