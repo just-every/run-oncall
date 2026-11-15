@@ -6783,6 +6783,10 @@
       "sha256": "8cd2a1108913f05bbdaf741de75b2e827cd0e88b2d83f369290836951e217ca3",
       "executable": false
     },
+    "tests/stranger-trip-steps.mjs": {
+      "sha256": "0430f76896570f5d3b965890532c114c1e9e582124b995fa57342524eea0a13c",
+      "executable": false
+    },
     "tests/transfer.mjs": {
       "sha256": "1d250071a375ae9cbfca40f73c3645ec9f3df7207365a541135c6e79b1538f9a",
       "executable": false
