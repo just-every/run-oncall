@@ -7,11 +7,14 @@ import { ownerDeploy } from '@runeditrun/rer/deploy';
 import { localPortability } from '@runeditrun/rer/portability';
 import { labels } from '@runeditrun/rer/local-installer';
 import * as model from './ui/seed.mjs';
+import { validateMailConfiguration } from '../../src/mail-configuration.mjs';
+import { refuse } from '@runeditrun/rer/errors';
 
 export { selectLocalState };
 const baseLifecycle = operatorInstaller({
  database: 'oncall-local', features: model.features,
  async prepare({ root, input, store }) {
+  validateMailConfiguration(input);
   // export and import run prepare without answers; the saved branding stays.
   if (input.APP_NAME === undefined && input.PRIMARY_COLOR === undefined) return;
   await store.step('Saving application branding');
@@ -33,6 +36,12 @@ export const adapter = lifecycle;
 export const { install } = lifecycle;
 export const commandAdapter = createCommandAdapter(lifecycle, {
  generatedOutputs: ['management/integration/deployment-spec.json', 'public/move-in/oncall-export.mjs.txt'],
+ mailOffSignIn: 'rer signin',
+ deployPolicy({ options, bindings, env }) {
+  if (options.remove || options.unsetSecret) return;
+  try { validateMailConfiguration({ ...env, ...bindings }, { required: !options.dryRun }); }
+  catch (error) { throw refuse(error.message); }
+ },
  site: { entry: 'src/site/pages.tsx', output: 'dist/site', declaration: 'deploy-site.json', config: 'vite.site.config.ts' },
  publicPages: ['/', '/docs', '/docs/install', '/signin/local'],
  dev: developmentTarget, preview: previewTarget, verify: ['pnpm', ['run', 'verify:app']], deploy: ownerDeploy('deploy.json', lifecycle),

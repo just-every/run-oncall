@@ -6,10 +6,14 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
-  "triggers": { "crons": ["* * * * *"] },
+  "triggers": {
+    "crons": [
+      "* * * * *"
+    ]
+  },
   "vars": {
     "AUTH_LOCAL": "false",
-    "MAIL_PROVIDER": "sendgrid",
+    "MAIL_PROVIDER": "later",
     "MAIL_FROM": "",
     "MAIL_RELAY_URL": ""
   },

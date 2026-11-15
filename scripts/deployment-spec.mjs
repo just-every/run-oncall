@@ -14,8 +14,7 @@ const [build, deploy, setup, policy] = await Promise.all([
   json('scripts/deployment-spec-policy.json'),
 ]);
 const bindings = wranglerBindings(build);
-// Managed mail assigns these public inputs; owner-account deploys retain their
-// existing SendGrid declaration and MAIL_FROM environment input.
+// Mail selection stays deferred until the operator chooses a provider or explicit none.
 const publicVariables = {...build.vars, ...deploy.vars, MAIL_FROM: '', MAIL_RELAY_URL: ''};
 const setupFields = new Map(setup.fields.map(field => [field.name, field]));
 const secretNames = setup.fields.filter(field => field.kind === 'secret' && field.required).map(field => field.name);
