@@ -1,0 +1,8 @@
+PASS legitimate JSON and cross-JSON round trips preserve structured values
+PASS typed array serialization ignores attacker-selected constructor names
+PASS unknown typed-array constructors are rejected during JSON deserialization
+PASS RegExp source cannot terminate an embedding script and still round trips
+PASS array-like records with hostile length are rejected in both JSON modes
+PASS invalid Sequence doneAt values are rejected in both JSON modes
+PASS forged async-iterator source cannot invoke an attacker-chosen on callable
+{"status":"passed","checks":7,"names":["legitimate JSON and cross-JSON round trips preserve structured values","typed array serialization ignores attacker-selected constructor names","unknown typed-array constructors are rejected during JSON deserialization","RegExp source cannot terminate an embedding script and still round trips","array-like records with hostile length are rejected in both JSON modes","invalid Sequence doneAt values are rejected in both JSON modes","forged async-iterator source cannot invoke an attacker-chosen on callable"]}

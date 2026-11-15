@@ -1,0 +1,147 @@
+{
+  "author": "Run Edit Run fleet (Codex)",
+  "date": "2026-11-15",
+  "status": "passed",
+  "files": [
+    {
+      "path": "REPORT.md",
+      "bytes": 8711,
+      "sha256": "376af802a9a58eeabe9a96321e477da1e61e5eecc72df7786fc718597f6ebcd3"
+    },
+    {
+      "path": "PLAN.md",
+      "bytes": 3237,
+      "sha256": "893c9d303e78d51d3710f5bcb0d5b1dd91944497c04ebd85d8764962e1fe2e30"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 3188,
+      "sha256": "8111cd70d92a1ab698666eca6937a4427c13fbef363967c650579ffa1a2ac704"
+    },
+    {
+      "path": "validation-receipt.json",
+      "bytes": 4157,
+      "sha256": "dfcb41a61c6a2e773ce89b3c6ceb367270b8368a3d93ba2962dd804571c4ce16"
+    },
+    {
+      "path": "product-provenance.json",
+      "bytes": 1432,
+      "sha256": "8d5cb92d62f8f792a6384c42294646ef5b6331c1449993c650215ba46c29c897"
+    },
+    {
+      "path": "publication-receipt.json",
+      "bytes": 701,
+      "sha256": "484fcbc5dfb4d2563a0b71b4f6fb809c697e10281a501a65e50ee79fa04763c3"
+    },
+    {
+      "path": "publication-scan.json",
+      "bytes": 412916,
+      "sha256": "023bb01ab0022c4e75152b4e728b08b57e1097d6697fe331eb34ec89927e27e2"
+    },
+    {
+      "path": "publication-initial-worktree-scan.json",
+      "bytes": 415472,
+      "sha256": "224fb1cfe12222b22d4ff4811abff0eaa5c69a79c3cf15fd914cc27186be837f"
+    },
+    {
+      "path": "lock-audit.json",
+      "bytes": 1102,
+      "sha256": "aa83b55b701319dbcac5ebefd0c2301c075c48e2b1bcf7e812ec5bfaefa1161c"
+    },
+    {
+      "path": "dependency-graph.txt",
+      "bytes": 1158,
+      "sha256": "0323b4b41143bfadd848d289e4316d6b95d7281cef89dee05c67b5faaa5bae3e"
+    },
+    {
+      "path": "candidate.diff",
+      "bytes": 2469,
+      "sha256": "76d803b8b7e112151926e7c6f3016c642562e26c819f8253a16621ce27879be7"
+    },
+    {
+      "path": "commit-identity.txt",
+      "bytes": 85,
+      "sha256": "148bad84b5b174568017df50d58e073566703d43c6c9fe7fa6f1af04420adf55"
+    },
+    {
+      "path": "install.log",
+      "bytes": 1966,
+      "sha256": "31b240a54bd32d6f625eccce2c5564b68663ce4b99eaf811418fc27e812348dc"
+    },
+    {
+      "path": "build.log",
+      "bytes": 16616,
+      "sha256": "a39b2177d8adb9410b58ff35f9d35b8ac96530c868f398761a4fbb176199a635"
+    },
+    {
+      "path": "typecheck.log",
+      "bytes": 120,
+      "sha256": "724bc4ab6540ec99bd327f9acf716ca85061602c4bbd3069e55df14db9010dbc"
+    },
+    {
+      "path": "source-lock-check.json",
+      "bytes": 279079,
+      "sha256": "c209e3efea6485bc6ac4a48ad0f1d05ed8f8701efcd2e10370fed0b0e05682a1"
+    },
+    {
+      "path": "runtime-core.log",
+      "bytes": 23825,
+      "sha256": "0e291b2d07fc419b8b9a43f616e5997b4056de3b52f5bdff1390d5ba827dcfa5"
+    },
+    {
+      "path": "security-probe.mjs",
+      "bytes": 3276,
+      "sha256": "0a6378dcd774b04fd2ccd3d06d981a9b2695b2923d3b200e4c8e607fae76c4e4"
+    },
+    {
+      "path": "security-probe.log",
+      "bytes": 1080,
+      "sha256": "c4c980bb815d0f7d37dc260c8c8d4381017010e4309b0eabcf2a307db324ee3d"
+    },
+    {
+      "path": "browser-smoke.mjs",
+      "bytes": 3413,
+      "sha256": "f3a885e15b497b35a989584c1719234cae01f50e5e991852e0b3645b37eced04"
+    },
+    {
+      "path": "browser-smoke.log",
+      "bytes": 534,
+      "sha256": "bd2c9919e19b2296a8cd2d317e18e706c2c20e660dfb3ee5da1ba6a6d22e62ec"
+    },
+    {
+      "path": "browser/service-1440.png",
+      "bytes": 98291,
+      "sha256": "5aabef144d43d374488c2506588fa656a2e5373d89ba218076dfc6a73420c5a8"
+    },
+    {
+      "path": "browser/service-390.png",
+      "bytes": 71258,
+      "sha256": "7612882fa352e3050e0b003ed35a2d5a7a3001e2cdec2e46a97c009107d7b5ca"
+    },
+    {
+      "path": "push-receipt.txt",
+      "bytes": 1052,
+      "sha256": "5eb0ffd72ffe64225c3f8fda400c0473173da6039f796dc53e5b06ec8b8f94ff"
+    },
+    {
+      "path": "ci-discovery.json",
+      "bytes": 392,
+      "sha256": "b1005be64564ff8d848868ce86c8df49eba411d3485bac9b156fbb388354df8a"
+    },
+    {
+      "path": "ci-polls.json",
+      "bytes": 1092,
+      "sha256": "f9abe0c517b647754a55ce6f17e698d16e26c2461fe994cde5357add4f6a7e4e"
+    },
+    {
+      "path": "remote-refs.txt",
+      "bytes": 134,
+      "sha256": "78f647a3a500f41a36a0384a52b9b4cc30b3e56dcc053091f5302bda3ccdc059"
+    },
+    {
+      "path": "result.json",
+      "bytes": 582,
+      "sha256": "f7ef9ee7e1957f71053e09a6daee256fb265a6404067839fc9d768aa0697bdd4"
+    }
+  ]
+}

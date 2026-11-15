@@ -1,0 +1,130 @@
+{
+  "author": "Run Edit Run fleet (Codex)",
+  "date": "2026-11-15",
+  "productHead": "5aa6831eab93dcc606f6ce89200b47bd87f55fa5",
+  "branch": "cloud/gr-mt-oncall-dep-5",
+  "commands": [
+    {
+      "command": "pnpm update seroval --depth 100 --lockfile-only",
+      "exit": 0,
+      "result": "Only seroval resolution and dependent peer contexts changed."
+    },
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0,
+      "output": "Private setup output deliberately excluded from public packet."
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log": "build.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "result": "Only pnpm-lock.yaml digest changed."
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "source-lock-check.json"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "result": "0 errors, 0 warnings; generated documents current."
+    },
+    {
+      "command": "cloud_run env ONCALL_RUNTIME_PART=core node tests/runtime.mjs",
+      "exit": 0,
+      "log": "runtime-core.log",
+      "result": "Core journey 160.5 seconds; 18 linked hosted-mode pages/files answered 200; local execution only."
+    },
+    {
+      "command": "timeout 30 node packet/security-probe.mjs",
+      "exit": 0,
+      "log": "security-probe.log",
+      "checks": 7
+    },
+    {
+      "command": "structural YAML lock audit",
+      "exit": 0,
+      "log": "lock-audit.json"
+    },
+    {
+      "command": "cloud_run node packet/browser-smoke.mjs",
+      "exit": 0,
+      "log": "browser-smoke.log",
+      "assertedWidth": 1440,
+      "screenshotWidths": [
+        1440,
+        390
+      ],
+      "result": "Hydration, protected service creation, autosave and reload pass; no browser errors."
+    },
+    {
+      "command": "Base publish-check.mjs --repo clean-publication-export --ref 5aa6831eab93dcc606f6ce89200b47bd87f55fa5 --public-base https://github.com/just-every/run-oncall.git#main --env-file injected-bundle --timeout-seconds 600",
+      "exit": 0,
+      "log": "publication-scan.json",
+      "result": "COMPLETE/PASS; zero findings; source commit and tree exactly match candidate; environment checked."
+    },
+    {
+      "command": "python3 cloud-push.py origin cloud/gr-mt-oncall-dep-5",
+      "exit": 0,
+      "log": "push-receipt.txt",
+      "result": "PUSH_OK on first attempt; candidate identity and trailer hook passed."
+    },
+    {
+      "command": "gh api repos/just-every/run-oncall/actions/runs/43726517309 --jq {status,conclusion,head_sha,html_url}",
+      "exit": 0,
+      "result": "completed/success on exact candidate SHA",
+      "receipt": "ci-polls.json"
+    }
+  ],
+  "localBuildProvenance": {
+    "sourceSha": "98d633ee7d20ebbb1d68842eaab998bbdffb284b",
+    "note": "Build ran before maintenance commit, against the changed lockfile. Exact product SHA CI is required separately."
+  },
+  "contractCountsBefore": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "contractCountsAfter": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "clauseStatusChanges": [],
+  "testRegistrationsAdded": 0,
+  "testRegistrationsDeleted": 0,
+  "githubExplicitCallsUsed": 8,
+  "skipped": [
+    {
+      "command": "full local rer verify",
+      "reason": "Cloud brief requires focused local checks and full branch CI, and forbids the full local suite."
+    }
+  ],
+  "ci": {
+    "runId": 43726517309,
+    "githubCall": 8,
+    "queriedAt": "2026-11-15T15:05:36.606267+00:00",
+    "queryEpoch": 1794755136.047911,
+    "conclusion": "success",
+    "head_sha": "5aa6831eab93dcc606f6ce89200b47bd87f55fa5",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43726517309",
+    "status": "completed"
+  },
+  "outcome": "fixed"
+}

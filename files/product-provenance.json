@@ -1,0 +1,41 @@
+{
+  "author": "Run Edit Run fleet (Codex)",
+  "date": "2026-11-15",
+  "branch": "cloud/gr-mt-oncall-dep-5",
+  "head": "5aa6831eab93dcc606f6ce89200b47bd87f55fa5",
+  "tree": "685cf33bfcec6b4c932dd0c809fefc22a1532c33",
+  "origin": "https://github.com/just-every/run-oncall.git",
+  "base": "98d633ee7d20ebbb1d68842eaab998bbdffb284b",
+  "changedFiles": [
+    "pnpm-lock.yaml",
+    "sources.lock.json"
+  ],
+  "productPush": "PUSH_OK; branch created on first attempt",
+  "ci": {
+    "runId": 43726517309,
+    "githubCall": 8,
+    "queriedAt": "2026-11-15T15:05:36.606267+00:00",
+    "queryEpoch": 1794755136.047911,
+    "conclusion": "success",
+    "head_sha": "5aa6831eab93dcc606f6ce89200b47bd87f55fa5",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43726517309",
+    "status": "completed"
+  },
+  "pr": null,
+  "candidateCommitCount": 1,
+  "identity": "Run Edit Run fleet <fleet@runeditrun.com>",
+  "trailers": [],
+  "contractChanges": [],
+  "publicationSource": "Clean git archive of HEAD with full-history mirror metadata; raw tree hash matches candidate.",
+  "publication": {
+    "status": "PASS",
+    "complete": true,
+    "findings": 0,
+    "report": "publication-scan.json"
+  },
+  "githubExplicitCallsUsed": 8,
+  "outcome": "fixed",
+  "custody": "READY",
+  "ready": "READY branch=cloud/gr-mt-oncall-dep-5 head=5aa6831eab93dcc606f6ce89200b47bd87f55fa5",
+  "completedAt": "2026-11-15T15:06:04.630341+00:00"
+}

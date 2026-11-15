@@ -1,0 +1,15 @@
+{
+  "queriedAt": "2026-11-15T14:50:36.571412+00:00",
+  "queryEpoch": 1794754236.0402682,
+  "githubCall": 5,
+  "runs": [
+    {
+      "conclusion": null,
+      "head_sha": "5aa6831eab93dcc606f6ce89200b47bd87f55fa5",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43726517309",
+      "id": 43726517309,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ]
+}

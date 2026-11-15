@@ -1,0 +1,33 @@
+{
+  "runId": 43726517309,
+  "githubExplicitCallsUsed": 8,
+  "observations": [
+    {
+      "githubCall": 6,
+      "queriedAt": "2026-11-15T14:55:36.584228+00:00",
+      "queryEpoch": 1794754536.0431287,
+      "conclusion": null,
+      "head_sha": "5aa6831eab93dcc606f6ce89200b47bd87f55fa5",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43726517309",
+      "status": "in_progress"
+    },
+    {
+      "githubCall": 7,
+      "queriedAt": "2026-11-15T15:00:36.654216+00:00",
+      "queryEpoch": 1794754836.045739,
+      "conclusion": null,
+      "head_sha": "5aa6831eab93dcc606f6ce89200b47bd87f55fa5",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43726517309",
+      "status": "in_progress"
+    },
+    {
+      "githubCall": 8,
+      "queriedAt": "2026-11-15T15:05:36.606267+00:00",
+      "queryEpoch": 1794755136.047911,
+      "conclusion": "success",
+      "head_sha": "5aa6831eab93dcc606f6ce89200b47bd87f55fa5",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43726517309",
+      "status": "completed"
+    }
+  ]
+}
