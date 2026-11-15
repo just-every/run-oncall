@@ -1001,12 +1001,21 @@ try {
  const checkpointEdit={schedule:{...changed,name:'Edited after checkpoint'},from:Date.parse('2026-03-08T00:00:00Z'),to:Date.parse('2026-03-09T00:00:00Z')}
  const checkpointReview=ok(await req('/api/schedules/daily/review',checkpointEdit))
  ok(await req('/api/schedules/daily/apply',{...checkpointEdit,digest:checkpointReview.digest,confirmed:true}))
+ const restoreStarted=Date.now()
  const replacement=await req('/api/recovery/restore',{mode:'replace',checkpoint});ok(replacement)
+ const restoreCompleted=Date.now()
  const stateAfter=ok(await w.request('/api/state',undefined,replacement.cookie)),receiving=structuredClone(prior)
  if(receiving.scheduleRecords)receiving.scheduleRecords=receiving.scheduleRecords.map(row=>({...row,active:false,data:row.kind==='subscription'?{...row.data,hash:null}:row.data}))
  receiving.members=receiving.members.map(m=>m.role==='stakeholder'?{...m,active:false}:m)
  for(const i of receiving.incidents){if(i.manualPage)i.manualPage.obligations=i.manualPage.obligations.map(o=>o.state==='recorded'?{...o,state:'stopped',outcome:'Restored inactive; no sender'}:o);if(i.responderRequests)i.responderRequests=i.responderRequests.map(r=>({...r,status:r.status==='pending'?'held':r.status,obligation:r.obligation.state==='recorded'?{...r.obligation,state:'stopped',outcome:'Restored inactive; no sender'}:r.obligation,notice:r.notice?{...r.notice,state:'stopped'}:null}));}
- assert.deepEqual({...stateAfter,revision:prior.revision},receiving,'checkpoint retains complete history while new status identities and active manual records restore inactive')
+ for(const alert of receiving.alerts)if(alert.onCall?.state==='running'){
+  const held=stateAfter.alerts.find(row=>row.id===alert.id)?.onCall
+  assert.ok(held&&Date.parse(held.endedAt)>=restoreStarted&&Date.parse(held.endedAt)<=restoreCompleted,'on-call recovery hold is recorded during this restore')
+  const outcome='Restored inactive; will not resume'
+  Object.assign(alert.onCall,{state:'stopped',endedAt:held.endedAt,outcome})
+  alert.onCall.records=alert.onCall.records.map(row=>row.state==='pending'?{...row,state:'stopped',outcome}:row)
+ }
+ assert.deepEqual({...stateAfter,revision:prior.revision},receiving,'checkpoint retains complete history while new status identities, active manual records and on-call notification runs restore inactive')
  const pagingAfter=ok(await w.request('/api/paging/state',undefined,replacement.cookie));assert.deepEqual(pagingAfter.schedules,checkpoint.paging.schedules);assert.deepEqual(pagingAfter.policies,checkpoint.paging.policies)
  ok(await w.request('/api/state',undefined,cookie),401)
  record('OC-016: paired checkpoint invalid rollback and complete replacement preserved both datasets and revoked the old session')
