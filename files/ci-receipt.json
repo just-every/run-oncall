@@ -1,11 +1,28 @@
 {
   "repository": "just-every/run-oncall",
   "productHead": "d8357c8e671651b9e2f2021eaf32d705a3360fd0",
-  "runId": null,
-  "observations": [],
-  "latest": null,
-  "apiCallsUsed": 9,
-  "readiness": "PUSHED; corrected exact-SHA workflow has not yet been observed",
-  "priorRun": 43689675709,
-  "priorRunFailureFixed": "explicit .ts import; committed-clone full transfer passed"
+  "runId": 43692814329,
+  "observations": [
+    {
+      "observedAt": 1794731086,
+      "conclusion": "cancelled",
+      "head_sha": "d8357c8e671651b9e2f2021eaf32d705a3360fd0",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43692814329",
+      "id": 43692814329,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "latest": {
+    "conclusion": "cancelled",
+    "head_sha": "d8357c8e671651b9e2f2021eaf32d705a3360fd0",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43692814329",
+    "id": 43692814329,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "apiCallsUsed": 10,
+  "readiness": "PUSHED; exact-SHA Verify cancelled; rerun required",
+  "blocker": "No exact-SHA completed/success Verify observation; ten-call budget exhausted. Cancellation cause unobserved.",
+  "nextAction": "Lane should rerun Verify on this exact head before READY/landing."
 }

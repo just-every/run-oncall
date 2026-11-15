@@ -2,6 +2,7 @@
 
 Repository: just-every/run-oncall
 Branch: cloud/sd-oncall-run1-faults-2
+Custody: PUSHED. Exact-SHA Verify 43692814329 was cancelled; rerun required before READY/landing.
 
 ## Plan
 
@@ -28,7 +29,7 @@ All report material is synthetic. Key inputs are masked in retained browser proo
 
 ## Results
 
-All four reported defects are fixed in the candidate and pass the focused emitted-Worker/browser regression. Product head: `d8357c8e671651b9e2f2021eaf32d705a3360fd0`. Intermediate save: `335c4610dd0b5774d6bd5ea1a59cbd1adcf1e540`. All four product pushes succeeded on their first guarded attempt. Main remains `b30412d15c5049718e9b19d307cfb3348e08079c`; no merge/rewrite or PR was needed.
+All four reported defects are fixed in the candidate and pass the focused emitted-Worker/browser regression. Product head: `d8357c8e671651b9e2f2021eaf32d705a3360fd0`. Intermediate save: `335c4610dd0b5774d6bd5ea1a59cbd1adcf1e540`. All four product pushes succeeded on their first guarded attempt. Last fetched main is `b30412d15c5049718e9b19d307cfb3348e08079c`; no merge/rewrite or PR was needed.
 
 ### Behavior and before/after observations
 
@@ -61,4 +62,13 @@ The preserved diagnostics are `ci-prior-run-receipt.json`, `ci-prior-run-jobs.js
 
 Previously held digest-only secrets require one explicit rotation; existing credentials are never silently invalidated. Shared adoption binds existing workspace services/people and does not automatically consolidate pre-existing copies. Supported policy adoption uses one or two steps targeting the same rota; unsupported semantics stay paused/refused. History evaluates the current saved rota, current membership eligibility and retained overrides, not every earlier edit or an attested record of who actually worked a shift. No external paging, delivery, hosted acceptance, real export, company-instance operation or independent gate result is claimed.
 
-Touched clause work is reported as PARTIAL with points=none: OC-003, OC-011, OC-015, OC-019, OC-020, OC-021, OC-022, OC-026, OC-027, OC-033, OC-038 and OC-042. These are bounded work claims; stored clause judgments and summary counts are unchanged.
+Touched clause work is reported as PARTIAL with points=none: OC-003, OC-011, OC-013, OC-015, OC-018, OC-019, OC-020, OC-021, OC-022, OC-026, OC-027, OC-033, OC-038, OC-042 and OC-052. These are bounded work claims; stored clause judgments and summary counts are unchanged.
+
+## Final custody
+
+Product branch: `cloud/sd-oncall-run1-faults-2`
+Product head: `d8357c8e671651b9e2f2021eaf32d705a3360fd0`
+
+**PUSHED, not READY.** Final exact-SHA Verify run **43692814329** completed **cancelled**: https://github.com/just-every/run-oncall/actions/runs/43692814329 . Its cancellation cause was not observed. All ten permitted GitHub reads are consumed, so no additional job inspection or API rerun was attempted. This is not recorded as an unresolved software assertion. The lane must rerun Verify on this exact head and require success before READY/landing. No acceptance or landing is claimed.
+
+The prior candidate's actual software failure (run 43689675709, CLI policy-module loading) is fixed. The correction passed the complete fresh-clone transfer journey, and the final creation UI changes passed typecheck, build and the expanded owner-fault browser regression. The product checkout is clean, all four product commits are pushed, and the report/receipts are separately published to the evidence ref. No ruling/account blocker is known; the remaining custody condition is the cancelled exact-SHA CI run.

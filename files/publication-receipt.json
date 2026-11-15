@@ -59,5 +59,8 @@
     ]
   ],
   "gitStatus": "",
-  "pr": null
+  "pr": null,
+  "terminalCustody": "PUSHED",
+  "ciRunId": 43692814329,
+  "ciConclusion": "cancelled"
 }
