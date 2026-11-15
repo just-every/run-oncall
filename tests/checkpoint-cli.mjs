@@ -85,6 +85,13 @@ export function assertCheckpointRestored(checkpoint,after,handoffs=checkpoint.ha
   assert.equal(event.status,item.status==='sending'?'uncertain':'interrupted')
   return {...item,authorized:false,status:event.status,revision:item.revision+1,lease:null,leaseUntil:null,history:[...item.history,event]}
  })
+ for(const alert of inactive.alerts)if(alert.onCall?.state==='running'){
+  const held=after.coordination.alerts.find(row=>row.id===alert.id)?.onCall
+  assert.ok(held&&Date.parse(held.endedAt)>=Date.parse(checkpoint.capturedAt)&&Date.parse(held.endedAt)<=Date.now(),'on-call recovery hold is recorded after capture and before readback')
+  const outcome='Restored inactive; will not resume'
+  Object.assign(alert.onCall,{state:'stopped',endedAt:held.endedAt,outcome})
+  alert.onCall.records=alert.onCall.records.map(row=>row.state==='pending'?{...row,state:'stopped',outcome}:row)
+ }
  assert.deepEqual({...after.coordination,revision:inactive.revision},inactive,'all coordination history survives; imported intake requires local reauthorization')
  assert.equal(after.paging.paging,'OFF');assert.equal(after.handoffs.delivery,'unsent')
  const expected=structuredClone(checkpoint.paging)

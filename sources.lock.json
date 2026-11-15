@@ -6484,7 +6484,7 @@
       "executable": false
     },
     "tests/checkpoint-cli.mjs": {
-      "sha256": "3c3d13506a3ccae21846a86d8847cd7e97336b90817595ac53cb7c8badfb0c12",
+      "sha256": "2339035e8cdc501940566959f09eff0059fa14f7e5658861747b8ea32b5c4dc8",
       "executable": false
     },
     "tests/diagnostics.mjs": {
