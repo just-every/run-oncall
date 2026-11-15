@@ -1,5 +1,5 @@
-import {validateNotificationRules} from '../family/response-operations/on-call-notifications/rules';
-import {holdOnCall} from '../family/response-operations/on-call-notifications/model';
+import {validateNotificationRules} from '../family/response-operations/on-call-notifications/rules.ts';
+import {holdOnCall} from '../family/response-operations/on-call-notifications/model.ts';
 import {fail,type State,type Member} from '../family/response-operations/domain.ts';
 import {coverage,preview,validateSchedule,type Schedule} from '../family/response-operations/schedules.ts';
 import type {RecordedResponseObligation} from '../alert-obligation';

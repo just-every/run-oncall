@@ -1,4 +1,4 @@
-import {markOnCallStart} from '../family/response-operations/on-call-notifications/model';
+import {markOnCallStart} from '../family/response-operations/on-call-notifications/model.ts';
 import {launchRuleWorkflow} from '../orchestration/workflows.ts';
 import { instantiateIncidentTemplate } from '../incident-workflows/template.ts';
 import { recordAlertObligation } from '../alert-obligation.ts';
