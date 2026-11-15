@@ -1,9 +1,12 @@
 import {useEffect, useId, useRef, useState, type ReactNode} from 'react';
+import {PersonNotifications} from './PersonNotifications';
+import {useWorkspaceContext} from '../app/shell/WorkspaceContext';
 import {Tooltip} from '../app/Tooltip';
 import type {Member, Role} from '../family/response-operations/domain';
 export const roleName = (role: string) => role[0].toUpperCase() + role.slice(1);
 type Props = {member: Member; admin: boolean; role: Role; roleChanged: (role: Role) => void; roleMark?: ReactNode; roleFeedback?: ReactNode; roleConfirm?: ReactNode; accessAction: () => void; resetAction: (password: string) => void; confirmation?: ReactNode; feedback?: ReactNode; accessFeedback?: ReactNode; busy?: boolean; openRequest?: number; resetVersion?: number};
 export function MemberRow({member, admin, role, roleChanged, roleMark, roleFeedback, roleConfirm, accessAction, resetAction, confirmation, feedback, accessFeedback, busy, openRequest, resetVersion}: Props) {
+  const {actor}=useWorkspaceContext();
   const [tipDismissed, setTipDismissed] = useState(false);
   const [open, setOpen] = useState(false), [resetting, setResetting] = useState(false), [password, setPassword] = useState('');
   const opener = useRef<HTMLButtonElement>(null), menu = useRef<HTMLDivElement>(null), id = useId();
@@ -36,5 +39,6 @@ export function MemberRow({member, admin, role, roleChanged, roleMark, roleFeedb
       </div>
       <div className="team-member-feedback">{accessFeedback}</div>
     </> : null}
+    {!member.erased&&<PersonNotifications member={member.id} editable={admin||actor.id===member.id}/>}
   </article>;
 }

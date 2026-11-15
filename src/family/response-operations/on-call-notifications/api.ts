@@ -17,7 +17,7 @@ export function installOnCallNotifications(api: any, deps: Dependencies) {
     return c.json(notificationRulesView(state, c.req.param('id')));
   });
   api.post('/api/members/:id/notification-rules', async (c: any) => {
-    const input = await deps.body(c), state = await deps.state(c, true), revision = state.revision;
+    const input = await deps.body(c), state = await deps.state(c), revision = state.revision;
     setAuditSubject(c.env.DB, 'member', c.req.param('id'));
     const result = writeNotificationRules(state, c.get('actor'), c.req.param('id'), input, new Date().toISOString());
     await deps.save(c.env.DB, state, revision, deps.guard(c));

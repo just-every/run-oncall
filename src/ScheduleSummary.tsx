@@ -43,7 +43,7 @@ function EscalationSummary({schedule,policies,admin,request,onSaveStart,showCale
  }});
  return <section className="scheduling-panel scheduling-summary">
  {showCalendar&&<><p className="scheduling-feed"><a href={`/api/schedules/${encodeURIComponent(schedule.id)}/calendar.ics`}>Open private ICS feed (next 7 days)</a></p><p>The feed uses your session. Download it into a calendar; no bearer URL or public feed is created.</p></>}
- <h2>Escalation policy as data</h2><p>Primary then backup. These values are stored as policy data only. Paging is OFF: no wait, retry or attempt runs.</p>
+ <h2>Escalation policy as data</h2><p>{policies.find(p=>p.service===schedule.service)?.secondStep==='none'?'One primary step; no repeat.':policies.find(p=>p.service===schedule.service)?.secondStep==='primary'?'Two primary steps.':'Primary then backup.'} These values are stored as policy data only. Paging is OFF: no wait, retry or attempt runs.</p>
  <div className="scheduling-escalation autosave-form"><fieldset disabled={!admin}>{escalationFields.map(field=><div key={field}><label className="scheduling-field"><span>{escalationLabels[field]} <SavedState state={save.states[field]}/></span><input aria-label={escalationLabels[field]} type="number" required min="1" value={save.values[field]} onChange={e=>save.change(field,e.target.value,'text')} onBlur={()=>save.blur(field)}/></label><SaveFeedback state={save.states[field]} retry={()=>save.retry(field)} useMine={()=>save.useMine(field)}/></div>)}</fieldset></div>
  </section>;
 }

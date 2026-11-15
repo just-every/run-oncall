@@ -26,7 +26,7 @@ function clockChanges(zones:string[],from:number,to:number):ClockChange[] {
 /** The digest binds the complete proposal, retained slots, membership snapshot and evaluated range. No writes. */
 export async function reviewSchedule(old:Schedule,input:unknown,state:State,from:number,to:number):Promise<ScheduleReview> {
  const supplied=validateSchedule(input,state);
- if(supplied.id!==old.id||supplied.service!==old.service)fail('Schedule and service identities cannot change');
+ if(supplied.id!==old.id||supplied.service!==old.service||JSON.stringify(supplied.services)!==JSON.stringify(old.services))fail('Schedule and service identities cannot change');
  if(supplied.revision!==old.revision)fail('Schedule changed; reload and review again',409);
  for(const entry of old.pto??[])if(!supplied.pto?.some(next=>canonical(next)===canonical(entry)))fail('Retained PTO entries cannot be removed or rewritten');
  for(const entry of supplied.pto??[])if(!old.pto?.some(prior=>prior.id===entry.id)&&!state.members.some(member=>member.id===entry.member&&member.active&&['admin','responder'].includes(member.role)))fail('New PTO requires an active responder');

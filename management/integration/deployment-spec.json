@@ -411,6 +411,12 @@
       "name": "0163_business_retired.sql",
       "sha256": "1bfc79bfe6432e03a4eba9843ab10fae6a501e7ac5b9fd98caf42054c9f36c0c",
       "sql": "-- Value-free tombstones of people erased from the installation: domain-separated SHA-256 digests of the roster\n-- address and the Business member id, with the invite number they had. Never a name, address or id.\nCREATE TABLE bs_retired (\n  digest TEXT PRIMARY KEY,\n  invite INTEGER NOT NULL CHECK(invite >= 0),\n  erasure_id TEXT NOT NULL\n);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0164_alert_key_reveal.sql",
+      "sha256": "272d98066c8199868584136e00f5de5ad860bcc94ba52ff73a7099048646403c",
+      "sql": "-- Retain existing credential digests and signed custody unchanged. Held digest-only keys\n-- cannot be reconstructed: their next explicit rotation supplies encrypted reveal custody.\nALTER TABLE sources ADD COLUMN key_custody TEXT;\nALTER TABLE oc_intake_credentials ADD COLUMN key_custody TEXT;\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

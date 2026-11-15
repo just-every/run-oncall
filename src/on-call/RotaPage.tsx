@@ -32,7 +32,7 @@ export function RotaPage({id, state, actor, value, refresh, edit = false, render
   const savedLine=useRef<HTMLParagraphElement>(null);
   useEffect(()=>{if(!edit){const key='rota-saved:'+id,value=sessionStorage.getItem(key);if(value){sessionStorage.removeItem(key);setSavedNotice(value);}}},[edit,id]);
   useEffect(()=>{if(savedNotice&&!edit){savedLine.current?.focus();savedLine.current?.scrollIntoView({block:'nearest'});}},[savedNotice,edit]);
-  const [data, setData] = useState<ModuleState | null>(null), [windows, setWindows] = useState<Coverage[]>([]), [from] = useState(() => Date.now());
+  const [data, setData] = useState<ModuleState | null>(null), [windows, setWindows] = useState<Coverage[]>([]), [from,setFrom] = useState(() => Date.now());
   const [sheet, setSheet] = useState<'cover' | 'swap' | null>(null), [selected, setSelected] = useState<OnCallBand | null>(null);
   const [review, setReview] = useState<ScheduleReview | null>(null), [proposal, setProposal] = useState<Schedule | null>(null), [busy, setBusy] = useState(false);
   const [cover, setCover] = useState({member: actor.id, role: 'primary' as 'primary' | 'backup', start: '', end: ''}), [substitute, setSubstitute] = useState('');
@@ -48,7 +48,7 @@ export function RotaPage({id, state, actor, value, refresh, edit = false, render
   }, [id, from]);
   useEffect(() => {void load().catch(error => failures.show(error, {read: true, target: null, retry: load}));return () => {++generation.current;};}, [load, state]);
   const changed = async () => {await refresh();await load();};
-  const canEdit = !!schedule && teamCoverage(state, actor, schedule.service), responsive = ['admin','responder'].includes(actor.role);
+  const canEdit = !!schedule && (schedule.services?.length?actor.role==='admin':teamCoverage(state, actor, schedule.service)), responsive = ['admin','responder'].includes(actor.role);
   const person = (id: string | null) => state.members.find(person => person.id === id);
   const bands: OnCallBand[] = windows.flatMap((window, index) => (['primary','backup'] as const).map(role => ({role, member: window[role] && person(window[role]) ? {id: window[role]!, name: person(window[role])!.name} : null, from: new Date(window.at).toISOString(), to: new Date(windows[index + 1]?.at ?? from + 14 * 86_400_000).toISOString()})));
   const ownShifts = bands.filter(band => band.member?.id === actor.id && Date.parse(band.from) > Date.now());
@@ -102,9 +102,15 @@ export function RotaPage({id, state, actor, value, refresh, edit = false, render
     <FailureLine failure={sheet ? null : failures.failure}/>
     {data && !schedule && <p>Rota not found. <Link to={'/on-call' as any}>Return to On call</Link></p>}
     {schedule && <><ScheduleNowNext schedule={schedule} state={state} request={request}/>
-      <WeekBands rotas={[{id, name:schedule.name, week:bands}]} from={from} to={from + 14 * 86_400_000} title="Next two weeks" zone={schedule.timezone} selectable={band=>band.member?.id===actor.id&&Date.parse(band.from)>Date.now()} onShift={band => {if (band.member?.id === actor.id && Date.parse(band.from) > Date.now()) openSwap(band);}}/>
+      <nav className="oc-rota-actions" aria-label="Shift history">
+       <button type="button" disabled={from-14*86_400_000<Date.UTC(2000,0,1)} onClick={()=>{setWindows([]);setFrom(value=>value-14*86_400_000);}}>Previous two weeks</button>
+       <button type="button" onClick={()=>{setWindows([]);setFrom(Date.now());}}>Current two weeks</button>
+       <button type="button" disabled={from+28*86_400_000>Date.UTC(2101,0,1)} onClick={()=>{setWindows([]);setFrom(value=>value+14*86_400_000);}}>Next two weeks</button>
+      </nav>
+      <p className="oc-quiet">{shortTime(from,schedule.timezone)} – {shortTime(from+14*86_400_000,schedule.timezone)} · {schedule.timezone}. Past coverage uses the saved rota and retained overrides.</p>
+      <WeekBands rotas={[{id, name:schedule.name, week:bands}]} from={from} to={from + 14 * 86_400_000} title={from+14*86_400_000<=Date.now()?"Previous shifts":"Next two weeks"} zone={schedule.timezone} selectable={band=>band.member?.id===actor.id&&Date.parse(band.from)>Date.now()} onShift={band => {if (band.member?.id === actor.id && Date.parse(band.from) > Date.now()) openSwap(band);}}/>
       <div className="oc-rota-actions">{canEdit && <button type="button" onClick={openCover}>Cover a shift</button>}{responsive && <button type="button" onClick={() => openSwap()}>Request a swap</button>}</div>
-      {schedule.overrides.length > 0 && <section className="oc-card"><h2>Cover</h2><ul className="oc-cover-list">{schedule.overrides.map(override => <li key={override.id}><div><strong>{person(override.member)?.name ?? 'Nobody on call'}</strong><p>{override.role} · {shortTime(override.start, schedule.timezone)} – {shortTime(override.end, schedule.timezone)}</p></div>{canEdit && <Tooltip label="Remove cover"><button type="button" aria-label="Remove cover" onClick={() => {setSheet('cover');void reviewChange({...schedule, overrides:schedule.overrides.filter(row => row.id !== override.id)});}}>×</button></Tooltip>}</li>)}</ul></section>}
+      {schedule.overrides.length > 0 && <section className="oc-card"><h2>Cover</h2><ul className="oc-cover-list">{schedule.overrides.filter(override=>Date.parse(override.start)<from+14*86_400_000&&Date.parse(override.end)>from).map(override => <li key={override.id}><div><strong>{person(override.member)?.name ?? 'Nobody on call'}</strong><p>{override.role} · {shortTime(override.start, schedule.timezone)} – {shortTime(override.end, schedule.timezone)}</p></div>{canEdit && <Tooltip label="Remove cover"><button type="button" aria-label="Remove cover" onClick={() => {setSheet('cover');void reviewChange({...schedule, overrides:schedule.overrides.filter(row => row.id !== override.id)});}}>×</button></Tooltip>}</li>)}</ul></section>}
       <div className="oc-coordination"><ScheduleCoordination rotaPage onRequestSwap={() => openSwap()} schedule={schedule} state={state} actor={actor} onChanged={changed}/></div>
       <details className="oc-card oc-paging"><summary>Paging is off</summary><ScheduleSummary showCalendar={false} schedule={schedule} policies={data?.policies ?? []} admin={canEdit} request={request} onSaved={() => {void load();}}/></details>
     </>}

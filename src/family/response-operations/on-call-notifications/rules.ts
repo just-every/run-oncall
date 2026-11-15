@@ -51,9 +51,9 @@ export function notificationRulesView(state:State,member:string) {
   return {member,revision:row?.revision??0,at:row?.at??null,active:row?.active??false,...structuredClone(row?.data??{contacts:[],rules:[]}),
     verified:false,paging:'OFF',label:'Recorded destinations only: never verified and never used for delivery'};
 }
-/** Admin-authored replacement of one member's complete set, bound to its revision. */
+/** Person/admin-authored replacement of one member's complete set, bound to its revision. */
 export function writeNotificationRules(state:State,actor:{id:string;role:string;machine?:true},memberId:string,input:any,at:string) {
-  if(actor.role!=='admin'||actor.machine)fail('Current admin required',403);
+  if((actor.role!=='admin'&&actor.id!==memberId)||actor.machine)fail('Current admin required',403);
   const member = state.members.find(m=>m.id===memberId&&!m.erased);
   if(!member)fail('Unknown member',404);
   const v = exact(input,['revision','contacts','rules'],'notification rules request');

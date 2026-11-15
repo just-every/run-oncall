@@ -1,9 +1,85 @@
+// Owner fault regression: synthetic data through the emitted Worker and browser doors.
+async function ownerFaultsBrowser(page,context) {
+ const request=async(path,data,status=200,cookie)=>{
+  const response=await worker.request(path,data,cookie??ownerCookie);
+  assert.equal(response.status,status,`${path}: ${response.value?.error??''}`);return response.value;
+ };
+ const outboundBefore=(await worker.outboundRequests()).length;
+ const ownerCookie=(await context.cookies()).map(c=>c.name+'='+c.value).join('; '),actor=(await request('/api/session')).member;
+ for(const id of ['fault-checkout','fault-billing'])await request('/api/command',{type:'service',id,name:id==='fault-checkout'?'Checkout':'Billing',environment:'test',owner:actor.id,runbook:[],pager:''});
+ const viewer=await request('/api/members',{name:'Synthetic observer',role:'viewer',password:'synthetic-observer-password'},201),responder=await request('/api/members',{name:'Synthetic responder',role:'responder',password:'synthetic-responder-password'},201);
+ const observerLogin=await worker.request('/api/login',{name:viewer.name,password:'synthetic-observer-password'}),responderLogin=await worker.request('/api/login',{name:responder.name,password:'synthetic-responder-password'});
+ const revoked=await worker.request('/api/login',{name:responder.name,password:'synthetic-responder-password'});await worker.request('/api/logout',{},revoked.cookie);
+ const expired=await worker.request('/api/login',{name:viewer.name,password:'synthetic-observer-password'});const expiredToken=expired.cookie.split('=')[1];worker.sql("UPDATE sessions SET expires=0 WHERE token='"+createHash('sha256').update(expiredToken).digest('hex')+"'");
+ const revealPath='/api/integrations/native/fault-alert/reveal',key=randomBytes(32).toString('hex');
+ await request('/api/sources',{id:'fault-alert',key,mode:'bearer',scopes:['fault-checkout']});
+ const beforeAudit=await request('/api/audit/export');
+ for(let i=0;i<2;i++)assert.ok((await request(revealPath,{})).key===key,'admin reads the same key repeatedly');
+ const audit=await request('/api/audit/export');assert.equal(audit.rows.filter(r=>r.kind==='source.key-reveal').length-beforeAudit.rows.filter(r=>r.kind==='source.key-reveal').length,2);
+ assert.ok(!JSON.stringify(audit).includes(key),'audit excludes the key');
+ await request(revealPath,{},403,observerLogin.cookie);await request(revealPath,{},403,responderLogin.cookie);await request(revealPath,{},401,revoked.cookie);await request(revealPath,{},401,expired.cookie);assert.equal((await worker.request(revealPath,{})).status,401);
+ worker.sql("CREATE TRIGGER fault_reveal_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='source.key-reveal' BEGIN SELECT RAISE(ABORT,'synthetic audit failure'); END");
+ const failed=await worker.request(revealPath,{},ownerCookie);assert.equal(failed.status,503);assert.ok(!JSON.stringify(failed.value).includes(key),'failed audit returns no key');worker.sql('DROP TRIGGER fault_reveal_audit');
+ const raw=worker.sql("SELECT key_custody FROM sources WHERE id='fault-alert'")[0].key_custody;assert.ok(raw.startsWith('v1.')&&!raw.includes(key),'held bearer key is encrypted');
+ const payload={source:'fault-alert',eventId:'synthetic-fault-trigger',service:'fault-checkout',environment:'test',key:'synthetic-fault',generation:'one',intent:'trigger',severity:'warning',title:'Synthetic checkout check',observedAt:new Date().toISOString(),evidence:''};
+ assert.equal((await worker.send('/api/ingress/fault-alert',JSON.stringify(payload),{'content-type':'application/json',authorization:'Bearer '+key})).status,201,'an external sender can use the revealed key');
+ await context.grantPermissions(['clipboard-read','clipboard-write']);
+ await page.goto(worker.origin+'/settings/integrations/native%3Afault-alert');await page.getByRole('button',{name:'Show key',exact:true}).click();
+ const credential=page.getByRole('region',{name:'Created credential',exact:true});await credential.getByRole('button',{name:'Copy',exact:true}).click();assert.ok(await page.evaluate(()=>navigator.clipboard.readText())===key,'copy preserves the revealed key');
+ for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:`evidence/browser/fault-key-${width}.png`,fullPage:true,mask:[credential.locator('input')]});}
+ await credential.getByRole('button',{name:'Done',exact:true}).click();
+ const rotated=randomBytes(32).toString('hex');await request('/api/sources',{id:'fault-alert',key:rotated,mode:'bearer',scopes:['fault-checkout']});
+ assert.ok((await request(revealPath,{})).key===rotated);assert.equal((await worker.send('/api/ingress/fault-alert',JSON.stringify({...payload,eventId:'synthetic-old-key'}),{'content-type':'application/json',authorization:'Bearer '+key})).status,401);
+ for(const kind of ['signed','intake','change']){const otherKey=randomBytes(32).toString('hex'),id='fault-'+kind;
+  if(kind==='signed')await request('/api/sources',{id,key:otherKey,mode:'signed',scopes:['fault-checkout']});
+  else await request(kind==='intake'?'/api/intake/sources':'/api/changes/sources',{id,name:'Synthetic '+kind,provider:kind==='intake'?'pagerduty':'native',service:'fault-checkout',key:otherKey,mode:'bearer',revision:0},201);
+  assert.ok((await request('/api/integrations/'+(kind==='signed'?'native':kind)+'/'+id+'/reveal',{})).key===otherKey,'configured source kind supports readback');
+ }
+ const contacts=[{id:'work',type:'email',label:'Work email',address:'synthetic-person@example.test',countryCode:null}],rules=[{id:'immediate',contact:'work',delayMinutes:0,urgency:'high'}];
+ const path='/api/members/'+responder.id+'/notification-rules';
+ await request(path,{revision:0,contacts,rules},200,responderLogin.cookie);
+ await request('/api/members/'+actor.id+'/notification-rules',{revision:0,contacts,rules},403,responderLogin.cookie);await request(path,{revision:1,contacts,rules},403,observerLogin.cookie);
+ await page.setViewportSize({width:1440,height:1000});await page.goto(worker.origin+'/settings/team');const person=page.getByRole('article',{name:responder.name,exact:true});await person.locator('summary').filter({hasText:'Contact methods and notification rules'}).click();await person.getByLabel('Email address',{exact:true}).waitFor();assert.equal(await person.getByLabel('Email address',{exact:true}).inputValue(),contacts[0].address);
+ await person.getByLabel('Delay in minutes',{exact:true}).fill('2');await person.getByRole('button',{name:'Save notification rules',exact:true}).click();await person.getByRole('status').filter({hasText:'Contact methods and notification rules saved'}).waitFor();assert.equal((await request(path)).rules[0].delayMinutes,2);
+ for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await person.scrollIntoViewIfNeeded();await page.screenshot({path:`evidence/browser/fault-person-${width}.png`,fullPage:true});}
+ const observerContext=await context.browser().newContext({baseURL:worker.origin,viewport:{width:1440,height:1000}});await observerContext.addCookies(observerLogin.cookie.split('; ').map(pair=>({name:pair.split('=')[0],value:pair.split('=').slice(1).join('='),url:worker.origin})));const observerPage=await observerContext.newPage();
+ try{await observerPage.goto(worker.origin+'/settings/team');const readonly=observerPage.getByRole('article',{name:responder.name,exact:true});await readonly.locator('summary').click();await readonly.getByLabel('Email address',{exact:true}).waitFor();assert.equal(await readonly.getByLabel('Email address',{exact:true}).isDisabled(),true);assert.equal(await readonly.getByRole('button',{name:'Save notification rules',exact:true}).count(),0);await observerPage.goto(worker.origin+'/settings/integrations/native%3Afault-alert');assert.equal(await observerPage.getByRole('button',{name:'Show key',exact:true}).count(),0);}finally{await observerContext.close();}
+ const importedDoor=ownerDoor(worker,ownerCookie),sharedSource={users:[{id:'fault-pd-person',name:'Synthetic shared responder',email:'shared-responder@example.test'}],schedules:[{id:'fault-pd-rota',name:'Shared support rota',time_zone:'UTC',schedule_layers:[{id:'fault-layer',name:'Daily',start:'2026-01-01T09:00:00Z',rotation_virtual_start:'2026-01-01T09:00:00Z',rotation_turn_length_seconds:86400,users:[{user:{id:'fault-pd-person'}}],restrictions:[]}]}],escalation_policies:[{id:'fault-pd-policy',name:'Shared support escalation',num_loops:0,escalation_rules:[{escalation_delay_in_minutes:5,targets:[{id:'fault-pd-rota',type:'schedule_reference'}]}]}],services:['one','two'].map(id=>({id:'fault-pd-service-'+id,name:'Source '+id,escalation_policy:{id:'fault-pd-policy',type:'escalation_policy_reference'}}))};
+ const planned=await importedDoor.preview('pagerduty',JSON.stringify(sharedSource));assert.equal(planned.status,200);assert.equal(planned.value.rejected.length,0);assert.equal(planned.value.items.flatMap(i=>i.effects).filter(e=>e.targetKind==='policy').length,1);assert.equal(planned.value.items.flatMap(i=>i.effects).filter(e=>e.targetKind==='schedule').length,1);
+ assert.equal((await importedDoor.apply('pagerduty',planned.value)).status,200);
+ const objects=await request('/api/move-in/objects'),importedRota=objects.find(o=>o.targetId==='pagerduty:fault-pd-rota'),importedPolicy=objects.find(o=>o.targetId==='pagerduty:fault-pd-policy');assert.equal(importedPolicy.value.serviceSources.length,2);assert.ok(importedPolicy.value.serviceSources.every(s=>s.policyId===importedPolicy.targetId));
+ await page.setViewportSize({width:1440,height:1000});await page.goto(worker.origin+'/settings/move-in');await page.getByRole('button',{name:'Make schedule live',exact:true}).click();
+ const adoptionForm=page.locator('.move-in-objects > li').filter({has:page.getByRole('button',{name:'Close adoption',exact:true})});await adoptionForm.getByRole('combobox',{name:'Service for Shared support rota',exact:true}).selectOption('fault-checkout');await adoptionForm.getByLabel('Billing',{exact:true}).check();await adoptionForm.getByLabel('Shared escalation policy',{exact:true}).selectOption(importedPolicy.targetId);
+ assert.ok((await adoptionForm.innerText()).includes('Source one, Source two'));
+ for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await adoptionForm.scrollIntoViewIfNeeded();await page.screenshot({path:`evidence/browser/fault-adoption-${width}.png`,fullPage:true});}
+ const adoption={id:importedRota.targetId,revision:importedRota.revision,service:'fault-checkout',services:['fault-checkout','fault-billing'],members:{'shared-responder@example.test':responder.id},policy:{id:importedPolicy.targetId,revision:importedPolicy.revision},confirm:true};
+ await request('/api/move-in/adopt',{...adoption,services:['fault-checkout','missing']},400);await request('/api/move-in/adopt',{...adoption,policy:{...adoption.policy,revision:'stale'}},409);
+ worker.sql("CREATE TRIGGER fault_shared_adoption BEFORE INSERT ON paging_policies BEGIN SELECT RAISE(ABORT,'synthetic policy failure'); END");
+ await request('/api/move-in/adopt',adoption,503);assert.equal((await request('/api/paging/state')).schedules.filter(s=>s.id===importedRota.targetId).length,0);worker.sql('DROP TRIGGER fault_shared_adoption');
+ await request('/api/move-in/adopt',adoption,201);await request('/api/move-in/adopt',adoption,409);
+ const shared=await request('/api/paging/state');assert.equal(shared.schedules.filter(s=>s.id===importedRota.targetId).length,1);assert.equal(shared.policies.filter(p=>p.id===importedPolicy.targetId).length,1);assert.deepEqual(shared.policies.find(p=>p.id===importedPolicy.targetId).services,adoption.services);
+ const oncall=await request('/api/on-call');assert.equal(oncall.rotas.filter(r=>r.id===importedRota.targetId).length,1);assert.ok(!oncall.unrostered.some(s=>adoption.services.includes(s.id)));
+ for(const service of adoption.services){const sourceId='fault-'+service,key=randomBytes(32).toString('hex');await request('/api/sources',{id:sourceId,key,mode:'bearer',scopes:[service]});const received=await worker.send('/api/ingress/'+sourceId,JSON.stringify({...payload,source:sourceId,service,eventId:'shared-'+service}),{'content-type':'application/json',authorization:'Bearer '+key});assert.equal(received.status,201);const state=await request('/api/state');assert.equal(state.alerts.find(a=>a.service===service&&a.events.includes(received.value.id)).onCall.policy.scheduleId,importedRota.targetId);}
+ const sharedAlerts=(await request('/api/state')).alerts.filter(a=>a.onCall?.policy.scheduleId===importedRota.targetId);const afterWait=Math.max(...sharedAlerts.map(a=>Date.parse(a.onCall.startedAt)))+301000;await worker.time(afterWait);assert.equal((await worker.send('/cdn-cgi/local/scheduled',undefined,{},'GET')).status,200);const completed=(await request('/api/state')).alerts.filter(a=>a.onCall?.policy.scheduleId===importedRota.targetId);assert.ok(completed.every(a=>a.onCall.state==='completed'&&a.onCall.step===1&&a.onCall.records.every(r=>r.step===1)),'a single source step never invents a second notification');await worker.time(null);
+ // Navigate bounded two-week history pages and inspect a retained past override.
+ const rota=shared.schedules.find(s=>s.id===importedRota.targetId),past=Date.now()-7*86400000,override={id:'fault-past-cover',role:'primary',start:new Date(past).toISOString(),end:new Date(past+3600000).toISOString(),member:actor.id};
+ const proposal={schedule:{...rota,overrides:[override]},from:past,to:past+86400000},review=await request('/api/schedules/'+encodeURIComponent(rota.id)+'/review',proposal);await request('/api/schedules/'+encodeURIComponent(rota.id)+'/apply',{...proposal,digest:review.digest,confirmed:true});
+ await page.setViewportSize({width:1440,height:1000});await page.goto(worker.origin+'/on-call/'+encodeURIComponent(rota.id));await page.getByRole('button',{name:'Previous two weeks',exact:true}).click();await page.getByRole('heading',{name:'Previous shifts',exact:true}).waitFor();await page.locator('.oc-cover-list').getByText(actor.name,{exact:true}).waitFor();
+ const historyResponse=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/paging/preview'&&r.request().method()==='POST'&&r.request().postDataJSON()?.from<Date.now()-27*86400000);await page.getByRole('button',{name:'Previous two weeks',exact:true}).click();const history=await (await historyResponse).json();assert.ok(history.length>0&&history.length<100);assert.ok(history.every(span=>span.at<Date.now()-14*86400000));
+ await page.getByRole('button',{name:'Next two weeks',exact:true}).click();await page.locator('.oc-cover-list').getByText(actor.name,{exact:true}).waitFor();
+ for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:`evidence/browser/fault-history-${width}.png`,fullPage:true});}
+ await page.getByRole('button',{name:'Current two weeks',exact:true}).click();await page.getByRole('heading',{name:'Next two weeks',exact:true}).waitFor();
+ assert.equal((await request('/api/paging/state')).paging,'OFF');
+ assert.equal((await worker.outboundRequests()).length-outboundBefore,0,'fault journeys never send outbound traffic');
+ await writeFile('evidence/browser/owner-faults-receipt.json',JSON.stringify({key:{repeatRead:true,audited:true,encrypted:true,auditFailureRefused:true,externalSend:true,rotationInvalidates:true,nonAdminRefused:true},person:{selfEdit:true,adminEdit:true,otherReadOnly:true},sharing:{importedPolicies:1,importedRotas:1,sourceServiceReferences:2,nativePolicies:1,nativeRotas:1,workspaceServiceReferences:2,atomicRollback:true,alertsUseSharedRota:true},history:{twoWeekPages:true,pastOverrides:true,previousAndCurrent:true},paging:'OFF',outboundRequests:0,screenshots:[1440,390]},null,2)+'\n');
+}
+
 import {readableNamesBrowser} from './readable-names-browser.mjs'
 import {assertInstallationChecklist} from './readiness.mjs'
 import {nightResponseScenario,assertNightResponse,responseCsvRows} from './response-report-fixture.mjs'
 import {openWorkspaceSection,openHistoryComparison,selectRoutedSource,keyboardUser,focusWorkspace,openIncidentAction} from './keyboard.mjs'
 import assert from 'node:assert/strict'
-import {randomBytes,createHmac} from 'node:crypto'
+import {randomBytes,createHmac,createHash} from 'node:crypto'
 import {mkdir,readFile,writeFile} from 'node:fs/promises'
 import {chromium,expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
@@ -982,9 +1058,10 @@ try {
   } finally { await worker.time(selectedTime) }
  }
  const focused=process.env.ONCALL_PRODUCT_JOURNEY;
- if(focused&&!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused))throw Error('Unknown focused product journey');
+ if(focused&&!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults'].includes(focused))throw Error('Unknown focused product journey');
  const triageProof={snapshot:()=>durableSnapshot(worker),outbound:()=>worker.outboundRequests()};
  const setTime=async at=>{selectedTime=at;await worker.time(at);if(at===null)await page.clock.setSystemTime(new Date());else await page.clock.setFixedTime(new Date(at));};
+ if(focused==='owner-faults')await ownerFaultsBrowser(page,context);
  if(focused==='rota-timeline'){
   const session=await (await context.request.get('/api/session')).json();
   await context.request.post('/api/command',{headers:{origin:worker.origin},data:{type:'service',id:'synthetic-oncall-1',name:'Checkout',environment:'test',owner:session.member.id,runbook:[],pager:''}});
@@ -1017,7 +1094,7 @@ try {
  if(focused==='move-in-guide')await providerExport(page,context,1440,triageProof);
  if(['limitations','readiness'].includes(focused))await limitationsBrowser(page,context);
  if(focused==='triage')await triageFiltersBrowser(page,context,{setTime,proof:triageProof});
- if(!['sender-setup','response-policy','imported-email','events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused)){
+ if(!['sender-setup','response-policy','imported-email','events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults'].includes(focused)){
  await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime,triageProof})
  if(focused!=='accessibility'){
  await incompleteIntakeBrowser(page,context)
@@ -1028,11 +1105,12 @@ try {
  console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440; overflow, axe and hydration checked')
  }
  }
- if(!['sender-setup','response-policy','imported-email','events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused))await readinessBrowser(page,context)
+ if(!['sender-setup','response-policy','imported-email','events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults'].includes(focused))await readinessBrowser(page,context)
  if(!focused)await importedEmailBrowser(page,context)
  if(!focused)await responseReportBrowser(browser)
  if(!focused)await eventsSourceBrowser(page,context)
  assert.deepEqual(errors,[],'no browser application errors')
+ if(!focused){await setTime(null);await ownerFaultsBrowser(page,context);}
  console.log(focused==='sender-setup'?'Emitted Worker sender setup journey passed at 1440; screens captured at 1440 and 390':focused==='response-policy'?'Emitted Worker response-policy journey passed at 1440':focused==='imported-email'?'Emitted Worker saved email import journey passed at 1440; changed states captured at 1440 and 390':focused==='rota-timeline'?'Emitted Worker rota timeline passed: readable phone lists and compact accessible desktop slices on overview and rota pages':focused==='readable-times'?'Emitted Worker readable-times journey passed at 1440 in Australia/Brisbane with an America/New_York rota; changed rota and readiness screens captured at 1440 and 390':focused==='events-source'?'Emitted Worker Events source journey passed at 1440; screens captured at 1440 and 390':focused==='support-start'?'Emitted Worker support-start browser journey passed at 1440; screens captured at 1440 and 390':focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
 } catch(error) {
  if(page){
@@ -1044,4 +1122,4 @@ try {
 } finally {
  try {await browser?.close()} finally {await worker.close()}
 }
-if(!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');
+if(!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');

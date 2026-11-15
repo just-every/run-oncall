@@ -1,3 +1,4 @@
+import {servicePolicy} from './family/response-operations/escalation';
 import { demoEffect } from './modules/demo/index.mjs'
 import { deliver } from './delivery'
 import { command, fail } from './family/response-operations/domain'
@@ -20,7 +21,7 @@ export async function sendDemoPage(c: any, body: (c: any) => Promise<any>) {
   const incident = workspace.incidents.find(item => item.id === input.incident)
   if (!incident) fail('Unknown incident', 404)
   if (incident.state === 'resolved') fail('Incident is resolved', 409)
-  const policy = archive.policies.find(item => item.service === incident.service)
+  const policy = servicePolicy(archive.policies,incident.service)
   const schedule = archive.schedules.find(item => item.id === policy?.scheduleId)
   if (!schedule) fail('Set up an escalation policy first', 409)
   const now = Date.now()

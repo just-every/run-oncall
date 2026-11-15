@@ -1,7 +1,8 @@
 import { fail, type State } from "./domain.ts";
-import { validateSchedule, type Schedule } from "./schedules.ts";
+import { scheduleServices, validateSchedule, type Schedule } from "./schedules.ts";
 import { clock } from "./synthetic-provider.ts";
 import {
+  policyServices,
   pause,
   validatePolicy,
   validateJob,
@@ -84,11 +85,13 @@ export function validatePagingArchive(input: unknown, workspace?: State): Paging
   for (const schedule of schedules) {
     // Historical slots are intentionally retained even when a member disappears.
     if(workspace&&schedule.pto?.some(entry=>entry.member!==null&&workspace.members.some(member=>member.id===entry.member&&member.erased)))fail("PTO predates member erasure; nothing restored",409);
-    if (workspace && !services.has(schedule.service)) fail("Unknown archive schedule service");
+    if (workspace && scheduleServices(schedule).some(id=>!services.has(id))) fail("Unknown archive schedule service");
   }
+  const bindings=policies.flatMap(policyServices);
+  if(new Set(bindings).size!==bindings.length)fail('Multiple policies reference the same service');
   for (const policy of policies) {
     const schedule = schedules.find(schedule => schedule.id === policy.scheduleId);
-    if (!schedule || (workspace && !services.has(policy.service))) fail("Unknown archive policy references");
+    if (!schedule || (workspace && policyServices(policy).some(id=>!services.has(id)))) fail("Unknown archive policy references");
     validatePolicy(policy, schedule);
   }
   const jobsById = new Map(jobs.map(job => [job.id, job]));

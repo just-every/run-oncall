@@ -1,6 +1,6 @@
 # Schedules and hand-overs
 
-A schedule says who is on call for one service, in two rotations: **primary** and **backup**. Oncall shows who is on now and when the next hand-over happens, in the schedule's own time zone.
+A schedule says who is on call for a service (or several services explicitly sharing an imported rota), in two rotations: **primary** and **backup**. Oncall shows who is on now and when the next hand-over happens, in the schedule's own time zone.
 
 Open **On call** in the app. Workspace administrators and the service's team managers can create and edit rotas. Other permitted team members can read coverage; an active responder can manage their own PTO on their team's rota.
 
@@ -52,6 +52,8 @@ Schedule and override changes retain one **recorded obligation** for each affect
 ## Who is on now and next
 
 **On call** shows **Now**, **Next hand-over** and **Gaps this week** beside the **This week** timeline. The gap list and timeline cover the same seven elapsed days, from one day before the observation time to six days after it, including earlier uncovered hours. Open a rota for its **Now** and **Next** panels and **Next two weeks** timeline. The editor’s **Preview coverage** shows the resolved windows and gaps for its displayed range. Neither starts a timer or sends anything.
+
+**Previous two weeks**, **Next two weeks** and **Current two weeks** on a rota page browse bounded 14-day windows. Past pages show previous resolved shifts and overlapping retained cover overrides in the rota’s named zone. They evaluate the saved rota; they do not reconstruct earlier edits or prove who actually responded. The supported date range remains 2000–2100.
 
 If both roles land on the same person at once, primary stays and backup shows as unavailable.
 

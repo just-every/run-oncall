@@ -437,6 +437,9 @@ async function heldSourceCustody(cookie, heldSignedKey, heldBearerKey, digest) {
   assert.equal(held[0].signing_custody, null, "bearer sources keep only a digest");
   assert.match(held[1].signing_custody, /^v1\.[A-Za-z0-9+/]+=*\.[A-Za-z0-9+/]+=*$/, "the held signing key is sealed under installation custody");
   assert.ok(!held[1].signing_custody.includes(heldSignedKey));
+  assert.deepEqual(rows("SELECT id,key_custody FROM sources ORDER BY id"),[{id:"held-bearer",key_custody:null},{id:"held-signed",key_custody:null}],"additive readback upgrade preserves held keys without fabricating a recoverable bearer secret");
+  ok(await request("/api/integrations/native/held-bearer/reveal",{},cookie),409);
+  assert.ok(ok(await request("/api/integrations/native/held-signed/reveal",{},cookie)).key===heldSignedKey,"held signed custody supports audited readback without rotating");
   const first = ok(await signed(heldSignedKey, signal("held-signed", "after-upgrade")), 201);
   ok(await signed(randomBytes(32).toString("hex"), signal("held-signed", "wrong-key")), 401);
   ok(await bearer(heldBearerKey, signal("held-bearer", "bearer-after-upgrade")), 201);

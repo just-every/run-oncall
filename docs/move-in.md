@@ -388,3 +388,9 @@ These are saved-response adapters tested with synthetic exports. No live
 incumbent account, export inventory, delivery, reconciliation or cutover was
 verified. OC-038's account and move gates and OC-074 remain unchanged. Paging
 stays OFF, and a local receiving test is not a provider receipt.
+
+### Shared PagerDuty policies and rotas
+
+One PagerDuty policy and rota retain one imported identity each, regardless of how many source services reference them. The policy retains the source service names and references for review. When making a schedule live, choose its first workspace service and select **Other services sharing this rota**. Optionally choose the **Shared escalation policy** from the reviewed import. One policy and one rota then cover the selected services; no per-service copies are made. Existing workspace services and people must be matched explicitly. Only administrators can change shared coverage.
+
+Adoption of a policy requires its one or two supported steps to reference this same rota. A one-step policy ends after its first wait; it does not invent a second notification. Different-rota targets stay paused for explicit review, as do unsupported repeats and other existing import refusals. Timing differences remain visible in import review. Adoption commits the rota, shared policy and import markers together; an audit or storage failure commits none. Paging remains OFF and no sender is enabled.

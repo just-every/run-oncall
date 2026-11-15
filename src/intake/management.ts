@@ -1,3 +1,5 @@
+import {sealCredential,sourceCustody} from '../changes/credentials';
+import {runtimeBindings} from '../auth.server';
 import { requireNewSubjectIdentity } from '../subject-erasure-identity.ts'
 import {installIncumbentKeys} from './incumbent'
 import { auditIdentity } from '../audit-store'
@@ -28,7 +30,7 @@ export function installIntakeManagement(api:any,deps:Dependencies) {
     if(previous)state.intakeSources![state.intakeSources!.indexOf(previous)]=source;else(state.intakeSources??=[]).push(source);
     state.audit.push({id:crypto.randomUUID(),at:source.updatedAt,actor:actor.id,kind:'intake-source',text:`Configured ${source.provider} integration ${id}; revision ${source.revision}`});
     auditIdentity(c.env.DB,{source:{kind:'intake-source',id:source.id},subject:{kind:'intake-source',id:source.id}});
-    const token=crypto.randomUUID(),result=await c.env.DB.batch([...workspaceWrite(c.env.DB,state,state.revision,deps.guard(c),token),c.env.DB.prepare('INSERT INTO oc_intake_credentials(source,key_digest) SELECT ?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?) ON CONFLICT(source) DO UPDATE SET key_digest=excluded.key_digest').bind(id,digest,token)]);
+    const token=crypto.randomUUID(),result=await c.env.DB.batch([...workspaceWrite(c.env.DB,state,state.revision,deps.guard(c),token),c.env.DB.prepare('INSERT INTO oc_intake_credentials(source,key_digest,key_custody) SELECT ?,?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?) ON CONFLICT(source) DO UPDATE SET key_digest=excluded.key_digest,key_custody=excluded.key_custody').bind(id,digest,await sealCredential(key,runtimeBindings(c.env).SESSION_SECRET,sourceCustody),token)]);
     if(result[0].meta.changes!==1)fail('Workspace or authority changed; reload',409);
     return c.json(source,previous?200:201);
   });

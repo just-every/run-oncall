@@ -1,3 +1,5 @@
+import {sealCredential,sourceCustody} from '../changes/credentials';
+import {runtimeBindings} from '../auth.server';
 import {auditIdentity,auditRefusalCommitted} from '../audit-store';
 import {workspaceWrite} from '../workspace-store';
 import {authority,fail,text,type State} from '../family/response-operations/domain';
@@ -58,7 +60,7 @@ export function installIncumbentKeys(api:any,deps:Dependencies) {
   const nativeKey=[...crypto.getRandomValues(new Uint8Array(32))].map(n=>n.toString(16).padStart(2,'0')).join(''),digest=await intakeHash(nativeKey);
   source.active=true;source.revision++;source.updatedAt=new Date().toISOString();audit(c,state,source,'incumbent-key-activated');
   const token=crypto.randomUUID(),guard=deps.guard(c),bound={sql:`(${guard.sql}) AND EXISTS(SELECT 1 FROM oc_incumbent_credentials WHERE source=? AND key_digest=?)`,values:[...guard.values,source.id,held.key_digest]};
-  const result=await c.env.DB.batch([...workspaceWrite(c.env.DB,state,state.revision,bound,token),c.env.DB.prepare(`INSERT INTO oc_intake_credentials(source,key_digest) SELECT ?,? WHERE ${gate} ON CONFLICT(source) DO UPDATE SET key_digest=excluded.key_digest`).bind(source.id,digest,token)]);
+  const result=await c.env.DB.batch([...workspaceWrite(c.env.DB,state,state.revision,bound,token),c.env.DB.prepare(`INSERT INTO oc_intake_credentials(source,key_digest,key_custody) SELECT ?,?,? WHERE ${gate} ON CONFLICT(source) DO UPDATE SET key_digest=excluded.key_digest,key_custody=excluded.key_custody`).bind(source.id,digest,await sealCredential(nativeKey,runtimeBindings(c.env).SESSION_SECRET,sourceCustody),token)]);
   if(result[0].meta.changes!==1){auditRefusalCommitted(c.env.DB);fail('Integration or authority changed; reload',409);}
   return c.json({source,keySupplied:true,nativeKey,paging:'OFF'});
  });

@@ -27,3 +27,7 @@ To change someone's access later, use **Update access** on their card. **Reset l
 Being on the team does not put anyone on call: that is the [schedule's](schedules.md) job.
 
 Stakeholders are a separate, admin-assigned local member role. They can read only the internal status panel and subscribe themselves to a business service whose explicit audience includes them; all incident, alert, runbook, contact, schedule, audit and archive doors refuse their session. Admins and active communications owners can subscribe eligible users. SSO/SCIM assignment and private-team scope are not implemented. Restoring an archive keeps stakeholder identities inactive until an admin explicitly reauthorizes them.
+
+## Contact methods and notification rules
+
+Under **Settings → Team**, expand **Contact methods and notification rules** on a person’s card. Workspace members can read the recorded email, phone and SMS destinations, rule urgency and delay. The person and administrators can add, edit or remove them, then choose **Save notification rules**. A stale revision is refused; reload before trying again. These are unverified records: paging stays OFF and nothing is sent. Stakeholders cannot read these details.

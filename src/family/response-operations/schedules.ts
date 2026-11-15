@@ -19,6 +19,7 @@ export type Schedule = {
   id: string;
   name: string;
   service: string;
+  services?: string[];
   revision: number;
   timezone: string;
   validFrom: string;
@@ -30,6 +31,12 @@ export type Schedule = {
   companyDates?: CompanyDate[];
   pto?: PTO[];
 };
+/** A shared object retains one identity; each listed service references that object. */
+export function sharedServices(value:unknown,primary:string):string[] {
+ if(!Array.isArray(value)||!value.length||value.length>64||value.some(id=>typeof id!=='string'||!id.length||id.length>100||id!==id.trim())||new Set(value).size!==value.length||value[0]!==primary)fail('Shared services must be distinct known identities, starting with the owning service (maximum 64)');
+ return [...value];
+}
+export const scheduleServices=(schedule:Pick<Schedule,'service'|'services'>)=>schedule.services??[schedule.service];
 export type CoverageMember = { id: string; name?: string; active: boolean; role: string; erased?: boolean };
 export type CoverageWindow = {
   role: "primary" | "backup";
@@ -140,7 +147,7 @@ export function validateSchedule(input: unknown, known?: {
   services: { id: string }[];
   members: CoverageMember[];
 }): Schedule {
-  const optional = ["layers", "companyDates", "pto"].filter(key => input && typeof input === "object" && Object.hasOwn(input, key));
+  const optional = ["layers", "companyDates", "pto", "services"].filter(key => input && typeof input === "object" && Object.hasOwn(input, key));
   const value = object(input, ["id", "name", "service", "revision", "timezone", "validFrom", "validUntil", "primary", "backup", "overrides", ...optional], "Schedule");
   const timezone = string(value.timezone, "timezone");
   const canonicalZone = formatter(timezone).resolvedOptions().timeZone;
@@ -180,11 +187,12 @@ export function validateSchedule(input: unknown, known?: {
   const additions = validateAdditions(value, rotation, references);
   if(known&&additions.pto?.some(entry=>entry.member!==null&&known.members.some(member=>member.id===entry.member&&member.erased)))fail("PTO member was erased");
   const service = string(value.service, "service ID");
-  if (known && !known.services.some(s => s.id === service)) fail("Unknown schedule service");
+  const services = value.services === undefined ? undefined : sharedServices(value.services,service);
+  if (known && (services??[service]).some(id=>!known.services.some(s=>s.id===id))) fail("Unknown schedule service");
   if (known && references.some(id => !known.members.some(m => m.id === id))) fail("Unknown schedule member");
   return {
     id: string(value.id, "schedule ID"), name: string(value.name, "schedule name", 200),
-    service, revision: integer(value.revision, "schedule revision", 0, Number.MAX_SAFE_INTEGER),
+    service, ...(services?{services}:{}), revision: integer(value.revision, "schedule revision", 0, Number.MAX_SAFE_INTEGER),
     timezone: canonicalZone, validFrom, validUntil, primary, backup, overrides, ...additions,
   };
 }

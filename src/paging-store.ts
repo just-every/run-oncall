@@ -44,6 +44,7 @@ export async function commitPaging(db:D1Database,s:PagingSnapshot,archive:Paging
   const author=s.workspace.members.find(member=>member.id===authority?.member&&member.active)
   for(const schedule of archive.schedules){
     const prior=s.archive.schedules.find(old=>old.id===schedule.id)
+    if((schedule.services?.length||prior?.services?.length)&&canonical(schedule)!==canonical(prior)&&author?.role!=='admin')fail('Only an administrator can change shared coverage',403)
     if(canonical(schedule.companyDates??[])!==canonical(prior?.companyDates??[])&&author?.role!=='admin')fail('Only an administrator can author company dates',403)
     if(author?.role!=='admin'&&schedule.pto?.some(entry=>!prior?.pto?.some(old=>old.id===entry.id)&&entry.member!==author?.id))fail('Only an administrator can record another member’s PTO',403)
   }

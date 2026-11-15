@@ -1,3 +1,4 @@
+import {servicePolicy} from '../escalation';
 import {coverage,type Schedule} from '../schedules.ts';
 import {validatePolicy,type EscalationPolicy} from '../escalation.ts';
 import {fail,type Alert,type Entry,type Incident,type State} from '../domain.ts';
@@ -15,7 +16,7 @@ export type OnCallRecord = {
 };
 export type OnCallRun = {
   id:string; paging:'off'; automatic:false; label:'no sender'; state:'running'|'stopped'|'completed';
-  policy:{retrySeconds:number;maxAttempts:number;service:string;revision:number;scheduleId:string;secondStep:'backup'|'primary';primaryWaitSeconds:number;backupWaitSeconds:number};
+  policy:{retrySeconds:number;maxAttempts:number;service:string;revision:number;scheduleId:string;secondStep:'backup'|'primary'|'none';primaryWaitSeconds:number;backupWaitSeconds:number};
   urgency:'high'|'low'; incident:string|null; assignee:string|null;
   startedAt:string; secondStepAt:string; endsAt:string; step:1|2; endedAt:string|null; outcome:string; records:OnCallRecord[];
 };
@@ -67,7 +68,7 @@ export function startOnCall(state:State,policies:EscalationPolicy[],schedules:Sc
     const alert = state.alerts.find(a=>a.id===id);
     if(!alert||alert.onCall||alert.state!=='active'||alert.suppressed||alert.service===null)continue;
     // Services without an escalation policy keep the upstream behaviour exactly.
-    const policy = policies.find(p=>p.service===alert.service), first = state.events.find(e=>e.id===alert.events[0]);
+    const policy = servicePolicy(policies,alert.service!), first = state.events.find(e=>e.id===alert.events[0]);
     if(!policy||!first)continue;
     const t0 = Date.parse(first.acceptedAt), schedule = schedules.find(s=>s.id===policy.scheduleId);
     const target = alert.coordination?.assignee ?? alert.owner ?? (schedule ? coverage(schedule,state.members,t0).primary : null);
@@ -75,7 +76,7 @@ export function startOnCall(state:State,policies:EscalationPolicy[],schedules:Sc
     const run:OnCallRun = {id:'on-call:'+alert.id,paging:'off',automatic:false,label:'no sender',state:'running',
       policy:{retrySeconds:policy.retrySeconds,maxAttempts:policy.maxAttempts,service:policy.service,revision:policy.revision,scheduleId:policy.scheduleId,secondStep:policy.secondStep??'backup',primaryWaitSeconds:policy.primaryWaitSeconds,backupWaitSeconds:policy.backupWaitSeconds},
       urgency:alert.urgency??'high',incident:incident?.id??null,assignee:target,startedAt:iso(t0),
-      secondStepAt:iso(t0+policy.primaryWaitSeconds*1000),endsAt:iso(t0+(policy.primaryWaitSeconds+policy.backupWaitSeconds)*1000),
+      secondStepAt:iso(t0+policy.primaryWaitSeconds*1000),endsAt:iso(t0+(policy.primaryWaitSeconds+(policy.secondStep==='none'?0:policy.backupWaitSeconds))*1000),
       step:1,endedAt:null,outcome:`Step 1 recorded; ${noSender}`,records:[]};
     run.records = stepRecords(state,run,1,target,t0,now);
     recordDue(run,now);
@@ -111,7 +112,8 @@ export function advanceOnCall(state:State,schedules:Schedule[],now:number) {
   for(const alert of state.alerts) {
     const run = alert.onCall;if(run?.state!=='running')continue;
     const second = Date.parse(run.secondStepAt), ends = Date.parse(run.endsAt);
-    if(run.step===1&&now>=second) {
+    if(run.policy.secondStep==='none'&&now>=ends){recordDue(run,now,ends-1);end(run,'completed',now,'Escalation ended after step 1; no repeat');continue;}
+    if(run.step===1&&now>=second&&run.policy.secondStep!=='none') {
       recordDue(run,now,second-1);
       for(const r of run.records)if(r.state==='pending'){r.state='stopped';r.outcome='Step 1 wait ended; no sender';}
       const schedule = schedules.find(s=>s.id===run.policy.scheduleId), held = schedule ? coverage(schedule,state.members,second) : null;
@@ -142,16 +144,17 @@ export function validateOnCall(state:State,alert:Alert) {
   if(!shape(run,['id','paging','automatic','label','state','policy','urgency','incident','assignee','startedAt','secondStepAt','endsAt','step','endedAt','outcome','records'])||run.id!=='on-call:'+alert.id||
     run.paging!=='off'||run.automatic!==false||run.label!=='no sender'||!['running','stopped','completed'].includes(run.state)||
     !shape(run.policy,['service','revision','scheduleId','secondStep','primaryWaitSeconds','backupWaitSeconds','retrySeconds','maxAttempts'])||run.policy.service!==alert.service||typeof run.policy.scheduleId!=='string'||
-    !['backup','primary'].includes(run.policy.secondStep)||[run.policy.revision,run.policy.primaryWaitSeconds,run.policy.backupWaitSeconds,run.policy.retrySeconds,run.policy.maxAttempts].some(n=>!Number.isSafeInteger(n)||n<1)||
+    !['backup','primary','none'].includes(run.policy.secondStep)||[run.policy.revision,run.policy.primaryWaitSeconds,run.policy.backupWaitSeconds,run.policy.retrySeconds,run.policy.maxAttempts].some(n=>!Number.isSafeInteger(n)||n<1)||
     !['high','low'].includes(run.urgency)||run.incident!==null&&!state.incidents.some(i=>i.id===run.incident)||!member(run.assignee)||
     ![run.startedAt,run.secondStepAt,run.endsAt].every(date)||Date.parse(run.secondStepAt)!==Date.parse(run.startedAt)+run.policy.primaryWaitSeconds*1000||
-    Date.parse(run.endsAt)!==Date.parse(run.secondStepAt)+run.policy.backupWaitSeconds*1000||![1,2].includes(run.step)||
+    Date.parse(run.endsAt)!==Date.parse(run.secondStepAt)+(run.policy.secondStep==='none'?0:run.policy.backupWaitSeconds)*1000||![1,2].includes(run.step)||
     (run.state==='running'?run.endedAt!==null:!date(run.endedAt))||typeof run.outcome!=='string'||run.outcome.length>1000||
     !Array.isArray(run.records)||run.records.length>200||new Set(run.records.map((r:any)=>r?.id)).size!==run.records.length)fail('Invalid on-call notification run');
   validatePolicy(run.policy);
   const first=state.events.find(e=>e.id===alert.events[0]);
-  if(!first||run.startedAt!==first.acceptedAt||run.incident!==null&&!state.incidents.some(i=>i.id===run.incident&&i.service===alert.service)||run.state==='completed'&&(run.step!==2||Date.parse(run.endedAt)<Date.parse(run.endsAt)))fail('Invalid on-call run provenance');
+  if(!first||run.startedAt!==first.acceptedAt||run.incident!==null&&!state.incidents.some(i=>i.id===run.incident&&i.service===alert.service)||run.state==='completed'&&(run.step!==(run.policy.secondStep==='none'?1:2)||Date.parse(run.endedAt)<Date.parse(run.endsAt)))fail('Invalid on-call run provenance');
   for(const r of run.records) {
+    if(run.policy.secondStep==='none'&&r.step===2)fail('Single-step policy cannot record a second step');
     if(!shape(r,['id','step','member','contact','rule','dueAt','recordedAt','state','sender','outcome'])||typeof r.id!=='string'||!r.id.startsWith(run.id+':')||r.id.length>400||
       ![1,2].includes(r.step)||r.step>run.step||!member(r.member)||r.sender!=='none'||!date(r.dueAt)||typeof r.outcome!=='string'||r.outcome.length>1000||
       !['pending','recorded','stopped'].includes(r.state)||(r.state==='recorded')!==date(r.recordedAt)||r.state!=='recorded'&&r.recordedAt!==null||r.state==='pending'&&run.state!=='running'||

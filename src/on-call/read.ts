@@ -1,4 +1,4 @@
-import {coverage, preview} from '../family/response-operations/schedules';
+import {scheduleServices, coverage, preview} from '../family/response-operations/schedules';
 import type {State} from '../family/response-operations/domain';
 import type {PagingArchive} from '../family/response-operations/paging-archive';
 
@@ -23,8 +23,9 @@ export function onCall(workspace: State, archive: Pick<PagingArchive, 'schedules
     return person ? {id: person.id, name: person.name} : null;
   };
   const rotas = archive.schedules.flatMap(schedule => {
-    const service = workspace.services.find(row => row.id === schedule.service);
-    if (!service) return [];
+    const services=scheduleServices(schedule).map(id=>workspace.services.find(row=>row.id===id));
+    const service=services[0];
+    if (!service||services.some(s=>!s)) return [];
     const now = coverage(schedule, workspace.members, at);
     const ends = now.windows.flatMap(window => window.end && Date.parse(window.end) > at ? [Date.parse(window.end)] : []);
     const nextAt = ends.length ? Math.min(...ends) : null;
@@ -43,10 +44,10 @@ export function onCall(workspace: State, archive: Pick<PagingArchive, 'schedules
     }
     const gaps = week.filter(band => !band.member).map(({role, from, to}) => ({role, from, to}));
     const anchor = schedule.primary.anchorLocal;
-    return [{id: schedule.id, name: schedule.name, service: {id: service.id, name: service.name}, zone: schedule.timezone,
+    return [{id: schedule.id, name: schedule.name, service: {id: service.id, name: services.map(s=>s!.name).join(' · ')}, zone: schedule.timezone,
       rhythm: {every: schedule.primary.periodDays, weekday: new Intl.DateTimeFormat('en-GB', {weekday: 'long', timeZone: 'UTC'}).format(new Date(anchor + 'Z')), time: anchor.slice(11, 16)},
       now: {primary: member(now.primary), backup: member(now.backup), until: nextAt === null ? null : new Date(nextAt).toISOString()},
       next: next && nextAt !== null ? {at: new Date(nextAt).toISOString(), primary: member(next.primary), backup: member(next.backup)} : null, gaps, week}];
   });
-  return {at: new Date(at).toISOString(), rotas, unrostered: workspace.services.filter(service => !rotas.some(rota => rota.service.id === service.id)).map(({id, name}) => ({id, name}))};
+  return {at: new Date(at).toISOString(), rotas, unrostered: workspace.services.filter(service => !archive.schedules.some(schedule=>scheduleServices(schedule).includes(service.id))).map(({id, name}) => ({id, name}))};
 }

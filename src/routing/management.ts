@@ -49,7 +49,7 @@ export function installRoutingManagement(api:any,deps:RoutingDependencies) {
     if(previous)state.intakeSources![state.intakeSources!.indexOf(previous)]=source;else(state.intakeSources??=[]).push(source);
     state.audit.push({id:crypto.randomUUID(),at,actor:actor.id,kind:'routing-key',text:`Configured routed ${source.provider} key ${source.name}${team?` for team ${team.name}`:''}; revision ${source.revision}; rule version ${definition.versions.at(-1)!.version}`});
     auditIdentity(c.env.DB,{source:{kind:'intake-source',id:source.id},subject:{kind:'intake-source',id:source.id}});
-    const token=crypto.randomUUID(),result=await c.env.DB.batch([...workspaceWrite(c.env.DB,state,state.revision,deps.guard(c),token),c.env.DB.prepare('INSERT INTO oc_intake_credentials(source,key_digest,signing_custody) SELECT ?,?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?) ON CONFLICT(source) DO UPDATE SET key_digest=excluded.key_digest,signing_custody=excluded.signing_custody').bind(id,digest,custody,token)]);
+    const token=crypto.randomUUID(),result=await c.env.DB.batch([...workspaceWrite(c.env.DB,state,state.revision,deps.guard(c),token),c.env.DB.prepare('INSERT INTO oc_intake_credentials(source,key_digest,signing_custody,key_custody) SELECT ?,?,?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?) ON CONFLICT(source) DO UPDATE SET key_digest=excluded.key_digest,signing_custody=excluded.signing_custody,key_custody=excluded.key_custody').bind(id,digest,custody,await sealCredential(key,runtimeBindings(c.env).SESSION_SECRET,sourceCustody),token)]);
     if(result[0].meta.changes!==1)fail('Workspace or authority changed; reload',409);
     return c.json(source,previous?200:201);
   });

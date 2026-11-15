@@ -1,12 +1,12 @@
 import { fail, text, type Member } from "./domain.ts";
-import { coverage, validateSchedule, type Schedule, type Coverage } from "./schedules.ts";
+import { scheduleServices, sharedServices, coverage, validateSchedule, type Schedule, type Coverage } from "./schedules.ts";
 import { clock, fields, validateBehavior, validateReceipt,
   type SyntheticBehavior, type SyntheticOutcome, type SyntheticReceipt } from "./synthetic-provider.ts";
 export { validateReceipt } from "./synthetic-provider.ts";
 export type { SyntheticBehavior, SyntheticReceipt } from "./synthetic-provider.ts";
 
-export type EscalationPolicy = { service: string; scheduleId: string; revision: number;
-  secondStep?: "primary" | "backup"; primaryWaitSeconds: number; backupWaitSeconds: number; retrySeconds: number; maxAttempts: number };
+export type EscalationPolicy = { id?: string; services?: string[]; service: string; scheduleId: string; revision: number;
+  secondStep?: "primary" | "backup" | "none"; primaryWaitSeconds: number; backupWaitSeconds: number; retrySeconds: number; maxAttempts: number };
 export type EscalationAttempt = { step: 0 | 1; role: "primary" | "backup"; key: string;
   target: string | null; at: number; outcome: SyntheticOutcome | "unavailable";
   coverage: Coverage; members: Member[]; workspaceRevision: number | null; selectionWarnings: string[] };
@@ -25,17 +25,24 @@ function integer(value: any, name: string, min: number, max: number): number {
   if (!Number.isSafeInteger(value) || value < min || value > max) fail(`Invalid ${name}`);
   return value;
 }
+export const policyServices=(policy:EscalationPolicy)=>policy.services??[policy.service];
+export function servicePolicy(policies:EscalationPolicy[],service:string) {
+ const policy=policies.find(p=>policyServices(p).includes(service));
+ return policy?{...policy,service}:undefined;
+}
 export function validatePolicy(input: any, schedule?: Schedule): EscalationPolicy {
-  fields(input, ["service", "scheduleId", "revision", "primaryWaitSeconds", "backupWaitSeconds", "retrySeconds", "maxAttempts", ...(Object.hasOwn(input ?? {}, "secondStep") ? ["secondStep"] : [])]);
-  if (input.secondStep !== undefined && !["primary", "backup"].includes(input.secondStep)) fail("Invalid second step role");
+  fields(input, ["service", "scheduleId", "revision", "primaryWaitSeconds", "backupWaitSeconds", "retrySeconds", "maxAttempts", ...["secondStep","id","services"].filter(key=>Object.hasOwn(input??{},key))]);
+  if (input.secondStep !== undefined && !["primary", "backup", "none"].includes(input.secondStep)) fail("Invalid second step role");
   const policy: EscalationPolicy = { ...(input.secondStep === undefined ? {} : {secondStep: input.secondStep}), service: text(input.service, "service", 100), scheduleId: text(input.scheduleId, "schedule ID", 100),
     revision: integer(input.revision, "policy revision", 1, 1_000_000_000),
     primaryWaitSeconds: integer(input.primaryWaitSeconds, "primary wait", 1, 86_400),
     backupWaitSeconds: integer(input.backupWaitSeconds, "backup wait", 1, 86_400),
     retrySeconds: integer(input.retrySeconds, "retry wait", 1, 3_600),
     maxAttempts: integer(input.maxAttempts, "maximum attempts", 1, 10) };
+  if(input.id!==undefined)policy.id=text(input.id,'policy ID',100);
+  if(input.services!==undefined)policy.services=sharedServices(input.services,policy.service);
   if (policy.service !== input.service || policy.scheduleId !== input.scheduleId) fail("Noncanonical policy identity");
-  if (schedule && (schedule.id !== policy.scheduleId || schedule.service !== policy.service)) fail("Policy schedule/service mismatch");
+  if (schedule && (schedule.id !== policy.scheduleId || policyServices(policy).some(service=>!scheduleServices(schedule).includes(service)))) fail("Policy schedule/service mismatch");
   return policy;
 }
 const active = (m: Member) => m.active && ["admin", "responder"].includes(m.role);

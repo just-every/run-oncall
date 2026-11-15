@@ -50,6 +50,7 @@ import { installTriage, memberWorkspace } from "./triage-api";
 import { linkRestoredOwner, restoredAdministrators } from './identity-link';
 import { checkWorkspaceSize, loadWorkspace, workspaceWrite, workspaceRows } from './workspace-store';
 import { nativeMember } from './native-member';
+import {installKeyReveal} from './integrations/key-reveal';
 import { installNativeSources, refuseKeyEcho, sealHeldSourceKeys, type NativeSource } from './native-sources';
 import { runtimeBindings, type Bindings } from './auth.server';
 import { admitted } from './base/setup-state';
@@ -442,6 +443,7 @@ api.use("/api/*", async (c, next) => {
 });
 installBusinessStatus(api, {...changeDeps, state: (c: any) => authorizedState(c, false, true)});
 installAutomationManagement(api, changeDeps);
+installKeyReveal(api,changeDeps);
 installChangeManagement(api, changeDeps);
 installSubjectErasure(api, changeDeps);
 installMonitoringSigning(api, changeDeps);

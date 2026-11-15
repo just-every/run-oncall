@@ -1,7 +1,9 @@
+import {request} from '../useWorkspace';
+import {failureMessage} from '../app/FailureLine';
 import {InlineConfirm} from '../app/autosave/InlineConfirm';
 import {OneTimeSecret} from './OneTimeSecret';
 import {privateKey} from './catalog';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { SourceTest } from './SourceTest';
 import { integrationKinds, shortTime, type IntegrationProps, type SourceRecord } from './catalog';
 import './integrations.css';
@@ -13,7 +15,8 @@ import { allowanceKey, refusalText, throttleNotices } from './key-refusals';
 const references = { email: ['/docs/compatible-intake#integration-email', 'Set up email routing'], events: ['/docs/incidents#send-an-alert-event', 'Events API reference'], changes: ['/docs/changes', 'Change events reference'], pagerduty: ['/docs/compatible-intake', 'Provider setup'], opsgenie: ['/docs/compatible-intake', 'Provider setup'], splunk: ['/docs/compatible-intake', 'Provider setup'], alertmanager: ['/docs/monitoring-providers', 'Provider setup'], grafana: ['/docs/monitoring-providers', 'Provider setup'], datadog: ['/docs/monitoring-providers', 'Provider setup'] } as const;
 
 export function SourcePage({ source, state, admin, busy, run, children }: IntegrationProps & { source?: SourceRecord; children?: React.ReactNode }) {
-  const [confirm, setConfirm] = useState<'rotate'|'revoke'>(),[revealed,setRevealed]=useState('');
+  const [confirm, setConfirm] = useState<'rotate'|'revoke'>(),[revealed,setRevealed]=useState(''),[revealError,setRevealError]=useState(''),[reading,setReading]=useState(false);
+  useEffect(()=>{setRevealed('');setRevealError('');},[source?.id,admin]);
   if (!source) return <section className="panel padded integrations"><a className="integration-link" href="/settings/integrations">‹ Integrations</a><h2>Source not found</h2><p>Choose an integration from the list.</p></section>;
   const id = source.id.slice(source.id.indexOf(':') + 1), service = state.services.find(s => s.id === source.service);
   const intake = (state.intakeReceipts ?? []).filter(r => r.source === id).slice().reverse();
@@ -34,6 +37,7 @@ export function SourcePage({ source, state, admin, busy, run, children }: Integr
     {source.kind !== 'email' && <><h3>Receipts</h3><ol className="integration-receipts">{(source.kind === 'changes' ? changes : source.kind === 'events' ? events : intake).map((r: any) => <li key={r.id}><strong>{r.title ?? r.summary ?? 'Received event'}</strong><p>{r.outcome ?? r.intent ?? 'Accepted'} · {shortTime(r.acceptedAt ?? r.timestamp ?? r.observedAt)}</p>{r.incomplete && <p>Incomplete intake · {r.incomplete.bytes.toLocaleString()} bytes · {r.incomplete.dropped ?? 'Some'} alerts unread</p>}</li>)}</ol>{!(source.kind === 'changes' ? changes : source.kind === 'events' ? events : intake).length && <p>No accepted requests yet.</p>}</>}
     {allowanceId && source.statusKnown !== false && <AllowanceForm state={state} id={allowanceId} admin={admin} busy={busy} run={run} open={refused.length > 0} />}
     <details><summary>Rejected requests ({rejections.length+refused.length+emailRejected.length})</summary>{rejections.length ? <ul>{rejections.map(r => <li key={r.id}>Request refused · {shortTime(r.at)}</li>)}</ul> : !refused.length&&!emailRejected.length&&<p>No rejected requests retained for this source.</p>}{refused.length>0&&<ul aria-label="Allowance refusals">{refused.map(r=><li key={r.id}>Request refused · {shortTime(r.at)} · {refusalText(r.text)} {admin?<a href="#key-allowance">Raise this key’s allowance</a>:'An administrator can raise this key’s allowance.'}</li>)}</ul>}{emailRejected.length>0&&<ul>{emailRejected.map(r=><li key={r.id}>Message refused · {shortTime(r.at)}</li>)}</ul>}</details>
+    {admin&&source.kind!=='email'&&<><button type="button" disabled={busy||reading||!source.active} onClick={async()=>{setReading(true);setRevealError('');setRevealed('');try{const result=await request('/api/integrations/'+(source.kind==='events'?'native':source.kind==='changes'?'change':'intake')+'/'+encodeURIComponent(id)+'/reveal',{});setRevealed(result.key);}catch(error){setRevealError(failureMessage(error));}finally{setReading(false);}}}>Show key</button>{revealError&&<p role="alert">{revealError}</p>}</>}
     {admin&&source.kind!=='email'&&<details><summary>Source actions</summary><button type="button" disabled={busy||source.kind==='events'&&!source.active} onClick={()=>setConfirm('rotate')}>Rotate key</button><button type="button" disabled={busy||!source.active} onClick={()=>setConfirm('revoke')}>Revoke key</button>
      {confirm&&<InlineConfirm action={confirm==='rotate'?'Rotate key now':'Revoke key now'} keep="Cancel" busy={busy} onCancel={()=>setConfirm(undefined)} onConfirm={async()=>{
       let key=privateKey(source.kind==='changes'&&existing&&'provider' in existing&&existing.provider==='pagerduty'?16:32);
@@ -42,7 +46,7 @@ export function SourcePage({ source, state, admin, busy, run, children }: Integr
       const data=confirm==='rotate'?source.kind==='events'?{id,key,mode:source.native?.authentication,scopes:source.native?.scopes}:{...existing,key,revision:existing?.revision}:existing?{revision:existing.revision}:{};
       if(await run(path,data,confirm==='rotate'?'Source key rotated':'Source revoked')){if(confirm==='rotate')setRevealed(key);setConfirm(undefined);}
      }}>Stop the old key from sending new events? Accepted records stay.</InlineConfirm>}
-    </details>}{revealed&&<OneTimeSecret value={revealed} onDone={()=>setRevealed('')}/>}
+    </details>}{admin&&revealed&&<OneTimeSecret value={revealed} readable onDone={()=>setRevealed('')}/>}
 
     <a className="integration-link" href={reference}>{referenceName}</a>
   </section>;

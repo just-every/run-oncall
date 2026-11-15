@@ -9,7 +9,7 @@ import { mailbox, mapSchedule, type Mapped } from './rotations'
 import type { Vendor } from './source'
 
 // A semantic adapter change must re-review unchanged saved source on catch-up.
-export const MOVE_IN_MAPPING_VERSION='oncall-move-in-2'
+export const MOVE_IN_MAPPING_VERSION='oncall-move-in-3'
 type MappingRecord=Pick<SourceRecord,'kind'|'sourceId'|'payload'|'location'>
 export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:number):ImportMapping {
  source={records:source.records.map(row=>({...row,payload:mappingPayload(vendor,row.kind,row.payload)}))}
@@ -128,7 +128,7 @@ export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:numbe
      if(step.notifyType&&step.notifyType!=='default')throw Error(`Policy ${label} step ${index+1}: notifyType ${step.notifyType}`)
      return {scheduleId:`${vendor}:${scheduleId}`,delayMinutes:Math.max(1,minutes),condition:'if-not-acked'}
     })
-    const result=effect('policy',`${vendor}:${record.sourceId}`,{name:label,steps:normalized,sourceId:record.sourceId})
+    const result=effect('policy',`${vendor}:${record.sourceId}`,{name:label,steps:normalized,sourceId:record.sourceId,...(vendor==='pagerduty'?{serviceSources:source.records.filter(row=>row.kind==='services'&&String((row.payload as any).escalation_policy?.id)===record.sourceId).map(row=>({namespace:vendor,sourceId:row.sourceId,name:(row.payload as any).name??row.sourceId,policyId:`${vendor}:${record.sourceId}`}))}:{})})
     result.unmapped=[...differences,...Object.keys(value).filter(k=>!['id','name','rules','escalation_rules','num_loops','repeat','repeatEnabled'].includes(k)).map(field=>({field,reason:`Policy ${label}: metadata is retained only, not an active rule`}))]
     return result
    }

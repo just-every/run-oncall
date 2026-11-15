@@ -4,7 +4,7 @@ import { sendDemoPage } from './demo-paging'
 import { deliver } from './delivery'
 import { fail, text, type Member } from './family/response-operations/domain'
 import { coverage, preview, validateSchedule } from './family/response-operations/schedules'
-import { acknowledge, cancel, replay, validatePolicy, type EscalationJob } from './family/response-operations/escalation'
+import { acknowledge, cancel, replay, validatePolicy, policyServices, type EscalationJob } from './family/response-operations/escalation'
 import { validatePagingArchive, preparePagingImport } from './family/response-operations/paging-archive'
 import { pagingSnapshot, commitPaging, putSchedule, putPolicy, putJob, replaceArchive, type PagingSnapshot } from './paging-store'
 
@@ -43,13 +43,16 @@ export function installPaging(api:any,body:(c:any,max?:number)=>Promise<any>) {
     return c.json(schedule)
   })
   api.post('/api/paging/policies',async(c:any)=>{
-    const {s,m}=await context(c),v=await body(c),old=s.archive.policies.find(x=>x.service===v?.service)
+    const {s,m}=await context(c),v=await body(c),old=s.archive.policies.find(x=>policyServices(x).includes(v?.service))
     requireTeamCoverage(s.workspace,m,v?.service)
     if(!v||typeof v!=='object'||Array.isArray(v)||!Number.isSafeInteger(v.revision)||v.revision<0) fail('Invalid escalation policy revision')
     if(v.revision!==(old?.revision??0)) fail('Escalation policy changed; reload and retry',409)
     const schedule=s.archive.schedules.find(x=>x.id===v.scheduleId)
-    if(!schedule||schedule.service!==v.service) fail('Policy schedule/service mapping invalid')
-    const policy=validatePolicy({...v,revision:v.revision+1},schedule)
+    if(!schedule) fail('Policy schedule/service mapping invalid')
+    const policy=validatePolicy({...v,...(old?.id?{id:old.id}:{}),...(old?.services?{service:old.service,services:old.services,secondStep:v.secondStep??old.secondStep??'backup'}:{}),revision:v.revision+1},schedule)
+    if(policyServices(policy).length>1&&m.role!=='admin')fail('Only an administrator can change shared coverage',403)
+    for(const service of policyServices(policy)){requireTeamCoverage(s.workspace,m,service);if(!s.workspace.services.some(s=>s.id===service))fail('Unknown policy service')}
+    if(s.archive.policies.some(p=>p!==old&&policyServices(p).some(id=>policyServices(policy).includes(id))))fail('A service already references another policy',409)
     const next={...s.archive,policies:replace(s.archive.policies,policy,x=>x.service)}
     await commitPaging(c.env.DB,s,next,token=>[putPolicy(c.env.DB,policy,token)],authority(c))
     return c.json(policy)

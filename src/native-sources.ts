@@ -77,10 +77,11 @@ export function installNativeSources(api: any, deps: Dependencies) {
       fail('Choose explicit service scopes');
     refuseKeyEcho([id, ...input.scopes], key);
     const signed = input.mode === 'signed', authority = deps.guard(c);
-    const custody = signed ? await sealCredential(key, runtimeBindings(c.env).SESSION_SECRET, sourceCustody) : null;
+    const keyCustody = await sealCredential(key, runtimeBindings(c.env).SESSION_SECRET, sourceCustody);
+    const custody = signed ? keyCustody : null;
     // One statement rotates the key: the previous key stops admitting events as this commits.
-    const saved = await c.env.DB.prepare(`INSERT INTO sources(id,digest,signing_custody,scopes) SELECT ?,?,?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE revision=?) AND ${authority.sql} ON CONFLICT(id) DO UPDATE SET digest=excluded.digest,signing_custody=excluded.signing_custody,scopes=excluded.scopes`)
-      .bind(id, await changeHash(key), custody, JSON.stringify(input.scopes), state.revision, ...authority.values).run();
+    const saved = await c.env.DB.prepare(`INSERT INTO sources(id,digest,signing_custody,scopes,key_custody) SELECT ?,?,?,?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE revision=?) AND ${authority.sql} ON CONFLICT(id) DO UPDATE SET digest=excluded.digest,signing_custody=excluded.signing_custody,scopes=excluded.scopes,key_custody=excluded.key_custody`)
+      .bind(id, await changeHash(key), custody, JSON.stringify(input.scopes), keyCustody, state.revision, ...authority.values).run();
     if (saved.meta.changes !== 1) fail('Authority changed; reload', 409);
     return c.json({ id, authentication: signed ? 'signed' : 'bearer',
       credential: signed ? 'encrypted in this installation; never returned' : 'stored as digest; never returned', effect: 'intake only; no read access' });
