@@ -1,0 +1,54 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-15",
+  "status": "pass",
+  "head": "de562d49f481af1827a59112dd172dbcc63ae033",
+  "fixedBy": "c682f802d4ae3e34caa65c5c99e9c2b45f715844",
+  "rows": [
+    {
+      "directory": ".",
+      "override": "7.30.1",
+      "packages": [
+        "undici@7.30.1"
+      ],
+      "snapshots": [
+        "undici@7.30.1"
+      ],
+      "edges": [
+        {
+          "parent": "miniflare@5.20260907.0-alpha(@types/node@22.18.6)",
+          "kind": "dependencies",
+          "version": "7.30.1"
+        }
+      ],
+      "engine": ">=20.18.1",
+      "historicalBefore": [
+        "undici@7.29.1"
+      ],
+      "vulnerableInstancesNow": 0
+    },
+    {
+      "directory": "src/modules/mail",
+      "override": "7.30.1",
+      "packages": [
+        "undici@7.30.1"
+      ],
+      "snapshots": [
+        "undici@7.30.1"
+      ],
+      "edges": [
+        {
+          "parent": "miniflare@5.20260907.0-alpha",
+          "kind": "dependencies",
+          "version": "7.30.1"
+        }
+      ],
+      "engine": ">=20.18.1",
+      "historicalBefore": [
+        "undici@7.29.1"
+      ],
+      "vulnerableInstancesNow": 0
+    }
+  ],
+  "scope": "Dependency resolution only; no exploit execution or runtime compatibility claim."
+}

@@ -1,0 +1,7 @@
+{
+  "status": "no-change",
+  "sha": "de562d49f481af1827a59112dd172dbcc63ae033",
+  "summary": "Current remote main already resolves every undici runtime instance in both lockfiles to patched 7.30.1, introduced by c682f802d4ae3e34caa65c5c99e9c2b45f715844; no product changes are needed.",
+  "tests": "PASS: structural YAML/manifest/edge verification, ancestor proof, pnpm 10.12.4 frozen offline lockfile-only validation for root and mail on Node 22.20.0, clean diff, and current remote-main SHA match. Existing exact-SHA Verify 43733750453 and 43731408011 and Run site 43733750414 completed/success. No full install, local build, typecheck, runtime suite or exploit reproduction: no product change.",
+  "security": true
+}

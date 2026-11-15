@@ -1,0 +1,37 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-15",
+  "head": "de562d49f481af1827a59112dd172dbcc63ae033",
+  "investigator": {
+    "outcome": "already patched",
+    "facts": [
+      "Both manifests override undici to 7.30.1.",
+      "Both parsed lockfiles contain exactly one undici package and snapshot, all Miniflare edges resolve to 7.30.1.",
+      "Importer specifiers and manifest overrides match.",
+      "No alternate runtime instance; undici-types is a separate package."
+    ],
+    "limits": [
+      "Read-only static inspection; no installs or network."
+    ]
+  },
+  "reviewer": {
+    "outcome": "no reportable finding",
+    "reachable_snapshots": {
+      "root": 236,
+      "mail": 56
+    },
+    "unresolved_edges": 0,
+    "undici_versions": [
+      "7.30.1"
+    ],
+    "checks": [
+      "Parsed/traversed dependencies, optional dependencies and aliases.",
+      "Integrity strings match across graphs.",
+      "Staged and working tree diffs empty."
+    ],
+    "limits": [
+      "No runtime exercise, registry/advisory lookup or downloaded artifact verification.",
+      "Node bundled fetch is outside requested npm dependency scope."
+    ]
+  }
+}
