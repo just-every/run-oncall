@@ -164,7 +164,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "fa9fca87bbc5f4da71a9deb8d22b88f0390ab22cb74187b9b22ced182de8d817",
+      "sha256": "19eeb5d7991b2cc866eff0434c89baaad70ae0d174e9182544f8c3e56bf03650",
       "executable": false
     },
     "CLAUDE.md": {
@@ -736,7 +736,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "81f4b965353f69d818ca26fe7ef69d983f24d3f5fd363af50b5957d4b25ebf8a",
+      "sha256": "0f561dc32ee74729afff770c10823f7c3c61e3f2c30ed1b2cfe076cda3aae0b6",
       "executable": false
     },
     "pnpm-lock.yaml": {
@@ -832,11 +832,11 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "aead9281452628604a71856c037c692c45712e6df92945985d7cb014982d4626",
+      "sha256": "2fbb13afef6aa6c4f09f667eb154bf251a59d11d7cf6b7a81e26c3c931dccae1",
       "executable": false
     },
     "RELEASE.md": {
-      "sha256": "ad1921af5625b6da61d807c2a888d4a0f615cf6934954b234f9606303731604f",
+      "sha256": "5eb14608908ce9a29343a36366b1066d0539aace1bc54e6937ca0285219f3c5c",
       "executable": false
     },
     "rer-project.json": {
@@ -1676,7 +1676,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "1e3e511472c20faabe1671213c4e0fd43c025730ec421297948992ba99b58e24",
+      "sha256": "130f81940ec475b72ddac899589b49f59adaa83e894aac014551f9302bc79bff",
       "executable": false
     },
     "src/agent-door/alert-tools.ts": {
