@@ -96,7 +96,7 @@ Compare the shared [hosting options](https://run-oncall.com/docs/hosting), or fo
 
 Release 1 supports hosted incident coordination alongside your team's existing pager. Paging stays OFF; coordination does not need an independent standby. Release 2 paging and independent standby are not built. Keep the pager's routes and notification settings in place.
 
-**Hosting is in `v0.3.0` and later.** Use a fresh checkout of `main` for the following steps; a checkout already set up with a development owner keeps that owner when setup runs again. Install `rer` first if you have not used the one-line installer above, then put its launcher on PATH in this terminal. It provides its own Node and pnpm; you do not need global `node` or `npx`.
+**Hosting is in `v0.3.0` and later.** Hosting claims the owner you set up, so start from a checkout with your real owner mailbox. Install `rer` first if you have not used the one-line installer above, then put its launcher on PATH in this terminal. It provides its own Node and pnpm; you do not need global `node` or `npx`.
 
 ```sh
 curl -fsSL https://runeditrun.com/install.sh | sh
@@ -105,6 +105,8 @@ rer install just-every/run-oncall --dir oncall-hosted
 cd oncall-hosted
 rer setup --owner-email you@example.com
 ```
+
+Already running Oncall locally from `run-oncall`? Its local development owner stays when setup runs again, so either use the fresh `oncall-hosted` checkout above, or reuse that folder: stop it with `rer dev --stop`, save anything you want to keep with `rer export --output exports/installation.rer`, run `rer reset --yes` (it deletes the local data and owner), then `rer setup --owner-email you@example.com`. Hosting never uploads local data.
 
 Replace `you@example.com` with a real mailbox you can open. Setup prepares the owner and private settings locally and stops its temporary app before returning. Repeating setup preserves the configured owner; it does not change their email.
 

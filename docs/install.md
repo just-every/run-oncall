@@ -6,13 +6,14 @@ Start with the dated [US installation and dependency checklist](readiness.md#us-
 
 ## Run it on your computer
 
-One line installs the `rer` command, clones Oncall into `run-oncall` and starts it:
+Two steps. First install the `rer` command, then clone Oncall into `run-oncall` and start it:
 
 ```sh
-curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-oncall
+curl -fsSL https://runeditrun.com/install.sh | sh
+rer dev just-every/run-oncall
 ```
 
-Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-oncall` does the same. If the installer prints a line that puts `rer` on your PATH, run that line too. To start it again later, run the same line from the same folder, or `cd run-oncall && rer dev`. `rer dev` installs the locked dependencies, prepares the local database and creates a local development owner (`owner@<checkout-name>.test`). It starts Oncall and prints a private `RER_OPEN` link. Open that link on this computer and you are signed in as the owner. Use the printed address: the default port starts at 8787 and another free port is selected if needed; `rer dev --port N` requests a specific free port.
+If the second line says `rer: command not found`, run `export PATH="$HOME/.local/bin:$PATH"` and repeat it; add that line to your shell startup file to keep it. Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-oncall` does both steps. To start it again later, run `cd run-oncall && rer dev`. `rer dev` installs the locked dependencies, prepares the local database and creates a local development owner (`owner@<checkout-name>.test`). It starts Oncall and prints a private `RER_OPEN` link. Open that link on this computer and you are signed in as the owner. Use the printed address: the default port starts at 8787 and another free port is selected if needed; `rer dev --port N` requests a specific free port.
 
 The first time, Oncall opens **Finish setup**. Name and Email are read-only; a default local owner is named **Owner**. Review the displayed email, tick *I confirm this owner account is ready to use* and press **Finish setup**. This screen confirms the owner; it does not edit their name or email. After that, Oncall opens straight into the app. To choose a real owner mailbox before first launch, use the explicit setup steps below.
 
@@ -107,13 +108,17 @@ This restarts the updated local app, applies migrations and keeps your owner, sc
 
 Release 1 supports hosted incident coordination alongside your team's existing pager. Paging stays OFF; coordination does not need an independent standby. Release 2 paging and independent standby are not built. Keep the pager's routes and notification settings in place.
 
-**Hosting is in `v0.3.0` and later.** Use a fresh checkout of `main` for the following steps; a checkout already set up with a development owner keeps that owner when setup runs again.
+**Hosting is in `v0.3.0` and later.** Hosting claims the owner you set up, so start from a checkout with your real owner mailbox. `rer` brings its own Node and pnpm; you do not need global `node` or `npx`. Install `rer` first if you have not used the installer above, then put its launcher on PATH in this terminal.
 
 ```sh
-npx -y @runeditrun/rer install just-every/run-oncall --dir oncall-hosted
+curl -fsSL https://runeditrun.com/install.sh | sh
+export PATH="$HOME/.local/bin:$PATH"
+rer install just-every/run-oncall --dir oncall-hosted
 cd oncall-hosted
 rer setup --owner-email you@example.com
 ```
+
+Already running Oncall locally from `run-oncall`? Its local development owner stays when setup runs again, so either use the fresh `oncall-hosted` checkout above, or reuse that folder: stop it with `rer dev --stop`, save anything you want to keep with `rer export --output exports/installation.rer`, run `rer reset --yes` (it deletes the local data and owner), then `rer setup --owner-email you@example.com`. Hosting never uploads local data.
 
 Replace `you@example.com` with a real mailbox you can open. Setup prepares the owner and private settings locally and stops its temporary app before returning. Repeating setup preserves the configured owner; it does not change their email.
 

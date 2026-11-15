@@ -46,3 +46,7 @@
 .team-section .person-notifications {grid-column:1 / -1; min-width:0;}
 .team-section .person-notifications fieldset {min-width:0; margin:12px 0; border:1px solid var(--oc-line); border-radius:12px;}
 .team-section .person-notifications :is(input,select) {max-width:100%;}
+.team-section .team-signin {margin-top:20px; padding:16px; border:1px solid var(--oc-line); border-radius:12px; display:grid; gap:8px; justify-items:start;}
+.team-section .team-signin h3 {margin:0; font-size:16px;}
+.team-section .team-signin :is(ol,p) {margin:0; font-size:14px;}
+.team-section .team-signin ol {padding-left:20px; display:grid; gap:4px;}
