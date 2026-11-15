@@ -1,3 +1,4 @@
+import {beginOnCall} from '../family/response-operations/on-call-notifications/model';
 import { finishResponseAdmission } from '../response-policy/model.ts';
 import type { Bindings } from '../auth.server';
 import { auditedDatabase } from '../audit-database.ts';
@@ -57,7 +58,8 @@ export async function receiveEmail(message:ForwardableEmailMessage,env:Bindings)
     }
     if(state.emailReceipts.length>10000)fail('Email receipt capacity reached',429);
     checkEmailCustody(state);
-    const result=await db.batch(workspaceWrite(db,state,revision,{sql:'1=1',values:[]}));
+    const pagingGuard=await beginOnCall(db,state);
+    const result=await db.batch(workspaceWrite(db,state,revision,pagingGuard));
     if(result[0].meta.changes!==1)fail('Email admission changed; provider must retry',409);
     if(['quarantined','refused'].includes(receipt.outcome))message.setReject(receipt.diagnostic);
   } catch {

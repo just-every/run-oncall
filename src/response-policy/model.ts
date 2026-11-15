@@ -1,3 +1,4 @@
+import {markOnCallStart} from '../family/response-operations/on-call-notifications/model';
 import {launchRuleWorkflow} from '../orchestration/workflows.ts';
 import { instantiateIncidentTemplate } from '../incident-workflows/template.ts';
 import { recordAlertObligation } from '../alert-obligation.ts';
@@ -51,6 +52,7 @@ export function finishResponseAdmission(state: State, alert: Alert, event: Event
     obligation.policy = decideResponse(policy, first ? responseAdmissionUrgency(state, alert, first) : 'high', first?.decision.transformation?.severity ?? first?.severity ?? 'critical', first?.decision.policy ?? null);
   }
   if (!event) return;
+  if (event.intent === 'trigger' && alert.events[0] === event.id && !alert.suppressed && automatic) markOnCallStart(state,alert);
   if (alert.state === 'recovered') {
     const recovered = state.events.find(e => alert.events.includes(e.id) && e.intent === 'recover');
     if (recovered && !obligation.stoppedAt) {

@@ -1,3 +1,4 @@
+import {validateOnCall,validOnCallEntry} from "./on-call-notifications/model.ts";
 import {validateTeams,type Team} from '../../teams/model.ts';
 import {approveWorkflow,workflowShape,type ApprovedWorkflow} from '../../orchestration/workflows.ts';
 import {transform,validateTransformation,validateTransformationEvents,type Transformation,type TransformationDecision} from '../../orchestration/transformation.ts';
@@ -101,6 +102,7 @@ export type Event = Signal & {
   };
 };
 export type Alert = {
+  onCall?: import("./on-call-notifications/model").OnCallRun;
   originalSeverity?: Signal['severity'];
   originalPriority?: Signal['priority'] | null;
   revision?:number;
@@ -934,7 +936,7 @@ export function validateArchive(value: any): State {
       "events",
       "owner",
       "suppressed",
-    ], ["urgency", "urgencyRevision", "urgencyHistory", "priority", "obligation", "revision", "coordination", "originalSeverity", "originalPriority"]);
+    ], ["urgency", "urgencyRevision", "urgencyHistory", "priority", "obligation", "revision", "coordination", "originalSeverity", "originalPriority", "onCall"]);
     if (
       !(a.service===null ? a.environment==='' && a.events.length===0 && value.intakeReceipts?.some((r:any)=>r.alert===a.id&&r.incomplete&&r.service===null&&r.source===a.source.slice(7)&&r.key===a.key&&r.generation===a.generation) : value.services.some(
         (s: any) => s.id === a.service && s.environment === a.environment,
@@ -947,6 +949,7 @@ export function validateArchive(value: any): State {
     if(firstClassification?.decision.transformation||a.originalSeverity!==undefined||a.originalPriority!==undefined){const first=firstClassification;if(!first?.decision.transformation||a.originalSeverity!==first.severity||a.originalPriority!==(first.priority??null))fail('Invalid original alert classification');}
     validateAlertCoordination(value,a);
     validateAlertObligation(value,a);
+    validateOnCall(value,a);
     text(a.generation, "generation", 100);
     bool(a.suppressed);
     if(a.priority!==undefined&&!/^P[1-5]$/.test(a.priority))fail("Invalid alert priority");
@@ -1023,7 +1026,7 @@ export function validateArchive(value: any): State {
     array(i.timeline);
     i.timeline.forEach(entry);
     if(i.timeline.some((e:any)=>e.lifecycle?.member!=null&&!hasMember(e.lifecycle.member)))fail("Invalid named responder reference");
-    if (i.timeline.some((e: any) => !hasMember(e.actor) && !value.apiClients?.some((c:any)=>c.id===e.actor) && !e.metadata?.agent && !validResponseSourceEntry(value,i,e) && !validDeadlineEntry(i,e)))
+    if (i.timeline.some((e: any) => !hasMember(e.actor) && !value.apiClients?.some((c:any)=>c.id===e.actor) && !e.metadata?.agent && !validResponseSourceEntry(value,i,e) && !validDeadlineEntry(i,e) && !validOnCallEntry(value,i,e)))
       fail("Invalid incident attribution");
     array(i.runbook);
     for (const r of i.runbook) {

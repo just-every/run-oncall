@@ -1,3 +1,4 @@
+import {eraseOnCallMember} from './family/response-operations/on-call-notifications/model';
 import { addressRanges } from './move-in/address-match'
 import { upgradeD1ImportErasureIndex } from './modules/import-kit/src/d1/index'
 import { validateSchedule } from './family/response-operations/schedules'
@@ -93,7 +94,7 @@ export async function eraseSubject({secret,db,state,actor,guard,input,kind,id,im
       delete incident.automaticDeclaration;incident.title='Incident source erased';const first=incident.timeline[0];first.actor=await anonymous();first.text='Original integration evidence explicitly erased';delete first.metadata
      }
      delete incident.sourceRecovery;delete incident.sourceRecoveryHistory
-     incident.timeline=incident.timeline.filter(e=>e.kind!=='source-recovery'&&(!e.metadata?.event||!events.has(e.metadata.event)))
+     incident.timeline=incident.timeline.filter(e=>e.kind!=='on-call-assigned'&&e.kind!=='source-recovery'&&(!e.metadata?.event||!events.has(e.metadata.event)))
      incident.revision++
     }
     if(affected.length){for(const row of affected)changedIncidents.add(row.id);remember('oc_incidents');updated.oc_incidents=changedIncidents.size;await eraseHandoffCopies(affected.map(i=>i.id))}
@@ -143,6 +144,7 @@ export async function eraseSubject({secret,db,state,actor,guard,input,kind,id,im
    const entries=new Set(incident.timeline.map(e=>e.id))
    const relationKey=(e:{kind:string;actor:string;at:string;text:string})=>JSON.stringify([e.kind==='merge-incidents'?'merge':e.kind==='split-incident'?'split':e.kind,e.actor,e.at,e.text.split('\nImpact: ')[0]])
    const relations=new Set(incident.timeline.filter(e=>['merge','split'].includes(e.kind)).map(relationKey))
+   for(const alert of state.alerts)if(alert.onCall?.incident===id){alert.onCall.incident=null;remember('oc_alerts')}
    remove('incidents','oc_incidents',i=>i.id===id)
    remove('apiOperations','oc_api_operations',o=>o.entity===id)
    // Relations retain the other incident, but sever the erased source and any
@@ -226,6 +228,7 @@ export async function eraseSubject({secret,db,state,actor,guard,input,kind,id,im
     }
    }
    if(ptoChanged){remember('paging_schedules');remember('paging_control');statements.push(guardStatement(db,'EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?)',pagingControl!.revision),db.prepare('UPDATE paging_control SET revision=revision+1 WHERE id=1'))}
+   for(const alert of state.alerts)eraseOnCallMember(alert,id);remember('oc_alerts')
    member.name='Erased member';member.active=false;member.erased=true;remember('oc_members')
    for(const entry of [...state.audit,...state.incidents.flatMap(row=>row.timeline)]){
     const by=entry.metadata?.agent;if(!by)continue

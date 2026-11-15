@@ -1,3 +1,4 @@
+import {sweepOnCall} from './family/response-operations/on-call-notifications/sweep';
 import { sweepMoveInConsent } from './move-in/pagerduty-oauth';
 import {lobbyPaths} from './app/lobbyPaths';
 import {isWorkspacePath, workspaceAddress} from './app/paths';
@@ -36,6 +37,8 @@ export default withDemo({
     const deadlines=auditedDatabase(env.DB,{feature:'incident-deadlines',kind:'deadline.sweep',actor:{kind:'service',id:'incident-deadlines'},source:{kind:'door',id:'scheduled'},commits:0,storageFailed:false});
     const deadlineEnv={...env,DB:deadlines.db};
     await sweepDeadlines(deadlines.db,(args,who)=>oncallAgentDoor(deadlineEnv).invoke('oncall.incidents.update',{...args,change:'expire-deadline',idempotency_key:`deadline-${args.deadline}`},who));
+    const notifications=auditedDatabase(env.DB,{feature:'on-call',kind:'on-call.record',actor:{kind:'service',id:'on-call'},source:{kind:'door',id:'scheduled'},commits:0,storageFailed:false});
+    await sweepOnCall(notifications.db);
     for(let n=0;n<10;n++) {
       const audit=auditedDatabase(env.DB,{feature:'automation',kind:'automation.dispatch',actor:{kind:'service',id:'outbox-dispatcher'},source:{kind:'door',id:'outbox-dispatcher'},commits:0,storageFailed:false});
       if(!(await dispatchOutbox({...env,DB:audit.db})).processed)break;

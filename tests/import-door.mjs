@@ -1,3 +1,4 @@
+import {adoptedOnCallFlow} from './paging-response-flow.mjs'
 import assert from 'node:assert/strict'
 import {generateKeyPairSync,sign,createHash,randomUUID} from 'node:crypto'
 import {readFile,readdir,writeFile} from 'node:fs/promises'
@@ -727,7 +728,7 @@ const {default:assert}=await import('node:assert/strict')
 const {readFile}=await import('node:fs/promises')
 const {localWorker,ownerDoor}=await import('./worker.mjs')
 
-const w=await localWorker()
+const w=await localWorker({},{clock:true,outboundLedger:true})
 const ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value}
 try {
  const owner=await w.request('/api/setup',{name:'Admin',password:'synthetic-local-testing-password'})
@@ -1003,6 +1004,7 @@ try {
  ok(await req('/api/intake/sources/synthetic-oncall-adoption/revoke',{revision:active.source.revision}))
  assert.equal(ok(await req('/api/intake/sources/synthetic-oncall-adoption/incumbent')).keySupplied,false)
  console.log('OC-055 import activation: separate key supply, inactive receiving, explicit activation, no supplied-key echo and revoke passed')
+ await adoptedOnCallFlow({w,req,ok,admin,alice,bob,schedule})
  console.log('Move-in: explicit timing difference, named people, validated adoption, authority, concurrent publication, atomic rollback, now/next, ICS and protected undo passed')
 } finally {await w.close()}
 

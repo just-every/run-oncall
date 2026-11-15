@@ -1,7 +1,9 @@
+import {validateNotificationRules} from '../family/response-operations/on-call-notifications/rules';
+import {holdOnCall} from '../family/response-operations/on-call-notifications/model';
 import {fail,type State,type Member} from '../family/response-operations/domain.ts';
 import {coverage,preview,validateSchedule,type Schedule} from '../family/response-operations/schedules.ts';
 import type {RecordedResponseObligation} from '../alert-obligation';
-export type ScheduleRecord={id:string;kind:'swap'|'policy'|'reminder'|'subscription'|'notice';member:string;active:boolean;revision:number;at:string;data:Record<string,any>};
+export type ScheduleRecord={id:string;kind:'notification-rules'|'swap'|'policy'|'reminder'|'subscription'|'notice';member:string;active:boolean;revision:number;at:string;data:Record<string,any>};
 export const records=(state:State)=>state.scheduleRecords??=[];
 export const responsive=(state:State,id:string)=>state.members.some(m=>m.id===id&&m.active&&['admin','responder'].includes(m.role));
 export function record(state:State,kind:ScheduleRecord['kind'],member:string,data:Record<string,any>):ScheduleRecord {
@@ -41,7 +43,7 @@ export function reminderDue(state:State,row:ScheduleRecord,schedules:Schedule[],
  }));
  return candidates.length?new Date(Math.min(...candidates)).toISOString():null;
 }
-export function holdScheduleRecords(state:State){for(const row of state.scheduleRecords??[]){row.active=false;if(row.kind==='subscription')row.data.hash=null;}}
+export function holdScheduleRecords(state:State){holdOnCall(state);for(const row of state.scheduleRecords??[]){row.active=false;if(row.kind==='subscription')row.data.hash=null;}}
 export function validateScheduleRecords(state:State){
  const rows=state.scheduleRecords;if(rows===undefined)return;
  if(!Array.isArray(rows)||rows.length>10000||new Set(rows.map(r=>r?.id)).size!==rows.length)fail('Invalid schedule coordination records');
@@ -49,11 +51,13 @@ export function validateScheduleRecords(state:State){
  for(const row of rows)if(row?.kind==='subscription')subscriptionCounts.set(row.member,(subscriptionCounts.get(row.member)??0)+1);
  for(const r of rows){
   if(!r||Object.keys(r).sort().join()!==['id','kind','member','active','revision','at','data'].sort().join()||typeof r.id!=='string'||!r.id.length||r.id.length>100||!state.members.some(m=>m.id===r.member)||typeof r.active!=='boolean'||!Number.isSafeInteger(r.revision)||r.revision<1||!Number.isFinite(Date.parse(r.at))||!r.data||typeof r.data!=='object'||Array.isArray(r.data))fail('Invalid schedule record identity');
-  const identity=r.kind==='policy'?'policy:'+r.data.schedule:r.kind==='reminder'?'reminder:'+r.member:r.kind==='notice'?'notice:'+r.data.key:r.kind==='subscription'&&r.data.hash?'hash:'+r.data.hash:null;
+  const identity=r.kind==='notification-rules'?'notification-rules:'+r.member:r.kind==='policy'?'policy:'+r.data.schedule:r.kind==='reminder'?'reminder:'+r.member:r.kind==='notice'?'notice:'+r.data.key:r.kind==='subscription'&&r.data.hash?'hash:'+r.data.hash:null;
   if(identity){if(unique.has(identity))fail('Duplicate schedule coordination setting or capability');unique.add(identity);}
   if(r.kind==='subscription'&&(subscriptionCounts.get(r.member)??0)>20)fail('Too many calendar subscriptions');
   const d=r.data,keys=(names:string[])=>Object.keys(d).sort().join()===names.sort().join();
-  if(r.kind==='swap'){
+  if(r.kind==='notification-rules'){
+   validateNotificationRules(d);
+  }else if(r.kind==='swap'){
    if(!keys(['schedule','scheduleRevision','substitute','role','start','end','status','approved','override'])||typeof d.schedule!=='string'||!Number.isSafeInteger(d.scheduleRevision)||!state.members.some(m=>m.id===d.substitute)||!['primary','backup'].includes(d.role)||!Number.isFinite(Date.parse(d.start))||!Number.isFinite(Date.parse(d.end))||Date.parse(d.end)<=Date.parse(d.start)||!['pending','accepted','declined','cancelled'].includes(d.status)||typeof d.approved!=='boolean'||d.override!==null&&typeof d.override!=='string')fail('Invalid swap custody');
   }else if(r.kind==='subscription'){
    if(!keys(['scope','target','hash'])||!['schedule','service','own'].includes(d.scope)||typeof d.target!=='string'||!(d.hash===null&&!r.active||typeof d.hash==='string'&&/^[a-f0-9]{64}$/.test(d.hash)))fail('Invalid calendar subscription');

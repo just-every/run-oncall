@@ -15,6 +15,7 @@ import { holdManualRecords } from './manual-pages/archive';
 import { pagingSnapshot } from './paging-store';
 import { installBusinessStatus } from './business-status/api';
 import { holdBusinessStatus, refreshBusinessStatus } from './business-status/model';
+import {installOnCallNotifications} from './family/response-operations/on-call-notifications/api';
 import { installResponsePolicy } from './response-policy/api';
 import { finishResponseAdmission } from './response-policy/model';
 import { requireErasureFence, erasureFenceCondition, fenceValues } from './erasure-fence'
@@ -451,6 +452,7 @@ installRoutingManagement(api, changeDeps);
 installAllowances(api, changeDeps);
 installUrgency(api, changeDeps);
 installResponsePolicy(api, changeDeps);
+installOnCallNotifications(api, changeDeps);
 installReviews(api, authorizedState);
 installTriage(api, {body, state: authorizedState, save: (c, state, revision, extra) => {const guard=sessionGuard(c);return save(c.env.DB,state,revision,extra?{sql:'('+guard.sql+') AND ('+extra.sql+')',values:[...guard.values,...extra.values]}:guard)}, saveItem: (c, state, revision, operationId, incidentId) => saveTriageItem(c.env.DB, state, revision, operationId, incidentId, sessionGuard(c))});
 api.get("/api/state", async (c) => c.json(memberWorkspace(await authorizedState(c), c.get("actor"))));

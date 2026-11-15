@@ -6,7 +6,7 @@ export { validateReceipt } from "./synthetic-provider.ts";
 export type { SyntheticBehavior, SyntheticReceipt } from "./synthetic-provider.ts";
 
 export type EscalationPolicy = { service: string; scheduleId: string; revision: number;
-  primaryWaitSeconds: number; backupWaitSeconds: number; retrySeconds: number; maxAttempts: number };
+  secondStep?: "primary" | "backup"; primaryWaitSeconds: number; backupWaitSeconds: number; retrySeconds: number; maxAttempts: number };
 export type EscalationAttempt = { step: 0 | 1; role: "primary" | "backup"; key: string;
   target: string | null; at: number; outcome: SyntheticOutcome | "unavailable";
   coverage: Coverage; members: Member[]; workspaceRevision: number | null; selectionWarnings: string[] };
@@ -26,8 +26,9 @@ function integer(value: any, name: string, min: number, max: number): number {
   return value;
 }
 export function validatePolicy(input: any, schedule?: Schedule): EscalationPolicy {
-  fields(input, ["service", "scheduleId", "revision", "primaryWaitSeconds", "backupWaitSeconds", "retrySeconds", "maxAttempts"]);
-  const policy = { service: text(input.service, "service", 100), scheduleId: text(input.scheduleId, "schedule ID", 100),
+  fields(input, ["service", "scheduleId", "revision", "primaryWaitSeconds", "backupWaitSeconds", "retrySeconds", "maxAttempts", ...(Object.hasOwn(input ?? {}, "secondStep") ? ["secondStep"] : [])]);
+  if (input.secondStep !== undefined && !["primary", "backup"].includes(input.secondStep)) fail("Invalid second step role");
+  const policy: EscalationPolicy = { ...(input.secondStep === undefined ? {} : {secondStep: input.secondStep}), service: text(input.service, "service", 100), scheduleId: text(input.scheduleId, "schedule ID", 100),
     revision: integer(input.revision, "policy revision", 1, 1_000_000_000),
     primaryWaitSeconds: integer(input.primaryWaitSeconds, "primary wait", 1, 86_400),
     backupWaitSeconds: integer(input.backupWaitSeconds, "backup wait", 1, 86_400),
@@ -100,7 +101,7 @@ export function validateJob(input: any): EscalationJob {
   for (let i = 0; i < input.steps.length; i++) {
     const s = input.steps[i];
     fields(s, ["step", "role", "target", "deliveryKey", "startedAt", "deadline", "attempts", "outcome", "receipt"]);
-    if (s.step !== i || s.role !== (i === 0 ? "primary" : "backup") || s.deliveryKey !== `${input.id}:${i}`) fail("Invalid step identity");
+    if (s.step !== i || s.role !== (i === 0 ? "primary" : input.policy.secondStep ?? "backup") || s.deliveryKey !== `${input.id}:${i}`) fail("Invalid step identity");
     if (s.target !== null) text(s.target, "target", 100);
     clock(s.startedAt); clock(s.deadline);
     if (s.startedAt < input.createdAt || s.startedAt > input.lastEvaluatedAt || s.deadline !== s.startedAt + input.policy[i === 0 ? "primaryWaitSeconds" : "backupWaitSeconds"] * 1000) fail("Invalid step deadline");
@@ -152,7 +153,7 @@ export function validateJob(input: any): EscalationJob {
     const attempts = input.history.filter((h: JobHistory) => h.attempt?.step === s.step);
     if (!attempts.length || attempts.filter((h: JobHistory) => h.attempt!.outcome !== "unavailable").length !== s.attempts || attempts.at(-1)!.attempt.outcome !== s.outcome) fail("Attempt history/count mismatch");
     const initial = attempts[0].attempt;
-    const duplicate = s.step === 1 && initial.coverage.backup !== null && initial.coverage.backup === input.steps[0].target;
+    const duplicate = s.step === 1 && s.role === "backup" && initial.coverage.backup !== null && initial.coverage.backup === input.steps[0].target;
     if (attempts[0].at !== s.startedAt || initial.target !== (duplicate ? null : initial.coverage[s.role]) ||
         initial.selectionWarnings.length !== (duplicate ? 1 : 0)) fail("Frozen initial recipient mismatch");
     const accepted = attempts.find((h: JobHistory) => ["accepted", "delivered", "uncertain"].includes(h.attempt!.outcome));
