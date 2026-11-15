@@ -55,7 +55,7 @@ export async function mailOffJourney() {
  const planned=spawnSync(process.execPath,['node_modules/@runeditrun/rer/global/rer.mjs','deploy','--dry-run','--non-interactive'],{env:cleanEnv,encoding:'utf8',timeout:180000})
  assert.equal(planned.status,0,'public mail-off deploy dry run succeeds: '+planned.stderr)
  const packaging=JSON.parse(await readFile('scripts/delivery/base/packaging.json','utf8'))
- await deploymentSpec(root,packaging.artifact.specInputs)
+ assert.deepEqual(await deploymentSpec(root,packaging.artifact.specInputs),JSON.parse(await readFile('management/integration/deployment-spec.json','utf8')),'managed packaging must match the native source plan')
  assert.match(planned.stdout+planned.stderr,/Outbound email is off/)
  assert.match(planned.stdout+planned.stderr,/rer signin/)
  assert.match(planned.stdout+planned.stderr,/nothing was changed remotely/)

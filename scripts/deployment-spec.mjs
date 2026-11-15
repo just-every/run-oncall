@@ -15,7 +15,7 @@ const [build, deploy, setup, policy] = await Promise.all([
 ]);
 const bindings = wranglerBindings(build);
 // Mail selection stays deferred until the operator chooses a provider or explicit none.
-const publicVariables = {...build.vars, ...deploy.vars, MAIL_PROVIDER: '', MAIL_FROM: '', MAIL_RELAY_URL: ''};
+const publicVariables = {...build.vars, ...deploy.vars, MAIL_PROVIDER: '', MAIL_FROM: '', MAIL_RELAY_URL: '', MAIL_ACCOUNT_ID: ''};
 const setupFields = new Map(setup.fields.map(field => [field.name, field]));
 const secretNames = setup.fields.filter(field => field.kind === 'secret' && field.required).map(field => field.name);
 const optionalSecretNames = (deploy.secrets ?? []).map(item => item.binding).filter(name =>

@@ -440,7 +440,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "a30154c2f76d4a0a4c7422034555f6f3edab76bd89bbe3cdedce8836459c233f",
+      "sha256": "f0889272aa691f2049d289cec8b5f2dae6af74845522cdb37b8ceb0b9f6e27f7",
       "executable": false
     },
     "migrations/core/0001_initial.sql": {
@@ -936,7 +936,7 @@
       "executable": false
     },
     "scripts/delivery/base/packaging.json": {
-      "sha256": "325cbfcb37d070a1716b50ceedf1b44ecb8123552bd72e297afede45bc6c8846",
+      "sha256": "1f5762d83d77483d61bdd829fe07890a46dbc14c91ca17ae6ecf9538dcce68cd",
       "executable": false
     },
     "scripts/delivery/base/paths.mjs": {
@@ -976,7 +976,7 @@
       "executable": false
     },
     "scripts/delivery/base/spec.mjs": {
-      "sha256": "998e4fbfb5e4df5975fcf23e46ea603aebeb162ead58891d2657a6e92def5167",
+      "sha256": "709d1b2b2c92bd054a354bed7eb6115fe48984c58428a719a73204a16232d80e",
       "executable": false
     },
     "scripts/delivery/base/sql-statements.mjs": {
@@ -988,7 +988,7 @@
       "executable": false
     },
     "scripts/deployment-spec.mjs": {
-      "sha256": "a766071efd85131f4e82a1fa351b15fefbdffc2987f0510edec146a2af524678",
+      "sha256": "f4a3a07be25168f57cc23e249fbb14bcebea3cd9385063b9ec23fe76d78ec001",
       "executable": false
     },
     "scripts/edition-authoring/adopt.mjs": {
@@ -6648,7 +6648,7 @@
       "executable": false
     },
     "tests/mail-off.mjs": {
-      "sha256": "6fa7c216a73bbd0c5dfa095bffd594f86351595f4caa666db39fb8a90b8d49fb",
+      "sha256": "4c31c736cf4643770b0fbbd71cedfc30fc5e7940384a5bcbe528a8d5536c0dc9",
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
@@ -6800,7 +6800,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "1d250071a375ae9cbfca40f73c3645ec9f3df7207365a541135c6e79b1538f9a",
+      "sha256": "e4f3d6cf153d8f309b23772554f8b1028b0ed8e195efa9eba0199d2c7f3daeba",
       "executable": false
     },
     "tests/triage.mjs": {
