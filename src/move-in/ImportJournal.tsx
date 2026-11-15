@@ -1,7 +1,8 @@
 import {vendorName} from './vendor-formats'
 const provider=(job:any)=>vendorName(job.vendor??job.namespace)
 const shortProvider=(job:any)=>(({splunk:'Splunk',jsm:'Jira',betterstack:'Better Stack'} as Record<string,string>)[job.vendor??job.namespace]??provider(job))
-const label=(job:any)=>[provider(job),...(job.schedules??[]),...(job.files??[]),job.state.replaceAll('_',' ')].join(' · ')
+const artifactLabel=(value:string)=>value.startsWith('erased-artifact:')?'Import file containing erased data':value
+const label=(job:any)=>[provider(job),...(job.schedules??[]).map(artifactLabel),...(job.files??[]).map(artifactLabel),job.state.replaceAll('_',' ')].join(' · ')
 
 // A door import continues and undoes through the door; Business's continue only through Business, and a failed one needs a new preview.
 const resumable=(job:any)=>job.door?job.state==='rolling_back'||(!job.door.business&&['queued','applying'].includes(job.state)):['queued','applying','failed','rolling_back'].includes(job.state)

@@ -46,7 +46,7 @@ Your schedules, incidents and team stay in the folder until you [export them](da
 
 ## Explicit and unattended setup
 
-To choose a real owner mailbox before the first launch, run `npx -y @runeditrun/rer setup just-every/run-oncall` (set up only; in an interactive terminal it asks for your owner email), then `cd run-oncall && rer dev`. Or, from the checkout, one verb at a time:
+To choose a real owner mailbox before the first launch, after installing `rer` above, run `rer setup just-every/run-oncall` (set up only; in an interactive terminal it asks for your owner email), then `cd run-oncall && rer dev`. Or, from the checkout, one verb at a time:
 
 ```sh
 rer install
@@ -118,7 +118,7 @@ cd oncall-hosted
 rer setup --owner-email you@example.com
 ```
 
-Already running Oncall locally from `run-oncall`? Its local development owner stays when setup runs again, so either use the fresh `oncall-hosted` checkout above, or reuse that folder: stop it with `rer dev --stop`, save anything you want to keep with `rer export --output exports/installation.rer`, run `rer reset --yes` (it deletes the local data and owner), then `rer setup --owner-email you@example.com`. Hosting never uploads local data.
+Already running Oncall locally from `run-oncall`? Keep that folder and its data, and use the fresh `oncall-hosted` checkout above for hosting. Hosting never uploads local records. See [Transfer local coordination records to hosting](data.md#transfer-local-coordination-records-to-hosting) before planning a move; [Export and restore](data.md) explains local backup and recovery.
 
 Replace `you@example.com` with a real mailbox you can open. Setup prepares the owner and private settings locally and stops its temporary app before returning. Repeating setup preserves the configured owner; it does not change their email.
 

@@ -1,3 +1,4 @@
+import {readableErasure,coveredSwap} from './stranger-trip-steps.mjs'
 import {savedEmailBundle} from './email-fixtures.mjs'
 import {pathToFileURL} from 'node:url'
 import {resolve} from 'node:path'
@@ -73,8 +74,13 @@ export async function productImport(page,context,width,session,proof) {
   await typed.fill('erase '+email)
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'erase control has no horizontal overflow')
   await page.screenshot({path:`${directory}/erase-person-${width}.png`,fullPage:true})
+  const erasedResponse=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/move-in/erase'&&response.request().method()==='POST')
   await person.getByRole('button',{name:'Erase permanently',exact:true}).click()
-  await page.getByText(/^Erased\. Receipt /).waitFor();assert.equal(await person.count(),0,'the erased person leaves the paused data list')
+  const receipt=await (await erasedResponse).json()
+  await page.getByText(/^Imported person erased/).waitFor();assert.equal(await person.count(),0,'the erased person leaves the paused data list')
+  await readableErasure(page,context,receipt)
+  for(const proofWidth of [1440,390]){await page.setViewportSize({width:proofWidth,height:1000});await page.screenshot({path:`${directory}/erased-import-${proofWidth}.png`,fullPage:true})}await page.setViewportSize({width,height:1000})
+  await readableErasure(page,context,receipt,{reload:true})
   await incumbentActivation(page,context,width)
   await reconciliationJourney(page,context,session)
   await plainMoveInReview(page,context,session)
@@ -915,6 +921,7 @@ export async function scheduleCoordinationBrowser(page,context,width,session,{ow
  await coordination.getByRole('button',{name:'Revoke subscription',exact:true}).click();await coordination.getByText(/revoked or restored inactive/).waitFor();assert.equal((await context.request.get(url)).status(),404);
  const coverage=await api('/api/schedules/'+schedule.id+'/now-next?at='+encodeURIComponent(swap.data.start));assert.equal(coverage.now.primary,substitute.id);
  await page.reload();await page.getByText('Reminders and swaps',{exact:true}).click();assert.equal(await page.getByLabel('Swap approval',{exact:true}).inputValue(),'none');assert.equal(await page.getByLabel('Reminder lead minutes',{exact:true}).inputValue(),'30','a number left in the field remains saved after reload');
+ await coveredSwap(page,context,session,substitute,directory,capture);
  console.log(`PASS OC-025 browser ${width}: band-selected swap, independent substitute acceptance after approval, effective override, autosaved approval/reminder, no-timer label, one-time feed dismissal, immediate revoke, recorded obligations, axe and overflow`);
 }
 

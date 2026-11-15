@@ -1,10 +1,11 @@
 # Getting started
 
-Oncall runs on your own computer first. Open a terminal (on a Mac, Terminal in Applications → Utilities; on Windows, your WSL2 distribution), copy this line into it and press Enter:
+Oncall runs on your own computer first. Open a terminal (on a Mac, Terminal in Applications → Utilities; on Windows, your WSL2 distribution), install `rer`, then start Oncall:
 
 <!-- rer:local-recipe -->
 ```sh
-curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-oncall
+curl -fsSL https://runeditrun.com/install.sh | sh
+rer dev just-every/run-oncall
 ```
 
 Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-oncall` does the same.
@@ -12,9 +13,9 @@ Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-oncall
 macOS, Linux or Windows with WSL2. git is required; rer brings Node and pnpm.
 <!-- /rer:local-recipe -->
 
-The line installs `rer`, the Run Edit Run command, clones Oncall into a `run-oncall` folder, installs everything, prepares the local database and a local owner, and starts Oncall. It prints a private `RER_OPEN` link: open it on the same computer and you are signed in as the owner. Treat it like a password. The first time, Oncall opens **Finish setup**: tick *I confirm this owner account is ready to use* and press **Finish setup**. This free copy runs only on your computer: it sends no email, and nobody else can open it.
+These two steps install `rer`, the Run Edit Run command, clones Oncall into a `run-oncall` folder, installs everything, prepares the local database and a local owner, and starts Oncall. It prints a private `RER_OPEN` link: open it on the same computer and you are signed in as the owner. Treat it like a password. The first time, Oncall opens **Finish setup**: tick *I confirm this owner account is ready to use* and press **Finish setup**. This free copy runs only on your computer: it sends no email, and nobody else can open it.
 
-To start Oncall again later, run the same line from the same folder. Adding `rer` to your shell's PATH is optional for future terminals; the one-line launch already finds it for this run.
+If `rer` is not found after installation, run `export PATH="$HOME/.local/bin:$PATH"` and repeat the second command; add that line to your shell startup file to keep it. To start Oncall again later, run `cd run-oncall && rer dev`.
 
 For Assisted, Managed and the walkthrough for your own Cloudflare account, see [Put Oncall online](https://run-oncall.com/docs/hosting).
 
@@ -96,7 +97,7 @@ Compare the shared [hosting options](https://run-oncall.com/docs/hosting), or fo
 
 Release 1 supports hosted incident coordination alongside your team's existing pager. Paging stays OFF; coordination does not need an independent standby. Release 2 paging and independent standby are not built. Keep the pager's routes and notification settings in place.
 
-**Hosting is in `v0.3.0` and later.** Hosting claims the owner you set up, so start from a checkout with your real owner mailbox. Install `rer` first if you have not used the one-line installer above, then put its launcher on PATH in this terminal. It provides its own Node and pnpm; you do not need global `node` or `npx`.
+**Hosting is in `v0.3.0` and later.** Hosting claims the owner you set up, so start from a checkout with your real owner mailbox. Install `rer` first if you have not used the installer above, then put its launcher on PATH in this terminal. It provides its own Node and pnpm; you do not need global `node` or `npx`.
 
 ```sh
 curl -fsSL https://runeditrun.com/install.sh | sh
@@ -106,7 +107,7 @@ cd oncall-hosted
 rer setup --owner-email you@example.com
 ```
 
-Already running Oncall locally from `run-oncall`? Its local development owner stays when setup runs again, so either use the fresh `oncall-hosted` checkout above, or reuse that folder: stop it with `rer dev --stop`, save anything you want to keep with `rer export --output exports/installation.rer`, run `rer reset --yes` (it deletes the local data and owner), then `rer setup --owner-email you@example.com`. Hosting never uploads local data.
+Already running Oncall locally from `run-oncall`? Keep that folder and its data, and use the fresh `oncall-hosted` checkout above for hosting. Hosting never uploads local records. See [Transfer local coordination records to hosting](data.md#transfer-local-coordination-records-to-hosting) before planning a move; [Export and restore](data.md) explains local backup and recovery.
 
 Replace `you@example.com` with a real mailbox you can open. Setup prepares the owner and private settings locally and stops its temporary app before returning. Repeating setup preserves the configured owner; it does not change their email.
 

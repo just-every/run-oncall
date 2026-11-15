@@ -109,11 +109,15 @@ The response ownership section assigns/transfers commander, scribe, communicatio
 
 Repeated subject-mode failures append to one derived generation and one recorded obligation. A custom `FAILED: (\S+)` trigger and `OK: (\S+)` resolve can both capture group 1: `FAILED: nightly-db` and `OK: nightly-db` act on the same key; `nightly-web` stays separate. Activity explains each mode, rule version, extracted key and outcome. Recovery says **stopped by source recovery** with its email receipt. Paging is OFF, so this is a labelled non-automatic state. A declared incident remains open for the responder's recovery evidence and resolution summary.
 
-For native Events API HMAC requests, save your JSON as `event.json`, export the scoped source key privately as `ONCALL_SOURCE_KEY`, and sign the exact bytes sent:
+For native Events API HMAC requests, save your JSON as `event.json`, export the scoped source key privately as `ONCALL_SOURCE_KEY`, and sign the exact bytes sent. This uses curl, OpenSSL and standard shell tools on macOS, Linux or WSL; no global Node is needed. Check `curl --version` and `openssl version` first:
 
 ```sh
 ONCALL_TIMESTAMP=$(date +%s)
-ONCALL_SIGNATURE=$(node --input-type=module -e 'import {readFileSync} from "node:fs"; import {createHmac} from "node:crypto"; process.stdout.write(createHmac("sha256",process.env.ONCALL_SOURCE_KEY).update(process.argv[1]+".").update(readFileSync("event.json")).digest("hex"))' "$ONCALL_TIMESTAMP")
+ONCALL_SIGNATURE=$(
+  { printf '%s.' "$ONCALL_TIMESTAMP"; cat event.json; } |
+    openssl dgst -sha256 -hmac "${ONCALL_SOURCE_KEY:?Set ONCALL_SOURCE_KEY privately first}" -binary |
+    od -An -v -tx1 | tr -d ' \n'
+)
 curl --fail-with-body "${ONCALL_ORIGIN}/api/ingress/monitoring" \
   -H 'Content-Type: application/json' \
   -H "x-oncall-timestamp: ${ONCALL_TIMESTAMP}" \

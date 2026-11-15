@@ -200,7 +200,7 @@
       "executable": false
     },
     "docs/changes.md": {
-      "sha256": "b7c2d79ed1ed7b6b12f26606740700f479de0bd0a7933fbbae112c547741f2b3",
+      "sha256": "884d579174bec875e9ab0bc8cfe81dd4865cd0746289395a00d0fa9a8a41c606",
       "executable": false
     },
     "docs/checkpoints.md": {
@@ -244,19 +244,19 @@
       "executable": false
     },
     "docs/data.md": {
-      "sha256": "37e9923ea33481af147e64807ee58e0a046f0e6e178c311678c2eb9e7b6c022c",
+      "sha256": "b1629daf063a1727a4c153eb38042294e56a074f38f41b2e8214283c9fa86cd7",
       "executable": false
     },
     "docs/getting-started.md": {
-      "sha256": "058f4f77bb637e89acdffe6c379d023a7bd1774c595e1c4f0afb334fbb5621de",
+      "sha256": "572eec3a424aa44d728f0331324a42e3e626efa8a0840565b3a5380f5a415d4d",
       "executable": false
     },
     "docs/incidents.md": {
-      "sha256": "094f213de1e887f5f8de0ef41104049e1b9e2f53a1b2d74bf9dffc70bb5c97a6",
+      "sha256": "9ccc5892337a3b47e77eaddece246ac040e6627a87393cfc5b66fd3e764f4d2a",
       "executable": false
     },
     "docs/install.md": {
-      "sha256": "9ca4cb54ad80e1223266a475e2e901ce7afa6bc90a7ba4f0064cd507d1301d3f",
+      "sha256": "d9ea99031f4e415e4e24f15e9227f7fe7bd1886daad24b1080b55d2034af66ce",
       "executable": false
     },
     "docs/limits.md": {
@@ -828,7 +828,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "03d11757d735563f8be134f68abc7120a61677bef0216bb9377fcdbfa89c27a2",
+      "sha256": "0d58ce5a9908b24a4151dd1d85e3fdee7aa34304f09a80eb467a4bf4cd5f02ac",
       "executable": false
     },
     "RELEASE.json": {
@@ -852,7 +852,7 @@
       "executable": false
     },
     "RUN-LOCALLY.md": {
-      "sha256": "2b1a81bfa60b1b0e49e368606b7e385c46287cf5e5d4b561b17a846b5ce17ede",
+      "sha256": "4fbd0952d0be847b6739f3fa22c586ecb1922bc492842d073087dcaffbf49521",
       "executable": false
     },
     "SCHEDULE-SEMANTICS.md": {
@@ -1844,7 +1844,7 @@
       "executable": false
     },
     "src/app/IncidentBulkActions.tsx": {
-      "sha256": "b3196253f139cdd500f9eaf441562d18ed64bfe1b0a2eceeee5c450d33af479b",
+      "sha256": "8bebbb69192038dd8d65716028d40c940cab18a0bb4d49d4cffeb76bed269807",
       "executable": false
     },
     "src/app/IncidentMeta.tsx": {
@@ -5524,7 +5524,7 @@
       "executable": false
     },
     "src/move-in/ExportHelp.tsx": {
-      "sha256": "872d6324c6ff248f50ed743fe2ad5acc6dd13b1ca266fb27ae79bbdac257d09e",
+      "sha256": "9b9f434eec3b14a1db70c53243d45fa464093b9c60149172b5534e0c49f53200",
       "executable": false
     },
     "src/move-in/import-lifecycle-sql.d.mts": {
@@ -5540,7 +5540,7 @@
       "executable": false
     },
     "src/move-in/ImportJournal.tsx": {
-      "sha256": "4cdb1398c4199e001529092a75b508cc9756c6464363a1e4de16afd97ae36cf9",
+      "sha256": "365e2a21fa85e851f3ef6c2cb60ee23418ab439e9a1ce3945d7ab5f232e69dde",
       "executable": false
     },
     "src/move-in/ImportStep.tsx": {
@@ -5560,7 +5560,7 @@
       "executable": false
     },
     "src/move-in/MoveIn.tsx": {
-      "sha256": "f984d1f134448c49b2658cea071e68be0fc35e263edb84b767d45dff776925c3",
+      "sha256": "fb3771a92a83d3f5372f84addf71cd6b1624196b23aea157e18e2fa6cddfab0a",
       "executable": false
     },
     "src/move-in/native-erasure.ts": {
@@ -5716,7 +5716,7 @@
       "executable": false
     },
     "src/on-call/RotaPage.tsx": {
-      "sha256": "149f5afd37b6bb23917ab1229dd45d736eafde0155210ad391779198951608dd",
+      "sha256": "429775a6418754fc45e9afb6d24175c92619fd9fa0f0b14bb74066e8935dbbd8",
       "executable": false
     },
     "src/on-call/RotaRow.tsx": {
@@ -6356,11 +6356,15 @@
       "executable": false
     },
     "src/team/team-section.css": {
-      "sha256": "fb74422c16194ce210f904a3d41b7f0058205b833c84cd6289c975fa35477e01",
+      "sha256": "2514d8f3ce4d9ce891935cbdab2869b6996df5894f5fd5966ca84d3abc1a1210",
       "executable": false
     },
     "src/team/TeamSection.tsx": {
-      "sha256": "59bc06e9801194e52360b125b64c035b8b6dae4b48b0e8451fcdfe9997aa3a64",
+      "sha256": "548adf228cb06f7bf00a2a743c758650715df791f1d57f1ae2f9f1f6d9b980bd",
+      "executable": false
+    },
+    "src/team/TeamSignIn.tsx": {
+      "sha256": "84628a02ebd01f3b060aae8b54ef88ece1b2dda440cd0e8072ebf93e3f1f3e70",
       "executable": false
     },
     "src/teams/api.ts": {
@@ -6752,11 +6756,11 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "bcd0bdb3f7702de51780e80d329724e182cc53423aee6b5fc7abdd1860595c62",
+      "sha256": "f8c930215b16e6648c514964cfc43699c29402ea153cbc44458100d3d4c8f31c",
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "1458e1756cf2d8f522aad649d75df6d6edc595be4b3ae9dfc78aee38c80776cb",
+      "sha256": "5ca0aa32b027db37852949339cefa34f1632e8a82ad1ca2c7852c8ef4cbc3033",
       "executable": false
     },
     "tests/readable-names-browser.mjs": {

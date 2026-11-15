@@ -187,8 +187,9 @@ confirms the restore.
 
 ```sh
 rer verify
-rer reset --yes
-rer export --output exports/installation.rer
+rer export --output exports/installation.rer &&
+  test -s exports/installation.rer &&
+  rer reset --yes
 rer import --input exports/installation.rer --yes
 rer deploy --environment production --env-file "$HOME/.config/oncall/production.env"
 rer describe
