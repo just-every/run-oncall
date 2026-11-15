@@ -1,0 +1,30 @@
+{
+  "head": "e995ff2d930b0e17f4d480f7f085d85033f9355e",
+  "node": "v22.20.0",
+  "results": [
+    {
+      "characters": 20,
+      "milliseconds": 28,
+      "status": 0,
+      "signal": null
+    },
+    {
+      "characters": 24,
+      "milliseconds": 29,
+      "status": 0,
+      "signal": null
+    },
+    {
+      "characters": 28,
+      "milliseconds": 30,
+      "status": 0,
+      "signal": null
+    },
+    {
+      "characters": 256,
+      "milliseconds": 31,
+      "status": 0,
+      "signal": null
+    }
+  ]
+}

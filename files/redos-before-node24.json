@@ -1,0 +1,31 @@
+{
+  "expression": "^/(?:[A-Za-z0-9._~-]+/?)*$",
+  "results": [
+    {
+      "characters": 20,
+      "milliseconds": 101,
+      "status": 0,
+      "signal": null
+    },
+    {
+      "characters": 24,
+      "milliseconds": 300,
+      "status": 0,
+      "signal": null
+    },
+    {
+      "characters": 28,
+      "milliseconds": 1504,
+      "status": null,
+      "signal": "SIGTERM",
+      "error": "ETIMEDOUT"
+    },
+    {
+      "characters": 256,
+      "milliseconds": 1506,
+      "status": null,
+      "signal": "SIGTERM",
+      "error": "ETIMEDOUT"
+    }
+  ]
+}

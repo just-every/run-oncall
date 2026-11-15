@@ -1,0 +1,90 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-15",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/gr-mt-oncall-code-11",
+  "head": "e995ff2d930b0e17f4d480f7f085d85033f9355e",
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "baseline_regression": {
+    "status": "expected failure",
+    "reason": "ETIMEDOUT",
+    "timeout_ms": 5000
+  },
+  "checks": [
+    {
+      "command": "node tests/native-export.mjs",
+      "exit_code": 0,
+      "receipt": "regression-after.txt"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit_code": 0,
+      "receipt": "typecheck.txt"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit_code": 0,
+      "receipt": "rer-check.txt"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit_code": 0,
+      "receipt": "contract-check.txt"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit_code": 0,
+      "receipt": "source-lock-check.json"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit_code": 0,
+      "receipt": "installed-source-lock-check.json"
+    }
+  ],
+  "publication": {
+    "status": "PASS",
+    "complete": true,
+    "findings": 0,
+    "head": "e995ff2d930b0e17f4d480f7f085d85033f9355e",
+    "tree": "b897fdb4ecdb7c62dbec1f48088e0fd12c482a6f",
+    "receipt": "publication-scan.json"
+  },
+  "product_push": {
+    "status": "pushed",
+    "attempts": 1,
+    "receipt": "product-push.txt"
+  },
+  "ci": {
+    "conclusion": "success",
+    "head_sha": "e995ff2d930b0e17f4d480f7f085d85033f9355e",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43719386291",
+    "status": "completed",
+    "id": 43719386291,
+    "receipt": "ci-final.json"
+  },
+  "counts": {
+    "verification_lane_entries": {
+      "before": 17,
+      "after": 18
+    },
+    "contract": {
+      "before": {
+        "done": 26,
+        "partial": 41,
+        "missing": 34,
+        "total": 101
+      },
+      "after": {
+        "done": 26,
+        "partial": 41,
+        "missing": 34,
+        "total": 101
+      }
+    }
+  },
+  "clause_status_changes": [],
+  "terminal_custody": "READY",
+  "blockers": []
+}

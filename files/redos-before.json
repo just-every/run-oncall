@@ -1,0 +1,33 @@
+{
+  "base": "44ca722b6a5dde173b5253df7b5e0eab762df459",
+  "node": "v22.20.0",
+  "method": "Run unmodified committed baseline native-export.mjs and sql-statements.mjs in an isolated temporary directory, one bounded child per input",
+  "results": [
+    {
+      "characters": 20,
+      "milliseconds": 38,
+      "status": 0,
+      "signal": null
+    },
+    {
+      "characters": 24,
+      "milliseconds": 193,
+      "status": 0,
+      "signal": null
+    },
+    {
+      "characters": 28,
+      "milliseconds": 1509,
+      "status": null,
+      "signal": "SIGTERM",
+      "error": "ETIMEDOUT"
+    },
+    {
+      "characters": 256,
+      "milliseconds": 1512,
+      "status": null,
+      "signal": "SIGTERM",
+      "error": "ETIMEDOUT"
+    }
+  ]
+}
