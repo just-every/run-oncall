@@ -1,0 +1,37 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-run1-faults-2",
+  "productHead": "a6e983e5745201257bc97c7bd64280d364883ed6",
+  "saves": [
+    {
+      "head": "335c4610dd0b5774d6bd5ea1a59cbd1adcf1e540",
+      "result": "PUSH_OK",
+      "attempt": 1
+    },
+    {
+      "head": "a6e983e5745201257bc97c7bd64280d364883ed6",
+      "result": "PUSH_OK",
+      "attempt": 1
+    }
+  ],
+  "identityRecords": [
+    [
+      "a6e983e5745201257bc97c7bd64280d364883ed6",
+      "Run Edit Run fleet",
+      "fleet@runeditrun.com",
+      "Run Edit Run fleet",
+      "fleet@runeditrun.com",
+      ""
+    ],
+    [
+      "335c4610dd0b5774d6bd5ea1a59cbd1adcf1e540",
+      "Run Edit Run fleet",
+      "fleet@runeditrun.com",
+      "Run Edit Run fleet",
+      "fleet@runeditrun.com",
+      ""
+    ]
+  ],
+  "gitStatus": "",
+  "pr": null
+}

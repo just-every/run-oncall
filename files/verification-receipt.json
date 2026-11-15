@@ -1,0 +1,86 @@
+{
+  "schema": 1,
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-run1-faults-2",
+  "productHead": "a6e983e5745201257bc97c7bd64280d364883ed6",
+  "checks": [
+    {
+      "command": "node tests/import-door.mjs",
+      "result": "passed",
+      "exitCode": null,
+      "completionMarker": "Move-in: explicit timing difference",
+      "logSha256": "b7a9b9dd455a2739c44523fc4d1c0aebab58a6b0444ef502925a0a3a912d28b4"
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=core node tests/runtime.mjs",
+      "result": "passed",
+      "exitCode": 0,
+      "completionMarker": "Runtime core completed",
+      "logSha256": "a93c9bfbe0dbc9eeb1d5004b744a492984159138eb6639b737224150b4b8d56f"
+    },
+    {
+      "command": "pnpm typecheck",
+      "result": "passed",
+      "exitCode": 0,
+      "completionMarker": "tsc --noEmit",
+      "logSha256": "81d0b4f0ac8c311f8ba2565673ac6ae02c5f0e1647ed9e0b63ba38b7abfd8c0c"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "result": "passed",
+      "exitCode": 0,
+      "completionMarker": "build: complete (exit 0)",
+      "logSha256": "47b938ed917cc9fd967b70bf38d429d6a11a0cf673b757f006867c448798c2bf"
+    },
+    {
+      "command": "ONCALL_PRODUCT_JOURNEY=owner-faults node tests/product-browser.mjs",
+      "result": "passed",
+      "exitCode": 0,
+      "completionMarker": "Emitted Worker owner faults passed",
+      "logSha256": "d07e97ca894d2b86610db19114a742b7cb2a0456753fb70bf8dfcf1d9573fbda"
+    },
+    {
+      "command": "ONCALL_PRODUCT_JOURNEY=events-source node tests/product-browser.mjs",
+      "result": "passed",
+      "exitCode": 0,
+      "completionMarker": "Emitted Worker Events source journey passed",
+      "logSha256": "031ed2c921b9eb5c73ff1472e4073072c7c937741e13321a24ca06908e356a60"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "result": "passed",
+      "exitCode": 0,
+      "completionMarker": null,
+      "logSha256": "f94d83cf7937fa714d19ee45045ef464ce28b7f90e9541bf46ba1eccfd922fcc"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "result": "passed",
+      "exitCode": 0,
+      "completionMarker": "Contract documents are current.",
+      "logSha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    }
+  ],
+  "notes": [
+    "Import-door status is recorded from its final success marker; no exit code is invented for that earlier compound shell.",
+    "An invalid runtime-part invocation was corrected to the documented core selector; the actual core run passed.",
+    "The original held-row assertion remains: snapshots project all pre-upgrade columns and new nullable custody defaults are asserted separately.",
+    "Local tests ran on candidate source before its final commit; exact-SHA Verify supplies committed-candidate validation."
+  ],
+  "contractCountsBefore": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "contractCountsAfter": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "clauseStatusChanges": [],
+  "doneClaims": [],
+  "paging": "OFF",
+  "outboundRequests": 0
+}

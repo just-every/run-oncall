@@ -1,0 +1,20 @@
+[
+  {
+    "time": 1794727361,
+    "arguments": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs?head_sha=a6e983e974a957806bff055fa4bc594a08927d60&per_page=100",
+      "--jq",
+      "{workflow_runs:[.workflow_runs[]|{id,name,status,conclusion,head_sha,html_url}]}"
+    ]
+  },
+  {
+    "time": 1794727373,
+    "arguments": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs?head_sha=a6e983e5745201257bc97c7bd64280d364883ed6&per_page=100",
+      "--jq",
+      "{workflow_runs:[.workflow_runs[]|{id,name,status,conclusion,head_sha,html_url}]}"
+    ]
+  }
+]

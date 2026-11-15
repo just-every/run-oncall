@@ -1,0 +1,38 @@
+[
+  {
+    "fault": 3,
+    "door": "/api/sources/:source/reveal",
+    "status": 404,
+    "keyReturned": false
+  },
+  {
+    "fault": 2,
+    "door": "/api/paging/policies",
+    "sharedRotaForSecondService": 400,
+    "error": "Policy schedule/service mapping invalid"
+  },
+  {
+    "fault": 3,
+    "path": "/settings/integrations/native%3Asynthetic-review",
+    "hasReveal": false,
+    "hasContacts": false,
+    "hasPrevious": false
+  },
+  {
+    "fault": 1,
+    "path": "/settings/team",
+    "hasReveal": false,
+    "hasContacts": false,
+    "hasPrevious": false
+  },
+  {
+    "fault": 4,
+    "path": "/on-call/shared-review",
+    "hasReveal": false,
+    "hasContacts": false,
+    "hasPrevious": false
+  },
+  {
+    "outboundRequests": 0
+  }
+]
