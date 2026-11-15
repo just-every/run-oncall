@@ -248,7 +248,7 @@
       "executable": false
     },
     "docs/getting-started.md": {
-      "sha256": "228ff771eccae5768f537aa9fea0e2b7a29c4fca077205d39f2ca0bfd1b5c300",
+      "sha256": "83c888f49be1eb98299dead38b777bc894470a6da55e7ac6791edce30a78bf31",
       "executable": false
     },
     "docs/incidents.md": {
@@ -844,7 +844,7 @@
       "executable": false
     },
     "rer-setup.json": {
-      "sha256": "9a01a7b3853ffb59efdf5fa1ab4edb6b743e2d64b7448bf9c67b742f4b7038bd",
+      "sha256": "8ad205fe4a2573aa9cddafc6fd00dfd44d52cf98eb73d4e5d4a2f079fd201ae2",
       "executable": false
     },
     "RULINGS.md": {
@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "2c24575f159bd1f9864894dfdc821036edbdbadd20617506f4e2c73948f6bb57",
+      "sha256": "aa06218c20dd4844ed0ec445721774ef3b6f9f54220281aee2a312af0261d15e",
       "executable": false
     },
     "scripts/installer/native-prefix-archive.mjs": {
@@ -1976,7 +1976,7 @@
       "executable": false
     },
     "src/auth.server.ts": {
-      "sha256": "1541b5fb49f7593894439b9bdae99bd2cd1adbcc1a330caa82fd83d704b5fc17",
+      "sha256": "05995a77777086abd04ceefccd6d2799065acd4686e2bd3951147c319098f52c",
       "executable": false
     },
     "src/automation/api.ts": {
