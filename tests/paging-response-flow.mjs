@@ -74,7 +74,10 @@ export async function adoptedOnCallFlow({w,req,ok,admin,alice,bob,schedule}) {
  ok(await req('/v2/enqueue',{routing_key:gapKey,event_action:'trigger',dedup_key:'uncovered',payload:{summary:'Uncovered service failed',source:'uncovered-monitor',severity:'critical'}}),202);
  const uncovered=await runFor('uncovered');assert.equal(uncovered.incident.assignee??null,null);assert.equal(uncovered.run.records[0].member,null);assert.match(uncovered.run.records[0].outcome,/No one on call/);
  // Native restore retains the records, but holds the run and member rules inactive.
- const running=ok(await req('/api/archive'));await w.time(null);const restore=await req('/api/restore',{mode:'replace',archive:running});ok(restore);
+ const running=ok(await req('/api/archive'));
+ const forged=structuredClone(running);forged.alerts.find(a=>a.onCall).onCall.records[0].sender='provider';
+ const beforeRefusal=await read();ok(await req('/api/restore',{mode:'replace',archive:forged}),400);assert.deepEqual(await read(),beforeRefusal,'an archive cannot turn a record into delivery');
+ await w.time(null);const restore=await req('/api/restore',{mode:'replace',archive:running});ok(restore);
  const held=ok(await w.request('/api/state',undefined,restore.cookie));assert.ok(held.alerts.filter(a=>a.onCall).every(a=>a.onCall.state!=='running'));assert.ok(held.scheduleRecords.filter(r=>r.kind==='notification-rules').every(r=>!r.active));
  // The caller's later owner session is intentionally replaced by restore; return it.
  await w.time(null);
