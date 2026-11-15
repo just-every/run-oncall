@@ -11,9 +11,9 @@ import {inspectOperations} from '@runeditrun/rer/operations'
 import {signinCommand} from '@runeditrun/rer/internal/cli/signin.mjs'
 import {requireProductionAuth} from '@runeditrun/rer/internal/cli/production-auth.mjs'
 import {validateSetupValue} from '../scripts/delivery/base/schema/setup-validation.mjs'
+import {deploymentSpec} from '../scripts/delivery/base/spec.mjs'
 import {commandAdapter} from '../scripts/installer/local.mjs'
-import {operatorMail} from '../src/mail.server.mjs'
-import {automationRuntime} from './worker.mjs'
+import {localWorker} from './worker.mjs'
 
 // Extends the existing member/owner journey: deliberately disabled mail is one
 // installation mode, with the same native HTTP, owner CLI and coordination doors.
@@ -36,41 +36,54 @@ export async function mailOffJourney() {
   commandAdapter.deployPolicy({options:{dryRun:true},env,bindings:bindings(env)})
   await requireProductionAuth({root,declaration,env,setupManifest:manifest,adapter:commandAdapter,options:{verb:'deploy',dryRun:true}})
  }
- for(const env of [{},{MAIL_PROVIDER:'later'},{MAIL_PROVIDER:'sendgrid'}, {...off,MAIL_API_KEY:'synthetic-oncall-1'}, {...off,SENDGRID_API_KEY:'synthetic-oncall-1'}, {...off,MAIL_RELAY_URL:'https://relay.example.test'}, {...off,MAIL_DKIM_PRIVATE_KEY:'synthetic-oncall-1'}]) {
+ for(const env of [{},{MAIL_PROVIDER:'later'},{MAIL_PROVIDER:'direct'},{MAIL_PROVIDER:'sendgrid'}, {...off,MAIL_API_KEY:'synthetic-oncall-1'}, {...off,SENDGRID_API_KEY:'synthetic-oncall-1'}, {...off,MAIL_RELAY_URL:'https://relay.example.test'}, {...off,MAIL_DKIM_PRIVATE_KEY:'synthetic-oncall-1'}]) {
   assert.throws(()=>commandAdapter.deployPolicy({options:{dryRun:false},env,bindings:bindings(env)}), 'incomplete enabled mail and none plus credentials refuse before build')
  }
- assert.equal(operatorMail(off),undefined)
- assert.equal(operatorMail({...off,MAIL_API_KEY:'synthetic-oncall-1',MAIL_FROM:'synthetic-oncall@example.test'}),undefined,'explicit none never constructs a sending runtime')
+ for(const provider of ['rer','sendgrid','resend','cloudflare']) {
+  const configured={MAIL_PROVIDER:provider,MAIL_FROM:'synthetic-oncall@example.test',MAIL_API_KEY:'synthetic-oncall-1',...(provider==='rer'?{MAIL_RELAY_URL:'https://relay.example.test'}:{}),...(provider==='cloudflare'?{MAIL_ACCOUNT_ID:'a'.repeat(32)}:{})}
+  commandAdapter.deployPolicy({options:{dryRun:true},env:configured,bindings:bindings(configured)})
+  for(const field of Object.keys(configured).filter(key=>key!=='MAIL_PROVIDER')) {
+   const missing={...configured};delete missing[field]
+   assert.throws(()=>commandAdapter.deployPolicy({options:{dryRun:true},env:missing,bindings:bindings(missing)}),'enabled provider refuses each missing input')
+  }
+ }
+ assert.equal(bindings(off).MAIL_PROVIDER,'none','the deployment maps explicit none to the runtime binding')
  // The public deploy command builds and validates an offline plan with explicit
  // none; its command environment deliberately contains no provider credentials.
  const cleanEnv=Object.fromEntries(Object.entries(process.env).filter(([key])=>!/(?:CLOUDFLARE|^CF_|MAIL|SMTP|SENDGRID|RESEND|POSTMARK|^GH_TOKEN$|^GITHUB_TOKEN$|^RER_CLOUD_)/i.test(key)))
  Object.assign(cleanEnv,{MAIL_PROVIDER:'none',CI:'true',WRANGLER_SEND_METRICS:'false'})
  const planned=spawnSync(process.execPath,['node_modules/@runeditrun/rer/global/rer.mjs','deploy','--dry-run','--non-interactive'],{env:cleanEnv,encoding:'utf8',timeout:180000})
  assert.equal(planned.status,0,'public mail-off deploy dry run succeeds: '+planned.stderr)
- assert.match(planned.stdout,/Outbound email is off/)
- assert.match(planned.stdout,/rer signin/)
- assert.match(planned.stdout,/nothing was changed remotely/)
+ const packaging=JSON.parse(await readFile('scripts/delivery/base/packaging.json','utf8'))
+ await deploymentSpec(root,packaging.artifact.specInputs)
+ assert.match(planned.stdout+planned.stderr,/Outbound email is off/)
+ assert.match(planned.stdout+planned.stderr,/rer signin/)
+ assert.match(planned.stdout+planned.stderr,/nothing was changed remotely/)
+ for(const selected of [{MAIL_PROVIDER:'sendgrid'}, {...off,MAIL_API_KEY:'synthetic-oncall-1'}]) {
+  const refused=spawnSync(process.execPath,['node_modules/@runeditrun/rer/global/rer.mjs','deploy','--dry-run','--non-interactive'],{env:{...cleanEnv,...selected},encoding:'utf8',timeout:30000})
+  assert.equal(refused.status,4,'public deploy refuses incomplete or contradictory mail before build')
+ }
  console.log('PASS mail-off configuration: native setup selection, operations, deploy policy, production preflight, public offline deploy plan and runtime none; incomplete enabled providers and contradictory credentials refuse')
 
  const origin='https://synthetic-oncall.example.test',setupToken=randomBytes(32).toString('hex')
- const runtime=await automationRuntime(()=>new Response('unexpected egress',{status:403}),{bindings:()=>({AUTH_LOCAL:'false',AUTH_ORIGIN:origin,MAIL_PROVIDER:'none',SETUP_TOKEN:setupToken})})
- const request=(path,data,cookie='')=>runtime.mf.dispatchFetch(origin+path,{method:data===undefined?'GET':'POST',headers:{origin,'content-type':'application/json',cookie},...(data===undefined?{}:{body:JSON.stringify(data)}),redirect:'manual'})
- const json=async(path,data,cookie='',status=200)=>{const r=await request(path,data,cookie);assert.equal(r.status,status,path);return r.json()}
+ const runtime=await localWorker({...bindings(off),MAIL_FROM:'',AUTH_ORIGIN:origin,OWNER_EMAIL:'synthetic-oncall-owner@example.test',SETUP_TOKEN:setupToken},{requestOrigin:origin,outboundLedger:true})
+ const request=(path,data,cookie='')=>fetch(runtime.origin+path,{method:data===undefined?'GET':'POST',headers:{host:new URL(origin).host,origin,'content-type':'application/json',cookie,'CF-Connecting-IP':'192.0.2.10'},...(data===undefined?{}:{body:JSON.stringify(data)}),redirect:'manual'})
+ const json=async(path,data,cookie='',status=200)=>{const r=await request(path,data,cookie);assert.equal(r.status,status,path);return status===204?null:r.json()}
  const directory=await mkdtemp(join(tmpdir(),'oncall-mail-off-'))
  let browser
  try {
   const bootstrap=await request('/auth/bootstrap',{token:setupToken,displayName:'Synthetic mail-off owner'})
-  assert.equal(bootstrap.status,303)
+  assert.equal(bootstrap.status,303,await bootstrap.clone().text())
   const bootstrapCookie=bootstrap.headers.getSetCookie().map(v=>v.split(';')[0]).join('; ')
   await bootstrap.body?.cancel()
-  const setup=await runtime.mf.dispatchFetch(origin+'/setup',{method:'POST',headers:{origin,cookie:bootstrapCookie,'content-type':'application/x-www-form-urlencoded'},body:'confirm=yes',redirect:'manual'})
+  const setup=await fetch(runtime.origin+'/setup',{method:'POST',headers:{host:new URL(origin).host,origin,cookie:bootstrapCookie,'content-type':'application/x-www-form-urlencoded'},body:'confirm=yes',redirect:'manual'})
   assert.equal(setup.status,303);await setup.body?.cancel()
-  await json('/auth/signout',{},bootstrapCookie)
+  await json('/auth/signout',{},bootstrapCookie,204)
   for(const email of ['synthetic-oncall-owner@example.test','synthetic-oncall-unknown@example.test']) {
    assert.deepEqual(await json('/auth/magic-link',{email},'',503),{error:'mail_unavailable'})
   }
   await json('/api/state',undefined,'',401)
-  await json('/api/setup',{name:'Synthetic untrusted owner',password:'synthetic-oncall-1'},'',403)
+  await json('/api/setup',{name:'Synthetic untrusted owner',password:'synthetic-oncall-1'},'',404)
   const dev=await request('/__dev/key',{key:'synthetic-oncall-1'});assert.equal(dev.status,404);await dev.body?.cancel()
   const oneClick=await request('/auth/one-click?email=synthetic-oncall-owner%40example.test&token=synthetic-oncall-1')
   assert.ok(oneClick.status>=400);await oneClick.body?.cancel()
@@ -87,7 +100,7 @@ export async function mailOffJourney() {
    let result
    if(path.endsWith('/d1/database/synthetic-oncall-auth/query')) {
     if(/INSERT|UPDATE|DELETE/i.test(body.sql))writes++
-    result=[await runtime.db.prepare(body.sql).all()]
+    result=[{success:true,results:runtime.sql(body.sql)}]
    } else {
     assert.ok(path.includes('/workers/scripts/'+worker+'/'),'only the recorded app Worker may be read')
     if(path.endsWith('/settings'))result={bindings:[]}
@@ -141,6 +154,8 @@ export async function mailOffJourney() {
   for(const email of ['synthetic-oncall-owner@example.test','synthetic-oncall-unknown@example.test']) {
    assert.deepEqual(await json('/auth/invite',{email,displayName:'Synthetic invite',role:'member'},cookie,503),{error:'mail_unavailable'})
   }
+  assert.equal(runtime.sql('SELECT COUNT(*) AS n FROM oa_operators')[0].n,1,'mail-off invitations create no pending people')
+  assert.equal(runtime.sql('SELECT COUNT(*) AS n FROM oa_tokens')[0].n,0,'unavailable email requests create no sign-in token')
   const service=await json('/api/command',{type:'service',id:'synthetic-mail-off',name:'Synthetic mail-off service',environment:'test',owner:member.id,runbook:[],pager:''},cookie)
   const schedule=await json('/api/paging/schedules',{id:'synthetic-mail-off',service:service.id,name:'Synthetic mail-off rota',revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:{anchorLocal:'2026-01-01T00:00',periodDays:1,members:[member.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-01-01T00:00',periodDays:1,members:[member.id],ambiguity:'earlier'},overrides:[]},cookie)
   assert.equal(schedule.service,service.id)
@@ -150,7 +165,7 @@ export async function mailOffJourney() {
   assert.equal(notified.responderRequests[0].obligation.paging,'off')
   assert.equal(notified.responderRequests[0].obligation.automatic,false)
   assert.notEqual(notified.responderRequests[0].obligation.state,'sent')
-  await runtime.restart()
+  await runtime.stop();await runtime.start()
   assert.equal((await json('/api/state',undefined,cookie)).incidents.find(i=>i.id===incident.id).responderRequests.length,1)
   for(const path of ['/','/docs','/health']){const r=await request(path);assert.equal(r.status,200,path);await r.body?.cancel()}
   await json('/api/state',undefined,'',401)
@@ -160,7 +175,7 @@ export async function mailOffJourney() {
   browser=await chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM_PATH??process.env.CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox','--use-mock-keychain','--password-store=basic']})
   const context=await browser.newContext({viewport:{width:1440,height:1000}})
   await context.route(origin+'/**',async route=>{
-   const req=route.request(),response=await runtime.mf.dispatchFetch(req.url(),{method:req.method(),headers:req.headers(),...(req.postDataBuffer()?{body:req.postDataBuffer()}:{})})
+   const req=route.request(),response=await fetch(runtime.origin+new URL(req.url()).pathname+new URL(req.url()).search,{method:req.method(),headers:{...req.headers(),host:new URL(origin).host},...(req.postDataBuffer()?{body:req.postDataBuffer()}:{})})
    await route.fulfill({status:response.status,headers:Object.fromEntries(response.headers),body:Buffer.from(await response.arrayBuffer())})
   })
   const page=await context.newPage(),errors=[];page.on('pageerror',error=>errors.push(error.message))

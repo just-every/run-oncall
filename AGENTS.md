@@ -32,7 +32,7 @@ rer check
 
 Export includes supported durable records and the import journal, excluding sessions and dev credentials. Import requires an empty destination and explicit confirmation. Reset deletes local data and owner settings. A deploy dry run builds and validates a local plan without credentials or Cloudflare requests and changes nothing remotely. It does not check target secrets, deployment permissions, remote readiness or mail delivery. Release 1 supports hosted incident coordination alongside your existing pager. Paging stays OFF; an independent standby is not required for coordination. Release 2 paging and its independent standby are not built. See [Getting started](docs/getting-started.md#host-for-your-team) for `rer deploy`, required mail configuration and removal. Use `describe` for flags and `doctor` for missing local prerequisites.
 
-Read CONTRACT.md and ACCEPTANCE.md. This seed owns UI, API, storage, authentication and migration integration. Keep the visual language in BRAND.md and the real controls. Current-member authority is checked inside server handlers and import SQL transactions. On local and hosted apps, the configured owner uses native email links, while admin-created team members sign in at `/signin/local` with an installation-local workspace name and password. Oncall sends no invitations. Only anonymous first-admin bootstrap at `/api/setup` remains loopback-only. No private Start transport is used; the Start document is a shell and private data uses protected HTTP APIs. New transports require unauthenticated, expired, revoked and valid-session proof.
+Read CONTRACT.md and ACCEPTANCE.md. This seed owns UI, API, storage, authentication and migration integration. Keep the visual language in BRAND.md and the real controls. Current-member authority is checked inside server handlers and import SQL transactions. On local and hosted apps, the configured owner uses native email links when mail is enabled or guarded rer signin when mail is explicitly off, while admin-created team members sign in at `/signin/local` with an installation-local workspace name and password. Oncall sends no invitations. Only anonymous first-admin bootstrap at `/api/setup` remains loopback-only. No private Start transport is used; the Start document is a shell and private data uses protected HTTP APIs. New transports require unauthenticated, expired, revoked and valid-session proof.
 
 Keep released migrations immutable. New migrations must prove held-data upgrades. Never special-case inputs, weaken tests or create application mocks/fallbacks. Tests guard user-visible flows through emitted Worker HTTP or browser doors; data import/restore and authority require malformed-input, revocation, concurrency and rollback proof. Replace obsolete tests explicitly and report them. No pin tests. Run the tests you touched and the typecheck, then `rer verify` before proposing a change. Run one heavy job at a time, keep at least 15 GiB of disk free, and stop every process you start. Never print secrets.
 
@@ -44,9 +44,9 @@ CONTRACT.md is the only acceptance text and status source, written to the RER co
 
 Lander-Regenerate: node src/base/contract-docs.mjs write
 Lander-Regenerate: node src/base/contract-docs.mjs check
-Lander-Regenerate: node scripts/edition-authoring/cli.mjs lock
+Lander-Regenerate: node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock
 
-This checkout vendors edition-authoring 1.1.0 in `scripts/edition-authoring/`; regenerate the source lock from the checkout root with `node scripts/edition-authoring/cli.mjs lock`, then run the same tool's `check`.
+The historical edition-authoring 1.1.0 snapshot remains in `scripts/edition-authoring/`. After adopting the package pin, regenerate the source lock with the pinned package that Verify uses: `node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock`, then run that same tool's `check`. Its toolchain identity must agree with the installed package.
 
 ## Upstream module documentation
 

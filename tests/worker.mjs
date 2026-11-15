@@ -111,7 +111,7 @@ export function durableSnapshot(w) {
  return Object.fromEntries(w.statements(names.map(name=>'SELECT * FROM "'+name.replaceAll('"','""')+'"').join(';')).map((rows,index)=>[names[index],rows.sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))]))
 }
 
-export async function localWorker(bindings = {}, {persistTo,clock=false,fetchSource="",outboundLedger=false} = {}) {
+export async function localWorker(bindings = {}, {persistTo,clock=false,fetchSource="",outboundLedger=false,requestOrigin} = {}) {
  const dir=await mkdtemp(join(tmpdir(),'oncall-flow-')),socket=createServer()
  await new Promise(r=>socket.listen(0,'127.0.0.1',r));const port=socket.address().port;await new Promise(r=>socket.close(r))
  const persist=persistTo??dir;
@@ -125,7 +125,9 @@ export async function localWorker(bindings = {}, {persistTo,clock=false,fetchSou
  const sql=command=>statements(command)[0]
  execFileSync(process.execPath,[cli,'d1','migrations','apply','DB','--local','--persist-to',persist],{env,stdio:'ignore'})
  let config='dist/server/wrangler.json',clockFiles=[];
- if(clock||fetchSource){
+ // A hosted fixture terminates TLS at this local test edge and forwards its
+ // canonical origin. Application host, Origin, cookie and authority checks still run.
+ if(clock||fetchSource||requestOrigin){
   const name='.test-clock-'+randomBytes(8).toString('hex'),wrapper=resolve('dist/server',name+'.js');
   config=resolve('dist/server',name+'.json');clockFiles=[wrapper,config];
   const built=JSON.parse(await readFile('dist/server/wrangler.json','utf8'));
@@ -135,7 +137,7 @@ const RealDate=Date;let at;
 // Explicit source timestamps and all native Date parsing remain unchanged.
 if(${clock})globalThis.Date=class extends RealDate {constructor(...args){super(...(args.length?args:[at??RealDate.now()]));}static now(){return at??RealDate.now();}};
 ${fetchSource}
-export default {...app,async fetch(request,env,ctx){if(new URL(request.url).pathname==='/__provider_control'&&${Boolean(fetchSource)}){const input=await request.json();providerMode=input.mode??'normal';providerCalls=[];pkceChallenge=input.challenge??pkceChallenge;return Response.json({ok:true});}if(new URL(request.url).pathname==='/__provider_calls'&&${Boolean(fetchSource)})return Response.json({calls:providerCalls,pkceValid,revoked});if(new URL(request.url).pathname==='/__provider_cron'&&${Boolean(fetchSource)}){await app.scheduled({},env,ctx);return Response.json({ok:true});}if(new URL(request.url).pathname==='/__test_clock'){const value=await request.text();at=value==='real'?undefined:Number(value);return new Response('clock injected');}return app.fetch(request,env,ctx);}};`);
+export default {...app,async fetch(request,env,ctx){if(new URL(request.url).pathname==='/__provider_control'&&${Boolean(fetchSource)}){const input=await request.json();providerMode=input.mode??'normal';providerCalls=[];pkceChallenge=input.challenge??pkceChallenge;return Response.json({ok:true});}if(new URL(request.url).pathname==='/__provider_calls'&&${Boolean(fetchSource)})return Response.json({calls:providerCalls,pkceValid,revoked});if(new URL(request.url).pathname==='/__provider_cron'&&${Boolean(fetchSource)}){await app.scheduled({},env,ctx);return Response.json({ok:true});}if(new URL(request.url).pathname==='/__test_clock'){const value=await request.text();at=value==='real'?undefined:Number(value);return new Response('clock injected');}if(${JSON.stringify(requestOrigin??'')}){const target=new URL(request.url);const canonical=new URL(${JSON.stringify(requestOrigin??'')});target.protocol=canonical.protocol;target.host=canonical.host;target.port=canonical.port;const headers=new Headers(request.headers);headers.set('host',canonical.host);request=new Request(target,new Request(request,{headers}));}return app.fetch(request,env,ctx);}};`);
   await writeFile(config,JSON.stringify({...built,main:name+'.js'}));
  }
  let worker,diagnostics,logLines=''

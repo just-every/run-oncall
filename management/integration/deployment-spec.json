@@ -425,8 +425,8 @@
   ],
   "publicVariables": {
     "AUTH_LOCAL": "false",
-    "MAIL_PROVIDER": "later",
     "MAIL_FROM": "",
+    "MAIL_PROVIDER": "",
     "MAIL_RELAY_URL": ""
   },
   "secretNames": [

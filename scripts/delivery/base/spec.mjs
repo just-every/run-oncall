@@ -145,6 +145,12 @@ export async function deploymentSpec(root, options = {}) {
   const deployPath = await sourcePath(root, 'deploy.json', {optional:true});
   if (deployPath) {
     const declaration = JSON.parse(decodeUtf8(await readFile(deployPath), 'deploy declaration'));
+    // Optional environment-to-Worker mappings have no fixed Wrangler value.
+    // Retain their public mail input slots for managed packaging; empty is
+    // unconfigured and must never select mail off.
+    for (const name of ['MAIL_PROVIDER', 'MAIL_RELAY_URL']) {
+      if (publicVariableNames.includes(name) && declaration.secrets?.some(item => item.binding === name && item.optional === true)) publicVariables[name] ??= '';
+    }
     validateMailSenders([
       {source:'deploy.json vars.MAIL_FROM', value:declaration.vars?.MAIL_FROM},
       {source:`${wranglerFile} vars.MAIL_FROM`, value:publicVariables.MAIL_FROM},
