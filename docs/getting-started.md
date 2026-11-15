@@ -1,11 +1,10 @@
 # Getting started
 
-Oncall runs on your own computer first. Open a terminal (on a Mac, Terminal in Applications → Utilities; on Windows, your WSL2 distribution), install `rer`, then start Oncall:
+Oncall runs on your own computer first. Open a terminal (on a Mac, Terminal in Applications → Utilities; on Windows, your WSL2 distribution), copy this line into it and press Enter:
 
 <!-- rer:local-recipe -->
 ```sh
-curl -fsSL https://runeditrun.com/install.sh | sh
-rer dev just-every/run-oncall
+curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-oncall
 ```
 
 Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-oncall` does the same.
@@ -13,9 +12,9 @@ Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-oncall
 macOS, Linux or Windows with WSL2. git is required; rer brings Node and pnpm.
 <!-- /rer:local-recipe -->
 
-These two steps install `rer`, the Run Edit Run command, clones Oncall into a `run-oncall` folder, installs everything, prepares the local database and a local owner, and starts Oncall. It prints a private `RER_OPEN` link: open it on the same computer and you are signed in as the owner. Treat it like a password. The first time, Oncall opens **Finish setup**: tick *I confirm this owner account is ready to use* and press **Finish setup**. This free copy runs only on your computer: it sends no email, and nobody else can open it.
+The line installs `rer`, the Run Edit Run command, clones Oncall into a `run-oncall` folder, installs everything, prepares the local database and a local owner, and starts Oncall. It prints a private `RER_OPEN` link: open it on the same computer and you are signed in as the owner. Treat it like a password. The first time, Oncall opens **Finish setup**: tick *I confirm this owner account is ready to use* and press **Finish setup**. This free copy runs only on your computer: it sends no email, and nobody else can open it.
 
-If `rer` is not found after installation, run `export PATH="$HOME/.local/bin:$PATH"` and repeat the second command; add that line to your shell startup file to keep it. To start Oncall again later, run `cd run-oncall && rer dev`.
+To start Oncall again later, run the same line from the same folder. Adding `rer` to your shell's PATH is optional for future terminals; the one-line launch already finds it for this run.
 
 For Assisted, Managed and the walkthrough for your own Cloudflare account, see [Put Oncall online](https://run-oncall.com/docs/hosting).
 

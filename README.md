@@ -33,27 +33,17 @@
 
 See the [Oncall Run page](https://run-oncall.com/run) for local launch and PATH help. Public source: [just-every/run-oncall](https://github.com/just-every/run-oncall). The `v0.5.14` release candidate includes hosted coordination. See [Getting started](docs/getting-started.md#host-for-your-team) for complete credentials and deployment instructions.
 
-Two steps. Git is required; `rer` brings its own Node and pnpm, so you do not need Node.
+One line installs the `rer` command, clones Oncall and starts it:
 
-1. Install the `rer` command:
+```sh
+curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-oncall
+```
 
-   ```sh
-   curl -fsSL https://runeditrun.com/install.sh | sh
-   ```
+Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-oncall` does the same.
 
-2. Clone Oncall and start it:
+macOS, Linux or Windows with WSL2. git is required; rer brings Node and pnpm.
 
-   ```sh
-   rer dev just-every/run-oncall
-   ```
-
-   If this says `rer: command not found`, run `export PATH="$HOME/.local/bin:$PATH"` first and repeat step 2 (add that line to your shell startup file to keep it; `"$HOME/.local/bin/rer" cli path` shows the line for your shell).
-
-Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-oncall` does steps 1 and 2 in one go.
-
-macOS, Linux or Windows with WSL2.
-
-To start it again later, run `cd run-oncall && rer dev` (a new terminal needs the same `export PATH` line unless you added it to your shell startup file). `rer dev` installs the application dependencies, creates a local development owner and prints a private `RER_OPEN` link that opens Oncall signed in. On first launch, confirm the read-only owner details at `/setup` (**Finish setup**); later launches open the app directly. To choose your own owner mailbox before the first launch, use [explicit setup](docs/getting-started.md#explicit-and-unattended-setup); unattended setup accepts a private answers file.
+To start it again later, run `cd run-oncall && rer dev`; after the `curl` installer, a terminal without `~/.local/bin` on PATH needs `export PATH="$HOME/.local/bin:$PATH"` first or it says `rer: command not found` (add that line to your shell startup file to keep it; `"$HOME/.local/bin/rer" cli path` shows the line for your shell). `rer dev` installs the application dependencies, creates a local development owner and prints a private `RER_OPEN` link that opens Oncall signed in. On first launch, confirm the read-only owner details at `/setup` (**Finish setup**); later launches open the app directly. To choose your own owner mailbox before the first launch, use [explicit setup](docs/getting-started.md#explicit-and-unattended-setup); unattended setup accepts a private answers file.
 
 Open the printed link on this computer. `rer dev --as signed-out` selects the signed-out persona. The compatibility flag `rer dev --login` still opens automatic owner entry. Ordinary `/signin` email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. The app does not capture mail or print sign-in tokens. Stop the background server with `rer dev --stop` (Ctrl-C also stops a foreground run); stop preview with `rer preview --stop` before building, verifying or deploying. A running dev or preview server owns the local state, so even a deploy dry run refuses with exit 4 until it stops.
 

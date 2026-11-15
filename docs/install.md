@@ -6,14 +6,13 @@ Start with the dated [US installation and dependency checklist](readiness.md#us-
 
 ## Run it on your computer
 
-Two steps. First install the `rer` command, then clone Oncall into `run-oncall` and start it:
+One line installs the `rer` command, clones Oncall into `run-oncall` and starts it:
 
 ```sh
-curl -fsSL https://runeditrun.com/install.sh | sh
-rer dev just-every/run-oncall
+curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-oncall
 ```
 
-If the second line says `rer: command not found`, run `export PATH="$HOME/.local/bin:$PATH"` and repeat it; add that line to your shell startup file to keep it. Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-oncall` does both steps. To start it again later, run `cd run-oncall && rer dev`. `rer dev` installs the locked dependencies, prepares the local database and creates a local development owner (`owner@<checkout-name>.test`). It starts Oncall and prints a private `RER_OPEN` link. Open that link on this computer and you are signed in as the owner. Use the printed address: the default port starts at 8787 and another free port is selected if needed; `rer dev --port N` requests a specific free port.
+Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-oncall` does the same. If the installer prints a line that puts `rer` on your PATH, run that line too. To start it again later, run the same line from the same folder, or `cd run-oncall && rer dev`. `rer dev` installs the locked dependencies, prepares the local database and creates a local development owner (`owner@<checkout-name>.test`). It starts Oncall and prints a private `RER_OPEN` link. Open that link on this computer and you are signed in as the owner. Use the printed address: the default port starts at 8787 and another free port is selected if needed; `rer dev --port N` requests a specific free port.
 
 The first time, Oncall opens **Finish setup**. Name and Email are read-only; a default local owner is named **Owner**. Review the displayed email, tick *I confirm this owner account is ready to use* and press **Finish setup**. This screen confirms the owner; it does not edit their name or email. After that, Oncall opens straight into the app. To choose a real owner mailbox before first launch, use the explicit setup steps below.
 
