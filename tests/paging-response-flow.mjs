@@ -14,7 +14,8 @@ export async function adoptedOnCallFlow({w,req,ok,admin,alice,bob,schedule}) {
  ok(await req(rulesPath(alice.id),{revision:1,contacts,rules:[{...rules[0],contact:'missing'}]}),400);
  const bobContacts=[{...contacts[0],address:'bob@example.test'}];
  ok(await req(rulesPath(bob.id),{revision:0,contacts:bobContacts,rules:[rules[0]]}));
- const viewer=await w.request('/api/login',{name:'Viewer',password:'synthetic-local-testing-password'});ok(viewer);
+ await w.time(null);
+ const viewer=await w.request('/api/login',{name:'Viewer',password:'synthetic-local-testing-password'});ok(viewer);await w.time(start);
  ok(await w.request(rulesPath(alice.id),{revision:1,contacts,rules},viewer.cookie),403);
  ok(await w.request(rulesPath(alice.id)),401);
  const publish=async(scheduleId,secondStep,revision=0)=>ok(await req('/api/paging/policies',{service:'checkout',scheduleId,revision,primaryWaitSeconds:120,backupWaitSeconds:180,retrySeconds:10,maxAttempts:1,...(secondStep?{secondStep}:{})}));
@@ -25,7 +26,7 @@ export async function adoptedOnCallFlow({w,req,ok,admin,alice,bob,schedule}) {
  ok(await req('/api/intake/sources',{id:'adopted-pager',name:'Checkout monitoring',provider:'pagerduty',service:'checkout',key,revision:0}),201);
  const send=async(dedup,action='trigger')=>ok(await req('/v2/enqueue',{routing_key:key,event_action:action,dedup_key:dedup,...(action==='trigger'?{payload:{summary:'Checkout latency increased',source:'checkout-monitor',severity:'critical'}}:{})}),202);
  const runFor=async(dedup)=>{const state=await read(),alert=state.alerts.find(a=>a.key===dedup);assert.ok(alert);return {state,alert,run:alert.onCall,incident:state.incidents.find(i=>i.alerts.includes(alert.id))};};
- const tick=async(at)=>{await w.time(at);const r=await w.send('/cdn-cgi/handler/scheduled');assert.equal(r.status,200,r.value);};
+ const tick=async(at)=>{await w.time(at);const r=await w.send('/cdn-cgi/local/scheduled',undefined,{},'GET');assert.equal(r.status,200,r.value);};
  const beforePaging=ok(await req('/api/paging/state'));
  await send('adopted-primary');let first=await runFor('adopted-primary');
  assert.equal(first.incident.assignee,alice.id);assert.equal(first.incident.commander,null,'assignment is not acknowledgment or command');
@@ -73,7 +74,7 @@ export async function adoptedOnCallFlow({w,req,ok,admin,alice,bob,schedule}) {
  ok(await req('/v2/enqueue',{routing_key:gapKey,event_action:'trigger',dedup_key:'uncovered',payload:{summary:'Uncovered service failed',source:'uncovered-monitor',severity:'critical'}}),202);
  const uncovered=await runFor('uncovered');assert.equal(uncovered.incident.assignee??null,null);assert.equal(uncovered.run.records[0].member,null);assert.match(uncovered.run.records[0].outcome,/No one on call/);
  // Native restore retains the records, but holds the run and member rules inactive.
- const running=ok(await req('/api/archive'));const restore=await req('/api/restore',{mode:'replace',archive:running});ok(restore);
+ const running=ok(await req('/api/archive'));await w.time(null);const restore=await req('/api/restore',{mode:'replace',archive:running});ok(restore);
  const held=ok(await w.request('/api/state',undefined,restore.cookie));assert.ok(held.alerts.filter(a=>a.onCall).every(a=>a.onCall.state!=='running'));assert.ok(held.scheduleRecords.filter(r=>r.kind==='notification-rules').every(r=>!r.active));
  // The caller's later owner session is intentionally replaced by restore; return it.
  await w.time(null);

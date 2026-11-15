@@ -24,6 +24,7 @@ export const memberName = (state: State, id: string | null | undefined) => {
         : nativeName(source);
     return `Source: ${name}`;
   }
+  if(id==='system:on-call')return 'On-call policy';
   if(id==='system:incident-deadlines')return 'Deadline scheduler';
   const member=state.members.find(member=>member.id===id);
   if(member)return member.name;
@@ -37,7 +38,7 @@ export const timelineHeading = (kind: string) => ({
   declared: 'Incident declared', transition: 'Status changed', note: 'Note added',
   action: 'Follow-up created', complete: 'Follow-up evidence submitted',
   'accept-action': 'Follow-up accepted', review: 'Review accepted', runbook: 'Runbook updated',
-  reassign: 'People updated', 'assign-role': 'People updated',
+  'on-call-assigned': 'On-call assignment', reassign: 'People updated', 'assign-role': 'People updated',
   'set-priority': 'Priority changed', 'set-urgency': 'Urgency changed', 'set-severity': 'Severity changed',
   'incident-deadline': 'Deadline', 'deadline-cancelled': 'Deadline cancelled', 'deadline-fired': 'Deadline reached',
   'source-recovery': 'Source recovered', 'bulk-acknowledge': 'Status changed', 'bulk-resolve': 'Status changed',
@@ -48,6 +49,10 @@ export const timelineHeading = (kind: string) => ({
 export function timelineText(entry: Entry, state: State) {
   // Only format generated workflow prefixes. Authored notes and reasons remain
   // literal text, and the retained timeline is never changed.
+  if (entry.kind === 'on-call-assigned') {
+    const alert=state.alerts.find(alert=>alert.onCall&&entry.id==='on-call-assigned:'+alert.onCall.id),run=alert?.onCall;
+    if(run)return run.assignee ? `Assigned to ${memberName(state,run.assignee)}. Notifications are recorded only; no sender, paging OFF.` : 'No one is on call. Assign a responder; paging remains OFF.';
+  }
   if (entry.kind === 'source-recovery') {
     return 'All alerts recovered — awaiting resolution. Source recovery stopped the alert obligations. The incident still needs human recovery evidence and a summary. A reminder was recorded for the incident lead; automatic reminders and recovery notices are not available yet.';
   }

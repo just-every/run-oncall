@@ -38,6 +38,7 @@ export default {
   await validateNativePrefixes(db,tables,coordination)
   validateAutomation(coordination)
   holdScheduleRecords(coordination)
+  if(tables.oc_alerts)for(const row of coordination.alerts.filter(alert=>alert.onCall))await db.prepare('UPDATE "'+tables.oc_alerts.replaceAll('"','""')+'" SET data=? WHERE id=?').bind(JSON.stringify(row),row.id).run()
   if(tables.oc_schedule_records)for(const row of coordination.scheduleRecords??[])await db.prepare('UPDATE "'+tables.oc_schedule_records.replaceAll('"','""')+'" SET data=? WHERE id=?').bind(JSON.stringify(row),row.id).run()
   holdBusinessStatus(coordination)
   holdManualRecords(coordination);holdDeadlines(coordination)
