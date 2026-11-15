@@ -1,7 +1,7 @@
 {
   "id": "oncall",
   "name": "Oncall",
-  "version": "0.5.14",
+  "version": "0.5.15",
   "maturity": "maintained",
   "category": "operations",
   "replaces": [
