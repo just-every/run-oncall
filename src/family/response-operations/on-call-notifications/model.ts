@@ -1,6 +1,5 @@
-import {servicePolicy} from '../escalation';
 import {coverage,type Schedule} from '../schedules.ts';
-import {validatePolicy,type EscalationPolicy} from '../escalation.ts';
+import {servicePolicy,validatePolicy,type EscalationPolicy} from '../escalation.ts';
 import {fail,type Alert,type Entry,type Incident,type State} from '../domain.ts';
 import {memberNotificationRules,validateNotificationRules,type Contact,type NotificationRule} from './rules.ts';
 
