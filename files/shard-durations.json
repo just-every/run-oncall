@@ -1,0 +1,94 @@
+{
+  "run_id": 43758259622,
+  "head": "f9d62e6da66f14b73f5082798f82103428e77af4",
+  "shards": [
+    {
+      "name": "shards (agents)",
+      "job_id": 132947545231,
+      "seconds": 515,
+      "journey_step_seconds": 426,
+      "other_steps_seconds": 89,
+      "started_at": "2026-11-15T20:30:14Z",
+      "completed_at": "2026-11-15T20:38:49Z",
+      "conclusion": "success"
+    },
+    {
+      "name": "shards (browser)",
+      "job_id": 132947545226,
+      "seconds": 388,
+      "journey_step_seconds": 240,
+      "other_steps_seconds": 148,
+      "started_at": "2026-11-15T20:30:13Z",
+      "completed_at": "2026-11-15T20:36:41Z",
+      "conclusion": "success"
+    },
+    {
+      "name": "shards (changes)",
+      "job_id": 132947545119,
+      "seconds": 585,
+      "journey_step_seconds": 400,
+      "other_steps_seconds": 185,
+      "started_at": "2026-11-15T20:30:14Z",
+      "completed_at": "2026-11-15T20:39:59Z",
+      "conclusion": "success"
+    },
+    {
+      "name": "shards (hosted)",
+      "job_id": 132947545141,
+      "seconds": 620,
+      "journey_step_seconds": 468,
+      "other_steps_seconds": 152,
+      "started_at": "2026-11-15T20:30:14Z",
+      "completed_at": "2026-11-15T20:40:34Z",
+      "conclusion": "success"
+    },
+    {
+      "name": "shards (intake)",
+      "job_id": 132947545157,
+      "seconds": 543,
+      "journey_step_seconds": 381,
+      "other_steps_seconds": 162,
+      "started_at": "2026-11-15T20:30:13Z",
+      "completed_at": "2026-11-15T20:39:16Z",
+      "conclusion": "success"
+    },
+    {
+      "name": "shards (runtime)",
+      "job_id": 132947545109,
+      "seconds": 432,
+      "journey_step_seconds": 313,
+      "other_steps_seconds": 119,
+      "started_at": "2026-11-15T20:30:13Z",
+      "completed_at": "2026-11-15T20:37:25Z",
+      "conclusion": "success"
+    },
+    {
+      "name": "shards (transfer)",
+      "job_id": 132947545243,
+      "seconds": 731,
+      "journey_step_seconds": 616,
+      "other_steps_seconds": 115,
+      "started_at": "2026-11-15T20:30:14Z",
+      "completed_at": "2026-11-15T20:42:25Z",
+      "conclusion": "success"
+    },
+    {
+      "name": "shards (triage)",
+      "job_id": 132947545234,
+      "seconds": 530,
+      "journey_step_seconds": 380,
+      "other_steps_seconds": 150,
+      "started_at": "2026-11-15T20:30:14Z",
+      "completed_at": "2026-11-15T20:39:04Z",
+      "conclusion": "success"
+    }
+  ],
+  "mean_seconds": 543.0,
+  "longest_to_mean": 1.3462246777163904,
+  "over_600_seconds": [
+    "shards (hosted)",
+    "shards (transfer)"
+  ],
+  "gh_logical_calls": 10,
+  "jobs_read_at": "2026-11-15T20:53:33.900055+00:00"
+}

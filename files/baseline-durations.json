@@ -1,0 +1,710 @@
+[
+  {
+    "run_id": 43717600735,
+    "sha": "98d633ee7d20ebbb1d68842eaab998bbdffb284b",
+    "jobs": [
+      {
+        "databaseId": 132823195066,
+        "name": "shards (agents)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-15T13:13:26Z",
+        "completedAt": "2026-11-15T13:22:31Z",
+        "seconds": 545.0
+      },
+      {
+        "databaseId": 132823195075,
+        "name": "shards (changes)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-15T13:13:26Z",
+        "completedAt": "2026-11-15T13:19:42Z",
+        "seconds": 376.0
+      },
+      {
+        "databaseId": 132823195105,
+        "name": "shards (runtime)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-15T13:13:26Z",
+        "completedAt": "2026-11-15T13:18:38Z",
+        "seconds": 312.0
+      },
+      {
+        "databaseId": 132823195111,
+        "name": "shards (browser)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-15T13:13:26Z",
+        "completedAt": "2026-11-15T13:27:29Z",
+        "seconds": 843.0
+      },
+      {
+        "databaseId": 132823195112,
+        "name": "shards (intake)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-15T13:13:26Z",
+        "completedAt": "2026-11-15T13:21:01Z",
+        "seconds": 455.0
+      },
+      {
+        "databaseId": 132823195122,
+        "name": "shards (hosted)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-15T13:13:26Z",
+        "completedAt": "2026-11-15T13:17:50Z",
+        "seconds": 264.0
+      },
+      {
+        "databaseId": 132823195130,
+        "name": "shards (triage)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-15T13:13:26Z",
+        "completedAt": "2026-11-15T13:22:57Z",
+        "seconds": 571.0
+      },
+      {
+        "databaseId": 132823195137,
+        "name": "shards (transfer)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-15T13:13:26Z",
+        "completedAt": "2026-11-15T13:25:17Z",
+        "seconds": 711.0
+      }
+    ]
+  },
+  {
+    "run_id": 43700831884,
+    "sha": "44ca722b6a5dde173b5253df7b5e0eab762df459",
+    "jobs": [
+      {
+        "databaseId": 132782311847,
+        "name": "shards (browser)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-15T10:30:41Z",
+        "completedAt": "2026-11-15T10:44:16Z",
+        "seconds": 815.0
+      },
+      {
+        "databaseId": 132782312549,
+        "name": "shards (intake)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-15T09:49:25Z",
+        "completedAt": "2026-11-15T09:58:02Z",
+        "seconds": 517.0
+      },
+      {
+        "databaseId": 132782312590,
+        "name": "shards (runtime)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-15T09:49:24Z",
+        "completedAt": "2026-11-15T09:54:05Z",
+        "seconds": 281.0
+      },
+      {
+        "databaseId": 132782312686,
+        "name": "shards (transfer)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-15T09:49:24Z",
+        "completedAt": "2026-11-15T10:00:54Z",
+        "seconds": 690.0
+      },
+      {
+        "databaseId": 132782312723,
+        "name": "shards (changes)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-15T09:49:24Z",
+        "completedAt": "2026-11-15T09:55:58Z",
+        "seconds": 394.0
+      },
+      {
+        "databaseId": 132782312727,
+        "name": "shards (agents)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-15T09:49:24Z",
+        "completedAt": "2026-11-15T09:58:14Z",
+        "seconds": 530.0
+      },
+      {
+        "databaseId": 132782312728,
+        "name": "shards (triage)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-15T09:49:24Z",
+        "completedAt": "2026-11-15T09:59:46Z",
+        "seconds": 622.0
+      },
+      {
+        "databaseId": 132782313093,
+        "name": "shards (hosted)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-15T09:49:24Z",
+        "completedAt": "2026-11-15T09:54:17Z",
+        "seconds": 293.0
+      }
+    ]
+  },
+  {
+    "run_id": 43631616284,
+    "sha": "96d1b7a9ee6ed01fce1effbb889991a4a8a66d01",
+    "jobs": [
+      {
+        "databaseId": 132560033377,
+        "name": "shards (transfer)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-14T19:23:50Z",
+        "completedAt": "2026-11-14T19:35:17Z",
+        "seconds": 687.0
+      },
+      {
+        "databaseId": 132560033385,
+        "name": "shards (intake)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-14T19:23:50Z",
+        "completedAt": "2026-11-14T19:34:35Z",
+        "seconds": 645.0
+      },
+      {
+        "databaseId": 132560033395,
+        "name": "shards (runtime)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-14T19:23:50Z",
+        "completedAt": "2026-11-14T19:28:27Z",
+        "seconds": 277.0
+      },
+      {
+        "databaseId": 132560033398,
+        "name": "shards (browser)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-14T19:23:50Z",
+        "completedAt": "2026-11-14T19:36:38Z",
+        "seconds": 768.0
+      },
+      {
+        "databaseId": 132560033432,
+        "name": "shards (hosted)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-14T19:23:51Z",
+        "completedAt": "2026-11-14T19:28:02Z",
+        "seconds": 251.0
+      },
+      {
+        "databaseId": 132560033435,
+        "name": "shards (triage)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-14T19:23:50Z",
+        "completedAt": "2026-11-14T19:33:19Z",
+        "seconds": 569.0
+      },
+      {
+        "databaseId": 132560033436,
+        "name": "shards (changes)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-14T19:23:50Z",
+        "completedAt": "2026-11-14T19:30:57Z",
+        "seconds": 427.0
+      }
+    ]
+  },
+  {
+    "run_id": 43587169224,
+    "sha": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+    "jobs": [
+      {
+        "databaseId": 132424740732,
+        "name": "shards (transfer)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-14T10:53:34Z",
+        "completedAt": "2026-11-14T11:04:40Z",
+        "seconds": 666.0
+      },
+      {
+        "databaseId": 132424740741,
+        "name": "shards (intake)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-14T10:53:34Z",
+        "completedAt": "2026-11-14T11:07:07Z",
+        "seconds": 813.0
+      },
+      {
+        "databaseId": 132424740746,
+        "name": "shards (hosted)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-14T10:53:34Z",
+        "completedAt": "2026-11-14T11:00:44Z",
+        "seconds": 430.0
+      },
+      {
+        "databaseId": 132424740755,
+        "name": "shards (runtime)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-14T10:53:34Z",
+        "completedAt": "2026-11-14T10:57:36Z",
+        "seconds": 242.0
+      },
+      {
+        "databaseId": 132424740797,
+        "name": "shards (browser)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-14T10:53:34Z",
+        "completedAt": "2026-11-14T11:07:07Z",
+        "seconds": 813.0
+      },
+      {
+        "databaseId": 132424740823,
+        "name": "shards (triage)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-14T10:53:34Z",
+        "completedAt": "2026-11-14T11:02:53Z",
+        "seconds": 559.0
+      },
+      {
+        "databaseId": 132424740907,
+        "name": "shards (changes)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-14T10:53:34Z",
+        "completedAt": "2026-11-14T11:02:56Z",
+        "seconds": 562.0
+      }
+    ]
+  },
+  {
+    "run_id": 43556264993,
+    "sha": "9e11ec73dc0f3ee12cba7e846a43ff63227d873f",
+    "jobs": [
+      {
+        "databaseId": 132330578589,
+        "name": "shards (changes)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-14T04:25:09Z",
+        "completedAt": "2026-11-14T04:35:27Z",
+        "seconds": 618.0
+      },
+      {
+        "databaseId": 132330578623,
+        "name": "shards (hosted)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-14T04:25:09Z",
+        "completedAt": "2026-11-14T04:29:47Z",
+        "seconds": 278.0
+      },
+      {
+        "databaseId": 132330578624,
+        "name": "shards (intake)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-14T04:25:09Z",
+        "completedAt": "2026-11-14T04:36:04Z",
+        "seconds": 655.0
+      },
+      {
+        "databaseId": 132330578630,
+        "name": "shards (browser)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-14T04:25:09Z",
+        "completedAt": "2026-11-14T04:36:09Z",
+        "seconds": 660.0
+      },
+      {
+        "databaseId": 132330578631,
+        "name": "shards (runtime)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-14T04:25:08Z",
+        "completedAt": "2026-11-14T04:29:39Z",
+        "seconds": 271.0
+      },
+      {
+        "databaseId": 132330578632,
+        "name": "shards (transfer)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-14T04:25:08Z",
+        "completedAt": "2026-11-14T04:37:36Z",
+        "seconds": 748.0
+      },
+      {
+        "databaseId": 132330578654,
+        "name": "shards (triage)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-14T04:25:08Z",
+        "completedAt": "2026-11-14T04:33:02Z",
+        "seconds": 474.0
+      }
+    ]
+  },
+  {
+    "run_id": 43482317147,
+    "sha": "8adae6c836f2fabda29e8a091b052450410c8ca5",
+    "jobs": [
+      {
+        "databaseId": 132082838880,
+        "name": "shards (changes)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T18:26:31Z",
+        "completedAt": "2026-11-13T18:35:18Z",
+        "seconds": 527.0
+      },
+      {
+        "databaseId": 132082838898,
+        "name": "shards (browser)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T18:26:32Z",
+        "completedAt": "2026-11-13T18:38:58Z",
+        "seconds": 746.0
+      },
+      {
+        "databaseId": 132082838939,
+        "name": "shards (hosted)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T18:26:31Z",
+        "completedAt": "2026-11-13T18:30:30Z",
+        "seconds": 239.0
+      },
+      {
+        "databaseId": 132082839018,
+        "name": "shards (transfer)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T18:26:31Z",
+        "completedAt": "2026-11-13T18:37:01Z",
+        "seconds": 630.0
+      },
+      {
+        "databaseId": 132082839101,
+        "name": "shards (runtime)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T18:26:31Z",
+        "completedAt": "2026-11-13T18:30:35Z",
+        "seconds": 244.0
+      },
+      {
+        "databaseId": 132082839108,
+        "name": "shards (intake)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T18:26:31Z",
+        "completedAt": "2026-11-13T18:34:56Z",
+        "seconds": 505.0
+      },
+      {
+        "databaseId": 132082839144,
+        "name": "shards (triage)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T18:26:31Z",
+        "completedAt": "2026-11-13T18:36:30Z",
+        "seconds": 599.0
+      }
+    ]
+  },
+  {
+    "run_id": 43467859063,
+    "sha": "551efe44531c876c101ec928b5a93f857976e132",
+    "jobs": [
+      {
+        "databaseId": 132033931876,
+        "name": "shards (runtime)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T17:01:04Z",
+        "completedAt": "2026-11-13T17:06:46Z",
+        "seconds": 342.0
+      },
+      {
+        "databaseId": 132033932020,
+        "name": "shards (intake)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T17:01:04Z",
+        "completedAt": "2026-11-13T17:14:00Z",
+        "seconds": 776.0
+      },
+      {
+        "databaseId": 132033932059,
+        "name": "shards (browser)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T17:01:04Z",
+        "completedAt": "2026-11-13T17:12:57Z",
+        "seconds": 713.0
+      },
+      {
+        "databaseId": 132033932079,
+        "name": "shards (transfer)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T17:01:04Z",
+        "completedAt": "2026-11-13T17:13:04Z",
+        "seconds": 720.0
+      },
+      {
+        "databaseId": 132033932102,
+        "name": "shards (triage)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T17:01:04Z",
+        "completedAt": "2026-11-13T17:11:52Z",
+        "seconds": 648.0
+      },
+      {
+        "databaseId": 132033932111,
+        "name": "shards (changes)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T17:01:04Z",
+        "completedAt": "2026-11-13T17:10:53Z",
+        "seconds": 589.0
+      },
+      {
+        "databaseId": 132033932269,
+        "name": "shards (hosted)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T17:01:04Z",
+        "completedAt": "2026-11-13T17:05:01Z",
+        "seconds": 237.0
+      }
+    ]
+  },
+  {
+    "run_id": 43446691374,
+    "sha": "4fa65b7023d8443bdea2e1aed9e46ca4a2467b56",
+    "jobs": [
+      {
+        "databaseId": 131960273586,
+        "name": "shards (triage)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T14:55:27Z",
+        "completedAt": "2026-11-13T15:05:18Z",
+        "seconds": 591.0
+      },
+      {
+        "databaseId": 131960273618,
+        "name": "shards (transfer)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T14:55:26Z",
+        "completedAt": "2026-11-13T15:07:47Z",
+        "seconds": 741.0
+      },
+      {
+        "databaseId": 131960273652,
+        "name": "shards (runtime)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T14:55:27Z",
+        "completedAt": "2026-11-13T15:00:35Z",
+        "seconds": 308.0
+      },
+      {
+        "databaseId": 131960273655,
+        "name": "shards (intake)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T14:55:26Z",
+        "completedAt": "2026-11-13T15:09:00Z",
+        "seconds": 814.0
+      },
+      {
+        "databaseId": 131960273660,
+        "name": "shards (changes)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T14:55:27Z",
+        "completedAt": "2026-11-13T15:04:53Z",
+        "seconds": 566.0
+      },
+      {
+        "databaseId": 131960273680,
+        "name": "shards (browser)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T14:55:26Z",
+        "completedAt": "2026-11-13T15:05:17Z",
+        "seconds": 591.0
+      },
+      {
+        "databaseId": 131960273955,
+        "name": "shards (hosted)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T14:55:27Z",
+        "completedAt": "2026-11-13T15:00:26Z",
+        "seconds": 299.0
+      }
+    ]
+  },
+  {
+    "run_id": 43435925256,
+    "sha": "1ab915f6efdfe3398c8d7645fe56e46e123299b6",
+    "jobs": [
+      {
+        "databaseId": 131922329545,
+        "name": "shards (intake)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T13:44:52Z",
+        "completedAt": "2026-11-13T13:55:23Z",
+        "seconds": 631.0
+      },
+      {
+        "databaseId": 131922329546,
+        "name": "shards (transfer)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T13:44:52Z",
+        "completedAt": "2026-11-13T13:55:40Z",
+        "seconds": 648.0
+      },
+      {
+        "databaseId": 131922329620,
+        "name": "shards (changes)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T13:44:52Z",
+        "completedAt": "2026-11-13T13:53:46Z",
+        "seconds": 534.0
+      },
+      {
+        "databaseId": 131922329634,
+        "name": "shards (browser)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T13:44:52Z",
+        "completedAt": "2026-11-13T13:58:32Z",
+        "seconds": 820.0
+      },
+      {
+        "databaseId": 131922329735,
+        "name": "shards (triage)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T13:44:51Z",
+        "completedAt": "2026-11-13T13:52:38Z",
+        "seconds": 467.0
+      },
+      {
+        "databaseId": 131922329772,
+        "name": "shards (runtime)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T13:44:52Z",
+        "completedAt": "2026-11-13T13:49:59Z",
+        "seconds": 307.0
+      },
+      {
+        "databaseId": 131922329818,
+        "name": "shards (hosted)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T13:44:51Z",
+        "completedAt": "2026-11-13T13:48:45Z",
+        "seconds": 234.0
+      }
+    ]
+  },
+  {
+    "run_id": 43386000971,
+    "sha": "4eab299d2ca0113ef0c27743bb22e4c14e200237",
+    "jobs": [
+      {
+        "databaseId": 131755513663,
+        "name": "shards (hosted)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T07:31:08Z",
+        "completedAt": "2026-11-13T07:36:09Z",
+        "seconds": 301.0
+      },
+      {
+        "databaseId": 131755513668,
+        "name": "shards (browser)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T07:31:09Z",
+        "completedAt": "2026-11-13T07:43:33Z",
+        "seconds": 744.0
+      },
+      {
+        "databaseId": 131755513671,
+        "name": "shards (transfer)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T07:31:09Z",
+        "completedAt": "2026-11-13T07:40:53Z",
+        "seconds": 584.0
+      },
+      {
+        "databaseId": 131755513694,
+        "name": "shards (triage)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T07:31:13Z",
+        "completedAt": "2026-11-13T07:41:31Z",
+        "seconds": 618.0
+      },
+      {
+        "databaseId": 131755513713,
+        "name": "shards (runtime)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T07:31:09Z",
+        "completedAt": "2026-11-13T07:36:42Z",
+        "seconds": 333.0
+      },
+      {
+        "databaseId": 131755513752,
+        "name": "shards (intake)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T07:31:08Z",
+        "completedAt": "2026-11-13T07:44:09Z",
+        "seconds": 781.0
+      },
+      {
+        "databaseId": 131755513802,
+        "name": "shards (changes)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "startedAt": "2026-11-13T07:31:08Z",
+        "completedAt": "2026-11-13T07:37:46Z",
+        "seconds": 398.0
+      }
+    ]
+  }
+]

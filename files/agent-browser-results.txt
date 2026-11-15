@@ -1,0 +1,84 @@
+PROBE BASE-AGENT-009 acceptance 3: native MCP at UTC week boundaries, complete paginated audit and Agents at 1440 and 390 -> 210 retained calls, 207 in period, exactly 8 cohorts, multi-class contributions once each, stable records and zero outbound requests
+PROBE BASE-AGENT-012 Scribe clear browser: autonomous and held MCP -> saved Unassigned Scribe, preserved companion roles and explicit assignee, attributed assign-role timeline; changed incident shown at 1440 and 390; zero outbound requests
+PROBE BASE-AGENT-012 Communications clear browser: autonomous and held MCP -> saved Unassigned Communications, preserved companion roles and explicit assignee, attributed assign-role timeline; changed incident shown at 1440 and 390; zero outbound requests
+PROBE BASE-AGENT-012 Lead clear browser: autonomous and held MCP -> saved Unassigned Lead, preserved companion roles and explicit assignee, attributed assign-role timeline; changed incident shown at 1440 and 390; zero outbound requests
+PROBE SURFACE-002 8 browser: autonomous manual update and held policy target -> pending without effect, returned signed-in URL submits exact saved revision and summary, one attributed operation, identical retry unchanged, zero outbound requests; screens at 1440 and 390
+PROBE BASE-AGENT-011 6 autonomous initially on: retained bearer read served; note executed; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous initially on: fresh bearer read served; note executed; zero outbound requests
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":false,"local":true} unchanged
+PROBE BASE-AGENT-011 6 autonomous local-only: retained and fresh bearer valid next MCP read and note -> agents_paused in 2899ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":true} unchanged
+PROBE BASE-AGENT-011 6 autonomous both: retained and fresh bearer valid next MCP read and note -> agents_paused in 759ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous: owner session reads and adds an attributed note with both flags set; paging unchanged
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":false} unchanged
+PROBE BASE-AGENT-011 6 autonomous Business-only after local resume: retained and fresh bearer valid next MCP read and note -> agents_paused in 2986ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":true} unchanged
+PROBE BASE-AGENT-011 6 autonomous both again: retained and fresh bearer valid next MCP read and note -> agents_paused in 1001ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":false,"local":true} unchanged
+PROBE BASE-AGENT-011 6 autonomous local-only after Business resume: retained and fresh bearer valid next MCP read and note -> agents_paused in 622ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous both resumed: retained bearer read served; note executed; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous both resumed: fresh bearer read served; note executed; zero outbound requests
+PROBE BASE-AGENT-011 6 held initially on: retained bearer read served; note held then human-approved; zero outbound requests
+PROBE BASE-AGENT-011 6 held initially on: fresh bearer read served; note held then human-approved; zero outbound requests
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":false,"local":true} unchanged
+PROBE BASE-AGENT-011 6 held local-only: retained and fresh bearer valid next MCP read and note -> agents_paused in 884ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":true} unchanged
+PROBE BASE-AGENT-011 6 held both: retained and fresh bearer valid next MCP read and note -> agents_paused in 679ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 6 held: owner session reads and adds an attributed note with both flags set; paging unchanged
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":false} unchanged
+PROBE BASE-AGENT-011 6 held Business-only after local resume: retained and fresh bearer valid next MCP read and note -> agents_paused in 898ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":true} unchanged
+PROBE BASE-AGENT-011 6 held both again: retained and fresh bearer valid next MCP read and note -> agents_paused in 821ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":false,"local":true} unchanged
+PROBE BASE-AGENT-011 6 held local-only after Business resume: retained and fresh bearer valid next MCP read and note -> agents_paused in 695ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 6 held both resumed: retained bearer read served; note held then human-approved; zero outbound requests
+PROBE BASE-AGENT-011 6 held both resumed: fresh bearer read served; note held then human-approved; zero outbound requests
+PASS independent Pause flags: both policies, valid next reads and mutations, maximum refusal 630ms, bearer resume 403 including owner cookie, human coordination and policy-appropriate resume; zero outbound requests
+PASS incident resolution browser: commitment-only approval, exact saved revision, native human approver and agent preparer, one attributed resolution and effect-free retry
+PROBE SURFACE-002 acceptance 8 browser snooze: signed-in approval URL at 1440 and 390 -> held live class, exact saved revision approved, one attributed recorded effect, identical retry, paging unchanged and zero outbound requests
+PROBE SURFACE-002 acceptance 8 browser cancel-deadline: signed-in approval URL at 1440 and 390 -> held live class, exact saved revision approved, one attributed recorded effect, identical retry, paging unchanged and zero outbound requests
+PROBE SURFACE-002 acceptance 8 browser expire-deadline: signed-in approval URL at 1440 and 390 -> held live class, exact saved revision approved, one attributed recorded effect, identical retry, paging unchanged and zero outbound requests
+PROBE BASE-AGENT-013 rendered autonomous: /docs/agents -> complete 42-tool class, scope and fixture inventory agrees with MCP; 17 resource templates; native and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-013 rendered held: /docs/agents -> complete 42-tool class, scope and fixture inventory agrees with MCP; 17 resource templates; native and paging unchanged; zero outbound requests
+PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements
+PROBE BASE-AGENT-003 2 autonomous admin draft review-material: every field equals protected native material; human acceptance absent after resource policy approval; native effects unchanged
+PROBE BASE-AGENT-003 2 autonomous viewer draft review-material: every field equals protected native material; human acceptance absent after resource policy approval; native effects unchanged
+PROBE BASE-AGENT-003 2 autonomous admin incidents: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin alerts: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin services: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin schedules: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin handoffs: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin changes: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin service-changes: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin reports: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin review-material: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer incidents: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer alerts: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer services: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer schedules: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer handoffs: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer changes: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer service-changes: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer reports: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer review-material: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin draft review-material: every field equals protected native material; human acceptance absent after resource policy approval; native effects unchanged
+PROBE BASE-AGENT-003 2 held viewer draft review-material: every field equals protected native material; human acceptance absent after resource policy approval; native effects unchanged
+PROBE BASE-AGENT-003 2 held admin incidents: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin alerts: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin services: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin schedules: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin handoffs: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin changes: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin service-changes: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin reports: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin review-material: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer incidents: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer alerts: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer services: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer schedules: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer handoffs: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer changes: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer service-changes: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer reports: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer review-material: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+WALL_SECONDS=189.288

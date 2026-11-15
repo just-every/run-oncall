@@ -1,0 +1,19 @@
+PROBE OC-009 declaration, acknowledgment and notes 1440: native keyboard incident and action dialog -> protected incident, commander and literal attributed note retained; focus, Tab containment, Escape return, labels, overflow and axe passed
+PROBE OC-009 stale write 1440: second authenticated HTTP session wins -> real 409, alert announcement, editable losing draft and no saved claim; winning data unchanged
+PROBE OC-057 acceptance 8: emitted Settings saves New York weekdays 09:00–17:00 without holidays; warning admitted at 2026-11-03T08:00:00Z -> active low alert, visible not-automatic notice and next support start 2026-11-03T14:00:00Z; reload at 08:30Z retains urgency history, native records, paging jobs and receipts; zero outbound requests; screens captured at 1440 and 390
+PASS OC-024 ordinary-member browser 1440: password sign-in, own-only picker, self-PTO and self-ICS review/apply, current consecutive revisions, effective gap, retained slots, visible stale refusal, axe; PTO screen captured at 1440
+PASS OC-024 browser coverage rules 1440: long review, focused PTO and ICS outcomes, consecutive reviewed writes, visible stale refusal and no visible internal identifiers
+PASS OC-025 browser 1440: band-selected swap, independent substitute acceptance after approval, effective override, autosaved approval/reminder, no-timer label, one-time feed dismissal, immediate revoke, recorded obligations, axe and overflow
+PROBE OC-009 schedules, overrides and preview 1440: native keyboard create, narrow disclosure, cover preparation, review, Escape and confirmation -> protected saved assignments and preview agree; focus, dialog containment, labels, overflow and axe passed
+PROBE OC-060 acceptance 1 web: 50 incidents -> rendered IDs and counts equal protected HTTP for service, urgency, triggered, declared, acknowledged, snoozed, resolved and mine; controls and URL agree; all durable rows, audit and paging unchanged, zero outbound requests
+PROBE OC-060 acceptance 3 web: two native low alerts -> retained explicit low urgency across reloads, separate attributed acknowledgment and close, retained acknowledged and resolved history despite duplicate intake and source revocation, active source state, unchanged paging and zero outbound requests; changed screens captured once at 1440 and 390
+PROBE OC-079 retained bulk selection: acknowledge one changed and one skipped, choose a selected target, merge the committed source revision with no reload, preserve the target and clear merged selection; form and results at 1440/390
+PROBE OC-079 bulk result titles: 50 all-matching acknowledgments retain titles and service context, shared timeline operation id, hidden/copyable diagnostic identity, bounded scrolling, unchanged replay and named mixed success/skipped/stale refusal; 1440 assertions, 1440/390 screen proof
+PROBE OC-038 acceptance 5: Opsgenie selection → dated readiness checklist → saved-export instructions; official sources, blocked account checks and unchecked import and cutover gates observed; zero mutation or provider requests and unchanged native, paging and durable records; browser proof at 1440 and 390
+PASS plainMoveInReview: saved PagerDuty review without raw labels; exact support copy; named adopted undo; zero preview writes and preserved live coverage; 1440 assertions and 1440/390 proof
+PROBE OC-009 declaration, acknowledgment and notes 390: native keyboard incident and action dialog -> protected incident, commander and literal attributed note retained; focus, Tab containment, Escape return, labels, overflow and axe passed
+WALL_SECONDS=255.953
+Result: FAIL (transport; no assertion failure reported)
+apiRequestContext.get: socket hang up (ECONNRESET)
+Location: tests/product-browser-journey.mjs:572; productSchedule at line 710
+Private HTTP headers/cookies omitted.

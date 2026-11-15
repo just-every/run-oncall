@@ -1,0 +1,13 @@
+{
+  "typecheck_exit": 0,
+  "first_party_check_exit": 0,
+  "source_lock_check_exit": 0,
+  "contract_documents_check_exit": 0,
+  "workflow_check_exit": 0,
+  "matrix_push_all_nightly_check_exit": 0,
+  "git_diff_check_exit": 0,
+  "sources_lock_sha256": "4fd5c9981bfbc939be43705910f14b1eddb19e2f4f0f2c590973b4baf800e962",
+  "base_sha": "7f250f7e66f1377f7b4b773effd1c72e8854c025",
+  "contract_sha256": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac",
+  "generated_views_changed": false
+}

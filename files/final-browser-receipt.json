@@ -1,0 +1,13 @@
+{
+  "head": "f9d62e6da66f14b73f5082798f82103428e77af4",
+  "build_command": "node scripts/verify-oncall-build.mjs",
+  "build_exit": 0,
+  "shared_build_receipt_sha": "f9d62e6da66f14b73f5082798f82103428e77af4",
+  "command": "node scripts/verify-oncall.mjs browser",
+  "shard_exit": 1,
+  "seconds": 255.953,
+  "failure_kind": "transport",
+  "failure": "apiRequestContext.get: socket hang up (ECONNRESET)",
+  "location": "tests/product-browser-journey.mjs:572; productSchedule at line 710",
+  "private_headers_and_cookies_omitted": true
+}

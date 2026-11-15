@@ -1,0 +1,11 @@
+{
+  "id": 43758259622,
+  "status": "completed",
+  "conclusion": "success",
+  "head_sha": "f9d62e6da66f14b73f5082798f82103428e77af4",
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/43758259622",
+  "jobs_confirmed_success": true,
+  "shard_count": 8,
+  "gh_logical_calls": 10,
+  "jobs_read_at": "2026-11-15T20:53:33.900055+00:00"
+}

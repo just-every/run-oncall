@@ -1,0 +1,24 @@
+{
+  "journey_entries_before": 18,
+  "journey_entries_after": 20,
+  "top_level_journey_files_before": 13,
+  "top_level_journey_files_after": 14,
+  "agent_module_previously_nested_in_product": true,
+  "browser_entries_before": 3,
+  "browser_entries_after": 5,
+  "flow_entries_before": 15,
+  "flow_entries_after": 15,
+  "shards_before": 8,
+  "shards_after": 8,
+  "product_parts": [
+    "core",
+    "settings"
+  ],
+  "all_other_selectors_and_env_preserved": true,
+  "aggregate_shard_names_preserved": true,
+  "timeouts_preserved": true,
+  "chromium_added_to_existing_runtime_shard": true,
+  "assertions_removed_or_weakened": 0,
+  "new_settings_part_inherits_application_error_guard": true,
+  "clauses_changed": []
+}

@@ -1,0 +1,4 @@
+PROBE OC-044 acceptance 2: GET /docs/limits -> direct US emergency guidance; paging OFF, standby not built, unmeasured load, no availability or regulated-data claim; dated field evidence distinct from not-run rows; Readiness link works; desktop assertions and 1440/390 visual proof passed
+PASS OC-065/030 templates, dependency, retention and protected signing settings at 1440; overflow, axe and hydration
+Product browser part completed: settings
+WALL_SECONDS=126.203

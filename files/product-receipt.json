@@ -1,0 +1,21 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/gr-ci-oncall-shard-1",
+  "head": "f9d62e6da66f14b73f5082798f82103428e77af4",
+  "base": "7f250f7e66f1377f7b4b773effd1c72e8854c025",
+  "identity_and_all_candidate_messages_checked": true,
+  "candidate_commits": [
+    "f9d62e6da66f14b73f5082798f82103428e77af4"
+  ],
+  "product_files": [
+    "AGENTS.md",
+    "scripts/verify-oncall-plan.mjs",
+    "scripts/verify-shards.json",
+    "sources.lock.json",
+    "tests/product-browser.mjs",
+    "tests/verify.mjs"
+  ],
+  "publication_scan": "Fleet Mac required; not run in cloud",
+  "push_exit": 0,
+  "push_completed_at": "2026-11-15T20:28:23.795611+00:00"
+}
