@@ -52,7 +52,7 @@ This checkout vendors edition-authoring 1.1.0 in `scripts/edition-authoring/`; r
 
 Documentation under `src/base/` and `src/modules/` is carried with copied upstream source. Its test paths and commands describe the upstream module trees; those test directories are not shipped in this edition. For local verification, use this checkout's `package.json` scripts and files under the root `tests/` directory.
 
-`rer verify` runs the complete suite. `pnpm test:flows` selects the HTTP and checkpoint journeys; `pnpm test:browser` selects the two desktop browser journeys and the managed installation journey with its 390-wide smoke. Both group commands build and typecheck first. CI shares its production build across the runtime, intake, browser and transfer shards.
+`rer verify` runs the complete suite. `pnpm test:flows` selects the HTTP and checkpoint journeys; `pnpm test:browser` selects the two desktop browser journeys and the managed installation journey with its 390-wide smoke. Both group commands build and typecheck first. CI shares its production build across the runtime, intake, agents, browser and transfer shards. The agent journey runs through `tests/runtime.mjs` with `ONCALL_RUNTIME_PART=agents`; the intake shard keeps machine, email and routing coverage. With no runtime part selected, the runtime script still executes both machine and agent journeys.
 
 ## Shared file import door
 
