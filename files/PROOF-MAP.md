@@ -17,8 +17,8 @@ This is bounded BASE-AGENT-012 work, with no whole-clause promotion. The unchang
 
 1. PARTIAL: selected outcomes are mapped above; other mutating tools, remaining diagnostics and job-handle outcomes remain omitted.
 2. Selected seeded safe and refused cases exercise actual emitted Worker HTTP, MCP and D1.
-3. The full unchanged agent journey has its own push shard via tests/runtime.mjs, part agents. Pending exact candidate Verify; previous saved SHA's browser shard passed, intake cancelled and aggregate verify failed.
-4. Candidate rerun required, or unchanged relevant-byte evidence, after the final source change.
+3. The full unchanged agent journey has its own push shard via tests/runtime.mjs, part agents. Exact candidate push Verify 43664226008 completed successfully; previous saved SHA's browser shard passed, intake cancelled and aggregate verify failed.
+4. The exact candidate local checks and successful push Verify reran these outcomes; PROOF-LINES.json also proves unchanged relevant helper bytes.
 5. No inheritance or acceptance text changes.
 6. Contract judgment cells reserved for lander; generated views checked locally and restored; no count change.
 7. No acceptance rewrite or ruling change.
@@ -30,3 +30,5 @@ This is bounded BASE-AGENT-012 work, with no whole-clause promotion. The unchang
 ## Pre-ready review
 
 No existing assertion may be removed, narrowed or moved behind a width or policy condition. Preserve the Scribe cases, f245 aged matrix, f247 mitigation, existing assignments, revocation, erasure and approval replay. Production and copied Base remain unchanged. There is no UI implementation edit; the existing saved-role screen and tooltip checks provide browser proof. Source lock and generated views must pass the documented mechanical checks after final edits. The cloud does not run the publication scan or deploy Run site.
+
+Final binding: b9ff7fd18d3b5e00843d3a10a89cd90bc27f7470; push Verify 43664226008 completed/success. R1 through R8 are MET within the selected scope. The complete clause remains MISSING, with the broader gaps retained. Guarded landing and publication scanning are pending fleet duties.

@@ -30,7 +30,7 @@
   },
   "contract_status": "missing",
   "claim_scope": "selected acceptances 1-4 and retention for Communications and Commander clear only",
-  "verification_pending": true,
+  "verification_pending": false,
   "publication_scan": "fleet lander only",
   "deployment": "not requested",
   "head": "b9ff7fd18d3b5e00843d3a10a89cd90bc27f7470",
@@ -145,7 +145,7 @@
   "main_base": "4af169eb4b7cd5ee3a0bc9867edf6e51a9ac2a8f",
   "product_pushed": true,
   "ci": {
-    "conclusion": null,
+    "conclusion": "success",
     "created_at": "2026-11-15T01:40:55Z",
     "event": "push",
     "head_branch": "cloud/sd-oncall-c-f251-pc1",
@@ -155,8 +155,29 @@
     "name": "Verify",
     "run_attempt": 1,
     "run_started_at": "2026-11-15T01:40:55Z",
-    "status": "in_progress"
+    "status": "completed"
   },
-  "gh_calls_used": 7,
-  "gh_call_budget": 10
+  "gh_calls_used": 8,
+  "gh_call_budget": 10,
+  "evidence_publish_preserved_product": {
+    "head": "b9ff7fd18d3b5e00843d3a10a89cd90bc27f7470",
+    "staged_diff_bytes": 0
+  },
+  "baseline_worktree_removed": true,
+  "stopped_native_test_scratch_removed": 2,
+  "local_servers_and_browsers_remaining": 0,
+  "terminal_product": {
+    "status": "READY",
+    "branch": "cloud/sd-oncall-c-f251-pc1",
+    "head": "b9ff7fd18d3b5e00843d3a10a89cd90bc27f7470",
+    "verify_run": 43664226008,
+    "verify_event": "push",
+    "verify_conclusion": "success"
+  },
+  "handoff_refs": {
+    "refs/heads/cloud/sd-oncall-c-f251-pc1": "b9ff7fd18d3b5e00843d3a10a89cd90bc27f7470",
+    "refs/heads/main": "4af169eb4b7cd5ee3a0bc9867edf6e51a9ac2a8f"
+  },
+  "main_equals_candidate": false,
+  "blockers_for_selected_scope": []
 }
