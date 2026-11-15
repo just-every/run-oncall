@@ -1,0 +1,11 @@
+{
+  "budget": 10,
+  "used": 7,
+  "prior_run_read_commands": 6,
+  "candidate_discovery_commands": 1,
+  "candidate_status_polls": 0,
+  "candidate_run": 43664226008,
+  "candidate_last_call_utc": "2026-11-15T01:42:44Z",
+  "single_watcher": true,
+  "minimum_poll_seconds": 300
+}

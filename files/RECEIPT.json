@@ -1,0 +1,162 @@
+{
+  "tag": "sd-oncall-c-f251-pc1",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f251-pc1",
+  "prior_head": "c6c0fd361cca4dcf0d662521b039f3160a25830f",
+  "save_head": "03d395d196cd2574e21169d654983f049093196b",
+  "prior_verify": {
+    "run": 43644301573,
+    "intake_job": 132599383115,
+    "aggregate_job": 132603464436,
+    "conclusion": "failure",
+    "intake_conclusion": "cancelled",
+    "annotation": "The job has exceeded the maximum execution time of 15m0s"
+  },
+  "prior_local_shard": {
+    "exit": 124,
+    "timeout_seconds": 900,
+    "machines_elapsed_seconds": 806.7,
+    "assertion_failure": false
+  },
+  "status_counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "status_counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "contract_status": "missing",
+  "claim_scope": "selected acceptances 1-4 and retention for Communications and Commander clear only",
+  "verification_pending": true,
+  "publication_scan": "fleet lander only",
+  "deployment": "not requested",
+  "head": "b9ff7fd18d3b5e00843d3a10a89cd90bc27f7470",
+  "main_comparison": {
+    "head": "4af169eb4b7cd5ee3a0bc9867edf6e51a9ac2a8f",
+    "command": "CI=true WRANGLER_SEND_METRICS=false timeout 900 node scripts/verify-oncall.mjs intake",
+    "node": "22.20.0",
+    "same_runner": true,
+    "exit": 124,
+    "machines_elapsed_seconds": 803.5,
+    "assertion_failure": false
+  },
+  "local_checks": [
+    {
+      "command": [
+        "node",
+        "scripts/verify-oncall-build.mjs"
+      ],
+      "completed_at_epoch": 1794705445,
+      "elapsed_seconds": 16,
+      "exit": 0,
+      "head": "b9ff7fd18d3b5e00843d3a10a89cd90bc27f7470",
+      "name": "build",
+      "node": "v22.20.0",
+      "started_at_epoch": 1794705429
+    },
+    {
+      "command": [
+        "timeout",
+        "900",
+        "node",
+        "scripts/verify-oncall.mjs",
+        "intake"
+      ],
+      "completed_at_epoch": 1794705968,
+      "elapsed_seconds": 523,
+      "exit": 0,
+      "head": "b9ff7fd18d3b5e00843d3a10a89cd90bc27f7470",
+      "name": "intake",
+      "node": "v22.20.0",
+      "started_at_epoch": 1794705445
+    },
+    {
+      "command": [
+        "timeout",
+        "900",
+        "node",
+        "scripts/verify-oncall.mjs",
+        "agents"
+      ],
+      "completed_at_epoch": 1794706507,
+      "elapsed_seconds": 539,
+      "exit": 0,
+      "head": "b9ff7fd18d3b5e00843d3a10a89cd90bc27f7470",
+      "name": "agents",
+      "node": "v22.20.0",
+      "started_at_epoch": 1794705968
+    },
+    {
+      "command": [
+        "perl",
+        "-e",
+        "alarm 1200; exec @ARGV",
+        "--",
+        "node",
+        "tests/agent-door-browser.mjs"
+      ],
+      "completed_at_epoch": 1794706742,
+      "elapsed_seconds": 235,
+      "exit": 0,
+      "head": "b9ff7fd18d3b5e00843d3a10a89cd90bc27f7470",
+      "name": "browser",
+      "node": "v22.20.0",
+      "started_at_epoch": 1794706507
+    }
+  ],
+  "local_checks_passed": true,
+  "selected_probe_lines": 24,
+  "browser_visual_inspection": {
+    "roles": [
+      "communications",
+      "commander"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "views": [
+      "timeline",
+      "people"
+    ],
+    "images_inspected": 8,
+    "observations": [
+      "Unassigned Communications",
+      "Unassigned Lead",
+      "agent attribution",
+      "companion roles retained",
+      "explicit assignee retained",
+      "Close dialog tooltip"
+    ]
+  },
+  "product_push": {
+    "head": "b9ff7fd18d3b5e00843d3a10a89cd90bc27f7470",
+    "ref": "refs/heads/cloud/sd-oncall-c-f251-pc1",
+    "remote_head": "b9ff7fd18d3b5e00843d3a10a89cd90bc27f7470",
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-oncall-c-f251-pc1",
+    "exit": 0,
+    "attempt": 1,
+    "identity_audit_commits": 8,
+    "completed_at": "2026-11-15T01:40:53.638503+00:00"
+  },
+  "main_base": "4af169eb4b7cd5ee3a0bc9867edf6e51a9ac2a8f",
+  "product_pushed": true,
+  "ci": {
+    "conclusion": null,
+    "created_at": "2026-11-15T01:40:55Z",
+    "event": "push",
+    "head_branch": "cloud/sd-oncall-c-f251-pc1",
+    "head_sha": "b9ff7fd18d3b5e00843d3a10a89cd90bc27f7470",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43664226008",
+    "id": 43664226008,
+    "name": "Verify",
+    "run_attempt": 1,
+    "run_started_at": "2026-11-15T01:40:55Z",
+    "status": "in_progress"
+  },
+  "gh_calls_used": 7,
+  "gh_call_budget": 10
+}

@@ -1,0 +1,13 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f251-pc1",
+  "head": "03d395d196cd2574e21169d654983f049093196b",
+  "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-oncall-c-f251-pc1",
+  "attempt": 1,
+  "exit": 0,
+  "result": "PUSH_OK",
+  "identity_audit_commits": 7,
+  "skip_ci": true,
+  "source_lock_check_exit": 0,
+  "workflow_permissions_check_exit": 0
+}

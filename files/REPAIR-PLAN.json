@@ -1,0 +1,15 @@
+{
+  "cause": "GitHub intake job exceeded its 15-minute whole-job budget",
+  "annotation": "The job has exceeded the maximum execution time of 15m0s",
+  "proposed_change": {
+    "file": "scripts/verify-shards.json",
+    "new_push_shard": "agents",
+    "push_shards_before": 7,
+    "push_shards_after": 8,
+    "timeout_changed": false
+  },
+  "routing": "tests/runtime.mjs keeps all mode executing both machine and agent phases; explicit agents mode runs the unchanged existing agent flow through runtime.mjs",
+  "assertions_removed": 0,
+  "production_changes": false,
+  "workflow_file_changes": false
+}

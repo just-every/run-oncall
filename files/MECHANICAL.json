@@ -1,0 +1,49 @@
+{
+  "head": "b9ff7fd18d3b5e00843d3a10a89cd90bc27f7470",
+  "checks": [
+    {
+      "name": "views-check",
+      "command": [
+        "node",
+        "src/base/contract-docs.mjs",
+        "check"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "source-lock-check",
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "check"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "installed-source-lock-check",
+      "command": [
+        "node",
+        "node_modules/@runeditrun/rer/edition-authoring/cli.mjs",
+        "check"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "workflow-permissions",
+      "command": [
+        "node",
+        "scripts/verify-ci.mjs",
+        "--check-workflows"
+      ],
+      "exit": 0
+    }
+  ],
+  "generator_write": "node src/base/contract-docs.mjs write; exit 0, wrote 0 files before candidate commit",
+  "generated_views_restored_from": "origin/main",
+  "lock_write": "node scripts/edition-authoring/cli.mjs lock; exit 0 before candidate commit",
+  "ledger": {
+    "command": null,
+    "reason": "no migration changed",
+    "exit": 0
+  }
+}

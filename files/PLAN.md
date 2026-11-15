@@ -1,0 +1,7 @@
+# Continuation plan
+
+Resume the already published c6c0fd361cca4dcf0d662521b039f3160a25830f on the named continuation branch, preserving every existing commit. Inspect the prior exact-SHA Verify and reproduce its failed shard command before editing. Distinguish an assertion failure from exhausted shard time. Keep all selected Communications and Commander clear cases, Scribe coverage, aged replay cases and saved incident browser proof.
+
+If the failure reproduces, make the smallest forward change that retains every assertion and public-door outcome, then run the affected emitted Worker shard, typecheck and first-party check. Show saved role pages at desktop and phone widths. Reconcile main by merge only; keep all Contract judgment cells and generated views from main. Generate contract views locally, check them, restore them, then regenerate and check the source lock last.
+
+Inspect all candidate identities, trailers and changed prose before every product push. Publish the first real forward commit and any substantial save through the fleet push guard. Discover exact-SHA Verify with one watcher and no more than one poll per 300 seconds, keeping the ten-call budget. Finish with the precise custody line supported by actual CI, and publish this actual non-secret report packet to the separate evidence ref. BASE-AGENT-012 remains MISSING with no count promotion; remaining tool matrices and authority holds stay named.

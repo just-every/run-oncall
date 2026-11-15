@@ -1,0 +1,56 @@
+{
+  "head": "b9ff7fd18d3b5e00843d3a10a89cd90bc27f7470",
+  "files": [
+    {
+      "path": "tests/oncall-agent-role-clear-replay.mjs",
+      "sha256": "2fb0d66b959615c7e5959185a8361e3893c09c6e7da6d7641607184506aba5c0",
+      "lines": {
+        "roleClearReplay": 7,
+        "committed": 66,
+        "immediate replay": 125,
+        "changed reason": 155,
+        "lost response": 165,
+        "revision diagnostics": 171,
+        "not_found": 199,
+        "focusedRoleClearReplay": 209
+      },
+      "unchanged_from_saved_sha": true
+    },
+    {
+      "path": "tests/oncall-agent-retention.mjs",
+      "sha256": "ef9961c652ffcb81e8e68b39a34d4a6a82fafc8e778f5c99736f809775bf2362",
+      "lines": {
+        "agedReplayRetention": 7,
+        "populated clear matrix": 183,
+        "aged renewal": 207
+      },
+      "unchanged_from_saved_sha": true
+    },
+    {
+      "path": "tests/agent-door-browser.mjs",
+      "sha256": "de149cd30ad2530ff14d9ff4b950599b8b58afe2c1b188a628cf74b33f7cef92",
+      "lines": {
+        "saved-role leg": 146,
+        "saved-role capture": 181
+      },
+      "unchanged_from_saved_sha": true
+    },
+    {
+      "path": "tests/runtime.mjs",
+      "sha256": "414c3881e8979b88dde72ac4905cba11d5d7af93104c846b4f5f2adfbfe74567",
+      "lines": {
+        "agent phase": 139
+      },
+      "unchanged_from_saved_sha": false
+    },
+    {
+      "path": "tests/oncall-agent-flow.mjs",
+      "sha256": "85550b1398ec25c52d804f6e527f15090c1ab9992addd7d1966d7ac68d57d53a",
+      "lines": {
+        "focused invocation": 1032,
+        "aged invocation": 576
+      },
+      "unchanged_from_saved_sha": true
+    }
+  ]
+}

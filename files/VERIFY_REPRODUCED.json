@@ -1,0 +1,25 @@
+{
+  "head": "c6c0fd361cca4dcf0d662521b039f3160a25830f",
+  "job": 132603464436,
+  "command": "env PLAN=success BUILD=success SHARDS=cancelled LIGHT=skipped PUSH_PROOF=skipped NIGHTLY_PROOF=skipped COVERAGE=full HAS_SHARDS=true SKIP=false bash reproduce-coverage.sh",
+  "test": "Require the selected coverage and its proof",
+  "exit": 1,
+  "failure": "SHARDS=cancelled; intake annotation: The job has exceeded the maximum execution time of 15m0s",
+  "intake_job": 132599383115,
+  "run": 43644301573,
+  "shard_reproduction": {
+    "head": "c6c0fd361cca4dcf0d662521b039f3160a25830f",
+    "command": "CI=true WRANGLER_SEND_METRICS=false timeout 900 node scripts/verify-oncall.mjs intake",
+    "node": "22.20.0",
+    "exit": 124,
+    "failure": "whole-shard 900-second timeout; machine phase passed in 806.7 seconds before intake and routing completed",
+    "selected_role_assertions": "all passed before timeout"
+  },
+  "main_comparison": {
+    "head": "4af169eb4b7cd5ee3a0bc9867edf6e51a9ac2a8f",
+    "exit": 124,
+    "same_runner": true,
+    "machine_phase_elapsed_seconds": 803.5,
+    "failure": "The complete intake shard also exceeds 900 seconds on main; no assertion failure"
+  }
+}
