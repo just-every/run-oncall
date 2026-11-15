@@ -1,5 +1,7 @@
 {
   "key": {
+    "createdRoutedRead": true,
+    "createdSourceRead": true,
     "routedRead": true,
     "repeatRead": true,
     "audited": true,

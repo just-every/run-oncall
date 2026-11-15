@@ -1,0 +1,52 @@
+{
+  "repository": "just-every/run-oncall",
+  "productHead": "a6e983e5745201257bc97c7bd64280d364883ed6",
+  "runId": 43689675709,
+  "observations": [
+    {
+      "observedAt": 1794727373,
+      "conclusion": null,
+      "head_sha": "a6e983e5745201257bc97c7bd64280d364883ed6",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43689675709",
+      "id": 43689675709,
+      "name": "Verify",
+      "status": "queued"
+    },
+    {
+      "observedAt": 1794727673,
+      "conclusion": null,
+      "head_sha": "a6e983e5745201257bc97c7bd64280d364883ed6",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43689675709",
+      "status": "in_progress"
+    },
+    {
+      "observedAt": 1794727973,
+      "conclusion": null,
+      "head_sha": "a6e983e5745201257bc97c7bd64280d364883ed6",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43689675709",
+      "status": "in_progress"
+    },
+    {
+      "observedAt": 1794728273,
+      "conclusion": null,
+      "head_sha": "a6e983e5745201257bc97c7bd64280d364883ed6",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43689675709",
+      "status": "in_progress"
+    },
+    {
+      "observedAt": 1794728573,
+      "conclusion": "failure",
+      "head_sha": "a6e983e5745201257bc97c7bd64280d364883ed6",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43689675709",
+      "status": "completed"
+    }
+  ],
+  "latest": {
+    "conclusion": "failure",
+    "head_sha": "a6e983e5745201257bc97c7bd64280d364883ed6",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43689675709",
+    "status": "completed"
+  },
+  "apiCallsUsed": 6,
+  "readiness": "PUSHED; exact-SHA Verify pending or failed"
+}

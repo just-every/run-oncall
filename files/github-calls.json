@@ -16,5 +16,76 @@
       "--jq",
       "{workflow_runs:[.workflow_runs[]|{id,name,status,conclusion,head_sha,html_url}]}"
     ]
+  },
+  {
+    "time": 1794727673,
+    "arguments": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43689675709",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "time": 1794727973,
+    "arguments": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43689675709",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "time": 1794728273,
+    "arguments": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43689675709",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "time": 1794728573,
+    "arguments": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43689675709",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "time": 1794728589,
+    "arguments": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43689675709/jobs?per_page=100",
+      "--jq",
+      "{jobs:[.jobs[]|{id,name,status,conclusion,steps:[.steps[]|select(.conclusion==\"failure\")|{name,conclusion}]}]}"
+    ]
+  },
+  {
+    "time": 1794728601,
+    "arguments": [
+      "run",
+      "view",
+      "43689675709",
+      "--repo",
+      "just-every/run-oncall",
+      "--job",
+      "132737983157",
+      "--log-failed"
+    ]
+  },
+  {
+    "time": 1794728607,
+    "arguments": [
+      "run",
+      "view",
+      "43689675709",
+      "--repo",
+      "just-every/run-oncall",
+      "--job",
+      "132741009099",
+      "--log-failed"
+    ]
   }
 ]

@@ -2,7 +2,7 @@
   "schema": 1,
   "repository": "just-every/run-oncall",
   "branch": "cloud/sd-oncall-run1-faults-2",
-  "productHead": "a6e983e5745201257bc97c7bd64280d364883ed6",
+  "productHead": "d8357c8e671651b9e2f2021eaf32d705a3360fd0",
   "checks": [
     {
       "command": "node tests/import-door.mjs",
@@ -23,21 +23,24 @@
       "result": "passed",
       "exitCode": 0,
       "completionMarker": "tsc --noEmit",
-      "logSha256": "81d0b4f0ac8c311f8ba2565673ac6ae02c5f0e1647ed9e0b63ba38b7abfd8c0c"
+      "logSha256": "81d0b4f0ac8c311f8ba2565673ac6ae02c5f0e1647ed9e0b63ba38b7abfd8c0c",
+      "source": "final candidate source before the UI-copy commit"
     },
     {
       "command": "npx -y @runeditrun/rer build",
       "result": "passed",
       "exitCode": 0,
       "completionMarker": "build: complete (exit 0)",
-      "logSha256": "47b938ed917cc9fd967b70bf38d429d6a11a0cf673b757f006867c448798c2bf"
+      "logSha256": "7868de836b75e9143212b6f0668f375e0e21a72637e29a1273c962211297ff66",
+      "source": "final candidate source before the UI-copy commit"
     },
     {
       "command": "ONCALL_PRODUCT_JOURNEY=owner-faults node tests/product-browser.mjs",
       "result": "passed",
       "exitCode": 0,
       "completionMarker": "Emitted Worker owner faults passed",
-      "logSha256": "d07e97ca894d2b86610db19114a742b7cb2a0456753fb70bf8dfcf1d9573fbda"
+      "logSha256": "d07e97ca894d2b86610db19114a742b7cb2a0456753fb70bf8dfcf1d9573fbda",
+      "source": "final candidate source before the UI-copy commit"
     },
     {
       "command": "ONCALL_PRODUCT_JOURNEY=events-source node tests/product-browser.mjs",
@@ -51,7 +54,7 @@
       "result": "passed",
       "exitCode": 0,
       "completionMarker": null,
-      "logSha256": "f94d83cf7937fa714d19ee45045ef464ce28b7f90e9541bf46ba1eccfd922fcc"
+      "logSha256": "38f8c9d2a594c248ef870ddefc882b057394e3e5f0d1b6f9b2f47fa5425c3751"
     },
     {
       "command": "node src/base/contract-docs.mjs check",
@@ -59,13 +62,28 @@
       "exitCode": 0,
       "completionMarker": "Contract documents are current.",
       "logSha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "command": "pinned Node 22.20.0 --experimental-strip-types: import scripts/installer/archive-policy.mjs",
+      "result": "passed",
+      "exitCode": 0,
+      "logSha256": "94733c05558e68a2b02f8abefdba07b53a8c5f6627b477edb09978fdbe90b79d"
+    },
+    {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/transfer.mjs",
+      "result": "passed",
+      "exitCode": 0,
+      "testedHead": "f3896cc239e600139d93674c4885028e5d9ffa53",
+      "logSha256": "3f693dce2de9e1fce92696de41546aa1233a11d8968bc4f13f60e9487ecb59ef",
+      "actualReceipt": "transfer-receipt.json"
     }
   ],
   "notes": [
     "Import-door status is recorded from its final success marker; no exit code is invented for that earlier compound shell.",
     "An invalid runtime-part invocation was corrected to the documented core selector; the actual core run passed.",
     "The original held-row assertion remains: snapshots project all pre-upgrade columns and new nullable custody defaults are asserted separately.",
-    "Local tests ran on candidate source before its final commit; exact-SHA Verify supplies committed-candidate validation."
+    "Local tests ran on candidate source before its final commit; exact-SHA Verify supplies committed-candidate validation.",
+    "The prior candidate failed native CLI archive-policy loading; the explicit .ts import fixes it. Full committed-clone transfer passed before the final UI-copy-only commit. A new exact-SHA Verify result remains required for READY."
   ],
   "contractCountsBefore": {
     "done": 26,

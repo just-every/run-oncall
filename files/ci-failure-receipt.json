@@ -1,0 +1,34 @@
+{
+  "repository": "just-every/run-oncall",
+  "failedHead": "a6e983e5745201257bc97c7bd64280d364883ed6",
+  "runId": 43689675709,
+  "cause": "Native Node archive-policy loading could not resolve an extensionless escalation import.",
+  "observedAssertion": {
+    "file": "tests/transfer.mjs:628",
+    "message": "The portability module refused or failed the archive operation (invalid_policy_module).",
+    "actualExit": 4,
+    "expectedExit": 0
+  },
+  "localReproduction": {
+    "runtime": "pinned Node 22.20.0 with --experimental-strip-types",
+    "code": "ERR_MODULE_NOT_FOUND",
+    "module": "src/family/response-operations/escalation",
+    "importer": "src/family/response-operations/on-call-notifications/model.ts"
+  },
+  "fix": "Merge servicePolicy into the existing explicit ../escalation.ts import.",
+  "failedLogReads": [
+    {
+      "command": "gh run view 43689675709 --repo just-every/run-oncall --job 132737983157 --log-failed",
+      "jobId": 132737983157,
+      "exitCode": 0,
+      "logSha256": "b4e700665d5a370bc8ae71c4fd16ce676355d9e7c457d04df517e306552e2a43"
+    },
+    {
+      "command": "gh run view 43689675709 --repo just-every/run-oncall --job 132741009099 --log-failed",
+      "jobId": 132741009099,
+      "exitCode": 0,
+      "logSha256": "b83eb68a5530d04e3e353e5db78303e3ea925889e83b477960f39f23e640fe84"
+    }
+  ],
+  "otherIndependentShards": "All succeeded on the prior head; that result does not establish readiness of the correction."
+}
