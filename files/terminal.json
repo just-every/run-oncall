@@ -1,0 +1,19 @@
+{
+  "status": "PUSHED",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-mail-off-1",
+  "head": "aa6bf82183a90a109a29c0619bca31c64c7028cb",
+  "local_checks": "passed",
+  "local_touched_journeys": "passed",
+  "verify_run": 43740686605,
+  "last_observed_conclusion": "cancelled",
+  "cancelled_job": 132893586182,
+  "rerun_requested": true,
+  "rerun_request_http_status": 201,
+  "rerun_observed": false,
+  "task_github_calls": 10,
+  "clause_status_changes": 0,
+  "real_deployment": false,
+  "live_mail": false,
+  "paging": "OFF"
+}

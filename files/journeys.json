@@ -1,0 +1,19 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-15",
+  "head": "70cd214eee0b2706bcd90ea9a90961bc645fe530",
+  "focused_exit": 0,
+  "full_member_exit": 0,
+  "focused_command": "ONCALL_MEMBER_JOURNEY=mail-off ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/member-coordination-browser.mjs",
+  "full_member_command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/member-coordination-browser.mjs",
+  "logs": {
+    "mail-off.txt": "7842e287130dab9b648add32313483b83b840206486b35481a26137990105d10",
+    "member-full.txt": "5f3b2d0be3a5e49570e800606b83f6776c782a9933cb3a16c4e9ae01d4395d4c"
+  },
+  "screenshots": {
+    "mail-off-signin-1440.png": "7d83f18780923e05519889a0364272f74e9344ecb2b65f69987cc8fa342946ea",
+    "mail-off-signin-390.png": "fe17f3311622fe8d27b29db3bc41ca5acd83ab4793f4b3a57f4cd0b9ca3144ee"
+  },
+  "real_deployment": false,
+  "live_mail": false
+}

@@ -1,0 +1,51 @@
+Run 43738779447; head 70cd214eee0b2706bcd90ea9a90961bc645fe530
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5762930Z AssertionError [ERR_ASSERTION]: The packaged delivery specification must match the declared plan, including surfaces, readiness and provider effects
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5763640Z + actual - expected
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5763832Z ... Skipped lines
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5763938Z 
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5764022Z   {
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5764242Z     compatibilityDate: '2026-09-08',
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5764481Z     compatibilityFlags: [
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5764623Z       'nodejs_compat'
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5764742Z     ],
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5764841Z ...
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5764950Z     optionalSecretNames: [
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5765099Z -     'SENDGRID_API_KEY',
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5765235Z -     'RESEND_API_KEY',
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5765360Z       'MAIL_API_KEY',
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5765490Z       'INBOUND_EMAIL_DOMAIN',
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5765892Z       'PAGERDUTY_OAUTH_CLIENT_ID',
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5766052Z       'PAGERDUTY_OAUTH_CLIENT_SECRET',
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5766210Z +     'SENDGRID_API_KEY',
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5766342Z +     'RESEND_API_KEY',
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5766473Z +     'MAIL_ACCOUNT_ID'
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5766590Z     ],
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5766697Z     providerEffects: [
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5766823Z       'outbound-mail',
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5766963Z       'signed-response-events',
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5767129Z       'read-only-provider-import'
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5767225Z 
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5767373Z     at file:///home/runner/work/run-oncall/run-oncall/tests/runtime.mjs:154:8 {
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5767593Z   generatedMessage: false,
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5767730Z   code: 'ERR_ASSERTION',
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5767855Z   actual: {
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5767964Z     schema: 1,
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5768113Z     resources: [ { kind: 'd1', binding: 'DB' } ],
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5768277Z     migrations: [
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5768391Z       {
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5768498Z         binding: 'DB',
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5768635Z         name: '0001_initial.sql',
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5768873Z         sha256: 'aa7883c189dc8b0e95984ce34c6a966e7caca591a87019c32ae5e2940e31b608',
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5769288Z         sql: 'CREATE TABLE IF NOT EXISTS workspace (id INTEGER PRIMARY KEY CHECK(id=1), revision INTEGER NOT NULL, data TEXT NOT NULL);\n' +
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5769756Z           'CREATE TABLE IF NOT EXISTS credentials (member TEXT PRIMARY KEY, salt TEXT NOT NULL, digest TEXT NOT NULL);\n' +
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5770193Z           'CREATE TABLE IF NOT EXISTS sessions (token TEXT PRIMARY KEY, member TEXT NOT NULL, expires INTEGER NOT NULL);\n' +
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5770568Z           'CREATE TABLE IF NOT EXISTS sources (id TEXT PRIMARY KEY, digest TEXT NOT NULL);\n'
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5770786Z       },
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5770891Z       {
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5771000Z         binding: 'DB',
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5771147Z         name: '0002_source_signatures.sql',
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5771395Z         sha256: '59281221f73018b2478d2d0bc29dace49ddeae5684204e34f1095e37cfad6e37',
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5771671Z         sql: 'ALTER TABLE sources ADD COLUMN signing_secret TEXT;\n' +
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5772006Z           'CREATE TABLE login_attempts (name TEXT PRIMARY KEY, attempts INTEGER NOT NULL, reset INTEGER NOT NULL);\n'
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5772262Z       },
+shards (runtime)	Run this shard	2026-11-15T17:07:19.5772364Z       {

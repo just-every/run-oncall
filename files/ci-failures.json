@@ -1,0 +1,20 @@
+[
+  {
+    "run": 43738779447,
+    "job": 132887745398,
+    "name": "runtime",
+    "archive_command": "gh run view 43738779447 --repo just-every/run-oncall --job 132887745398 --log-failed",
+    "archive_exit": 0,
+    "raw_output_sha256": "f1eedd8a65cd54b27b62961a622f5031ec0de4c59240c46f58a2e2192c8853c1",
+    "selected_excerpt": "ci-failure-runtime.txt"
+  },
+  {
+    "run": 43738779447,
+    "job": 132887745415,
+    "name": "transfer",
+    "archive_command": "gh run view 43738779447 --repo just-every/run-oncall --job 132887745415 --log-failed",
+    "archive_exit": 0,
+    "raw_output_sha256": "f833f89db852aa8b3669d0965a6cda7b99e438c54440bda499d69ea56a9816e9",
+    "selected_excerpt": "ci-failure-transfer.txt"
+  }
+]

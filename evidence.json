@@ -1,0 +1,232 @@
+{
+  "files": [
+    {
+      "blob": "d8cb581a4c9df556e3a3e375104f9fba299f3b57",
+      "bytes": 8503,
+      "path": "REPORT.md",
+      "sha256": "780e36596ca72c7a68a6209a33a69f7815b3a58d4d38d2f93c265c8a21a7828e"
+    },
+    {
+      "blob": "2be5e77c1d8643a63c802966edb30fe028a27b0d",
+      "bytes": 37057,
+      "path": "browser/mail-off-signin-1440.png",
+      "sha256": "7d83f18780923e05519889a0364272f74e9344ecb2b65f69987cc8fa342946ea"
+    },
+    {
+      "blob": "d383308f3d25bb64df7d90c4e3b2904affbe4561",
+      "bytes": 28315,
+      "path": "browser/mail-off-signin-390.png",
+      "sha256": "fe17f3311622fe8d27b29db3bc41ca5acd83ab4793f4b3a57f4cd0b9ca3144ee"
+    },
+    {
+      "blob": "78c26c58a93efdc2c40a287ec29a726a1e88d404",
+      "bytes": 1911,
+      "path": "checks-final.json",
+      "sha256": "be67cb5685f251263487a46403528368fc280180a56bfa1888a2a52aea6c9901"
+    },
+    {
+      "blob": "084c976e5ce0a10f2c8e6ea3d7beb309801f23a6",
+      "bytes": 1911,
+      "path": "checks.json",
+      "sha256": "99cf6e158f077da284506cddd236ecbdac224fb9af3bca8c669ec05acd76d9a5"
+    },
+    {
+      "blob": "e5d6c39bd969211d3e2a20748e7ed981cc773094",
+      "bytes": 257,
+      "path": "ci-discovery-70cd214.json",
+      "sha256": "25dc6307acc71ed24d1e7f8e22e487c8aedd68ee27ed82f289aa943b184c0d2b"
+    },
+    {
+      "blob": "96a7dbe044b4e80e54d3409d9a739c156d2babd4",
+      "bytes": 254,
+      "path": "ci-discovery.json",
+      "sha256": "b975e3381edd9b89b5d9d05179a499dffbda0f565309d6d20a7c37c315a09b84"
+    },
+    {
+      "blob": "86774cf756b5d7bc282e90650813b3c624ec3188",
+      "bytes": 5033,
+      "path": "ci-failure-runtime.txt",
+      "sha256": "dc72a16a517f47b8c4b4c2ade874a5a594c1eedb510d853377261b237aeaf983"
+    },
+    {
+      "blob": "aa54907045f4debfacdfdf7bea008757c6bcab21",
+      "bytes": 1288,
+      "path": "ci-failure-transfer.txt",
+      "sha256": "e48d2a56e4c0a0ff0dd2b865a6c623d22c58786e298f06a52ba1983d5bd61df4"
+    },
+    {
+      "blob": "f407527375a95b2145891246e59c347b740d3f13",
+      "bytes": 719,
+      "path": "ci-failures.json",
+      "sha256": "dea89eb97bdf938b09837c1d23e22af26b5b8fe057a2f1c4c0bf6da21161219b"
+    },
+    {
+      "blob": "e703c3ecc788e98a8607473a4bb00c25bb0b6dfd",
+      "bytes": 21634,
+      "path": "ci-jobs-70cd214.json",
+      "sha256": "a014a236af1ef04d9e638b5fff11bf75edc4da918ddb329eb8510df99af7b232"
+    },
+    {
+      "blob": "f5fc9031e57638c4e7ce5624370d0fd097b8ecdd",
+      "bytes": 2501,
+      "path": "ci-jobs.json",
+      "sha256": "9975fe270530e3086449073843f70c8ad33577ab81708ef575e2e0ad9872a51f"
+    },
+    {
+      "blob": "a885618ddfd200428b9859ad8748d2f62c1bef55",
+      "bytes": 352,
+      "path": "ci-rerun-request.json",
+      "sha256": "0fd99adb998084e2ad00716f3dabfab98cd3c1ff3725b24d36be6aa961b389c5"
+    },
+    {
+      "blob": "5844042a6846b4fccb4818610c83bfa7f8285c3e",
+      "bytes": 326,
+      "path": "ci-run-70cd214.json",
+      "sha256": "299bd7652fc4bf995aa681c83ab3ae3b19fc85b991958fb5420589f34efc1980"
+    },
+    {
+      "blob": "09d7c68990f3392d026f4a8d3f9475efde43b746",
+      "bytes": 308,
+      "path": "ci-run.json",
+      "sha256": "d11d1427aad00099bcfa5f570bfcd1b39b507dfbe9b5a5b4687c0280e1b00115"
+    },
+    {
+      "blob": "b59d39532e8a030ff74f6339019ab7870ef51548",
+      "bytes": 70,
+      "path": "contract-check-final.txt",
+      "sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "blob": "b59d39532e8a030ff74f6339019ab7870ef51548",
+      "bytes": 70,
+      "path": "contract-check.txt",
+      "sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "blob": "b1ad60114ffbfffbea40301d7c6ff6b4d9fd180b",
+      "bytes": 3082,
+      "path": "delivery-final.txt",
+      "sha256": "0f814f171e203cf8ae8e200b56b3f173e01934a3a1dad6247090a36243b6f273"
+    },
+    {
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "path": "diff-check-final.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "path": "diff-check.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "blob": "748e6a14d66fc4492bcfce7ce5e40308b39119fc",
+      "bytes": 1019,
+      "path": "journeys-final.json",
+      "sha256": "33a651a953d15eea1a186d45f02e44523a85cd3908880611f62813a84f591753"
+    },
+    {
+      "blob": "b18a6baba63e6b93698599bfb3e671310a818eb3",
+      "bytes": 875,
+      "path": "journeys.json",
+      "sha256": "0023933f4ebd8f05a2a575a1ed6dd9a5a7b44e955f755bde406b07fac3db7e44"
+    },
+    {
+      "blob": "77042c52f680de3df4be77281ea15bbae56073fd",
+      "bytes": 644,
+      "path": "mail-off-final.txt",
+      "sha256": "7842e287130dab9b648add32313483b83b840206486b35481a26137990105d10"
+    },
+    {
+      "blob": "77042c52f680de3df4be77281ea15bbae56073fd",
+      "bytes": 644,
+      "path": "mail-off.txt",
+      "sha256": "7842e287130dab9b648add32313483b83b840206486b35481a26137990105d10"
+    },
+    {
+      "blob": "d73eb3254ecf0538e7ce1e14949b744310b80c3c",
+      "bytes": 5690,
+      "path": "member-full.txt",
+      "sha256": "5f3b2d0be3a5e49570e800606b83f6776c782a9933cb3a16c4e9ae01d4395d4c"
+    },
+    {
+      "blob": "21d38d9d828c04092661a687f0df49d8ab20adf6",
+      "bytes": 86,
+      "path": "native-export-final.txt",
+      "sha256": "495f89747666f4ecacf8673e557722a3d0198a59ab8874b6c877cba504b9d159"
+    },
+    {
+      "blob": "21d38d9d828c04092661a687f0df49d8ab20adf6",
+      "bytes": 86,
+      "path": "native-export.txt",
+      "sha256": "495f89747666f4ecacf8673e557722a3d0198a59ab8874b6c877cba504b9d159"
+    },
+    {
+      "blob": "f43c1bf86dd3936b8d9d7a293e70e7244cfbf67e",
+      "bytes": 295,
+      "path": "product-70cd214.json",
+      "sha256": "9850d369adfd675870f917fab0842aad30268fdee3eea34ffa1e082bfaa9fb77"
+    },
+    {
+      "blob": "74765044929b0d0b8889c4774a52563fe63fffe4",
+      "bytes": 736,
+      "path": "product-push-fix.txt",
+      "sha256": "8ceb99647b4bc7b23a236370ff6c95a557a7bab4a1f11a8ebfff0176ee10445a"
+    },
+    {
+      "blob": "514674248d94472c848921e5e0c2c6d4a7446fac",
+      "bytes": 736,
+      "path": "product-push.txt",
+      "sha256": "6ebec592af71a2fb1148d0acd4aa0491737a98382503c273eeae4f40d581f952"
+    },
+    {
+      "blob": "6385139b23451279adc48cce2aed3a1ef1d09b93",
+      "bytes": 296,
+      "path": "product.json",
+      "sha256": "1baa0937e4e9f167d8633c5c1182799bb97db84b6cdc68d42c090ba17734674b"
+    },
+    {
+      "blob": "d8ece6f8347bd5ce86b1ed4627cc684a6a02f03b",
+      "bytes": 67,
+      "path": "seed-check-final.txt",
+      "sha256": "0be1c32f376f15c72452fd602286b701e3a1fc7ff2cc7add4b5b721266c84cbc"
+    },
+    {
+      "blob": "d8ece6f8347bd5ce86b1ed4627cc684a6a02f03b",
+      "bytes": 67,
+      "path": "seed-check.txt",
+      "sha256": "0be1c32f376f15c72452fd602286b701e3a1fc7ff2cc7add4b5b721266c84cbc"
+    },
+    {
+      "blob": "ae8b05a91045ae660aa73b7bcc4f4b06a7fdd787",
+      "bytes": 551,
+      "path": "terminal.json",
+      "sha256": "f054f8783d5ee4d3066ac65594f82bdb7878af33023936a02dcf791198228200"
+    },
+    {
+      "blob": "c0f06904d7778dfe8fe0a2423e7f8a5790115115",
+      "bytes": 5869,
+      "path": "transfer-final.txt",
+      "sha256": "437c35f6d3339dc10f60eb24fa790601cf303bc9a2dffeb1e3784ccd1dbb5e14"
+    },
+    {
+      "blob": "f43a6c055108bfc90b80e4085ac2aa7bb73615f9",
+      "bytes": 230,
+      "path": "typecheck-final.txt",
+      "sha256": "876d16948f622294333211ffa5758128c5bd4aac6d60324d384edc698b6cc4c3"
+    },
+    {
+      "blob": "f43a6c055108bfc90b80e4085ac2aa7bb73615f9",
+      "bytes": 230,
+      "path": "typecheck.txt",
+      "sha256": "876d16948f622294333211ffa5758128c5bd4aac6d60324d384edc698b6cc4c3"
+    }
+  ],
+  "product_branch": "cloud/main-oncall-mail-off-1",
+  "product_head": "aa6bf82183a90a109a29c0619bca31c64c7028cb",
+  "ref": "refs/heads/evidence/main-oncall-mail-off-1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "main-oncall-mail-off-1"
+}

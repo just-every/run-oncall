@@ -1,0 +1,74 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-15",
+  "head": "70cd214eee0b2706bcd90ea9a90961bc645fe530",
+  "checks": [
+    {
+      "name": "typecheck",
+      "argv": [
+        "pnpm",
+        "run",
+        "typecheck"
+      ],
+      "exitCode": 0,
+      "seconds": 4.45,
+      "output_sha256": "876d16948f622294333211ffa5758128c5bd4aac6d60324d384edc698b6cc4c3"
+    },
+    {
+      "name": "source-lock",
+      "argv": [
+        "node",
+        "node_modules/@runeditrun/rer/edition-authoring/cli.mjs",
+        "check"
+      ],
+      "exitCode": 0,
+      "seconds": 0.46,
+      "output_sha256": "83c5398eaf722705717efa904ea5e7618176d1849e7c132694a52e0e976959a5"
+    },
+    {
+      "name": "contract-check",
+      "argv": [
+        "node",
+        "src/base/contract-docs.mjs",
+        "check"
+      ],
+      "exitCode": 0,
+      "seconds": 0.27,
+      "output_sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "name": "native-export",
+      "argv": [
+        "node",
+        "tests/native-export.mjs"
+      ],
+      "exitCode": 0,
+      "seconds": 0.22,
+      "output_sha256": "495f89747666f4ecacf8673e557722a3d0198a59ab8874b6c877cba504b9d159"
+    },
+    {
+      "name": "seed-check",
+      "argv": [
+        "bash",
+        "-c",
+        ". /tmp/rer-cloud-toolchain.sh; cloud_run npx -y @runeditrun/rer check --profile first-party"
+      ],
+      "exitCode": 0,
+      "seconds": 3.15,
+      "output_sha256": "0be1c32f376f15c72452fd602286b701e3a1fc7ff2cc7add4b5b721266c84cbc"
+    },
+    {
+      "name": "diff-check",
+      "argv": [
+        "git",
+        "diff",
+        "--check",
+        "origin/main..HEAD"
+      ],
+      "exitCode": 0,
+      "seconds": 0.02,
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "source_lock_sha256": "05fd6cbf8ee53b933f74081b60ea47086fb83ef15a248e910e66482e38c6dfff"
+}

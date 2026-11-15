@@ -1,0 +1,1 @@
+Native export declarations accept supported paths and promptly refuse malformed paths

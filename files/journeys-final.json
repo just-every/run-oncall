@@ -1,0 +1,22 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-15",
+  "head": "aa6bf82183a90a109a29c0619bca31c64c7028cb",
+  "pipeline_exit": 0,
+  "commands": [
+    "ONCALL_RUNTIME_PART=delivery node tests/runtime.mjs",
+    "ONCALL_CHROMIUM_PATH=/usr/bin/chromium CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium node tests/transfer.mjs",
+    "ONCALL_MEMBER_JOURNEY=mail-off ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/member-coordination-browser.mjs"
+  ],
+  "logs": {
+    "delivery-final.txt": "0f814f171e203cf8ae8e200b56b3f173e01934a3a1dad6247090a36243b6f273",
+    "transfer-final.txt": "437c35f6d3339dc10f60eb24fa790601cf303bc9a2dffeb1e3784ccd1dbb5e14",
+    "mail-off-final.txt": "7842e287130dab9b648add32313483b83b840206486b35481a26137990105d10"
+  },
+  "screenshots": {
+    "mail-off-signin-1440.png": "7d83f18780923e05519889a0364272f74e9344ecb2b65f69987cc8fa342946ea",
+    "mail-off-signin-390.png": "fe17f3311622fe8d27b29db3bc41ca5acd83ab4793f4b3a57f4cd0b9ca3144ee"
+  },
+  "real_deployment": false,
+  "live_mail": false
+}

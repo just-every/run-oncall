@@ -1,0 +1,14 @@
+Run 43738779447; head 70cd214eee0b2706bcd90ea9a90961bc645fe530
+shards (transfer)	Run this shard	2026-11-15T17:09:14.3732452Z AssertionError [ERR_ASSERTION]: dry-run artifacts exclude private fixture values and the development key
+shards (transfer)	Run this shard	2026-11-15T17:09:14.3734073Z     at file:///tmp/oncall-native-4IcAHH/checkout/tests/transfer.mjs:620:10 {
+shards (transfer)	Run this shard	2026-11-15T17:09:14.3734741Z   generatedMessage: false,
+shards (transfer)	Run this shard	2026-11-15T17:09:14.3735033Z   code: 'ERR_ASSERTION',
+shards (transfer)	Run this shard	2026-11-15T17:09:14.3737123Z   actual: false,
+shards (transfer)	Run this shard	2026-11-15T17:09:14.3737543Z   expected: true,
+shards (transfer)	Run this shard	2026-11-15T17:09:14.3737949Z   operator: '==',
+shards (transfer)	Run this shard	2026-11-15T17:09:14.3738406Z   diff: 'simple'
+shards (transfer)	Run this shard	2026-11-15T17:09:14.3738736Z }
+shards (transfer)	Run this shard	2026-11-15T17:09:14.3738873Z 
+shards (transfer)	Run this shard	2026-11-15T17:09:14.3738990Z Node.js v22.20.0
+shards (transfer)	Run this shard	2026-11-15T17:09:14.5250447Z  ELIFECYCLE  Command failed with exit code 1.
+shards (transfer)	Run this shard	2026-11-15T17:09:14.5474895Z ##[error]Process completed with exit code 1.

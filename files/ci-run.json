@@ -1,0 +1,10 @@
+{
+  "conclusion": "cancelled",
+  "head_sha": "aa6bf82183a90a109a29c0619bca31c64c7028cb",
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/43740686605",
+  "id": 43740686605,
+  "status": "completed",
+  "watcher_calls": 2,
+  "prior_api_calls": 6,
+  "observed_at_epoch": 1794764510.6266081
+}
