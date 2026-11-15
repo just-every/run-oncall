@@ -36,20 +36,20 @@
         "AUTH_LOCAL",
         "MAIL_PROVIDER",
         "MAIL_FROM",
-        "MAIL_RELAY_URL"
+        "MAIL_RELAY_URL",
+        "MAIL_ACCOUNT_ID"
       ],
       "secretNames": [
         "SESSION_SECRET",
         "SETUP_TOKEN"
       ],
       "optionalSecretNames": [
+        "SENDGRID_API_KEY",
+        "RESEND_API_KEY",
         "MAIL_API_KEY",
         "INBOUND_EMAIL_DOMAIN",
         "PAGERDUTY_OAUTH_CLIENT_ID",
-        "PAGERDUTY_OAUTH_CLIENT_SECRET",
-        "SENDGRID_API_KEY",
-        "RESEND_API_KEY",
-        "MAIL_ACCOUNT_ID"
+        "PAGERDUTY_OAUTH_CLIENT_SECRET"
       ],
       "providerEffects": [
         "outbound-mail",

@@ -427,7 +427,8 @@
     "AUTH_LOCAL": "false",
     "MAIL_FROM": "",
     "MAIL_PROVIDER": "",
-    "MAIL_RELAY_URL": ""
+    "MAIL_RELAY_URL": "",
+    "MAIL_ACCOUNT_ID": ""
   },
   "secretNames": [
     "SESSION_SECRET",

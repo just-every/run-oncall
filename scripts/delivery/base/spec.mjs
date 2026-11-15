@@ -148,7 +148,7 @@ export async function deploymentSpec(root, options = {}) {
     // Optional environment-to-Worker mappings have no fixed Wrangler value.
     // Retain their public mail input slots for managed packaging; empty is
     // unconfigured and must never select mail off.
-    for (const name of ['MAIL_PROVIDER', 'MAIL_RELAY_URL']) {
+    for (const name of ['MAIL_PROVIDER', 'MAIL_RELAY_URL', 'MAIL_ACCOUNT_ID']) {
       if (publicVariableNames.includes(name) && declaration.secrets?.some(item => item.binding === name && item.optional === true)) publicVariables[name] ??= '';
     }
     validateMailSenders([

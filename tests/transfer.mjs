@@ -600,10 +600,15 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  delete offlineDeployEnv.RER_LOCAL_OPERATION
  await assert.rejects(lstat('.rer/deploy'),{code:'ENOENT'},'the disposable installation has no deployment record before planning')
  const deploySecretNames=new Set(JSON.parse(await readFile('deploy.json','utf8')).secrets.flatMap(({binding,environment})=>[binding,environment]))
+ const publicEnums=new Map(JSON.parse(await readFile('rer-setup.json','utf8')).fields.filter(field=>field.kind==='select').map(field=>[field.name,new Set(field.options.map(option=>option.value))]))
  const privateDeployValues=[...privateBuildValues,...privateBuildBefore.flatMap(({bytes})=>bytes.toString('utf8').split('\n').flatMap(line=>{
   const match=/^([A-Z_][A-Z0-9_]*)=(.*)$/.exec(line)
   if(!match||!deploySecretNames.has(match[1])||!match[2])return []
-  return [match[2].startsWith('"')?JSON.parse(match[2]):match[2]]
+  const value=match[2].startsWith('"')?JSON.parse(match[2]):match[2]
+  // A declared enum such as the local mail mode is public configuration,
+  // present in executable provider selection too; it is not a private sentinel.
+  // Keep every sender, key, token and unknown value in the exclusion check.
+  return publicEnums.get(match[1])?.has(value)?[]:[value]
  }))]
  const dryRunOutput=await m.command(['deploy','--environment','production','--dry-run','--non-interactive'],0,offlineDeployEnv)
  assert.match(dryRunOutput,/deploy: local dry run complete; no credentials were needed, no Cloudflare requests were made and nothing was changed remotely\. Target secrets and remote readiness were not checked\./,'the public command completes its local-only plan without provider authority')
