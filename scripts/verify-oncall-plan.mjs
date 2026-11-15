@@ -1,10 +1,12 @@
 import { access, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-export const { lanes, push, nightly } = JSON.parse(await readFile(new URL('./verify-shards.json', import.meta.url), 'utf8'));
+export const { lanes, browserLanes, push, nightly } = JSON.parse(await readFile(new URL('./verify-shards.json', import.meta.url), 'utf8'));
 
 export function verificationPlan() {
  const names = new Set(), selected = new Set();
+ if (!Array.isArray(browserLanes) || new Set(browserLanes).size !== browserLanes.length
+  || browserLanes.some(lane => !Object.hasOwn(lanes, lane))) throw Error('Invalid Oncall browser lanes');
  for (const shard of [...push, ...nightly]) {
   if (!/^[a-z][a-z0-9-]*$/.test(shard.name) || names.has(shard.name)
    || typeof shard.browser !== 'boolean' || typeof shard.hosted !== 'boolean'
@@ -12,6 +14,7 @@ export function verificationPlan() {
   names.add(shard.name);
   for (const lane of shard.lanes) {
    if (!Object.hasOwn(lanes, lane) || selected.has(lane)) throw Error(`Missing or duplicate verification lane: ${lane}`);
+   if (browserLanes.includes(lane) && !shard.browser) throw Error(`Browser lane needs Chromium: ${lane}`);
    selected.add(lane);
   }
  }
@@ -26,7 +29,7 @@ export function verificationPlan() {
 const reviewed = new Set([
  'tests/runtime.mjs', 'tests/changes.mjs', 'tests/triage.mjs', 'tests/activation.mjs',
  'tests/intake.mjs', 'tests/routing.mjs', 'tests/import-door.mjs',
- 'tests/member-coordination-browser.mjs', 'tests/product-browser.mjs', 'tests/transfer.mjs',
+ 'tests/member-coordination-browser.mjs', 'tests/product-browser.mjs', 'tests/agent-door-browser.mjs', 'tests/transfer.mjs',
 ]);
 const documents = new Set(['CONTRACT.md', 'ACCEPTANCE.md', 'CLAIMS.md', 'docs/CLAIMS.md', 'HANDOVER.md', 'STATUS.md']);
 export const documentReaders = ['node src/base/contract-docs.mjs check', 'pnpm run build'];

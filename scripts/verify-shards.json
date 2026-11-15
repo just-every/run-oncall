@@ -28,8 +28,12 @@
       "tests/routing.mjs"
     ],
     "browser": [
-      "tests/member-coordination-browser.mjs",
-      "tests/product-browser.mjs"
+      {
+        "file": "tests/product-browser.mjs",
+        "env": {
+          "ONCALL_PRODUCT_PART": "core"
+        }
+      }
     ],
     "hosted": [],
     "transfer": [
@@ -63,15 +67,37 @@
         "file": "tests/runtime.mjs",
         "part": "agents"
       }
+    ],
+    "member-browser": [
+      "tests/member-coordination-browser.mjs"
+    ],
+    "browser-settings": [
+      {
+        "file": "tests/product-browser.mjs",
+        "env": {
+          "ONCALL_PRODUCT_PART": "settings"
+        }
+      }
+    ],
+    "agent-browser": [
+      "tests/agent-door-browser.mjs"
     ]
   },
+  "browserLanes": [
+    "browser",
+    "member-browser",
+    "browser-settings",
+    "transfer",
+    "agent-browser"
+  ],
   "push": [
     {
       "name": "runtime",
       "lanes": [
-        "runtime"
+        "runtime",
+        "member-browser"
       ],
-      "browser": false,
+      "browser": true,
       "hosted": false,
       "timeout": 22
     },
@@ -105,7 +131,9 @@
     {
       "name": "hosted",
       "lanes": [
-        "hosted"
+        "hosted",
+        "browser-settings",
+        "agent-browser"
       ],
       "browser": true,
       "hosted": true,

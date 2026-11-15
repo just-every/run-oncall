@@ -1048,6 +1048,10 @@ async function eventsSourceBrowser(page,context) {
 }
 
 // Production Worker + real local D1, without starting a managed rer dev server.
+// CI separates settings and agent browser work; an unselected local run keeps all.
+const productPart=process.env.ONCALL_PRODUCT_PART;
+if(productPart&&!['core','settings'].includes(productPart))throw Error('Unknown product browser part');
+if(productPart&&process.env.ONCALL_PRODUCT_JOURNEY)throw Error('Choose a product browser part or focused journey, not both');
 const worker=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'},{clock:true,outboundLedger:true})
 const credentials={name:'Product browser owner',password:randomBytes(32).toString('hex')}
 let browser,page
@@ -1068,6 +1072,10 @@ try {
  const errors=[];page.on('pageerror',error=>errors.push(error.message))
  await page.goto(worker.origin)
  await page.locator('.oncall-frame').waitFor({timeout:60000})
+ if(productPart==='settings'){
+  await changeAndSigningBrowser(page,context);
+  assert.deepEqual(errors,[],'settings browser has no application errors');
+ }else{
  let selectedTime=null
  const openSession=async(second,secondPage)=>{
   // oc_current_sessions also checks SQLite's wall clock. Issue the independent
@@ -1129,7 +1137,7 @@ try {
  console.log('PASS OC-059 incomplete intake browser: high owner obligation in alerts and routing at 1440; overflow, axe and hydration checked')
  await responsePolicyBrowser(page,context)
  await setTime(null);await incidentWorkflowBrowser(page,context,triageProof)
- await changeAndSigningBrowser(page,context)
+ if(productPart!=='core')await changeAndSigningBrowser(page,context)
  console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440; overflow, axe and hydration checked')
  }
  }
@@ -1140,6 +1148,8 @@ try {
  assert.deepEqual(errors,[],'no browser application errors')
  if(!focused){await setTime(null);await ownerFaultsBrowser(page,context);assert.deepEqual(errors,[],'owner fault journey has no browser application errors');}
  console.log(focused==='owner-faults'?'Emitted Worker owner faults passed: admin key readback, person contacts/rules, shared PagerDuty mapping/adoption, bounded past coverage; paging OFF, zero outbound, proof at 1440/390':focused==='sender-setup'?'Emitted Worker sender setup journey passed at 1440; screens captured at 1440 and 390':focused==='response-policy'?'Emitted Worker response-policy journey passed at 1440':focused==='imported-email'?'Emitted Worker saved email import journey passed at 1440; changed states captured at 1440 and 390':focused==='rota-timeline'?'Emitted Worker rota timeline passed: readable phone lists and compact accessible desktop slices on overview and rota pages':focused==='readable-times'?'Emitted Worker readable-times journey passed at 1440 in Australia/Brisbane with an America/New_York rota; changed rota and readiness screens captured at 1440 and 390':focused==='events-source'?'Emitted Worker Events source journey passed at 1440; screens captured at 1440 and 390':focused==='support-start'?'Emitted Worker support-start browser journey passed at 1440; screens captured at 1440 and 390':focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
+ }
+ if(productPart)console.log('Product browser part completed: '+productPart);
 } catch(error) {
  if(page){
   await page.screenshot({path:'evidence/browser/product-failure.png',fullPage:true,mask:[page.locator('[aria-label="New private calendar URL"]'),page.locator('.one-time-secret input')]})
@@ -1150,4 +1160,4 @@ try {
 } finally {
  try {await browser?.close()} finally {await worker.close()}
 }
-if(!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');
+if(!productPart&&!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');
