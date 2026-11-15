@@ -51,8 +51,12 @@ export function RotaPage({id, state, actor, value, refresh, edit = false, render
   const canEdit = !!schedule && (schedule.services?.length?actor.role==='admin':teamCoverage(state, actor, schedule.service)), responsive = ['admin','responder'].includes(actor.role);
   const person = (id: string | null) => state.members.find(person => person.id === id);
   const bands: OnCallBand[] = windows.flatMap((window, index) => (['primary','backup'] as const).map(role => ({role, member: window[role] && person(window[role]) ? {id: window[role]!, name: person(window[role])!.name} : null, from: new Date(window.at).toISOString(), to: new Date(windows[index + 1]?.at ?? from + 14 * 86_400_000).toISOString()})));
-  const ownShifts = bands.filter(band => band.member?.id === actor.id && Date.parse(band.from) > Date.now());
+  const upcomingShifts = bands.filter(band => band.member?.id === actor.id && Date.parse(band.from) > Date.now());
+  const hasCover = (band: OnCallBand) => schedule?.overrides.some(override => override.role === band.role && Date.parse(override.start) < Date.parse(band.to) && Date.parse(override.end) > Date.parse(band.from));
+  const ownShifts = upcomingShifts.filter(band => !hasCover(band));
+  const coveredShifts = upcomingShifts.some(hasCover);
   const shiftKey = (band: OnCallBand | null) => band ? band.role + ':' + band.from : '';
+  const swapShift = ownShifts.find(band => shiftKey(band) === shiftKey(selected)) ?? ownShifts[0] ?? null;
   const close = () => {if (!busy) {setSheet(null);setReview(null);setProposal(null);failures.clear();}};
   const openCover = () => {
     if (!schedule) return;
@@ -61,7 +65,7 @@ export function RotaPage({id, state, actor, value, refresh, edit = false, render
     setCover(kept ?? {member: actor.id, role:'primary', start: localDate(next, schedule.timezone), end: localDate(next + 3_600_000, schedule.timezone)});
     setReview(null);setProposal(null);failures.clear();setSheet('cover');
   };
-  const openSwap = (band?: OnCallBand | null) => {const kept=(readLocalDraft<{selected:OnCallBand|null;substitute:string}>('swap',id,schedule?.revision??0) ?? policyDrafts<{selected:OnCallBand|null;substitute:string}>('swap',id)[0])?.value;setSelected(band ?? ownShifts.find(row=>shiftKey(row)===shiftKey(kept?.selected??null)) ?? ownShifts[0] ?? null);setSubstitute(kept?.substitute??'');setReview(null);failures.clear();setSheet('swap');};
+  const openSwap = (band?: OnCallBand | null) => {const kept=(readLocalDraft<{selected:OnCallBand|null;substitute:string}>('swap',id,schedule?.revision??0) ?? policyDrafts<{selected:OnCallBand|null;substitute:string}>('swap',id)[0])?.value;setSelected((band && !hasCover(band) ? band : null) ?? ownShifts.find(row=>shiftKey(row)===shiftKey(kept?.selected??null)) ?? ownShifts[0] ?? null);setSubstitute(kept?.substitute??'');setReview(null);failures.clear();setSheet('swap');};
   const updateCover = (value:Partial<typeof cover>) => {setCover(current=>{const next={...current,...value};writeLocalDraft({kind:'cover',id,baseVersion:schedule?.revision??0,value:next});return next;});};
   const reviewChange = async (next: Schedule, reviewFrom = from) => {
     setBusy(true);failures.clear();
@@ -91,9 +95,9 @@ export function RotaPage({id, state, actor, value, refresh, edit = false, render
   };
   const updateSwap = (value:{selected?:OnCallBand|null;substitute?:string}) => {const next={selected,substitute,...value};setSelected(next.selected);setSubstitute(next.substitute);writeLocalDraft({kind:'swap',id,baseVersion:schedule?.revision??0,value:next});};
   const requestSwap = async () => {
-    if (!schedule || !selected || !substitute) return;
+    if (!schedule || !swapShift || !substitute) return;
     setBusy(true);failures.clear();
-    try {await request('/api/schedule-coordination', {action:'request',schedule:id,scheduleRevision:schedule.revision,substitute,role:selected.role,start:selected.from,end:selected.to});await changed();for(const kept of policyDrafts('swap',id))removeLocalDraft('swap',id,kept.baseVersion);setSheet(null);}
+    try {await request('/api/schedule-coordination', {action:'request',schedule:id,scheduleRevision:schedule.revision,substitute,role:swapShift.role,start:swapShift.from,end:swapShift.to});await changed();for(const kept of policyDrafts('swap',id))removeLocalDraft('swap',id,kept.baseVersion);setSheet(null);}
     catch (error) {failures.show(error, {target:null});} finally {setBusy(false);}
   };
   if (edit && schedule && renderEdit) return <>{renderEdit(schedule)}</>;
@@ -119,7 +123,7 @@ export function RotaPage({id, state, actor, value, refresh, edit = false, render
         <RotaField label={<>Who</>}><select value={cover.member} onChange={event => updateCover({member:event.target.value})}><option value="">Nobody on call</option>{state.members.filter(person => person.active && ['admin','responder'].includes(person.role)).map(person => <option value={person.id} key={person.id}>{person.name}</option>)}</select></RotaField>
         <RotaField label={<>Role</>}><select value={cover.role} onChange={event => updateCover({role:event.target.value as 'primary'|'backup'})}><option value="primary">Primary</option><option value="backup">Backup</option></select></RotaField>
         <RotaField label={<>From</>}><input type="datetime-local" required value={cover.start} onChange={event => updateCover({start:event.target.value})}/></RotaField><RotaField label={<>To</>}><input type="datetime-local" required value={cover.end} onChange={event => updateCover({end:event.target.value})}/></RotaField><button type="submit" disabled={busy}>Review change</button>
-      </ValidationForm> : <ValidationForm onSubmit={event => {event.preventDefault();void requestSwap();}}>{ownShifts.length ? <>{ownShifts.length > 1 ? <RotaField label={<>Shift to swap</>}><select value={shiftKey(selected)} onChange={event => updateSwap({selected:ownShifts.find(band => shiftKey(band) === event.target.value) ?? null})}>{ownShifts.map(band => <option key={shiftKey(band)} value={shiftKey(band)}>{shortTime(band.from, schedule.timezone)} · {band.role}</option>)}</select></RotaField> : <p>Shift · {shortTime(ownShifts[0].from,schedule.timezone)} · {ownShifts[0].role}</p>}<RotaField label={<>Substitute</>}><select required value={substitute} onChange={event => updateSwap({substitute:event.target.value})}><option value="">Choose a person</option>{state.members.filter(person => person.active && person.id !== actor.id && ['admin','responder'].includes(person.role)).map(person => <option key={person.id} value={person.id}>{person.name}</option>)}</select></RotaField><button type="submit" aria-describedby={!substitute?swapHintId:undefined} disabled={busy || !substitute}>Request</button>{!substitute&&<p id={swapHintId}>Choose a substitute to enable requesting this swap.</p>}</> : <p>You have no upcoming shift in these two weeks. Choose one of your shifts from the bands when it appears.</p>}</ValidationForm>}
+      </ValidationForm> : <ValidationForm onSubmit={event => {event.preventDefault();void requestSwap();}}>{coveredShifts && <p>Shifts with existing cover cannot be swapped. {canEdit ? 'Close this dialog and use Remove cover in the Cover list, then review and apply the change before requesting a swap.' : 'Ask a rota administrator to remove the existing cover, review and apply the change before requesting a swap.'}</p>}{ownShifts.length ? <>{ownShifts.length > 1 ? <RotaField label={<>Shift to swap</>}><select value={shiftKey(swapShift)} onChange={event => updateSwap({selected:ownShifts.find(band => shiftKey(band) === event.target.value) ?? null})}>{ownShifts.map(band => <option key={shiftKey(band)} value={shiftKey(band)}>{shortTime(band.from, schedule.timezone)} · {band.role}</option>)}</select></RotaField> : <p>Shift · {shortTime(ownShifts[0].from,schedule.timezone)} · {ownShifts[0].role}</p>}<RotaField label={<>Substitute</>}><select required value={substitute} onChange={event => updateSwap({substitute:event.target.value})}><option value="">Choose a person</option>{state.members.filter(person => person.active && person.id !== actor.id && ['admin','responder'].includes(person.role)).map(person => <option key={person.id} value={person.id}>{person.name}</option>)}</select></RotaField><button type="submit" aria-describedby={!substitute?swapHintId:undefined} disabled={busy || !substitute}>Request</button>{!substitute&&<p id={swapHintId}>Choose a substitute to enable requesting this swap.</p>}</> : <p>You have no eligible upcoming shift in these two weeks. Use Next two weeks to find a later shift.</p>}</ValidationForm>}
     </RotaSheet>}
   </section></div>;
 }

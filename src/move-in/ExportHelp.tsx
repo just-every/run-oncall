@@ -17,7 +17,7 @@ export function ExportHelp({vendor}:{vendor:string}) {
  if(!['opsgenie','pagerduty'].includes(vendor))return <SavedExportHelp key={vendor} vendor={vendor}/>
  return <details className="move-in-export-help" key={vendor}>
   <summary>How to export from {name}</summary>
-  <p>Use the downloadable exporter on your computer to create one ready-to-upload JSON file. It reads {name} with GET requests, handles every page, gets schedule details and joins each override to its schedule. Your existing pager stays in charge.</p>
+  <p>Use the downloadable exporter on your computer to create one ready-to-upload JSON file. It reads {name} with GET requests, handles every page, gets schedule details and joins each override to its schedule. Your existing pager stays in charge. It needs a read-only key from a real {name} account; with no account, use <strong>Other: from a file</strong> to upload an export you already have.</p>
   {ops&&<>
    <h3>Opsgenie migration readiness</h3>
    <p>Public-documentation review executed <time dateTime="2026-10-31">31 October 2026 (UTC)</time>. Announced shutdown: <time dateTime="2027-04-05">5 April 2027</time>. Read the <a href="/docs/move-in#opsgenie-migration-readiness-checklist">Opsgenie migration readiness checklist</a> before exporting.</p>

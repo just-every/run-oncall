@@ -45,7 +45,7 @@ Your schedules, incidents and team stay in the folder until you [export them](da
 
 ## Explicit and unattended setup
 
-To choose a real owner mailbox before the first launch, run `npx -y @runeditrun/rer setup just-every/run-oncall` (set up only; in an interactive terminal it asks for your owner email), then `cd run-oncall && rer dev`. Or, from the checkout, one verb at a time:
+To choose a real owner mailbox before the first launch, after installing `rer` above, run `rer setup just-every/run-oncall` (set up only; in an interactive terminal it asks for your owner email), then `cd run-oncall && rer dev`. Or, from the checkout, one verb at a time:
 
 ```sh
 rer install
@@ -107,13 +107,17 @@ This restarts the updated local app, applies migrations and keeps your owner, sc
 
 Release 1 supports hosted incident coordination alongside your team's existing pager. Paging stays OFF; coordination does not need an independent standby. Release 2 paging and independent standby are not built. Keep the pager's routes and notification settings in place.
 
-**Hosting is in `v0.3.0` and later.** Use a fresh checkout of `main` for the following steps; a checkout already set up with a development owner keeps that owner when setup runs again.
+**Hosting is in `v0.3.0` and later.** Hosting claims the owner you set up, so start from a checkout with your real owner mailbox. `rer` brings its own Node and pnpm; you do not need global `node` or `npx`. Install `rer` first if you have not used the installer above, then put its launcher on PATH in this terminal.
 
 ```sh
-npx -y @runeditrun/rer install just-every/run-oncall --dir oncall-hosted
+curl -fsSL https://runeditrun.com/install.sh | sh
+export PATH="$HOME/.local/bin:$PATH"
+rer install just-every/run-oncall --dir oncall-hosted
 cd oncall-hosted
 rer setup --owner-email you@example.com
 ```
+
+Already running Oncall locally from `run-oncall`? Keep that folder and its data, and use the fresh `oncall-hosted` checkout above for hosting. Hosting never uploads local records. See [Transfer local coordination records to hosting](data.md#transfer-local-coordination-records-to-hosting) before planning a move; [Export and restore](data.md) explains local backup and recovery.
 
 Replace `you@example.com` with a real mailbox you can open. Setup prepares the owner and private settings locally and stops its temporary app before returning. Repeating setup preserves the configured owner; it does not change their email.
 

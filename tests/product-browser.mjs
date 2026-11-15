@@ -601,13 +601,14 @@ async function changeAndSigningBrowser(page,context){
 
 // Execute the displayed recipe in a sender shell with only its documented tools.
 // The bin contains no node, npx or package manager, even on hosts with system Node.
-async function runSenderRecipe(sample,key,commands='sh send.sh') {
+async function runSenderRecipe(sample,key,commands='sh send.sh',files={}) {
  const {tmpdir}=await import('node:os'),{spawn,execFileSync}=await import('node:child_process');
  const {mkdtemp,writeFile,symlink,rm}=await import('node:fs/promises'),{join}=await import('node:path');
  const dir=await mkdtemp(join(tmpdir(),'oncall-send-'));
  try {
-  for(const name of ['sh','curl','openssl','date','od','tr','awk'])await symlink(execFileSync('/usr/bin/which',[name],{encoding:'utf8'}).trim(),join(dir,name));
+  for(const name of ['sh','curl','openssl','date','od','tr','awk','cat'])await symlink(execFileSync('/usr/bin/which',[name],{encoding:'utf8'}).trim(),join(dir,name));
   await writeFile(join(dir,'send.sh'),sample);
+  for(const [name,body] of Object.entries(files))await writeFile(join(dir,name),body);
   // Substitute only the private environment setting, as the sender does. Run the copied invocation unchanged.
   commands=commands.replace(/^export ONCALL_SOURCE_KEY=.*\n/,'');
   return await new Promise((resolve,reject)=>{
@@ -990,6 +991,15 @@ async function eventsSourceBrowser(page,context) {
   await proof(sample===source?'readable-bearer-source':'readable-signed-source');
   const output=await runSenderRecipe(example,sample.key);
   const receipt=JSON.parse(output);assert.equal(receipt.service,service);assert.ok(receipt.id);
+  if(sample!==source){
+   await request('/api/sources',{id:'monitoring',key:sample.key,mode:'signed',scopes:[service]});
+   await page.goto(origin+'/docs/incidents');
+   const recipe=await page.locator('pre code').filter({hasText:'ONCALL_SIGNATURE='}).innerText();
+   // Supply only the documented origin, key and exact file, including its trailing newline.
+   const documented=await runSenderRecipe('ONCALL_ORIGIN='+JSON.stringify(origin)+'\n'+recipe,sample.key,'sh send.sh',{'event.json':JSON.stringify({...body,source:'monitoring',eventId:body.eventId+'-reference'})+'\n'});
+   assert.equal(JSON.parse(documented).service,service,'the published HMAC reference accepts exact file bytes without global Node');
+   await proof('hmac-reference');
+  }
   const sendBody=async(value)=>{
    const raw=JSON.stringify(value),headers={'content-type':'application/json'};
    if(sample===source)headers.authorization='Bearer '+sample.key;
@@ -1071,9 +1081,14 @@ try {
   } finally { await worker.time(selectedTime) }
  }
  const focused=process.env.ONCALL_PRODUCT_JOURNEY;
- if(focused&&!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults'].includes(focused))throw Error('Unknown focused product journey');
+ if(focused&&!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in'].includes(focused))throw Error('Unknown focused product journey');
  const triageProof={snapshot:()=>durableSnapshot(worker),outbound:()=>worker.outboundRequests()};
  const setTime=async at=>{selectedTime=at;await worker.time(at);if(at===null)await page.clock.setSystemTime(new Date());else await page.clock.setFixedTime(new Date(at));};
+ if(focused==='move-in'){
+  const session=await (await context.request.get('/api/session')).json();
+  await context.request.post('/api/command',{headers:{origin:worker.origin},data:{type:'service',name:'Checkout',environment:'test',owner:session.member.id,runbook:[],pager:''}});
+  const {productImport}=await import('./product-browser-journey.mjs');await productImport(page,context,1440,session,triageProof);
+ }
  if(focused==='owner-faults')await ownerFaultsBrowser(page,context);
  if(focused==='rota-timeline'){
   const session=await (await context.request.get('/api/session')).json();
@@ -1107,7 +1122,7 @@ try {
  if(focused==='move-in-guide')await providerExport(page,context,1440,triageProof);
  if(['limitations','readiness'].includes(focused))await limitationsBrowser(page,context);
  if(focused==='triage')await triageFiltersBrowser(page,context,{setTime,proof:triageProof});
- if(!['sender-setup','response-policy','imported-email','events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults'].includes(focused)){
+ if(!['sender-setup','response-policy','imported-email','events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in'].includes(focused)){
  await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime,triageProof})
  if(focused!=='accessibility'){
  await incompleteIntakeBrowser(page,context)
@@ -1118,7 +1133,7 @@ try {
  console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440; overflow, axe and hydration checked')
  }
  }
- if(!['sender-setup','response-policy','imported-email','events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults'].includes(focused))await readinessBrowser(page,context)
+ if(!['sender-setup','response-policy','imported-email','events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in'].includes(focused))await readinessBrowser(page,context)
  if(!focused)await importedEmailBrowser(page,context)
  if(!focused)await responseReportBrowser(browser)
  if(!focused)await eventsSourceBrowser(page,context)
@@ -1135,4 +1150,4 @@ try {
 } finally {
  try {await browser?.close()} finally {await worker.close()}
 }
-if(!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');
+if(!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');

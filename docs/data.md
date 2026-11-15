@@ -18,7 +18,17 @@ The permanent audit is a separate durable category in installation transfer. It 
 
 ## Restore into a new installation
 
-Fetch Oncall into the new checkout first with `npx -y @runeditrun/rer install just-every/run-oncall`, then `cd run-oncall` and copy your private archive into its `exports` directory:
+[Install the `rer` command](install.md#run-it-on-your-computer) first; it provides its own Node runtime. In an empty folder, fetch Oncall without starting it:
+
+```sh
+rer install just-every/run-oncall
+cd run-oncall
+mkdir -p exports
+```
+
+Alternative for people who already have Node 22 or later: use `npx -y @runeditrun/rer install just-every/run-oncall` for the first command. After `cd run-oncall`, prefix subsequent `rer` commands with `npx -y @runeditrun/rer` too if you have not installed the launcher.
+
+Copy your private archive into the new checkout's `exports` directory, then restore:
 
 ```sh
 rer import --input exports/installation.rer --yes
@@ -75,12 +85,12 @@ rer dev
 Confirm the new owner and map an archived administrator as described above. An import that says `target_not_empty` has kept the existing installation; it has not replaced any records. Do not reset to upgrade Oncall.
 
 
-Change-event erasure is a separate administrator action in Services → Data erasure settings. It commits event removal, last-receipt cleanup, local transfer-copy invalidation, retry and restore fences and identity unlinking together. The count-only receipt confirms local completion and explicitly reports standby as not reconciled. See [Change erasure](changes.md#erase-a-retained-change) for categories, retention, the HTTP door and offline/provider custody limits. Linked installation-owner account erasure and standby reconciliation remain incomplete.
+Change-event erasure is a separate administrator action in Settings → Archive → Erase someone's data. It commits event removal, last-receipt cleanup, local transfer-copy invalidation, retry and restore fences and identity unlinking together. The count-only receipt confirms local completion and explicitly reports standby as not reconciled. See [Change erasure](changes.md#erase-a-retained-change) for categories, retention, the HTTP door and offline/provider custody limits. Linked installation-owner account erasure and standby reconciliation remain incomplete.
 
 
 ## Incident, member and integration erasure
 
-An administrator opens **Services → Data erasure settings**, chooses the category and exact subject, and types `erase <subject ID>`. The HTTP equivalent is `POST /api/erasure/:category/:id` with `workspaceRevision` and `confirmation`. Supported categories are `incident`, `member`, `native`, `intake`, `email`, `change`, `client` and `endpoint`. Use a new integration ID after erasure; an erased ID cannot be configured again.
+An administrator opens **Settings → Archive → Erase someone's data**, chooses the category and exact subject, and types `erase <displayed subject name>` exactly as the app shows it. The HTTP equivalent is `POST /api/erasure/:category/:id` with `workspaceRevision` and `confirmation: "erase <subject ID>"`. Supported categories are `incident`, `member`, `native`, `intake`, `email`, `change`, `client`, `endpoint` and `email-list`. Use a new integration ID after erasure; an erased ID cannot be configured again.
 
 ### Incident
 
@@ -112,7 +122,7 @@ A matching response delivery that is sending, uncertain or has an expired lease 
 
 A business service can retain up to 50 operator-declared email-list addresses, each at most 254 characters, with its email channel, subscription state, last editor and time. Formatting validation does not verify a mailing list, its membership or ownership. Only current administrators and the active communications owner manage or read these addresses. Lists create recorded impact-started/ended obligations containing the business-service name and status, never raw alert content. No sender or delivery is enabled.
 
-Unsubscribe stops future obligations and retains the address and stopped history. An administrator can remove the independent list subject through the existing Data erasure settings, with the same committed per-table receipt, audit identity unlinking, transfer-copy invalidation and restore fence as other local subjects. Erasing a native/imported person removes matching known email-list addresses and their local notices. Other business-owned lists retain anonymized authorship. Auth accounts and other products are untouched. No automatic expiry applies. Native and portable restore retain lists inactive and notices stopped; reactivation authorizes only future records. Offline copies cannot be recalled, and standby reconciliation remains unbuilt.
+Unsubscribe stops future obligations and retains the address and stopped history. An administrator can remove the independent list subject through **Settings → Archive → Erase someone's data**, with the same committed per-table receipt, audit identity unlinking, transfer-copy invalidation and restore fence as other local subjects. Erasing a native/imported person removes matching known email-list addresses and their local notices. Other business-owned lists retain anonymized authorship. Auth accounts and other products are untouched. No automatic expiry applies. Native and portable restore retain lists inactive and notices stopped; reactivation authorizes only future records. Offline copies cannot be recalled, and standby reconciliation remains unbuilt.
 
 Installation-bound agent erasure receipts (`oc_agent_erasure_receipts`) retain only binding IDs and digests, never erased content. They are excluded from portable export/import. Native subject erasure inventories and clears earlier receipts in the same transaction, then may retain the new agent erasure binding. A receipt supplies no restore data, deletion authority or cached response, and does not weaken the erasure fence.
 

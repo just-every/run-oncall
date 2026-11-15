@@ -10,19 +10,21 @@ import {request} from '../useWorkspace';
 import {Field, Form} from '../forms';
 import {TeamsPanel} from '../teams/TeamsPanel';
 import {MemberRow} from './MemberRow';
+import {TeamSignIn} from './TeamSignIn';
 import './team-section.css';
 export function TeamSection() {
-  const {s, actor, admin, w, page} = useWorkspaceContext(), [adding, setAdding] = useState(false);
+  const {s, actor, admin, w, page} = useWorkspaceContext(), [adding, setAdding] = useState(false), [created, setCreated] = useState('');
   if (page !== 'team') return null;
   return <div className="team-section">
-    <section className="panel padded">{admin && <div className="team-title"><button type="button" aria-expanded={adding} onClick={() => setAdding(value => !value)}>Add member</button></div>}
+    <section className="panel padded">{admin && <div className="team-title"><button type="button" aria-expanded={adding} onClick={() => {setAdding(value => !value); setCreated('');}}>Add member</button></div>}
       {!admin && <p>Admins can change roles and access.</p>}
       <div className="team-members">{s.members.filter(member => !member.machine).map(member => admin && !member.erased ? <MemberEditor key={member.id} member={member} state={s} admin={admin} refresh={w.refresh}/> : <MemberRow key={member.id} member={member} admin={false} role={member.role} roleChanged={() => {}} accessAction={() => {}} resetAction={() => {}}/>)}</div>
-      {admin && adding && <section className="team-add" aria-label="Add member"><h3>Add member</h3><Form busy={w.busy} label="Create member" onSubmit={async data => {const result=await w.run('/api/members',data);if(result)w.setNotice('');return result;}}>
+      {admin && adding && <section className="team-add" aria-label="Add member"><h3>Add member</h3><Form busy={w.busy} label="Create member" onSubmit={async data => {const result=await w.run('/api/members',data);if(result){w.setNotice('');setCreated(String(data.name??''));}return result;}}>
         <Field name="name" label="Name"/>
         <Field name="role" label="Role"><option value="responder">Responder</option><option value="viewer">Viewer</option><option value="stakeholder">Stakeholder</option><option value="admin">Admin</option></Field>
         <Field name="password" label="Password" type="password"/>
       </Form></section>}
+      {admin && (adding || created) && <TeamSignIn name={created || undefined}/>}
     </section>
     <TeamsPanel state={s} actor={actor} refresh={w.refresh}/>
   </div>;
