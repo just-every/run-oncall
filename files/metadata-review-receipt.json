@@ -1,0 +1,41 @@
+{
+  "author": "Run Edit Run fleet",
+  "stamp": "2026-11-15T09:46:06Z",
+  "status": "PASS",
+  "version_before": "0.5.14",
+  "version_after": "0.5.15",
+  "rer_pin": "0.2.113",
+  "historical_changelog_bytes_preserved": 328996,
+  "historical_upgrade_instructions_preserved": true,
+  "added_migrations": [
+    "migrations/core/0164_alert_key_reveal.sql"
+  ],
+  "release_migrations": [
+    {
+      "id": "0164_alert_key_reveal.sql",
+      "buyerSteps": "Apply after 0163_business_retired.sql in filename order after a verified backup. This additive migration adds nullable key_custody columns to native sources and intake credentials; existing credential digests and signed custody are retained unchanged. Existing digest-only keys cannot be recovered; a current administrator must explicitly rotate one before readback becomes available. Keep all applied migration bytes unchanged; do not reset a populated installation."
+    }
+  ],
+  "migration_count_previous_tag": 67,
+  "migration_count_main": 68,
+  "migration_count_candidate": 68,
+  "contract_counts_before": [
+    "| Core | 25 | 35 | 24 | 84 |",
+    "| Agent surface | 1 | 6 | 10 | 17 |",
+    "| Full target | 26 | 41 | 34 | 101 |"
+  ],
+  "contract_counts_after": [
+    "| Core | 25 | 35 | 24 | 84 |",
+    "| Agent surface | 1 | 6 | 10 | 17 |",
+    "| Full target | 26 | 41 | 34 | 101 |"
+  ],
+  "clause_status_changes": [],
+  "tests_added": 0,
+  "tests_removed": 0,
+  "protected_hashes": {
+    "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac",
+    "ACCEPTANCE.md": "875e11f85ca8473511fe5defbbdd5d6457f248e48fcbbe6796d86194701c62c3",
+    "docs/CLAIMS.md": "8c57d53cb2bd436176cc5b556bd1a4ca786848e4ee2d310bed277fe8faf7d440",
+    "pnpm-lock.yaml": "b6aa5dfd7cf634bc68088065e02bbf51a977d60f664eb712711f2050c717f844"
+  }
+}

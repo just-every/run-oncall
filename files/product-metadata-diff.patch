@@ -1,0 +1,100 @@
+diff --git a/README.md b/README.md
+index b03ef36..11d2bf7 100644
+--- a/README.md
++++ b/README.md
+@@ -31,7 +31,7 @@
+ 
+ # Run it locally
+ 
+-See the [Oncall Run page](https://run-oncall.com/run) for local launch and PATH help. Public source: [just-every/run-oncall](https://github.com/just-every/run-oncall). The `v0.5.14` release candidate includes hosted coordination. See [Getting started](docs/getting-started.md#host-for-your-team) for complete credentials and deployment instructions.
++See the [Oncall Run page](https://run-oncall.com/run) for local launch and PATH help. Public source: [just-every/run-oncall](https://github.com/just-every/run-oncall). The `v0.5.15` release candidate includes hosted coordination. See [Getting started](docs/getting-started.md#host-for-your-team) for complete credentials and deployment instructions.
+ 
+ One line installs the `rer` command, clones Oncall and starts it:
+ 
+diff --git a/RELEASE.md b/RELEASE.md
+index f7405c1..ca438ce 100644
+--- a/RELEASE.md
++++ b/RELEASE.md
+@@ -1,6 +1,6 @@
+ # Releasing Oncall
+ 
+-The public source repository is `just-every/run-oncall` (`https://github.com/just-every/run-oncall`). The current version is 0.5.14, declared consistently by package, seed and release metadata; the first release is the annotated tag `v0.1.0` on the repository's first commit. Release 1 permits hosted incident coordination alongside the team's existing pager without a standby requirement, following owner direction on 16 October 2026. Paging is OFF. Release 2 paging and independent standby are not built. Scope approval is not evidence of a particular deployment, mail delivery or real-phone drill; record those results separately under ACCEPTANCE.md and OPERATIONS.md.
++The public source repository is `just-every/run-oncall` (`https://github.com/just-every/run-oncall`). The current version is 0.5.15, declared consistently by package, seed and release metadata; the first release is the annotated tag `v0.1.0` on the repository's first commit. Release 1 permits hosted incident coordination alongside the team's existing pager without a standby requirement, following owner direction on 16 October 2026. Paging is OFF. Release 2 paging and independent standby are not built. Scope approval is not evidence of a particular deployment, mail delivery or real-phone drill; record those results separately under ACCEPTANCE.md and OPERATIONS.md.
+ 
+ Before a release, freeze and independently verify the candidate, review the migration and update instructions in RELEASE.json, and run Base's publication checks against the exact intended public tree. The actual parentless export must have a complete history scan with zero findings, source bytes and modes that match exactly, and a clean-clone verify. A dry run must record DRY_RUN, no created or pushed tag and nothing published.
+ 
+diff --git a/package.json b/package.json
+index f41379f..a718d95 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@just-every/oncall",
+-  "version": "0.5.14",
++  "version": "0.5.15",
+   "private": true,
+   "type": "module",
+   "engines": {
+diff --git a/seed.json b/seed.json
+index 999ea7f..8412ca3 100644
+--- a/seed.json
++++ b/seed.json
+@@ -1,7 +1,7 @@
+ {
+   "id": "oncall",
+   "name": "Oncall",
+-  "version": "0.5.14",
++  "version": "0.5.15",
+   "maturity": "maintained",
+   "category": "operations",
+   "replaces": [
+diff --git a/sources.lock.json b/sources.lock.json
+index 7bdd6b0..239b2c2 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -164,7 +164,7 @@
+       "executable": false
+     },
+     "CHANGELOG.md": {
+-      "sha256": "ed8c170c2716666b3d45305137d0bb4f319719c0107eb6dd46d4ceb24cc48b4f",
++      "sha256": "fa9fca87bbc5f4da71a9deb8d22b88f0390ab22cb74187b9b22ced182de8d817",
+       "executable": false
+     },
+     "CLAUDE.md": {
+@@ -736,7 +736,7 @@
+       "executable": false
+     },
+     "package.json": {
+-      "sha256": "95379aa0f515b430c7a111dcd6386053058c0d78dd5b156bfaedd6bc92bd9eae",
++      "sha256": "ea2812d4ad5337f3c0ace6eef85a5bd6777bfd65f9a3d5962daa0baf818f7802",
+       "executable": false
+     },
+     "pnpm-lock.yaml": {
+@@ -828,15 +828,15 @@
+       "executable": false
+     },
+     "README.md": {
+-      "sha256": "03d11757d735563f8be134f68abc7120a61677bef0216bb9377fcdbfa89c27a2",
++      "sha256": "1868c766a1837b414e8463fa5de228aad8ce7633ace4f7b7971b20bee0a3f666",
+       "executable": false
+     },
+     "RELEASE.json": {
+-      "sha256": "a208883e77c00e8b5a5ff221f61540f52821cb414d479d354c579532083c19f6",
++      "sha256": "aead9281452628604a71856c037c692c45712e6df92945985d7cb014982d4626",
+       "executable": false
+     },
+     "RELEASE.md": {
+-      "sha256": "af390b244023537ba32771a4c0822912bedb2dc20e85e546102e94b7ba05650a",
++      "sha256": "ad1921af5625b6da61d807c2a888d4a0f615cf6934954b234f9606303731604f",
+       "executable": false
+     },
+     "rer-project.json": {
+@@ -1676,7 +1676,7 @@
+       "executable": false
+     },
+     "seed.json": {
+-      "sha256": "0d887683acfe58be0cda35017d73923a331c7345acd931e1a1eb080dc72f0719",
++      "sha256": "1e3e511472c20faabe1671213c4e0fd43c025730ec421297948992ba99b58e24",
+       "executable": false
+     },
+     "src/agent-door/alert-tools.ts": {

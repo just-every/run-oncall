@@ -1,0 +1,19 @@
+{
+  "author": "Run Edit Run fleet",
+  "stamp": "2026-11-15T09:44:53Z",
+  "main": "d8357c8e671651b9e2f2021eaf32d705a3360fd0",
+  "previous_tag": "v0.5.14",
+  "previous_commit": "4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b",
+  "main_ahead_commits": 33,
+  "ancestor_check_exit": 0,
+  "next_version": "0.5.15",
+  "next_ref_absent": true,
+  "peer_release_prs": [],
+  "rer_pin": "0.2.113",
+  "main_ci_from_signed_brief": {
+    "Verify": 43692814329,
+    "Run site": 43699715117,
+    "conclusion": "SUCCESS",
+    "independently_read_by_sd": "2026-11-15T09:34:42Z"
+  }
+}

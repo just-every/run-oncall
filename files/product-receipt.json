@@ -1,0 +1,85 @@
+{
+  "author": "Run Edit Run fleet",
+  "stamp": "2026-11-15T09:46:47Z",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-release-0-5-15",
+  "head": "44ca722b6a5dde173b5253df7b5e0eab762df459",
+  "base": "d8357c8e671651b9e2f2021eaf32d705a3360fd0",
+  "paths": [
+    "CHANGELOG.md",
+    "README.md",
+    "RELEASE.json",
+    "RELEASE.md",
+    "package.json",
+    "seed.json",
+    "sources.lock.json"
+  ],
+  "push": "PASS",
+  "push_attempts": 1,
+  "product_pushes": 1,
+  "clean": true,
+  "pr": null,
+  "tags_created": false,
+  "release_published": false,
+  "deployed": false,
+  "publication_scan": "Mac guarded lander owns the required full-history scan; not run in cloud",
+  "checks": {
+    "frozen_dependency_install": 0,
+    "rer_check": 0,
+    "typecheck": 0,
+    "contract_docs_check": 0,
+    "vendored_source_lock_check": 0,
+    "installed_source_lock_check": 0,
+    "metadata_review": "PASS",
+    "diff_check": 0,
+    "identity_trailer_inspection": "PASS"
+  },
+  "toolchain": {
+    "node": "24.19.0",
+    "checkout_node_pin": "22.20.0",
+    "pnpm": "10.12.4",
+    "rer": "0.2.113"
+  },
+  "notes": "The supplied toolchain retained newer VM Node 24.19.0; pnpm emitted the exact Node engine warning. Typecheck passed; CI uses the checkout pin. No full local suite or new tests.",
+  "candidate_identity_log": "Run Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>\n\n",
+  "candidate_commits": [
+    "44ca722b6a5dde173b5253df7b5e0eab762df459"
+  ],
+  "final_committed_tree": "7e85e49eb9540797b2c1b2d5547ba79036231f76",
+  "source_lock_sha256": "97f376e24ca729d66a9a239a111dfae845f1c7aed3dd944471c6efe54e90a1af",
+  "ci": {
+    "conclusion": "cancelled",
+    "head_sha": "44ca722b6a5dde173b5253df7b5e0eab762df459",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43700831884",
+    "status": "completed",
+    "stamp": "2026-11-15T10:07:20Z",
+    "run_id": 43700831884,
+    "api_call_number": 7
+  },
+  "ready": false,
+  "terminal_custody": "BLOCKED",
+  "blocker": "Exact-SHA Verify 43700831884 completed cancelled; CI dispatch and rerun are prohibited in this task.",
+  "ci_job_summary": {
+    "plan": "success",
+    "build": "success",
+    "light": "skipped",
+    "shards (transfer)": "success",
+    "shards (hosted)": "success",
+    "shards (runtime)": "success",
+    "shards (changes)": "success",
+    "shards (agents)": "success",
+    "shards (browser)": "cancelled",
+    "shards (intake)": "success",
+    "shards (triage)": "success",
+    "verify": "failure",
+    "full-push-proof": "skipped",
+    "nightly-proof": "skipped"
+  },
+  "github_calls": 9,
+  "failed_job_archive_read": {
+    "job_id": 132775827605,
+    "invocations": 1,
+    "exit": 0
+  },
+  "final_stamp": "2026-11-15T10:18:13Z"
+}

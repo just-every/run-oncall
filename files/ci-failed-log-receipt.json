@@ -1,0 +1,10 @@
+{
+  "author": "Run Edit Run fleet",
+  "stamp": "2026-11-15T10:17:28Z",
+  "command": "gh run view 43700831884 --repo just-every/run-oncall --job 132775827605 --log-failed",
+  "exit": 0,
+  "api_calls": 9,
+  "archive_invocations_for_job": 1,
+  "sanitized_log": "ci-failed-verify-job.log",
+  "public_log_omission": "GitHub Actions step environment listing omitted; no environment dump is selected for publication. CI outcomes are independently retained in API receipts."
+}

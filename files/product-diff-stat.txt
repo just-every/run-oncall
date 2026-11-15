@@ -1,0 +1,8 @@
+ CHANGELOG.md      |  4 ++++
+ README.md         |  2 +-
+ RELEASE.json      | 17 +++++++++++------
+ RELEASE.md        |  2 +-
+ package.json      |  2 +-
+ seed.json         |  2 +-
+ sources.lock.json | 12 ++++++------
+ 7 files changed, 25 insertions(+), 16 deletions(-)

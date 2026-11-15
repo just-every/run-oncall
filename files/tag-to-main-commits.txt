@@ -1,0 +1,33 @@
+d8357c8e671651b9e2f2021eaf32d705a3360fd0 Show repeatable credential custody during source creation
+f3896cc239e600139d93674c4885028e5d9ffa53 Restore portable archive loading for shared escalation policies
+a6e983e5745201257bc97c7bd64280d364883ed6 Complete routed key readback and verify owner fault journeys
+335c4610dd0b5774d6bd5ea1a59cbd1adcf1e540 Fix owner key readback, person rules, shared imports and rota history [skip ci]
+b30412d15c5049718e9b19d307cfb3348e08079c Account for on-call holds in CLI checkpoint receiving history
+7f25832424e1f3868061affe50beb9f23ac529a9 Expect restored on-call notification history to remain inactive
+c4adb4a906039e34da495f83cc0c62ef10a7c03e Keep native notification imports loadable by the installer
+f96fafc07807f8e909e75db97f853c00576fc54a Refuse delivery claims in recorded-notification archives
+a7bddd3815182a6318f599d66912ac35eb90d754 Preserve restore holds and clarify recorded response recipients
+f0bff2457ff78a183452847941c0eefae6cc5c81 Record native on-call assignment and per-person alert notifications
+b9ff7fd18d3b5e00843d3a10a89cd90bc27f7470 Document the independently verified agent runtime phase
+03d395d196cd2574e21169d654983f049093196b Split agent replay coverage from the timed-out intake shard [skip ci]
+c6c0fd361cca4dcf0d662521b039f3160a25830f Retain unrelated call custody through the complete clear matrix
+9523528c24315c40285528e7bb966350a35635ec Keep the complete role clear matrix in a native fixture [skip ci]
+88a05e50237614cc360e8f40f4a1f75bb0ec2db7 Merge remote-tracking branch 'origin/main' into cloud/sd-oncall-c-f251
+8576019d3e3d4cc1b15d0b1f5d022ac4c152958f Keep new role clear fixtures within the intake shard budget
+4af169eb4b7cd5ee3a0bc9867edf6e51a9ac2a8f Wait for native review material before expanding its sections
+4d14b380111c77ab635448286a876a66db804055 Verify draft and accepted review material with native browser custody
+99e391e4cfd7e0cb6dea35b2c086f9777e3659ff Verify saved role clears preserve complete native custody
+494405716c8fe7f8c829d872289efbfe73b82541 Prove populated communications and commander clears [skip ci]
+e433eb6928f39aa9481724c5412cb999da24541b Prove populated review material parity for both native roles [skip ci]
+96d1b7a9ee6ed01fce1effbb889991a4a8a66d01 Verify saved Scribe clear in incident controls and timeline
+db9cb877170dacbdf2439359d1aa270091c3cdd7 Prove populated Scribe clear replay and revision custody [skip ci]
+772967384968f665f6e8363fc1b1e3d00b6fae86 Retain native window and sponsor provenance in parity receipts
+f264a370463fb3c86177ff0a110b3fb7d0812e90 Prove two-role recent change resource parity [skip ci]
+f7b5b5ea71e955081501bebf81a4f967459c8e34 Retain evidence-free mitigation outcomes beyond 24 hours
+5019bb1d10ef448c14f042356a4c15b1854b74a5 Prove evidence-free mitigation replay and conflicts [skip ci]
+f85fa75f02cceee88fea4dfeadba2d5cfe3a1eec Verify scoped report fields and native role browser custody
+0d83331a9a6072dfbed8c0dd1f6401b3cffafd97 Prove native two-role resource parity and complete report fields [skip ci]
+c682f802d4ae3e34caa65c5c99e9c2b45f715844 Update vulnerable undici and zod dependencies
+837f201d33195c56650447734513059f13ea5d34 Prove aged replay retention for standard coordination writes
+cbf889ea4766bdc1a0bfb8fbcb9b91a5813d43ff Extract aged replay retention journey [skip ci]
+183eef356bf1fd5eec173f2e5cbf27f3564ca0f7 Align ten agent tool clause associations with the contract

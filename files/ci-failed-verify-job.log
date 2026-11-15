@@ -1,0 +1,16 @@
+verify	Require the selected coverage and its proof	﻿2026-11-15T10:04:34.7207614Z ##[group]Run set -euo pipefail
+verify	Require the selected coverage and its proof	2026-11-15T10:04:34.7208575Z [36;1mset -euo pipefail[0m
+verify	Require the selected coverage and its proof	2026-11-15T10:04:34.7209268Z [36;1mtest "$PLAN" = success[0m
+verify	Require the selected coverage and its proof	2026-11-15T10:04:34.7210279Z [36;1mcase "$PUSH_PROOF:$NIGHTLY_PROOF" in[0m
+verify	Require the selected coverage and its proof	2026-11-15T10:04:34.7211111Z [36;1m  *failure*|*cancelled*) exit 1 ;;[0m
+verify	Require the selected coverage and its proof	2026-11-15T10:04:34.7211788Z [36;1mesac[0m
+verify	Require the selected coverage and its proof	2026-11-15T10:04:34.7212456Z [36;1mcase "$COVERAGE" in[0m
+verify	Require the selected coverage and its proof	2026-11-15T10:04:34.7213473Z [36;1m  reuse) test "$SKIP" = true && test "$BUILD" = skipped && test "$SHARDS" = skipped && test "$LIGHT" = skipped ;;[0m
+verify	Require the selected coverage and its proof	2026-11-15T10:04:34.7214895Z [36;1m  light) test "$SKIP" = false && test "$LIGHT" = success && test "$BUILD" = skipped && test "$SHARDS" = skipped ;;[0m
+verify	Require the selected coverage and its proof	2026-11-15T10:04:34.7216877Z [36;1m  full) test "$LIGHT" = skipped && { { test "$BUILD" = success && test "$SHARDS" = success; } || { test "$HAS_SHARDS" = false && test "$BUILD" = skipped && test "$SHARDS" = skipped; }; } ;;[0m
+verify	Require the selected coverage and its proof	2026-11-15T10:04:34.7218270Z [36;1m  *) exit 1 ;;[0m
+verify	Require the selected coverage and its proof	2026-11-15T10:04:34.7219060Z [36;1mesac[0m
+verify	Require the selected coverage and its proof	2026-11-15T10:04:34.7520617Z shell: /usr/bin/bash -e {0}
+[CI status environment listing omitted from public packet; outcomes are recorded in ci-terminal-receipt.json.]
+verify	Require the selected coverage and its proof	2026-11-15T10:04:34.7528196Z ##[endgroup]
+verify	Require the selected coverage and its proof	2026-11-15T10:04:34.7806409Z ##[error]Process completed with exit code 1.
