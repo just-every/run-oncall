@@ -52,7 +52,7 @@
     {
       "name": "OWNER_EMAIL",
       "label": "Owner email",
-      "help": "The owner of this installation. Hosted sign-in requires a configured remote mail provider and real credentials; rer deploy claims this owner automatically. Local rer dev also provides a private RER_OPEN owner entry.",
+      "help": "The owner of this installation. rer deploy claims this owner. With mail off, run rer signin from the deploying checkout using its Cloudflare credentials and recorded deployment.",
       "kind": "email",
       "required": true,
       "prefill": "account-email",
@@ -97,6 +97,10 @@
           "label": "Local development (no email)"
         },
         {
+          "value": "none",
+          "label": "Off (owner signs in with rer signin)"
+        },
+        {
           "value": "rer",
           "label": "RER managed mail"
         },
@@ -113,7 +117,8 @@
           "label": "Cloudflare Email Sending"
         }
       ],
-      "group": "mail"
+      "group": "mail",
+      "help": "Choose Off deliberately for a deployment without email. Email links and invitations are unavailable; the deploying owner uses rer signin."
     },
     {
       "name": "MAIL_FROM",

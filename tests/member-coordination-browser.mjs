@@ -4,6 +4,10 @@ import {mkdir,readFile} from 'node:fs/promises'
 import {chromium,expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import {localWorker} from './worker.mjs'
+import {mailOffJourney} from './mail-off.mjs'
+if (!process.env.ONCALL_MEMBER_JOURNEY || process.env.ONCALL_MEMBER_JOURNEY === 'mail-off') await mailOffJourney()
+if (process.env.ONCALL_MEMBER_JOURNEY === 'mail-off') process.exit(0)
+
 // OC-018 real hosted member coordination persists after reload: the hosted
 // member journey, maintained on the emitted production Worker. The owner claims
 // through the setup token; admin-created members sign in by password at

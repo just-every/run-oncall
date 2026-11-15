@@ -35,11 +35,13 @@ export interface Bindings {
  PAGERDUTY_OAUTH_CLIENT_SECRET?: string
  SESSION_SECRET: string
  SETUP_TOKEN?: string
- MAIL_PROVIDER?: 'development' | 'rer' | 'resend' | 'sendgrid' | 'cloudflare'
+ MAIL_PROVIDER?: 'none' | 'development' | 'rer' | 'resend' | 'sendgrid' | 'cloudflare'
  MAIL_RELAY_URL?: string
  MAIL_FROM?: string
  MAIL_API_KEY?: string
  MAIL_ACCOUNT_ID?: string
+ SENDGRID_API_KEY?: string
+ RESEND_API_KEY?: string
  /** Hosted deploys: built files and the deploy identity the deploy kit binds. */
  ASSETS?: Fetcher
  RER_DEPLOY_SOURCE?: string
@@ -48,7 +50,7 @@ export interface Bindings {
 }
 
 export const runtimeBindings = (env: Bindings): Bindings => env.RER_DEV_ORIGIN && env.AUTH_LOCAL === 'true' ? { ...env, AUTH_ORIGIN: env.RER_DEV_ORIGIN } : env
-export const authConfig = (env: Bindings): AuthConfig => ({ origin: env.AUTH_ORIGIN, local: env.AUTH_LOCAL === 'true', OWNER_EMAIL: env.OWNER_EMAIL, SESSION_SECRET: env.SESSION_SECRET, SETUP_TOKEN: env.SETUP_TOKEN, MAIL_FROM: env.MAIL_FROM ?? (env.RER_DEMO === '1' ? 'oncall@northline.example' : undefined), branding: { productName: branding.name, accentColor: branding.primaryColor, signInPath: '/signin', theme: theme.href } })
+export const authConfig = (env: Bindings): AuthConfig => ({ origin: env.AUTH_ORIGIN, local: env.AUTH_LOCAL === 'true', OWNER_EMAIL: env.OWNER_EMAIL, SESSION_SECRET: env.SESSION_SECRET, SETUP_TOKEN: env.SETUP_TOKEN, MAIL_FROM: env.MAIL_PROVIDER === 'none' ? undefined : env.MAIL_FROM ?? (env.RER_DEMO === '1' ? 'oncall@northline.example' : undefined), branding: { productName: branding.name, accentColor: branding.primaryColor, signInPath: '/signin', theme: theme.href } })
 export function operatorAuth(env: Bindings) {
  return createOperatorAuth({ db: env.DB, config: authConfig(env), mailSender: operatorMail(env), clientIp: request => request.headers.get('CF-Connecting-IP') ?? '' })
 }
@@ -101,9 +103,13 @@ export async function authResponse(request: Request, original: Bindings): Promis
   if (page) {
    let hint = ''
    try { hint = normalizeEmail(url.searchParams.get('login_hint')) } catch { /* Invalid hints leave the field empty. */ }
-   const document = hint && request.method === 'GET'
+   let document = hint && request.method === 'GET'
     ? new HTMLRewriter().on('#signin-email', { element(input) { input.setAttribute('value', hint) } }).transform(page)
     : page
+   if (env.MAIL_PROVIDER === 'none') document = new HTMLRewriter().on('.notice', { element(notice) {
+    notice.setInnerContent('Email is off for this installation. Email sign-in links and invitations are unavailable.')
+    notice.after('<p>The installation owner can run <code>rer signin</code> from the checkout that deployed it, using the same Cloudflare credentials and recorded deployment.</p>', { html: true })
+   } }).transform(document)
    return brandDocumentResponse(document)
   }
  }
@@ -112,6 +118,12 @@ export async function authResponse(request: Request, original: Bindings): Promis
   if(actor) {
    const mapped=await env.DB.prepare('SELECT member_id FROM operator_members WHERE operator_id=?').bind(actor.operator.id).first<{member_id:string}>()
    auditIdentity(env.DB,{actor:{kind:'member',id:mapped?.member_id??actor.operator.id}})
+  }
+  // Invitations cannot promise email delivery while the installation has mail off.
+  // Preserve the native authentication/authority refusal for other callers.
+  if (env.MAIL_PROVIDER === 'none' && url.pathname === '/auth/invite' && request.method === 'POST'
+   && actor && ['owner', 'admin'].includes(actor.operator.role) && request.headers.get('origin') === env.AUTH_ORIGIN) {
+   return Response.json({ error: 'mail_unavailable' }, { status: 503, headers: privateHeaders })
   }
   const settings=await importSettingsResponse(request,env)
   if(settings)return rejectedResponse(request,settings)

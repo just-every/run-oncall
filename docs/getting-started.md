@@ -231,3 +231,34 @@ rer deploy --environment production --env-file "$HOME/.config/oncall/production.
 ```
 
 This deletes only what that environment's deployment record says `rer` created, then reads back that every recorded resource is absent. Successful removal requires that empty readback; a successful DELETE alone is insufficient. The command exits successfully only after that verification. If removal refuses or readback fails, retain the records, address the reported cause and rerun the same removal command. Your local folder and local data stay. Provider API tokens and SendGrid sender identities are not deleted by this command; revoke installation-specific credentials in their provider consoles when no longer needed.
+
+
+### Hosted coordination with email off
+
+Choose `MAIL_PROVIDER=none` deliberately in the environment or the private
+0600 file passed with `--env-file`. Leave `MAIL_FROM`, `MAIL_API_KEY`,
+`SENDGRID_API_KEY`, `RESEND_API_KEY`, relay, account and DKIM inputs unset.
+A missing provider or a deferred choice does not turn email off. Check the plan
+with `rer deploy --dry-run --env-file PATH` before deploying to your own account.
+
+With email off, the owner runs `rer signin --environment production` from the
+checkout that deployed this environment, using its Cloudflare account credentials
+and its private recorded deployment. Rer checks the recorded app Worker, account,
+project, environment and ownership receipt against the live deployment before
+issuing a short-lived, one-time owner link. Keep that link private. A missing or
+replaced deployment record cannot be bypassed with local development entry.
+
+Email sign-in links and invitations return `503 mail_unavailable`. Existing
+workspace members can still use their installation-local passwords. Schedules,
+incident coordination and public pages keep working; notifications remain recorded
+without a sender and paging stays OFF. This makes no delivery guarantee.
+
+To enable mail, choose `sendgrid`, `resend`, `cloudflare` or `rer` and supply
+`MAIL_FROM` and `MAIL_API_KEY`. The direct providers also accept their native
+`SENDGRID_API_KEY` or `RESEND_API_KEY`. Cloudflare also requires
+`MAIL_ACCOUNT_ID`; managed mail requires `MAIL_RELAY_URL`. Enabled providers
+with missing inputs refuse. Remove old bound sending secrets explicitly with
+`rer deploy --environment production --unset-secret NAME` before switching
+an existing deployment off; a new selection does not remove old secrets.
+
+— Run Edit Run fleet, 2026-11-15

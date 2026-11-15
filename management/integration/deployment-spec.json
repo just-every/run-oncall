@@ -425,7 +425,7 @@
   ],
   "publicVariables": {
     "AUTH_LOCAL": "false",
-    "MAIL_PROVIDER": "sendgrid",
+    "MAIL_PROVIDER": "later",
     "MAIL_FROM": "",
     "MAIL_RELAY_URL": ""
   },
@@ -434,6 +434,8 @@
     "SETUP_TOKEN"
   ],
   "optionalSecretNames": [
+    "SENDGRID_API_KEY",
+    "RESEND_API_KEY",
     "MAIL_API_KEY",
     "INBOUND_EMAIL_DOMAIN",
     "PAGERDUTY_OAUTH_CLIENT_ID",
@@ -451,6 +453,11 @@
   "mail": {
     "providers": [
       "rer"
+    ],
+    "credentialSecretNames": [
+      "MAIL_API_KEY",
+      "SENDGRID_API_KEY",
+      "RESEND_API_KEY"
     ]
   },
   "surfaces": {

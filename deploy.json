@@ -12,8 +12,7 @@
   ],
   "originVar": "AUTH_ORIGIN",
   "vars": {
-    "AUTH_LOCAL": "false",
-    "MAIL_PROVIDER": "sendgrid"
+    "AUTH_LOCAL": "false"
   },
   "secrets": [
     {
@@ -29,13 +28,39 @@
       "environment": "SETUP_TOKEN"
     },
     {
+      "binding": "MAIL_PROVIDER",
+      "environment": "MAIL_PROVIDER",
+      "optional": true
+    },
+    {
+      "binding": "MAIL_RELAY_URL",
+      "environment": "MAIL_RELAY_URL",
+      "optional": true
+    },
+    {
+      "binding": "MAIL_ACCOUNT_ID",
+      "environment": "MAIL_ACCOUNT_ID",
+      "optional": true
+    },
+    {
+      "binding": "SENDGRID_API_KEY",
+      "environment": "SENDGRID_API_KEY",
+      "optional": true
+    },
+    {
+      "binding": "RESEND_API_KEY",
+      "environment": "RESEND_API_KEY",
+      "optional": true
+    },
+    {
       "binding": "MAIL_API_KEY",
-      "environment": "SENDGRID_API_KEY"
+      "environment": "MAIL_API_KEY",
+      "optional": true
     },
     {
       "binding": "MAIL_FROM",
       "environment": "MAIL_FROM",
-      "verifyStandIn": "auth@example.test"
+      "optional": true
     },
     {
       "binding": "INBOUND_EMAIL_DOMAIN",
