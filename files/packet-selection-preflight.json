@@ -142,6 +142,11 @@
       "path": "result.json",
       "bytes": 582,
       "sha256": "f7ef9ee7e1957f71053e09a6daee256fb265a6404067839fc9d768aa0697bdd4"
+    },
+    {
+      "path": "initial-evidence-publication.txt",
+      "bytes": 5403,
+      "sha256": "3733f4de40180f803c945c194e0f889f0c6bd50a3ecab9f767d703d775d3fb0c"
     }
   ]
 }

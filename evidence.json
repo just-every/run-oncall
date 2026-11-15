@@ -79,6 +79,12 @@
       "sha256": "0323b4b41143bfadd848d289e4316d6b95d7281cef89dee05c67b5faaa5bae3e"
     },
     {
+      "blob": "82e685353f3368b9f0e8e7c4eda0947975d60d6d",
+      "bytes": 5403,
+      "path": "initial-evidence-publication.txt",
+      "sha256": "3733f4de40180f803c945c194e0f889f0c6bd50a3ecab9f767d703d775d3fb0c"
+    },
+    {
       "blob": "d683edb0910bd48968948b8dd0e5113856df9594",
       "bytes": 1966,
       "path": "install.log",
@@ -91,10 +97,10 @@
       "sha256": "aa83b55b701319dbcac5ebefd0c2301c075c48e2b1bcf7e812ec5bfaefa1161c"
     },
     {
-      "blob": "e602121729d233d19fedb2e157df68c640ae1392",
-      "bytes": 4372,
+      "blob": "9f2270012b2e50732dcad129584e6cc29c7201c1",
+      "bytes": 4539,
       "path": "packet-selection-preflight.json",
-      "sha256": "156cd2b94d03e33e462e41e20997db805b327d7defaeb9ae4544d01fc837fbfb"
+      "sha256": "fb40246df0c2aa64a00489dcfddf59b5877cd860779c087b5834946f1636609d"
     },
     {
       "blob": "225acdb729d87fb5a1d6e54461e4efbaba85a030",
