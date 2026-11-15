@@ -1,6 +1,7 @@
 {
   "lanes": {
     "runtime": [
+      "tests/native-export.mjs",
       {
         "file": "tests/runtime.mjs",
         "part": "core"

@@ -156,7 +156,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "030bdfe78cc1ac08198ee0a7ff6c0520c901941a0e1361e40d9d73f8345f7c0a",
+      "sha256": "f7a11c2f5aa2dea4439f74f4d7d927a89fbfa05c89056b592c0c4e6c9cb20f25",
       "executable": false
     },
     "BRAND.md": {
@@ -928,7 +928,7 @@
       "executable": false
     },
     "scripts/delivery/base/native-export.mjs": {
-      "sha256": "5c0f90e688f5242dbc2f62416259cbb3074647298df8daa431a7022aa10d1a41",
+      "sha256": "e0066b4b818b2241c59d4cce06f13640c2ed9d0a0f688eeb60aac90f3473915e",
       "executable": false
     },
     "scripts/delivery/base/package.mjs": {
@@ -1664,7 +1664,7 @@
       "executable": false
     },
     "scripts/verify-shards.json": {
-      "sha256": "eaad7a14ef400f9f76f0a7a8eec6315b28eccd8ebb75b44a901f438ea2fc842b",
+      "sha256": "6cde2dec3364e2741cddf0dd7a1e5a0c5e02e67bba53fe0f569bfb670dcebcfe",
       "executable": false
     },
     "scripts/write-agent-surface.mjs": {
@@ -6641,6 +6641,10 @@
     },
     "tests/member-coordination-browser.mjs": {
       "sha256": "0179909f8bd114b34391f026325ab63af6e4d3840353d4f5c25255e8eb94e617",
+      "executable": false
+    },
+    "tests/native-export.mjs": {
+      "sha256": "e6e59eb803d16b6b6dfca71e31b5bad9aa16fa585bbd5649606df6dd59190979",
       "executable": false
     },
     "tests/oncall-agent-alerts.mjs": {
