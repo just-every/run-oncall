@@ -1,0 +1,3 @@
+81d2eaf7daac6501e2692272b856e1ef678ca7fc
+Upgrade re2js to patched 2.8.7
+

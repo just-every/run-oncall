@@ -1,0 +1,64 @@
+{
+  "files": [
+    {
+      "blob": "4807b5dbd2a95b8349cc01600681feb23ae54d4f",
+      "bytes": 3735,
+      "path": "REPORT.md",
+      "sha256": "198b9b0d6103d4bd763a9cf2d9b78b99e576d159ae1d715224f61d34368e24a8"
+    },
+    {
+      "blob": "142aa36bbef607a776885ec7fd898eb56c3944a9",
+      "bytes": 73,
+      "path": "candidate-messages.txt",
+      "sha256": "84739e13f00a86ce43f646d5b2aa81889a2a43e4b66b81ef6e1ec0fdfbd96518"
+    },
+    {
+      "blob": "55bfeff023c4ae17dc59e12f86f446b1960e6b53",
+      "bytes": 85,
+      "path": "commit-identity.txt",
+      "sha256": "148bad84b5b174568017df50d58e073566703d43c6c9fe7fa6f1af04420adf55"
+    },
+    {
+      "blob": "c647a35bfca061f7717e6b32a2dcd7999901e820",
+      "bytes": 422,
+      "path": "commit-stat.txt",
+      "sha256": "5124e355672422de0ccfdc0248edda217684c8d7ae08e0aff5c0188b1f848007"
+    },
+    {
+      "blob": "cd83a6f2756de71bcb664fedf4416c742a01c798",
+      "bytes": 1907,
+      "path": "handoff-receipt.json",
+      "sha256": "bbf17b4df7ec0a3540bbe880b17c1be19d3b7af6cb72140627843683a61f6cf9"
+    },
+    {
+      "blob": "667a8435ba5a4fdb28cf6cda5f250253f6e156e2",
+      "bytes": 80,
+      "path": "landing-ref.txt",
+      "sha256": "fc46288f14917b3b0afaddc6abd92019882fec0951ff493b1d4de5debe0f5263"
+    },
+    {
+      "blob": "161fd39a41869924742441fb9e4022c773590882",
+      "bytes": 836,
+      "path": "product-push.txt",
+      "sha256": "20440ce82460431e96ba6d50758638eaced532daa0550852b1022549d65c0996"
+    },
+    {
+      "blob": "a9d6849c914a95e6f38abbdc2349a1a02844a525",
+      "bytes": 77,
+      "path": "source-ref.txt",
+      "sha256": "81060eb23adc5f4c94549f9b2298be9f58c895394eb7b4e8973440aa418c861d"
+    },
+    {
+      "blob": "f7ae046fdc64cc01fc1e392cb2bd40f15022e7b4",
+      "bytes": 228,
+      "path": "verify-receipt.json",
+      "sha256": "8fe6a1149088a9f28da80bc2daafc9997adc9039e786e2394b5a902bf6250df1"
+    }
+  ],
+  "product_branch": "cloud/gr-mt-oncall-dep-6-c1",
+  "product_head": "81d2eaf7daac6501e2692272b856e1ef678ca7fc",
+  "ref": "refs/heads/evidence/gr-mt-oncall-dep-6-c1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "gr-mt-oncall-dep-6-c1"
+}

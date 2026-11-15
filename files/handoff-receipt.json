@@ -1,0 +1,60 @@
+{
+  "blockers": [],
+  "candidate_commit_count": 1,
+  "changed_paths": [
+    "package.json",
+    "pnpm-lock.yaml",
+    "sources.lock.json"
+  ],
+  "ci_poll_calls": 0,
+  "claim": null,
+  "clause_changes": [],
+  "contract_counts_after": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "contract_counts_before": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "contract_unchanged_from_parent": true,
+  "github_api_read_calls": 1,
+  "identity_and_trailers": "PASS; all candidate authors and committers fleet; no trailers",
+  "landing": "fleet Mac lander retains exact-SHA, full-history and publication gate custody",
+  "local_head": "81d2eaf7daac6501e2692272b856e1ef678ca7fc",
+  "pr": null,
+  "prior_publication_scan": "COMPLETE/PASS reported in the signed brief for the identical source SHA; not rerun by this carry task",
+  "product_branch": "cloud/gr-mt-oncall-dep-6-c1",
+  "product_content_changes": 0,
+  "product_new_commits": 0,
+  "product_push_attempts": 1,
+  "product_tree": "2fece402be8b806f48a78bb4fa1fb62e0e1caf64",
+  "re2js": {
+    "after": "2.8.7",
+    "before": "2.8.6",
+    "vulnerable_resolutions_after": 0,
+    "vulnerable_resolutions_before": 1
+  },
+  "recorded_at": "2026-11-15T16:38:20.668183+00:00",
+  "repository": "just-every/run-oncall",
+  "source_branch": "cloud/gr-mt-oncall-dep-6",
+  "source_head": "81d2eaf7daac6501e2692272b856e1ef678ca7fc",
+  "tag": "gr-mt-oncall-dep-6-c1",
+  "tests_rerun": false,
+  "verified_remote_head": "81d2eaf7daac6501e2692272b856e1ef678ca7fc",
+  "verify": {
+    "conclusion": "success",
+    "head_sha": "81d2eaf7daac6501e2692272b856e1ef678ca7fc",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43730664804",
+    "id": 43730664804,
+    "name": "Verify",
+    "run_attempt": 2,
+    "status": "completed"
+  },
+  "workflow_dispatches_or_reruns": 0,
+  "worktree_clean": true
+}
