@@ -107,7 +107,7 @@ export async function authResponse(request: Request, original: Bindings): Promis
     ? new HTMLRewriter().on('#signin-email', { element(input) { input.setAttribute('value', hint) } }).transform(page)
     : page
    if (env.MAIL_PROVIDER === 'none') document = new HTMLRewriter().on('.notice', { element(notice) {
-    notice.setInnerContent('Email is off for this installation. Email sign-in links and invitations are unavailable.')
+    if (!url.searchParams.has('notice')) notice.setInnerContent('Email is off for this installation. Email sign-in links and invitations are unavailable.')
     notice.after('<p>The installation owner can run <code>rer signin</code> from the checkout that deployed it, using the same Cloudflare credentials and recorded deployment.</p>', { html: true })
    } }).transform(document)
    return brandDocumentResponse(document)

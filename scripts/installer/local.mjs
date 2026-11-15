@@ -14,7 +14,8 @@ export { selectLocalState };
 const baseLifecycle = operatorInstaller({
  database: 'oncall-local', features: model.features,
  async prepare({ root, input, store }) {
-  validateMailConfiguration(input);
+  try { validateMailConfiguration(input); }
+  catch (error) { throw refuse(error.message); }
   // export and import run prepare without answers; the saved branding stays.
   if (input.APP_NAME === undefined && input.PRIMARY_COLOR === undefined) return;
   await store.step('Saving application branding');
