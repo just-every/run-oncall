@@ -1,0 +1,7 @@
+{
+  "status": "cannot",
+  "sha": "81d2eaf7daac6501e2692272b856e1ef678ca7fc",
+  "summary": "re2js is patched from 2.8.6 to 2.8.7 and pushed, but exact-SHA Verify 43730664804 is cancelled: browser shard cancelled and aggregate verify failed; no failing application assertion was observed.",
+  "tests": "PASS: frozen install, source-lock/check, contract-docs check, first-party check, build, typecheck, routing/intake/import-door journeys, bounded advisory and capture controls, exact-tree publication COMPLETE/PASS with zero new findings. CI build and seven shards pass; browser cancelled after about 15 minutes; aggregate verify fails.",
+  "security": true
+}

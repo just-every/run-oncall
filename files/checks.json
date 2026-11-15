@@ -1,0 +1,192 @@
+{
+  "author": "Run Edit Run fleet (Codex)",
+  "date": "2026-11-15",
+  "repository": "just-every/run-oncall",
+  "base_sha": "fe7d45ea1c2b89d3ed9dc4183a07d168c2fcccd0",
+  "branch": "cloud/gr-mt-oncall-dep-6",
+  "before": {
+    "declared": "2.8.6",
+    "resolved": "2.8.6",
+    "vulnerable_resolutions": 1
+  },
+  "after": {
+    "declared": "2.8.7",
+    "resolved": "2.8.7",
+    "vulnerable_resolutions": 0
+  },
+  "contract_counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "contract_counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "clause_status_changes": [],
+  "checks": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0,
+      "note": "Initial setup used VM Node 24.19.0; final checks use pinned Node 22.20.0."
+    },
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0,
+      "receipt": "install.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "receipt": "source-lock.log"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "receipt": "contract-check.log"
+    },
+    {
+      "command": "cloud_run pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "receipt": "first-party-check.log"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "receipt": "build.log"
+    },
+    {
+      "command": "cloud_run pnpm run typecheck",
+      "exit": 0,
+      "receipt": "typecheck.log"
+    },
+    {
+      "command": "cloud_run node tests/routing.mjs",
+      "exit": 0,
+      "receipt": "routing.log"
+    },
+    {
+      "command": "cloud_run node tests/intake.mjs",
+      "exit": 0,
+      "receipt": "intake.log"
+    },
+    {
+      "command": "cloud_run node tests/import-door.mjs",
+      "exit": 0,
+      "receipt": "import-door.log"
+    },
+    {
+      "command": "cloud_run node /tmp/gr-mt-oncall-dep-6-regression.mjs",
+      "exit": 0,
+      "receipt": "regression.json",
+      "note": "positive/negative lookbehind repeated matching with flag at 1k/2k/4k; default syntax refusal and ordinary matching/captures in both versions"
+    },
+    {
+      "command": "python3 /tmp/rer-reap.py node /tmp/gr-mt-oncall-dep-6-scan.mjs",
+      "exit": 0,
+      "receipt": "publication-scan.json",
+      "note": "Raw committed-tree staging; full history, 1184 commits, 1138 trees, 7134 blobs, 1184 commit messages and 22 tag messages; COMPLETE/PASS, zero new findings; four pre-existing historical records.",
+      "library_call": "sourcePublicationScan(committedSource(repo, HEAD), temporary, undefined, just-every/run-oncall, https://github.com/just-every/run-oncall.git, https://github.com/just-every/run-oncall.git#main, false)"
+    },
+    {
+      "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/gr-mt-oncall-dep-6",
+      "exit": 0,
+      "receipt": "push.log"
+    },
+    {
+      "command": "git ls-remote --heads origin cloud/gr-mt-oncall-dep-6",
+      "exit": 0,
+      "observed_sha": "81d2eaf7daac6501e2692272b856e1ef678ca7fc"
+    },
+    {
+      "command": "git log origin/main..HEAD --format=%an <%ae>%n%cn <%ce>%n%(trailers:only,unfold), plus complete candidate messages",
+      "exit": 0,
+      "note": "One candidate commit, fleet author+committer, no trailers."
+    }
+  ],
+  "github_calls_before_scan": 3,
+  "github_calls": [
+    {
+      "endpoint": "repos/just-every/base/git/trees/main?recursive=1",
+      "result": "404; corrected source identity from edition.json, no retry on nonexistent repository"
+    },
+    {
+      "endpoint": "repos/runeditrun/base/git/trees/main?recursive=1",
+      "result": "200; read-only path discovery, scanner subsequently found in installed CLI"
+    },
+    {
+      "endpoint": "advisories/GHSA-gg6h-894w-4m9c",
+      "result": "200; advisory.json"
+    }
+  ],
+  "sha": "81d2eaf7daac6501e2692272b856e1ef678ca7fc",
+  "publication": {
+    "status": "PASS",
+    "complete": true,
+    "findings": 0,
+    "pre_existing": 4,
+    "head": "81d2eaf7daac6501e2692272b856e1ef678ca7fc",
+    "tree": "2fece402be8b806f48a78bb4fa1fb62e0e1caf64",
+    "scanner": {
+      "name": "gitleaks",
+      "version": "8.30.1"
+    },
+    "guarantees": {
+      "historyScanned": true,
+      "visualRecognition": false,
+      "environmentChecked": false
+    }
+  },
+  "product_push": {
+    "status": "pushed",
+    "attempts": 1,
+    "branch": "cloud/gr-mt-oncall-dep-6",
+    "sha": "81d2eaf7daac6501e2692272b856e1ef678ca7fc"
+  },
+  "ci": {
+    "run_id": 43730664804,
+    "status": "completed",
+    "head_sha": "81d2eaf7daac6501e2692272b856e1ef678ca7fc",
+    "url": "https://github.com/just-every/run-oncall/actions/runs/43730664804",
+    "conclusion": "cancelled",
+    "checked_at": "2026-11-15T15:55:13.648525+00:00",
+    "aggregate_verify_job": "failure"
+  },
+  "ci_observations": [
+    {
+      "checked_at": "2026-11-15T15:45:13.145354+00:00",
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-oncall/actions/runs/43730664804",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ],
+      "exit": 0,
+      "conclusion": null,
+      "head_sha": "81d2eaf7daac6501e2692272b856e1ef678ca7fc",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43730664804",
+      "status": "in_progress"
+    },
+    {
+      "checked_at": "2026-11-15T15:55:13.648525+00:00",
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-oncall/actions/runs/43730664804",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ],
+      "exit": 0,
+      "conclusion": "cancelled",
+      "head_sha": "81d2eaf7daac6501e2692272b856e1ef678ca7fc",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43730664804",
+      "status": "completed"
+    }
+  ],
+  "outcome": "blocked",
+  "blocker": "Required exact-SHA Verify did not complete successfully: browser shard cancelled while still emitting passing probes, then aggregate verify failed; no failing application assertion observed. Cancellation timing is consistent with its configured 15-minute budget, but no explicit timeout reason was returned."
+}

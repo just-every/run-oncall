@@ -1,0 +1,9 @@
+2026-11-15T15:38:10.5510000Z Job is waiting for a hosted runner to come online.
+2026-11-15T15:38:10.5480000Z Requested labels: ubuntu-24.04
+2026-11-15T15:38:10.5480000Z Job defined at: just-every/run-oncall/.github/workflows/verify.yml@refs/heads/cloud/gr-mt-oncall-dep-6
+2026-11-15T15:38:10.5480000Z Waiting for a runner to pick up this job...
+2026-11-15T15:38:10.5520000Z Job is about to start running on the hosted runner: GitHub Actions 1000327835
+2026-11-15T15:38:10.5470000Z Evaluating shards.if
+2026-11-15T15:38:10.5470000Z Evaluating: (success() && ((needs.plan.outputs.has_shards == 'true')))
+2026-11-15T15:38:10.5470000Z Expanded: (true && ('true' == 'true'))
+2026-11-15T15:38:10.5470000Z Result: true

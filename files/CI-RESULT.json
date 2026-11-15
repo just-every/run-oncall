@@ -1,0 +1,30 @@
+{
+  "author": "Run Edit Run fleet (Codex)",
+  "date": "2026-11-15",
+  "outcome": "blocked",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/gr-mt-oncall-dep-6",
+  "head": "81d2eaf7daac6501e2692272b856e1ef678ca7fc",
+  "run_id": 43730664804,
+  "run_conclusion": "cancelled",
+  "verify_job_conclusion": "failure",
+  "browser_job": 132863110877,
+  "browser_conclusion": "cancelled",
+  "browser_configured_timeout_minutes": 15,
+  "browser_started_at": "2026-11-15T15:38:11Z",
+  "browser_completed_at": "2026-11-15T15:53:39Z",
+  "passing_shards": [
+    "shards (runtime)",
+    "shards (agents)",
+    "shards (changes)",
+    "shards (triage)",
+    "shards (transfer)",
+    "shards (hosted)",
+    "shards (intake)"
+  ],
+  "build": "success",
+  "blocker": "Required exact-SHA Verify did not complete successfully: browser shard cancelled while still emitting passing probes, then aggregate verify failed; no failing application assertion observed. Cancellation timing is consistent with its configured 15-minute budget, but no explicit timeout reason was returned.",
+  "next_action": "Lane investigates browser CI duration/cancellation and obtains required exact-SHA green through its authorized gates. Builder did not rerun or dispatch this SHA, weaken checks, or create a no-op commit.",
+  "github_budget": "3 explicit source/advisory reads, one scanner reference-resolution phase, one run discovery, two status polls, one completed-jobs read and two log-view commands. No further API calls planned.",
+  "log_handling": "Both prescribed gh run view --job --log-failed commands were used once and exited 0; browser returned empty output. The already downloaded gh log archive was read locally for the browser shard and system log, with no further API call. Workflow environment listings were omitted from published log receipts; no injected values or signed URL queries retained."
+}

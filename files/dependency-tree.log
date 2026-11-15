@@ -1,0 +1,6 @@
+Legend: production dependency, optional only, dev only
+
+@just-every/oncall@0.5.15 /home/agent/rer-consolidation/work/maint/gr-mt-oncall-dep-6/repo (PRIVATE)
+
+dependencies:
+re2js 2.8.7

@@ -1,0 +1,4 @@
+
+> @just-every/oncall@0.5.15 typecheck /home/agent/rer-consolidation/work/maint/gr-mt-oncall-dep-6/repo
+> tsc --noEmit
+

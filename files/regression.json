@@ -1,0 +1,98 @@
+{
+  "advisory": "GHSA-gg6h-894w-4m9c",
+  "node": "22.20.0",
+  "probes": [
+    {
+      "label": "2.8.6",
+      "rows": [
+        {
+          "pattern": "(?<=a)b",
+          "size": 1000,
+          "matches": 500,
+          "ms": 54.143
+        },
+        {
+          "pattern": "(?<=a)b",
+          "size": 2000,
+          "matches": 1000,
+          "ms": 167.823
+        },
+        {
+          "pattern": "(?<=a)b",
+          "size": 4000,
+          "matches": 2000,
+          "ms": 623.381
+        },
+        {
+          "pattern": "(?<!a)b",
+          "size": 1000,
+          "matches": 500,
+          "ms": 40.883
+        },
+        {
+          "pattern": "(?<!a)b",
+          "size": 2000,
+          "matches": 1000,
+          "ms": 153.633
+        },
+        {
+          "pattern": "(?<!a)b",
+          "size": 4000,
+          "matches": 2000,
+          "ms": 655.748
+        }
+      ],
+      "defaultLookbehindRejected": true,
+      "ordinaryMatchAndCapturePassed": true
+    },
+    {
+      "label": "2.8.7",
+      "rows": [
+        {
+          "pattern": "(?<=a)b",
+          "size": 1000,
+          "matches": 500,
+          "ms": 9.373
+        },
+        {
+          "pattern": "(?<=a)b",
+          "size": 2000,
+          "matches": 1000,
+          "ms": 5.709
+        },
+        {
+          "pattern": "(?<=a)b",
+          "size": 4000,
+          "matches": 2000,
+          "ms": 8.367
+        },
+        {
+          "pattern": "(?<!a)b",
+          "size": 1000,
+          "matches": 500,
+          "ms": 4.884
+        },
+        {
+          "pattern": "(?<!a)b",
+          "size": 2000,
+          "matches": 1000,
+          "ms": 4.315
+        },
+        {
+          "pattern": "(?<!a)b",
+          "size": 4000,
+          "matches": 2000,
+          "ms": 2.632
+        }
+      ],
+      "defaultLookbehindRejected": true,
+      "ordinaryMatchAndCapturePassed": true
+    }
+  ],
+  "note": "Bounded one-pass timing observations, not a capacity benchmark or a formal complexity proof.",
+  "artifacts": {
+    "baseline_module_sha256": "1cd1da133e67a261232d16e99e4186c5fb7410c1a89c8fec9e23765d22e89df8",
+    "patched_module_sha256": "2eba876bb0c8b86584234d3cd35b6ad79809977fa92e03d2ada3e0df1044876e",
+    "script_sha256": "b34937835eb3d81b537a2cdba48fd965d0c7ee1b7407d3667af7b3d248a32821"
+  }
+}

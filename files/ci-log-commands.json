@@ -1,0 +1,14 @@
+{
+  "commands": [
+    {
+      "command": "gh run view 43730664804 --repo just-every/run-oncall --job 132867509964 --log-failed",
+      "exit": 0,
+      "receipt": "ci-verify-failed.log"
+    },
+    {
+      "command": "gh run view 43730664804 --repo just-every/run-oncall --job 132863110877 --log-failed",
+      "exit": 0,
+      "receipt": "ci-browser-cancelled.log"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+diff --git a/package.json b/package.json
+index a718d957..4cfea6ee 100644
+--- a/package.json
++++ b/package.json
+@@ -34,7 +34,7 @@
+     "@tanstack/react-router": "1.170.41",
+     "@tanstack/react-start": "1.168.60",
+     "hono": "4.13.7",
+-    "re2js": "2.8.6",
++    "re2js": "2.8.7",
+     "react": "19.2.8",
+     "react-dom": "19.2.8"
+   },
+diff --git a/pnpm-lock.yaml b/pnpm-lock.yaml
+index 5cd3c2af..ddbcf099 100644
+--- a/pnpm-lock.yaml
++++ b/pnpm-lock.yaml
+@@ -26,8 +26,8 @@ importers:
+         specifier: 4.13.7
+         version: 4.13.7
+       re2js:
+-        specifier: 2.8.6
+-        version: 2.8.6
++        specifier: 2.8.7
++        version: 2.8.7
+       react:
+         specifier: 19.2.8
+         version: 19.2.8
+@@ -1109,9 +1109,9 @@ packages:
+     engines: {node: '>=14'}
+     hasBin: true
+ 
+-  re2js@2.8.6:
+-    resolution: {integrity: sha512-xLgQil4kIUCrAzVk9fRSkxkFNwmygLFjVxXrLc65aE1F0+Zsb8rxumFBy4XKyvgMCTL6kilDq3EZ0piE2dP/Dg==}
+-    engines: {node: '>=18.0.0'}
++  re2js@2.8.7:
++    resolution: {integrity: sha512-bRSL/vn3KAmlGfGNoVpcsBXLaVvl6AbuvMMWbz0m3vBj60nj+p2/biozfBUOSBP+5XTduF6mr6IO/ZVjmqqkVQ==}
++    engines: {node: '>=20.0.0'}
+ 
+   react-dom@19.2.8:
+     resolution: {integrity: sha512-rVprimfGBG3DR+Tq0IQG2DT5PxKth1WIGDmj5yPmlzr4YBe7uyE+Du4oVqTDXZSHGGGXRtTJEGSSePyQCMBglQ==}
+@@ -2254,7 +2254,7 @@ snapshots:
+ 
+   prettier@3.9.6: {}
+ 
+-  re2js@2.8.6: {}
++  re2js@2.8.7: {}
+ 
+   react-dom@19.2.8(react@19.2.8):
+     dependencies:
+diff --git a/sources.lock.json b/sources.lock.json
+index b42c4dc8..36229b04 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -736,11 +736,11 @@
+       "executable": false
+     },
+     "package.json": {
+-      "sha256": "ea2812d4ad5337f3c0ace6eef85a5bd6777bfd65f9a3d5962daa0baf818f7802",
++      "sha256": "34a2d5100085fffa77851fce3add928ab0d3b4b7bc4a6b22fae3dec66fac6638",
+       "executable": false
+     },
+     "pnpm-lock.yaml": {
+-      "sha256": "b6aa5dfd7cf634bc68088065e02bbf51a977d60f664eb712711f2050c717f844",
++      "sha256": "8a4ee94c34ea41da97b1daed2096dfc09722bd5ca100afd37ec3a8085f797f0c",
+       "executable": false
+     },
+     "public/brand/badge-rail-1x.webp": {

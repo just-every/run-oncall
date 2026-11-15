@@ -1,0 +1,21 @@
+{
+  "checked_at": "2026-11-15T15:35:12.547760+00:00",
+  "command": [
+    "gh",
+    "api",
+    "repos/just-every/run-oncall/actions/runs?head_sha=81d2eaf7daac6501e2692272b856e1ef678ca7fc&per_page=100",
+    "--jq",
+    "[.workflow_runs[] | {id,name,status,conclusion,head_sha,html_url}]"
+  ],
+  "exit": 0,
+  "runs": [
+    {
+      "conclusion": null,
+      "head_sha": "81d2eaf7daac6501e2692272b856e1ef678ca7fc",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43730664804",
+      "id": 43730664804,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ]
+}

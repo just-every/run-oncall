@@ -1,0 +1,12 @@
+{
+  "author": "Run Edit Run fleet (Codex)",
+  "date": "2026-11-15",
+  "product_head": "81d2eaf7daac6501e2692272b856e1ef678ca7fc",
+  "branch": "cloud/gr-mt-oncall-dep-6",
+  "local_heavy_commands": "all complete and reaped through cloud_run",
+  "servers_or_browsers_left_running_by_builder": 0,
+  "ci_watcher": "one REST watcher, 600-second intervals; no other GitHub poller",
+  "publication_scan": "raw committed tree, no installer state or local secrets in staging",
+  "packet_preflight": "regular files only, no injected secret values or credential-shaped token/private-key material found",
+  "notes": "Final cleanup waits until exact-SHA CI observation and report-only evidence transfer finish."
+}
