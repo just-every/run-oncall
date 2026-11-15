@@ -1,0 +1,19 @@
+ RUN-LOCALLY.md                    |  5 +++--
+ docs/changes.md                   |  4 ++--
+ docs/data.md                      | 18 ++++++++++++----
+ docs/getting-started.md           |  4 +++-
+ docs/incidents.md                 |  8 +++++--
+ docs/install.md                   | 10 ++++++---
+ sources.lock.json                 | 38 ++++++++++++++++++++-------------
+ src/app/IncidentBulkActions.tsx   |  2 +-
+ src/move-in/ExportHelp.tsx        |  2 +-
+ src/move-in/ImportJournal.tsx     |  3 ++-
+ src/move-in/MoveIn.tsx            |  2 +-
+ src/on-call/RotaPage.tsx          | 14 +++++++-----
+ src/team/TeamSection.tsx          |  8 ++++---
+ src/team/TeamSignIn.tsx           | 29 +++++++++++++++++++++++++
+ src/team/team-section.css         |  4 ++++
+ tests/product-browser-journey.mjs |  9 +++++++-
+ tests/product-browser.mjs         | 27 +++++++++++++++++------
+ tests/stranger-trip-steps.mjs     | 45 +++++++++++++++++++++++++++++++++++++++
+ 18 files changed, 184 insertions(+), 48 deletions(-)
