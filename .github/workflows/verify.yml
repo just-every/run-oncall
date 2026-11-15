@@ -54,6 +54,22 @@ jobs:
           NIGHTLY_CACHE_HIT: ${{ steps.nightly.outputs.cache-hit }}
         run: node scripts/verify-oncall.mjs --plan
 
+  contract-docs:
+    needs: plan
+    if: ${{ needs.plan.outputs.skip != 'true' }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+      - name: Check the generated contract documents
+        run: node src/base/contract-docs.mjs check
+
   build:
     needs: plan
     if: ${{ needs.plan.outputs.has_shards == 'true' }}
@@ -82,8 +98,6 @@ jobs:
           path: ${{ runner.temp }}/pnpm-store
           key: seed-ubuntu24-temp-store-${{ runner.arch }}-build-${{ hashFiles('pnpm-lock.yaml', 'package.json') }}
       - run: pnpm install --frozen-lockfile
-      - name: Check the generated contract documents
-        run: node src/base/contract-docs.mjs check
       - name: Check edition source lock with the installed package
         run: node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check
       - run: pnpm run deps
@@ -154,8 +168,6 @@ jobs:
           # Old snapshots contain absolute HOME paths; do not restore them here.
           key: seed-ubuntu24-temp-store-${{ runner.arch }}-browser-${{ matrix.browser }}-${{ hashFiles('pnpm-lock.yaml', 'package.json') }}
       - run: pnpm install --frozen-lockfile
-      - name: Check the generated contract documents
-        run: node src/base/contract-docs.mjs check
       - name: Check edition source lock with the installed package
         run: node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check
       - run: pnpm run deps
@@ -222,8 +234,6 @@ jobs:
       - run: npm install --global pnpm@10.12.4
       - run: pnpm config set store-dir "$RUNNER_TEMP/pnpm-store"
       - run: pnpm install --frozen-lockfile
-      - name: Check the generated contract documents
-        run: node src/base/contract-docs.mjs check
       - name: Check edition source lock with the installed package
         run: node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check
       - run: pnpm run deps
@@ -254,7 +264,7 @@ jobs:
           key: nightly-green-${{ github.sha }}
 
   verify:
-    needs: [plan, build, shards, light, full-push-proof, nightly-proof]
+    needs: [plan, contract-docs, build, shards, light, full-push-proof, nightly-proof]
     if: ${{ always() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 1
@@ -262,6 +272,7 @@ jobs:
       - name: Require the selected coverage and its proof
         env:
           PLAN: ${{ needs.plan.result }}
+          CONTRACT_DOCS: ${{ needs.contract-docs.result }}
           BUILD: ${{ needs.build.result }}
           SHARDS: ${{ needs.shards.result }}
           LIGHT: ${{ needs.light.result }}
@@ -273,6 +284,10 @@ jobs:
         run: |
           set -euo pipefail
           test "$PLAN" = success
+          case "$CONTRACT_DOCS:$SKIP" in
+            success:false|skipped:true) ;;
+            *) exit 1 ;;
+          esac
           case "$PUSH_PROOF:$NIGHTLY_PROOF" in
             *failure*|*cancelled*) exit 1 ;;
           esac
