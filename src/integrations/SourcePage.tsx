@@ -16,7 +16,7 @@ const references = { email: ['/docs/compatible-intake#integration-email', 'Set u
 
 export function SourcePage({ source, state, admin, busy, run, children }: IntegrationProps & { source?: SourceRecord; children?: React.ReactNode }) {
   const [confirm, setConfirm] = useState<'rotate'|'revoke'>(),[revealed,setRevealed]=useState(''),[revealError,setRevealError]=useState(''),[reading,setReading]=useState(false);
-  useEffect(()=>{setRevealed('');setRevealError('');},[source?.id,admin]);
+  useEffect(()=>{setRevealed('');setRevealError('');},[source?.id,source?.active,admin]);
   if (!source) return <section className="panel padded integrations"><a className="integration-link" href="/settings/integrations">‹ Integrations</a><h2>Source not found</h2><p>Choose an integration from the list.</p></section>;
   const id = source.id.slice(source.id.indexOf(':') + 1), service = state.services.find(s => s.id === source.service);
   const intake = (state.intakeReceipts ?? []).filter(r => r.source === id).slice().reverse();

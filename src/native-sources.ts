@@ -4,8 +4,9 @@ import { fail, text, type State } from './family/response-operations/domain';
 import { changeHash, changeHmac, equalSignature, freshTimestamp, openCredential, sealCredential, sourceCustody } from './changes/credentials';
 import { runtimeBindings } from './auth.server';
 
-// OC-042: a native source holds a bearer key only as its digest, and an HMAC signing key only as
-// installation-local AES-GCM ciphertext (sources.signing_custody). Neither is returned, archived or audited.
+// OC-042: authentication uses a bearer digest or encrypted HMAC signing custody.
+// New keys also retain installation-local encrypted admin readback custody.
+// Ordinary reads, archives and audit exclude both the credential and its ciphertext.
 export type NativeSource = { digest: string; signing_secret: string | null; signing_custody: string | null; scopes: string };
 type Guard = { sql: string; values: (string | number | null)[] };
 type Dependencies = { body: (c: any) => Promise<any>; load: (db: D1Database) => Promise<State>; guard: (c: any) => Guard };
@@ -58,9 +59,9 @@ async function currentAdmin(c: any, deps: Dependencies) {
 export function installNativeSources(api: any, deps: Dependencies) {
   api.get('/api/sources', async (c: any) => {
     await currentAdmin(c, deps);
-    const rows = (await c.env.DB.prepare('SELECT id,signing_secret IS NOT NULL AS pending,signing_custody IS NOT NULL AS signed,scopes FROM sources ORDER BY id').all()).results as { id: string; pending: number; signed: number; scopes: string }[];
+    const rows = (await c.env.DB.prepare('SELECT id,signing_secret IS NOT NULL AS pending,signing_custody IS NOT NULL AS signed,key_custody IS NOT NULL AS readable,scopes FROM sources ORDER BY id').all()).results as { id: string; pending: number; signed: number; readable: number; scopes: string }[];
     return c.json({ sources: rows.map(row => ({ id: row.id, authentication: row.pending || row.signed ? 'signed' : 'bearer',
-      custody: row.pending ? 'awaiting the installation key' : row.signed ? 'encrypted in this installation' : 'digest only', scopes: JSON.parse(row.scopes) })) });
+      custody: row.pending ? 'awaiting the installation key' : row.signed || row.readable ? 'encrypted in this installation' : 'digest only', scopes: JSON.parse(row.scopes) })) });
   });
   api.post('/api/sources', async (c: any) => {
     if (c.get('actor').role !== 'admin') fail('Admin required', 403);
