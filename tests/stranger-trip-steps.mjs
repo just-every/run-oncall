@@ -6,7 +6,8 @@ export async function readableErasure(page,context,receipt,{reload=false}={}) {
  const jobs=await (await context.request.get(origin+'/api/move-in/jobs?vendor=opsgenie')).json();
  const erased=jobs.find(job=>job.files?.some(file=>file.startsWith('erased-artifact:')));
  assert.ok(erased,'erasure retains internal artifact custody');
- if(reload){await page.reload();await page.getByLabel('Source',{exact:true}).selectOption('file');await page.getByLabel('File source',{exact:true}).selectOption('opsgenie');}
+ if(reload)await page.reload();
+ await page.getByLabel('Source',{exact:true}).selectOption('file');await page.getByLabel('File source',{exact:true}).selectOption('opsgenie');
  if(jobs.length>1){const selector=page.getByLabel('Saved import journal',{exact:true});await selector.waitFor();await selector.selectOption(erased.id);}
  else if(await page.getByRole('heading',{name:'Import journal',exact:true}).count()===0)await page.getByRole('button',{name:'Open saved import',exact:true}).click();
  await page.getByRole('heading',{name:'Import journal',exact:true}).waitFor();
