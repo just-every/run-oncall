@@ -130,7 +130,7 @@ In **Workers & Pages**, also confirm that the account has a **Your subdomain** v
 
 ### 2. Get a SendGrid key and verified sender
 
-Hosted email-link sign-in sends real email through SendGrid, selected by `deploy.json`. Use a SendGrid account enabled for sending and complete its account verification and two-factor authentication prompts. See [SendGrid account verification](https://www.twilio.com/docs/sendgrid/ui/account-and-settings/verifying-your-account).
+For email-link sign-in, choose `MAIL_PROVIDER=sendgrid` with the inputs below. To host with email off, skip the provider account and follow [Hosted coordination with email off](#hosted-coordination-with-email-off). Use a SendGrid account enabled for sending and complete its account verification and two-factor authentication prompts. See [SendGrid account verification](https://www.twilio.com/docs/sendgrid/ui/account-and-settings/verifying-your-account).
 
 **`MAIL_FROM` is the sender address recipients see**, for example `oncall@example.com`. It is separate from the owner's recipient mailbox and must be verified in the same SendGrid account as the key:
 
@@ -141,7 +141,7 @@ Hosted email-link sign-in sends real email through SendGrid, selected by `deploy
 
 ### 3. Save credentials in a private file
 
-The following macOS/Linux/WSL shell commands create a file outside the checkout, readable and writable only by your user (`0600`). The creation step refuses to overwrite an existing file. Run it once, then use your editor to replace the four placeholders with the copied values; do not paste real secrets into shell commands or shared logs.
+The following macOS/Linux/WSL shell commands create a file outside the checkout, readable and writable only by your user (`0600`). The creation step refuses to overwrite an existing file. Run it once, then use your editor to replace the placeholders with the copied values; do not paste real secrets into shell commands or shared logs.
 
 ```sh
 mkdir -p "$HOME/.config/oncall"
@@ -152,6 +152,7 @@ chmod 700 "$HOME/.config/oncall"
   cat > "$HOME/.config/oncall/production.env" <<'ENV'
 CLOUDFLARE_ACCOUNT_ID=replace-with-account-id
 CLOUDFLARE_API_TOKEN=replace-with-token-secret
+MAIL_PROVIDER=sendgrid
 SENDGRID_API_KEY=replace-with-sendgrid-key
 MAIL_FROM=oncall@example.com
 ENV
@@ -220,7 +221,7 @@ rer deploy --environment production --env-file "$HOME/.config/oncall/production.
 rer deploy --environment production --env-file "$HOME/.config/oncall/production.env" --set-secret MAIL_FROM
 ```
 
-`MAIL_API_KEY` is the Worker binding populated from `SENDGRID_API_KEY`; `MAIL_FROM` comes from the same-named file entry. Run only the change you need, repeat the real email sign-in test, then revoke an old SendGrid key after its replacement works.
+`MAIL_API_KEY` uses the same-named file entry; `SENDGRID_API_KEY` is also supported as a native SendGrid binding. Use `--set-secret SENDGRID_API_KEY` when replacing that native key. `MAIL_FROM` comes from the same-named file entry. Run only the change you need, repeat the real email sign-in test, then revoke an old SendGrid key after its replacement works.
 
 ### Remove a hosted installation
 

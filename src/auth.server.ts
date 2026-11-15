@@ -122,7 +122,7 @@ export async function authResponse(request: Request, original: Bindings): Promis
   // Invitations cannot promise email delivery while the installation has mail off.
   // Preserve the native authentication/authority refusal for other callers.
   if (env.MAIL_PROVIDER === 'none' && url.pathname === '/auth/invite' && request.method === 'POST'
-   && actor && ['owner', 'admin'].includes(actor.operator.role) && request.headers.get('origin') === env.AUTH_ORIGIN) {
+   && actor && ['owner', 'admin'].includes(actor.operator.role) && request.headers.get('origin') === env.AUTH_ORIGIN && request.headers.get('sec-fetch-site') !== 'cross-site') {
    return Response.json({ error: 'mail_unavailable' }, { status: 503, headers: privateHeaders })
   }
   const settings=await importSettingsResponse(request,env)
