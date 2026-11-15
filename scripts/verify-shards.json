@@ -56,6 +56,12 @@
           "ONCALL_TRIAGE_PART": "reports"
         }
       }
+    ],
+    "agents": [
+      {
+        "file": "tests/runtime.mjs",
+        "part": "agents"
+      }
     ]
   },
   "push": [
@@ -72,6 +78,15 @@
       "name": "intake",
       "lanes": [
         "intake"
+      ],
+      "browser": false,
+      "hosted": false,
+      "timeout": 15
+    },
+    {
+      "name": "agents",
+      "lanes": [
+        "agents"
       ],
       "browser": false,
       "hosted": false,

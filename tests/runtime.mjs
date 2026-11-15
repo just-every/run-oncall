@@ -13,7 +13,7 @@ import {createHmac,pbkdf2Sync,createHash,randomBytes} from 'node:crypto'
 import {createServer} from 'node:net'
 
 const runtimePart=process.env.ONCALL_RUNTIME_PART??'all'
-if(!['all','core','machines','delivery'].includes(runtimePart))throw Error(`Unknown runtime journey: ${runtimePart}`)
+if(!['all','core','machines','agents','delivery'].includes(runtimePart))throw Error(`Unknown runtime journey: ${runtimePart}`)
 if(['all','core'].includes(runtimePart)) {
  const started=performance.now();await coordinationJourney()
  console.log(`Runtime core completed (${((performance.now()-started)/1000).toFixed(1)}s)`)
@@ -136,7 +136,12 @@ await automationJourney();
 
  console.log(`Runtime machines completed (${((performance.now()-started)/1000).toFixed(1)}s)`)
 }
-if(runtimePart!=='machines') {
+if(['all','agents'].includes(runtimePart)) {
+ const started=performance.now()
+ await import('./oncall-agent-flow.mjs')
+ console.log(`Runtime agents completed (${((performance.now()-started)/1000).toFixed(1)}s)`)
+}
+if(!['machines','agents'].includes(runtimePart)) {
 // The same emitted build must serve every public linked page in hosted mode.
 {
 const {default:assert}=await import('node:assert/strict')
@@ -2105,6 +2110,4 @@ try {
   console.log('PASS OC-040 integration erasure: queued send prevented, in-flight public erasure 409, completion only after outcome, audit rollback, per-table credentials/outbox counts, concurrent 200/409, client unlink and native restore fence');
  }finally{hold?.();await erased.close()}
 }
-await import('./oncall-agent-flow.mjs');
-
 }

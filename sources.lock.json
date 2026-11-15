@@ -1660,7 +1660,7 @@
       "executable": false
     },
     "scripts/verify-shards.json": {
-      "sha256": "211b2292dff0af84bae5321b4d1be245cbad2a3444b68ce7a63aa237760775ff",
+      "sha256": "eaad7a14ef400f9f76f0a7a8eec6315b28eccd8ebb75b44a901f438ea2fc842b",
       "executable": false
     },
     "scripts/write-agent-surface.mjs": {
@@ -6740,7 +6740,7 @@
       "executable": false
     },
     "tests/runtime.mjs": {
-      "sha256": "6f6be596471ba77e98d4dab1e8d9c9ec462cb0ec64e19c38076a33d6110ceac7",
+      "sha256": "414c3881e8979b88dde72ac4905cba11d5d7af93104c846b4f5f2adfbfe74567",
       "executable": false
     },
     "tests/transfer.mjs": {
