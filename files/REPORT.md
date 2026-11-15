@@ -71,3 +71,12 @@ Push Verify [43664226008](https://github.com/just-every/run-oncall/actions/runs/
 All selected scope checks pass. There is no selected-scope blocker. Product custody is READY on the named cloud branch and the exact head above. It is not landed: main equality, Run site and the complete publication scan remain guarded fleet duties. The final ref read is recorded in RECEIPT.json. The baseline worktree and the two stopped native-test scratch directories were removed; successful native runtimes and browsers closed normally. The product clone is removed only after the final evidence transfer.
 
 CLAIM BASE-AGENT-012 PARTIAL points=1,2,3,4 tests=tests/oncall-agent-role-clear-replay.mjs#roleClearReplay; tests/oncall-agent-retention.mjs#agedReplayRetention; tests/agent-door-browser.mjs#saved-role leg
+
+## Canonical selected probes
+
+Each line covers Communications and Commander under autonomous and held policies.
+
+PROBE BASE-AGENT-012 1: native MCP assign-role with member=null and exact-key retries -> one attributed clear, equal stored result and original review; T+24h and T+24h+1s preserve original expiry after unchanged-policy renewal and fresh same-identity tokens.
+PROBE BASE-AGENT-012 2: destroy the real MCP response at headers without consuming the body -> D1 establishes the completed original call and single clear; a new RPC id recovers that saved result and review.
+PROBE BASE-AGENT-012 3: completed key and original revision with only a schema-valid reason changed -> isError and idempotency_conflict in metadata and text, no private structuredContent and no effect; original arguments still replay.
+PROBE BASE-AGENT-012 4: stale optional expected revision with current native revision, and stale native revision with expected revision absent -> revision_conflict with authorized parent current_revision in metadata and text, distinct from workspace revision; fresh-key correction clears once and exact retries add no effect; missing and scoped-out targets return identical not_found without disclosure.
