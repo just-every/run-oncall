@@ -1,0 +1,10 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-15T14:09:33.383Z",
+  "head": "98d633ee7d20ebbb1d68842eaab998bbdffb284b",
+  "assertionWidth": 1440,
+  "cases": [],
+  "screenshots": [],
+  "status": "failed",
+  "error": "TypeError: Cannot read properties of undefined (reading 'launch')"
+}

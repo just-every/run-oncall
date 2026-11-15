@@ -1,0 +1,42 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-15T14:12:22.795294+00:00",
+  "gh_calls": 5,
+  "attempts": [
+    {
+      "attempt": 1,
+      "command": "gh api repos/just-every/run-oncall/code-scanning/alerts/20",
+      "exit": 1,
+      "http": 403,
+      "error": "gh: Resource not accessible by integration (HTTP 403)"
+    },
+    {
+      "attempt": 2,
+      "command": "gh api repos/just-every/run-oncall/code-scanning/alerts/20",
+      "exit": 1,
+      "http": 403,
+      "error": "gh: Resource not accessible by integration (HTTP 403)"
+    },
+    {
+      "attempt": 3,
+      "command": "gh api repos/just-every/run-oncall/code-scanning/alerts/20",
+      "exit": 1,
+      "http": 403,
+      "error": "gh: Resource not accessible by integration (HTTP 403)"
+    },
+    {
+      "attempt": 4,
+      "command": "gh api repos/just-every/run-oncall/code-scanning/alerts/20",
+      "exit": 1,
+      "http": 403,
+      "error": "gh: Resource not accessible by integration (HTTP 403)"
+    },
+    {
+      "attempt": 5,
+      "command": "gh api repos/just-every/run-oncall/code-scanning/alerts/20",
+      "exit": 1,
+      "http": 403,
+      "error": "gh: Resource not accessible by integration (HTTP 403)"
+    }
+  ]
+}

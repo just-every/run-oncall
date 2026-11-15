@@ -1,0 +1,7 @@
+{
+  "status": "no-change",
+  "sha": "98d633ee7d20ebbb1d68842eaab998bbdffb284b",
+  "summary": "Alert #20 is a false positive: the DOM region is a React href suffix after a fixed same-origin path; native OAuth normalizes US/EU, and 12 emitted-browser/HTTP cases prove no HTML interpretation or script execution.",
+  "tests": "Node 22.20.0/pnpm 10.12.4: rer build PASS; pnpm run typecheck PASS; emitted Worker/Chromium probe PASS (12 valid/hostile regions, US/EU fixed identity hosts, key fallback/clearing and source controls, 1440 assertions and 1440/390 screenshots, zero outbound requests). No product changes.",
+  "security": false
+}

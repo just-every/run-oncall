@@ -1,0 +1,123 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-15T14:13:17.513949+00:00",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/gr-mt-oncall-code-9",
+  "head": "98d633ee7d20ebbb1d68842eaab998bbdffb284b",
+  "status": "no-change",
+  "sourceDisposition": "false-positive",
+  "productCommits": 0,
+  "productDiffFiles": 0,
+  "productPush": "not needed: proven no-change",
+  "productPR": null,
+  "ciRunIds": [],
+  "commands": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "node": "24.19.0",
+      "pnpm": "10.12.4",
+      "exit": 0,
+      "result": "setup completed; dependencies installed, build and 68 local migrations applied; temporary app stopped"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "node": "24.19.0",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run pnpm run typecheck",
+      "node": "24.19.0",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run node packet/connect-step-probe.mjs <repo> <packet>",
+      "node": "24.19.0",
+      "exit": 0,
+      "result": "12 cases; native HTTP and browser; details in connect-step-node24-receipt.json"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "node": "22.20.0",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run pnpm run typecheck",
+      "node": "22.20.0",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run node packet/connect-step-probe.mjs <repo> <packet>",
+      "node": "22.20.0",
+      "exit": 0,
+      "result": "12 cases; native HTTP and browser; details in connect-step-receipt.json"
+    },
+    {
+      "command": "git diff --exit-code; git diff --cached --exit-code; git status --porcelain",
+      "exit": 0,
+      "result": "no staged or unstaged tracked changes and no untracked files"
+    },
+    {
+      "command": "git log origin/main..HEAD --format=\"%an <%ae>%n%cn <%ce>%n%(trailers:only,unfold)\"",
+      "exit": 0,
+      "result": "empty: no candidate product commits"
+    }
+  ],
+  "initialProbeFailure": {
+    "result": "test harness CJS import error before Chromium launch, not a product assertion failure",
+    "receipt": "probe-initial-failure.json",
+    "correction": "load @playwright/test through createRequire instead of expecting named exports from its resolved CommonJS entrypoint"
+  },
+  "toolchain": {
+    "finalNode": "22.20.0",
+    "pnpm": "10.12.4",
+    "browser": "/usr/bin/chromium",
+    "browserArgs": [
+      "--no-sandbox",
+      "--use-mock-keychain",
+      "--password-store=basic"
+    ]
+  },
+  "counts": {
+    "contractBefore": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "contractAfter": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "registeredLaneEntriesBefore": 17,
+    "registeredLaneEntriesAfter": 17,
+    "newProductTests": 0,
+    "targetAlertCount": 1,
+    "falsePositiveCount": 1,
+    "fixedInCodeCount": 0
+  },
+  "sourceSha256": {
+    "src/move-in/ConnectStep.tsx": "da3f4c53bfe96f2cc69be7d012305524d15a4781aa2767a5dab0d6f595fa6215",
+    "src/move-in/MoveIn.tsx": "fb3771a92a83d3f5372f84addf71cd6b1624196b23aea157e18e2fa6cddfab0a",
+    "src/move-in/pagerduty-oauth.ts": "269f4b9cca2926435829313d65444d85418a81f3ebdb362c0be6c04f68bfb708",
+    "src/move-in/ExportHelp.tsx": "9b9f434eec3b14a1db70c53243d45fa464093b9c60149172b5534e0c49f53200",
+    "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac",
+    "ACCEPTANCE.md": "875e11f85ca8473511fe5defbbdd5d6457f248e48fcbbe6796d86194701c62c3",
+    "docs/CLAIMS.md": "8c57d53cb2bd436176cc5b556bd1a4ca786848e4ee2d310bed277fe8faf7d440",
+    "sources.lock.json": "d8503eca97942097455f350f73e995a7e8ef8c72045b014f39f716e782dbd80f"
+  },
+  "history": {
+    "connectStepIntroduction": "4e83731196a33c6ccd4ca0a97cb18f9a84810d52",
+    "connectStepChangesSinceIntroduction": 0
+  },
+  "clauseStatusChanges": [],
+  "notRun": [
+    "full local verification suite (brief prohibits full local rer verify)",
+    "branch Verify (no product commit or push)",
+    "Base publication scan (no new product tree is being published; scanner unavailable in cloud VM)",
+    "live provider exchange or import (not needed to assess HTML reinterpretation; no real credentials used)"
+  ],
+  "providerState": "unknown: alert detail read denied HTTP 403, no GitHub alert dismissal attempted",
+  "processes": "browser context, Chromium and localWorker closed by the successful probe; rer setup temporary app stopped before exit"
+}

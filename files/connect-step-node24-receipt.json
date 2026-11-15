@@ -1,0 +1,170 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-15T14:10:17.961Z",
+  "head": "98d633ee7d20ebbb1d68842eaab998bbdffb284b",
+  "assertionWidth": 1440,
+  "cases": [
+    {
+      "name": "us",
+      "source": "us",
+      "hrefSuffix": "/api/move-in/pagerduty/start?region=us",
+      "originPreserved": true,
+      "pathPreserved": true,
+      "htmlChildren": 0,
+      "eventAttributes": false,
+      "injectedScriptExecutions": 0,
+      "status": 302,
+      "providerOrigin": "https://identity.pagerduty.com"
+    },
+    {
+      "name": "eu",
+      "source": "eu",
+      "hrefSuffix": "/api/move-in/pagerduty/start?region=eu",
+      "originPreserved": true,
+      "pathPreserved": true,
+      "htmlChildren": 0,
+      "eventAttributes": false,
+      "injectedScriptExecutions": 0,
+      "status": 302,
+      "providerOrigin": "https://identity.eu.pagerduty.com"
+    },
+    {
+      "name": "javascript URL",
+      "source": "javascript:globalThis.__oncall20=1",
+      "hrefSuffix": "/api/move-in/pagerduty/start?region=javascript:globalThis.__oncall20=1",
+      "originPreserved": true,
+      "pathPreserved": true,
+      "htmlChildren": 0,
+      "eventAttributes": false,
+      "injectedScriptExecutions": 0,
+      "status": 302,
+      "providerOrigin": "https://identity.pagerduty.com"
+    },
+    {
+      "name": "external URL",
+      "source": "https://attacker.example.test/",
+      "hrefSuffix": "/api/move-in/pagerduty/start?region=https://attacker.example.test/",
+      "originPreserved": true,
+      "pathPreserved": true,
+      "htmlChildren": 0,
+      "eventAttributes": false,
+      "injectedScriptExecutions": 0,
+      "status": 302,
+      "providerOrigin": "https://identity.pagerduty.com"
+    },
+    {
+      "name": "protocol-relative URL",
+      "source": "//attacker.example.test/",
+      "hrefSuffix": "/api/move-in/pagerduty/start?region=//attacker.example.test/",
+      "originPreserved": true,
+      "pathPreserved": true,
+      "htmlChildren": 0,
+      "eventAttributes": false,
+      "injectedScriptExecutions": 0,
+      "status": 302,
+      "providerOrigin": "https://identity.pagerduty.com"
+    },
+    {
+      "name": "attribute / image injection",
+      "source": "\"><img src=x onerror=\"globalThis.__oncall20=1\">",
+      "hrefSuffix": "/api/move-in/pagerduty/start?region=\"><img src=x onerror=\"globalThis.__oncall20=1\">",
+      "originPreserved": true,
+      "pathPreserved": true,
+      "htmlChildren": 0,
+      "eventAttributes": false,
+      "injectedScriptExecutions": 0,
+      "status": 302,
+      "providerOrigin": "https://identity.pagerduty.com"
+    },
+    {
+      "name": "attribute / SVG injection",
+      "source": "' onmouseover='globalThis.__oncall20=1'><svg onload='globalThis.__oncall20=1'>",
+      "hrefSuffix": "/api/move-in/pagerduty/start?region=' onmouseover='globalThis.__oncall20=1'><svg onload='globalThis.__oncall20=1'>",
+      "originPreserved": true,
+      "pathPreserved": true,
+      "htmlChildren": 0,
+      "eventAttributes": false,
+      "injectedScriptExecutions": 0,
+      "status": 302,
+      "providerOrigin": "https://identity.pagerduty.com"
+    },
+    {
+      "name": "encoded tag",
+      "source": "%22%3E%3Csvg%20onload%3DglobalThis.__oncall20%3D1%3E",
+      "hrefSuffix": "/api/move-in/pagerduty/start?region=%22%3E%3Csvg%20onload%3DglobalThis.__oncall20%3D1%3E",
+      "originPreserved": true,
+      "pathPreserved": true,
+      "htmlChildren": 0,
+      "eventAttributes": false,
+      "injectedScriptExecutions": 0,
+      "status": 302,
+      "providerOrigin": "https://identity.pagerduty.com"
+    },
+    {
+      "name": "query separator",
+      "source": "us&region=eu&redirect=https://attacker.example.test/",
+      "hrefSuffix": "/api/move-in/pagerduty/start?region=us&region=eu&redirect=https://attacker.example.test/",
+      "originPreserved": true,
+      "pathPreserved": true,
+      "htmlChildren": 0,
+      "eventAttributes": false,
+      "injectedScriptExecutions": 0,
+      "status": 302,
+      "providerOrigin": "https://identity.pagerduty.com"
+    },
+    {
+      "name": "fragment",
+      "source": "eu#javascript:globalThis.__oncall20=1",
+      "hrefSuffix": "/api/move-in/pagerduty/start?region=eu#javascript:globalThis.__oncall20=1",
+      "originPreserved": true,
+      "pathPreserved": true,
+      "htmlChildren": 0,
+      "eventAttributes": false,
+      "injectedScriptExecutions": 0,
+      "status": 302,
+      "providerOrigin": "https://identity.eu.pagerduty.com"
+    },
+    {
+      "name": "newline",
+      "source": "\njavascript:globalThis.__oncall20=1",
+      "hrefSuffix": "/api/move-in/pagerduty/start?region=\njavascript:globalThis.__oncall20=1",
+      "originPreserved": true,
+      "pathPreserved": true,
+      "htmlChildren": 0,
+      "eventAttributes": false,
+      "injectedScriptExecutions": 0,
+      "status": 302,
+      "providerOrigin": "https://identity.pagerduty.com"
+    },
+    {
+      "name": "backslash",
+      "source": "\\attacker.example.test/",
+      "hrefSuffix": "/api/move-in/pagerduty/start?region=\\attacker.example.test/",
+      "originPreserved": true,
+      "pathPreserved": true,
+      "htmlChildren": 0,
+      "eventAttributes": false,
+      "injectedScriptExecutions": 0,
+      "status": 302,
+      "providerOrigin": "https://identity.pagerduty.com"
+    }
+  ],
+  "screenshots": [
+    "browser/connect-1440.png",
+    "browser/connect-390.png",
+    "browser/key-fallback-1440.png",
+    "browser/key-fallback-390.png"
+  ],
+  "status": "passed",
+  "compatibility": {
+    "us": true,
+    "eu": true,
+    "keyFallback": true,
+    "keyClearedOnSwitch": true,
+    "opsgenie": true,
+    "fileUploadControl": true
+  },
+  "externalBrowserRequests": 0,
+  "outboundWorkerRequests": 0,
+  "pageErrors": []
+}
