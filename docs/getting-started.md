@@ -223,6 +223,14 @@ rer deploy --environment production --env-file "$HOME/.config/oncall/production.
 
 `MAIL_API_KEY` uses the same-named file entry; `SENDGRID_API_KEY` is also supported as a native SendGrid binding. Use `--set-secret SENDGRID_API_KEY` when replacing that native key. `MAIL_FROM` comes from the same-named file entry. Run only the change you need, repeat the real email sign-in test, then revoke an old SendGrid key after its replacement works.
 
+An existing deployment inherits its bound `MAIL_PROVIDER` secret during a normal redeploy. To change the mail selection, including turning mail on or off, update `MAIL_PROVIDER` in your environment or private file and explicitly replace that secret. For example, after editing `$HOME/.config/oncall/production.env`, run:
+
+```sh
+rer deploy --environment production --env-file "$HOME/.config/oncall/production.env" --set-secret MAIL_PROVIDER
+```
+
+— sd, 2026-11-15
+
 ### Remove a hosted installation
 
 Removal deletes the hosted database and its records. Keep the deployment record and use the same account, credentials and named environment:

@@ -118,7 +118,7 @@
         }
       ],
       "group": "mail",
-      "help": "Choose Off deliberately for a deployment without email. Email links and invitations are unavailable; the deploying owner uses rer signin."
+      "help": "rer deploy reads MAIL_PROVIDER from the environment or --env-file, separately from this setup choice. Set MAIL_PROVIDER=none there for a deployment without email. Email links and invitations are unavailable; the deploying owner uses rer signin."
     },
     {
       "name": "MAIL_FROM",
