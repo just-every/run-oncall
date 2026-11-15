@@ -2708,7 +2708,7 @@
       "executable": false
     },
     "src/integrations/AddIntegration.tsx": {
-      "sha256": "c242f0d84a10d089dea99a48eb7d76181a7839279d4cc9b62cac22417a7d803d",
+      "sha256": "987042822d759fa7b8eb8a41f418a9d948e483af9177c22d9373538006f240e5",
       "executable": false
     },
     "src/integrations/catalog.ts": {
@@ -6136,7 +6136,7 @@
       "executable": false
     },
     "src/routing/RoutedKeyCreate.tsx": {
-      "sha256": "d1c517c817e0203c7349fa397db7cbe4513909bab2b71dba5786a381c7453c95",
+      "sha256": "41b9da904c2c1777b6acaf9e6a253628f63520aa32dae47fa2122ff6a63357bc",
       "executable": false
     },
     "src/routing/RoutedSenderSetup.tsx": {
@@ -6756,7 +6756,7 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "b4565173e4559bcdd62589b2cad0bf429366f8f7a434a03abef62493e6b1ab9a",
+      "sha256": "1458e1756cf2d8f522aad649d75df6d6edc595be4b3ae9dfc78aee38c80776cb",
       "executable": false
     },
     "tests/readable-names-browser.mjs": {

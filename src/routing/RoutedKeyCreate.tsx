@@ -12,7 +12,7 @@ export function RoutedKeyCreate({ state, busy, run, defaultOpen = false, onCreat
   const services = state.services.filter(s=>!team||s.team===team);
   const owners = state.members.filter(m => m.active && ['admin', 'responder'].includes(m.role));
   return <details className="panel padded integrations routing-create" open={open} onToggle={e => setOpen(e.currentTarget.open)}><summary>Add routed key</summary>
-    {created ? <><OneTimeSecret value={created} onDone={() => { setCreated(''); setSender(undefined); setName(''); setOpen(false); }} />{sender && <RoutedSenderSetup sender={sender} defaultOpen />}</> : !state.services.length ? <p><a href="/settings/services">Add a service first</a></p> : <Form busy={busy} label="Create routed key" onSubmit={async () => {
+    {created ? <><OneTimeSecret value={created} readable onDone={() => { setCreated(''); setSender(undefined); setName(''); setOpen(false); }} />{sender && <RoutedSenderSetup sender={sender} defaultOpen />}</> : !state.services.length ? <p><a href="/settings/services">Add a service first</a></p> : <Form busy={busy} label="Create routed key" onSubmit={async () => {
       if(!scope.length){setError('Choose at least one service.');return false;}setError('');
       const id = newIdentity('routed'), key = privateKey();
       const result = await run('/api/routing/keys', { id, name, provider, scope, owner, key, ...(team?{team}:{}), revision: 0, rules: [], catchAll: null, ...(provider === 'native' ? { authentication } : {}) }, 'Routed key created');
