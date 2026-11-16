@@ -458,7 +458,7 @@ async function changeAndSigningBrowser(page,context){
   await settings.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await check('oc040-erasure-review',width);
   const erasureResponse=page.waitForResponse(r=>r.url().endsWith('/api/changes/'+erasureChange.id+'/erase'));
   await settings.getByRole('button',{name:'Erase retained change',exact:true}).click();assert.equal((await erasureResponse).status(),200);
-  await settings.getByText(erasedName+' erased: 1 change. Standby not reconciled.',{exact:true}).waitFor();
+  await settings.getByText(erasedName+' erased: 1 change.',{exact:true}).waitFor();
   assert.equal((await (await erasureResponse).json()).stores.oc_changes.deleted,1);assert.equal((await (await erasureResponse).json()).stores.oc_changes.updated,0);
   assert.ok(!(await request('/api/state')).changes.some(row=>row.id===erasureChange.id));
   await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-erasure-receipt',width);
@@ -524,7 +524,7 @@ async function changeAndSigningBrowser(page,context){
   const memberPlan=await importDoor.preview('pagerduty',JSON.stringify({users:[{id:'synthetic-oncall-413-'+width,name:'Synthetic erasable contact',email:memberName}]}));assert.equal(memberPlan.status,200);assert.equal((await importDoor.apply('pagerduty',memberPlan.value)).status,200);
   await focusWorkspace(page);
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('member');await settings.getByLabel('Erasure subject',{exact:true}).selectOption(erasedMember.id);
-  await settings.getByLabel('Imported identity Synthetic erasable contact',{exact:true}).check();await settings.getByLabel('Imported identities reviewed',{exact:true}).check();
+  await settings.getByLabel('Imported identity Synthetic erasable contact',{exact:true}).check();await settings.getByLabel('I reviewed the imported identities for this member.',{exact:true}).check();
   await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+await settings.locator('select').nth(1).evaluate(select=>select.selectedOptions[0].label));await settings.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await check('oc040-member-review',width);
   const memberResponse=page.waitForResponse(r=>r.url().endsWith('/api/erasure/member/'+erasedMember.id));await settings.getByRole('button',{name:'Erase selected subject',exact:true}).click();const memberReply=await memberResponse;assert.equal(memberReply.status(),200,await memberReply.text());
   await settings.getByText('Imported records cleared locally.',{exact:true}).waitFor();await settings.getByRole('status').scrollIntoViewIfNeeded();await settings.getByText(/Approved response recipient .*Provider deletion requires the owner’s consent/).waitFor();await check('oc040-member-receipt',width);

@@ -4,13 +4,13 @@ import {ReplayComparison} from '../app/ReplayComparison';
 import { failureMessage } from '../app/FailureLine';
 import type { State } from '../family/response-operations/domain';
 
-export function CompareHistory({ state }: { state: State }) {
+export function CompareHistory({ state, draftRule = null }: { state: State; draftRule?: Record<string, unknown> | null }) {
   const [open, setOpen] = useState(false), [result, setResult] = useState<any>(), [error, setError] = useState(''), [running, setRunning] = useState(false);
   const [pasted, setPasted] = useState(''), [events, setEvents] = useState(state.events);
   const opener = useRef<HTMLButtonElement>(null), panel = useRef<HTMLDivElement>(null);
   async function compare(input: State['events']) {
     setRunning(true); setError(''); setResult(undefined);
-    try { const submitted=input.map(({source,eventId,service,environment,key,generation,intent,severity,title,observedAt,evidence,priority})=>({source,eventId,service,environment,key,generation,intent,severity,title,observedAt,evidence,...(priority?{priority}:{})}));setResult(await compareRequest('/api/replay', { events: submitted })); setEvents(input); }
+    try { const submitted=input.map(({source,eventId,service,environment,key,generation,intent,severity,title,observedAt,evidence,priority})=>({source,eventId,service,environment,key,generation,intent,severity,title,observedAt,evidence,...(priority?{priority}:{})}));setResult(await compareRequest('/api/replay', { events: submitted, ...(draftRule ? { policyDraft: draftRule } : {}) })); setEvents(input); }
     catch (e) { setError(failureMessage(e, true)); }
     finally { setRunning(false); }
   }
@@ -27,6 +27,7 @@ export function CompareHistory({ state }: { state: State }) {
       }
     }}>
       <div className="integration-heading"><h2>Compare with history</h2><button type="button" onClick={close}>Close comparison</button></div>
+      {draftRule && <p>The proposed decision includes your open, unpublished rule.</p>}
       {running && <p role="status">Comparing retained events…</p>}
       {error && <p role="alert">{error} <button type="button" onClick={() => compare(events)}>Retry</button></p>}
       {result && <ReplayComparison result={result} members={state.members} events={events}/>}

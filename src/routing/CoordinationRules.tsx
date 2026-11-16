@@ -1,20 +1,23 @@
-import {useState} from 'react';
+import {useEffect,useState} from 'react';
 import {InlineConfirm} from '../app/autosave/InlineConfirm';
 import {useVersionDraft} from '../integrations/useVersionDraft';
 import type {IntegrationProps} from '../integrations/catalog';
-type Rule={service:string;severity:string;action:'route'|'suppress';owner:string};
-export function CoordinationRules({state,admin,busy,run}:IntegrationProps) {
+export type Rule={service:string;severity:string;action:'route'|'suppress';owner:string};
+export function CoordinationRules({state,admin,busy,run,onDraft}:IntegrationProps&{onDraft?:(rule:Rule|null)=>void}) {
  const [editing,setEditing]=useState<string>(),[confirm,setConfirm]=useState(false);
  const key=editing??'new',published=state.policies.find(p=>p.id===key);
  return <section className="panel padded integrations coordination-rules"><h2>Coordination rules</h2>
   {state.policies.map(p=><article className="coordination-row" key={p.id}><strong>{state.services.find(s=>s.id===p.service)?.name} · {p.severity==='*'?'All severities':p.severity}</strong><p>{p.action==='route'?'Route to '+(state.members.find(m=>m.id===p.owner)?.name??'Unassigned'):'Suppress'} · version {p.version}</p>{admin&&<button onClick={()=>{setEditing(p.id);setConfirm(false);}}>Edit rule</button>}</article>)}
-  {admin&&state.services.length>0&&<>{editing===undefined?<button onClick={()=>setEditing('new')}>Add rule</button>:<CoordinationDraft key={key} state={state} busy={busy} run={run} id={key} version={published?.version??0} initial={{service:published?.service??state.services[0].id,severity:published?.severity??'*',action:published?.action??'route',owner:published?.owner??state.members.find(m=>m.active&&['admin','responder'].includes(m.role))?.id??''}} confirm={confirm} setConfirm={setConfirm} onPublished={()=>{setEditing(undefined);setConfirm(false);}}/>}</>}
+  {admin&&state.services.length>0&&<>{editing===undefined?<button onClick={()=>setEditing('new')}>Add rule</button>:<CoordinationDraft key={key} onDraft={onDraft} state={state} busy={busy} run={run} id={key} version={published?.version??0} initial={{service:published?.service??state.services[0].id,severity:published?.severity??'*',action:published?.action??'route',owner:published?.owner??state.members.find(m=>m.active&&['admin','responder'].includes(m.role))?.id??''}} confirm={confirm} setConfirm={setConfirm} onPublished={()=>{setEditing(undefined);setConfirm(false);}}/>}</>}
  </section>;
 }
-function CoordinationDraft({state,busy,run,id,version,initial,confirm,setConfirm,onPublished}:Pick<IntegrationProps,'state'|'busy'|'run'>&{id:string;version:number;initial:Rule;confirm:boolean;setConfirm:(v:boolean)=>void;onPublished:()=>void}) {
+function CoordinationDraft({state,busy,run,id,version,initial,confirm,setConfirm,onPublished,onDraft}:Pick<IntegrationProps,'state'|'busy'|'run'>&{onDraft?:(rule:Rule|null)=>void;id:string;version:number;initial:Rule;confirm:boolean;setConfirm:(v:boolean)=>void;onPublished:()=>void}) {
  const versionFor=(rule:Rule)=>state.policies.find(p=>p.service===rule.service&&p.severity===rule.severity)?.version??0;
  const draft=useVersionDraft('coordination',id,versionFor,initial),value=draft.value,owners=state.members.filter(m=>m.active&&['admin','responder'].includes(m.role));
  const current=state.policies.find(p=>p.service===value.service&&p.severity===value.severity),next=(current?.version??0)+1;
+ // Compare with history evaluates the open draft as if it were published.
+ useEffect(()=>{onDraft?.(id==='new'||draft.changed?value:null);},[id,draft.changed,value.service,value.severity,value.action,value.owner]);
+ useEffect(()=>()=>onDraft?.(null),[]);
  const change=(field:keyof Rule,to:string)=>{const next={...value,[field]:to};draft.edit(next,field==='service'||field==='severity'?versionFor(next):draft.baseVersion);};
  return <div className="coordination-draft"><h3>Draft rule</h3><div className="routing-fields">
   {state.services.length===1?<p>Service · {state.services[0].name}</p>:<label className="field">Service<select aria-label="Service" value={value.service} onChange={e=>change('service',e.target.value)}>{state.services.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label>}

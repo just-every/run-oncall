@@ -982,7 +982,7 @@ try {
  assert.equal(ok(await door.apply('opsgenie',changedPlan)).job.state,'completed')
  const pdPlan=ok(await door.preview('pagerduty',sources.pagerduty)),held=ok(await door.call('pagerduty','apply',{planId:pdPlan.planId,reviewedFingerprint:pdPlan.fingerprint}),409)
  assert.equal(held.code,'TARGET_REVISION_CONFLICT');for(const email of ['alice@example.test','bob@example.test'])assert.ok(held.error.includes(email),'the refusal names the people already imported')
- assert.match(held.error,/ already in Oncall from the Opsgenie import [0-9a-f]{8}-[0-9a-f-]{27}\b/,'the refusal names the holding import by its vendor');assert.doesNotMatch(held.error,/door:/,'no internal namespace reaches the owner')
+ assert.match(held.error,/ already in Oncall from the Opsgenie import\b/,'the refusal names the holding import by its vendor');assert.doesNotMatch(held.error,/[0-9a-f]{8}-[0-9a-f]{4}-/,'no import id reaches the owner');assert.doesNotMatch(held.error,/door:/,'no internal namespace reaches the owner')
  assert.deepEqual(w.sql('SELECT * FROM move_in_objects ORDER BY kind,id'),nativeBefore,'changed source cannot replace committed native data')
  const revoked=await w.request('/api/login',{name:'Admin',password:'synthetic-local-testing-password'});ok(revoked);ok(await w.request('/api/logout',{},revoked.cookie));ok(await door.call('opsgenie','apply',{planId:preview.planId,reviewedFingerprint:preview.fingerprint},revoked.cookie),401);ok(await w.request('/api/audit/export',undefined,revoked.cookie),401)
  assert.deepEqual(w.sql('SELECT * FROM move_in_objects ORDER BY kind,id'),nativeBefore,'revoked session cannot resume or mutate imported data')

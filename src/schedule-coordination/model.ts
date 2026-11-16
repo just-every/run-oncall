@@ -17,9 +17,11 @@ export function swapSchedule(state:State,schedule:Schedule,requester:string,subs
  if(!responsive(state,requester)||!responsive(state,substitute)||requester===substitute)fail('Choose one different active substitute');
  const before=preview(schedule,state.members,from,to);
  if(before.some(window=>window[role]!==requester))fail('Requester must hold the entire interval; no gap or different holder may be replaced',409);
+ const other=role==='primary'?'backup':'primary';
+ if(before.some(window=>window[other]===substitute))fail((state.members.find(m=>m.id===substitute)?.name??'That person')+' already holds the '+other+' role during this shift; choose someone else',409);
  const override={id:crypto.randomUUID(),role,start:new Date(from).toISOString(),end:new Date(to).toISOString(),member:substitute};
  const changed=validateSchedule({...schedule,revision:schedule.revision+1,overrides:[...schedule.overrides,override]},state);
- const after=preview(changed,state.members,from,to),other=role==='primary'?'backup':'primary';
+ const after=preview(changed,state.members,from,to);
  for(const at of new Set([...before,...after].map(window=>window.at))){const prior=coverage(schedule,state.members,at),next=coverage(changed,state.members,at);if(next[role]!==substitute||next[other]!==prior[other])fail('Swap would create ambiguous or overlapping coverage or a new gap',409);}
  return changed;
 }

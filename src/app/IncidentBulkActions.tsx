@@ -1,4 +1,5 @@
 import { useId, useRef, useState } from 'react';
+import {plural} from './plural';
 import { request } from '../useWorkspace';
 import { Field, Form } from '../forms';
 import type { Member } from '../family/response-operations/domain';
@@ -20,7 +21,7 @@ export function IncidentBulkActions({items, allMatching, count, total, refreshin
       {total <= 1000 && !allMatching && <button className="quiet" disabled={busy || refreshing} onClick={selectMatching}>Select all {total} matching</button>}
       <button className="quiet" disabled={busy} onClick={clear}>Clear selection</button></div>
     <label>Bulk action<select aria-label="Bulk action" disabled={busy || !canEdit} value={action} onChange={e => setAction(e.target.value)}><option value="acknowledge">Acknowledge</option><option value="reassign">Reassign</option>{items.every(item=>item.kind==='alert')&&!allMatching&&<option value="orchestrate">Declare incidents and record notifications</option>}<option value="set-priority">Set priority</option><option value="set-urgency">Set urgency</option><option value="snooze">Snooze</option><option value="merge">Merge into incident</option><option value="resolve">Resolve / close alert-only items</option></select></label>
-    <Form busy={busy} disabled={!canEdit || !sources.length} label={`Apply to ${sources.length} ${items.every(i=>i.kind==='alert')?'alert-only items':'incidents'}`} onSubmit={async data => {
+    <Form busy={busy} disabled={!canEdit || !sources.length} label={`Apply to ${plural(sources.length,items.every(i=>i.kind==='alert')?'alert-only item':'incident')}`} onSubmit={async data => {
       const target=incidents.find(i=>i.id===data.target);
       const selectedTarget = action === 'merge' && items.find(item => item.id === data.target);
       const payload = {...data, action, items: sources.map(({id, revision, kind}) => ({id, revision, kind})),...((action==='orchestrate'||durable&&action==='reassign')&&items.every(i=>i.kind==='alert')?{durable:true}:{}), allMatching: selectedTarget ? false : allMatching, query, workspaceRevision, confirmedCount: sources.length,...(action==='snooze'?{minutes:Number(data.minutes)}:{}),...(action==='merge'?{targetRevision:selectedTarget ? selectedTarget.revision : target?.revision}:{})};

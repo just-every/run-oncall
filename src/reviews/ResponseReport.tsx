@@ -1,4 +1,5 @@
 import {useViewAnchor} from '../app/useViewAnchor';
+import {plural} from '../app/plural';
 import { useEffect, useRef, useState } from 'react';
 import type { State } from '../family/response-operations/domain';
 import type { ProjectedReport as Report } from './load';
@@ -50,7 +51,7 @@ export function ResponseReport({state}: {state: State}) {
     {!report && loading && <p role="status">Loading response records…</p>}
     {report && <>
       <div className="review-snapshot">
-        <p><strong>{report.cohort.count} incidents</strong> · {report.cohort.service ? state.services.find(s => s.id === report.cohort.service)?.name ?? report.cohort.service : 'All services'}</p>
+        <p><strong>{plural(report.cohort.count,'incident')}</strong> · {report.cohort.service ? state.services.find(s => s.id === report.cohort.service)?.name ?? report.cohort.service : 'All services'}</p>
 
 
 

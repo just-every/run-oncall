@@ -2,14 +2,10 @@ import {useEffect, useRef, useState} from 'react';
 import {Tooltip} from '../app/Tooltip';
 import type {OnCallBand} from './read';
 import {shortTime} from './time';
+import {initials} from '../app/initials';
 import {viewerZone} from './rota-steps/draft';
 
 const DAY = 86_400_000;
-const initials = (name: string) => {
-  const words = name.trim().split(/\s+/);
-  return [words[0], ...(words.length > 1 ? [words.at(-1)!] : [])].map(word => Array.from(word)[0]).join('').toLocaleUpperCase();
-};
-
 /** Keep the full name when it fits; a compact chip retains its complete accessible name. */
 function BandName({name}: {name: string}) {
   const root = useRef<HTMLSpanElement>(null), measure = useRef<HTMLSpanElement>(null);

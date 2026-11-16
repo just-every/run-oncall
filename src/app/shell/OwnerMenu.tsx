@@ -1,4 +1,5 @@
 import {useEffect, useId, useRef, useState} from 'react';
+import {initials} from '../initials';
 import type {Member} from '../../family/response-operations/domain';
 
 /** Kept in the shell so workspace polling cannot replace an open account menu. */
@@ -19,7 +20,7 @@ export function OwnerMenu({actor, busy, signingOut, onSignOut}: {actor: Member; 
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {event.preventDefault(); setOpen(true); action.current?.focus();}
   }}>
     <button className="owner-button" ref={button} aria-haspopup="menu" aria-expanded={open} aria-controls={open ? id : undefined} onClick={() => setOpen(value => !value)}>
-      <span className="avatar" aria-hidden="true">{actor.name.slice(0, 2).toUpperCase()}</span>
+      <span className="avatar" aria-hidden="true">{initials(actor.name)}</span>
       <span className="owner-identity"><span className="owner-name">{actor.name}</span><span className="muted">{actor.role}</span></span>
       <span aria-hidden="true">⌄</span>
     </button>

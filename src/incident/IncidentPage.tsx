@@ -28,6 +28,14 @@ export function IncidentPage(incidentProps: IncidentProps) {
   const after = useMutateAfterSaves(incidentProps.mutate);
   const props = {...incidentProps, mutate: after.mutate, busy: incidentProps.busy || after.waiting};
   const Sheet = action ? sheets[action] : null;
+  // A link such as /incidents/<id>?action=followups opens that action's sheet once.
+  useEffect(() => {
+    const url = new URL(window.location.href), wanted = url.searchParams.get('action');
+    if (!wanted) return;
+    url.searchParams.delete('action');
+    window.history.replaceState(window.history.state, '', url);
+    if (incidentActions.some(([id]) => id === wanted)) setAction(wanted as IncidentAction);
+  }, [props.incident.id]);
   useEffect(() => {
     const heading = document.querySelector<HTMLElement>('.incident-head h1');
     heading?.focus({preventScroll: true});

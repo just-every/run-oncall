@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from 'react';
 import {HttpFailure, InterruptedTransport, request} from '../../useWorkspace';
 import type {HandoffEligibility, HandoffPayload, HandoffRecord, HandoffSource} from '../../family/response-operations/handoffs';
-import type {IncidentProps} from '../types';
+import {shortTime, type IncidentProps} from '../types';
 import './handoff.css';
 
 type Context = {incidentRevision: number; serviceHash: string; source: HandoffSource; unavailable?: boolean};
@@ -110,15 +110,15 @@ export function Handoff({incident, state, actor}: IncidentProps) {
     {notice && <p role="status">{notice}</p>}
     {error && <p role="alert">{error} {retry && <button type="button" disabled={busy} onClick={() => pending.current && void perform(pending.current)}>Retry action</button>}</p>}
     {records.length > 0 && <label className="field"><span>Saved handoff</span><select aria-label="Saved handoff" disabled={busy || editing} value={record?.id ?? ''} onChange={event => {setError(''); setNotice(''); setRetry(false); void load(event.target.value);}}>
-      {records.map(item => <option key={item.id} value={item.id}>{item.payload.title} · {item.payload.audience} · {new Date(item.history[0].at).toLocaleString()}</option>)}
+      {records.map(item => <option key={item.id} value={item.id}>{item.payload.title} · {item.payload.audience} · {shortTime(item.history[0].at)}</option>)}
     </select></label>}
     {!canAct && <p>Viewer access: inspect saved handoffs. A current responder or administrator prepares, reviews and exports them.</p>}
     {record && <article className="handoff-copy" aria-label="Saved handoff copy">
       <p className="handoff-state">{record.status === 'reviewed' ? 'Reviewed copy' : record.status === 'withdrawn' ? 'Withdrawn copy' : 'Prepared copy'} · {record.payload.audience === 'customer' ? 'Customer audience' : 'Internal audience'} · Internal visibility</p>
       <h3>{record.payload.title}</h3><p className="handoff-summary">{record.payload.summary}</p>
       {([['Evidence', record.payload.evidenceLinks], ['Impact', record.payload.impactLinks]] as const).map(([label, links]) => links.length > 0 && <div key={label}><h4>{label}</h4><ul>{links.map((link, index) => <li key={index}><a href={link} target="_blank" rel="noreferrer">{link}</a></li>)}</ul></div>)}
-      <p>Prepared by {record.history[0].actor?.name} · <time dateTime={new Date(record.history[0].at).toISOString()}>{new Date(record.history[0].at).toLocaleString()}</time></p>
-      {approval && <p>Reviewed by {approval.actor?.name} · <time dateTime={new Date(approval.at).toISOString()}>{new Date(approval.at).toLocaleString()}</time>{approval.selfReview && ' · Author reviewed their own copy'}</p>}
+      <p>Prepared by {record.history[0].actor?.name} · <time dateTime={new Date(record.history[0].at).toISOString()}>{shortTime(record.history[0].at)}</time></p>
+      {approval && <p>Reviewed by {approval.actor?.name} · <time dateTime={new Date(approval.at).toISOString()}>{shortTime(approval.at)}</time>{approval.selfReview && ' · Author reviewed their own copy'}</p>}
       {stale && <p role="status">Out of date: the incident or service changed. Prepare again from the current source before review or export.</p>}
       {record.held && <p role="status">Review held after restore. A current responder or administrator must review this copy again.</p>}
       {record.status === 'withdrawn' && <p>This copy was withdrawn and cannot be reviewed or exported.</p>}

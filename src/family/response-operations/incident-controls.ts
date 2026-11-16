@@ -43,9 +43,11 @@ export function incidentControl(state: State, actor: Member, i: Incident, input:
   } else if (input.type === 'bulk-acknowledge') {
     if (i.state !== 'declared') fail(`Cannot acknowledge an incident in ${i.state} state`, 409);
     i.state = 'acknowledged';
-    i.assignee = actor.id;
+    // An existing assignee stays; the acknowledger takes an empty slot, and the timeline entry says so.
+    const taken = !incidentAssignee(i);
+    if (taken) i.assignee = actor.id;
     if (!i.commander) i.commander = actor.id;
-    description = `declared → acknowledged${suffix}`;
+    description = `declared → acknowledged${taken ? `; assignee: Unassigned → ${actor.name}` : ''}${suffix}`;
   } else {
     if (i.state === 'resolved') fail('Incident is already resolved', 409);
     const evidence = link(input.evidence);
