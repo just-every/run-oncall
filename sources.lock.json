@@ -6220,7 +6220,7 @@
       "executable": false
     },
     "src/ScheduleSummary.tsx": {
-      "sha256": "8eec979c8e80f4201b90cbb783a52030f78c2d01acba25e161d37bf856796f73",
+      "sha256": "a867a165be0bf14e914394093dccee9a487fc589080730f14ab392f7d5851f55",
       "executable": false
     },
     "src/scheduling.css": {
@@ -6800,7 +6800,7 @@
       "executable": false
     },
     "tests/stranger-trip-steps.mjs": {
-      "sha256": "f607451013b70ba5c071123f48847bb4a35e3ead902bd616ea55e7c95b482933",
+      "sha256": "3b981f6a64c284d55053696c04bfa5cf9cc53a19e7f0d499d652454a30bc8af9",
       "executable": false
     },
     "tests/transfer.mjs": {
