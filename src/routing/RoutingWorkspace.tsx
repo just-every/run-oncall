@@ -1,3 +1,4 @@
+import {throttleNoticeText} from '../integrations/key-refusals';
 import {DecisionExplanation} from './DecisionExplanation';
 import {AllowanceForm} from '../intake-rate/AllowanceForm';
 import { useEffect, useId, useState } from 'react';
@@ -50,7 +51,7 @@ function RoutingKey({state,admin,busy,run,source}:Props&{source:IntakeSource}) {
       {base!==current.version&&<p role="alert">This draft is based on v{base}; v{current.version} is now published. Publishing this stale draft will be refused. <button type="button" onClick={()=>{draft.useMine();changed();}}>Use mine</button></p>}
 
       {services[0]&&<RoutedSenderSetup key={source.id} sender={{id:source.id,name:source.name,provider:source.provider,authentication:source.authentication,service:services[0],services}}/>}
-      <AllowanceForm state={state} id={'intake:'+source.id} admin={admin} busy={busy} run={run}/><ul aria-label="Throttle notices">{state.audit.filter(a=>a.kind==='intake-throttled'&&a.actor==='source:intake:'+source.id).slice(-5).map(a=><li key={a.id}>{a.text}</li>)}</ul>
+      <AllowanceForm state={state} id={'intake:'+source.id} admin={admin} busy={busy} run={run}/><ul aria-label="Throttle notices">{state.audit.filter(a=>a.kind==='intake-throttled'&&a.actor==='source:intake:'+source.id).slice(-5).map(a=><li key={a.id}>{throttleNoticeText(state,a.text)}</li>)}</ul>
       <h3>Routing rules</h3><p>Draft based on version {base}. Changes below take effect only after publication.</p>
       {!rules.length&&<p>No rules. Every event takes the catch-all decision.</p>}
       {rules.map((rule,i)=>admin?<RuleEditor key={i} rule={rule} index={i} services={services} disabled={busy} first={i===0} last={i===rules.length-1} onChange={value=>edit(i,value)} onRemove={()=>{setRules(rules.filter((_,n)=>n!==i));changed();}} onMove={delta=>{const next=[...rules];[next[i],next[i+delta]]=[next[i+delta],next[i]];setRules(next);changed();}}/>:<article className="routing-rule" key={i}><h4>Rule {i+1}</h4><p>{rule.match} conditions · {'service' in rule.target?services.find(s=>'service' in rule.target&&s.id===rule.target.service)?.name:'Extracted service'}</p><ul>{rule.conditions.map((condition,n)=><li key={n}>{routingFieldNames[condition.field]??`Custom field (${condition.field})`} · {({equals:'is',contains:'contains',exists:'is present',matches:'matches','not-matches':'does not match'} as Record<string,string>)[condition.op]}{condition.value!==undefined?' '+condition.value:''}</li>)}</ul></article>)}

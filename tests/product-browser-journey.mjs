@@ -1,4 +1,4 @@
-import {readableErasure,coveredSwap} from './stranger-trip-steps.mjs'
+import {readableErasure,coveredSwap,nextCoverageBrowser} from './stranger-trip-steps.mjs'
 import {savedEmailBundle} from './email-fixtures.mjs'
 import {pathToFileURL} from 'node:url'
 import {resolve} from 'node:path'
@@ -712,7 +712,7 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  const times=(await calendar.text()).split('\r\n').filter(line=>/^DT(STAMP|START|END):/.test(line));assert.ok(times.length>0);assert.ok(times.every(line=>/^DT(STAMP|START|END):[0-9]{8}T[0-9]{6}Z$/.test(line)),'calendar uses whole-second UTC times');
  await page.screenshot({path:`${directory}/rota-page-${width}.png`,fullPage:true});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
  await setTime(null);
- if(!selectedOnly){await coverageRulesBrowser(page,context,width,session,{ownerLink});await scheduleCoordinationBrowser(page,context,width,session,{ownerLink});}
+ if(!selectedOnly){await coverageRulesBrowser(page,context,width,session,{ownerLink,setTime});await scheduleCoordinationBrowser(page,context,width,session,{ownerLink});}
  console.log(`PROBE OC-009 schedules, overrides and preview ${width}: native keyboard create, narrow disclosure, cover preparation, review, Escape and confirmation -> protected saved assignments and preview agree; focus, dialog containment, labels, overflow and axe passed`);
 }
 // The existing schedule journey carries the one phone smoke, including both timeline doors.
@@ -771,7 +771,7 @@ export function scheduleReviewWindow(now) {
  throw Error('No nearby clock changes found for schedule review')
 }
 
-export async function coverageRulesBrowser(page,context,width,session,{ownerLink}={}){
+export async function coverageRulesBrowser(page,context,width,session,{ownerLink,setTime}={}){
  const origin=new URL(page.url()).origin,api=async(path,input)=>{const r=await(input===undefined?context.request.get(origin+path):context.request.post(origin+path,{headers:{origin},data:input}));assert.equal(r.status(),200);return r.json();};
  const state=await api('/api/state'),now=Date.now(),date=new Date(now-86400000).toISOString().slice(0,10),id='synthetic-oncall-'+(3000+width);
  const rotation={anchorLocal:date+'T00:00',periodDays:1,members:[session.member.id],ambiguity:'earlier'},layer={id:id+'-layer',name:'synthetic-oncall-'+(4000+width),role:'primary',timezone:'UTC',kind:'daily',rotation,start:date+'T00:00:00.000Z',end:null,weekdays:[1,2,3,4,5],startHour:9,endHour:17,holidayCalendars:[],holidayAction:'next',ptoAction:'next'};
@@ -834,6 +834,7 @@ export async function coverageRulesBrowser(page,context,width,session,{ownerLink
   await ownReview.getByRole('checkbox').check();const staleSelf=memberPage.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/pto-apply'));await ownReview.getByRole('button',{name:'Apply reviewed change',exact:true}).click();assert.equal((await staleSelf).status(),409);await memberPage.locator('.failure-line').waitFor();assert.equal((await api('/api/paging/state')).schedules.find(s=>s.id===selfRota.id).pto.length,stored.pto.length);
   console.log('PASS OC-024 ordinary-member browser 1440: password sign-in, own-only picker, self-PTO and self-ICS review/apply, current consecutive revisions, effective gap, retained slots, visible stale refusal, axe; PTO screen captured at 1440');
  }finally{await memberContext.close();}
+ if(width===1440)await nextCoverageBrowser(page,context,session,{setTime});
  console.log('PASS OC-024 browser coverage rules '+width+': long review, focused PTO and ICS outcomes, consecutive reviewed writes, visible stale refusal and no visible internal identifiers');
 }
 

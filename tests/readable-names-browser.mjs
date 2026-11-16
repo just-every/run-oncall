@@ -21,6 +21,7 @@ export async function readableNamesBrowser(page,context,{source,service,serviceN
  };
  const secondService='synthetic-oncall-511',secondName='Harbour search';
  const member=(await request('/api/session')).member;
+ const morgan=await request('/api/members',{name:'Morgan Ellis',role:'responder',password:'synthetic-oncall-morgan-password'},201);
  await request('/api/command',{type:'service',id:secondService,name:secondName,environment:'production',owner:member.id,runbook:[],pager:''});
  await page.goto(origin+'/settings/routing');
  const create=page.locator('.routing-create');
@@ -28,6 +29,7 @@ export async function readableNamesBrowser(page,context,{source,service,serviceN
  const keyName='Harbour monitoring router';
  await create.getByLabel('Name',{exact:true}).fill(keyName);
  await create.getByLabel('Provider',{exact:true}).selectOption('native');
+ await create.getByLabel('Owner',{exact:true}).selectOption(morgan.id);
  await create.getByRole('checkbox',{name:serviceName,exact:true}).check();
  await create.getByRole('checkbox',{name:secondName,exact:true}).check();
  const pending=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/routing/keys'&&r.request().method()==='POST');
@@ -67,6 +69,17 @@ export async function readableNamesBrowser(page,context,{source,service,serviceN
  const first=await attempt('synthetic-oncall-512');assert.ok([201,429].includes(first.status()));
  const refused=await attempt('synthetic-oncall-516');
  assert.equal(refused.status(),429,'a real allowance refusal is retained for the named source');
+ const routedAttempt=eventId=>context.request.post('/api/ingress/intake:'+routed.id,{headers:{authorization:'Bearer '+privateKey},data:{source:'intake:'+routed.id,eventId,service,environment:'production',key:'synthetic-oncall-35-rate',generation:'synthetic-oncall-35-rate',intent:'trigger',severity:'warning',title:'Receipt processing delay',observedAt:new Date().toISOString(),evidence:''}});
+ const initial=await routedAttempt('synthetic-oncall-35-first');assert.ok([201,429].includes(initial.status()));
+ const throttled=await routedAttempt('synthetic-oncall-35-next');assert.equal(throttled.status(),429);assert.ok(Number(throttled.headers()['retry-after'])>0,'a throttled routed request supplies a retry time');
+ const rawBefore=await request('/api/state'),rawNotice=rawBefore.audit.find(entry=>entry.kind==='intake-throttled'&&entry.actor==='source:intake:'+routed.id);assert.ok(rawNotice.text.includes(morgan.id),'retained notice preserves owner identity');
+ await page.goto(origin+'/settings/routing');
+ const selector=page.getByLabel('Routed integration',{exact:true});if(await selector.count())await selector.selectOption(routed.id);
+ const notice=page.getByRole('list',{name:'Throttle notices',exact:true});await expect(notice).toContainText(morgan.name);
+ assert.ok(!(await notice.innerText()).includes(morgan.id),'routing never renders the owner UUID');
+ assert.doesNotMatch(await notice.innerText(),/\b[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}\b/i);
+ assert.deepEqual((await request('/api/state')).audit,rawBefore.audit,'display names do not rewrite retained notices');
+ await proof('routed-throttled');
  const before=await request('/api/state');
  await page.goto(origin+'/settings/archive');await page.getByRole('heading',{name:'Configuration audit',exact:true}).waitFor();
  const audit=page.locator('.archive-audit'),text=await audit.innerText();

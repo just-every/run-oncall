@@ -3,21 +3,21 @@ import {SavedState,SaveFeedback} from './app/autosave/SavedState'
 import {useViewAnchor} from './app/useViewAnchor'
 import {FailureLine,useActionFailure} from './app/FailureLine'
 import { useEffect,useState } from 'react'
-import {coverage, type Coverage, type Schedule} from './family/response-operations/schedules'
+import {type Coverage, type Schedule} from './family/response-operations/schedules'
 import type { State } from './family/response-operations/domain'
 
 // Keep the schedule's named clock and the offset at this hand-over visible.
 function handoffLabel(instant:string|null|undefined,timezone:string,changesHolder=true) {
- if(!instant)return 'No next hand-off'
+ if(!instant)return 'No coverage scheduled'
  const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:timezone,weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23',timeZoneName:'shortOffset'}).formatToParts(Date.parse(instant)).map(p=>[p.type,p.value]))
  return `${changesHolder?'Hand-over':'Next coverage window'}: ${parts.weekday} ${parts.day} ${parts.month}, ${parts.hour}:${parts.minute} ${timezone} (${parts.timeZoneName})`
 }
 
 type ReadProps = {schedule:Schedule;state:State;request:(path:string,data?:unknown)=>Promise<any>}
-type NowNext = {now:Coverage;next:Record<'primary'|'backup',Coverage|null>}
+type NowNext = {now:Coverage;upcoming:Record<'primary'|'backup',Coverage|null>;searchThrough:string;limited:('primary'|'backup')[]}
 
 export function ScheduleNowNext({schedule,state,request}:ReadProps) {
- const [value,setValue]=useState<NowNext>(()=>{const now=coverage(schedule,state.members,Date.now());return {now,next:Object.fromEntries(now.windows.map(window=>[window.role,window.end?coverage(schedule,state.members,Date.parse(window.end)):null])) as NowNext['next']};})
+ const [value,setValue]=useState<NowNext|null>(null)
  const failures=useActionFailure()
  const preserveView=useViewAnchor()
  useEffect(()=>{
@@ -26,7 +26,7 @@ export function ScheduleNowNext({schedule,state,request}:ReadProps) {
   return ()=>{current=false}
  },[schedule,request])
  const name=(id:string|null|undefined)=>state.members.find(m=>m.id===id)?.name??'Nobody on call'
- return <section className="scheduling-panel scheduling-now-next"><h2>On call now and next</h2><FailureLine failure={failures.failure}/>{value&&<div className="scheduling-form-grid two">{(['primary','backup'] as const).map(role=><div key={role} className="scheduling-now-role"><h3>{role}</h3><p className={value.now[role]?"now":"oc-now-gap"}>Now: {name(value.now[role])}</p><p className="scheduling-rule">{value.now.windows.find(w=>w.role===role)?.explanation??value.now.warnings.filter(w=>w.startsWith(role+':')).join('; ')}</p><p className="next">Next: {name(value.next[role]?.[role])}</p><p className="scheduling-rule">{value.next[role]?.windows.find(w=>w.role===role)?.explanation??value.next[role]?.warnings.filter(w=>w.startsWith(role+':')).join('; ')}</p><p className="handoff">{handoffLabel(value.now.windows.find(w=>w.role===role)?.end,schedule.timezone,!(schedule.layers?.length||schedule.pto?.length)||value.next[role]?.[role]!==value.now[role])}</p></div>)}</div>}</section>
+ return <section className="scheduling-panel scheduling-now-next"><h2>On call now and next</h2><FailureLine failure={failures.failure}/>{value&&<div className="scheduling-form-grid two">{(['primary','backup'] as const).map(role=><div key={role} className="scheduling-now-role"><h3>{role}</h3><p className={value.now[role]?"now":"oc-now-gap"}>Now: {name(value.now[role])}</p><p className="scheduling-rule">{value.now.windows.find(w=>w.role===role)?.explanation??value.now.warnings.filter(w=>w.startsWith(role+':')).join('; ')}</p><p className="next">Next: {name(value.upcoming[role]?.[role])}</p><p className="scheduling-rule">{value.upcoming[role]?.windows.find(w=>w.role===role)?.explanation??value.upcoming[role]?.warnings.filter(w=>w.startsWith(role+':')).join('; ')}</p><p className="handoff">{value.limited.includes(role)?`No coverage scheduled through ${new Intl.DateTimeFormat('en-GB',{timeZone:schedule.timezone,dateStyle:'medium'}).format(Date.parse(value.searchThrough))}`:handoffLabel(value.upcoming[role]?new Date(value.upcoming[role]!.at).toISOString():null,schedule.timezone,!!value.now[role]&&(!(schedule.layers?.length||schedule.pto?.length)||value.upcoming[role]?.[role]!==value.now[role]))}</p></div>)}</div>}</section>
 }
 
 const escalationFields = ['primaryWaitSeconds','backupWaitSeconds','retrySeconds','maxAttempts'] as const;

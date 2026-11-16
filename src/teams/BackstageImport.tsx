@@ -44,6 +44,7 @@ export function BackstageImport({refresh}:{refresh:()=>Promise<void>}){
   }finally{setBusy(false);}
  }
  return <details className="teams-import"><summary>Import from Backstage</summary><div className="teams-import-form">
+  <p>Export JSON from your Backstage catalog’s <code>GET /api/catalog/entities</code> endpoint, then paste or upload the entity array or <code>{'{items: [...]}'}</code> response. Components match existing services by ID, name or title; group owners match existing team names. <a href="/docs/team#import-from-backstage">Backstage import guide</a>.</p>
   <label className="field"><span>Backstage catalog</span><textarea name="catalog" spellCheck={false} value={text} onChange={e=>setText(e.target.value)}/></label>
   <label className="field"><span>Catalog file</span><input type="file" accept=".json,application/json" onChange={async e=>{const file=e.target.files?.[0];if(file)setText(await file.text());}}/></label>
   <div><button type="button" disabled={busy} onClick={()=>void previewImport()}>Preview import</button><Feedback note={previewNote}/></div>

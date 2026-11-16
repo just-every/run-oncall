@@ -29,3 +29,9 @@ export function testRefusal(status: number, value: any) {
   if (status === 401 || /^Invalid (?:integration|source) credential$/.test(reason)) return 'The receiver refused this private key or signature. Copy the current private key for this source, or rotate it under Source actions and enter the new key. If signing is enabled, check its signing secret.';
   return reason || 'The receiver refused this test. Review Rejected requests and the sample request for this source.';
 }
+
+/** Retained audit keeps the owner identity; ordinary routing screens show its current name. */
+export function throttleNoticeText(state: State, text: string) {
+  return text.replace(/^Integration owner (.*?)(: key )/, (_, id, suffix) =>
+    'Integration owner ' + (state.members.find(member => member.id === id)?.name ?? 'Unavailable member') + suffix);
+}

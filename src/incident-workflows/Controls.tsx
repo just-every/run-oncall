@@ -1,3 +1,4 @@
+import {alertDisplay} from '../alerts/alert-display';
 import {shortTime} from '../reviews/time';
 import {InlineConfirm} from '../app/autosave/InlineConfirm';
 import {failureMessage} from '../app/FailureLine';
@@ -111,7 +112,7 @@ export function IncidentWorkflows({ state, incident, member, send, view }: Props
           <fieldset className="workflow-options"><legend>Alert groups</legend>
             {attached.map(alert => <label className="workflow-choice" key={alert.id}>
               <input type="checkbox" checked={alerts.includes(alert.id)} onChange={e => setAlerts(current => e.target.checked ? [...current, alert.id] : current.filter(id => id !== alert.id))} />
-              <span>{alert.key}<small>{service(alert.service)} · {alert.environment}{!view && <> · {alert.source} · generation {alert.generation}</>} · {alert.state}</small></span>
+              <span>{alertDisplay(alert,state).title}<small>{service(alert.service)} · {alert.environment}{!view && <> · {alert.source} · generation {alert.generation}</>} · {alert.state}</small></span>
             </label>)}
           </fieldset>
           <Field name="title" label="New incident title" />

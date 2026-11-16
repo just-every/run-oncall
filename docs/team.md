@@ -31,3 +31,21 @@ Stakeholders are a separate, admin-assigned local member role. They can read onl
 ## Contact methods and notification rules
 
 Under **Settings → Team**, expand **Contact methods and notification rules** on a person’s card. Workspace members can read the recorded email, phone and SMS destinations, rule urgency and delay. The person and administrators can add, edit or remove them, then choose **Save notification rules**. A stale revision is refused; reload before trying again. These are unverified records: paging stays OFF and nothing is sent. Stakeholders cannot read these details.
+
+## Import from Backstage
+
+An administrator exports JSON from their Backstage instance’s `GET /api/catalog/entities` endpoint using the access their Backstage administrator provides. Save the response as a `.json` file or copy its JSON body. Oncall accepts an array of catalog entities or an object with an `items` array, not a `catalog-info.yaml` file or a catalog URL. Oncall reads the supplied JSON; it does not connect to Backstage.
+
+Components match an existing Oncall service by exact `metadata.name` service ID first, otherwise by `metadata.name` or `metadata.title` against the service name after lowercasing and replacing punctuation/spaces with hyphens. `spec.owner` matches an existing active team name the same way; `group:default/payments` names the Payments team. Person owners and ambiguous or missing matches remain unresolved. Create the services and teams in Oncall before importing; no person, service or team is invented.
+
+For example, for an existing **Receipt processing** service and active **Payments** team:
+
+```json
+{"items":[{"kind":"Component","metadata":{"name":"receipt-processing"},"spec":{"owner":"group:default/payments"}}]}
+```
+
+In **Settings → Team → Import from Backstage**, paste or upload a JSON catalog entities response and choose **Preview import**. Preview changes no durable records or permanent audit. Ownership and dependencies are reviewed independently. A Component's `spec.dependsOn` can name existing Oncall services through Component references; the importer creates no service, team or person. Catalogs allow up to 1,000 Components, each with at most 30 dependency references of up to 600 characters. The resulting dependency set also stays within 30 services.
+
+Review the current and proposed dependencies and each original source reference. Unsupported kinds, self-references, missing matches and ambiguous matches retain their references with reasons. When any reference is unresolved, existing dependencies are kept and supported additions remain reviewable. An omitted `spec.dependsOn` leaves dependencies alone; an explicit empty list proposes removal. Hand-set dependencies require **Keep current** or **Use Backstage**; keeping current is the default. Previously imported dependencies can be updated by the next reviewed catalog.
+
+**Apply import** saves accepted ownership, dependencies, source references, import identity and time with their audit in one transaction. A service or provenance change that affects the review requires a fresh preview; unrelated incident notes do not. A manual dependency change clears imported dependency provenance, while unrelated service edits retain it. If an answer is lost, **Retry** checks the saved dependency and ownership state before sending another Apply. Repeating an old HTTP digest is refused after a successful change; a fresh identical preview applies nothing. Both paths leave application records unchanged. Archives, checkpoints and portable restore preserve provenance and immutable handoff source snapshots; restored approvals remain held, and source drift still prevents export. None of these records grants sign-in, integration execution or paging authority.

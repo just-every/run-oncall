@@ -355,6 +355,17 @@ try {
   await owner.page.setViewportSize({width,height:1000});await owner.page.goto(worker.origin+'/settings/team');
   const importPanel=owner.page.locator('.teams-import');
   await importPanel.getByText('Import from Backstage',{exact:true}).click();
+  if(width===1440){
+   const guide=importPanel.getByRole('link',{name:'Backstage import guide',exact:true});
+   await guide.click();await owner.page.waitForURL(url=>url.pathname==='/docs/team'&&url.hash==='#import-from-backstage');
+   const article=owner.page.locator('.docs-article');await article.getByRole('heading',{name:'Import from Backstage',exact:true}).waitFor();
+   const example=JSON.parse(await article.locator('pre code').filter({hasText:'receipt-processing'}).innerText());
+   const services=ok(await call(owner.page,'/api/state')).services;
+   const match=services.find(row=>row.id==='checkout');example.items[0].metadata.name=match.id;example.items[0].spec.owner=catalogTeam.name;
+   const preview=ok(await call(owner.page,'/api/teams/backstage/preview',{catalog:example}));assert.equal(preview.rows[0].service.id,match.id);assert.equal(preview.rows[0].team.id,catalogTeam.id,'the linked guide example previews against existing native records');
+   for(const proofWidth of [1440,390]){await owner.page.setViewportSize({width:proofWidth,height:1000});await owner.page.screenshot({path:`${captureDirectory}/oc023-backstage-guide-${proofWidth}.png`,fullPage:true});}
+   await owner.page.setViewportSize({width:1440,height:1000});await owner.page.goto(worker.origin+'/settings/team');await importPanel.getByText('Import from Backstage',{exact:true}).click();
+  }
   await importPanel.getByLabel('Backstage catalog',{exact:true}).fill(JSON.stringify(importCatalog));
   const previewAnswer=owner.page.waitForResponse(r=>new URL(r.url()).pathname==='/api/teams/backstage/preview');
   await importPanel.getByRole('button',{name:'Preview import',exact:true}).click();
