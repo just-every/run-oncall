@@ -1,0 +1,53 @@
+{
+  "calls": 4,
+  "budget": 10,
+  "intendedMinimumPollIntervalSeconds": 300,
+  "correctedWaitMarginSeconds": 2,
+  "observedSnapshotIntervalsSeconds": [
+    300.419,
+    299.999,
+    302.011
+  ],
+  "maximumSimultaneousWatchers": 1,
+  "runs": [
+    {
+      "file": "ci-discovery.json",
+      "savedAt": "2026-11-16T03:40:51.190928+00:00",
+      "id": 43799584849,
+      "head_sha": "82081ae6fb7e19c78760269a0283579be0b840bb",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43799584849"
+    },
+    {
+      "file": "ci-poll-2.json",
+      "savedAt": "2026-11-16T03:45:51.609507+00:00",
+      "id": 43799584849,
+      "head_sha": "82081ae6fb7e19c78760269a0283579be0b840bb",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43799584849"
+    },
+    {
+      "file": "ci-poll-3.json",
+      "savedAt": "2026-11-16T03:50:51.608053+00:00",
+      "id": 43799584849,
+      "head_sha": "82081ae6fb7e19c78760269a0283579be0b840bb",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43799584849"
+    },
+    {
+      "file": "ci-poll-4.json",
+      "savedAt": "2026-11-16T03:55:53.618761+00:00",
+      "id": 43799584849,
+      "head_sha": "82081ae6fb7e19c78760269a0283579be0b840bb",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43799584849"
+    }
+  ],
+  "latestStatus": "completed",
+  "conclusion": "success",
+  "exactHead": "82081ae6fb7e19c78760269a0283579be0b840bb"
+}

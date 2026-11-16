@@ -1,0 +1,29 @@
+{
+  "main": "f366ecb24cd0934930ce1dc69e44c164e0b8c108",
+  "dryRun": {
+    "misleadingReferences": 2
+  },
+  "backstage": {
+    "text": "Import from Backstage\nBackstage catalog\nCatalog file\nPreview import\nApply import",
+    "guideLinks": 0
+  },
+  "routing": {
+    "status": 429,
+    "retryAfter": "60",
+    "rawOwner": true,
+    "notice": "Integration owner 8d061d89-f4a4-415a-beb5-12d2c242bdf2: key Receipt router throttled at 2 requests in the rolling minute; 1 requested; coordination notice recorded; paging remains OFF"
+  },
+  "split": {
+    "picker": "Alert groups\nalertmanager:62d1034af98db8a466791b81e2cbacc1cc00b07e765131655376c8f65abbeeeb\nReceipt processing · production · active",
+    "hasTitle": false,
+    "hasFingerprint": true
+  },
+  "coverage": {
+    "summary": "On call now and next\nPRIMARY\n\nNow: Nobody on call\n\nLondon (Europe/London, business): off by business hours; New York (America/New_York, business): off by business hours; Los Angeles (America/Los_Angeles, business): off by business hours\n\nNext: Nobody on call\n\nLondon (Europe/London, business): off by business hours; New York (America/New_York, business): off by business hours; Los Angeles (America/Los_Angeles, business): off by business hours\n\nNext coverage window: Mon 16 Nov, 05:00 UTC (GMT+0)\n\nBACKUP\n\nNow: Nobody on call\n\nbackup: rotation has no member slots\n\nNext: Nobody on call\n\nbackup: rotation has no member slots\n\nNext coverage window: Tue 17 Nov, 00:00 UTC (GMT+0)",
+    "at": "2026-11-16T01:19:00.000Z",
+    "primary": null,
+    "nextPrimary": null,
+    "boundary": "2026-11-16T05:00:00.000Z",
+    "nextBackup": null
+  }
+}

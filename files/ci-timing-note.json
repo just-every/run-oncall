@@ -1,0 +1,8 @@
+{
+  "callsUsed": 3,
+  "observedSnapshotIntervalsSeconds": [
+    300.419,
+    299.999
+  ],
+  "repair": "Whole-second timestamp rounding could shorten the next interval; the one watcher was stopped and restarted with 302-second delay after the recorded response, preserving its call count."
+}

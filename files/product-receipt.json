@@ -1,0 +1,27 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-stranger35-trips-1",
+  "head": "82081ae6fb7e19c78760269a0283579be0b840bb",
+  "tree": "9e0546ffee28b0f1f3f22f4fb317107afb24d348",
+  "mainAtIntegration": "f366ecb24cd0934930ce1dc69e44c164e0b8c108",
+  "worktreeClean": true,
+  "commits": [
+    "82081ae6fb7e19c78760269a0283579be0b840bb Run Edit Run fleet <fleet@runeditrun.com> / Run Edit Run fleet <fleet@runeditrun.com>",
+    "Keep rota clocks on empty coverage and prove reviewed coverage changes",
+    "",
+    "8f799c2a2a41fd14ad1794e72010a9cf4ed0b84f Run Edit Run fleet <fleet@runeditrun.com> / Run Edit Run fleet <fleet@runeditrun.com>",
+    "Fix five stranger trips in docs, routing, incidents and coverage [skip ci]"
+  ],
+  "generatedViewsChanged": false,
+  "sourceLock": {
+    "sha256": "8ae91fbef65f0d5c21c3a7b7060d2d403286f6e21be6808572580eec1b6651b7",
+    "checkPassed": true
+  },
+  "ciRunId": 43799584849,
+  "ciState": "completed",
+  "productPush": "succeeded",
+  "evidence": "separate report-only ref; not a landing or READY signal",
+  "ciConclusion": "success",
+  "remoteProductHead": "82081ae6fb7e19c78760269a0283579be0b840bb",
+  "remoteRefVerified": true
+}

@@ -1,0 +1,147 @@
+{
+  "author": "Run Edit Run fleet (Codex)",
+  "date": "2026-11-16",
+  "status": "all touched local checks passed; product pushed; exact-SHA Verify completed/success",
+  "saveHead": "8f799c2a2a41fd14ad1794e72010a9cf4ed0b84f",
+  "steps": [
+    {
+      "step": "oncall-setup",
+      "result": "passed",
+      "log": "oncall-setup.log",
+      "summary": "Set them in your environment or a private (mode 0600) file passed with --env-file, then check with rer deploy --dry-run."
+    },
+    {
+      "step": "oncall-build",
+      "result": "passed",
+      "log": "oncall-build.log",
+      "summary": "build: complete (exit 0)"
+    },
+    {
+      "step": "oncall-typecheck",
+      "result": "passed",
+      "log": "oncall-typecheck.log",
+      "summary": ""
+    },
+    {
+      "step": "oncall-events-source",
+      "result": "passed",
+      "log": "oncall-events-source.log",
+      "summary": "Emitted Worker Events source journey passed at 1440; screens captured at 1440 and 390"
+    },
+    {
+      "step": "oncall-roles",
+      "command": "ONCALL_PRODUCT_JOURNEY=roles node tests/product-browser.mjs",
+      "result": "passed",
+      "summary": "Alertmanager group with a hashed key is declared, merged, selected by readable title with service/environment, and split into its child incident; role/authority assertions also retained.",
+      "assertionWidth": 1440,
+      "proofWidths": [
+        1440,
+        390
+      ]
+    },
+    {
+      "step": "oncall-coverage",
+      "command": "ONCALL_PRODUCT_JOURNEY=readable-times node tests/product-browser.mjs",
+      "result": "passed",
+      "summary": "Fixed Monday 01:19 UTC: 05:00 remains uncovered; next actual primary is London responder at 09:00 UTC, empty backup and empty rota have no coverage window. Half-open start, reviewed PTO and override targets agree with the unchanged preview. Existing named-clock, swap, member PTO, stale refusal, keyboard and readiness assertions also pass.",
+      "assertionWidth": 1440,
+      "proofWidths": [
+        1440,
+        390
+      ]
+    },
+    {
+      "step": "oncall-contract-check",
+      "command": "node src/base/contract-docs.mjs check",
+      "result": "passed",
+      "summary": "Contract prose: 0 errors, 0 warnings.\nContract documents are current."
+    },
+    {
+      "step": "oncall-member",
+      "command": "node tests/member-coordination-browser.mjs",
+      "result": "passed",
+      "summary": "Full existing journey: mail-off public dry-run, native member coordination, Backstage linked guide example preview, dependency conflict review, Apply, lost-response Retry and reload/provenance; existing sign-in, authority and API client legs also pass.",
+      "assertionWidth": 1440,
+      "proofWidths": [
+        1440,
+        390
+      ]
+    },
+    {
+      "step": "oncall-docs-proof",
+      "command": "node .seed/docs-proof.mjs (temporary public documentation probe)",
+      "result": "passed",
+      "summary": "HTTP 200; both corrected command-reference paragraphs rendered.",
+      "proofWidths": [
+        1440,
+        390
+      ]
+    }
+  ],
+  "counts": {
+    "publicJourneyPlanEntriesBefore": 20,
+    "publicJourneyPlanEntriesAfter": 20,
+    "addedRegistrations": 0,
+    "contractBefore": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "contractAfter": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "repairsDuringVerification": [
+    "Preserved named timezone in empty/bounded coverage messages after the existing readable-times assertion caught its omission.",
+    "Corrected only the extended coverage fixture: existing schedules update through digest-bound Review and Apply, and retained PTO is preserved when removing coverage layers.",
+    "Installed the real Playwright Chromium package required by the existing mail-off operations precheck; browser-driving commands continue to use /usr/bin/chromium --no-sandbox."
+  ],
+  "verificationPolicy": {
+    "localFullVerifyRun": false,
+    "newTestsRegistered": 0,
+    "assertionsWidth": 1440,
+    "proofWidths": [
+      1440,
+      390
+    ],
+    "browserExecutable": "/usr/bin/chromium",
+    "browserArgument": "--no-sandbox",
+    "ci": "exact product SHA only"
+  },
+  "dryRunObservation": {
+    "test": "tests/mail-off.mjs#mailOffJourney",
+    "command": "rer deploy --dry-run --non-interactive",
+    "exitStatusAsserted": 0,
+    "providerCredentialsInCommandEnvironment": false,
+    "observedByPassingPublicCommandAssertion": true,
+    "remoteChanges": false,
+    "environment": "default production"
+  },
+  "tripCounts": {
+    "baselineReproduced": 5,
+    "locallyFixed": 5,
+    "notReproduced": 0,
+    "remainingGaps": 0
+  },
+  "candidateHead": "82081ae6fb7e19c78760269a0283579be0b840bb",
+  "visualInspection": {
+    "widths": [
+      1440,
+      390
+    ],
+    "screens": [
+      "command reference dry-run",
+      "Backstage import panel",
+      "Backstage Team guide",
+      "routing throttle notice",
+      "incident split picker",
+      "next coverage summary"
+    ],
+    "outcome": "inspected; readable labels and responsive layout retained"
+  },
+  "verificationProvenance": "Local touched checks exercised the final source tree before its final commit; Verify rebuilt and checked the exact published candidate SHA."
+}

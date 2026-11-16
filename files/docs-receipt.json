@@ -1,0 +1,11 @@
+{
+  "status": 200,
+  "paragraphs": [
+    "Release 1 supports hosted incident coordination alongside the existing pager,\nwith paging OFF and no independent standby prerequisite. Release 2 paging and\nindependent standby are not built. rer deploy deploys coordination to the\noperator's Cloudflare account; see hosting instructions.\nrer deploy --environment production --dry-run builds and validates the local deployment plan. It needs no credentials, makes no Cloudflare requests and changes nothing remotely. It does not check target secrets, deployment permissions or remote readiness, even with --env-file. The default environment is production; select another with\n--environment NAME. Local validation does not establish provider acceptance,\nhosted health or mail delivery.",
+    "The dry run builds and validates the local deployment plan without credentials or Cloudflare requests. It does not check target secrets, deployment permissions, remote readiness or mail delivery; --env-file does not enable those checks. Local validation or build errors can still refuse. A successful dry run is not hosted acceptance. A successful\nreal deploy applies hosted migrations, checks deployment identity at /health,\nclaims the owner automatically and retires the one-time setup token. Open the\nreturned HTTPS address, request an owner sign-in email, open it on the same\ndevice and press Confirm. Mailbox receipt and successful owner entry prove\nthe mail flow; deployment success alone does not. Local dev keys and owner-entry\nlinks do not work there."
+  ],
+  "proofWidths": [
+    1440,
+    390
+  ]
+}
