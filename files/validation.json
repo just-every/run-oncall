@@ -1,0 +1,64 @@
+{
+  "author": "Run Edit Run fleet",
+  "at": "2026-11-16T21:08:07.616384+00:00",
+  "metadata": "pass",
+  "versions": {
+    "before": "0.5.16",
+    "after": "0.5.17",
+    "previousVersion": "0.5.16"
+  },
+  "rer": {
+    "package": "0.2.118",
+    "lock": "0.2.118",
+    "installed": "0.2.118",
+    "unchanged": true
+  },
+  "migration_inventory": {
+    "added": [],
+    "modified": [],
+    "deleted": [],
+    "total": 68
+  },
+  "contract_counts": {
+    "before": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "after": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "clause_changes": [],
+  "new_tests": 0,
+  "legacy_upgrade_instructions": "preserved verbatim",
+  "typecheck": {
+    "command": "pnpm run typecheck",
+    "exit": 0
+  },
+  "setup": {
+    "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+    "initial_exit": 1,
+    "retry_exit": 0,
+    "initial_diagnostic": "Vite restarted after package.json changed during setup; Worker ops-oncall types returned 500 Parent environment not initialized. Retried after metadata edits completed; setup passed."
+  },
+  "public_notes": "matching changelog and RELEASE.json; internal CI/test changes omitted",
+  "publication_scan": "fleet-only prerequisite; deferred to Mac publication gate as instructed",
+  "changed_files": [
+    "CHANGELOG.md",
+    "RELEASE.json",
+    "RELEASE.md",
+    "package.json",
+    "seed.json",
+    "sources.lock.json"
+  ],
+  "source_lock": {
+    "write_exit": 0,
+    "check_exit": 0,
+    "final_check_exit": 0
+  }
+}

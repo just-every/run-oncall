@@ -1,0 +1,52 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-release-0-5-17",
+  "head": "3b9cba555f564a4d582b9909305bc8d35c9c8bf1",
+  "parent": "82081ae6fb7e19c78760269a0283579be0b840bb",
+  "tree": "1de572b1f5270562e1792d4d13342cfdfffef58b",
+  "changed_files": [
+    "CHANGELOG.md",
+    "RELEASE.json",
+    "RELEASE.md",
+    "package.json",
+    "seed.json",
+    "sources.lock.json"
+  ],
+  "commits": [
+    "3b9cba555f564a4d582b9909305bc8d35c9c8bf1"
+  ],
+  "source_lock": {
+    "write_exit": 0,
+    "check_exit": 0,
+    "final_check_exit": 0,
+    "sha256": "0df2d8917c51ce1c0c7f66979537e19b02f4189f45424c592e76f9d8bdee29d4",
+    "changed_entries": [
+      "CHANGELOG.md",
+      "RELEASE.json",
+      "RELEASE.md",
+      "package.json",
+      "seed.json"
+    ],
+    "toolchain_unchanged": true
+  },
+  "contract_documents_check_exit": 0,
+  "typecheck_exit": 0,
+  "scope_check": "pass",
+  "protected_files": "unchanged",
+  "push_exit": 0,
+  "push_attempts": 1,
+  "pr": null,
+  "tag_created": false,
+  "release_created": false,
+  "clauses_changed": [],
+  "at": "2026-11-16T21:09:41.710117+00:00",
+  "verify": {
+    "run_id": 43957032360,
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "3b9cba555f564a4d582b9909305bc8d35c9c8bf1",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43957032360",
+    "calls_used": 5
+  },
+  "terminal_custody": "READY"
+}

@@ -1,0 +1,38 @@
+{
+  "repository": "just-every/run-oncall",
+  "run_id": 43957032360,
+  "head": "3b9cba555f564a4d582b9909305bc8d35c9c8bf1",
+  "calls_used": 5,
+  "history": [
+    {
+      "call": 3,
+      "at": "2026-11-16T21:13:55.322782+00:00",
+      "command": "gh api repos/just-every/run-oncall/actions/runs/43957032360 --jq {status,conclusion,head_sha,html_url}",
+      "exit": 0,
+      "conclusion": null,
+      "head_sha": "3b9cba555f564a4d582b9909305bc8d35c9c8bf1",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43957032360",
+      "status": "in_progress"
+    },
+    {
+      "call": 4,
+      "at": "2026-11-16T21:18:55.217698+00:00",
+      "command": "gh api repos/just-every/run-oncall/actions/runs/43957032360 --jq {status,conclusion,head_sha,html_url}",
+      "exit": 0,
+      "conclusion": null,
+      "head_sha": "3b9cba555f564a4d582b9909305bc8d35c9c8bf1",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43957032360",
+      "status": "in_progress"
+    },
+    {
+      "call": 5,
+      "at": "2026-11-16T21:23:55.296390+00:00",
+      "command": "gh api repos/just-every/run-oncall/actions/runs/43957032360 --jq {status,conclusion,head_sha,html_url}",
+      "exit": 0,
+      "conclusion": "success",
+      "head_sha": "3b9cba555f564a4d582b9909305bc8d35c9c8bf1",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43957032360",
+      "status": "completed"
+    }
+  ]
+}
