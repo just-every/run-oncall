@@ -919,7 +919,7 @@ export async function scheduleCoordinationBrowser(page,context,width,session,{ow
  await capture('history');
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));const axe=await new AxeBuilder({page}).include('[aria-label="Shift coordination"]').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(axe.violations,[]);
  assert.equal(await coordination.getByLabel('Swap approval',{exact:true}).inputValue(),'none','saved policy stays selected');await coordination.screenshot({path:`${directory}/OC-025-settings-${width}.png`});
- await coordination.getByRole('button',{name:'Revoke subscription',exact:true}).click();await coordination.getByText(/revoked or restored inactive/).waitFor();assert.equal((await context.request.get(url)).status(),404);
+ await coordination.getByRole('button',{name:'Revoke subscription',exact:true}).click();await coordination.getByText(/\bRevoked\b/).waitFor();assert.equal((await context.request.get(url)).status(),404);
  const coverage=await api('/api/schedules/'+schedule.id+'/now-next?at='+encodeURIComponent(swap.data.start));assert.equal(coverage.now.primary,substitute.id);
  await page.reload();await page.getByText('Reminders and swaps',{exact:true}).click();assert.equal(await page.getByLabel('Swap approval',{exact:true}).inputValue(),'none');assert.equal(await page.getByLabel('Reminder lead minutes',{exact:true}).inputValue(),'30','a number left in the field remains saved after reload');
  await coveredSwap(page,context,session,substitute,directory,capture);
@@ -957,7 +957,7 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
   const api=await call('/api/triage?'+new URLSearchParams({...query,limit:'100'}));
   assert.equal(api.total,expected.length);assert.deepEqual(ids(api.items),ids(expected));
   if(navigate)await page.goto(origin+'/incidents?'+new URLSearchParams(Object.entries(query).map(([key,value])=>['triage_'+key,value])));
-  await triage.locator('.triage-count').getByText(`${expected.length} matching ${query.kind==='alerts'?'alert-only items':'incidents'}`,{exact:true}).waitFor();
+  await triage.locator('.triage-count').getByText(`${expected.length} matching ${query.kind==='alerts'?'alert-only item':'incident'}${expected.length===1?'':'s'}`,{exact:true}).waitFor();
   for(let loaded=25;loaded<expected.length;loaded+=25){
    await triage.getByRole('button',{name:'Load more incidents',exact:true}).click();
    await page.waitForFunction(count=>document.querySelectorAll('[data-triage-id]').length>=count,Math.min(expected.length,loaded+25));
@@ -1023,7 +1023,7 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
   await triage.getByLabel('Select '+title,{exact:true}).check();
   const bulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});await bulk.getByLabel('Bulk action',{exact:true}).selectOption(action);
   await bulk.getByLabel(action==='resolve'?'Resolution summary for declared incidents':'Bulk action reason',{exact:true}).fill('Authorized human '+action+' of this low alert');
-  await bulk.getByRole('button',{name:'Apply to 1 alert-only items',exact:true}).click();await page.getByText('1 changed; 0 refused',{exact:true}).waitFor();
+  await bulk.getByRole('button',{name:'Apply to 1 alert-only item',exact:true}).click();await page.getByText('1 changed; 0 refused',{exact:true}).waitFor();
   await bulk.getByRole('button',{name:'Clear selection',exact:true}).click();
  };
  await act(low[0],'acknowledge');await compare(query,[low[1]]);
@@ -1076,7 +1076,7 @@ export async function triageBulkBrowser(page,context,width){
  await retainedBulk.getByLabel('Bulk action',{exact:true}).selectOption('merge');
  await retainedBulk.getByLabel('Merge target',{exact:true}).selectOption(selected[1].id);
  await retainedBulk.getByLabel('Bulk action reason',{exact:true}).fill('Combine the dependency investigation');
- await retainedBulk.getByRole('button',{name:'Apply to 1 incidents',exact:true}).click();
+ await retainedBulk.getByRole('button',{name:'Apply to 1 incident',exact:true}).click();
  const mergeResponse=await mergeReply,mergeBody=mergeResponse.request().postDataJSON();assert.equal(mergeResponse.status(),200);
  assert.deepEqual(mergeBody.items.map(item=>({id:item.id,revision:item.revision})),[{id:selected[0].id,revision:acknowledged.revision}],'retained source uses its committed acknowledgment revision without reload');
  assert.equal(mergeBody.confirmedCount,1);assert.equal(mergeBody.target,selected[1].id);
@@ -1147,11 +1147,11 @@ export async function triageBulkBrowser(page,context,width){
  await captureBulk('mixed-results');
  await stormBulk.getByRole('button',{name:'Clear selection',exact:true}).click();
  // Same-value priority is a successful server no-op, displayed as skipped rather than changed.
- await page.getByLabel('Search incidents',{exact:true}).fill(mixed[1].title);await page.getByText('1 matching incidents',{exact:true}).waitFor();
- await page.getByLabel('Select '+mixed[1].title,{exact:true}).check();stormBulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});await stormBulk.getByLabel('Bulk action',{exact:true}).selectOption('set-priority');await stormBulk.getByLabel('Bulk priority',{exact:true}).selectOption('P2');await stormBulk.getByLabel('Bulk action reason',{exact:true}).fill('Coordinate the same priority');await stormBulk.getByRole('button',{name:'Apply to 1 incidents',exact:true}).click();await expect(stormBulk.getByRole('button',{name:'Apply to 1 incidents',exact:true})).toBeEnabled();
+ await page.getByLabel('Search incidents',{exact:true}).fill(mixed[1].title);await page.getByText('1 matching incident',{exact:true}).waitFor();
+ await page.getByLabel('Select '+mixed[1].title,{exact:true}).check();stormBulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});await stormBulk.getByLabel('Bulk action',{exact:true}).selectOption('set-priority');await stormBulk.getByLabel('Bulk priority',{exact:true}).selectOption('P2');await stormBulk.getByLabel('Bulk action reason',{exact:true}).fill('Coordinate the same priority');await stormBulk.getByRole('button',{name:'Apply to 1 incident',exact:true}).click();await expect(stormBulk.getByRole('button',{name:'Apply to 1 incident',exact:true})).toBeEnabled();
  await stormBulk.getByRole('button',{name:'Clear selection',exact:true}).click();await page.getByLabel('Select '+mixed[1].title,{exact:true}).check();stormBulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});await stormBulk.getByLabel('Bulk action',{exact:true}).selectOption('set-priority');await stormBulk.getByLabel('Bulk priority',{exact:true}).selectOption('P2');await stormBulk.getByLabel('Bulk action reason',{exact:true}).fill('Review unchanged priority');
  const beforeNoop=(await call('/api/state')).incidents.find(i=>i.id===mixed[1].id);
- await stormBulk.getByRole('button',{name:'Apply to 1 incidents',exact:true}).click();await expect(stormBulk.getByRole('list',{name:'Bulk operation results'}).locator('[data-bulk-outcome="skipped"]')).toHaveCount(1);await expect(stormBulk.getByRole('button',{name:'Apply to 1 incidents',exact:true})).toBeEnabled();assert.deepEqual((await call('/api/state')).incidents.find(i=>i.id===mixed[1].id),beforeNoop);
+ await stormBulk.getByRole('button',{name:'Apply to 1 incident',exact:true}).click();await expect(stormBulk.getByRole('list',{name:'Bulk operation results'}).locator('[data-bulk-outcome="skipped"]')).toHaveCount(1);await expect(stormBulk.getByRole('button',{name:'Apply to 1 incident',exact:true})).toBeEnabled();assert.deepEqual((await call('/api/state')).incidents.find(i=>i.id===mixed[1].id),beforeNoop);
  await stormBulk.getByRole('button',{name:'Clear selection',exact:true}).click();
  console.log('PROBE OC-079 bulk result titles: 50 all-matching acknowledgments retain titles and service context, shared timeline operation id, hidden/copyable diagnostic identity, bounded scrolling, unchanged replay and named mixed success/skipped/stale refusal; 1440 assertions, 1440/390 screen proof');
  const state=await call('/api/state'),service=state.services.find(s=>s.name==='Checkout'),prefix='Synthetic bulk '+(width===1440?'desktop':'phone');
@@ -1223,7 +1223,7 @@ export async function triageBulkBrowser(page,context,width){
  const transformResponse=await context.request.post(origin+'/api/ingress/'+newSource,{headers:{origin,authorization:'Bearer '+newKey},data:{source:newSource,eventId:transformIdentity,service:newServiceId,environment:'test',key:transformIdentity,generation:transformIdentity,intent:'trigger',severity:'critical',priority:'P1',title:transformTitle,observedAt:new Date().toISOString(),evidence:''}});assert.equal(transformResponse.status(),201);
  await page.goto(origin+'/alerts');await openWorkspaceSection(page,'alerts');await focusWorkspace(page);await page.locator('.alert-row').filter({hasText:transformTitle}).click();
  const transformCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:transformTitle,exact:true})});await transformCard.getByText('warning',{exact:true}).waitFor();await transformCard.getByText('Event context',{exact:true}).click();await transformCard.getByText(/Priority: P3/).waitFor();await transformCard.getByText(/Original severity: critical \/ P1 → warning \/ P3/).waitFor();await transformCard.getByText(/Synthetic reviewed customer-impact lowering/).waitFor();await workflowCheck('transformation-alert');
- await page.goto(origin+'/incidents?triage_kind=alerts&triage_q='+encodeURIComponent(transformTitle));await page.getByText('1 matching alert-only items',{exact:true}).waitFor();await page.getByRole('region',{name:'Incident triage',exact:true}).getByRole('button').filter({has:page.getByRole('heading',{name:'Alert-only: '+transformTitle,exact:true})}).getByText(/^warning$/i).waitFor();await workflowCheck('transformation-triage');
+ await page.goto(origin+'/incidents?triage_kind=alerts&triage_q='+encodeURIComponent(transformTitle));await page.getByText('1 matching alert-only item',{exact:true}).waitFor();await page.getByRole('region',{name:'Incident triage',exact:true}).getByRole('button').filter({has:page.getByRole('heading',{name:'Alert-only: '+transformTitle,exact:true})}).getByText(/^warning$/i).waitFor();await workflowCheck('transformation-triage');
  const replayEvent=(await call('/api/state')).events.find(event=>event.title===transformTitle),routedId='synthetic-oncall-445-'+width,routedKey=randomBytes(32).toString('hex');
  const routedDefinition=await call('/api/routing/keys',{id:routedId,name:'Synthetic transformed routing '+width,provider:'pagerduty',scope:[newServiceId],owner:coordinator.id,key:routedKey,revision:0,rules:[],catchAll:newServiceId},201);
  const routedResponse=await context.request.post(origin+'/v2/enqueue',{data:{routing_key:routedKey,event_action:'trigger',dedup_key:routedId,payload:{summary:'Synthetic routed transformation '+width,source:routedId,severity:'critical'}}});assert.equal(routedResponse.status(),202);

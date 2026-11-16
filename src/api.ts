@@ -1,4 +1,5 @@
 import { nativeName } from './integrations/native-name';
+import {withDraftPolicy} from './orchestration/draft-policy.ts';
 import {installReadiness} from './readiness/api';
 import {installTeams} from './teams/api';
 import {auditRefusalCommitted} from './audit-store';
@@ -513,7 +514,7 @@ api.post("/api/replay", async (c) => {
   events.sort((a, b) =>
     accepted(a.signal).localeCompare(accepted(b.signal)) || a.signal.source.localeCompare(b.signal.source) || a.signal.eventId.localeCompare(b.signal.eventId));
   const decisions: ReturnType<typeof replayService> = [];
-  replayService(state, events.map(event => event.signal), evaluatedAt)
+  replayService(input.policyDraft ? withDraftPolicy(state, input.policyDraft) : state, events.map(event => event.signal), evaluatedAt)
     .forEach((decision, index) => { decisions[events[index].index] = decision; });
   return c.json({
     sideEffects: false,

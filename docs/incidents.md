@@ -54,7 +54,7 @@ Send `POST /api/ingress/SOURCE` with a JSON object, at most 65,536 bytes (64 KiB
 
 Text values are trimmed; their limits apply before trimming. Unknown fields are discarded, so include all context you need in these supported fields.
 
-To get the service UUID, open **Services** and copy the ID shown below the service's name and owner. You can also open `/api/state` in that signed-in browser and find its `id` in `services`. The **Allowed service** selector uses that ID automatically; an external sender must supply it explicitly.
+To get the service UUID, open **Settings → Integrations**, open your Events API source and copy the `service` value from its **Sample request**. The service pages do not show the ID. You can also open `/api/state` in that signed-in browser and find its `id` in `services`. The sample request fills in that ID automatically; an external sender must supply it explicitly.
 
 For a source configured as **Bearer token**, set `ONCALL_ORIGIN` to your hosted HTTPS app origin or the local app's printed origin, `ONCALL_SERVICE_ID` to that UUID and `ONCALL_SOURCE_KEY` to the private credential in your shell. With a source named `monitoring` authorized for that service in `production`:
 

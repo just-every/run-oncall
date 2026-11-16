@@ -1,4 +1,5 @@
 import {useState,useEffect,useRef,useId} from 'react';
+import {plural} from '../app/plural';
 import type {ScheduleReview} from './review';
 
 export function ReviewedChange({review,busy,onApply,focusOnOpen=true}:{review:ScheduleReview;busy:boolean;onApply:()=>void;focusOnOpen?:boolean}) {
@@ -14,7 +15,7 @@ export function ReviewedChange({review,busy,onApply,focusOnOpen=true}:{review:Sc
   <h2 tabIndex={-1}>Review change</h2>
   <p>{date(review.from)} – {date(review.to)} · {review.schedule.timezone}</p>
   {review.clocks.length>0&&<><h3>Clock changes</h3><ul>{review.clocks.map(c=><li key={c.zone+c.at}>DST / clock change: {c.zone}, {date(c.at,c.zone)}, {c.before} → {c.after}</li>)}</ul></>}
-  <p>{review.intervals.length} resolved role spans; {review.intervals.filter(row=>row.after===null).length} uncovered spans. Gaps first.</p>
+  <p>{plural(review.intervals.length,'resolved role span')}; {plural(review.intervals.filter(row=>row.after===null).length,'uncovered span')}. Gaps first.</p>
   <div className="scheduling-window-list" tabIndex={0} role="region" aria-label="Coverage change intervals">{rows.slice(0,shown).map(row=><div className="scheduling-window" key={row.role+row.start}>
    <p><time>{date(row.start)} → {date(row.end)}</time></p>
    <p><strong>{row.role}: {name(row.before)} → {name(row.after)}</strong></p>

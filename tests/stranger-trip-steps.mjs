@@ -42,6 +42,14 @@ export async function coveredSwap(page,context,session,substitute,directory,capt
  assert.ok(swap,'an uncovered alternative produces a real swap request');
  assert.ok(Date.parse(swap.data.start)>=Date.parse(revised.overrides[0].end),'the offered shift starts after existing cover');
  assert.deepEqual((await api('/api/paging/state')).schedules.find(row=>row.id===revised.id).overrides,revised.overrides,'requesting a swap leaves cover untouched');
+ // A shift longer than the two visible weeks is swapped whole, not cut at the view's edge.
+ const longStart=new Date(now+day).toISOString(),longEnd=new Date(now+26*day).toISOString();
+ const long=await api('/api/paging/schedules',{id:'synthetic-oncall-long-swap',name:'Long shift',service:state.services[0].id,revision:0,timezone:'UTC',validFrom:longStart,validUntil:longEnd,primary:{anchorLocal:longStart.slice(0,16),periodDays:25,members:[session.member.id],ambiguity:'earlier'},backup:{anchorLocal:longStart.slice(0,16),periodDays:25,members:[],ambiguity:'earlier'},overrides:[]});
+ await page.goto(origin+'/on-call/'+long.id);await page.getByRole('button',{name:'Request a swap',exact:true}).click();sheet=page.getByRole('dialog');
+ await sheet.getByLabel('Substitute',{exact:true}).selectOption(substitute.id);await sheet.getByRole('button',{name:'Request',exact:true}).click();await sheet.waitFor({state:'detached'});
+ const whole=(await api('/api/schedule-coordination')).records.find(row=>row.kind==='swap'&&row.data.schedule===long.id);
+ assert.ok(whole,'a long shift produces a swap request');
+ assert.equal(Date.parse(whole.data.start),Date.parse(longStart));assert.equal(Date.parse(whole.data.end),Date.parse(longEnd),'the swap covers the whole shift');
 }
 
 // Continue the saved rota journey on a fixed clock through the summary and the

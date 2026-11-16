@@ -14,20 +14,20 @@ curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-oncal
 
 Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-oncall` does the same. If the installer prints a line that puts `rer` on your PATH, run that line too. To start it again later, run the same line from the same folder, or `cd run-oncall && rer dev`. `rer dev` installs the locked dependencies, prepares the local database and creates a local development owner (`owner@<checkout-name>.test`). It starts Oncall and prints a private `RER_OPEN` link. Open that link on this computer and you are signed in as the owner. Use the printed address: the default port starts at 8787 and another free port is selected if needed; `rer dev --port N` requests a specific free port.
 
-The first time, Oncall opens **Finish setup**. Name and Email are read-only; a default local owner is named **Owner**. Review the displayed email, tick *I confirm this owner account is ready to use* and press **Finish setup**. This screen confirms the owner; it does not edit their name or email. After that, Oncall opens straight into the app. To choose a real owner mailbox before first launch, use the explicit setup steps below.
+The first time, Oncall opens **Finish setup**. The email is shown for review and cannot be edited here. **Your name** starts as the default local owner name, **Owner**; type your own name if you want it shown instead. Tick *I confirm this owner account is ready to use* and press **Finish setup**. You can also correct your name later in settings. After that, Oncall opens straight into the app. To choose a real owner mailbox before first launch, use the explicit setup steps below.
 
 Treat the `RER_OPEN` link like a password: it signs whoever opens it in as the owner. Open it only on this computer.
 
 `rer dev` can detach and return after printing the ready links. The app keeps running in the background; `rer dev --stop` stops it. If it is running in the foreground, Ctrl-C stops it too.
 
-Before the first `rer verify`, stop dev and preview, then install its browser using the dependencies `rer dev` (or `rer install`) already installed:
+Stop dev and preview before `rer verify`. It downloads its test browser the first time it runs. To fetch that browser ahead of time, use the dependencies `rer dev` (or `rer install`) already installed:
 
 ```sh
 rer run --script node_modules/@playwright/test/cli.js install chromium
 rer verify
 ```
 
-This command uses the installer’s private Node runtime; no global Node or pnpm is needed. On Linux, add `--with-deps` to the browser install command if system libraries are missing. `rer doctor` reports a missing verification browser. `rer check` is silent on success (exit 0); `rer check --json` prints the result.
+This command uses the installer’s private Node runtime; no global Node or pnpm is needed. On Linux, add `--with-deps` to the browser install command if system libraries are missing. `rer doctor` notes a browser that is not downloaded yet; that is not a failure. `rer check` is silent on success (exit 0); `rer check --json` prints the result.
 
 ## Sign-in emails on your computer
 

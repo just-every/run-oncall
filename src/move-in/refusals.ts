@@ -27,10 +27,10 @@ export function duplicateTargets(source: SourceBundle, mapping: ImportMapping) {
 }
 
 // A door import's kit job keeps an internal namespace (door:<hash>); its door plan names the vendor.
-type Held = { kind: string; id: string; job: string; namespace: string }
+type Held = { kind: string; id: string; job: string; namespace: string; file: string | null; adopted: number }
 async function holders(db: D1Database, effects: TargetEffect[], job?: string): Promise<Held[]> {
  const wanted = JSON.stringify(effects.map(e => [e.targetKind, e.targetId]))
- const rows = await db.prepare(`SELECT p.target_kind AS kind,p.target_id AS id,p.job_id AS job,COALESCE((SELECT d.namespace FROM ik_door_plans d WHERE d.job_id=j.id OR 'door:'||d.id=j.operation_key LIMIT 1),j.namespace) AS namespace FROM ik_provenance p JOIN ik_jobs j ON j.id=p.job_id WHERE p.destination='oncall' AND p.reversed=0 AND p.job_id IS NOT ? AND EXISTS(SELECT 1 FROM json_each(?) w WHERE json_extract(w.value,'$[0]')=p.target_kind AND json_extract(w.value,'$[1]')=p.target_id) ORDER BY p.target_kind,p.target_id`).bind(job ?? null, wanted).all<Held>()
+ const rows = await db.prepare(`SELECT p.target_kind AS kind,p.target_id AS id,p.job_id AS job,COALESCE((SELECT d.namespace FROM ik_door_plans d WHERE d.job_id=j.id OR 'door:'||d.id=j.operation_key LIMIT 1),j.namespace) AS namespace,(SELECT MIN(o.name) FROM ik_originals o WHERE o.job_id=p.job_id) AS file,EXISTS(SELECT 1 FROM ik_provenance q JOIN move_in_objects m ON m.kind=q.target_kind AND m.id=q.target_id WHERE q.job_id=p.job_id AND q.reversed=0 AND json_extract(m.data,'$.adopted') IS NOT NULL) AS adopted FROM ik_provenance p JOIN ik_jobs j ON j.id=p.job_id WHERE p.destination='oncall' AND p.reversed=0 AND p.job_id IS NOT ? AND EXISTS(SELECT 1 FROM json_each(?) w WHERE json_extract(w.value,'$[0]')=p.target_kind AND json_extract(w.value,'$[1]')=p.target_id) ORDER BY p.target_kind,p.target_id`).bind(job ?? null, wanted).all<Held>()
  return rows.results
 }
 const vendorName = (namespace: string) => namespace === 'pagerduty' ? 'PagerDuty' : namespace === 'opsgenie' ? 'Opsgenie' : namespace
@@ -40,8 +40,14 @@ const vendorName = (namespace: string) => namespace === 'pagerduty' ? 'PagerDuty
 export async function alreadyImported(db: D1Database, plan: ImportPlan, vendor: string, job?: string) {
  const held = await holders(db, plan.entries.flatMap(entry => entry.effects).filter(effect => effect.expectedRevision === undefined), job)
  if (!held.length) return null
- const imports = [...new Set(held.map(h => `the ${vendorName(h.namespace)} import ${h.job}`))]
- return new Refusal(409, `${list(held.map(h => object(h.kind, h.id)))} ${held.length > 1 ? 'are' : 'is'} already in Oncall from ${list(imports)}. Undo that import, or erase ${held.length > 1 ? 'those people' : 'that person'}, before bringing ${held.length > 1 ? 'them' : 'it'} in again from ${vendorName(vendor)}. Nothing from this file was written.`, 'TARGET_REVISION_CONFLICT')
+ // Name an earlier import by its provider and file, never by its internal id.
+ const imports = [...new Set(held.map(h => `the ${vendorName(h.namespace)} import${h.file && !h.file.startsWith('erased-artifact:') ? ` of ${h.file}` : ''}`))]
+ const many = held.length > 1, them = many ? 'those people' : 'that person'
+ // A made-live import can no longer be undone, so only removal from this file or erasure can work.
+ const remedy = held.some(h => h.adopted)
+  ? `${list([...new Set(held.filter(h => h.adopted).map(h => `the ${vendorName(h.namespace)} import`))])} was made live and can no longer be undone. Remove ${many ? 'them' : 'this person'} from this file and preview again, or erase ${them} under Settings, Archive, Erase someone’s data first.`
+  : `Undo that import, or erase ${them}, before bringing ${many ? 'them' : 'it'} in again from ${vendorName(vendor)}.`
+ return new Refusal(409, `${list(held.map(h => object(h.kind, h.id)))} ${many ? 'are' : 'is'} already in Oncall from ${list(imports)}. ${remedy} Nothing from this file was written.`, 'TARGET_REVISION_CONFLICT')
 }
 
 /** NATIVE_EDIT_CONFLICT on undo: name what changed in Oncall after the import, which undo would otherwise overwrite. Null when nothing did. */

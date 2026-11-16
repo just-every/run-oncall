@@ -43,13 +43,13 @@ Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-oncall
 
 macOS, Linux or Windows with WSL2. git is required; rer brings Node and pnpm.
 
-To start it again later, run `cd run-oncall && rer dev`; after the `curl` installer, a terminal without `~/.local/bin` on PATH needs `export PATH="$HOME/.local/bin:$PATH"` first or it says `rer: command not found` (add that line to your shell startup file to keep it; `"$HOME/.local/bin/rer" cli path` shows the line for your shell). `rer dev` installs the application dependencies, creates a local development owner and prints a private `RER_OPEN` link that opens Oncall signed in. On first launch, confirm the read-only owner details at `/setup` (**Finish setup**); later launches open the app directly. To choose your own owner mailbox before the first launch, use [explicit setup](docs/getting-started.md#explicit-and-unattended-setup); unattended setup accepts a private answers file.
+To start it again later, run `cd run-oncall && rer dev`; after the `curl` installer, a terminal without `~/.local/bin` on PATH needs `export PATH="$HOME/.local/bin:$PATH"` first or it says `rer: command not found` (add that line to your shell startup file to keep it; `"$HOME/.local/bin/rer" cli path` shows the line for your shell). `rer dev` installs the application dependencies, creates a local development owner and prints a private `RER_OPEN` link that opens Oncall signed in. On first launch, review the owner at `/setup` (**Finish setup**): the email is shown for review and you can correct **Your name** there; later launches open the app directly. To choose your own owner mailbox before the first launch, use [explicit setup](docs/getting-started.md#explicit-and-unattended-setup); unattended setup accepts a private answers file.
 
 Open the printed link on this computer. `rer dev --as signed-out` selects the signed-out persona. The compatibility flag `rer dev --login` still opens automatic owner entry. Ordinary `/signin` email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. The app does not capture mail or print sign-in tokens. Stop the background server with `rer dev --stop` (Ctrl-C also stops a foreground run); stop preview with `rer preview --stop` before building, verifying or deploying. A running dev or preview server owns the local state, so even a deploy dry run refuses with exit 4 until it stops.
 
 ```sh
 rer build
-rer preview
+rer preview --detach
 rer verify
 rer export --output exports/installation.rer
 rer import --input exports/installation.rer --yes
@@ -61,14 +61,14 @@ rer describe
 rer check
 ```
 
-Before the first `rer verify`, stop dev and preview, then install its browser using the dependencies `rer dev` (or `rer install`) already installed:
+Stop dev and preview before `rer verify`. It downloads its test browser the first time it runs. To fetch that browser ahead of time, use the dependencies `rer dev` (or `rer install`) already installed:
 
 ```sh
 rer run --script node_modules/@playwright/test/cli.js install chromium
 rer verify
 ```
 
-This command uses the installer’s private Node runtime; no global Node or pnpm is needed. On Linux, add `--with-deps` to the browser install command if system libraries are missing. `rer doctor` reports a missing verification browser. `rer check` is silent on success (exit 0); `rer check --json` prints the result.
+This command uses the installer’s private Node runtime; no global Node or pnpm is needed. On Linux, add `--with-deps` to the browser install command if system libraries are missing. `rer doctor` notes a browser that is not downloaded yet; that is not a failure. `rer check` is silent on success (exit 0); `rer check --json` prints the result.
 
 Export includes supported durable records and the import journal, excluding sessions and dev credentials. Import requires an empty destination and explicit confirmation. If it refuses with `target_not_empty`, export any data you need to keep, stop dev and preview, then run `rer reset --yes` before importing into the now-empty installation. Configure a new owner, sign in, then explicitly map an archived administrator identity from the signed-out workspace; credentials never travel. Reset deletes local data and owner settings and keeps your exports; see [Export and restore](docs/data.md) for the in-place restore sequence.
 
@@ -84,7 +84,7 @@ Move in (under Settings) reviews supplied Opsgenie exports first, then PagerDuty
 
 Held data upgrades in place through unchanged migrations 0001–0006 and additive migrations. Coordination now stores individual members, services, policies, events, alerts, incidents and audit entries in relational tables. Old password accounts remain usable; Base owner identity never silently takes over an existing workspace. For a held installation, continue using its password accounts until the owner explicitly links identity during a future identity migration. On local and hosted apps, the configured owner uses email links and admin-created team members use their installation-local workspace name and password at `/signin/local`. Only anonymous first-admin bootstrap remains loopback-only. Do not reset to upgrade.
 
-To look around with realistic sample data, run `rer demo` after setup: a throwaway, signed-in copy where nothing can page, call, text or email ([DEMO.md](DEMO.md)).
+To look around with realistic sample data, run `rer demo` after setup (stop `rer dev` or `rer preview` first with `rer dev --stop`; the demo refuses to start while either is serving this checkout): a throwaway, signed-in copy where nothing can page, call, text or email ([DEMO.md](DEMO.md)).
 
 Read [CONTRACT.md](CONTRACT.md), [ACCEPTANCE.md](ACCEPTANCE.md), [OPERATIONS.md](OPERATIONS.md) and [RELEASE.md](RELEASE.md). The checkout declares its exact command version in `package.json` and the lockfile. `base-copies.json` records each Base runtime/module copy and its own revision; `src/base` comes from Base 6d38b54a6401879989e8d1f7ab4a02ffbdb4c46c. Source locks are generated with Base's edition-authoring command from this checkout. This repository is runnable source, without a composition step.
 
