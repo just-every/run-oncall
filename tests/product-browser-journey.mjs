@@ -1736,7 +1736,7 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession,
  await page.setViewportSize({width:1440,height:1000})
 }
 
-async function sharedIncidentLinks(page,context) {
+export async function sharedIncidentLinks(page,context) {
  const origin=new URL(page.url()).origin
  const state=await (await context.request.get('/api/state')).json(),incident=state.incidents.find(incident=>!incident.mergedInto)
  assert.ok(incident,'the existing coordination journey provides an incident to share')
@@ -1785,6 +1785,50 @@ async function sharedIncidentLinks(page,context) {
  assert.equal(await page.locator('.detail').count(),0,'a missing shared incident never opens a different incident')
  await back.click()
  await page.waitForURL(url=>url.pathname==='/on-call')
+ await unknownWorkspaceLinks(page,context)
+}
+
+async function unknownWorkspaceLinks(page,context) {
+ const origin=new URL(page.url()).origin,externalDocuments=[]
+ const guard=async route=>{
+  const request=route.request()
+  if(request.isNavigationRequest()&&request.resourceType()==='document'&&new URL(request.url()).origin!==origin){
+   externalDocuments.push(request.url())
+   await route.abort()
+  }else await route.continue()
+ }
+ await context.route('**/*',guard)
+ try{
+  await page.setViewportSize({width:1440,height:1000})
+  const fragments=['https://outside.invalid/path','//outside.invalid/path','\\\\outside.invalid/path','../signin','/api/state']
+  for(const fragment of fragments){
+   const path='/'+encodeURIComponent(fragment)
+   await page.goto(origin+'/#'+fragment)
+   await page.waitForURL(url=>url.origin===origin&&url.pathname===path)
+   await page.locator('.workspace-not-found').waitFor()
+   assert.equal(new URL(page.url()).origin,origin,'a URL-like legacy fragment stays on the installation origin')
+   assert.equal(new URL(page.url()).pathname,path,'a URL-like legacy fragment becomes an encoded local unknown workspace')
+   const response=await page.reload()
+   assert.equal(response.status(),404,'the encoded unknown workspace returns a document-level HTTP 404')
+   await page.locator('.workspace-not-found a[href="/on-call"]').waitFor()
+   assert.equal(new URL(page.url()).origin,origin,'reloading an unknown workspace stays on the installation origin')
+   assert.equal(new URL(page.url()).pathname,path,'reloading preserves the encoded unknown workspace path')
+   assert.equal(await page.locator('.detail').count(),0,'an unknown workspace never opens incident data')
+   assert.deepEqual(externalDocuments,[],'URL-like legacy fragments attempt no external document navigation')
+  }
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'unknown workspace fits the desktop viewport')
+  assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0,'unknown workspace has no hydration mismatch')
+  const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser'
+  await mkdir(directory,{recursive:true})
+  for(const width of [1440,390]){
+   await page.setViewportSize({width,height:1000})
+   await page.screenshot({path:`${directory}/workspace-links-unknown-${width}.png`,fullPage:true})
+  }
+  await page.setViewportSize({width:1440,height:1000})
+  await page.locator('.workspace-not-found a[href="/on-call"]').click()
+  await page.waitForURL(url=>url.pathname==='/on-call')
+  console.log('PASS workspace links: 19 canonical section and incident entries, guest lobby and retained shell; five URL-like fragments stay encoded on the installation origin, show unknown workspace and reload with HTTP 404, with zero external document navigation attempts; assertions at 1440 and unknown workspace captures at 1440/390')
+ }finally{await context.unroute('**/*',guard)}
 }
 
 

@@ -1932,7 +1932,7 @@
       "executable": false
     },
     "src/app/useWorkspacePath.ts": {
-      "sha256": "2237548ce9ff4c62b477ad230715027c23bdca7b91db21a28e0fe12ac6ab47b5",
+      "sha256": "a16fc8c5eef4776b2eb5cd779147d4e9042af8786edeb352b62eedaa891b0c8d",
       "executable": false
     },
     "src/app/WorkspaceOutlet.tsx": {
@@ -6820,11 +6820,11 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "c6e615105db19a6cfaad4f2b3c74c82f5f3a7f567bc7b7ec86795c767d023bc2",
+      "sha256": "78ca9eaeddcd3dc3e98c471f2662d5ecc1388e2951990d3a27bd60184762075c",
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "db5d3610cb7a84ef359c2cc41bee38f9119fa80b39268325d38ebe7233d242be",
+      "sha256": "80b57362df9bedcfcfdcc90c73e5808caeb09cc852174060f22d11b03a1019a6",
       "executable": false
     },
     "tests/readable-names-browser.mjs": {
