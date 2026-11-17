@@ -248,7 +248,7 @@
       "executable": false
     },
     "docs/getting-started.md": {
-      "sha256": "494fd60c2c96e9962162baf4c94ef5c2ea00e2ffc2fbca41166818a9543d5c26",
+      "sha256": "f89cd6643a8b7473ab05521033113ba6f6e313fadc7fd43cc84a3428ca70cd92",
       "executable": false
     },
     "docs/incidents.md": {
@@ -6653,6 +6653,10 @@
     },
     "tests/initialize-agent-reviewer.mjs": {
       "sha256": "01129c44d1cfa757f77125786aa87aa0734477a1855c38e06242a253e9f0b2ea",
+      "executable": false
+    },
+    "tests/installation-fit.mjs": {
+      "sha256": "c59c4a7362267928f6e1556b21208a759228c6e7e7aed543780326c1383e2588",
       "executable": false
     },
     "tests/intake.mjs": {
