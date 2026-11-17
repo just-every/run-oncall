@@ -95,6 +95,23 @@ async function syntheticPagerDutyAccount({w,req,door,call,upload,ok}) {
   await finish('undo',plan);assert.deepEqual(await objects(),before)
   console.log('Synthetic account catch-up and undo: '+via)
   assert.deepEqual(ok(await req('/api/state')),native);assert.deepEqual(ok(await req('/api/paging/state')),paging)
+  if(via==='owner') {
+   const businessIds=['synthetic-oncall-empty-1','synthetic-oncall-empty-2']
+   const emptyPages={
+    users:[{id:'synthetic-oncall-empty-user',name:'Synthetic responder',email:'empty-user@example.test'}],
+    business_services:businessIds.map(id=>({id,name:id})),
+    subscribers:businessIds.map(()=>({subscribers:[],limit:25,offset:0,more:false,total:0})),
+    _bindings:businessIds.map((parentId,index)=>({pointer:`/subscribers/${index}`,parentKind:'business_services',parentId})),
+   }
+   const scoped=ok(await preview(JSON.stringify(emptyPages)))
+   assert.deepEqual(scoped.items.filter(item=>item.rejection).map(item=>item.id).sort(),businessIds)
+   assert.equal(scoped.summary.sourceRecords,3)
+   assert.deepEqual(scoped.items.flatMap(item=>item.unmapped.filter(note=>note.disposition).map(note=>note.field)).sort(),leaves(emptyPages).sort())
+   assert.deepEqual(await objects(),before)
+   const wrongParent=structuredClone(emptyPages);wrongParent._bindings[1].parentId=businessIds[0]
+   const refused=await preview(JSON.stringify(wrongParent));assert.equal(refused.status,400)
+   assert.deepEqual(await objects(),before)
+  }
   // Wrong wrappers, missing or contradictory parents, incomplete pagination,
   // duplicate identities and credential fields must not leave native effects.
   const hostile=[
