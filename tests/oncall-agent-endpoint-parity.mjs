@@ -17,6 +17,16 @@ export async function endpointParity({runtime,people,browser,receipt,scopes,at})
  assert.ok(endpoint,'Reuse the populated active native endpoint');
  const requested=[...scopes,'integrations:read'];
  receipt.endpoints={existing:endpoint.id,cases:[]};
+ for(const phase of ['active','inactive']){
+  if(phase==='inactive'){
+   // Finish the active observations before revoking this disposable fixture.
+   // The signed-in native administrator prepares inactivity before any new
+   // observation baseline; no registration, renewal or dispatch is needed.
+   const revoked=await json(admin.http,'/api/automation/endpoints/'+endpoint.id+'/revoke',{revision:endpoint.revision});
+   assert.deepEqual(revoked,{...endpoint,active:false,revision:endpoint.revision+1});
+   receipt.endpoints.preparation={nativeDoor:'/api/automation/endpoints/'+endpoint.id+'/revoke',
+    administrator:admin.member.id,at:new Date(at).toISOString(),before:endpoint,after:revoked};
+  }
  for(const [mode,policy] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
   assert.equal((await runtime.adopt(policy)).status,200);
   for(const person of people){
@@ -39,7 +49,8 @@ export async function endpointParity({runtime,people,browser,receipt,scopes,at})
    const automation=await json(admin.http,'/api/automation');
    assert.equal(automation.paging,'OFF');
    const expected=automation.endpoints.find(row=>row.id===endpoint.id);
-   assert.ok(expected);assert.equal(expected.active,true);
+   assert.ok(expected);assert.equal(expected.active,phase==='active');
+   assert.deepEqual(expected,{...endpoint,active:phase==='active',revision:endpoint.revision+(phase==='inactive'?1:0)});
    const uri='oncall://automation/endpoints/'+expected.id;
    const reviews=await custody(runtime,'agent_door_reviews'),approvals=await custody(runtime,'agent_door_approvals');
    if(person.member.role==='admin'){
@@ -65,11 +76,11 @@ export async function endpointParity({runtime,people,browser,receipt,scopes,at})
      assert.equal(review.prepared_by.for,person.member.name);
      assert.deepEqual(afterReviews.filter(row=>!reviews.some(prior=>prior.id===row.id)).map(row=>row.id),[reviewId]);
     }else assert.deepEqual(afterReviews,reviews);
-    receipt.endpoints.cases.push({mode,role:person.member.role,agent,sponsor:person.member.id,scopes:requested,uri,
+    receipt.endpoints.cases.push({phase,mode,role:person.member.role,agent,sponsor:person.member.id,scopes:requested,uri,
      at:new Date(at).toISOString(),workspaceRevision:native.revision,schedulingRevision:paging.revision,
      decision:read.initial.decision.id,disposition:read.initial.decision.disposition,review:reviewId,
      nativeDoor:'/api/automation',nativeRecord:expected,resourceRecord:read.value,equal:true});
-    console.log(`PROBE BASE-AGENT-003 2 endpoints ${mode} admin: every field equals protected native HTTP and native state; standard class, untrusted marker and read custody retained`);
+    console.log(`PROBE BASE-AGENT-003 2 endpoints ${phase} ${mode} admin: every field equals protected native HTTP and native state; standard class, untrusted marker and read custody retained`);
    }else{
     assert.equal(Object.hasOwn(native,'apiEndpoints'),false,'Viewer state omits endpoint records entirely');
     const denied=await json(person.http,'/api/automation',undefined,403);
@@ -82,16 +93,16 @@ export async function endpointParity({runtime,people,browser,receipt,scopes,at})
      const refused=await runtime.mcp('resources/read',{uri:'oncall://automation/endpoints/'+id},{},bearer);
      assert.equal(refused.status,200);assert.equal(refused.result,undefined);
      assert.deepEqual(refused.body.error,{code:-32602,message:'Resource unavailable',data:{code:'resource_unavailable'}});
-     if(unavailable)assert.deepEqual(refused.body.error,unavailable,'Populated and missing endpoints have identical refusal without content');
+     if(unavailable)assert.deepEqual(refused.body.error,unavailable,'The '+phase+' endpoint and missing endpoint have identical refusal without content');
      for(const value of [expected.id,expected.name,expected.url])assert.ok(!JSON.stringify(refused.body).includes(value));
      unavailable=refused.body.error;
     }
     assert.deepEqual(await custody(runtime,'agent_door_reviews'),reviews);
     assertAgentReadUnchanged(before,await agentReadSnapshot(runtime));
-    receipt.endpoints.cases.push({mode,role:person.member.role,agent,sponsor:person.member.id,scopes:requested,
+    receipt.endpoints.cases.push({phase,mode,role:person.member.role,agent,sponsor:person.member.id,scopes:requested,
      at:new Date(at).toISOString(),workspaceRevision:native.revision,schedulingRevision:paging.revision,
      nativeDoor:'/api/automation',nativeStatus:403,stateEndpointsOmitted:true,refusedIds,error:unavailable});
-    console.log(`PROBE BASE-AGENT-003 2 endpoints ${mode} viewer: native 403, state omits endpoints, populated and missing resource_unavailable are identical without content`);
+    console.log(`PROBE BASE-AGENT-003 2 endpoints ${phase} ${mode} viewer: native 403, state omits endpoints, populated and missing resource_unavailable are identical without content`);
    }
    assert.deepEqual(await custody(runtime,'agent_door_approvals'),approvals,'Endpoint reads never create or alter approval custody');
    assert.deepEqual(await json(person.http,'/api/state'),native);
@@ -100,10 +111,12 @@ export async function endpointParity({runtime,people,browser,receipt,scopes,at})
    if(person.member.role==='admin')assertAgentReadUnchanged(baseline,await agentReadSnapshot(runtime));
    else assertObservedUnchanged(baseline,await agentReadSnapshot(runtime),'refusal');
    assert.deepEqual(await runtime.outboundRequests(),[]);
-   if(browser)await captureEndpoints({browser,runtime,person,mode,at,native,automation,receipt});
+   if(browser)await captureEndpoints({browser,runtime,person,phase,mode,at,native,automation,receipt});
   }
  }
- assert.equal(receipt.endpoints.cases.length,4);
+ }
+ assert.equal(receipt.endpoints.cases.length,8);
+ for(const phase of ['active','inactive'])assert.equal(receipt.endpoints.cases.filter(row=>row.phase===phase).length,4);
 }
 
 function assertObservedUnchanged(before,after,kind){
@@ -117,7 +130,7 @@ function assertObservedUnchanged(before,after,kind){
  assertAgentReadUnchanged(before,{...after,records:{...after.records,oc_admin_audit:after.records.oc_admin_audit.filter(row=>prior.has(row.id)||row.kind==='agent-door.persistence')}});
 }
 
-async function captureEndpoints({browser,runtime,person,mode,at,native,automation,receipt}){
+async function captureEndpoints({browser,runtime,person,phase,mode,at,native,automation,receipt}){
  const before=await agentReadSnapshot(runtime);
  const reviews=await custody(runtime,'agent_door_reviews'),approvals=await custody(runtime,'agent_door_approvals');
  const context=await browser.newContext({baseURL:runtime.origin,viewport:{width:1440,height:1000}});
@@ -166,10 +179,10 @@ async function captureEndpoints({browser,runtime,person,mode,at,native,automatio
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
    }
    await recipients.scrollIntoViewIfNeeded();
-   const file=`parity-${mode}-${person.member.role}-endpoints-${width}.png`;
+   const file=`parity-${mode}-${person.member.role}-endpoints${phase==='inactive'?'-inactive':''}-${width}.png`;
    await page.screenshot({path:(process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser')+'/'+file,fullPage:true});
-   receipt.screens.push({role:person.member.role,mode,path,kind:'endpoints',at:new Date(at).toISOString(),width,file});
-   console.log(`Browser proof endpoints ${mode} ${person.member.role} ${width}: existing Recipients disclosure captured`);
+   receipt.screens.push({role:person.member.role,phase,mode,path,kind:'endpoints',at:new Date(at).toISOString(),width,file});
+   console.log(`Browser proof endpoints ${phase} ${mode} ${person.member.role} ${width}: existing Recipients disclosure captured`);
   }
  }finally{await context.close()}
  assertObservedUnchanged(before,await agentReadSnapshot(runtime),'screen');
