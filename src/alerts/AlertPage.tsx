@@ -1,3 +1,4 @@
+import {AcknowledgmentStatus} from '../incident-deadlines/Status';
 import {useState} from 'react';
 import type {Alert, State} from '../family/response-operations/domain';
 import type {IntakeRun} from '../intake/CompatibleTest';
@@ -17,7 +18,7 @@ export function AlertPage({alert, state, canEdit, busy, run, name, onDeclare, on
   return <article className="panel padded alert-page" aria-label="Alert details">
     <a className="alert-back" href="/alerts">‹ Alerts</a>
     <h2>{title}</h2><p className="alert-meta"><span className={'priority sev-' + severity}>{severity}</span> · {service?.name ?? 'Integration unrouted queue'} · {alert.environment} · {alert.state}</p>
-    {incidents.map(incident => <p key={incident.id}><a href={'/incidents/' + encodeURIComponent(incident.id)} onClick={event => {event.preventDefault(); onOpenIncident(incident.id);}}>In incident {incident.title}</a></p>)}
+    {incidents.map(incident => <div key={incident.id}><AcknowledgmentStatus incident={incident} state={state}/><p><a href={'/incidents/' + encodeURIComponent(incident.id)} onClick={event => {event.preventDefault(); onOpenIncident(incident.id);}}>In incident {incident.title}</a></p></div>)}
     <AlertUrgency storageKey={'alert-urgency:'+draftScope+':'+alert.id} onSaved={onSaved} alert={alert} state={state} canEdit={canEdit && alert.service !== null} busy={busy} run={run} />
     <section className="alert-runbook"><h3>Runbook</h3>{service?.runbook.length ? <ol>{service.runbook.map((step, index) => <li key={index}>{step}</li>)}</ol> : <p>No service runbook is configured.</p>}</section>
     {canEdit && !incidents.length && <>

@@ -1,3 +1,4 @@
+import {AcknowledgmentStatus} from '../incident-deadlines/Status';
 import {useEffect, useState} from 'react';
 import {leaveAfterSaving} from '../app/autosave/leaveGuard';
 import {IncidentHead} from './IncidentHead';
@@ -38,6 +39,7 @@ export function IncidentPage(incidentProps: IncidentProps) {
     <section className="panel detail incident-page" aria-label="Incident">
       <IncidentHead {...props} actions={() => setMenu(true)} />
       <div className="incident-people"><PeoplePicker {...props} field="commander" label="Lead" /><PeoplePicker {...props} field="assignee" label="Assignee" /></div>
+      <AcknowledgmentStatus incident={props.incident} state={props.state}/>
       <NextStep {...props} />
       <div className="incident-body"><Runbook {...props} /><Timeline {...props} /></div>
     </section>
