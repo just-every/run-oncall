@@ -58,7 +58,7 @@ This is partial progress, not a DONE claim or a status promotion.
 | --- | --- |
 | 1 | PASS for the selected inactive endpoint observations; FAIL for a whole-clause DONE claim because the retained acceptance gaps remain. See the proof register. |
 | 2 | PASS for the selected slice: populated records, native allowed administrator path and denied viewer path, unchanged durable effects. |
-| 3 | Local invocation is selected by existing push Verify agent and hosted shards. Exact candidate CI result is recorded in the final receipt; a whole-clause DONE claim remains unavailable. |
+| 3 | Local invocation is selected by existing push Verify agent and hosted shards. PASS for the selected slice: push Verify 44068675323 completed successfully on 81afa370cb73f71e83d359a9931b3dea2742a9b9. A whole-clause DONE claim remains unavailable. |
 | 4 | Candidate source and evidence provenance are recorded in the receipt. Relevant native application bytes are unchanged throughout this run. |
 | 5 | INSPECTED: this changes proof for the Base clause itself and adds no receiving duty or new inheritance. Existing inheritance remains untouched. |
 | 6 | PASS mechanical generation and check; main's generated views are restored. Status, Gap, Evidence and counts remain reserved for the lander and are not represented as updated judgment. |
@@ -78,7 +78,7 @@ PLAN.md contains the actual plan. No fleet inbox or state file was read or writt
 
 ## Exact candidate handoff
 
-Candidate 81afa370cb73f71e83d359a9931b3dea2742a9b9 is pushed. Branch Verify push run 44068675323 was discovered in progress on this exact SHA. The final candidate receipt and CI response record its terminal or latest observed status. Prior main Verify 44058962092 and Run site 44058962257 were completed successfully on 91984b892ad8e993e0ddd782042d5143ed63baaf. No candidate Run site or publication scan is claimed.
+Candidate 81afa370cb73f71e83d359a9931b3dea2742a9b9 is pushed. Branch Verify push run 44068675323 completed successfully on this exact SHA, observed at 2026-11-17T11:06:42Z. Its raw REST response is candidate-ci-status.json. Five core API calls were used, with at least 300 seconds between status observations of this run; no dispatch, rerun or repair was needed. Prior main Verify 44058962092 and Run site 44058962257 were completed successfully on 91984b892ad8e993e0ddd782042d5143ed63baaf. No candidate Run site or publication scan is claimed.
 
 PROBE BASE-AGENT-003 2: inactive administrator resource read under both policies equals all native management and state fields; viewer native 403 and omitted state agree with identical inactive and missing resource_unavailable; native records, revisions, permanent state-changing audit and paging retained; zero outbound attempts.
 
@@ -87,3 +87,9 @@ MECHANICAL lock=node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock
 CLAIM BASE-AGENT-003 PARTIAL points=2 tests=tests/oncall-agent-endpoint-parity.mjs#endpointParity; tests/oncall-agent-resource-parity.mjs#resourceParity
 
 GAP BASE-AGENT-003: only the selected inactive endpoint slice is closed; complete role and target coverage, every write link, grant byte budgets, Base duties and all named authority and external holds remain. Status stays MISSING.
+
+Endpoint proof counts changed from four to eight cases and from eight to sixteen captures, preserving every active case. Contract counts and judgment cells did not change. The final product ref was read back after CI; its complete SHA matches the receipt. The published save is retained in candidate history. All local native Worker and browser processes started by this task have exited.
+
+Final validation: emitted Worker runtime agents PASS; agent browser PASS with all active and inactive endpoint roles and modes at 1440 and 390; candidate build PASS; typecheck PASS; first-party check PASS; generated views write and check PASS and restored; pinned source lock PASS; exact-SHA Verify 44068675323 push success. Publication scan, main equality and candidate Run site remain with the fleet lander. No BLOCKED condition applies to the selected slice.
+
+READY branch=cloud/sd-oncall-c-f259 head=81afa370cb73f71e83d359a9931b3dea2742a9b9

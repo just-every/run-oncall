@@ -64,6 +64,14 @@
       "head": "81afa370cb73f71e83d359a9931b3dea2742a9b9",
       "command": "git diff --check",
       "exit": 0
+    },
+    {
+      "head": "81afa370cb73f71e83d359a9931b3dea2742a9b9",
+      "command": "GitHub Actions Verify, push event",
+      "runId": 44068675323,
+      "exit": 0,
+      "status": "completed",
+      "conclusion": "success"
     }
   ],
   "endpointCases": 8,
@@ -241,18 +249,16 @@
     "src/automation/AutomationSettings.tsx",
     "src/modules/agent-door"
   ],
-  "verify": [
-    {
-      "conclusion": null,
-      "event": "push",
-      "head_sha": "81afa370cb73f71e83d359a9931b3dea2742a9b9",
-      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44068675323",
-      "id": 44068675323,
-      "name": "Verify",
-      "status": "in_progress"
-    }
-  ],
-  "githubCoreCallsSoFar": 2,
+  "verify": {
+    "conclusion": "success",
+    "head_sha": "81afa370cb73f71e83d359a9931b3dea2742a9b9",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44068675323",
+    "status": "completed",
+    "id": 44068675323,
+    "event": "push",
+    "observedAt": "2026-11-17T11:06:42Z"
+  },
+  "githubCoreCallsSoFar": 5,
   "publicationScan": {
     "commit": "81afa370cb73f71e83d359a9931b3dea2742a9b9",
     "complete": null,
@@ -266,5 +272,17 @@
     "publicationAndLandingAuthority": "fleet only"
   },
   "pr": null,
-  "blockersInSelectedSlice": []
+  "blockersInSelectedSlice": [],
+  "finalAdvertisedRefs": [
+    "81afa370cb73f71e83d359a9931b3dea2742a9b9\trefs/heads/cloud/sd-oncall-c-f259",
+    "91984b892ad8e993e0ddd782042d5143ed63baaf\trefs/heads/main"
+  ],
+  "proofCountsBefore": {
+    "endpointCases": 4,
+    "endpointCaptures": 8
+  },
+  "proofCountsAfter": {
+    "endpointCases": 8,
+    "endpointCaptures": 16
+  }
 }

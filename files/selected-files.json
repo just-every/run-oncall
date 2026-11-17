@@ -232,5 +232,8 @@
   "browser/parity-held-viewer-schedules-390.png",
   "browser/parity-held-viewer-services-1440.png",
   "browser/parity-held-viewer-services-390.png",
-  "selected-files.json"
+  "selected-files.json",
+  "candidate-ci-status.json",
+  "candidate-ci-polled-at.txt",
+  "evidence-ref.txt"
 ]
