@@ -29,6 +29,8 @@ export async function actionSubmitReplay(runtime,{approve,observe=async()=>{}}={
   incident=await command({type:'action',incident:incident.id,revision:incident.revision,title:'Synthetic human review follow-up',
    owner:responder.id,due:'2027-04-12',priority:'P1',completionPolicy:'human-review'});
   const action=incident.actions.at(-1);
+  assert.equal(action.owner,responder.id);assert.equal(action.due,'2027-04-12');
+  assert.equal(action.priority,'P1');assert.equal(action.completionPolicy,'human-review');
   assert.equal(incident.recovery,'');assert.deepEqual(incident.alerts,[]);
   assert.equal(action.done,false);assert.equal(action.evidence,'');assert.equal(action.submission,undefined);assert.equal(action.accepted,undefined);
   const args={incident:incident.id,revision:incident.revision,action:action.id,
@@ -118,12 +120,14 @@ export async function actionSubmitReplay(runtime,{approve,observe=async()=>{}}={
   let afterAudit=await audits();assert.deepEqual(afterAudit.slice(0,-1),auditBefore);assert.equal(afterAudit.length,auditBefore.length+1);
   const refusal=JSON.parse(afterAudit.at(-1).row);
   assert.equal(refusal.tool,name);assert.equal(refusal.outcome,'refused');assert.equal(refusal.code,'idempotency_conflict');
+  assert.equal(refusal.agent.id,context.agentId);assert.equal(refusal.sponsor.id,owner.id);
   assert.equal(refusal.idempotency_key,args.idempotency_key);assert.equal(refusal.approval,null);assert.equal(refusal.review,null);
   await bookkeeping(permanentBefore);
   auditBefore=afterAudit;permanentBefore=await permanent();
   const retry=await tool(name,args);
   assert.equal(retry.status,200);assert.equal(retry.body.error,undefined);assert.notEqual(retry.body.id,first.body.id);assert.notEqual(retry.body.id,conflict.body.id);
   assert.equal(retry.result.isError,false);assert.deepEqual(retry.result.structuredContent,saved.result);
+  assert.deepEqual(JSON.parse(retry.result.content[0].text),saved.result);
   assert.deepEqual(retry.result._meta['com.runeditrun/receipt'],saved.receipt?{...saved.receipt,decision:saved.decision}:undefined);assert.deepEqual(retry.result._meta['com.runeditrun/review'],saved.review);
   assert.deepEqual(retry.decision.classes,saved.decision.classes);
   assert.deepEqual(await snapshot(),once,'Exact retry retains all native records, revisions, timeline, permanent state-changing audit, original call and expiry, approval identity, reviews and paging');
@@ -131,6 +135,7 @@ export async function actionSubmitReplay(runtime,{approve,observe=async()=>{}}={
   const attempt=JSON.parse(afterAudit.at(-1).row);
   assert.equal(attempt.id,retry.decision.id);assert.equal(attempt.tool,name);assert.equal(attempt.outcome,'replayed');
   assert.equal(attempt.replay_of,call.decision_id);assert.equal(attempt.operation_id,original.operation_id);
+  assert.equal(attempt.agent.id,context.agentId);assert.equal(attempt.sponsor.id,owner.id);
   assert.equal(attempt.idempotency_key,args.idempotency_key);await bookkeeping(permanentBefore);
   assert.deepEqual(await runtime.outboundRequests(),[],'Submission, approval, conflict and retry never fetch evidence or send requests');
   await observe({mode,incident:result,action:result.actions[0],handle,saved:savedApproval});
