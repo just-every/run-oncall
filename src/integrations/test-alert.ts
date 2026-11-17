@@ -17,7 +17,7 @@ export function installTestAlerts(api: any, deps: any) {
     if (!service) fail('Choose a service');
     const action = input.action ?? 'new';
     if (!['new', 'add', 'close'].includes(action)) fail('Choose a test action');
-    const existing = action === 'new' ? undefined : state.alerts.find(alert => alert.id === input.alert && alert.service === service.id);
+    const existing = action === 'new' ? undefined : state.alerts.find(alert => alert.id === input.alert && alert.service === service.id && alert.state === 'active' && alert.coordination?.state !== 'closed');
     if (action !== 'new' && !existing) fail('Choose an alert for this service');
     const identity = existing?.key ?? 'test-' + crypto.randomUUID(), generation = existing?.generation ?? identity;
     const intent = action === 'close' ? 'recover' : 'trigger';
@@ -70,11 +70,12 @@ export function installTestAlerts(api: any, deps: any) {
     if (!current) fail('Session or workspace changed; reload before sending', 409);
     const response = await api.fetch(new Request(new URL(sample.path, c.req.url), {method: 'POST', headers: sample.headers, body}), c.env, c.executionCtx);
     if (!response.ok) {
+      const retry = response.headers.get('Retry-After');if (retry) c.header('Retry-After', retry);
       const receipt = await response.json().catch(() => null);
       fail(testRefusal(response.status, receipt).replaceAll(key, '[private key]'), response.status);
     }
     const after: State = await deps.state(c), eventSource = kind === 'intake' ? 'intake:' + id : id;
-    const alert = after.alerts.find(alert => alert.source === eventSource && alert.service === service.id && alert.key === identity);
+    const alert = after.alerts.find(alert => existing ? alert.id === existing.id : alert.source === eventSource && alert.service === service.id && alert.key === identity);
     return c.json({alert: alert?.id ?? null, service: service.name, effect: !alert ? 'Test received; no alert raised' : action === 'close' ? 'Alert closed' : existing && alert.id === existing.id ? 'Added to the open alert' : 'New alert raised'});
   });
 }

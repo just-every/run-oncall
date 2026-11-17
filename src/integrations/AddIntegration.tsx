@@ -11,7 +11,7 @@ export function AddIntegration(props: IntegrationProps & { kind?: string }) {
   const kind = props.kind && props.kind in integrationKinds ? props.kind as IntegrationKind : undefined;
   const [emailDomain, setEmailDomain] = useState<string | null | undefined>();
   useEffect(() => {if (props.admin) request('/api/email').then(value => setEmailDomain(value.domain)).catch(() => setEmailDomain(undefined));}, [props.admin]);
-  if (!kind) return <section className="panel padded integrations" aria-label="Add integration"><h2>Add integration</h2><ul className="integration-rows">{Object.entries(integrationKinds).sort(([a], [b]) => Number(a === 'email') - Number(b === 'email')).map(([key, name]) => <li key={key}>{key === 'email' && !emailDomain ? <><span aria-disabled="true">{name}</span><p>{emailDomain === undefined ? 'Reading receiving domain…' : 'Set up a receiving domain to receive email alerts.'}</p></> : <a href={addPath(key)}>{name}</a>}</li>)}</ul></section>;
+  if (!kind) return <section className="panel padded integrations" aria-label="Add integration"><h2>Add integration</h2><ul className="integration-rows">{Object.entries(integrationKinds).sort(([a], [b]) => (a === 'events' ? -1 : Number(a === 'email')) - (b === 'events' ? -1 : Number(b === 'email'))).map(([key, name]) => <li key={key}>{key === 'email' && !emailDomain ? <><span aria-disabled="true">{name}</span><p>{emailDomain === undefined ? 'Reading receiving domain…' : 'Set up a receiving domain to receive email alerts.'}</p></> : <a href={addPath(key)}>{name}</a>}</li>)}</ul></section>;
   return <IntegrationCreate key={kind} {...props} kind={kind} />;
 }
 

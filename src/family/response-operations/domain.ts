@@ -694,11 +694,17 @@ function applyCommand(
     description = text(input.text, "note", 3000);
   } else if (input.type === 'reopen') {
     if (incident.state !== 'resolved') fail('Only resolved incidents can be reopened', 409);
-    const resolved = incident.timeline.findLastIndex(entry => entry.lifecycle?.to === 'resolved');
+    const resolved = incident.timeline.findLastIndex(entry => entry.lifecycle?.to === 'resolved' || entry.kind === 'bulk-resolve' || entry.kind === 'transition' && /^\w+ → resolved:/.test(entry.text));
     const recovery = incident.timeline[resolved - 1];
-    const previous = recovery?.kind === 'recovery-at-resolution' ? recovery.lifecycle?.from : incident.timeline[resolved]?.lifecycle?.from;
+    const resolution = incident.timeline[resolved];
+    const legacy = resolution && /^(declared|acknowledged|mitigating|recovered) → resolved:/.exec(resolution.text)?.[1] as Incident['state'] | undefined;
+    const retained = incident.timeline.slice(0, resolved < 0 ? incident.timeline.length : resolved).flatMap(entry => {
+      const state = entry.lifecycle?.to ?? (entry.kind === 'declared' ? 'declared' : /→ (declared|acknowledged|mitigating|recovered):/.exec(entry.text)?.[1] as Incident['state'] | undefined);
+      return state && state !== 'resolved' ? [state] : [];
+    }).at(-1);
+    const previous = recovery?.kind === 'recovery-at-resolution' ? recovery.lifecycle?.from : resolution?.lifecycle?.from ?? legacy ?? retained;
     const target = previous && previous !== 'resolved' ? previous : 'acknowledged';
-    const why = input.reason === undefined || input.reason === '' ? '' : text(input.reason, 'Reason', 3000);
+    const why = input.reason === undefined || typeof input.reason === 'string' && !input.reason.trim() ? '' : text(input.reason, 'Reason', 3000);
     description = `Reopened by ${actor.name}${why ? ': ' + why : ''}`;
     lifecycle = {from: 'resolved', to: target};
     incident.state = target;

@@ -116,3 +116,4 @@ body:has(.incident-sheet[open], .incident-people-dialog[open]) { overflow: hidde
 .on-call-now p:last-child { margin-bottom: 0; }
 .incident-other-steps { display: grid; gap: 12px; }
 .incident-other-steps p { margin: 6px 0 0; }
+.incident-sheet .workflow-choice input { accent-color: var(--oc-ink); }
