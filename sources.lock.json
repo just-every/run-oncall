@@ -6699,6 +6699,10 @@
       "sha256": "e5bb65f4904f28a4be5e2a149c66d0ca8208bc207d6275a94e97de71815b5e11",
       "executable": false
     },
+    "tests/oncall-agent-endpoint-parity.mjs": {
+      "sha256": "c48d6d8ae33ad1900fa4f5951b489dd036e21a9fdac51f58869b09e55ab1698b",
+      "executable": false
+    },
     "tests/oncall-agent-erase-replay.mjs": {
       "sha256": "3009d353b76e7866568e531e1469bfe017338e4378488be187f14e430f3898d5",
       "executable": false

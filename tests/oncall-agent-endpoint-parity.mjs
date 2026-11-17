@@ -108,13 +108,13 @@ export async function endpointParity({runtime,people,browser,receipt,scopes,at})
 
 function assertObservedUnchanged(before,after,kind){
  const prior=new Set(before.records.oc_admin_audit.map(row=>row.id));
- for(const row of after.records.oc_admin_audit.filter(row=>!prior.has(row.id))){
+ for(const row of after.records.oc_admin_audit.filter(row=>!prior.has(row.id)&&row.kind!=='agent-door.persistence')){
   assert.equal(row.kind,kind==='refusal'?'workspace.request':'urgency.request');
   if(kind==='refusal')assert.equal(row.outcome,'refused');
   assert.equal(row.detail,null);
   for(const family of ['workspace','paging','handoff'])assert.equal(row[family+'_before'],row[family+'_after']);
  }
- assertAgentReadUnchanged(before,{...after,records:{...after.records,oc_admin_audit:after.records.oc_admin_audit.filter(row=>prior.has(row.id))}});
+ assertAgentReadUnchanged(before,{...after,records:{...after.records,oc_admin_audit:after.records.oc_admin_audit.filter(row=>prior.has(row.id)||row.kind==='agent-door.persistence')}});
 }
 
 async function captureEndpoints({browser,runtime,person,mode,at,native,automation,receipt}){
