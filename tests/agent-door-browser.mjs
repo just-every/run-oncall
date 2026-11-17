@@ -8,6 +8,7 @@ import {recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPage
 import specialist from './oncall-agent-native.mjs';
 import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-revisions.mjs';
 import {actionSubmitNativeRevision} from './oncall-agent-action-submit-native-revision.mjs';
+import {focusedActionEvidenceReplay} from './oncall-agent-action-evidence-replay.mjs';
 import {agedActionSubmitRetention} from './oncall-agent-action-submit-retention.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {openIncidentAction} from './keyboard.mjs';
@@ -193,6 +194,55 @@ try{
  page.off('request',recordSubmitApproval);
  assert.deepEqual(submitEvidenceRequests,[],'The browser never fetches submitted evidence');
  await context.unroute('https://evidence.example.invalid/**',stopEvidence);
+ // Evidence policy completes the existing P2 follow-up. Its saved material
+ // and one sponsor approval are observed in a separate emitted installation.
+ await focusedActionEvidenceReplay({async connect(evidenceRuntime){
+  const evidenceContext=await browser.newContext({baseURL:evidenceRuntime.origin,viewport:{width:1440,height:1000}});
+  await evidenceContext.addCookies(evidenceRuntime.cookie.split('; ').map(pair=>{const at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:evidenceRuntime.origin,httpOnly:true,sameSite:'Lax'}}));
+  const evidencePage=await evidenceContext.newPage(),evidenceRequests=[],approvalPosts=[];
+  await evidenceContext.route('https://evidence.example.invalid/**',route=>{evidenceRequests.push(route.request().url());return route.abort()});
+  evidencePage.on('request',request=>{if(request.method()==='POST'&&new URL(request.url()).pathname.endsWith('/approve'))approvalPosts.push(request.postDataJSON())});
+  return {
+   async approve({handle,saved,owner}){
+    await capture('follow-up-evidence-pending',new URL(handle.url).pathname,async()=>{
+     await evidencePage.locator('[data-approval-state="pending"]').waitFor();
+     await evidencePage.getByText(owner.name,{exact:false}).first().waitFor();
+    },evidenceRuntime,evidencePage);
+    await evidencePage.goto(handle.url);
+    await evidencePage.getByRole('button',{name:'Approve',exact:true}).click();
+    await evidencePage.locator('[data-approval-state="executed"]').waitFor();
+    assert.deepEqual(approvalPosts,[{revision:saved.revision,summary_sha256:saved.summary_sha256}],
+     'The named sponsor approves the exact saved revision and summary once');
+   },
+   async observe({mode,incident,action,handle}){
+    const response=await evidenceRuntime.http('/api/reviews/'+incident.id+'/material');assert.equal(response.status,200);
+    const material=await response.json();
+    assert.deepEqual(material.followups,incident.actions,'Protected review material agrees with the stored MCP result');
+    assert.equal(material.followups.find(row=>row.id===action.id).done,true);
+    await capture('follow-up-evidence-'+mode,'/reviews/'+incident.id,async()=>{
+     await evidencePage.getByRole('dialog',{name:incident.title,exact:true}).waitFor();
+     await evidencePage.locator('.review-material-body summary').filter({hasText:/^Follow-ups \(/}).click();
+     const item=evidencePage.locator('.review-material-body li').filter({hasText:action.title});await item.waitFor();
+     const evidence=item.getByRole('link',{name:/^Evidence/});await evidence.waitFor();
+     if(evidencePage.viewportSize().width===1440){
+      const text=await item.innerText();
+      assert.match(text,/P2/);assert.match(text,/Complete · Completes with evidence/);
+      assert.ok(!text.includes('Awaiting acceptance'));
+      assert.equal(await evidence.getAttribute('href'),action.evidence);
+     }
+     await evidence.scrollIntoViewIfNeeded();
+    },evidenceRuntime,evidencePage);
+    if(handle)await capture('follow-up-evidence-executed',new URL(handle.url).pathname,async()=>{
+     await evidencePage.locator('[data-approval-state="executed"]').waitFor();
+     if(evidencePage.viewportSize().width===1440)assert.equal(await evidencePage.getByRole('button',{name:'Approve',exact:true}).count(),0);
+    },evidenceRuntime,evidencePage);
+    assert.equal(approvalPosts.length,mode==='held'?1:0,'Completed result retrieval never repeats approval');
+    assert.deepEqual(evidenceRequests,[],'Saved material and approval never fetch the evidence URL');
+    console.log('PROBE BASE-AGENT-012 evidence completion browser '+mode+': protected review material equals MCP result; saved P2 Complete and Completes with evidence plus retained evidence link at 1440 and 390; original sponsor approval '+(handle?'executed once':'not needed')+'; zero evidence requests');
+   },
+   close:()=>evidenceContext.close(),
+  };
+ }});
  // Each retained submission has isolated native custody. The browser takes
  // the held sponsor step once at T, then only reads the retained result.
  await agedActionSubmitRetention({async connect(retainedRuntime,mode){
