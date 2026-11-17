@@ -79,5 +79,15 @@
     "versionId": null
   },
   "finalLockCheckExit": 0,
-  "checkoutClean": true
+  "checkoutClean": true,
+  "completedAt": "2026-11-17T23:32:44Z",
+  "exactShaVerify": {
+    "id": 44197951379,
+    "status": "completed",
+    "conclusion": "success",
+    "head": "be2d69c6021f5318eb2256584a5aaa060aba6a37",
+    "url": "https://github.com/just-every/run-oncall/actions/runs/44197951379",
+    "restCalls": 4
+  },
+  "blockers": []
 }
