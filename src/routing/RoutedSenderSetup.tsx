@@ -1,10 +1,12 @@
+import {SnsSettings} from '../intake/SnsSettings';
+import type {SnsConfiguration} from '../intake/sns-config';
 import { useState } from 'react';
 import { RequestExample } from '../integrations/RequestExample';
 import { ProviderRequest } from '../integrations/ProviderRequest';
 import type { IntegrationKind, SourceRecord } from '../integrations/catalog';
 import type { Service } from '../family/response-operations/domain';
 
-export type RoutedSender = { id: string; name: string; provider: string; authentication?: string; service: Service; services: Service[] };
+export type RoutedSender = { id: string; name: string; provider: string; sns?:SnsConfiguration;canReveal?:boolean;credential?:string;active?:boolean; authentication?: string; service: Service; services: Service[] };
 const ingressPath = (provider: string, id: string) => provider === 'native' ? '/api/ingress/' + encodeURIComponent('intake:' + id) : null;
 
 /** Everything a sender needs to start using a routed key, except its private key. */
@@ -14,7 +16,7 @@ export function RoutedSenderSetup({ sender, defaultOpen = false }: { sender: Rou
   const record: SourceRecord = { id: 'intake:' + sender.id, name: sender.name, kind: sender.provider as IntegrationKind, service: sender.service.id, active: true };
   return <section className="routed-sender" aria-label="Sender setup for this key"><h3>Sender setup</h3>
     <p>{sender.name} · Services: {sender.services.map(service => service.name).join(', ')}</p>
-    {ingressPath(sender.provider, sender.id)
+    {sender.provider==='sns'&&sender.sns?<SnsSettings id={sender.id} config={sender.sns} canReveal={sender.canReveal} credential={sender.credential} active={sender.active}/>:ingressPath(sender.provider, sender.id)
       ? <RequestExample source={'intake:' + sender.id} service={sender.service} mode={sender.authentication || 'bearer'} defaultOpen={defaultOpen} routed />
       : <ProviderRequest key={record.id} source={record} service={sender.service} defaultOpen={defaultOpen} />}
     <details><summary>Key details</summary>

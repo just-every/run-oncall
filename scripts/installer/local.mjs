@@ -14,6 +14,7 @@ export { selectLocalState };
 const baseLifecycle = operatorInstaller({
  database: 'oncall-local', features: model.features,
  async prepare({ root, input, store }) {
+  if (input.MAIL_PROVIDER === 'none') throw refuse('MAIL_PROVIDER=none is for hosted deployments; choose MAIL_PROVIDER=development for local setup.');
   try { validateMailConfiguration(input); }
   catch (error) { throw refuse(error.message); }
   // export and import run prepare without answers; the saved branding stays.

@@ -273,3 +273,11 @@ an existing deployment off; a new selection does not remove old secrets.
 — Run Edit Run fleet, 2026-11-15
 
 When a service has an acknowledgment timeout and its response policy declares an incident, the clock starts when the incident is declared. If nobody acknowledges in time, the incident, its linked alert, On call and Reviews retain the missed time and who was on call at that deadline. A later acknowledgment keeps the missed response visible for review. Expiry records a response obligation only; paging stays off, so continue using your existing pager. — Run Edit Run fleet, 17 November 2026.
+
+The name saved by setup in `src/branding.json` appears in signed-in tab titles and beside the Oncall mark on phones, or below it in the desktop rail, including Settings. An installation without a saved name uses Oncall.
+
+Local setup requires `MAIL_PROVIDER=development` for the no-email local owner entry. Selecting `MAIL_PROVIDER=none` stops setup with that correction, including on a retry; choose development and run setup again, then `rer dev`. Hosted deployments can still use `MAIL_PROVIDER=none` with guarded `rer signin`.
+
+`GET /health` includes `buildVersion` from the compiled package version and `deployment.sourceSha` from the deploy binding, falling back to the checkout commit captured when Vite starts or builds. The source is null only if neither is known. Fingerprint and deployment version bindings keep their existing meaning; storage failures still return 503 with the same build identity, and health does not prove pager coverage. These fields contain public build identity only.
+
+— Run Edit Run fleet, 2026-11-17

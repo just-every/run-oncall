@@ -97,6 +97,13 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
       }),
       target: (args, ctx) => nativeCall(async () => {
         const { current, incident } = await access(args, ctx)
+        if (operation.name === 'actions.submit') {
+          // Resolve the scoped follow-up before disclosing its parent revision.
+          // Base skips this admission resolver for exact completed-result retries;
+          // the execution guard below still protects changes after admission.
+          if (!incident?.actions.some(row => row.id === args.action)) throw new ToolRefusal('not_found')
+          if (args.revision !== incident.revision) throw new ToolRefusal('revision_conflict', 'Native revision changed; reload before applying', { current_revision: incident.revision })
+        }
         if (incident) return { kind: 'incident', id: incident.id }
         const service = current.state.services.find(row => row.id === args.service)!
         return { kind: 'service', id: service.id }
