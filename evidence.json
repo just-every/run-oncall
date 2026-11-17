@@ -1,0 +1,100 @@
+{
+  "files": [
+    {
+      "blob": "d03313b73856154f2554ab45f8feb86541731f54",
+      "bytes": 1419,
+      "path": "CI.json",
+      "sha256": "f0cc36a56c8796e0078a01becb683e689242345888207e5818cfb8aa29e0f033"
+    },
+    {
+      "blob": "c21ac12bde550205370ae966a9fe393d28835223",
+      "bytes": 1765,
+      "path": "LOCAL.json",
+      "sha256": "36c418e927adb8d280737dafc3f479221a4cf510270fa6860b7bd52861a83adb"
+    },
+    {
+      "blob": "22380ed183a59ea75765756bf3cdf5e5cec51015",
+      "bytes": 2299,
+      "path": "MECHANICAL.json",
+      "sha256": "662bea55f01a0496ee73e7fbc8f13bc47853052c6a7fa12c1242831ccddd9d0d"
+    },
+    {
+      "blob": "a9e150fd2ea1f7bca16932b1e664a3a16b919798",
+      "bytes": 2525,
+      "path": "PROBES.txt",
+      "sha256": "ae23ec962bd47f530a4d1f835e49489fbda34bc305c76e3af059c6de14ce7358"
+    },
+    {
+      "blob": "f7d62426a7265eb95c51bc5a277ee6e4e5519c94",
+      "bytes": 757,
+      "path": "PRODUCT.json",
+      "sha256": "c25fc297c00cfcd2da7147a430452f4cb887355f819b006b6b3fc7d718d496be"
+    },
+    {
+      "blob": "28f4f57e6ea2132ac65415ef7c569eeb1364d50c",
+      "bytes": 16562,
+      "path": "REPORT.md",
+      "sha256": "8745fcc1b9112d767b9396db0ff35c7a286d18980c717791cd5efb39acb0c1b4"
+    },
+    {
+      "blob": "d6194cfbb1f366b30ebd7f7555b06f856e2e05b0",
+      "bytes": 46820,
+      "path": "browser.log",
+      "sha256": "73ba85717f2fa6a5ab599bbd85c00d538fb4ba3f365a4d9d9526241c760b2616"
+    },
+    {
+      "blob": "f62e037e8fda532ef858280d83cba290ae3072b7",
+      "bytes": 16667,
+      "path": "build.log",
+      "sha256": "cfd7a8efb32636bcc7643981a47d6815fd67b24fae5dec0ad55d06fe60185725"
+    },
+    {
+      "blob": "840f182e0b7a0f45ac7c3cd47ff258a1978a3328",
+      "bytes": 110744,
+      "path": "runtime.log",
+      "sha256": "f26adb74c5ddf0f62b330ad584ced4903c56ffdf6b7c53066e459c6932faa976"
+    },
+    {
+      "blob": "0dcdbc60e3a9329824ca4dfb22f128a56fc594da",
+      "bytes": 49333,
+      "path": "screens/agent-door-follow-up-submit-retained-approval-1440.png",
+      "sha256": "0fa269544a0e666dc4a9649144b0b420ab5bad240b0f69553b1f676fa5b5bddb"
+    },
+    {
+      "blob": "897ee315cbf95288120e97d6d7c066f18d3e04ae",
+      "bytes": 44086,
+      "path": "screens/agent-door-follow-up-submit-retained-approval-390.png",
+      "sha256": "a97e230ec8fa4559fd05050acf962d9e68e239dd04be6ca00f34acb8a7615b45"
+    },
+    {
+      "blob": "47b84f22746093711e6bae7b1e0a99eaf6dc082a",
+      "bytes": 93662,
+      "path": "screens/agent-door-follow-up-submit-retained-autonomous-1440.png",
+      "sha256": "9460fe15d5dc0011e75a90574d0ede4cf507457c096d7affe775a24b749933c5"
+    },
+    {
+      "blob": "b3adde2df8865d43ad912dc37c68b56a792d216e",
+      "bytes": 34399,
+      "path": "screens/agent-door-follow-up-submit-retained-autonomous-390.png",
+      "sha256": "2a00679f0430ccefa837f7ebcf2e787aa1d1c99336a9c34790a32365d427e096"
+    },
+    {
+      "blob": "47b84f22746093711e6bae7b1e0a99eaf6dc082a",
+      "bytes": 93662,
+      "path": "screens/agent-door-follow-up-submit-retained-held-1440.png",
+      "sha256": "9460fe15d5dc0011e75a90574d0ede4cf507457c096d7affe775a24b749933c5"
+    },
+    {
+      "blob": "d249a7e6d26523ec4fae3bbcebca9c56071220d8",
+      "bytes": 36523,
+      "path": "screens/agent-door-follow-up-submit-retained-held-390.png",
+      "sha256": "38ebd7c149c32627d1607b098de5d0f725ab6a84f4af9da5e4106202a3e3dc93"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f261",
+  "product_head": "0b1e46522288036dab1eab105aa5585c5c0042da",
+  "ref": "refs/heads/evidence/sd-oncall-c-f261",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f261"
+}

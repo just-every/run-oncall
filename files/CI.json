@@ -1,0 +1,43 @@
+{
+  "observed_at": "2026-11-17T14:13:45.863059+00:00",
+  "github_calls_total": 5,
+  "runs": [
+    {
+      "id": 44100626330,
+      "name": "Verify",
+      "event": "push",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "0b1e46522288036dab1eab105aa5585c5c0042da",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44100626330",
+      "created_at": "2026-11-17T14:12:45Z"
+    }
+  ],
+  "polls": [
+    {
+      "observed_at": "2026-11-17T14:19:20.427948+00:00",
+      "run_id": 44100626330,
+      "conclusion": null,
+      "head_sha": "0b1e46522288036dab1eab105aa5585c5c0042da",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44100626330",
+      "status": "in_progress"
+    },
+    {
+      "observed_at": "2026-11-17T14:24:48.074244+00:00",
+      "run_id": 44100626330,
+      "conclusion": null,
+      "head_sha": "0b1e46522288036dab1eab105aa5585c5c0042da",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44100626330",
+      "status": "in_progress"
+    },
+    {
+      "observed_at": "2026-11-17T14:29:57.090642+00:00",
+      "run_id": 44100626330,
+      "conclusion": "success",
+      "head_sha": "0b1e46522288036dab1eab105aa5585c5c0042da",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44100626330",
+      "status": "completed"
+    }
+  ],
+  "last_poll_at": "2026-11-17T14:29:57.090642+00:00"
+}

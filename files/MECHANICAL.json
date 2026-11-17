@@ -1,0 +1,61 @@
+{
+  "head": "0b1e46522288036dab1eab105aa5585c5c0042da",
+  "base": "708271f0cbd8bb35ae45a5b402a97faa6197cc1a",
+  "branch": "cloud/sd-oncall-c-f261",
+  "identity_and_trailers": "pass, all candidate commits including side parents",
+  "judgment_cells_and_generated_views": "unchanged from origin/main",
+  "registered_journeys": "existing journeys extended, none removed or narrowed",
+  "source_hashes": {
+    "sources.lock.json": "95b9195fda53af3a0f6ffecb6d7292d3a9de508c125faadf4814b3aa276e8815",
+    "tests/agent-door-browser.mjs": "c6ea536fef725d8875b1125d4eac86bda454cffdf5f51f1de3d4baf55798ef35",
+    "tests/oncall-agent-action-submit-retention.mjs": "94195f567da9c6d5f3eaeaabfb553c996f66df4cc444a785fd0adb64c35654c6",
+    "tests/oncall-agent-flow.mjs": "87417fc00bcb24b1af123882cc7705da109e74b0bc7febb1d67c703960fbadaf"
+  },
+  "checks": [
+    {
+      "command": "pnpm exec tsc --noEmit",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write; node src/base/contract-docs.mjs check; git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock; node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build after main merge",
+      "exit": 0
+    }
+  ],
+  "migration_ledger": "not applicable, no migration changes",
+  "counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "supersedes_head": "bba345b9f353918ed98690f1e9ea6a100fdd0a90",
+  "post_merge_checks": "generator write and check, pinned lock generation and check, typecheck, first-party check and production build passed; clean product checkout",
+  "terminal_source_integrity_exit": 0,
+  "publication_scan": {
+    "head": "0b1e46522288036dab1eab105aa5585c5c0042da",
+    "status": "not run in cloud; guarded lander owns the full-history scan",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  },
+  "main_equals_candidate": false,
+  "lander_pending": true
+}

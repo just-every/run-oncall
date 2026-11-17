@@ -1,0 +1,23 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f261",
+  "head": "0b1e46522288036dab1eab105aa5585c5c0042da",
+  "remote_head": "0b1e46522288036dab1eab105aa5585c5c0042da",
+  "base": "708271f0cbd8bb35ae45a5b402a97faa6197cc1a",
+  "parents": [
+    "bba345b9f353918ed98690f1e9ea6a100fdd0a90",
+    "708271f0cbd8bb35ae45a5b402a97faa6197cc1a"
+  ],
+  "clean": true,
+  "full_history": true,
+  "verify": {
+    "observed_at": "2026-11-17T14:29:57.090642+00:00",
+    "run_id": 44100626330,
+    "conclusion": "success",
+    "head_sha": "0b1e46522288036dab1eab105aa5585c5c0042da",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44100626330",
+    "status": "completed"
+  },
+  "pr": null,
+  "guarded_landing_pending": true
+}

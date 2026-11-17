@@ -1,0 +1,43 @@
+{
+  "head": "0b1e46522288036dab1eab105aa5585c5c0042da",
+  "browser": {
+    "command": "cloud_run perl -e 'alarm 1800; exec @ARGV' -- node tests/agent-door-browser.mjs",
+    "exit": 0,
+    "node": "22.20.0",
+    "chromium": "/usr/bin/chromium",
+    "screens": [
+      {
+        "path": "screens/agent-door-follow-up-submit-retained-autonomous-1440.png",
+        "sha256": "9460fe15d5dc0011e75a90574d0ede4cf507457c096d7affe775a24b749933c5"
+      },
+      {
+        "path": "screens/agent-door-follow-up-submit-retained-autonomous-390.png",
+        "sha256": "2a00679f0430ccefa837f7ebcf2e787aa1d1c99336a9c34790a32365d427e096"
+      },
+      {
+        "path": "screens/agent-door-follow-up-submit-retained-held-1440.png",
+        "sha256": "9460fe15d5dc0011e75a90574d0ede4cf507457c096d7affe775a24b749933c5"
+      },
+      {
+        "path": "screens/agent-door-follow-up-submit-retained-held-390.png",
+        "sha256": "38ebd7c149c32627d1607b098de5d0f725ab6a84f4af9da5e4106202a3e3dc93"
+      },
+      {
+        "path": "screens/agent-door-follow-up-submit-retained-approval-1440.png",
+        "sha256": "0fa269544a0e666dc4a9649144b0b420ab5bad240b0f69553b1f676fa5b5bddb"
+      },
+      {
+        "path": "screens/agent-door-follow-up-submit-retained-approval-390.png",
+        "sha256": "a97e230ec8fa4559fd05050acf962d9e68e239dd04be6ca00f34acb8a7615b45"
+      }
+    ],
+    "log_sha256": "73ba85717f2fa6a5ab599bbd85c00d538fb4ba3f365a4d9d9526241c760b2616"
+  },
+  "runtime": {
+    "command": "ONCALL_RUNTIME_PART=agents cloud_run perl -e 'alarm 1800; exec @ARGV' -- node tests/runtime.mjs",
+    "exit": 0,
+    "seconds": 453.2,
+    "log_sha256": "f26adb74c5ddf0f62b330ad584ced4903c56ffdf6b7c53066e459c6932faa976"
+  },
+  "completed_at": "2026-11-17T14:29:03.716362+00:00"
+}
