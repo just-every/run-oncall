@@ -42,6 +42,8 @@ Agent policy and audit, call, review and event history travel as retained record
 
 ## The archive screen
 
+### Transfer local coordination records to hosting
+
 In **Settings → Archive**, choose **Download full backup** while Oncall is running. The dated JSON includes alerts, incidents, rotas, overrides, contact methods and prepared updates, and excludes passwords, sign-in sessions and private integration keys. Open **Restore a backup**, choose that file and type `REPLACE` to restore it; notification work is paused and prepared updates need review again. Older coordination archives still restore, but do not contain rotas. To move a backup to another installation, use a new empty workspace and explicitly choose the archived administrator for your sign-in.
 
 ## Subject erasure fences
