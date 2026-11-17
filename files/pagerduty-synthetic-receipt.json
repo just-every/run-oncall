@@ -1,0 +1,95 @@
+{
+  "fixtureSha256": "08963daadc47d636e9d6b341b0a1ce030bf33102ffd21f0f84d64e4415813fbd",
+  "sourceObjects": 498,
+  "sourceLeaves": 6211,
+  "fieldDispositions": {
+    "mapped": 767,
+    "lossy": 241,
+    "retained-only": 4073,
+    "refused": 1130
+  },
+  "objects": {
+    "mapped": 0,
+    "mappedWithDifferences": 364,
+    "rejected": 134
+  },
+  "results": [
+    {
+      "door": "owner",
+      "sourceObjects": 498,
+      "fields": 6211,
+      "targets": 132,
+      "checkpoint": 20,
+      "total": 498,
+      "reconcile": {
+        "sourceRecords": 498,
+        "present": 0,
+        "explained": 498,
+        "nativeTargets": 132,
+        "byKind": {
+          "user": 60,
+          "schedule": 12,
+          "policy": 12,
+          "integration": 48
+        }
+      },
+      "identicalReplay": true,
+      "changedCatchup": true,
+      "restart": true,
+      "layeredUndo": true,
+      "hostileCases": [
+        "malformed",
+        "wrong wrapper",
+        "missing binding",
+        "wrong parent",
+        "duplicate parent",
+        "missing detail",
+        "incomplete pages",
+        "incomplete cursor",
+        "wrong total",
+        "duplicate source",
+        "credential"
+      ],
+      "nativeEffects": 0
+    },
+    {
+      "door": "business",
+      "sourceObjects": 498,
+      "fields": 6211,
+      "targets": 132,
+      "checkpoint": 20,
+      "total": 498,
+      "reconcile": {
+        "sourceRecords": 498,
+        "present": 0,
+        "explained": 498,
+        "nativeTargets": 132,
+        "byKind": {
+          "user": 60,
+          "schedule": 12,
+          "policy": 12,
+          "integration": 48
+        }
+      },
+      "identicalReplay": true,
+      "changedCatchup": true,
+      "restart": true,
+      "layeredUndo": true,
+      "hostileCases": [
+        "malformed",
+        "wrong wrapper",
+        "missing binding",
+        "wrong parent",
+        "duplicate parent",
+        "missing detail",
+        "incomplete pages",
+        "incomplete cursor",
+        "wrong total",
+        "duplicate source",
+        "credential"
+      ],
+      "nativeEffects": 0
+    }
+  ],
+  "paging": "OFF"
+}

@@ -1,0 +1,112 @@
+{
+  "schemaSha256": "cbae7d77f588e8fb5b14118003c9b8a71f274c57719ddc39eb8e77a71994f6d8",
+  "fixtureSha256": "08963daadc47d636e9d6b341b0a1ce030bf33102ffd21f0f84d64e4415813fbd",
+  "objects": 498,
+  "responseCount": 265,
+  "errors": 0,
+  "rows": [
+    {
+      "kind": "users",
+      "endpoint": "GET /users",
+      "responses": 3,
+      "schemaErrors": []
+    },
+    {
+      "kind": "contact_methods",
+      "endpoint": "GET /users/{id}/contact_methods",
+      "responses": 60,
+      "schemaErrors": []
+    },
+    {
+      "kind": "notification_rules",
+      "endpoint": "GET /users/{id}/notification_rules",
+      "responses": 60,
+      "schemaErrors": []
+    },
+    {
+      "kind": "teams",
+      "endpoint": "GET /teams",
+      "responses": 1,
+      "schemaErrors": []
+    },
+    {
+      "kind": "schedules",
+      "endpoint": "GET /schedules/{id}",
+      "responses": 12,
+      "schemaErrors": []
+    },
+    {
+      "kind": "overrides",
+      "endpoint": "GET /schedules/{id}/overrides",
+      "responses": 12,
+      "schemaErrors": []
+    },
+    {
+      "kind": "escalation_policies",
+      "endpoint": "GET /escalation_policies",
+      "responses": 1,
+      "schemaErrors": []
+    },
+    {
+      "kind": "services",
+      "endpoint": "GET /services",
+      "responses": 1,
+      "schemaErrors": []
+    },
+    {
+      "kind": "integrations",
+      "endpoint": "GET /services/{id}/integrations/{integration_id}",
+      "responses": 48,
+      "schemaErrors": []
+    },
+    {
+      "kind": "incidents",
+      "endpoint": "GET /incidents",
+      "responses": 2,
+      "schemaErrors": []
+    },
+    {
+      "kind": "log_entries",
+      "endpoint": "GET /incidents/{id}/log_entries",
+      "responses": 48,
+      "schemaErrors": []
+    },
+    {
+      "kind": "business_services",
+      "endpoint": "GET /business_services",
+      "responses": 1,
+      "schemaErrors": []
+    },
+    {
+      "kind": "subscribers",
+      "endpoint": "GET /business_services/{id}/subscribers",
+      "responses": 6,
+      "schemaErrors": []
+    },
+    {
+      "kind": "maintenance_windows",
+      "endpoint": "GET /maintenance_windows",
+      "responses": 1,
+      "schemaErrors": []
+    },
+    {
+      "kind": "event_orchestrations",
+      "endpoint": "GET /event_orchestrations",
+      "responses": 1,
+      "schemaErrors": []
+    },
+    {
+      "kind": "orchestration_routers",
+      "endpoint": "GET /event_orchestrations/{id}/router",
+      "responses": 6,
+      "schemaErrors": []
+    },
+    {
+      "kind": "automation_actions",
+      "endpoint": "GET /automation_actions/actions",
+      "responses": 2,
+      "schemaErrors": []
+    }
+  ],
+  "limits": "Public documented response shapes only; no account reads, provider availability, production delivery or full migration claim. The deliberate unknown future_setting is allowed by the public schema and must remain an explicit import gap."
+}

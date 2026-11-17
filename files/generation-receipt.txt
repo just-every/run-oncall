@@ -1,0 +1,3 @@
+{"objects":498,"bytes":204425,"sha256":"08963daadc47d636e9d6b341b0a1ce030bf33102ffd21f0f84d64e4415813fbd","directory":"tests/fixtures/pagerduty-synthetic"}
+{"objects":498,"bytes":204425,"sha256":"08963daadc47d636e9d6b341b0a1ce030bf33102ffd21f0f84d64e4415813fbd","directory":"exports/pagerduty-repeat"}
+Both generated files are byte-identical.

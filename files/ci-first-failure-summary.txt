@@ -1,0 +1,9 @@
+Run Edit Run fleet, 2026-11-17 UTC.
+Observed earlier exact-SHA Verify run: 44085883158
+Head: c17cf0d31ce4ce8aea49f04838c9f3db8f7cf88b
+Result: completed/cancelled; aggregate verify job failed because the changes shard was cancelled.
+Observed jobs: plan/build/contract-docs and seven other shards succeeded; changes cancelled; aggregate verify failed. See ci-first-status.json and ci-first-jobs.json.
+Failed aggregate archive read once:
+gh run view 44085883158 --repo just-every/run-oncall --job 134057975333 --log-failed
+Observed assertion: aggregate full coverage requires every shard success; SHARDS was cancelled. No product assertion failure is claimed from that aggregate log, and no green receipt is claimed for this SHA.
+The full runner log is retained locally but excluded from publication because its runner-formatted metadata includes an environment section.

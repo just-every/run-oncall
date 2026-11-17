@@ -1,0 +1,64 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-import-pagerduty-1",
+  "head": "f14b9337969e42646cc7a36272ac1e7fb6e4e8a2",
+  "checks": [
+    {
+      "command": "pnpm run typecheck",
+      "result": "passed",
+      "head": "f14b9337969e42646cc7a36272ac1e7fb6e4e8a2"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "result": "passed",
+      "head": "f14b9337969e42646cc7a36272ac1e7fb6e4e8a2"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "result": "passed"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "result": "passed",
+      "head": "f14b9337969e42646cc7a36272ac1e7fb6e4e8a2"
+    },
+    {
+      "command": "node tests/activation.mjs",
+      "result": "passed",
+      "scope": "pre-final-cache-array-fix local worktree; complete activation proof including both vendor restarts"
+    },
+    {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/product-browser-journey.mjs",
+      "result": "passed",
+      "head": "f14b9337969e42646cc7a36272ac1e7fb6e4e8a2",
+      "receipt": "browser/pagerduty-account-review-receipt.json"
+    },
+    {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/transfer.mjs",
+      "result": "passed",
+      "exitCode": 0,
+      "head": "f14b9337969e42646cc7a36272ac1e7fb6e4e8a2",
+      "receipt": "transfer-receipt.json"
+    },
+    {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/import-door.mjs",
+      "result": "passed",
+      "exitCode": 0,
+      "head": "f14b9337969e42646cc7a36272ac1e7fb6e4e8a2",
+      "completedAt": "2026-11-17T13:58:56.968648+00:00",
+      "receipts": [
+        "pagerduty-synthetic-receipt.json",
+        "pagerduty-synthetic-erasure-receipt.json"
+      ],
+      "observations": "Both public doors, changed-source pointer uniqueness, all original fixture regressions and full local erasure passed."
+    }
+  ],
+  "contractStatusChanges": 0,
+  "testRegistrationsAdded": 0,
+  "productPR": null,
+  "providerCalls": 0,
+  "paging": "OFF",
+  "publicationScan": "Mac fleet owns complete publication scan; no cloud COMPLETE claim"
+}

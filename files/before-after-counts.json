@@ -1,0 +1,45 @@
+{
+  "existingFixture": {
+    "objects": 75,
+    "byKind": {
+      "users": 12,
+      "schedules": 8,
+      "overrides": 1,
+      "escalation_policies": 8,
+      "services": 8,
+      "integrations": 16,
+      "teams": 4,
+      "incidents": 12,
+      "maintenance_windows": 2,
+      "business_services": 3,
+      "event_orchestrations": 1
+    }
+  },
+  "newFixture": {
+    "users": 60,
+    "teams": 6,
+    "contact_methods": 120,
+    "notification_rules": 60,
+    "schedules": 12,
+    "overrides": 12,
+    "escalation_policies": 12,
+    "services": 24,
+    "integrations": 48,
+    "incidents": 48,
+    "log_entries": 48,
+    "business_services": 6,
+    "subscribers": 18,
+    "maintenance_windows": 6,
+    "event_orchestrations": 6,
+    "orchestration_routers": 6,
+    "automation_actions": 6
+  },
+  "newObjects": 498,
+  "contractStatusesBefore": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "contractStatusesChanged": 0,
+  "testRegistrationsAdded": 0
+}

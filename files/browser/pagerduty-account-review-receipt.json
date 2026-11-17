@@ -1,0 +1,14 @@
+{
+  "objects": 498,
+  "fields": 6211,
+  "copyBytes": 6916137,
+  "copyExact": true,
+  "downloadExact": true,
+  "zeroNativeEffects": true,
+  "assertionWidth": 1440,
+  "screenshots": [
+    1440,
+    390
+  ],
+  "seriousCriticalAccessibilityFindings": 0
+}
