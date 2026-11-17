@@ -242,9 +242,14 @@ async function prepareReviewMaterial(runtime,people,changes,mode,browser,receipt
  // Approving a resource read cannot accept the human review or change its revision.
  assert.deepEqual(await json(admin.http,'/api/reviews/'+incident.id+'/material'),draftMaterial);
  const beforeDenied=await agentReadSnapshot(runtime);
- for(const input of [{type:'review',...draft},{type:'review',...draft,accept:true,materialRevision:incident.revision,materialWorkspaceRevision:draftMaterial.workspaceRevision},{type:'accept-action',action:actions[2].id,reason:'Viewer cannot accept retained evidence'}]){
-  await json(viewer.http,'/api/command',{incident:incident.id,revision:incident.revision,...input},403);
- }
+ const viewerMutations=[
+  {type:'review',...draft},
+  {type:'review',...draft,accept:true,materialRevision:incident.revision,materialWorkspaceRevision:draftMaterial.workspaceRevision},
+  {type:'accept-action',action:actions[2].id,reason:'Viewer cannot accept retained evidence'},
+  {type:'complete',action:actions[2].id,evidence:evidence+'/viewer-refused'},
+  {type:'action',title:'Viewer cannot create a follow-up',owner:admin.member.id,due:'2026-11-12',priority:'P1',completionPolicy:'human-review'},
+ ];
+ for(const input of viewerMutations)await json(viewer.http,'/api/command',{incident:incident.id,revision:incident.revision,...input},403);
  // Refusal audit is permitted, but every native application record and all
  // permanent state-changing audit must remain identical.
  const afterDenied=await agentReadSnapshot(runtime);
@@ -256,7 +261,7 @@ async function prepareReviewMaterial(runtime,people,changes,mode,browser,receipt
  await runtime.time(observed);
  assert.deepEqual(await runtime.outboundRequests(),[]);
  return {incident,admin:admin.member,trigger,recovery,agentEntry,actions,draft,changes,
-  receipt:{mode,incident:incident.id,nativeDoor:'/api/reviews/'+incident.id+'/material',draftMaterial,acceptedBy:acceptance.by,acceptance,viewerRefusals:3,coordinationDecision:called.decision.id,coordinationDisposition:called.decision.disposition,draftComparisons}};
+  receipt:{mode,incident:incident.id,nativeDoor:'/api/reviews/'+incident.id+'/material',draftMaterial,acceptedBy:acceptance.by,acceptance,viewerRefusals:viewerMutations.length,coordinationDecision:called.decision.id,coordinationDisposition:called.decision.disposition,draftComparisons}};
 }
 
 function assertReviewMaterial(material,fixture,native,at){

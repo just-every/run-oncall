@@ -138,6 +138,13 @@ async function captureActions({browser,runtime,person,mode,at,native,incident,re
    await page.screenshot({path:(process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser')+'/'+file,fullPage:true});
    receipt.screens.push({role:person.member.role,mode,path,kind:'actions',width,file});
    console.log(`Browser proof actions ${mode} ${person.member.role} ${width}: native Follow-up owners sheet captured`);
+   // The administrator's evidence forms make this sheet taller. Capture its
+   // retained accepted completion too, without changing any native record.
+   const accepted=incident.actions.find(action=>action.done);
+   await sheet.locator('.followup-list > li').filter({has:page.getByText(accepted.title,{exact:true})}).scrollIntoViewIfNeeded();
+   const completionFile=`parity-${mode}-${person.member.role}-actions-completion-${width}.png`;
+   await page.screenshot({path:(process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser')+'/'+completionFile,fullPage:true});
+   receipt.screens.push({role:person.member.role,mode,path,kind:'actions',stage:'accepted',width,file:completionFile});
   }
  }finally{await context.close()}
  const after=await agentReadSnapshot(runtime),priorIds=new Set(before.records.oc_admin_audit.map(row=>row.id));
