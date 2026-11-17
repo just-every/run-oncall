@@ -1700,7 +1700,7 @@
       "executable": false
     },
     "src/agent-door/coordination-tools.ts": {
-      "sha256": "40f8b367eb6bfe0222939876a2dd0019044a223162f673a292be24a38530755b",
+      "sha256": "ed5773aedd5eefc00a95b4a9bee33c7588a01bdd9745719e34a52e64317735fd",
       "executable": false
     },
     "src/agent-door/deadlines.ts": {
@@ -6667,8 +6667,12 @@
       "sha256": "8f50f9597cb69f530c18dc1c40a8d56adfe7fa07ae0d0def8d990a8cf6904094",
       "executable": false
     },
+    "tests/oncall-agent-action-submit-native-revision.mjs": {
+      "sha256": "8405b84c8e132b50da16dc89afb17762abaa8c4bffe19dfbfffbf20d93bbd591",
+      "executable": false
+    },
     "tests/oncall-agent-action-submit-replay.mjs": {
-      "sha256": "525589c4f24ebdfb8f8b57da968f2b7d91943140d4313a5b87c6efac3b570a81",
+      "sha256": "130da4f25f7ff25eaf018d7389f1b591b696a4a46927836fcf3eac2e96d301aa",
       "executable": false
     },
     "tests/oncall-agent-alerts.mjs": {
@@ -6720,7 +6724,7 @@
       "executable": false
     },
     "tests/oncall-agent-flow.mjs": {
-      "sha256": "a7b7b9587e01972b93b0d6b3801802082ed43a4eabfba265876de178deb0dd83",
+      "sha256": "5157a00b9faf7ff30d6abe653aa0f54594bd69c979cd07314247ac0f54119b56",
       "executable": false
     },
     "tests/oncall-agent-incident-replay.mjs": {
