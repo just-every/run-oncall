@@ -1,0 +1,1 @@
+Changed test-text hygiene PASS: no email-shaped string, provider credential shape or co-author trailer; added paths are real relative module files or leading-slash application routes.

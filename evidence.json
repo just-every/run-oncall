@@ -1,0 +1,118 @@
+{
+  "files": [
+    {
+      "blob": "88e77414d2e5831333fd170ac534ebf9cfb378d9",
+      "bytes": 13091,
+      "path": "REPORT.md",
+      "sha256": "51bc81db303aa777fdfac25a77e52a5182722857222b2ed472e2cef85f274f3b"
+    },
+    {
+      "blob": "10f71759a20b1ab1015c0a1f1415fb8e96612d68",
+      "bytes": 45388,
+      "path": "browser.log",
+      "sha256": "8f1cba48909d78f81f61a1d3d625642024cbdda7c3563200c0031b12248abb11"
+    },
+    {
+      "blob": "cd287fc6a8ec6c015b3fb35b5309e27283842d04",
+      "bytes": 16714,
+      "path": "build.log",
+      "sha256": "cc04e146ff33aeec0d3665f290bd652824402911fe0ee4d1a39ba21673f2d8d7"
+    },
+    {
+      "blob": "c966d547699270beef074c6cc3be5b4c98d1e822",
+      "bytes": 244,
+      "path": "ci-discovery.json",
+      "sha256": "16eceffb526af428f92950506fcebd2ac73e0612a705ad16f508e5aca694a287"
+    },
+    {
+      "blob": "1e7b2791d6210afeac78fa3b65fa9e82d58ca571",
+      "bytes": 1498,
+      "path": "focused.log",
+      "sha256": "925b26534e559dc6dbea18ac742b3e65d0c19e6209285d3bf41e7719ec7bb024"
+    },
+    {
+      "blob": "a15ca1baafc2b61550adf7013bae52078b54d77e",
+      "bytes": 184,
+      "path": "hygiene.txt",
+      "sha256": "36dfbafab0caa4f2a64c00725a26442741ae4b9e66f7aff26003ce156859404a"
+    },
+    {
+      "blob": "120b20b8cd7f8258a97b2dbc206fa25f1bb1c8fd",
+      "bytes": 4426,
+      "path": "receipt.json",
+      "sha256": "c275f0da5b8edbc4abf5894c265abc92ab1af86dda06fc876973bbeb5b7a13d0"
+    },
+    {
+      "blob": "5072231739e0ead9974e6d724cdf75106faa8857",
+      "bytes": 111438,
+      "path": "runtime.log",
+      "sha256": "74a919d1757a62581eae3eb1a1645659057f745abffc68f010ddc3ba79835bd6"
+    },
+    {
+      "blob": "24a28492b53586fc466bb5c7f34aca2d0b21e5fe",
+      "bytes": 136384,
+      "path": "screens/agent-door-follow-up-submit-loss-autonomous-1440.png",
+      "sha256": "0c0d018f803592412875be46a49ea472a805ace17b92af815a10f0042044a8ef"
+    },
+    {
+      "blob": "5933ec6da67288b8bcdd9e103df06d63d3441c66",
+      "bytes": 57627,
+      "path": "screens/agent-door-follow-up-submit-loss-autonomous-390.png",
+      "sha256": "68907d2daeb303b5443812d4ab49092f8b3c30141af0b98c046dc9869a18aae5"
+    },
+    {
+      "blob": "76bd0a787d76c8b9cf89717ee87dd1345ab95ea5",
+      "bytes": 48942,
+      "path": "screens/agent-door-follow-up-submit-loss-executed-1440.png",
+      "sha256": "2c0549af3a48b6aabf0ae00bf05fd7c9e8dd07d40b0ebd1ca4672a427835826b"
+    },
+    {
+      "blob": "ce177a63d2c4224b960037e685feb8bd748d8c20",
+      "bytes": 43450,
+      "path": "screens/agent-door-follow-up-submit-loss-executed-390.png",
+      "sha256": "72b6c77abe908e1af57798892a8a72c5e684c5c0cc940f7aa599a8ab9749bbfc"
+    },
+    {
+      "blob": "68df6222fe009223815b84fb7e1ccb7db840832c",
+      "bytes": 150324,
+      "path": "screens/agent-door-follow-up-submit-loss-held-1440.png",
+      "sha256": "c71c71b3502515552193772e80d866078e77a407fb5a90582c9ce36385cda336"
+    },
+    {
+      "blob": "046f839a8110ac1cf39fbdc0f1947513dee4207d",
+      "bytes": 72084,
+      "path": "screens/agent-door-follow-up-submit-loss-held-390.png",
+      "sha256": "5bc3e6c131b8fee8ed063148e55d4239af0e86ae44857086abc2214febe5bb3a"
+    },
+    {
+      "blob": "86bf020657aeab6cc7d80521d3e9683c74e1142f",
+      "bytes": 50278,
+      "path": "screens/agent-door-follow-up-submit-loss-pending-1440.png",
+      "sha256": "77e806e5bb95629dce8752c7976ff0da760034aedd698e8a120a71d75216bb64"
+    },
+    {
+      "blob": "fa57a67d5f4f647481b8e60b3b70d7735f61d889",
+      "bytes": 44946,
+      "path": "screens/agent-door-follow-up-submit-loss-pending-390.png",
+      "sha256": "7f6804938b54e47eedd3a0b290269246c0c469f55a4c77765900910422efc887"
+    },
+    {
+      "blob": "bc56ff1b2d0d8a93b813954db553f5e3e9c8f743",
+      "bytes": 82,
+      "path": "typecheck.log",
+      "sha256": "e8bda9742a9b5eeb7047bc1188b56a7313adc6eb76145d5c7565bf93137b8063"
+    },
+    {
+      "blob": "3c86266104500be8fe132938ed7c2e589cfed5de",
+      "bytes": 98,
+      "path": "views.log",
+      "sha256": "6a3edad7783bf6c13e63dbe5a49f4f1d6a932a81c60be61934495e59874a258a"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f262",
+  "product_head": "709a43a790f9aadee8b50d89de1a12a872464934",
+  "ref": "refs/heads/evidence/sd-oncall-c-f262",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f262"
+}

@@ -1,0 +1,147 @@
+{
+  "artifacts": {
+    "browser.log": {
+      "bytes": 45388,
+      "sha256": "8f1cba48909d78f81f61a1d3d625642024cbdda7c3563200c0031b12248abb11"
+    },
+    "build.log": {
+      "bytes": 16714,
+      "sha256": "cc04e146ff33aeec0d3665f290bd652824402911fe0ee4d1a39ba21673f2d8d7"
+    },
+    "focused.log": {
+      "bytes": 1498,
+      "sha256": "925b26534e559dc6dbea18ac742b3e65d0c19e6209285d3bf41e7719ec7bb024"
+    },
+    "runtime.log": {
+      "bytes": 111438,
+      "sha256": "74a919d1757a62581eae3eb1a1645659057f745abffc68f010ddc3ba79835bd6"
+    },
+    "typecheck.log": {
+      "bytes": 82,
+      "sha256": "e8bda9742a9b5eeb7047bc1188b56a7313adc6eb76145d5c7565bf93137b8063"
+    },
+    "views.log": {
+      "bytes": 98,
+      "sha256": "6a3edad7783bf6c13e63dbe5a49f4f1d6a932a81c60be61934495e59874a258a"
+    }
+  },
+  "base": "09f2821d713460dcd33d0878dc3a7825daccfc5a",
+  "branch": "cloud/sd-oncall-c-f262",
+  "ci": {
+    "workflow_runs": [
+      {
+        "conclusion": null,
+        "event": "push",
+        "head_sha": "709a43a790f9aadee8b50d89de1a12a872464934",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44121729762",
+        "id": 44121729762,
+        "name": "Verify",
+        "status": "in_progress"
+      }
+    ]
+  },
+  "claim": "PARTIAL",
+  "clause": "BASE-AGENT-012",
+  "commands": [
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log": "build.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "stdout_bytes": 0
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "exit": 0,
+      "log": "runtime.log",
+      "runtime_seconds": 428.1
+    },
+    {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/agent-door-browser.mjs",
+      "exit": 0,
+      "log": "browser.log"
+    },
+    {
+      "command": "node /tmp/f262-focused-runner.mjs",
+      "exit": 0,
+      "log": "focused.log"
+    }
+  ],
+  "contract_changed": false,
+  "counts_after": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "counts_before": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "generated_views_committed": false,
+  "github_core_calls": 2,
+  "head": "709a43a790f9aadee8b50d89de1a12a872464934",
+  "identity_and_trailers": {
+    "all_candidate_commits_checked": true,
+    "coauthor_trailers": 0,
+    "including_side_parents": true,
+    "result": "pass"
+  },
+  "landing": {
+    "main_equals_candidate": false,
+    "observed_main": "09f2821d713460dcd33d0878dc3a7825daccfc5a",
+    "run_site": "not run for branch candidate; fleet lander required"
+  },
+  "mechanical": {
+    "ledger": "none; no migration changed",
+    "ledger_exit": 0,
+    "lock_check": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+    "lock_exit": 0,
+    "lock_write": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+    "source_lock_sha256": "a367afe0ccdd667e92ffa781ed92206c2c540d9fca10460fdf28d1c68933ea19",
+    "views_check": "node src/base/contract-docs.mjs check",
+    "views_exit": 0,
+    "views_restored_from_main": true,
+    "views_write": "node src/base/contract-docs.mjs write"
+  },
+  "observed_ref_utc": "2026-11-17T16:06:57.483496+00:00",
+  "product_push": {
+    "observed_ref": "709a43a790f9aadee8b50d89de1a12a872464934",
+    "remote_verified": true,
+    "status": "pushed"
+  },
+  "production_changed": false,
+  "publication_scan": {
+    "complete": null,
+    "findings": null,
+    "historyScanned": null,
+    "status": "not run in cloud; fleet lander required"
+  },
+  "recorded_utc": "2026-11-17T16:06:03.170664+00:00",
+  "repository": "just-every/run-oncall",
+  "screens": [
+    "screens/agent-door-follow-up-submit-loss-autonomous-1440.png",
+    "screens/agent-door-follow-up-submit-loss-autonomous-390.png",
+    "screens/agent-door-follow-up-submit-loss-executed-1440.png",
+    "screens/agent-door-follow-up-submit-loss-executed-390.png",
+    "screens/agent-door-follow-up-submit-loss-held-1440.png",
+    "screens/agent-door-follow-up-submit-loss-held-390.png",
+    "screens/agent-door-follow-up-submit-loss-pending-1440.png",
+    "screens/agent-door-follow-up-submit-loss-pending-390.png"
+  ],
+  "selected_points": [
+    2
+  ],
+  "source_status": "missing",
+  "tag": "sd-oncall-c-f262"
+}
