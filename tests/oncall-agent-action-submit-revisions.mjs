@@ -76,6 +76,7 @@ export async function staleActionSubmitExpectedRevision(runtime,{approve,observe
    assert.equal(savedApproval.state,'pending');assert.equal(savedApproval.decision_id,first.decision.id);
    assert.equal(savedApproval.revision,context.revision);assert.match(savedApproval.summary_sha256,/^[a-f0-9]{64}$/);
    assert.deepEqual(savedApproval.classes,classes);assert.deepEqual(savedApproval.approvers,['sponsor']);
+   assert.equal(savedApproval.prepared_by.agent.id,context.agentId);
    assert.equal(savedApproval.prepared_by.for.id,owner.id);
    assert.deepEqual(savedApproval.summary.nativeTarget,{kind:'incident',id:incident.id});
    assert.ok(savedApproval.summary.items.includes('Revision '+args.revision));

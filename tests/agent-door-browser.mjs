@@ -140,7 +140,7 @@ try{
  await context.route('https://evidence.example.invalid/**',stopEvidence);
  await staleActionSubmitExpectedRevision(runtime,{
   async approve({handle,saved,owner}){
-   await capture('follow-up-submit-pending',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="pending"]').waitFor()});
+   await capture('follow-up-submit-revision-pending',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="pending"]').waitFor()});
    await page.goto(handle.url);
    await page.getByText(owner.name,{exact:false}).first().waitFor();
    const submitted=page.waitForRequest(request=>request.method()==='POST'&&new URL(request.url()).pathname.endsWith('/approve'));
@@ -148,10 +148,10 @@ try{
    const posted=(await submitted).postDataJSON();
    assert.equal(posted.revision,saved.revision);assert.equal(posted.summary_sha256,saved.summary_sha256);
    await page.locator('[data-approval-state="executed"]').waitFor();
-   await capture('follow-up-submit-executed',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="executed"]').waitFor()});
+   await capture('follow-up-submit-revision-executed',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="executed"]').waitFor()});
   },
   async observe({mode,incident,action}){
-   await capture('follow-up-submit-'+mode,'/reviews/'+incident.id,async()=>{
+   await capture('follow-up-submit-revision-'+mode,'/reviews/'+incident.id,async()=>{
     await page.getByRole('dialog',{name:incident.title,exact:true}).waitFor();
     await page.locator('.review-material-body summary').filter({hasText:/^Follow-ups \(/}).click();
     await page.getByText('Awaiting acceptance',{exact:false}).first().waitFor();
