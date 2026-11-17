@@ -1,4 +1,4 @@
-import {fail, text, type Alert, type Member, type State} from '../family/response-operations/domain';
+import {fail, text, type Alert, type Member, type State} from '../family/response-operations/domain.ts';
 
 /** Human closure is distinct from a sender's recovery event. */
 export function closeAlert(alert: Alert, actor: Member, at: string, reason = '') {

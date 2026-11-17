@@ -1,4 +1,4 @@
-import {alertCommand, closeAlert} from '../../alerts/commands';
+import {alertCommand, closeAlert} from '../../alerts/commands.ts';
 import {validateOnCall,validOnCallEntry} from "./on-call-notifications/model.ts";
 import {validateTeams,type Team} from '../../teams/model.ts';
 import {approveWorkflow,workflowShape,type ApprovedWorkflow} from '../../orchestration/workflows.ts';

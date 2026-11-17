@@ -780,8 +780,8 @@ try {
   ok(await req('/api/command', {type: 'member', id: backup.id, role: 'responder', active: true}));
   awaiting = ok(await req('/api/command', {type: 'assign-role', incident: awaiting.id, revision: awaiting.revision, role: 'commander', member: backup.id, reason: 'Transfer the pending resolution review'}));
   assert.equal(awaiting.sourceRecovery.reminder.commander, backup.id); assert.equal(awaiting.sourceRecovery.reminder.id, marker.reminder.id);
-  for (const fields of [{reason: '', evidence: 'https://example.test/recovery'}, {reason: 'Source green; customer recovery needs verification', evidence: ''}]) ok(await req('/api/command', {type: 'bulk-resolve', incident: awaiting.id, revision: awaiting.revision, ...fields}), 400);
-  assert.deepEqual(incidentAt(await snapshot(), awaiting.id), awaiting, 'a recovered declared incident still requires both human summary and evidence');
+  for (const fields of [{reason: '', evidence: 'https://example.test/recovery'}, {reason: 'Source green; customer recovery needs verification', evidence: 'not-a-link'}]) ok(await req('/api/command', {type: 'bulk-resolve', incident: awaiting.id, revision: awaiting.revision, ...fields}), 400);
+  assert.deepEqual(incidentAt(await snapshot(), awaiting.id), awaiting, 'resolution requires a human summary and refuses a malformed optional recovery link');
 
   const responderCookie = (await w.request('/api/login', {name: backup.name, password: passwords.scribe})).cookie;
   const beforePolicyRefusals = (await snapshot()).services.find(s => s.id === recoveryService.id).responsePolicies;

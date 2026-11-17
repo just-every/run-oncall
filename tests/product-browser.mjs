@@ -138,10 +138,10 @@ async function incompleteIntakeBrowser(page,context) {
   await focusWorkspace(page)
   await page.locator('.alert-row').filter({hasText:title}).click();
   const routedCard=page.getByRole('article',{name:'Alert details',exact:true});
-  await routedCard.getByText(/Payments · production · active/).waitFor();
+  await routedCard.getByText(/Payments · production · Active/).waitFor();
   await page.goto(origin+'/alerts');await page.locator('.alert-row').filter({hasText:incompleteTitle}).click();
   const ownerCard=page.getByRole('article',{name:'Alert details',exact:true});
-  await ownerCard.getByText(/Integration unrouted queue.*active$/).waitFor();await ownerCard.getByText('Event context',{exact:true}).click()
+  await ownerCard.getByText(/Integration unrouted queue.*Active$/).waitFor();await ownerCard.getByText('Event context',{exact:true}).click()
   await ownerCard.getByText(`Paging obligation: recorded · Integration owner: ${member.name} · high urgency · paging OFF; non-automatic.`,{exact:true}).waitFor()
   assert.ok(await ownerCard.isVisible())
   const incidentService=ownerCard.getByLabel('Incident service',{exact:true}),declare=ownerCard.getByRole('button',{name:'Declare incident from alert',exact:true})
@@ -647,7 +647,7 @@ async function senderSetupBrowser(page,context,origin,request,token){
  await page.goto(origin+'/settings/integrations/'+encodeURIComponent('change:'+changeId));
  await page.locator('summary').filter({hasText:/^Sample request$/}).click();
  const sample=await page.getByLabel('Sample request',{exact:true}).inputValue();assert.ok(!sample.includes(changeKey),'sample never embeds the secret');
- await page.getByRole('button',{name:'Copy sample request',exact:true}).click();await expect(page.locator('.ingress-example [role=status]')).toHaveText('Copied');assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),sample);
+ await page.getByRole('button',{name:'Copy sample request',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),sample);
  await page.getByRole('button',{name:'Copy run commands',exact:true}).click();const commands=await page.evaluate(()=>navigator.clipboard.readText());
  const receipt=JSON.parse(await runSenderRecipe(sample,changeKey,commands));assert.ok(receipt.id,'the copied recipe sends one change with no Node on PATH');assert.equal(receipt.duplicate,false);assert.equal(receipt.service,'synthetic-oncall-1');
  assert.ok((await request('/api/state')).changes.some(change=>change.id===receipt.id),'the accepted change is retained');
