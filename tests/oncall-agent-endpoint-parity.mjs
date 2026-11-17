@@ -22,8 +22,14 @@ export async function endpointParity({runtime,people,browser,receipt,scopes,at})
    // Finish the active observations before revoking this disposable fixture.
    // The signed-in native administrator prepares inactivity before any new
    // observation baseline; no registration, renewal or dispatch is needed.
+   const before=await json(admin.http,'/api/automation');
    const revoked=await json(admin.http,'/api/automation/endpoints/'+endpoint.id+'/revoke',{revision:endpoint.revision});
    assert.deepEqual(revoked,{...endpoint,active:false,revision:endpoint.revision+1});
+   const prepared=await json(admin.http,'/api/automation');
+   assert.deepEqual(prepared.endpoints,before.endpoints.map(row=>row.id===endpoint.id?revoked:row),
+    'Preparation revokes only the existing endpoint without registering another');
+   assert.deepEqual(prepared.clients,before.clients);assert.deepEqual(prepared.outbox,before.outbox);
+   assert.equal(prepared.paging,'OFF');
    receipt.endpoints.preparation={nativeDoor:'/api/automation/endpoints/'+endpoint.id+'/revoke',
     administrator:admin.member.id,at:new Date(at).toISOString(),before:endpoint,after:revoked};
   }
@@ -146,6 +152,12 @@ async function captureEndpoints({browser,runtime,person,phase,mode,at,native,aut
    await panel.waitFor();await recipients.locator(':scope > summary').click();
    for(const actions of await recipients.locator('.integration-entry-actions').all()){
     const summary=actions.locator('summary');await summary.focus();await summary.press('Enter');
+   }
+   // Actions use the native focus disclosure. Leave focus on the observed
+   // endpoint so its permitted controls remain visible in both captures.
+   if(person.member.role==='admin'){
+    const index=automation.endpoints.findIndex(row=>row.id===receipt.endpoints.existing);
+    await recipients.locator(':scope > ul > li').nth(index).locator('.integration-entry-actions > summary').focus();
    }
    if(person.member.role==='admin')for(const endpoint of automation.endpoints){
     await recipients.getByText(endpoint.name,{exact:true}).waitFor();
