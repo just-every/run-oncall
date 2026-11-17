@@ -6704,7 +6704,7 @@
       "executable": false
     },
     "tests/oncall-agent-endpoint-parity.mjs": {
-      "sha256": "f1a1f5dc7b9e4a5941d8cc6b28557b972beb671ab538f08e098fb3cf28638f7b",
+      "sha256": "3218b5781a3113376d9002ce74fecb98a7c67bc8868da562d17c2c400b79f9cf",
       "executable": false
     },
     "tests/oncall-agent-erase-replay.mjs": {
