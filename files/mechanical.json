@@ -1,0 +1,95 @@
+{
+  "head": "db9f4bf9e5f80d06fb4d055ad35e527361c6d5fe",
+  "main": "91984b892ad8e993e0ddd782042d5143ed63baaf",
+  "checks": [
+    {
+      "command": [
+        "node",
+        "src/base/contract-docs.mjs",
+        "write"
+      ],
+      "exit": 0,
+      "seconds": 0.12,
+      "output_sha256": "14cee29b7bd19487e15f4013d4fb85016e022ef21d230676971a6490c88436d2",
+      "output_bytes": 28
+    },
+    {
+      "command": [
+        "node",
+        "src/base/contract-docs.mjs",
+        "check"
+      ],
+      "exit": 0,
+      "seconds": 0.13,
+      "output_sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422",
+      "output_bytes": 70
+    },
+    {
+      "command": [
+        "git",
+        "checkout",
+        "origin/main",
+        "--",
+        "ACCEPTANCE.md",
+        "docs/CLAIMS.md"
+      ],
+      "exit": 0,
+      "seconds": 0.03,
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "output_bytes": 0
+    },
+    {
+      "command": [
+        "pnpm",
+        "run",
+        "typecheck"
+      ],
+      "exit": 0,
+      "seconds": 3.18,
+      "output_sha256": "c1ac869d853697f6117e17fac4b64b08dc2b6ba0497264a6da3035a8fe2991d9",
+      "output_bytes": 118
+    },
+    {
+      "command": [
+        "pnpm",
+        "exec",
+        "rer",
+        "check",
+        "--profile",
+        "first-party"
+      ],
+      "exit": 0,
+      "seconds": 0.79,
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "output_bytes": 0
+    },
+    {
+      "command": [
+        "node",
+        "node_modules/@runeditrun/rer/edition-authoring/cli.mjs",
+        "lock"
+      ],
+      "exit": 0,
+      "seconds": 0.24,
+      "output_sha256": "1fedb3c50b9e9b5413e9ca29878aab5267ad7c46ca458cb73a4b9a17fd8cb639",
+      "output_bytes": 280849
+    },
+    {
+      "command": [
+        "node",
+        "node_modules/@runeditrun/rer/edition-authoring/cli.mjs",
+        "check"
+      ],
+      "exit": 0,
+      "seconds": 0.25,
+      "output_sha256": "013c5aaa7c96658e2d5ffd4971cbb738360c0afcea335f597541bc08087ae77e",
+      "output_bytes": 280863
+    }
+  ],
+  "ledger": {
+    "command": null,
+    "exit": 0,
+    "reason": "No migrations added or edited"
+  },
+  "shallow": "false"
+}

@@ -1,0 +1,22 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+(node:2119) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Owned runtime processes [["2119","2118","node"],["2127","2119","esbuild"],["2137","2119","workerd"],["2143","2119","ps"]]
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
+  {
++   code: 'revision_conflict',
++   current_revision: 2
+-   code: 'not_found'
+  }
+
+    at refused (file:///home/agent/rer-consolidation/work/sd-oncall-c-f260/run-oncall/tests/oncall-agent-action-submit-native-revision.mjs:35:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async beforeSubmit (file:///home/agent/rer-consolidation/work/sd-oncall-c-f260/run-oncall/tests/oncall-agent-action-submit-native-revision.mjs:62:5)

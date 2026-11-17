@@ -1,0 +1,9 @@
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+    at refused (file:///home/agent/rer-consolidation/work/sd-oncall-c-f260/run-oncall/tests/oncall-agent-action-submit-native-revision.mjs:35:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async beforeSubmit (file:///home/agent/rer-consolidation/work/sd-oncall-c-f260/run-oncall/tests/oncall-agent-action-submit-native-revision.mjs:62:5)
+    at async actionSubmitReplay (file:///home/agent/rer-consolidation/work/sd-oncall-c-f260/run-oncall/tests/oncall-agent-action-submit-replay.mjs:38:3)
+    at async actionSubmitNativeRevision (file:///home/agent/rer-consolidation/work/sd-oncall-c-f260/run-oncall/tests/oncall-agent-action-submit-native-revision.mjs:17:2)
+    at async focusedActionSubmitNativeRevision (file:///home/agent/rer-consolidation/work/sd-oncall-c-f260/run-oncall/tests/oncall-agent-action-submit-native-revision.mjs:72:6)
+    at async file:///tmp/oncall-native-revision-probe.mjs:2:1 {
+Node.js v22.20.0

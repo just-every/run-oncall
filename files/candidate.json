@@ -1,0 +1,121 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f260",
+  "head": "db9f4bf9e5f80d06fb4d055ad35e527361c6d5fe",
+  "files": [
+    {
+      "path": "src/agent-door/coordination-tools.ts",
+      "sha256": "ed5773aedd5eefc00a95b4a9bee33c7588a01bdd9745719e34a52e64317735fd"
+    },
+    {
+      "path": "tests/oncall-agent-action-submit-native-revision.mjs",
+      "sha256": "8405b84c8e132b50da16dc89afb17762abaa8c4bffe19dfbfffbf20d93bbd591"
+    },
+    {
+      "path": "tests/oncall-agent-action-submit-replay.mjs",
+      "sha256": "130da4f25f7ff25eaf018d7389f1b591b696a4a46927836fcf3eac2e96d301aa"
+    },
+    {
+      "path": "tests/oncall-agent-flow.mjs",
+      "sha256": "5157a00b9faf7ff30d6abe653aa0f54594bd69c979cd07314247ac0f54119b56"
+    },
+    {
+      "path": "tests/agent-door-browser.mjs",
+      "sha256": "3f08213cd806037c7d70e157a0946422692aea4a8e1fcae6d2e4ee5a9cd916f7"
+    }
+  ],
+  "source_only_change": "Submission target admission. Existing execution guard, schemas, classifiers, Base and human acceptance boundary unchanged.",
+  "main_at_start": "91984b892ad8e993e0ddd782042d5143ed63baaf",
+  "before_counts": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "after_counts": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "contract_status": "MISSING unchanged",
+  "claim": "PARTIAL, bounded acceptance 4 required native revision diagnostic",
+  "baseline_ci": {
+    "verify": 44058962092,
+    "verify_conclusion": "success",
+    "run_site": 44058962257,
+    "run_site_conclusion": "success"
+  },
+  "checks": {
+    "focused_native_revision": {
+      "exit": 0,
+      "evidence": "native-revision.log"
+    },
+    "typecheck": {
+      "exit": 0,
+      "evidence": "typecheck.log"
+    },
+    "first_party": {
+      "exit": 0,
+      "evidence": "first-party.log"
+    },
+    "contract_generator_write_check": {
+      "exit": 0,
+      "evidence": "views-candidate.log"
+    },
+    "source_lock_generation_check": {
+      "exit": 0
+    },
+    "migration_ledger": {
+      "command": null,
+      "reason": "No migrations changed"
+    }
+  },
+  "runtime_agents": {
+    "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+    "exit": 0,
+    "duration_seconds": 407.0,
+    "head": "db9f4bf9e5f80d06fb4d055ad35e527361c6d5fe",
+    "evidence": "runtime-agents.log"
+  },
+  "browser": {
+    "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/agent-door-browser.mjs",
+    "exit": 0,
+    "head": "db9f4bf9e5f80d06fb4d055ad35e527361c6d5fe",
+    "evidence": "browser.log",
+    "screenshots": "browser-proof",
+    "widths": [
+      1440,
+      390
+    ],
+    "inspected_screenshots": 8,
+    "approval_posts": 1
+  },
+  "ci": [
+    {
+      "conclusion": null,
+      "head_sha": "db9f4bf9e5f80d06fb4d055ad35e527361c6d5fe",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44069391283",
+      "status": "in_progress",
+      "id": 44069391283,
+      "name": "Verify",
+      "event": "push"
+    }
+  ],
+  "publication_scan": {
+    "status": "NOT RUN",
+    "complete": false,
+    "historyScanned": null,
+    "findings": null,
+    "reason": "Cloud route delegates the full-history scan to the fleet lander."
+  },
+  "landed": false,
+  "pushed": {
+    "head": "db9f4bf9e5f80d06fb4d055ad35e527361c6d5fe",
+    "branch": "cloud/sd-oncall-c-f260",
+    "exit": 0,
+    "evidence": "push.log",
+    "remote_ref_confirmed": true
+  },
+  "github_core_calls": 3
+}
