@@ -7,28 +7,28 @@
       "sha256": "63e3888dc01d572e3476a58ef90fd30924721cb9db02a79c998e5aae1ff4bde3"
     },
     {
-      "blob": "09edd6dce0373354a1a098c4a6c8df5e66e4d447",
-      "bytes": 4994,
+      "blob": "259b951775b255e844e3e206fa04f2ed303969e9",
+      "bytes": 8023,
       "path": "REPORT.md",
-      "sha256": "fb2ec80aa4f3ca1e7eac25c3fb616f7a3f8518be7e89b62f230f551590715b69"
+      "sha256": "56dee0583c0e85cc6a40b2db6f41d163b0d22f75b1f5b9bd9ae09e4da85beb2b"
     },
     {
-      "blob": "47d7acb5e28aff04ebeb1a9823e444a8bb101a65",
-      "bytes": 2504,
+      "blob": "8a214627398de531b05bceaffd0cfbcce24594a8",
+      "bytes": 2600,
       "path": "preflight-browser.log",
-      "sha256": "0a00aaf31c087b53cfb6d696b36b8f4cc3402047628ad6b847546d0d45019539"
+      "sha256": "d843df8a4cd0af75db11c7b6b8810f0e29dca9467dc837c456e540c20ec3a142"
     },
     {
-      "blob": "83da258d9fbf507f73d8568fc26512fb6ef32fac",
-      "bytes": 981,
+      "blob": "e179b104b4ac6807df73242404dd71a45f0e57fb",
+      "bytes": 3016,
       "path": "preflight-receipt.json",
-      "sha256": "fdf73fd584df441a70e60c559c2c6e613911f27b43eb5e5a57d51715b48e385a"
+      "sha256": "eeaa35d96280a3bf839a6aa0723fda37ea2fb54158d30b319173fbfa10445ec8"
     },
     {
-      "blob": "b33151e71dc994ce8fb231286d7726b689a73ad1",
-      "bytes": 1332,
+      "blob": "1e1ba1777e825262daf32c92fa815ba239bc078e",
+      "bytes": 1428,
       "path": "preflight-runtime.log",
-      "sha256": "2ce4d435c6cb308b7c4d6a970830ead0ec43974771659b3292bd27616c8044de"
+      "sha256": "f9acd6a37f2a63a9696e6042112a8b5ab8693a50d4dd3e23a1669fac8952dd80"
     },
     {
       "blob": "06faeb633d4d3c66cf5f36c5bcfbc5d1d514abce",
@@ -68,7 +68,7 @@
     }
   ],
   "product_branch": "cloud/sd-oncall-c-f264",
-  "product_head": "0f19e1a989c05a824ee75024665fb5c22da06252",
+  "product_head": "96f3bf2624da756947ec15fb1977024e0746bb51",
   "ref": "refs/heads/evidence/sd-oncall-c-f264",
   "repository": "just-every/run-oncall",
   "schema": 1,

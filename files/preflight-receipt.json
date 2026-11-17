@@ -18,9 +18,74 @@
     ]
   },
   "sha256": {
-    "tests/oncall-agent-action-evidence-retention.mjs": "89c2fa888268dead95363f4fa2e71d75449ae88fee4b137101d0642e85fe3373",
+    "tests/oncall-agent-action-evidence-retention.mjs": "894446f89a66e545cb885ae5928cfabf28eb8f2b53f4978dbbb2932b395d9e5d",
     "tests/oncall-agent-action-evidence-replay.mjs": "472099afa4bbbcf72595e065433f25564558b5d5e2fe54f952e09c9348e9c6f2",
-    "tests/browser-f264.mjs": "4a24d8a6288acae3478e0286fc76ced2c035005b11b324415b2c30f10b9d3a3f"
+    "tests/browser-f264.mjs": "8d94af32e7598ab7a351949a9db147516ad1e13e778e993f0e9f99a997628e04",
+    "tests/focused-f264.mjs": "9297fd11aec6bbb862917897f29605127440a1e147f41fa7468e365a5581a880"
   },
-  "candidate_ci": null
+  "candidate_ci": null,
+  "product_branch": "cloud/sd-oncall-c-f264",
+  "product_save": "96f3bf2624da756947ec15fb1977024e0746bb51",
+  "product_save_remote_confirmed": true,
+  "product_save_trailers": 0,
+  "product_save_ci": "skip ci intermediate save",
+  "mechanical": {
+    "contract_documents_write": 0,
+    "contract_documents_check": 0,
+    "source_lock_regenerated": 0,
+    "source_lock_check": 0
+  },
+  "save_local_checks": {
+    "node": "22.20.0",
+    "pnpm_typecheck": 0,
+    "rer_check_first_party": 0,
+    "source_lock_check_after_commit": 0,
+    "git_diff_check": 0
+  },
+  "predecessor": {
+    "tag": "sd-oncall-c-f263",
+    "head": "e70051e60c403f6bd99c992871751ee42d7963a0",
+    "verify": {
+      "id": 44178727506,
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    "landed": false
+  },
+  "latest_main_checks": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "76e7ed5eb83d6cf3dba8b591a10cf63028eb4f4a",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44199031422",
+      "id": 44199031422,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "76e7ed5eb83d6cf3dba8b591a10cf63028eb4f4a",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44199031466",
+      "id": 44199031466,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "76e7ed5eb83d6cf3dba8b591a10cf63028eb4f4a",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44194078272",
+      "id": 44194078272,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "terminal_main_check": {
+    "checked_utc": "2026-11-17T23:35:56Z",
+    "main_head": "76e7ed5eb83d6cf3dba8b591a10cf63028eb4f4a",
+    "f263_preparation_present": false,
+    "f264_candidate_head": null
+  }
 }
