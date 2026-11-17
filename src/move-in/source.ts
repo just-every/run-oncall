@@ -7,7 +7,7 @@ import {isVendor, type Vendor} from './vendor-formats'
 export type {Vendor} from './vendor-formats'
 
 // The documented single-detail key of each PagerDuty list response.
-const detail:Record<string,string>={users:'user',schedules:'schedule',escalation_policies:'escalation_policy',overrides:'override',services:'service',integrations:'integration',teams:'team',incidents:'incident',maintenance_windows:'maintenance_window',business_services:'business_service',event_orchestrations:'orchestration_path'}
+const detail:Record<string,string>={users:'user',schedules:'schedule',escalation_policies:'escalation_policy',overrides:'override',services:'service',integrations:'integration',teams:'team',incidents:'incident',maintenance_windows:'maintenance_window',business_services:'business_service',event_orchestrations:'orchestration_path',orchestration_routers:'orchestration_path',contact_methods:'contact_method',notification_rules:'notification_rule',log_entries:'log_entry',automation_actions:'action'}
 // Oncall never accepts a key, token or signing secret, even where the kit's own check would keep it as retained metadata.
 const credentialKey=/^(?:password|passwd|secret|token|credentials?|authorization|cookie)$|(?:api|access|auth|integration|routing|service|signing|private|client|refresh|session)[_-]?(?:key|secret|token)$|^webhook[_-]?(?:url|secret)$|(?:http|web)[_-]?cal[_-]?url$/i
 const escape=(key:string)=>key.replaceAll('~','~0').replaceAll('/','~1')
@@ -35,6 +35,7 @@ function entries(vendor:Vendor,kind:string,body:any,pointer:string):Entry[] {
  else if(vendor==='opsgenie'&&body.data!==undefined)at=`${pointer}/data`,items=body.data
  else if(vendor==='pagerduty'&&kind==='event_orchestrations'&&Array.isArray(body.orchestrations))at=`${pointer}/orchestrations`,items=body.orchestrations
  else if(vendor==='pagerduty'&&kind==='event_orchestrations'&&body.orchestration&&typeof body.orchestration==='object')at=`${pointer}/orchestration`,items=body.orchestration
+ else if(vendor==='pagerduty'&&kind==='automation_actions'&&Array.isArray(body.actions))at=`${pointer}/actions`,items=body.actions
  else if(vendor==='pagerduty'&&Array.isArray(body[kind]))at=`${pointer}/${escape(kind)}`,items=body[kind]
  else if(vendor==='pagerduty'&&detail[kind]&&body[detail[kind]]&&typeof body[detail[kind]]==='object')at=`${pointer}/${detail[kind]}`,items=body[detail[kind]]
  else return [{payload:body,pointer}]
@@ -63,8 +64,12 @@ export async function fileSource(vendor:Vendor,raw:string,filename?:unknown) {
 export function savedExportRecords(vendor:Vendor,value:Json):ParsedRecord[] {
   if(!value||Array.isArray(value)||typeof value!=='object')throw Error('Export bundle must be an object')
   refuseCredentials(value,'')
+  if(vendor==='pagerduty') {
+   const reserved=(value:any):void=>{if(Array.isArray(value))value.forEach(reserved);else if(value&&typeof value==='object')for(const [key,child] of Object.entries(value)){if(key.startsWith('_pd'))fail('Reserved PagerDuty parser metadata; save original endpoint responses instead');reserved(child)}}
+   reserved(value)
+  }
   const records:ParsedRecord[]=[],count=new Map<string,number>()
-  for(const [kind,response] of Object.entries(value))
+  for(const [kind,response] of Object.entries(value).filter(([kind])=>vendor!=='pagerduty'||kind!=='_bindings'))
    for(const {payload,pointer} of entries(vendor,kind,response,`/${escape(kind)}`)) {
     const index=count.get(kind)??0;count.set(kind,index+1)
     records.push({kind,sourceId:String(payload?.id??payload?.accountId??payload?.alias??payload?.username??payload?.slug??payload?._parent?.id??(kind==='event_orchestrations'?payload?.parent?.id:undefined)??`${kind}-${index}`),payload,pointer})
@@ -82,7 +87,7 @@ export function savedExportRecords(vendor:Vendor,value:Json):ParsedRecord[] {
     integration.payload={...(integration.payload as any),_emailActions:row.payload}
    }
   }
-  const result=vendor==='pagerduty'?pagerdutyRecords(records):records
+  const result=vendor==='pagerduty'?pagerdutyRecords(records,(value as any)._bindings,value):records
   if(result.length>500)fail(`The saved export holds ${result.length} records, above the 500-record limit (including embedded integrations); narrow the export and preview again. Nothing was imported or truncated.`,413)
   return result
 }
