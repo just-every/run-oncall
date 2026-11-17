@@ -17,6 +17,7 @@ import {staleScribeExpectedRevision} from './oncall-agent-role-revisions.mjs';
 import {staleCommunicationsExpectedRevision,staleCommunicationsNativeRevision} from './oncall-agent-communications-revisions.mjs';
 import {changedServiceNameReplay} from './oncall-agent-service-replay.mjs';
 import {agedReplayRetention} from './oncall-agent-retention.mjs';
+import {agedActionSubmitRetention} from './oncall-agent-action-submit-retention.mjs';
 import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-revisions.mjs';
 import {focusedActionSubmitReplay} from './oncall-agent-action-submit-replay.mjs';
 import {focusedAssigneeClearReplay} from './oncall-agent-assignee-clear-replay.mjs';
@@ -577,6 +578,7 @@ await (await import('./oncall-agent-alerts.mjs')).alertReads();
 await (await import('./oncall-agent-analytics.mjs')).analyticsReads();
 await (await import('./oncall-agent-triage.mjs')).triageReads();
 await agedReplayRetention();
+await agedActionSubmitRetention();
 
 const runtime=await agentRuntime({clock:null});
 const code=answer=>answer.result?._meta?.['com.runeditrun/error']?.code??answer.body?.error?.data?.code;

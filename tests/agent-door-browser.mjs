@@ -7,6 +7,7 @@ import {agentRuntime,agentEffectSnapshot,pauseMatrix} from './agent-door-runtime
 import {recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy,deadlineTarget} from './oncall-agent-fixtures.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-revisions.mjs';
+import {agedActionSubmitRetention} from './oncall-agent-action-submit-retention.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {openIncidentAction} from './keyboard.mjs';
 
@@ -20,22 +21,22 @@ try{
  const context=await browser.newContext({baseURL:runtime.origin,viewport:{width:1440,height:1000}});
  await context.addCookies(runtime.cookie.split('; ').map(pair=>{const at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:runtime.origin,httpOnly:true,sameSite:'Lax'}}));
  page=await context.newPage();
- async function capture(label,path,prepare=async()=>{}){
+ async function capture(label,path,prepare=async()=>{},proofRuntime=runtime,proofPage=page){
   for(const width of [1440,390]){
-   await page.setViewportSize({width,height:1000});
-   await page.goto(runtime.origin+path);await prepare();
-   const fits=await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth);
-   const findings=(await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations.filter(row=>['serious','critical'].includes(row.impact));
-   const controls=await page.locator('button,input:not([type=hidden]),select,textarea').evaluateAll(nodes=>nodes.filter(node=>node.getClientRects().length).map(node=>({label:node.getAttribute('aria-label')??node.textContent?.trim().slice(0,60)??node.name,height:(node.matches('input[type=checkbox],input[type=radio]')?node.labels?.[0]??node:node).getBoundingClientRect().height})).filter(row=>row.height<44));
+   await proofPage.setViewportSize({width,height:1000});
+   await proofPage.goto(proofRuntime.origin+path);await prepare();
+   const fits=await proofPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth);
+   const findings=(await new AxeBuilder({page:proofPage}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations.filter(row=>['serious','critical'].includes(row.impact));
+   const controls=await proofPage.locator('button,input:not([type=hidden]),select,textarea').evaluateAll(nodes=>nodes.filter(node=>node.getClientRects().length).map(node=>({label:node.getAttribute('aria-label')??node.textContent?.trim().slice(0,60)??node.name,height:(node.matches('input[type=checkbox],input[type=radio]')?node.labels?.[0]??node:node).getBoundingClientRect().height})).filter(row=>row.height<44));
    if(width===1440){
     assert.ok(fits,`${label} fits ${width}px`);
     assert.deepEqual(findings,[],`${label} has no serious/critical accessibility findings`);
     assert.deepEqual(controls,[],`${label} controls have 44px targets`);
    }
    console.log(`Browser proof ${label} ${width}: fits=${fits} serious/critical=${findings.length} undersized-controls=${controls.length}`);
-   await page.screenshot({path:`${directory}/agent-door-${label}-${width}.png`,fullPage:true});
+   await proofPage.screenshot({path:`${directory}/agent-door-${label}-${width}.png`,fullPage:true});
   }
-  await page.setViewportSize({width:1440,height:1000});
+  await proofPage.setViewportSize({width:1440,height:1000});
  }
  // A known native week spans multiple audit cursor pages. Expected cohorts
  // are fixed by the calls below, independently of the page's SQL aggregation.
@@ -163,6 +164,49 @@ try{
  });
  assert.deepEqual(submitEvidenceRequests,[],'The browser never fetches submitted evidence');
  await context.unroute('https://evidence.example.invalid/**',stopEvidence);
+ // Each retained submission has isolated native custody. The browser takes
+ // the held sponsor step once at T, then only reads the retained result.
+ await agedActionSubmitRetention({async connect(retainedRuntime,mode){
+  const retainedContext=await browser.newContext({baseURL:retainedRuntime.origin,viewport:{width:1440,height:1000}});
+  await retainedContext.addCookies(retainedRuntime.cookie.split('; ').map(pair=>{const at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:retainedRuntime.origin,httpOnly:true,sameSite:'Lax'}}));
+  const retainedPage=await retainedContext.newPage(),evidenceRequests=[],approvalPosts=[];
+  await retainedContext.route('https://evidence.example.invalid/**',route=>{evidenceRequests.push(route.request().url());return route.abort()});
+  retainedPage.on('request',request=>{if(request.method()==='POST'&&new URL(request.url()).pathname.endsWith('/approve'))approvalPosts.push(request.postDataJSON())});
+  return {
+   async approve({handle,saved,owner}){
+    await retainedPage.goto(handle.url);
+    await retainedPage.locator('[data-approval-state="pending"]').waitFor();
+    await retainedPage.getByText(owner.name,{exact:false}).first().waitFor();
+    await retainedPage.getByRole('button',{name:'Approve',exact:true}).click();
+    await retainedPage.locator('[data-approval-state="executed"]').waitFor();
+    assert.deepEqual(approvalPosts,[{revision:saved.revision,summary_sha256:saved.summary_sha256}],'The sponsor posts the exact saved approval once at T');
+   },
+   async observe({elapsed,incident,action,handle,approved}){
+    // The helper compares custody at both boundaries. Capture each changed
+    // screen once per width after the last boundary on realistic native data.
+    if(elapsed!==86401000)return;
+    await capture('follow-up-submit-retained-'+mode,'/reviews/'+incident.id,async()=>{
+     await retainedPage.getByRole('dialog',{name:incident.title,exact:true}).waitFor();
+     await retainedPage.locator('.review-material-body summary').filter({hasText:/^Follow-ups \(/}).click();
+     await retainedPage.getByText('Awaiting acceptance',{exact:false}).first().waitFor();
+     const evidence=retainedPage.locator('.review-material-body').getByRole('link',{name:/^Evidence/});await evidence.waitFor();
+     if(retainedPage.viewportSize().width===1440)assert.equal(await evidence.getAttribute('href'),action.evidence);
+     await evidence.scrollIntoViewIfNeeded();
+    },retainedRuntime,retainedPage);
+    if(handle)await capture('follow-up-submit-retained-approval',new URL(handle.url).pathname,async()=>{
+     await retainedPage.locator('[data-approval-state="executed"]').waitFor();
+     if(retainedPage.viewportSize().width===1440){
+      assert.equal(await retainedPage.getByRole('button',{name:'Approve',exact:true}).count(),0);
+      const response=await retainedRuntime.http('/agents/api/approvals/'+handle.id);assert.equal(response.status,200);
+      assert.deepEqual((await response.json()).approval,approved,'The original executed approval is unchanged after retained-result retrieval');
+     }
+    },retainedRuntime,retainedPage);
+    assert.equal(approvalPosts.length,mode==='held'?1:0,'Aged retrieval never posts another approval');
+    assert.deepEqual(evidenceRequests,[],'Neither retained follow-up nor original approval fetches evidence');
+   },
+   close:()=>retainedContext.close(),
+  };
+ }});
  await specialist({request:runtime.request,origin:runtime.origin,cookie:runtime.cookie,fixtures:runtime.fixtures,tool});
  const native=async()=> (await (await http('/api/state')).json());
  let state=await native();
