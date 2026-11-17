@@ -1,0 +1,4 @@
+4988fbb Reapply native submission revision refusal on current main
+09f2821 Preserve the managed transfer fixture owner identity
+2f6edae Document installation identity and local mail setup
+6dfdd84 Show installation identity and keep local setup usable [skip ci]

@@ -1,0 +1,22 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f261-lin-1",
+  "head": "0f758adfe7e73cf994fb5e52379ad1757b3372a5",
+  "tree": "3aa09b6f7ab2447e628fd7b54cf06b4d0d3d16f7",
+  "parent": "4988fbbe5e310410f02d3cfbd4ffc323bc967a6f",
+  "commits_ahead": 1,
+  "merges": [],
+  "worktree_clean": true,
+  "remote_head": "0f758adfe7e73cf994fb5e52379ad1757b3372a5",
+  "pushed": true,
+  "verify": {
+    "timestamp": 1794940204.8364327,
+    "calls": 5,
+    "run_id": 44144864021,
+    "conclusion": "success",
+    "head_sha": "0f758adfe7e73cf994fb5e52379ad1757b3372a5",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44144864021",
+    "status": "completed"
+  },
+  "status": "READY"
+}

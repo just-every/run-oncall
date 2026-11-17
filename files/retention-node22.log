@@ -1,0 +1,8 @@
+Command: ['/home/agent/.rer/node/node-v22.20.0-linux-x64/bin/node', '--input-type=module', '-e', 'import {agedActionSubmitRetention} from "./tests/oncall-agent-action-submit-retention.mjs"; await agedActionSubmitRetention();']
+HEAD: 0f758adfe7e73cf994fb5e52379ad1757b3372a5
+Started: 2026-11-17T17:51:30.153449+00:00
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+(node:2468) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)

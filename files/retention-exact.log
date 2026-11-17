@@ -1,0 +1,14 @@
+Command: ['/home/agent/.rer/node/node-v22.20.0-linux-x64/bin/node', '/tmp/run-retention.mjs']
+HEAD: 0f758adfe7e73cf994fb5e52379ad1757b3372a5
+Started: 2026-11-17T17:54:49.018140+00:00
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+(node:2929) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Owned runtime processes [["2929","2927","node"],["2937","2929","esbuild"],["2946","2929","workerd"],["2952","2929","ps"]]
+PROBE BASE-AGENT-012 acceptance 1 autonomous oncall.actions.submit T+86400000ms: unchanged policy renewal and fresh same-identity token; original arguments and key with new RPC id -> original structured outcome, receipt and review identity; original terminal call and expiry, agent-attributed submission, open human acceptance, native revisions, timeline, audit, approvals, reviews and paging unchanged; linked replay attempt only; zero outbound requests and no evidence fetch
+PROBE BASE-AGENT-012 acceptance 1 autonomous oncall.actions.submit T+86401000ms: unchanged policy renewal and fresh same-identity token; original arguments and key with new RPC id -> original structured outcome, receipt and review identity; original terminal call and expiry, agent-attributed submission, open human acceptance, native revisions, timeline, audit, approvals, reviews and paging unchanged; linked replay attempt only; zero outbound requests and no evidence fetch
+Owned runtime processes [["2929","2927","node"],["2937","2929","esbuild"],["2953","2929","workerd"],["2959","2929","ps"]]
+PROBE BASE-AGENT-012 acceptance 1 held oncall.actions.submit T+86400000ms: unchanged policy renewal and fresh same-identity token; original arguments and key with new RPC id -> original structured outcome, receipt and review identity; original terminal call and expiry, agent-attributed submission, open human acceptance, native revisions, timeline, audit, approvals, reviews and paging unchanged; linked replay attempt only; zero outbound requests and no evidence fetch
+PROBE BASE-AGENT-012 acceptance 1 held oncall.actions.submit T+86401000ms: unchanged policy renewal and fresh same-identity token; original arguments and key with new RPC id -> original structured outcome, receipt and review identity; original terminal call and expiry, agent-attributed submission, open human acceptance, native revisions, timeline, audit, approvals, reviews and paging unchanged; linked replay attempt only; zero outbound requests and no evidence fetch

@@ -1,0 +1,8 @@
+Command: ['pnpm', 'run', 'typecheck']
+HEAD: 0f758adfe7e73cf994fb5e52379ad1757b3372a5
+Started: 2026-11-17T18:09:27.524162+00:00
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> @just-every/oncall@0.5.18 typecheck /home/agent/rer-consolidation/work/sd-oncall-c-f261-lin-1/run-oncall
+> tsc --noEmit
+

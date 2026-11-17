@@ -1,0 +1,20 @@
+Command: ['env', '-u', 'HTTP_PROXY', '-u', 'HTTPS_PROXY', '-u', 'ALL_PROXY', '-u', 'http_proxy', '-u', 'https_proxy', '-u', 'all_proxy', '/home/agent/.rer/node/node-v22.20.0-linux-x64/bin/node', '/tmp/probe-miniflare.mjs']
+HEAD: 0f758adfe7e73cf994fb5e52379ad1757b3372a5
+Started: 2026-11-17T17:52:47.424847+00:00
+Creating minimal Worker with D1
+Worker ready http://127.0.0.1:40731/
+D1 ready
+{
+  success: true,
+  meta: {
+    served_by: 'miniflare.db',
+    duration: 1,
+    changes: 0,
+    last_row_id: 0,
+    changed_db: false,
+    size_after: 4096,
+    rows_read: 0,
+    rows_written: 0
+  },
+  results: [ { '1': 1 } ]
+}

@@ -1,0 +1,97 @@
+[
+  {
+    "file": "agent-browser.log",
+    "removed_private_lines": 0,
+    "formatting": "ANSI and NUL padding removed"
+  },
+  {
+    "file": "agent-flow.log",
+    "removed_private_lines": 0,
+    "formatting": "ANSI and NUL padding removed"
+  },
+  {
+    "file": "build.log",
+    "removed_private_lines": 0,
+    "formatting": "ANSI and NUL padding removed"
+  },
+  {
+    "file": "check.log",
+    "removed_private_lines": 0,
+    "formatting": "ANSI and NUL padding removed"
+  },
+  {
+    "file": "contract-docs.log",
+    "removed_private_lines": 0,
+    "formatting": "ANSI and NUL padding removed"
+  },
+  {
+    "file": "first-party-exact.log",
+    "removed_private_lines": 0,
+    "formatting": "ANSI and NUL padding removed"
+  },
+  {
+    "file": "lock-check-exact.log",
+    "removed_private_lines": 0,
+    "formatting": "ANSI and NUL padding removed"
+  },
+  {
+    "file": "product-push.log",
+    "removed_private_lines": 0,
+    "formatting": "ANSI and NUL padding removed"
+  },
+  {
+    "file": "retention-exact.log",
+    "removed_private_lines": 0,
+    "formatting": "ANSI and NUL padding removed"
+  },
+  {
+    "file": "retention-local.log",
+    "removed_private_lines": 0,
+    "formatting": "ANSI and NUL padding removed"
+  },
+  {
+    "file": "retention-node22.log",
+    "removed_private_lines": 0,
+    "formatting": "ANSI and NUL padding removed"
+  },
+  {
+    "file": "retention-trace.log",
+    "removed_private_lines": 0,
+    "formatting": "ANSI and NUL padding removed"
+  },
+  {
+    "file": "retention.log",
+    "removed_private_lines": 0,
+    "formatting": "ANSI and NUL padding removed"
+  },
+  {
+    "file": "runtime-probe-v4.log",
+    "removed_private_lines": 0,
+    "formatting": "ANSI and NUL padding removed"
+  },
+  {
+    "file": "runtime-probe.log",
+    "removed_private_lines": 0,
+    "formatting": "ANSI and NUL padding removed"
+  },
+  {
+    "file": "setup.log",
+    "removed_private_lines": 0,
+    "formatting": "ANSI and NUL padding removed"
+  },
+  {
+    "file": "source-lock.log",
+    "removed_private_lines": 0,
+    "formatting": "ANSI and NUL padding removed"
+  },
+  {
+    "file": "typecheck-exact.log",
+    "removed_private_lines": 0,
+    "formatting": "ANSI and NUL padding removed"
+  },
+  {
+    "file": "typecheck.log",
+    "removed_private_lines": 0,
+    "formatting": "ANSI and NUL padding removed"
+  }
+]

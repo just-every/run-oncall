@@ -1,0 +1,3 @@
+Command: ['npx', '-y', '@runeditrun/rer', 'check', '--profile', 'first-party']
+HEAD: 0f758adfe7e73cf994fb5e52379ad1757b3372a5
+Started: 2026-11-17T18:09:31.296982+00:00

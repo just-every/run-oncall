@@ -1,0 +1,25 @@
+{
+  "contract_status_before": {
+    "done": 26,
+    "partial": 37,
+    "missing": 33
+  },
+  "contract_status_after": {
+    "done": 26,
+    "partial": 37,
+    "missing": 33
+  },
+  "clause_status_changes": [],
+  "verification_command_registrations_before": 20,
+  "verification_command_registrations_after": 20,
+  "distinct_registered_journey_files_before": 14,
+  "distinct_registered_journey_files_after": 14,
+  "new_helper_behaviour": "agedActionSubmitRetention extends existing agent HTTP and browser registrations with the same retained-outcome behaviour under two company policies and two age boundaries",
+  "retention_age_boundaries_ms": [
+    86400000,
+    86401000
+  ],
+  "retention_policy_modes": 2,
+  "product_candidate_commits": 1,
+  "product_candidate_merge_commits": 0
+}

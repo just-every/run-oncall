@@ -1,0 +1,108 @@
+{
+  "screenshots": [
+    {
+      "path": "browser/agent-door-follow-up-submit-retained-autonomous-1440.png",
+      "bytes": 93648,
+      "sha256": "1df2a6cfe7fe0bdd64a8d16bba06299be7ef3499335f35747b5bffc527fe32cd",
+      "width": 1440,
+      "purpose": "retention proof"
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-retained-autonomous-390.png",
+      "bytes": 34382,
+      "sha256": "9279a8a4663c8b28e0e533ac747472810762ab085063d609232c6af2bdc8b103",
+      "width": 390,
+      "purpose": "retention proof"
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-retained-held-1440.png",
+      "bytes": 93648,
+      "sha256": "1df2a6cfe7fe0bdd64a8d16bba06299be7ef3499335f35747b5bffc527fe32cd",
+      "width": 1440,
+      "purpose": "retention proof"
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-retained-held-390.png",
+      "bytes": 36507,
+      "sha256": "1c917f151898dd361a627284251f3ccef3ad820ec4a467b0a3e8607bdb372d90",
+      "width": 390,
+      "purpose": "retention proof"
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-retained-approval-1440.png",
+      "bytes": 49338,
+      "sha256": "e7fa5d978ceec7cc158e55760a15f12d60a94b03b7a6313f559eecc924fcf005",
+      "width": 1440,
+      "purpose": "retention proof"
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-retained-approval-390.png",
+      "bytes": 44091,
+      "sha256": "76f082f5c0cc7116fc3516ef95338923f706f3bd730cda03467c43645e4b1282",
+      "width": 390,
+      "purpose": "retention proof"
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-pending-1440.png",
+      "bytes": 49553,
+      "sha256": "2d3469f1d1a4afb9cc40614336bf37b415c7b8c982f50c4e09efa6bc788ef5db",
+      "width": 1440,
+      "purpose": "main native-revision proof retained unchanged"
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-pending-390.png",
+      "bytes": 44506,
+      "sha256": "14fdfc51be7c82c49e1c936b77351af21f82cf6040b5f0b584933d5309573d57",
+      "width": 390,
+      "purpose": "main native-revision proof retained unchanged"
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-executed-1440.png",
+      "bytes": 48284,
+      "sha256": "ab49794d869042ec562274ea30a265e8bd42f25f712445edcc7612d778afeec2",
+      "width": 1440,
+      "purpose": "main native-revision proof retained unchanged"
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-executed-390.png",
+      "bytes": 43089,
+      "sha256": "bdbbb3426dbffaf6ec156eb55d310aed0222750f7a1da88b2ed0801d7c457354",
+      "width": 390,
+      "purpose": "main native-revision proof retained unchanged"
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-autonomous-1440.png",
+      "bytes": 144406,
+      "sha256": "bee02902a4bf1c666c31b54fc38953d741dc19f3723c3b9192d5b907a5f0d0a1",
+      "width": 1440,
+      "purpose": "main native-revision proof retained unchanged"
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-autonomous-390.png",
+      "bytes": 64748,
+      "sha256": "79b4469eea706eb73897cff3c9a44f305fc1fc0b357890ccf16b0f164921820f",
+      "width": 390,
+      "purpose": "main native-revision proof retained unchanged"
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-held-1440.png",
+      "bytes": 166733,
+      "sha256": "0d755a3adffb5e2d990942b5bf587f929380382652c600446caca2254259f2c9",
+      "width": 1440,
+      "purpose": "main native-revision proof retained unchanged"
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-held-390.png",
+      "bytes": 86373,
+      "sha256": "0c5160757566bcf491431b570f94b85b9ba4cc3401bc7cae5ed368355269a952",
+      "width": 390,
+      "purpose": "main native-revision proof retained unchanged"
+    }
+  ],
+  "total": 14,
+  "assertion_width": 1440,
+  "visual_widths": [
+    1440,
+    390
+  ]
+}

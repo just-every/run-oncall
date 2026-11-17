@@ -1,0 +1,671 @@
+diff --git a/docs/getting-started.md b/docs/getting-started.md
+index b6eb8dd..8072ad4 100644
+--- a/docs/getting-started.md
++++ b/docs/getting-started.md
+@@ -271,3 +271,11 @@ with missing inputs refuse. Remove old bound sending secrets explicitly with
+ an existing deployment off; a new selection does not remove old secrets.
+ 
+ — Run Edit Run fleet, 2026-11-15
++
++The name saved by setup in `src/branding.json` appears in signed-in tab titles and beside the Oncall mark on phones, or below it in the desktop rail, including Settings. An installation without a saved name uses Oncall.
++
++Local setup requires `MAIL_PROVIDER=development` for the no-email local owner entry. Selecting `MAIL_PROVIDER=none` stops setup with that correction, including on a retry; choose development and run setup again, then `rer dev`. Hosted deployments can still use `MAIL_PROVIDER=none` with guarded `rer signin`.
++
++`GET /health` includes `buildVersion` from the compiled package version and `deployment.sourceSha` from the deploy binding, falling back to the checkout commit captured when Vite starts or builds. The source is null only if neither is known. Fingerprint and deployment version bindings keep their existing meaning; storage failures still return 503 with the same build identity, and health does not prove pager coverage. These fields contain public build identity only.
++
++— Run Edit Run fleet, 2026-11-17
+diff --git a/rer-setup.json b/rer-setup.json
+index 3cecce5..5f78736 100644
+--- a/rer-setup.json
++++ b/rer-setup.json
+@@ -98,7 +98,7 @@
+         },
+         {
+           "value": "none",
+-          "label": "Off (owner signs in with rer signin)"
++          "label": "Hosted only: off (owner uses rer signin)"
+         },
+         {
+           "value": "rer",
+@@ -118,7 +118,7 @@
+         }
+       ],
+       "group": "mail",
+-      "help": "rer deploy reads MAIL_PROVIDER from the environment or --env-file, separately from this setup choice. Set MAIL_PROVIDER=none there for a deployment without email. Email links and invitations are unavailable; the deploying owner uses rer signin."
++      "help": "For local setup choose MAIL_PROVIDER=development (no email); MAIL_PROVIDER=none is hosted only. rer deploy reads MAIL_PROVIDER from the environment or --env-file, separately from this setup choice. Set MAIL_PROVIDER=none there for a deployment without email. Email links and invitations are unavailable; the deploying owner uses rer signin."
+     },
+     {
+       "name": "MAIL_FROM",
+diff --git a/scripts/installer/local.mjs b/scripts/installer/local.mjs
+index 9e92547..9af3dcb 100644
+--- a/scripts/installer/local.mjs
++++ b/scripts/installer/local.mjs
+@@ -14,6 +14,7 @@ export { selectLocalState };
+ const baseLifecycle = operatorInstaller({
+  database: 'oncall-local', features: model.features,
+  async prepare({ root, input, store }) {
++  if (input.MAIL_PROVIDER === 'none') throw refuse('MAIL_PROVIDER=none is for hosted deployments; choose MAIL_PROVIDER=development for local setup.');
+   try { validateMailConfiguration(input); }
+   catch (error) { throw refuse(error.message); }
+   // export and import run prepare without answers; the saved branding stays.
+diff --git a/sources.lock.json b/sources.lock.json
+index ffcfe06..3cefe48 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -248,7 +248,7 @@
+       "executable": false
+     },
+     "docs/getting-started.md": {
+-      "sha256": "83c888f49be1eb98299dead38b777bc894470a6da55e7ac6791edce30a78bf31",
++      "sha256": "f89cd6643a8b7473ab05521033113ba6f6e313fadc7fd43cc84a3428ca70cd92",
+       "executable": false
+     },
+     "docs/incidents.md": {
+@@ -844,7 +844,7 @@
+       "executable": false
+     },
+     "rer-setup.json": {
+-      "sha256": "8ad205fe4a2573aa9cddafc6fd00dfd44d52cf98eb73d4e5d4a2f079fd201ae2",
++      "sha256": "65a23abb58939622d3533876405b212765c2205d60f07357f463b1e4695dcb75",
+       "executable": false
+     },
+     "RULINGS.md": {
+@@ -1608,7 +1608,7 @@
+       "executable": false
+     },
+     "scripts/installer/local.mjs": {
+-      "sha256": "aa06218c20dd4844ed0ec445721774ef3b6f9f54220281aee2a312af0261d15e",
++      "sha256": "76b111849cd277052738fa8da83502178d12b10a235e0b4908283a3cefc6a55f",
+       "executable": false
+     },
+     "scripts/installer/native-prefix-archive.mjs": {
+@@ -1700,7 +1700,7 @@
+       "executable": false
+     },
+     "src/agent-door/coordination-tools.ts": {
+-      "sha256": "40f8b367eb6bfe0222939876a2dd0019044a223162f673a292be24a38530755b",
++      "sha256": "ed5773aedd5eefc00a95b4a9bee33c7588a01bdd9745719e34a52e64317735fd",
+       "executable": false
+     },
+     "src/agent-door/deadlines.ts": {
+@@ -1892,11 +1892,11 @@
+       "executable": false
+     },
+     "src/app/shell/AppShell.tsx": {
+-      "sha256": "425d7179020b5eac7208df9d0c7fb4ba0abb2b2043ef7b55461b93cf827b8aad",
++      "sha256": "808b9ec076416005e577610536674236daf910c2b922451c2d3e18619c060286",
+       "executable": false
+     },
+     "src/app/shell/frame.css": {
+-      "sha256": "054dcc5f22a2bd052f9dc46ac24d6890d8b4f182c8ed7c280d46389595dab673",
++      "sha256": "d436442344a12e633d7a7b515e358b088bd15edf1441ee0e8911ac7ca2765d5b",
+       "executable": false
+     },
+     "src/app/shell/nav.ts": {
+@@ -2048,7 +2048,7 @@
+       "executable": false
+     },
+     "src/base/deployment-health.ts": {
+-      "sha256": "49f4dac80429ea7d9477b40799a6242f9af4870f3229df70d0ac1f635476b8b7",
++      "sha256": "713556cb1c8e3d25426a0b81bac300a546fa212b7f441f58d48385e99590315a",
+       "executable": false
+     },
+     "src/base/dispatch.ts": {
+@@ -5956,7 +5956,7 @@
+       "executable": false
+     },
+     "src/routes/__root.tsx": {
+-      "sha256": "f566feb157c5961b050b4d0606736c5b6cf51e72fff79f3df2ada916e689e9db",
++      "sha256": "8aa1e17598062cd13ce29c7e33f638a0ca5eff58491883b99b7a7bd9ecf3f2a8",
+       "executable": false
+     },
+     "src/routes/$.tsx": {
+@@ -6500,7 +6500,7 @@
+       "executable": false
+     },
+     "tests/agent-door-browser.mjs": {
+-      "sha256": "c6ea536fef725d8875b1125d4eac86bda454cffdf5f51f1de3d4baf55798ef35",
++      "sha256": "66f2047f18fb75261fe4b28bc69dfbf61fc216b4b041506aa1f7cfaab8709d6b",
+       "executable": false
+     },
+     "tests/agent-door-runtime.mjs": {
+@@ -6655,6 +6655,10 @@
+       "sha256": "01129c44d1cfa757f77125786aa87aa0734477a1855c38e06242a253e9f0b2ea",
+       "executable": false
+     },
++    "tests/installation-fit.mjs": {
++      "sha256": "d3e3e28d31c5071abcc183295c417551c220d86e2dc39260400b0bf8f08cffb7",
++      "executable": false
++    },
+     "tests/intake.mjs": {
+       "sha256": "8b665d7c51467bee446608945ba15d285c60ec297195cc46722ba302effce158",
+       "executable": false
+@@ -6679,8 +6683,12 @@
+       "sha256": "8f50f9597cb69f530c18dc1c40a8d56adfe7fa07ae0d0def8d990a8cf6904094",
+       "executable": false
+     },
++    "tests/oncall-agent-action-submit-native-revision.mjs": {
++      "sha256": "8405b84c8e132b50da16dc89afb17762abaa8c4bffe19dfbfffbf20d93bbd591",
++      "executable": false
++    },
+     "tests/oncall-agent-action-submit-replay.mjs": {
+-      "sha256": "525589c4f24ebdfb8f8b57da968f2b7d91943140d4313a5b87c6efac3b570a81",
++      "sha256": "130da4f25f7ff25eaf018d7389f1b591b696a4a46927836fcf3eac2e96d301aa",
+       "executable": false
+     },
+     "tests/oncall-agent-action-submit-retention.mjs": {
+@@ -6740,7 +6748,7 @@
+       "executable": false
+     },
+     "tests/oncall-agent-flow.mjs": {
+-      "sha256": "87417fc00bcb24b1af123882cc7705da109e74b0bc7febb1d67c703960fbadaf",
++      "sha256": "56499baf36714abcae3c5108926e19ea37aca618e28a693591cf3fb85b5d0217",
+       "executable": false
+     },
+     "tests/oncall-agent-incident-replay.mjs": {
+@@ -6840,7 +6848,7 @@
+       "executable": false
+     },
+     "tests/runtime.mjs": {
+-      "sha256": "8cd2a1108913f05bbdaf741de75b2e827cd0e88b2d83f369290836951e217ca3",
++      "sha256": "80cdd47e231c47e895f8ce308206256a896762fdc0083ec4eb8b7eb4ea41eec3",
+       "executable": false
+     },
+     "tests/sns.mjs": {
+@@ -6852,7 +6860,7 @@
+       "executable": false
+     },
+     "tests/transfer.mjs": {
+-      "sha256": "e4f3d6cf153d8f309b23772554f8b1028b0ed8e195efa9eba0199d2c7f3daeba",
++      "sha256": "be2cbc57264e3b6970919e8409860671a01c017902d09805133af6654caef4cd",
+       "executable": false
+     },
+     "tests/triage.mjs": {
+@@ -6876,7 +6884,7 @@
+       "executable": false
+     },
+     "vite.config.ts": {
+-      "sha256": "3139c62bc76f58dac4c27680770ea04996e9012c9316195c2741d29d8e014375",
++      "sha256": "d833d4fe5079e66e16535799641f3d92029356a6b2a6b5d597eb75cd07196de7",
+       "executable": false
+     },
+     "vite.site.config.ts": {
+diff --git a/src/agent-door/coordination-tools.ts b/src/agent-door/coordination-tools.ts
+index a027fe0..741c4be 100644
+--- a/src/agent-door/coordination-tools.ts
++++ b/src/agent-door/coordination-tools.ts
+@@ -97,6 +97,13 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
+       }),
+       target: (args, ctx) => nativeCall(async () => {
+         const { current, incident } = await access(args, ctx)
++        if (operation.name === 'actions.submit') {
++          // Resolve the scoped follow-up before disclosing its parent revision.
++          // Base skips this admission resolver for exact completed-result retries;
++          // the execution guard below still protects changes after admission.
++          if (!incident?.actions.some(row => row.id === args.action)) throw new ToolRefusal('not_found')
++          if (args.revision !== incident.revision) throw new ToolRefusal('revision_conflict', 'Native revision changed; reload before applying', { current_revision: incident.revision })
++        }
+         if (incident) return { kind: 'incident', id: incident.id }
+         const service = current.state.services.find(row => row.id === args.service)!
+         return { kind: 'service', id: service.id }
+diff --git a/src/app/shell/AppShell.tsx b/src/app/shell/AppShell.tsx
+index ab8695f..86212fb 100644
+--- a/src/app/shell/AppShell.tsx
++++ b/src/app/shell/AppShell.tsx
+@@ -6,6 +6,7 @@ import {FailureLine} from '../FailureLine';
+ import {WorkspaceNotFound} from '../NotFound';
+ import {request} from '../../useWorkspace';
+ import {Mark} from '../../landing/Mark';
++import {identity} from '../../identity';
+ import {NavIcon} from '../NavIcon';
+ import {dailyNavigation, settingsNavigation, settingsItem, type NavItem} from './nav';
+ import {OwnerMenu} from './OwnerMenu';
+@@ -24,6 +25,8 @@ import {ArchiveSection} from '../../sections/archive';
+ import './frame.css';
+ 
+ export function AppShell() {
++  const deployment = identity.deployment?.trim();
++  const installation = deployment && deployment !== identity.product ? deployment : null;
+   const workspace = useWorkspaceValue();
+   const {w, page, signingOut, setSigningOut, s, actor} = workspace;
+   const {pathname} = useLocation();
+@@ -64,15 +67,17 @@ export function AppShell() {
+     {item.count !== undefined && <span className="nav-count" aria-label={`${item.count} ${item.id === 'incidents' ? 'open' : 'active'}`}>{item.count}</span>}
+   </a>);
+   const title = [...daily, ...settingsNavigation].find(item => item.id === page)?.label ?? 'Oncall';
++  const brand = <a href={stakeholder ? '/status' : '/on-call'} className="brand"><Mark size={30} /><span data-rer-name>{identity.product}</span></a>;
+   return <WorkspaceContext.Provider value={workspace}><div className="app oncall-frame">
+     <a className="skip" href="#main">Skip to content</a>
+     <aside className="sidebar shell-rail">
+-      {settings && !stakeholder ? <a className="nav settings-back" href="/on-call">‹ Oncall</a> : <a href={stakeholder ? '/status' : '/on-call'} className="brand"><Mark size={30} /><span data-rer-name>Oncall</span></a>}
++      <div className="installation-brand">{brand}{installation && <span className="installation-name">{installation}</span>}</div>
++      {settings && !stakeholder && <a className="nav settings-back" href="/on-call">‹ Oncall</a>}
+       <nav className="navigation" aria-label={settings && !stakeholder ? 'Settings' : 'Workspace'}>{links(settings && !stakeholder ? settingsNavigation : daily)}</nav>
+       <div className="rail-foot">{!settings && !stakeholder && links([settingsItem])}{owner()}</div>
+     </aside>
+     <div className="mobile-bar">
+-      <a href={stakeholder ? '/status' : '/on-call'} className="brand"><Mark size={30} /><span data-rer-name>Oncall</span></a>
++      <div className="installation-brand">{brand}{installation && <span className="installation-name">{installation}</span>}</div>
+       <button ref={menuButton} aria-haspopup="dialog" aria-expanded={sheetOpen} onClick={() => {sheetNavigation.current = false; setSheetSettings(settings && !stakeholder); setSheetOpen(true);}}>Menu</button>
+     </div>
+     <dialog className="shell-sheet" ref={sheet} aria-label="Menu" onClose={() => {setSheetOpen(false); if (!sheetNavigation.current) menuButton.current?.focus({preventScroll: true});}} onClick={event => {if (event.target === sheet.current) {const rect=sheet.current.getBoundingClientRect(); if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)closeSheet();}}}>
+diff --git a/src/app/shell/frame.css b/src/app/shell/frame.css
+index eb13db2..604b47a 100644
+--- a/src/app/shell/frame.css
++++ b/src/app/shell/frame.css
+@@ -2,6 +2,8 @@
+ .oncall-frame .brand {min-width: 0; max-width: 100%; flex-wrap: nowrap;}
+ .oncall-frame .brand .oc-mark {flex: none;}
+ .oncall-frame .brand > span {min-width: 0; line-height: 1.05; overflow-wrap: anywhere;}
++.oncall-frame .installation-brand {min-width: 0; display: grid; gap: 8px;}
++.oncall-frame .installation-name {font-size: 14px; line-height: 1.35; color: var(--oc-ink); overflow-wrap: anywhere;}
+ .oncall-frame .shell-rail {gap: 28px;}
+ .oncall-frame .rail-foot {margin-top: auto; display: grid; gap: 16px;}
+ .oncall-frame .nav-label {min-width: 0;}
+@@ -30,6 +32,9 @@
+   .oncall-frame .shell-rail {display: none;}
+   .oncall-frame .mobile-bar {height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 16px; background: var(--oc-paper-deep);}
+   .oncall-frame .mobile-bar .brand {padding: 0; font-size: 22px; flex: 1; min-height: 44px; display: flex; align-items: center;}
++  .oncall-frame .mobile-bar .installation-brand {display: flex; align-items: center; gap: 12px; flex: 1;}
++  .oncall-frame .mobile-bar .brand {flex: none;}
++  .oncall-frame .mobile-bar .installation-name {min-width: 0;}
+   .oncall-frame .mobile-bar button {min-height: 44px; flex: none;}
+   .oncall-frame .workspace {padding: 0 16px 40px;}
+   .oncall-frame .header {padding: 24px 0 12px;}
+diff --git a/src/base/deployment-health.ts b/src/base/deployment-health.ts
+index 025fe38..a774bc9 100644
+--- a/src/base/deployment-health.ts
++++ b/src/base/deployment-health.ts
+@@ -1,13 +1,17 @@
++declare const __ONCALL_RELEASE__: { version: string };
++declare const __ONCALL_SOURCE_SHA__: string | null;
++
+ // rer deploy compares this body with what it just deployed
+ // (modules/deploy-kit/health-request.mjs). The deploy kit sets the bindings.
+ type DeploymentBindings = { RER_DEPLOY_SOURCE?: string, RER_DEPLOY_FINGERPRINT?: string, RER_VERSION?: { id: string } }
+ 
+-/** The /health body that proves which deployment answered. Missing bindings are null. */
++/** Compiled identity is the local fallback; deployed bindings remain authoritative. */
+ export function deploymentHealth(env: DeploymentBindings) {
+   return {
+     ok: true as const,
++    buildVersion: __ONCALL_RELEASE__.version,
+     deployment: {
+-      sourceSha: env.RER_DEPLOY_SOURCE ?? null,
++      sourceSha: env.RER_DEPLOY_SOURCE || __ONCALL_SOURCE_SHA__,
+       fingerprint: env.RER_DEPLOY_FINGERPRINT ?? null,
+       versionId: env.RER_VERSION?.id ?? null,
+     },
+diff --git a/src/routes/__root.tsx b/src/routes/__root.tsx
+index c076021..1a57c5f 100644
+--- a/src/routes/__root.tsx
++++ b/src/routes/__root.tsx
+@@ -9,13 +9,14 @@ import {
+ } from "@tanstack/react-router";
+ import { WorkspaceOutlet } from "../app/WorkspaceOutlet";
+ import { fontLinks } from "../brand/font-head";
++import { identity } from "../identity";
+ 
+ export const Route = createRootRoute({
+   head: () => ({
+     meta: [
+       { charSet: "utf-8" },
+       { name: "viewport", content: "width=device-width, initial-scale=1" },
+-      { title: "Oncall" },
++      { title: identity.deployment?.trim() && identity.deployment.trim() !== identity.product ? `${identity.deployment.trim()} · ${identity.product}` : identity.product },
+     ],
+     links: [...fontLinks, { rel: "icon", href: "/brand/mark.svg", type: "image/svg+xml" }],
+   }),
+diff --git a/tests/agent-door-browser.mjs b/tests/agent-door-browser.mjs
+index a56da3f..684ce77 100644
+--- a/tests/agent-door-browser.mjs
++++ b/tests/agent-door-browser.mjs
+@@ -7,6 +7,7 @@ import {agentRuntime,agentEffectSnapshot,pauseMatrix} from './agent-door-runtime
+ import {recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy,deadlineTarget} from './oncall-agent-fixtures.mjs';
+ import specialist from './oncall-agent-native.mjs';
+ import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-revisions.mjs';
++import {actionSubmitNativeRevision} from './oncall-agent-action-submit-native-revision.mjs';
+ import {agedActionSubmitRetention} from './oncall-agent-action-submit-retention.mjs';
+ import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
+ import {openIncidentAction} from './keyboard.mjs';
+@@ -162,6 +163,34 @@ try{
+    });
+   },
+  });
++ const submitApprovalPosts=[];
++ const recordSubmitApproval=request=>{if(request.method()==='POST'&&new URL(request.url()).pathname.endsWith('/approve'))submitApprovalPosts.push(request.url())};
++ page.on('request',recordSubmitApproval);
++ await actionSubmitNativeRevision(runtime,{
++  async approve({handle,saved,owner}){
++   await capture('follow-up-submit-pending',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="pending"]').waitFor()});
++   await page.goto(handle.url);
++   await page.getByText(owner.name,{exact:false}).first().waitFor();
++   const submitted=page.waitForRequest(request=>request.method()==='POST'&&new URL(request.url()).pathname.endsWith('/approve'));
++   await page.getByRole('button',{name:'Approve',exact:true}).click();
++   const posted=(await submitted).postDataJSON();
++   assert.equal(posted.revision,saved.revision);assert.equal(posted.summary_sha256,saved.summary_sha256);
++   await page.locator('[data-approval-state="executed"]').waitFor();
++   await capture('follow-up-submit-executed',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="executed"]').waitFor()});
++  },
++  async observe({mode,incident,action}){
++   await capture('follow-up-submit-'+mode,'/reviews/'+incident.id,async()=>{
++    await page.getByRole('dialog',{name:incident.title,exact:true}).waitFor();
++    await page.locator('.review-material-body summary').filter({hasText:/^Follow-ups \(/}).click();
++    await page.getByText('Awaiting acceptance',{exact:false}).first().waitFor();
++    const evidence=page.locator('.review-material-body').getByRole('link',{name:/^Evidence/});await evidence.waitFor();
++    if(page.viewportSize().width===1440)assert.equal(await evidence.getAttribute('href'),action.evidence);
++    await evidence.scrollIntoViewIfNeeded();
++   });
++  },
++ });
++ assert.equal(submitApprovalPosts.length,1,'One sponsor approval POST; completed-result retries never repeat the approval action');
++ page.off('request',recordSubmitApproval);
+  assert.deepEqual(submitEvidenceRequests,[],'The browser never fetches submitted evidence');
+  await context.unroute('https://evidence.example.invalid/**',stopEvidence);
+  // Each retained submission has isolated native custody. The browser takes
+diff --git a/tests/installation-fit.mjs b/tests/installation-fit.mjs
+new file mode 100644
+index 0000000..6abd7c2
+--- /dev/null
++++ b/tests/installation-fit.mjs
+@@ -0,0 +1,65 @@
++import assert from 'node:assert/strict';
++import {readFile, writeFile, mkdir} from 'node:fs/promises';
++import {execFileSync} from 'node:child_process';
++import {expect} from '@playwright/test';
++
++// Part of the existing managed installation journey, through the real CLI.
++export async function localMailChoiceRefusal(managed, answers) {
++ const selected={OWNER_EMAIL:'transfer-owner@example.test',APP_NAME:'Example Operations',MAIL_PROVIDER:'none'};
++ await writeFile(answers,JSON.stringify(selected),{mode:0o600});
++ const output=await managed.command(['setup','--answers',answers,'--non-interactive'],4);
++ assert.match(output,/MAIL_PROVIDER=none.*hosted.*MAIL_PROVIDER=development/);
++ // A retry of the same selection must explain the same correction before success.
++ const retry=await managed.command(['setup','--answers',answers,'--non-interactive'],4);
++ assert.match(retry,/MAIL_PROVIDER=none.*MAIL_PROVIDER=development/);
++ await writeFile(answers,JSON.stringify({...selected,MAIL_PROVIDER:'development'}),{mode:0o600});
++ console.log('PASS local mail selection: public setup refuses hosted-only none on first attempt and retry, with a field-specific correction');
++}
++
++export async function signedInInstallation(page, origin, {fallback=false, capture=false}={}) {
++ const branding=JSON.parse(await readFile('src/branding.json','utf8'));
++ const stored=branding.name?.trim(),installation=stored&&stored!=='Oncall'?stored:null;
++ const expectedTitle=installation?`${installation} · Oncall`:'Oncall';
++ await page.setViewportSize({width:1440,height:1000});
++ for(const path of ['/on-call','/settings/services']) {
++  await page.goto(origin+path);
++  await page.locator('.oncall-frame').waitFor();
++  await expect(page).toHaveTitle(new RegExp('^'+expectedTitle+'(?: Dev)?$'));
++  await expect(page.locator('.shell-rail .brand')).toHaveText('Oncall');
++  if(installation)await expect(page.locator('.shell-rail .installation-name')).toHaveText(installation);
++  else assert.equal(await page.locator('.installation-name').count(),0);
++  if(capture){
++   const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
++   for(const width of [1440,390]){
++    await page.setViewportSize({width,height:1000});
++    await page.screenshot({path:`${directory}/installation-${path==='/on-call'?'workspace':'settings'}-${width}.png`,fullPage:true});
++   }
++   await page.setViewportSize({width:1440,height:1000});
++  }
++ }
++ if(fallback){
++  const original=await readFile('src/branding.json','utf8');
++  try{
++   // Vite reloads the actual saved identity; neither the app nor auth is mocked.
++   const {name,...withoutName}=branding;
++   await writeFile('src/branding.json',JSON.stringify(withoutName)+'\n');
++   await page.reload();
++   await expect(page).toHaveTitle(/^Oncall(?: Dev)?$/);
++   await expect(page.locator('.shell-rail .brand')).toHaveText('Oncall');
++   await expect(page.locator('.installation-name')).toHaveCount(0);
++  }finally{await writeFile('src/branding.json',original);}
++ }
++ console.log('PASS signed-in installation: saved name in title and rail across workspace/settings'+(fallback?', absent name falls back to product':'')+(capture?', built screens captured at 1440/390':''));
++}
++
++export async function compiledHealth(request) {
++ const {version}=JSON.parse(await readFile('package.json','utf8'));
++ const sourceSha=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
++ const response=await request('/health');
++ assert.equal(response.status,200);
++ assert.equal(response.value.buildVersion,version,'public health reports the compiled package version');
++ assert.equal(response.value.deployment.sourceSha,sourceSha,'without deploy bindings health identifies the compiled checkout');
++ assert.equal(response.value.ok,true);assert.equal(response.value.storage,'available');
++ assert.equal(response.value.paging,'not-provided');
++ console.log('PASS compiled health: actual package version and checkout SHA without deployment bindings; coordination liveness preserved');
++}
+diff --git a/tests/oncall-agent-action-submit-native-revision.mjs b/tests/oncall-agent-action-submit-native-revision.mjs
+new file mode 100644
+index 0000000..ef7442e
+--- /dev/null
++++ b/tests/oncall-agent-action-submit-native-revision.mjs
+@@ -0,0 +1,75 @@
++import assert from 'node:assert/strict';
++import {randomUUID} from 'node:crypto';
++import {agentRuntime,agentEffectSnapshot} from './agent-door-runtime.mjs';
++import {actionSubmitReplay} from './oncall-agent-action-submit-replay.mjs';
++
++/** Required parent revision is checked before sensitive submission approval. */
++export async function actionSubmitNativeRevision(runtime,options={}){
++ const {db,http,tool}=runtime,name='oncall.actions.submit';
++ const rows=async(sql,...values)=>(await db.prepare(sql).bind(...values).all()).results;
++ const command=async input=>{const response=await http('/api/command',input);assert.equal(response.status,200);return response.json()};
++ const snapshot=()=>agentEffectSnapshot(runtime),audits=()=>rows('SELECT * FROM agent_door_audit ORDER BY sequence');
++ const permanent=()=>rows('SELECT * FROM oc_admin_audit ORDER BY ordinal');
++ const credential='synthetic-oncall-'+randomUUID();
++ const client=await http('/api/automation/clients',{name:'Synthetic native submission revision scope',key:credential,
++  services:['agent-service'],permissions:['services:read','incidents:read','actions:write']});
++ assert.equal(client.status,201);await client.json();
++ await actionSubmitReplay(runtime,{...options,async beforeSubmit({mode,incident,action,args,owner}){
++  assert.equal(Object.hasOwn(args,'expected_revision'),false,'The optional revision is explicitly absent');
++  assert.equal(incident.state,'declared');assert.equal(action.done,false);assert.equal(action.evidence,'');
++  assert.equal(action.submission,undefined);assert.equal(action.accepted,undefined);
++  let foreign=await command({type:'declare',service:'agent-foreign-service',title:'Synthetic private submission '+mode,
++   summary:'Ordinary coordination without protected evidence',severity:'warning',alerts:[]});
++  foreign=await command({type:'action',incident:foreign.id,revision:foreign.revision,title:'Synthetic scoped-out follow-up',
++   owner:action.owner,due:action.due,priority:'P1',completionPolicy:'human-review'});
++  for(const bearer of [undefined,credential]){
++   const admitted=await tool('oncall.services.read',{id:'agent-service'},{},bearer);
++   assert.equal(admitted.status,200);assert.equal(admitted.result.isError,false);
++   assert.equal(admitted.result.structuredContent.data[0].id,'agent-service');
++  }
++  const before=await snapshot();assert.notEqual(before.application.revision,incident.revision,'Parent and workspace revisions are distinct');
++  async function refused(input,expected,bearer){
++   assert.equal(Object.hasOwn(input,'expected_revision'),false);
++   const prior=await audits(),priorPermanent=await permanent();
++   const answer=await tool(name,input,{},bearer);
++   assert.equal(answer.status,200);assert.equal(answer.body.error,undefined);
++   assert.equal(answer.result.isError,true,'Stale required revision must refuse before opening an approval');
++   assert.deepEqual(answer.result._meta['com.runeditrun/error'],expected);
++   assert.deepEqual(JSON.parse(answer.result.content[0].text),expected);
++   assert.equal(answer.result.structuredContent,undefined);
++   assert.equal(answer.result._meta['com.runeditrun/approval'],undefined);
++   assert.equal(answer.result._meta['com.runeditrun/review'],undefined);
++   assert.deepEqual(await snapshot(),before,'Refusal preserves native records, revisions, timeline, state-changing audit, calls and outcomes, approvals, reviews and paging');
++   const after=await audits();assert.deepEqual(after.slice(0,-1),prior);assert.equal(after.length,prior.length+1);
++   const refusal=JSON.parse(after.at(-1).row);
++   assert.equal(refusal.tool,name);assert.equal(refusal.outcome,'refused');assert.equal(refusal.code,expected.code);
++   assert.equal(refusal.idempotency_key,input.idempotency_key);assert.equal(refusal.sponsor.id,owner.id);
++   assert.equal(refusal.approval,null);assert.equal(refusal.review,null);
++   const afterPermanent=await permanent();assert.deepEqual(afterPermanent.slice(0,priorPermanent.length),priorPermanent);
++   for(const row of afterPermanent.slice(priorPermanent.length)){
++    assert.equal(row.kind,'agent-door.persistence');assert.ok(['accepted','refused'].includes(row.outcome));
++    for(const family of ['workspace','paging','handoff'])assert.equal(row[family+'_before'],row[family+'_after']);
++   }
++   assert.deepEqual(await runtime.outboundRequests(),[],'No evidence URL fetch or other outbound request');
++   return answer;
++  }
++  const staleArgs={...args,revision:incident.revision-1,idempotency_key:randomUUID()};
++  const stale=await refused(staleArgs,{code:'revision_conflict',current_revision:incident.revision});
++  // A scoped-out incident and an absent incident or action disclose the same
++  // not-found diagnostic, even when their supplied parent revision is stale.
++  for(const target of [
++   {incident:foreign.id,action:foreign.actions.at(-1).id},
++   {incident:'synthetic-oncall-'+randomUUID(),action:action.id},
++   {incident:incident.id,action:'synthetic-oncall-'+randomUUID()},
++  ])await refused({...staleArgs,...target,idempotency_key:randomUUID()},{code:'not_found'},credential);
++  args.revision=stale.result._meta['com.runeditrun/error'].current_revision;
++  args.idempotency_key=randomUUID();assert.notEqual(args.idempotency_key,staleArgs.idempotency_key);
++  assert.equal(Object.hasOwn(args,'expected_revision'),false);
++  console.log('PROBE BASE-AGENT-012 acceptance 4 '+mode+' oncall.actions.submit: stale required parent revision with expected_revision absent -> isError revision_conflict and exact authorized parent current_revision '+args.revision+' in metadata and text, distinct from workspace revision '+before.application.revision+'; no private result, approval, review or native effect; missing and scoped-out targets -> identical not_found with no revision; zero outbound requests');
++ }});
++}
++
++export async function focusedActionSubmitNativeRevision(){
++ const runtime=await agentRuntime({clock:null});
++ try{await actionSubmitNativeRevision(runtime)}finally{await runtime.close()}
++}
+diff --git a/tests/oncall-agent-action-submit-replay.mjs b/tests/oncall-agent-action-submit-replay.mjs
+index 734544b..2806cd8 100644
+--- a/tests/oncall-agent-action-submit-replay.mjs
++++ b/tests/oncall-agent-action-submit-replay.mjs
+@@ -4,7 +4,7 @@ import {agentRuntime,agentEffectSnapshot} from './agent-door-runtime.mjs';
+ import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
+ 
+ /** Changed evidence cannot replace a completed human-review submission. */
+-export async function actionSubmitReplay(runtime,{approve,observe=async()=>{}}={}){
++export async function actionSubmitReplay(runtime,{approve,observe=async()=>{},beforeSubmit=async()=>{}}={}){
+  const {db,http,tool,context}=runtime,name='oncall.actions.submit';
+  const rows=async(sql,...values)=>(await db.prepare(sql).bind(...values).all()).results;
+  const read=async path=>{const response=await http(path);assert.equal(response.status,200);return response.json()};
+@@ -35,6 +35,7 @@ export async function actionSubmitReplay(runtime,{approve,observe=async()=>{}}={
+   assert.equal(action.done,false);assert.equal(action.evidence,'');assert.equal(action.submission,undefined);assert.equal(action.accepted,undefined);
+   const args={incident:incident.id,revision:incident.revision,action:action.id,
+    evidence:'https://evidence.example.invalid/synthetic-oncall-original',idempotency_key:randomUUID()};
++  await beforeSubmit({mode,incident,action,args,owner});
+   const before=await snapshot(),priorAudit=await audits();
+   const first=await tool(name,args);
+   assert.equal(first.status,200);assert.equal(first.body.error,undefined);
+diff --git a/tests/oncall-agent-flow.mjs b/tests/oncall-agent-flow.mjs
+index ba70a36..de6a537 100644
+--- a/tests/oncall-agent-flow.mjs
++++ b/tests/oncall-agent-flow.mjs
+@@ -19,7 +19,7 @@ import {changedServiceNameReplay} from './oncall-agent-service-replay.mjs';
+ import {agedReplayRetention} from './oncall-agent-retention.mjs';
+ import {agedActionSubmitRetention} from './oncall-agent-action-submit-retention.mjs';
+ import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-revisions.mjs';
+-import {focusedActionSubmitReplay} from './oncall-agent-action-submit-replay.mjs';
++import {focusedActionSubmitNativeRevision} from './oncall-agent-action-submit-native-revision.mjs';
+ import {focusedAssigneeClearReplay} from './oncall-agent-assignee-clear-replay.mjs';
+ import {focusedRoleClearReplay} from './oncall-agent-role-clear-replay.mjs';
+ import {transitionReplay} from './oncall-agent-transition-replay.mjs';
+@@ -1036,7 +1036,7 @@ try{
+  await transitionReplay(runtime);
+  await focusedRoleClearReplay();
+  await focusedAssigneeClearReplay();
+- await focusedActionSubmitReplay();
++ await focusedActionSubmitNativeRevision();
+  await staleActionSubmitExpectedRevision(runtime);
+  assert.equal((await runtime.adopt()).status,200);
+  await specialist({request:runtime.request,origin:runtime.origin,cookie:runtime.cookie,fixtures:runtime.fixtures,tool});
+diff --git a/tests/runtime.mjs b/tests/runtime.mjs
+index a778204..6aa0650 100644
+--- a/tests/runtime.mjs
++++ b/tests/runtime.mjs
+@@ -164,7 +164,7 @@ const deployment={...await healthBuildIdentity(),versionId:crypto.randomUUID()}
+ const hosted=await serveHosted(process.cwd(),{bindings:{RER_DEPLOY_SOURCE:deployment.sourceSha,RER_DEPLOY_FINGERPRINT:deployment.fingerprint,RER_VERSION:{id:deployment.versionId}}})
+ try{
+  const health=await hosted.fetch('health');assert.equal(health.status,200)
+- const body=await health.json();assert.equal(body.ok,true);assert.equal(body.storage,'available');assert.equal(body.target,'coordination');assert.equal(body.paging,'not-provided')
++ const body=await health.json();assert.equal(body.buildVersion,JSON.parse(await readFile('package.json','utf8')).version);assert.equal(body.ok,true);assert.equal(body.storage,'available');assert.equal(body.target,'coordination');assert.equal(body.paging,'not-provided')
+  assert.deepEqual(body.deployment,deployment,'the built hosted Worker reports the exact supplied source, fingerprint and version identity')
+  console.log('OC-010 hosted-mode production output: deployment identity matches; no provider deployment, delivery, drill or capacity result inferred')
+  for(const link of links) {
+@@ -201,6 +201,7 @@ async function coordinationHealth({request,sql,deployment,cookie}) {
+   return {described,checked}
+  }
+  const healthy=ok(await request('/health'))
++ assert.equal(healthy.buildVersion,JSON.parse(await readFile('package.json','utf8')).version)
+  assert.deepEqual(healthy.deployment,deployment,'the emitted build identifies its actual source and artifact')
+  assert.equal(healthy.ok,true);assert.equal(healthy.storage,'available');assert.equal(healthy.target,'coordination');assert.equal(healthy.paging,'not-provided')
+  const before=ok(await request('/api/archive',undefined,cookie)),description=commands()
+@@ -209,7 +210,7 @@ async function coordinationHealth({request,sql,deployment,cookie}) {
+  sql('ALTER TABLE workspace_control RENAME TO workspace_fault')
+  try {
+   const failed=await request('/health');assert.equal(failed.status,503)
+-  assert.equal(failed.value.ok,false);assert.equal(failed.value.storage,'unavailable')
++  assert.equal(failed.value.buildVersion,healthy.buildVersion);assert.equal(failed.value.ok,false);assert.equal(failed.value.storage,'unavailable')
+   assert.equal(failed.value.target,'coordination');assert.equal(failed.value.paging,'not-provided')
+   assert.deepEqual(failed.value.deployment,deployment,'failure still identifies the deployed build')
+   assert.equal(typeof failed.value.error,'string')
+diff --git a/tests/transfer.mjs b/tests/transfer.mjs
+index 6267eed..703776c 100644
+--- a/tests/transfer.mjs
++++ b/tests/transfer.mjs
+@@ -1,3 +1,4 @@
++import {localMailChoiceRefusal,signedInInstallation,compiledHealth} from './installation-fit.mjs'
+ import {developmentReadiness} from './readiness.mjs'
+ import {recordHealthOutcome} from './health-outcomes.mjs'
+ import {generateKeyPairSync,sign,createHash,randomUUID,randomBytes,createHmac} from 'node:crypto'
+@@ -246,6 +247,7 @@ await mkdir('.rer/local',{recursive:true,mode:0o700});await mkdir('exports',{rec
+ const answers='.rer/local/transfer-answers.json',archive='exports/transfer-proof.rer',corrupt='exports/transfer-corrupt.rer',invalidRecords='exports/transfer-invalid-records.rer',later='exports/transfer-later.rer'
+ await writeFile(answers,JSON.stringify({OWNER_EMAIL:'transfer-owner@example.test'}),{mode:0o600})
+ try{
++ await localMailChoiceRefusal(m,answers);
+  await m.command(['setup','--answers',answers,'--port',String(m.port),'--non-interactive']);await business.configure();await m.start()
+  let cookie=await m.owner(),req=(path,input)=>m.request(path,input,cookie),member=ok(await req('/api/session')).member
+  await developmentReadiness(req);
+@@ -263,6 +265,7 @@ try{
+     await page.getByRole('checkbox').check();await page.getByRole('button',{name:'Finish setup'}).click()
+    }
+    await page.locator('.oncall-frame').waitFor()
++   await signedInInstallation(page,m.origin,{fallback:true});
+    const archiveResponse=await context.request.get(m.origin+'/api/archive'),nativeArchive=await archiveResponse.json()
+    assert.equal(archiveResponse.status(),200)
+    await page.goto(m.origin+'/settings/archive');await page.locator('.archive-restore > summary').click()
+@@ -273,6 +276,8 @@ try{
+    assert.ok((await context.cookies()).some(row=>row.name.startsWith('oncall_session_')),'native restore issued a workspace session')
+    await m.close();await m.command(['build','--non-interactive']);await m.preview()
+    await page.goto(m.openLink);await page.locator('.oncall-frame').waitFor()
++   await signedInInstallation(page,m.origin,{capture:true});
++   await compiledHealth(path=>m.request(path));
+    const session=await context.request.get(m.origin+'/api/session');assert.equal(session.status(),200)
+    assert.equal((await session.json()).member.id,member.id,'preview owner opens the linked native archive identity')
+    assert.equal(await page.locator('.oc-door-restore').count(),0,'an already linked owner needs no mapping')
+@@ -282,6 +287,9 @@ try{
+    await context.close()
+   }finally{await browser.close();await m.close()}
+  }
++ if(process.env.ONCALL_TRANSFER_JOURNEY==='installation-fit'){
++  console.log('PASS installation-fit: public setup refusal, corrected setup, runnable dev, signed-in fallback and built preview identity');
++ }else{
+  await m.start();cookie=await m.owner()
+  console.log('PROBE OC-018 native restore: Settings archive replacement -> build -> preview private owner link in the same browser -> mapped workspace without administrator selection')
+  ok(await req('/api/command',{type:'service',id:'transfer',name:'Transfer service',environment:'production',owner:member.id,runbook:['Retain this instruction'],pager:''}))
+@@ -857,4 +865,5 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
+   invalidArchiveRefusals:'passed',currentArchiveRetainsErasure:true,
+  })
+  console.log('OC-041 accepted state and its audit entry commit together, survive subject erasure and export without secrets; OC-052 all current durable categories restore inactive without authority or replay: nonempty refusal, invalid-input rollback, full relational/history/journal restore, credential exclusion, paused timer, explicit new-owner mapping and held approval')
++ }
+ }finally{await m.close();await rm(answers,{force:true});await rm(archive,{force:true});await rm(corrupt,{force:true});await rm(invalidRecords,{force:true});await rm(later,{force:true})}
+diff --git a/vite.config.ts b/vite.config.ts
+index 80ee726..6e0661e 100644
+--- a/vite.config.ts
++++ b/vite.config.ts
+@@ -3,11 +3,20 @@ import { tanstackStart } from '@tanstack/react-start/plugin/vite'
+ import react from '@vitejs/plugin-react'
+ import { defineConfig } from 'vite'
+ import { readFileSync } from 'node:fs'
++import { execFileSync } from 'node:child_process'
+ import { archiveOutputGuard } from '@runeditrun/rer/archive-output'
+ import { docsSite } from './src/docs/build/plugin.ts'
+ import { demoSockets } from './src/modules/demo/vite.mjs'
+ import pkg from './package.json' with { type: 'json' }
+ 
++// A checkout supplies its public commit identity even without hosted bindings.
++const sourceSha = (() => {
++ try {
++  const sha = execFileSync('git', ['rev-parse', 'HEAD'], {encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore']}).trim();
++  return /^[a-f0-9]{40}$/.test(sha) ? sha : null;
++ } catch { return null; }
++})();
++
+ // Bind only public field facts at build time; the root contract is not a served
+ // development source and no account inspection is performed.
+ const fieldProof = readFileSync('CONTRACT.md','utf8').split('## Field proof register\n')[1].split('\n## ')[0]
+@@ -26,4 +35,4 @@ const serve = { main: './src/server.dev.ts', vars: { ...local('INBOUND_EMAIL_DOM
+ // key, installer state), export archives, settings or local data.
+ const server = { fs: { allow: ['src', 'public', 'node_modules'], deny: ['**/.rer/**', '**/.seed/**', '**/exports/**', '**/*.rer'] } }
+ 
+-export default defineConfig(({ command, isPreview }) => ({ server, define: { __ONCALL_FIELD_PROOF__: JSON.stringify(fieldProof), __ONCALL_RELEASE__: JSON.stringify({ package: pkg.name, version: pkg.version }) }, plugins: [demoSockets(), cloudflare({ inspectorPort: false, viteEnvironment: { name: 'ssr' }, persistState: { path: process.env.RER_STATE_DIR ?? '.wrangler/state' }, ...(command === 'serve' && !isPreview ? { config: serve } : process.env.RER_DEV_ORIGIN ? { config: { vars: local('RER_DEV_ORIGIN') } } : {}) }), docsSite(), tanstackStart(), react(), archiveOutputGuard()] }))
++export default defineConfig(({ command, isPreview }) => ({ server, define: { __ONCALL_SOURCE_SHA__: JSON.stringify(sourceSha), __ONCALL_FIELD_PROOF__: JSON.stringify(fieldProof), __ONCALL_RELEASE__: JSON.stringify({ package: pkg.name, version: pkg.version }) }, plugins: [demoSockets(), cloudflare({ inspectorPort: false, viteEnvironment: { name: 'ssr' }, persistState: { path: process.env.RER_STATE_DIR ?? '.wrangler/state' }, ...(command === 'serve' && !isPreview ? { config: serve } : process.env.RER_DEV_ORIGIN ? { config: { vars: local('RER_DEV_ORIGIN') } } : {}) }), docsSite(), tanstackStart(), react(), archiveOutputGuard()] }))

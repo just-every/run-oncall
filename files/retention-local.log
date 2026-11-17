@@ -1,0 +1,5 @@
+Command: ['env', '-u', 'HTTP_PROXY', '-u', 'HTTPS_PROXY', '-u', 'ALL_PROXY', '-u', 'http_proxy', '-u', 'https_proxy', '-u', 'all_proxy', '/home/agent/.rer/node/node-v22.20.0-linux-x64/bin/node', '--input-type=module', '-e', 'import {agedActionSubmitRetention} from "./tests/oncall-agent-action-submit-retention.mjs"; await agedActionSubmitRetention();']
+HEAD: 0f758adfe7e73cf994fb5e52379ad1757b3372a5
+Started: 2026-11-17T17:53:01.679909+00:00
+(node:2730) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)

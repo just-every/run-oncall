@@ -1,0 +1,83 @@
+{
+  "base": "4988fbbe5e310410f02d3cfbd4ffc323bc967a6f",
+  "feeder": "0b1e46522288036dab1eab105aa5585c5c0042da",
+  "head": "0f758adfe7e73cf994fb5e52379ad1757b3372a5",
+  "merges": [],
+  "changed_from_main": [
+    "sources.lock.json",
+    "tests/agent-door-browser.mjs",
+    "tests/oncall-agent-action-submit-retention.mjs",
+    "tests/oncall-agent-flow.mjs"
+  ],
+  "feeder_differences": [
+    {
+      "file": "docs/getting-started.md",
+      "reason": "Identical to fresh main; unrelated managed installation/identity updates retained unchanged."
+    },
+    {
+      "file": "rer-setup.json",
+      "reason": "Identical to fresh main; unrelated managed installation/identity updates retained unchanged."
+    },
+    {
+      "file": "scripts/installer/local.mjs",
+      "reason": "Identical to fresh main; unrelated managed installation/identity updates retained unchanged."
+    },
+    {
+      "file": "sources.lock.json",
+      "reason": "Main newer native-revision proof, f260 integration, and regenerated combined source hashes."
+    },
+    {
+      "file": "src/agent-door/coordination-tools.ts",
+      "reason": "Identical to fresh main; unrelated managed installation/identity updates retained unchanged."
+    },
+    {
+      "file": "src/app/shell/AppShell.tsx",
+      "reason": "Identical to fresh main; unrelated managed installation/identity updates retained unchanged."
+    },
+    {
+      "file": "src/app/shell/frame.css",
+      "reason": "Identical to fresh main; unrelated managed installation/identity updates retained unchanged."
+    },
+    {
+      "file": "src/base/deployment-health.ts",
+      "reason": "Identical to fresh main; unrelated managed installation/identity updates retained unchanged."
+    },
+    {
+      "file": "src/routes/__root.tsx",
+      "reason": "Identical to fresh main; unrelated managed installation/identity updates retained unchanged."
+    },
+    {
+      "file": "tests/agent-door-browser.mjs",
+      "reason": "Main newer native-revision proof, f260 integration, and regenerated combined source hashes."
+    },
+    {
+      "file": "tests/installation-fit.mjs",
+      "reason": "Identical to fresh main; unrelated managed installation/identity updates retained unchanged."
+    },
+    {
+      "file": "tests/oncall-agent-action-submit-native-revision.mjs",
+      "reason": "Identical to fresh main; unrelated managed installation/identity updates retained unchanged."
+    },
+    {
+      "file": "tests/oncall-agent-action-submit-replay.mjs",
+      "reason": "Identical to fresh main; unrelated managed installation/identity updates retained unchanged."
+    },
+    {
+      "file": "tests/oncall-agent-flow.mjs",
+      "reason": "Main newer native-revision proof, f260 integration, and regenerated combined source hashes."
+    },
+    {
+      "file": "tests/runtime.mjs",
+      "reason": "Identical to fresh main; unrelated managed installation/identity updates retained unchanged."
+    },
+    {
+      "file": "tests/transfer.mjs",
+      "reason": "Identical to fresh main; unrelated managed installation/identity updates retained unchanged."
+    },
+    {
+      "file": "vite.config.ts",
+      "reason": "Identical to fresh main; unrelated managed installation/identity updates retained unchanged."
+    }
+  ],
+  "retention_helper_identical_to_feeder": true
+}

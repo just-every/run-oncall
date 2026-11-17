@@ -1,0 +1,1 @@
+Product candidate diff: no private-key, GitHub token, AWS access-key or Stripe live-key patterns. Fleet identity/trailer inspection passed. Full publication scan remains the fleet Mac landing gate.
