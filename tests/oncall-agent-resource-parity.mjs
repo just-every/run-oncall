@@ -167,7 +167,11 @@ export async function resourceParity({browserProof=false}={}){
   assert.equal(receipt.actions.cases.length,12);
   await coverageParity({runtime,people,browser,receipt});
   await clientParity({runtime,people,browser,receipt,client:fixture.client,scopes,at:observed});
+  // The shared runtime and browser invocation retain active reads, then
+  // observe this same disposable endpoint after native administrator revoke.
   await endpointParity({runtime,people,browser,receipt,scopes,at:observed});
+  assert.deepEqual(receipt.endpoints.cases.map(({phase,mode,role})=>({phase,mode,role})),
+   ['active','inactive'].flatMap(phase=>['autonomous','held'].flatMap(mode=>['admin','viewer'].map(role=>({phase,mode,role})))));
   assert.deepEqual(await runtime.outboundRequests(),[]);
   if(evidence){await mkdir(evidence,{recursive:true});await writeFile(evidence+'/resource-parity.json',JSON.stringify(receipt,null,2)+'\n');}
   return receipt;
