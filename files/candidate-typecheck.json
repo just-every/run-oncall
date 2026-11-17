@@ -1,0 +1,18 @@
+{
+  "author": "Run Edit Run fleet",
+  "started_utc": "2026-11-17T14:51:53.316660+00:00",
+  "ended_utc": "2026-11-17T14:51:58.314936+00:00",
+  "seconds": 4.998,
+  "command": [
+    "pnpm",
+    "run",
+    "typecheck"
+  ],
+  "head": "1defe48f8ddfdb6739042df3dfa694af954161c0",
+  "tree": "60444021068a091a9a917230bcace14310933311",
+  "exit_code": 0,
+  "log": "candidate-typecheck.log",
+  "log_sha256": "77843fa1345d79f455864caeed93a2219d245d09547a718dad5681e0c7f51eb8",
+  "tracked_clean_before": true,
+  "tracked_clean_after": true
+}

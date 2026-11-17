@@ -1,0 +1,211 @@
+{
+  "author": "Run Edit Run fleet",
+  "completed_utc": "2026-11-17T14:52:55.320151+00:00",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f260-lin-1",
+  "head": "1defe48f8ddfdb6739042df3dfa694af954161c0",
+  "parent": "708271f0cbd8bb35ae45a5b402a97faa6197cc1a",
+  "tree": "60444021068a091a9a917230bcace14310933311",
+  "candidate_commits": 1,
+  "candidate_merge_commits": 0,
+  "product_pushes": 1,
+  "pr": null,
+  "checks": [
+    {
+      "author": "Run Edit Run fleet",
+      "started_utc": "2026-11-17T14:30:04.357790+00:00",
+      "ended_utc": "2026-11-17T14:30:17.930713+00:00",
+      "seconds": 13.573,
+      "command": [
+        "npx",
+        "-y",
+        "@runeditrun/rer",
+        "build"
+      ],
+      "head": "1defe48f8ddfdb6739042df3dfa694af954161c0",
+      "tree": "60444021068a091a9a917230bcace14310933311",
+      "exit_code": 0,
+      "log": "candidate-build.log",
+      "log_sha256": "9626a38462143a877098b830f57d1717d28246b8d8dba878205474ac81d4362e",
+      "tracked_clean_before": true,
+      "tracked_clean_after": true
+    },
+    {
+      "author": "Run Edit Run fleet",
+      "started_utc": "2026-11-17T14:33:22.694090+00:00",
+      "ended_utc": "2026-11-17T14:33:37.975411+00:00",
+      "seconds": 15.281,
+      "command": [
+        "node",
+        "-e",
+        "import('./tests/oncall-agent-action-submit-native-revision.mjs').then(({focusedActionSubmitNativeRevision})=>focusedActionSubmitNativeRevision())"
+      ],
+      "head": "1defe48f8ddfdb6739042df3dfa694af954161c0",
+      "tree": "60444021068a091a9a917230bcace14310933311",
+      "exit_code": 0,
+      "log": "focused-native-revision.log",
+      "log_sha256": "79cbca3c9571db38e45459d5028cc05d6540a28ca1cba2038022f90780c535db",
+      "tracked_clean_before": true,
+      "tracked_clean_after": true
+    },
+    {
+      "author": "Run Edit Run fleet",
+      "started_utc": "2026-11-17T14:33:38.078970+00:00",
+      "ended_utc": "2026-11-17T14:44:42.847889+00:00",
+      "seconds": 664.769,
+      "command": [
+        "node",
+        "tests/oncall-agent-flow.mjs"
+      ],
+      "head": "1defe48f8ddfdb6739042df3dfa694af954161c0",
+      "tree": "60444021068a091a9a917230bcace14310933311",
+      "exit_code": 0,
+      "log": "agent-flow.log",
+      "log_sha256": "d75d11ffd6ba5024182a12429ddff6b30734f64b96fbf22f844c3f6d89dd6791",
+      "tracked_clean_before": true,
+      "tracked_clean_after": true
+    },
+    {
+      "author": "Run Edit Run fleet",
+      "started_utc": "2026-11-17T14:44:42.996369+00:00",
+      "ended_utc": "2026-11-17T14:51:44.348326+00:00",
+      "seconds": 421.352,
+      "command": [
+        "env",
+        "ONCALL_CHROMIUM_PATH=/usr/bin/chromium",
+        "ONCALL_BROWSER_EVIDENCE=/tmp/oncall-browser-evidence",
+        "node",
+        "tests/agent-door-browser.mjs"
+      ],
+      "head": "1defe48f8ddfdb6739042df3dfa694af954161c0",
+      "tree": "60444021068a091a9a917230bcace14310933311",
+      "exit_code": 0,
+      "log": "agent-browser.log",
+      "log_sha256": "c86364c7564fe0e2e8dd544fef0e4e7aa823e180602dc6a1eaad192b4aaa8e91",
+      "tracked_clean_before": true,
+      "tracked_clean_after": true
+    },
+    {
+      "author": "Run Edit Run fleet",
+      "started_utc": "2026-11-17T14:51:53.316660+00:00",
+      "ended_utc": "2026-11-17T14:51:58.314936+00:00",
+      "seconds": 4.998,
+      "command": [
+        "pnpm",
+        "run",
+        "typecheck"
+      ],
+      "head": "1defe48f8ddfdb6739042df3dfa694af954161c0",
+      "tree": "60444021068a091a9a917230bcace14310933311",
+      "exit_code": 0,
+      "log": "candidate-typecheck.log",
+      "log_sha256": "77843fa1345d79f455864caeed93a2219d245d09547a718dad5681e0c7f51eb8",
+      "tracked_clean_before": true,
+      "tracked_clean_after": true
+    },
+    {
+      "author": "Run Edit Run fleet",
+      "started_utc": "2026-11-17T14:51:58.417725+00:00",
+      "ended_utc": "2026-11-17T14:52:00.478532+00:00",
+      "seconds": 2.061,
+      "command": [
+        "npx",
+        "-y",
+        "@runeditrun/rer",
+        "check",
+        "--profile",
+        "first-party"
+      ],
+      "head": "1defe48f8ddfdb6739042df3dfa694af954161c0",
+      "tree": "60444021068a091a9a917230bcace14310933311",
+      "exit_code": 0,
+      "log": "candidate-first-party.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tracked_clean_before": true,
+      "tracked_clean_after": true
+    },
+    {
+      "author": "Run Edit Run fleet",
+      "started_utc": "2026-11-17T14:52:00.577715+00:00",
+      "ended_utc": "2026-11-17T14:52:00.772803+00:00",
+      "seconds": 0.195,
+      "command": [
+        "node",
+        "src/base/contract-docs.mjs",
+        "check"
+      ],
+      "head": "1defe48f8ddfdb6739042df3dfa694af954161c0",
+      "tree": "60444021068a091a9a917230bcace14310933311",
+      "exit_code": 0,
+      "log": "candidate-contract-docs.log",
+      "log_sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422",
+      "tracked_clean_before": true,
+      "tracked_clean_after": true
+    },
+    {
+      "author": "Run Edit Run fleet",
+      "started_utc": "2026-11-17T14:52:00.863935+00:00",
+      "ended_utc": "2026-11-17T14:52:01.235033+00:00",
+      "seconds": 0.371,
+      "command": [
+        "node",
+        "node_modules/@runeditrun/rer/edition-authoring/cli.mjs",
+        "check"
+      ],
+      "head": "1defe48f8ddfdb6739042df3dfa694af954161c0",
+      "tree": "60444021068a091a9a917230bcace14310933311",
+      "exit_code": 0,
+      "log": "candidate-lock-check.log",
+      "log_sha256": "12ccf71672b2ddf81e6e03272257f4162be0894593f06091762acbbaf2521524",
+      "tracked_clean_before": true,
+      "tracked_clean_after": true
+    }
+  ],
+  "ci": {
+    "conclusion": "success",
+    "head_sha": "1defe48f8ddfdb6739042df3dfa694af954161c0",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44103305566",
+    "status": "completed",
+    "author": "Run Edit Run fleet",
+    "observed_utc": "2026-11-17T14:48:46Z",
+    "repository": "just-every/run-oncall",
+    "run_id": 44103305566,
+    "workflow": "Verify",
+    "ci_rest_calls": 5,
+    "observations_utc": [
+      "2026-11-17T14:27:59Z",
+      "2026-11-17T14:33:02Z",
+      "2026-11-17T14:38:12Z",
+      "2026-11-17T14:43:27Z",
+      "2026-11-17T14:48:46Z"
+    ],
+    "minimum_poll_interval_seconds": 300,
+    "reruns": 0,
+    "dispatches": 0,
+    "pr_created": false
+  },
+  "registered_journey_invocations_before": 20,
+  "registered_journey_invocations_after": 20,
+  "contract_counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "contract_counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "clause_changes": [],
+  "claim": "CLAIM BASE-AGENT-012 PARTIAL points=4 tests=tests/oncall-agent-action-submit-native-revision.mjs#actionSubmitNativeRevision",
+  "gap": "GAP BASE-AGENT-012: Remaining coverage, retention, job-handle and authority gaps persist. Contract remains MISSING.",
+  "blockers": [],
+  "publication_scan": "Retained Mac lander gate; unavailable in this cloud by assignment",
+  "toolchain": {
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "rer": "0.2.118",
+    "chromium": "/usr/bin/chromium"
+  },
+  "browser_screenshots_selected": 16
+}

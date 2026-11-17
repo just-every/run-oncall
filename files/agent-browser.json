@@ -1,0 +1,20 @@
+{
+  "author": "Run Edit Run fleet",
+  "started_utc": "2026-11-17T14:44:42.996369+00:00",
+  "ended_utc": "2026-11-17T14:51:44.348326+00:00",
+  "seconds": 421.352,
+  "command": [
+    "env",
+    "ONCALL_CHROMIUM_PATH=/usr/bin/chromium",
+    "ONCALL_BROWSER_EVIDENCE=/tmp/oncall-browser-evidence",
+    "node",
+    "tests/agent-door-browser.mjs"
+  ],
+  "head": "1defe48f8ddfdb6739042df3dfa694af954161c0",
+  "tree": "60444021068a091a9a917230bcace14310933311",
+  "exit_code": 0,
+  "log": "agent-browser.log",
+  "log_sha256": "c86364c7564fe0e2e8dd544fef0e4e7aa823e180602dc6a1eaad192b4aaa8e91",
+  "tracked_clean_before": true,
+  "tracked_clean_after": true
+}

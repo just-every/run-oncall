@@ -1,0 +1,20 @@
+{
+  "author": "Run Edit Run fleet",
+  "date_utc": "2026-11-17T14:34:32.638114+00:00",
+  "repository": "just-every/run-oncall",
+  "head": "1defe48f8ddfdb6739042df3dfa694af954161c0",
+  "setup_exit": 0,
+  "migrations_applied": 68,
+  "precommit_build_exit": 0,
+  "precommit_typecheck_exit": 0,
+  "precommit_first_party_check_exit": 0,
+  "precommit_lock_generation_exit": 0,
+  "precommit_lock_check_exit": 0,
+  "contract_check_exit": 0,
+  "product_push_exit": 0,
+  "product_push_attempts": 1,
+  "product_branch": "cloud/sd-oncall-c-f260-lin-1",
+  "pr_created": false,
+  "publication_scan": "Mac fleet lander gate; unavailable in this cloud by task instruction",
+  "initial_local_probe": "Aborted due to --input-type=module inheritance into Miniflare eval worker; corrected invocation without product changes"
+}

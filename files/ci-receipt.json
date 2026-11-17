@@ -1,0 +1,23 @@
+{
+  "conclusion": "success",
+  "head_sha": "1defe48f8ddfdb6739042df3dfa694af954161c0",
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/44103305566",
+  "status": "completed",
+  "author": "Run Edit Run fleet",
+  "observed_utc": "2026-11-17T14:48:46Z",
+  "repository": "just-every/run-oncall",
+  "run_id": 44103305566,
+  "workflow": "Verify",
+  "ci_rest_calls": 5,
+  "observations_utc": [
+    "2026-11-17T14:27:59Z",
+    "2026-11-17T14:33:02Z",
+    "2026-11-17T14:38:12Z",
+    "2026-11-17T14:43:27Z",
+    "2026-11-17T14:48:46Z"
+  ],
+  "minimum_poll_interval_seconds": 300,
+  "reruns": 0,
+  "dispatches": 0,
+  "pr_created": false
+}

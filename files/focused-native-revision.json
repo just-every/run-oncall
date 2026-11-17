@@ -1,0 +1,18 @@
+{
+  "author": "Run Edit Run fleet",
+  "started_utc": "2026-11-17T14:33:22.694090+00:00",
+  "ended_utc": "2026-11-17T14:33:37.975411+00:00",
+  "seconds": 15.281,
+  "command": [
+    "node",
+    "-e",
+    "import('./tests/oncall-agent-action-submit-native-revision.mjs').then(({focusedActionSubmitNativeRevision})=>focusedActionSubmitNativeRevision())"
+  ],
+  "head": "1defe48f8ddfdb6739042df3dfa694af954161c0",
+  "tree": "60444021068a091a9a917230bcace14310933311",
+  "exit_code": 0,
+  "log": "focused-native-revision.log",
+  "log_sha256": "79cbca3c9571db38e45459d5028cc05d6540a28ca1cba2038022f90780c535db",
+  "tracked_clean_before": true,
+  "tracked_clean_after": true
+}

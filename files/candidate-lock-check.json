@@ -1,0 +1,18 @@
+{
+  "author": "Run Edit Run fleet",
+  "started_utc": "2026-11-17T14:52:00.863935+00:00",
+  "ended_utc": "2026-11-17T14:52:01.235033+00:00",
+  "seconds": 0.371,
+  "command": [
+    "node",
+    "node_modules/@runeditrun/rer/edition-authoring/cli.mjs",
+    "check"
+  ],
+  "head": "1defe48f8ddfdb6739042df3dfa694af954161c0",
+  "tree": "60444021068a091a9a917230bcace14310933311",
+  "exit_code": 0,
+  "log": "candidate-lock-check.log",
+  "log_sha256": "12ccf71672b2ddf81e6e03272257f4162be0894593f06091762acbbaf2521524",
+  "tracked_clean_before": true,
+  "tracked_clean_after": true
+}

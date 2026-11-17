@@ -1,0 +1,20 @@
+{
+  "author": "Run Edit Run fleet",
+  "started_utc": "2026-11-17T14:30:18.043631+00:00",
+  "ended_utc": "2026-11-17T14:31:47.077987+00:00",
+  "seconds": 89.034,
+  "command": [
+    "node",
+    "--input-type=module",
+    "-e",
+    "import {focusedActionSubmitNativeRevision} from './tests/oncall-agent-action-submit-native-revision.mjs'; await focusedActionSubmitNativeRevision();"
+  ],
+  "head": "1defe48f8ddfdb6739042df3dfa694af954161c0",
+  "tree": "60444021068a091a9a917230bcace14310933311",
+  "exit_code": -9,
+  "log": "local-runtime-stall.log",
+  "log_sha256": "e9606ebd10f736dc653a8dfa72d8592daa827bbfb2c36554c7793e41562cf252",
+  "tracked_clean_before": true,
+  "tracked_clean_after": true,
+  "diagnostic": "The focused CLI used node --input-type=module -e. Miniflare synchronous D1 RPC starts an eval Worker using require, which inherits --input-type=module and fails with require is not defined. The parent blocks in Atomics.wait before surfacing that Worker error. A separate Worker probe confirmed the cause. Use node -e with dynamic import, without --input-type; product/test files unchanged."
+}

@@ -1,0 +1,15 @@
+{
+  "author": "Run Edit Run fleet",
+  "head": "1defe48f8ddfdb6739042df3dfa694af954161c0",
+  "command": [
+    "node",
+    "--input-type=module",
+    "-e",
+    "import {focusedActionSubmitNativeRevision} from './tests/oncall-agent-action-submit-native-revision.mjs'; await focusedActionSubmitNativeRevision();"
+  ],
+  "exit_code": 247,
+  "signal": "SIGKILL to owned process after the inherited module-mode Worker startup stall; shell/cloud_run reported 247",
+  "log": "initial-runtime-stall.log",
+  "log_sha256": "6205e22497347c74bf6517d7c67792b17cc2051d7b12f33098353c4b1b9bed4a",
+  "timing": "Exact start/end timestamps were not recorded for this initial diagnostic invocation; it preceded the separately stamped Node 22 stall and corrected passing focused receipt."
+}

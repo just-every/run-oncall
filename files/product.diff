@@ -1,0 +1,234 @@
+diff --git a/sources.lock.json b/sources.lock.json
+index 3e50796..ea18cd5 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -1700,7 +1700,7 @@
+       "executable": false
+     },
+     "src/agent-door/coordination-tools.ts": {
+-      "sha256": "40f8b367eb6bfe0222939876a2dd0019044a223162f673a292be24a38530755b",
++      "sha256": "ed5773aedd5eefc00a95b4a9bee33c7588a01bdd9745719e34a52e64317735fd",
+       "executable": false
+     },
+     "src/agent-door/deadlines.ts": {
+@@ -6500,7 +6500,7 @@
+       "executable": false
+     },
+     "tests/agent-door-browser.mjs": {
+-      "sha256": "fe975cac95f8531009b281ce35d425bba98cbb5bed01eec181e53814ab93d405",
++      "sha256": "8d4c03e26f6b237de250d3581175949433a732a5f7f2a57dca48783337ed6535",
+       "executable": false
+     },
+     "tests/agent-door-runtime.mjs": {
+@@ -6679,8 +6679,12 @@
+       "sha256": "8f50f9597cb69f530c18dc1c40a8d56adfe7fa07ae0d0def8d990a8cf6904094",
+       "executable": false
+     },
++    "tests/oncall-agent-action-submit-native-revision.mjs": {
++      "sha256": "8405b84c8e132b50da16dc89afb17762abaa8c4bffe19dfbfffbf20d93bbd591",
++      "executable": false
++    },
+     "tests/oncall-agent-action-submit-replay.mjs": {
+-      "sha256": "525589c4f24ebdfb8f8b57da968f2b7d91943140d4313a5b87c6efac3b570a81",
++      "sha256": "130da4f25f7ff25eaf018d7389f1b591b696a4a46927836fcf3eac2e96d301aa",
+       "executable": false
+     },
+     "tests/oncall-agent-action-submit-revisions.mjs": {
+@@ -6736,7 +6740,7 @@
+       "executable": false
+     },
+     "tests/oncall-agent-flow.mjs": {
+-      "sha256": "23aba7690adc8cdfc7afe49df633a06371ed024ad210b8bd295590ba54f1c489",
++      "sha256": "fd4d3dab521853a68bf2e1dc992182b45011ac6234f9a051b24d7413ca38a120",
+       "executable": false
+     },
+     "tests/oncall-agent-incident-replay.mjs": {
+diff --git a/src/agent-door/coordination-tools.ts b/src/agent-door/coordination-tools.ts
+index a027fe0..741c4be 100644
+--- a/src/agent-door/coordination-tools.ts
++++ b/src/agent-door/coordination-tools.ts
+@@ -97,6 +97,13 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
+       }),
+       target: (args, ctx) => nativeCall(async () => {
+         const { current, incident } = await access(args, ctx)
++        if (operation.name === 'actions.submit') {
++          // Resolve the scoped follow-up before disclosing its parent revision.
++          // Base skips this admission resolver for exact completed-result retries;
++          // the execution guard below still protects changes after admission.
++          if (!incident?.actions.some(row => row.id === args.action)) throw new ToolRefusal('not_found')
++          if (args.revision !== incident.revision) throw new ToolRefusal('revision_conflict', 'Native revision changed; reload before applying', { current_revision: incident.revision })
++        }
+         if (incident) return { kind: 'incident', id: incident.id }
+         const service = current.state.services.find(row => row.id === args.service)!
+         return { kind: 'service', id: service.id }
+diff --git a/tests/agent-door-browser.mjs b/tests/agent-door-browser.mjs
+index 932d409..013ed0b 100644
+--- a/tests/agent-door-browser.mjs
++++ b/tests/agent-door-browser.mjs
+@@ -7,6 +7,7 @@ import {agentRuntime,agentEffectSnapshot,pauseMatrix} from './agent-door-runtime
+ import {recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy,deadlineTarget} from './oncall-agent-fixtures.mjs';
+ import specialist from './oncall-agent-native.mjs';
+ import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-revisions.mjs';
++import {actionSubmitNativeRevision} from './oncall-agent-action-submit-native-revision.mjs';
+ import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
+ import {openIncidentAction} from './keyboard.mjs';
+ 
+@@ -161,6 +162,34 @@ try{
+    });
+   },
+  });
++ const submitApprovalPosts=[];
++ const recordSubmitApproval=request=>{if(request.method()==='POST'&&new URL(request.url()).pathname.endsWith('/approve'))submitApprovalPosts.push(request.url())};
++ page.on('request',recordSubmitApproval);
++ await actionSubmitNativeRevision(runtime,{
++  async approve({handle,saved,owner}){
++   await capture('follow-up-submit-pending',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="pending"]').waitFor()});
++   await page.goto(handle.url);
++   await page.getByText(owner.name,{exact:false}).first().waitFor();
++   const submitted=page.waitForRequest(request=>request.method()==='POST'&&new URL(request.url()).pathname.endsWith('/approve'));
++   await page.getByRole('button',{name:'Approve',exact:true}).click();
++   const posted=(await submitted).postDataJSON();
++   assert.equal(posted.revision,saved.revision);assert.equal(posted.summary_sha256,saved.summary_sha256);
++   await page.locator('[data-approval-state="executed"]').waitFor();
++   await capture('follow-up-submit-executed',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="executed"]').waitFor()});
++  },
++  async observe({mode,incident,action}){
++   await capture('follow-up-submit-'+mode,'/reviews/'+incident.id,async()=>{
++    await page.getByRole('dialog',{name:incident.title,exact:true}).waitFor();
++    await page.locator('.review-material-body summary').filter({hasText:/^Follow-ups \(/}).click();
++    await page.getByText('Awaiting acceptance',{exact:false}).first().waitFor();
++    const evidence=page.locator('.review-material-body').getByRole('link',{name:/^Evidence/});await evidence.waitFor();
++    if(page.viewportSize().width===1440)assert.equal(await evidence.getAttribute('href'),action.evidence);
++    await evidence.scrollIntoViewIfNeeded();
++   });
++  },
++ });
++ assert.equal(submitApprovalPosts.length,1,'One sponsor approval POST; completed-result retries never repeat the approval action');
++ page.off('request',recordSubmitApproval);
+  assert.deepEqual(submitEvidenceRequests,[],'The browser never fetches submitted evidence');
+  await context.unroute('https://evidence.example.invalid/**',stopEvidence);
+  await specialist({request:runtime.request,origin:runtime.origin,cookie:runtime.cookie,fixtures:runtime.fixtures,tool});
+diff --git a/tests/oncall-agent-action-submit-native-revision.mjs b/tests/oncall-agent-action-submit-native-revision.mjs
+new file mode 100644
+index 0000000..ef7442e
+--- /dev/null
++++ b/tests/oncall-agent-action-submit-native-revision.mjs
+@@ -0,0 +1,75 @@
++import assert from 'node:assert/strict';
++import {randomUUID} from 'node:crypto';
++import {agentRuntime,agentEffectSnapshot} from './agent-door-runtime.mjs';
++import {actionSubmitReplay} from './oncall-agent-action-submit-replay.mjs';
++
++/** Required parent revision is checked before sensitive submission approval. */
++export async function actionSubmitNativeRevision(runtime,options={}){
++ const {db,http,tool}=runtime,name='oncall.actions.submit';
++ const rows=async(sql,...values)=>(await db.prepare(sql).bind(...values).all()).results;
++ const command=async input=>{const response=await http('/api/command',input);assert.equal(response.status,200);return response.json()};
++ const snapshot=()=>agentEffectSnapshot(runtime),audits=()=>rows('SELECT * FROM agent_door_audit ORDER BY sequence');
++ const permanent=()=>rows('SELECT * FROM oc_admin_audit ORDER BY ordinal');
++ const credential='synthetic-oncall-'+randomUUID();
++ const client=await http('/api/automation/clients',{name:'Synthetic native submission revision scope',key:credential,
++  services:['agent-service'],permissions:['services:read','incidents:read','actions:write']});
++ assert.equal(client.status,201);await client.json();
++ await actionSubmitReplay(runtime,{...options,async beforeSubmit({mode,incident,action,args,owner}){
++  assert.equal(Object.hasOwn(args,'expected_revision'),false,'The optional revision is explicitly absent');
++  assert.equal(incident.state,'declared');assert.equal(action.done,false);assert.equal(action.evidence,'');
++  assert.equal(action.submission,undefined);assert.equal(action.accepted,undefined);
++  let foreign=await command({type:'declare',service:'agent-foreign-service',title:'Synthetic private submission '+mode,
++   summary:'Ordinary coordination without protected evidence',severity:'warning',alerts:[]});
++  foreign=await command({type:'action',incident:foreign.id,revision:foreign.revision,title:'Synthetic scoped-out follow-up',
++   owner:action.owner,due:action.due,priority:'P1',completionPolicy:'human-review'});
++  for(const bearer of [undefined,credential]){
++   const admitted=await tool('oncall.services.read',{id:'agent-service'},{},bearer);
++   assert.equal(admitted.status,200);assert.equal(admitted.result.isError,false);
++   assert.equal(admitted.result.structuredContent.data[0].id,'agent-service');
++  }
++  const before=await snapshot();assert.notEqual(before.application.revision,incident.revision,'Parent and workspace revisions are distinct');
++  async function refused(input,expected,bearer){
++   assert.equal(Object.hasOwn(input,'expected_revision'),false);
++   const prior=await audits(),priorPermanent=await permanent();
++   const answer=await tool(name,input,{},bearer);
++   assert.equal(answer.status,200);assert.equal(answer.body.error,undefined);
++   assert.equal(answer.result.isError,true,'Stale required revision must refuse before opening an approval');
++   assert.deepEqual(answer.result._meta['com.runeditrun/error'],expected);
++   assert.deepEqual(JSON.parse(answer.result.content[0].text),expected);
++   assert.equal(answer.result.structuredContent,undefined);
++   assert.equal(answer.result._meta['com.runeditrun/approval'],undefined);
++   assert.equal(answer.result._meta['com.runeditrun/review'],undefined);
++   assert.deepEqual(await snapshot(),before,'Refusal preserves native records, revisions, timeline, state-changing audit, calls and outcomes, approvals, reviews and paging');
++   const after=await audits();assert.deepEqual(after.slice(0,-1),prior);assert.equal(after.length,prior.length+1);
++   const refusal=JSON.parse(after.at(-1).row);
++   assert.equal(refusal.tool,name);assert.equal(refusal.outcome,'refused');assert.equal(refusal.code,expected.code);
++   assert.equal(refusal.idempotency_key,input.idempotency_key);assert.equal(refusal.sponsor.id,owner.id);
++   assert.equal(refusal.approval,null);assert.equal(refusal.review,null);
++   const afterPermanent=await permanent();assert.deepEqual(afterPermanent.slice(0,priorPermanent.length),priorPermanent);
++   for(const row of afterPermanent.slice(priorPermanent.length)){
++    assert.equal(row.kind,'agent-door.persistence');assert.ok(['accepted','refused'].includes(row.outcome));
++    for(const family of ['workspace','paging','handoff'])assert.equal(row[family+'_before'],row[family+'_after']);
++   }
++   assert.deepEqual(await runtime.outboundRequests(),[],'No evidence URL fetch or other outbound request');
++   return answer;
++  }
++  const staleArgs={...args,revision:incident.revision-1,idempotency_key:randomUUID()};
++  const stale=await refused(staleArgs,{code:'revision_conflict',current_revision:incident.revision});
++  // A scoped-out incident and an absent incident or action disclose the same
++  // not-found diagnostic, even when their supplied parent revision is stale.
++  for(const target of [
++   {incident:foreign.id,action:foreign.actions.at(-1).id},
++   {incident:'synthetic-oncall-'+randomUUID(),action:action.id},
++   {incident:incident.id,action:'synthetic-oncall-'+randomUUID()},
++  ])await refused({...staleArgs,...target,idempotency_key:randomUUID()},{code:'not_found'},credential);
++  args.revision=stale.result._meta['com.runeditrun/error'].current_revision;
++  args.idempotency_key=randomUUID();assert.notEqual(args.idempotency_key,staleArgs.idempotency_key);
++  assert.equal(Object.hasOwn(args,'expected_revision'),false);
++  console.log('PROBE BASE-AGENT-012 acceptance 4 '+mode+' oncall.actions.submit: stale required parent revision with expected_revision absent -> isError revision_conflict and exact authorized parent current_revision '+args.revision+' in metadata and text, distinct from workspace revision '+before.application.revision+'; no private result, approval, review or native effect; missing and scoped-out targets -> identical not_found with no revision; zero outbound requests');
++ }});
++}
++
++export async function focusedActionSubmitNativeRevision(){
++ const runtime=await agentRuntime({clock:null});
++ try{await actionSubmitNativeRevision(runtime)}finally{await runtime.close()}
++}
+diff --git a/tests/oncall-agent-action-submit-replay.mjs b/tests/oncall-agent-action-submit-replay.mjs
+index 734544b..2806cd8 100644
+--- a/tests/oncall-agent-action-submit-replay.mjs
++++ b/tests/oncall-agent-action-submit-replay.mjs
+@@ -4,7 +4,7 @@ import {agentRuntime,agentEffectSnapshot} from './agent-door-runtime.mjs';
+ import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
+ 
+ /** Changed evidence cannot replace a completed human-review submission. */
+-export async function actionSubmitReplay(runtime,{approve,observe=async()=>{}}={}){
++export async function actionSubmitReplay(runtime,{approve,observe=async()=>{},beforeSubmit=async()=>{}}={}){
+  const {db,http,tool,context}=runtime,name='oncall.actions.submit';
+  const rows=async(sql,...values)=>(await db.prepare(sql).bind(...values).all()).results;
+  const read=async path=>{const response=await http(path);assert.equal(response.status,200);return response.json()};
+@@ -35,6 +35,7 @@ export async function actionSubmitReplay(runtime,{approve,observe=async()=>{}}={
+   assert.equal(action.done,false);assert.equal(action.evidence,'');assert.equal(action.submission,undefined);assert.equal(action.accepted,undefined);
+   const args={incident:incident.id,revision:incident.revision,action:action.id,
+    evidence:'https://evidence.example.invalid/synthetic-oncall-original',idempotency_key:randomUUID()};
++  await beforeSubmit({mode,incident,action,args,owner});
+   const before=await snapshot(),priorAudit=await audits();
+   const first=await tool(name,args);
+   assert.equal(first.status,200);assert.equal(first.body.error,undefined);
+diff --git a/tests/oncall-agent-flow.mjs b/tests/oncall-agent-flow.mjs
+index f60befa..c5c0e80 100644
+--- a/tests/oncall-agent-flow.mjs
++++ b/tests/oncall-agent-flow.mjs
+@@ -18,7 +18,7 @@ import {staleCommunicationsExpectedRevision,staleCommunicationsNativeRevision} f
+ import {changedServiceNameReplay} from './oncall-agent-service-replay.mjs';
+ import {agedReplayRetention} from './oncall-agent-retention.mjs';
+ import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-revisions.mjs';
+-import {focusedActionSubmitReplay} from './oncall-agent-action-submit-replay.mjs';
++import {focusedActionSubmitNativeRevision} from './oncall-agent-action-submit-native-revision.mjs';
+ import {focusedAssigneeClearReplay} from './oncall-agent-assignee-clear-replay.mjs';
+ import {focusedRoleClearReplay} from './oncall-agent-role-clear-replay.mjs';
+ import {transitionReplay} from './oncall-agent-transition-replay.mjs';
+@@ -1034,7 +1034,7 @@ try{
+  await transitionReplay(runtime);
+  await focusedRoleClearReplay();
+  await focusedAssigneeClearReplay();
+- await focusedActionSubmitReplay();
++ await focusedActionSubmitNativeRevision();
+  await staleActionSubmitExpectedRevision(runtime);
+  assert.equal((await runtime.adopt()).status,200);
+  await specialist({request:runtime.request,origin:runtime.origin,cookie:runtime.cookie,fixtures:runtime.fixtures,tool});

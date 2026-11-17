@@ -1,0 +1,148 @@
+{
+  "author": "Run Edit Run fleet",
+  "date_utc": "2026-11-17T14:46:29.500493+00:00",
+  "head": "1defe48f8ddfdb6739042df3dfa694af954161c0",
+  "assertion_width": 1440,
+  "browser_proof_widths": [
+    1440,
+    390
+  ],
+  "browser": "/usr/bin/chromium",
+  "measurements": [
+    "Browser proof follow-up-submit-revision-autonomous 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof follow-up-submit-revision-autonomous 390: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof follow-up-submit-revision-pending 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof follow-up-submit-revision-pending 390: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof follow-up-submit-revision-executed 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof follow-up-submit-revision-executed 390: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof follow-up-submit-revision-held 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof follow-up-submit-revision-held 390: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof follow-up-submit-autonomous 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof follow-up-submit-autonomous 390: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof follow-up-submit-pending 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof follow-up-submit-pending 390: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof follow-up-submit-executed 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof follow-up-submit-executed 390: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof follow-up-submit-held 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof follow-up-submit-held 390: fits=true serious/critical=0 undersized-controls=0"
+  ],
+  "files": [
+    {
+      "path": "browser/agent-door-follow-up-submit-revision-autonomous-1440.png",
+      "bytes": 93546,
+      "sha256": "8245cdfec86981cacffb62bf115af75d08f789598a4b06f31b72d83c82372d82",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-revision-autonomous-390.png",
+      "bytes": 34279,
+      "sha256": "5b1abdc8049ba50b79f97e41c2090955d78f9a8da56f80ae12fa5c015f333d54",
+      "width": 390,
+      "height": 1000
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-revision-pending-1440.png",
+      "bytes": 51179,
+      "sha256": "eb5f39a29de79268ca598274bf8df17642e125b51ddad0f25fa7557409e96856",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-revision-pending-390.png",
+      "bytes": 45970,
+      "sha256": "1244ad730f33ea0a0c741b58120e537ced37e43ca7b744d88f430ca1741186c0",
+      "width": 390,
+      "height": 1000
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-revision-executed-1440.png",
+      "bytes": 49596,
+      "sha256": "0939a765f299766f26cfbbe1d6a49ea9803a8df5afd6774d25fe5ce51d37f192",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-revision-executed-390.png",
+      "bytes": 44313,
+      "sha256": "9db0d5a0c99be3dfaaf2ea9bdd082370b490489a20f724dc96154a649f799b25",
+      "width": 390,
+      "height": 1000
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-revision-held-1440.png",
+      "bytes": 113422,
+      "sha256": "2386d9f21af03a6d1210174f204c0a37a581162f4bba8107c95263cafa577913",
+      "width": 1440,
+      "height": 1011
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-revision-held-390.png",
+      "bytes": 41851,
+      "sha256": "5d6a2956a31a84fcea81a13f2e92ea2be3f764b6b25e86771f561e5805cd4872",
+      "width": 390,
+      "height": 1140
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-autonomous-1440.png",
+      "bytes": 144554,
+      "sha256": "88c8ec261c689fde2210467c4d0de6245bf53f56c249511a410dbead040a6dea",
+      "width": 1440,
+      "height": 1385
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-autonomous-390.png",
+      "bytes": 64881,
+      "sha256": "0929096b69a95259aa56e7d5147ec9454940e32f83709874c984beda408d493a",
+      "width": 390,
+      "height": 1567
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-pending-1440.png",
+      "bytes": 49726,
+      "sha256": "c84c44e1c4be15a72e981bcc07139a0fbea95aacfe18b91997725f154ed76069",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-pending-390.png",
+      "bytes": 44717,
+      "sha256": "d57c46ed581f30e63c9fdccf5d808c26e429555ef0cc80c5048bca7647b1c962",
+      "width": 390,
+      "height": 1000
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-executed-1440.png",
+      "bytes": 48261,
+      "sha256": "270943fb7d38a7d17ec4f14343c1ff1d5bd8b6523fd18454531ec563492d7fa9",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-executed-390.png",
+      "bytes": 43071,
+      "sha256": "7ec7c9c4ba4a6fc078984ff216bfbf61553273fda47e1e98346a0e541d3b754a",
+      "width": 390,
+      "height": 1000
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-held-1440.png",
+      "bytes": 169730,
+      "sha256": "e1984e2c5c097d4973848515738c6abd859d4fed0ea6fffde7c3a888e25a0033",
+      "width": 1440,
+      "height": 1635
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-held-390.png",
+      "bytes": 86506,
+      "sha256": "70f15822b56f983a7b68cddb5727581efa37cb5a0e4ba635949bbdff5e1c3675",
+      "width": 390,
+      "height": 1868
+    }
+  ],
+  "visual_inspection": [
+    "native-revision pending approval at 1440",
+    "native-revision pending approval at 390",
+    "native-revision executed approval at 390"
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "author": "Run Edit Run fleet",
+  "date_utc": "2026-11-17T14:30:38.561263+00:00",
+  "head": "1defe48f8ddfdb6739042df3dfa694af954161c0",
+  "tree": "60444021068a091a9a917230bcace14310933311",
+  "main": "708271f0cbd8bb35ae45a5b402a97faa6197cc1a",
+  "feeder": "db9f4bf9e5f80d06fb4d055ad35e527361c6d5fe",
+  "parent": "708271f0cbd8bb35ae45a5b402a97faa6197cc1a",
+  "candidate_commits": [
+    "1defe48f8ddfdb6739042df3dfa694af954161c0"
+  ],
+  "candidate_merge_commits": [],
+  "changed_files": [
+    "sources.lock.json",
+    "src/agent-door/coordination-tools.ts",
+    "tests/agent-door-browser.mjs",
+    "tests/oncall-agent-action-submit-native-revision.mjs",
+    "tests/oncall-agent-action-submit-replay.mjs",
+    "tests/oncall-agent-flow.mjs"
+  ],
+  "outside_lease": [],
+  "product_and_helper_files_identical_to_feeder": [
+    "src/agent-door/coordination-tools.ts",
+    "tests/oncall-agent-action-submit-native-revision.mjs",
+    "tests/oncall-agent-action-submit-replay.mjs"
+  ],
+  "feeder_diff_files": [
+    "docs/routed-intake.md",
+    "sources.lock.json",
+    "src/intake/SnsSettings.tsx",
+    "src/intake/api.ts",
+    "src/intake/management.ts",
+    "src/intake/model.ts",
+    "src/intake/paths.ts",
+    "src/intake/provider-types.ts",
+    "src/intake/sns-config.ts",
+    "src/intake/sns.ts",
+    "src/routing/RoutedKeyCreate.tsx",
+    "src/routing/RoutedSenderSetup.tsx",
+    "src/routing/RoutingWorkspace.tsx",
+    "src/routing/management.ts",
+    "src/routing/operations.ts",
+    "tests/agent-door-browser.mjs",
+    "tests/intake.mjs",
+    "tests/oncall-agent-action-submit-revisions.mjs",
+    "tests/oncall-agent-endpoint-parity.mjs",
+    "tests/oncall-agent-flow.mjs",
+    "tests/oncall-agent-resource-parity.mjs",
+    "tests/sns.mjs"
+  ],
+  "feeder_diff_outside_main_and_reconciliation": [],
+  "retained_main_optional_revision_http": true,
+  "retained_main_optional_revision_browser": true,
+  "registered_journey_invocations": {
+    "before": 20,
+    "after": 20
+  },
+  "contract_status_counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "contract_status_counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "contract_and_generated_views_unchanged": true,
+  "identity": "1defe48f8ddfdb6739042df3dfa694af954161c0\nRun Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>"
+}
