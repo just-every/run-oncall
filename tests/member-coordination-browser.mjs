@@ -14,9 +14,10 @@ if (process.env.ONCALL_MEMBER_JOURNEY === 'mail-off') process.exit(0)
 // /signin/local, coordinate, reload and read attributed history; signed-out and
 // revoked sessions get no workspace; paging refuses.
 const worker=await localWorker({}, {clock:true})
+const focusedTeam=process.env.ONCALL_MEMBER_JOURNEY==='team-settings';
 const focusedClients=process.env.ONCALL_MEMBER_JOURNEY==='api-clients';
 const focusedSaves=process.env.ONCALL_MEMBER_JOURNEY==='incident-saves';
-if(process.env.ONCALL_MEMBER_JOURNEY&&!focusedSaves&&!focusedClients)throw Error('Unknown member coordination journey');
+if(process.env.ONCALL_MEMBER_JOURNEY&&!focusedSaves&&!focusedClients&&!focusedTeam)throw Error('Unknown member coordination journey');
 const captureDirectory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser'
 await mkdir(captureDirectory,{recursive:true})
 const responder={name:'Rosa Responder',password:'synthetic-responder-testing-password'},viewer={name:'Vic Viewer',password:'synthetic-viewer-testing-password'}
@@ -45,6 +46,90 @@ async function denied(page,label,id){
  assert.ok(!(await page.locator('body').innerText()).includes(noteText),`${label}: no coordination text in the page`)
 }
 // Extend the existing autosave journey through the service and review screens.
+// Settings > Team owner journeys: assert once on desktop, capture both layouts.
+async function teamSettings(page, owner) {
+ const request=async(path,data)=>ok(await call(page,path,data));
+ const capture=async name=>{
+  for(const width of [1440,390]){
+   await page.setViewportSize({width,height:1000});
+   await page.screenshot({path:`${captureDirectory}/team-${name}-${width}.png`,fullPage:true});
+  }
+  await page.setViewportSize({width:1440,height:1000});
+ };
+ await page.goto(worker.origin+'/settings/team');
+ let own=page.getByRole('article',{name:owner.name,exact:true});
+ await own.getByRole('button',{name:'Member actions',exact:true}).click();
+ const actions=own.getByRole('region',{name:'Actions for '+owner.name,exact:true});
+ await expect(actions.getByRole('button',{name:'Revoke access',exact:true})).toHaveCount(0);
+ await expect(actions.getByText(/only active admin/)).toBeVisible();
+ await capture('only-admin');
+ await actions.getByRole('button',{name:'Done',exact:true}).click();
+ for(const contactsOpen of [false,true]){
+  if(contactsOpen){await own.getByText('Contact methods and notification rules',{exact:true}).click();await own.getByRole('button',{name:'Add contact method',exact:true}).waitFor();}
+  await page.getByRole('button',{name:'Add member',exact:true}).click();
+  const form=page.getByRole('region',{name:'Add member',exact:true}),name=form.getByLabel('Name',{exact:true});
+  await expect(name).toBeFocused();
+  const box=await name.boundingBox();assert.ok(box.y>=0&&box.y+box.height<=1000,'Name opens in view even with contacts expanded');
+  assert.ok(await form.evaluate(element=>Boolean(element.compareDocumentPosition(document.querySelector('.team-members'))&Node.DOCUMENT_POSITION_FOLLOWING)),'the form precedes member cards');
+  await capture('add-'+(contactsOpen?'contacts-open':'contacts-closed'));
+  if(contactsOpen){
+   await name.fill('Example Teammate');await form.getByLabel('Password',{exact:true}).fill('synthetic-oncall-teammate-password');
+   const created=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/members'&&r.request().method()==='POST');
+   await form.getByRole('button',{name:'Create member',exact:true}).click();assert.equal((await created).status(),201);
+   await expect(page.getByRole('article',{name:'Example Teammate',exact:true})).toBeVisible();
+  }
+  await page.getByRole('button',{name:'Add member',exact:true}).click();
+ }
+ console.log('PASS Team Add member: visible focused Name with contacts closed/open, then member created through the form');
+ await own.getByRole('button',{name:'Edit name',exact:true}).click();
+ await expect(own.getByLabel('Your name',{exact:true})).toBeFocused();
+ const corrected='Example Owner';await own.getByLabel('Your name',{exact:true}).fill(corrected);
+ await capture('edit-name');
+ await own.getByRole('button',{name:'Save name',exact:true}).click();
+ own=page.getByRole('article',{name:corrected,exact:true});await expect(own.getByRole('heading',{name:corrected,exact:true})).toBeVisible();
+ await page.reload();await expect(own.getByRole('button',{name:'Edit name',exact:true})).toBeVisible();
+ assert.equal((await request('/api/session')).member.name,corrected);
+ assert.equal((await request('/auth/session')).operator.displayName,corrected,'member and native owner names agree after reload');
+ await capture('name-saved');
+ console.log('PASS Team owner name: editable after setup, native identity and member name persist after reload');
+ // Start a normal action, then let another admin cease to be an admin before
+ // confirmation. The real server refuses: the UI must clear the rejected edit.
+ const other=ok(await call(page,'/api/members',{name:'Example Deputy',role:'admin',password:'synthetic-oncall-deputy-password'}),201);
+ await page.reload();
+ await own.getByRole('button',{name:'Member actions',exact:true}).click();await own.getByRole('button',{name:'Revoke access',exact:true}).click();
+ await request('/api/command',{type:'member',id:other.id,field:'role',from:'admin',to:'viewer'});
+ const refused=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().postDataJSON()?.id===owner.id);
+ await own.locator('.autosave-confirm').getByRole('button',{name:'Revoke access',exact:true}).click();assert.equal((await refused).status(),400);
+ await expect(own.getByRole('alert')).toBeVisible();await expect(own.getByRole('button',{name:'Retry',exact:true})).toHaveCount(0);
+ await expect.poll(()=>page.evaluate(id=>localStorage.getItem('oncall:pending:member:'+id),owner.id)).toBe(null);
+ assert.equal((await request('/api/state')).members.find(m=>m.id===owner.id).active,true);
+ await capture('refused');
+ await page.reload();await expect(own.getByRole('button',{name:'Edit name',exact:true})).toBeVisible();
+ await expect(own.getByRole('alert')).toHaveCount(0);await expect(own.getByRole('button',{name:'Retry',exact:true})).toHaveCount(0);
+ await capture('refused-reload');
+ // Upgrade recovery: an older browser may still hold this rejected draft.
+ const state=await request('/api/state');
+ await page.evaluate(({id,revision})=>localStorage.setItem('oncall:pending:member:'+id,JSON.stringify({version:1,edits:[{field:'active',from:true,to:false,revision,ready:true}]})),{id:owner.id,revision:state.revision});
+ let commands=0;const count=r=>{if(new URL(r.url()).pathname==='/api/command'&&r.method()==='POST')commands++;};page.on('request',count);
+ await page.reload();await expect(own.getByRole('button',{name:'Edit name',exact:true})).toBeVisible();
+ await expect.poll(()=>page.evaluate(id=>localStorage.getItem('oncall:pending:member:'+id),owner.id)).toBe(null);
+ assert.equal(commands,0,'the old refused draft is cleared without another write');page.off('request',count);
+ await expect(own.getByRole('alert')).toHaveCount(0);
+ // Connection uncertainty still retains its edit and supports a real retry.
+ const deputy=page.getByRole('article',{name:other.name,exact:true});
+ const interrupt=route=>route.request().postDataJSON()?.type==='member'?route.abort():route.continue();
+ await page.route('**/api/command',interrupt);
+ await deputy.getByRole('button',{name:'Member actions',exact:true}).click();await deputy.getByRole('button',{name:'Revoke access',exact:true}).click();
+ await deputy.locator('.autosave-confirm').getByRole('button',{name:'Revoke access',exact:true}).click();
+ await expect(deputy.getByRole('button',{name:'Retry',exact:true})).toBeVisible();
+ await page.unroute('**/api/command',interrupt);await deputy.getByRole('button',{name:'Retry',exact:true}).click();
+ await expect.poll(async()=>(await request('/api/state')).members.find(m=>m.id===other.id).active).toBe(false);
+ await expect(deputy.getByRole('button',{name:'Retry',exact:true})).toHaveCount(0);
+ await own.getByRole('button',{name:'Edit name',exact:true}).click();await own.getByLabel('Your name',{exact:true}).fill(owner.name);await own.getByRole('button',{name:'Save name',exact:true}).click();
+ await expect(page.getByRole('article',{name:owner.name,exact:true}).getByRole('button',{name:'Edit name',exact:true})).toBeVisible();
+ console.log('PASS Team refused access: last-admin action unavailable with a next step; real refusal clears its draft and Retry across reload; older refused draft cleared; uncertain write still retries');
+}
+
 async function incidentSaves(page) {
  const request=async(path,data)=>ok(await call(page,path,data));
  await page.setViewportSize({width:1440,height:1000});
@@ -257,6 +342,8 @@ try {
  if(await confirmation.count()){await confirmation.check();await owner.page.getByRole('button',{name:'Finish setup'}).click()}
  await owner.page.locator('.oncall-frame').waitFor({timeout:60000})
  const ownerMember=ok(await call(owner.page,'/api/session')).member
+ if(!focusedSaves)await teamSettings(owner.page,ownerMember);
+ if(!focusedTeam){
  const rosaRecord=ok(await call(owner.page,'/api/members',{...responder,role:'responder'}),201)
  ok(await call(owner.page,'/api/members',{...viewer,role:'viewer'}),201)
  ok(await call(owner.page,'/api/command',{type:'service',id:'checkout',name:'Checkout',environment:'production',owner:rosaRecord.id,runbook:['Check payment provider status'],pager:''}))
@@ -780,13 +867,14 @@ try {
  console.log('OC-018 real hosted member coordination persists after reload: on the emitted production Worker a password member acknowledged and noted an incident, reloaded at 1440 and kept attribution; a viewer read it; signed-out, anonymous and revoked sessions got no workspace; paging refused (409)')
  }
 }
+}
 } finally {
  await browser?.close()
  await worker.close()
 }
 
 // Finish identity management with owner correction, sign-out and honest mail availability.
-if(!focusedSaves&&!focusedClients){
+if(!focusedSaves&&!focusedClients&&!focusedTeam){
 const {default:assert}=await import('node:assert/strict')
 const {mkdir,readFile}=await import('node:fs/promises')
 const {chromium}=await import('@playwright/test')
@@ -898,7 +986,7 @@ try {
 }
 
 // Configure scoped automation, inspect delivery failure and retain machine attribution in the workspace.
-if(!focusedSaves){
+if(!focusedSaves&&!focusedTeam){
 const {default:assert}=await import('node:assert/strict')
 const {mkdir}=await import('node:fs/promises')
 const {join,resolve}=await import('node:path')
