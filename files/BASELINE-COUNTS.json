@@ -1,0 +1,15 @@
+{
+  "plannedJourneyEntriesBefore": 20,
+  "plannedJourneyEntriesAfter": 20,
+  "newRegistrations": 0,
+  "existingJourneyExtended": "tests/product-browser.mjs#eventsSourceBrowser and ownerAlertsBrowser continuation",
+  "contractClauseChanges": 0,
+  "designItems": 6,
+  "baselineIssuesConfirmed": 6,
+  "contractSourceUnchanged": true,
+  "releaseMetadataUnchanged": true,
+  "productCommits": [
+    "b48f59b9d15c7144b6acdf59118e12f142a16c39 Prove the owner alert and incident lifecycle through the browser",
+    "9d45a29f1c8dcc60f6c6138246bd970257688b8b Make alert testing and incident closure accessible from the workspace [skip ci]"
+  ]
+}

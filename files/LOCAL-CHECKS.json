@@ -1,0 +1,12 @@
+{
+  "head": "680402aadade887c59a7f0943078b331b2a773e5",
+  "endedAt": "2026-11-17T14:04:35.377470+00:00",
+  "exitCode": 0,
+  "sequentialCommands": [
+    "pnpm typecheck",
+    "cloud_run npx -y @runeditrun/rer build",
+    "ONCALL_PRODUCT_JOURNEY=events-source node tests/product-browser.mjs",
+    "ONCALL_PRODUCT_JOURNEY=response-policy node tests/product-browser.mjs",
+    "ONCALL_RUNTIME_PART=core node tests/runtime.mjs"
+  ]
+}

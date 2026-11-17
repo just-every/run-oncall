@@ -1,0 +1,24 @@
+{
+  "head": "fb54c79d904d66342f166910d64996aa399bddf9",
+  "captures": [
+    "before-alerts-1440.png",
+    "before-alerts-390.png",
+    "before-integrations-1440.png",
+    "before-integrations-390.png",
+    "before-source-1440.png",
+    "before-source-390.png",
+    "before-alert-1440.png",
+    "before-alert-390.png",
+    "before-recovery-1440.png",
+    "before-recovery-390.png",
+    "before-resolved-1440.png",
+    "before-resolved-390.png"
+  ],
+  "observed": {
+    "alertsTestButton": false,
+    "sourceDefaultsToRecoverAfterTrigger": true,
+    "requiresRecoveryLink": true,
+    "alertRemainsActive": true,
+    "reopen": false
+  }
+}

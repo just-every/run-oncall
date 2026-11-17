@@ -1,0 +1,12 @@
+{
+  "head": "b48f59b9d15c7144b6acdf59118e12f142a16c39",
+  "endedAt": "2026-11-17T14:07:12.722285+00:00",
+  "exitCode": 0,
+  "commands": [
+    "cloud_run npx -y @runeditrun/rer build",
+    "ONCALL_PRODUCT_JOURNEY=events-source node tests/product-browser.mjs"
+  ],
+  "preconfiguredSenderKey": "empty",
+  "productChangesSinceFullTouchedCheck": false,
+  "changeSinceFullTouchedCheck": "two copied-command tests now execute with an empty key environment"
+}
