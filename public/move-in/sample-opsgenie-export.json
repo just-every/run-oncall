@@ -1,0 +1,33 @@
+{
+  "users": {
+    "data": [
+      { "id": "sample-user-1", "username": "avery.sample@example.test", "fullName": "Avery Sample", "timeZone": "America/New_York" },
+      { "id": "sample-user-2", "username": "jordan.sample@example.test", "fullName": "Jordan Sample", "timeZone": "America/New_York" }
+    ]
+  },
+  "schedules": [
+    {
+      "data": {
+        "id": "sample-schedule-1",
+        "name": "Sample checkout on-call",
+        "timezone": "America/New_York",
+        "rotations": [
+          {
+            "id": "sample-rotation-1",
+            "name": "Weekly handoff",
+            "startDate": "2026-11-02T14:00:00Z",
+            "type": "weekly",
+            "length": 1,
+            "participants": [
+              { "type": "user", "id": "sample-user-1" },
+              { "type": "user", "id": "sample-user-2" }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "overrides": [],
+  "escalations": [],
+  "timelines": []
+}

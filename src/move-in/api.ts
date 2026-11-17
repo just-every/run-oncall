@@ -15,6 +15,7 @@ import { readImportDoorHistory } from '../modules/import-kit/src/door/index'
 import { IMPORT_DOOR_KEY } from './door-key'
 import { adminSession, ownerImport } from './owner-door'
 import { expireInterruptedImports, importAttempt } from './import-lifecycle'
+import { approvalText } from './approval-text'
 
 export function installMoveIn(api:any,body:(c:any,max?:number)=>Promise<any>) {
  function context(c:any,vendor:Vendor):D1ImportContext {
@@ -46,10 +47,10 @@ export function installMoveIn(api:any,body:(c:any,max?:number)=>Promise<any>) {
   const rows=await c.env.DB.prepare(`SELECT j.id,j.namespace,j.mapping_version FROM ik_jobs j WHERE destination='oncall' AND principal_id=?
    AND (namespace=? OR EXISTS(SELECT 1 FROM ik_door_plans p WHERE p.job_id=j.id AND p.namespace=? AND p.installation_id=?))
    AND (${auth.sql}) ORDER BY j.rowid DESC`).bind(ctx.authorization.principalId,ctx.namespace,ctx.namespace,IMPORT_DOOR_KEY,...auth.params!).all()
-  // Owner and Business door imports list together, each with its approval: "approved by" or "approved via Business by".
+  // Owner and Business door imports list together, each with a readable approval sentence.
   return c.json(await Promise.all(rows.results.map(async(row:any)=>{
    const approved=history.find(item=>item.jobId===row.id)
-   return {...await readMoveInJournal(row.id,{...ctx,namespace:row.namespace,mappingVersion:row.mapping_version}),vendor:ctx.namespace,approval:approved?.caption,
+   return {...await readMoveInJournal(row.id,{...ctx,namespace:row.namespace,mappingVersion:row.mapping_version}),vendor:ctx.namespace,approval:approved?await approvalText(c.env.DB,approved as any):undefined,
     door:approved?{planId:approved.planId,fingerprint:approved.fingerprint,business:approved.reviewer===approved.approvalRecordId}:undefined}
   })))
  })

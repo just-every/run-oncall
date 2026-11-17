@@ -1,9 +1,9 @@
 # Run it locally
 
 Start Oncall from nothing with
-`curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-oncall`
+`curl -fsSL https://runeditrun.com/install.sh | sh`, then `rer dev just-every/run-oncall`
 (Git is required; rer brings Node and pnpm. Already have Node 22 or later?
-`npx -y @runeditrun/rer dev just-every/run-oncall` does the same; to set up only,
+`npx -y @runeditrun/rer dev just-every/run-oncall` is the alternative; to set up only,
 use `setup` in place of `dev`). After the installer script, a terminal without
 `~/.local/bin` on PATH needs `export PATH="$HOME/.local/bin:$PATH"` before a bare
 `rer dev`, or it says `rer: command not found` (add that line to your shell
@@ -74,7 +74,7 @@ packages from its store.
 
 After `RER_READY`, Oncall prints `RER_SIGNED_IN EMAIL` and a private
 `RER_OPEN URL`. Open that URL on this computer to enter as the owner. On first
-launch, `/setup` asks you to confirm the read-only owner details; once complete,
+launch, `/setup` asks you to confirm the owner (the email is read-only; the name can be corrected there); once complete,
 later launches open the app directly. Treat `RER_OPEN` as a credential.
 `rer dev --as signed-out` selects the signed-out persona; the compatibility flag
 `rer dev --login` still opens automatic owner entry. Ordinary `/signin` email

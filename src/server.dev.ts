@@ -19,6 +19,7 @@ export default {
    headers.set('content-security-policy', (headers.get('content-security-policy') ?? '').replace(/style-src ([^;]*)/, (_, sources) => `style-src ${sources} 'sha256-${hash}'`))
    response = new HTMLRewriter().on('head', { element(head) { head.append(`<style>${linkStyle}</style>`, { html: true }) } })
     .on('main', { element(main) {
+    main.append('<p>If <code>rer dev</code> has already returned to your prompt, run <code>rer dev</code> again in the <code>run-oncall</code> folder: it prints a new sign-in link for this computer.</p>', { html: true })
     main.append('<p>Joining this workspace as a teammate? <a href="/signin/local">Sign in with a workspace password</a> supplied by your administrator.</p>', { html: true })
    } }).transform(new Response(response.body, { status: response.status, statusText: response.statusText, headers }))
   }

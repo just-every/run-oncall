@@ -93,7 +93,7 @@ export function StatusPanel({actor, state}: {actor: Member; state?: State | null
 function ManualStatus({service,busy,save}:{service:any;busy:boolean;save:(input:any,onSaved?:()=>void)=>Promise<any>}) {
  const [pending,setPending]=useState<string|null|undefined>(undefined);
  return <><label className="field">Status set by hand<select aria-label="Status set by hand" value={pending===undefined?(service.override?.value??'derived'):(pending??'derived')} onChange={e=>setPending(e.target.value==='derived'?null:e.target.value)}><option value="derived">Use derived status</option><option value="operational">Operational</option><option value="degraded">Degraded</option><option value="major outage">Major outage</option></select></label>
- {pending!==undefined&&<InlineConfirm action="Set status" keep="Keep current status" reasonRequired explainDisabled busy={busy} onCancel={()=>setPending(undefined)} onConfirm={reason=>save({action:'override',id:service.id,revision:service.revision,value:pending,reason},()=>setPending(undefined))}>Set {service.name} to {pending??'its derived status'}? Your reason is recorded.</InlineConfirm>}
+ {pending!==undefined&&<InlineConfirm action="Set status" keep="Keep current status" reasonRequired busy={busy} onCancel={()=>setPending(undefined)} onConfirm={reason=>save({action:'override',id:service.id,revision:service.revision,value:pending,reason},()=>setPending(undefined))}>Set {service.name} to {pending??'its derived status'}? Your reason is recorded.</InlineConfirm>}
  </>;
 }
 function StatusSubscription({service,actorId,onServices}:{service:any;actorId:string;onServices:(services:any[])=>void}) {

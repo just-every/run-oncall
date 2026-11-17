@@ -152,7 +152,7 @@
       "executable": false
     },
     "AGENTS.md": {
-      "sha256": "7c81e343168ae196006d89b509ba7d464de84e19030bc73eebf4ff4222378584",
+      "sha256": "52a5a6db32cc060fa83b2210b24963834ec83df7837038e2bde3b0e317890fe5",
       "executable": false
     },
     "base-copies.json": {
@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac",
+      "sha256": "77663b65bd8dd84ada8f3a35a7db7f72483ff57974e1545c707577de7a6caa08",
       "executable": false
     },
     "DEMO.md": {
@@ -256,7 +256,7 @@
       "executable": false
     },
     "docs/install.md": {
-      "sha256": "e936b59e4709751c7d4407602cb1f3393313d9586fa81ad31c19e9141e5f452c",
+      "sha256": "9c9770ce11d4b99c7cf2db9bb314ead2ef2effb84b1bd8b52a42d1ca8d7828ac",
       "executable": false
     },
     "docs/limits.md": {
@@ -272,7 +272,7 @@
       "executable": false
     },
     "docs/overview.md": {
-      "sha256": "63965ef185c7253089d794c869303ae224d41e281223c6d772a83a04f97a3570",
+      "sha256": "a81557556e7464c195d499d1393d0e17e835e52721952d9574d7ab549f521ad0",
       "executable": false
     },
     "docs/readiness.md": {
@@ -828,7 +828,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "1868c766a1837b414e8463fa5de228aad8ce7633ace4f7b7971b20bee0a3f666",
+      "sha256": "b664b0994d8893317716fbc90e34106e0a15b616061b61d721195f55c7aa9c76",
       "executable": false
     },
     "RELEASE.json": {
@@ -852,7 +852,7 @@
       "executable": false
     },
     "RUN-LOCALLY.md": {
-      "sha256": "11ccb8c623bc2959852e952135ed746fcbc95f6e07dc7f9ca966bdb21dcc1143",
+      "sha256": "1ad22819a9319241bfb7c40f82a26ec8fedfcf517e35c5573e99e358599efd98",
       "executable": false
     },
     "SCHEDULE-SEMANTICS.md": {
@@ -1808,7 +1808,7 @@
       "executable": false
     },
     "src/app/autosave/InlineConfirm.tsx": {
-      "sha256": "bde1623399dfbacd750c77c96b78011b2dcfcd2755d8255984c0632dd6114f46",
+      "sha256": "e22e516f81e15de11872320ac45010d064086cdd717ddf9567a578a967a4773a",
       "executable": false
     },
     "src/app/autosave/leaveGuard.ts": {
@@ -2192,7 +2192,7 @@
       "executable": false
     },
     "src/business-status/StatusPanel.tsx": {
-      "sha256": "49094a2e3cdc9223924e4f7ec347d68e2b234848bd90b1fa8052c2b6a36adf8c",
+      "sha256": "831471ccc4a15a2ba996794b22087ca2aa80e6c6da5f4773f5858529ef6d65ee",
       "executable": false
     },
     "src/business-status/types.ts": {
@@ -5480,7 +5480,7 @@
       "executable": false
     },
     "src/move-in/api.ts": {
-      "sha256": "07b3165677c6d15685ee0c7bd052e6430c2afb314112f4345e76e114d32c7dd6",
+      "sha256": "605140963e6ede253933a7c5bf664e3149d352f8c73bb120ac797c682fc8dc76",
       "executable": false
     },
     "src/move-in/collect/bundle.ts": {
@@ -5500,7 +5500,7 @@
       "executable": false
     },
     "src/move-in/ConnectStep.tsx": {
-      "sha256": "8ae3d41d64117edf37fc7d5c65d7314d95a5b0b19f8ed55dcd59049bc95ca302",
+      "sha256": "5105e47eed0acfb0c817eeb5d94be011cbeffea835c741571f01ef6be32a42ad",
       "executable": false
     },
     "src/move-in/CopyDetails.tsx": {
@@ -6280,7 +6280,7 @@
       "executable": false
     },
     "src/server.dev.ts": {
-      "sha256": "56fafb7171fbd45ac5ee308f385b1bdf892d932d7f68477a1217ad48f86cd28e",
+      "sha256": "52e0b5ecdac7e6de2ece8a2b6bb428a1e2e31d025a066e60f05e0a2c12666ff9",
       "executable": false
     },
     "src/server.ts": {
@@ -6644,7 +6644,7 @@
       "executable": false
     },
     "tests/import-door.mjs": {
-      "sha256": "495361fd00c345dbc773e5013906fa8b078a9c37e197785c0dc3ebfb087cacaf",
+      "sha256": "d2ea773641e32047b15a21c7e4c19500d0c587bfe288b8ac675bdf22597e8476",
       "executable": false
     },
     "tests/initialize-agent-owner.mjs": {
@@ -6820,7 +6820,7 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "c6e615105db19a6cfaad4f2b3c74c82f5f3a7f567bc7b7ec86795c767d023bc2",
+      "sha256": "8105965b2211eb41ad6d1ddd17bcae96c1817f3de430ad29758ae595b3269eb6",
       "executable": false
     },
     "tests/product-browser.mjs": {

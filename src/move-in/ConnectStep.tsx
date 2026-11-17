@@ -13,6 +13,7 @@ export function ConnectStep({ waiting, source, vendor, choose, fileVendor, conne
  return <section className="scheduling-panel move-in-step" aria-labelledby="move-in-connect-title">
   <h2 id="move-in-connect-title">1 · Connect</h2>
   <p>Bring your schedules across. Your existing pager stays in charge.</p>
+  <p>No provider account to try this with? <a href="/move-in/sample-opsgenie-export.json" download="sample-opsgenie-export.json">Download a sample Opsgenie export</a>, then pick <strong>Other: from a file</strong>, choose Opsgenie and upload it to preview a paused import.</p>
   {waiting&&<div role="status" className="move-in-waiting"><p>A {waiting.name} review is waiting. Nothing has been imported.</p><button type="button" className="scheduling-primary" disabled={busy} onClick={waiting.continueReview}>Continue review</button> <button type="button" className="move-in-quiet" disabled={busy} onClick={waiting.discardReview}>Discard it</button></div>}
   <label className="scheduling-field"><span id="move-in-source">Source</span><select aria-labelledby="move-in-source" value={source} disabled={busy} onChange={event => { setKey(''); setUseKey(false); choose(event.target.value) }}>
    <option value="pagerduty">PagerDuty</option><option value="opsgenie">Opsgenie</option><option value="file">Other: from a file</option>

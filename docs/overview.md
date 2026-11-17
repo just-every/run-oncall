@@ -24,3 +24,15 @@ If your rota lives in Opsgenie or PagerDuty today, you can bring it across from 
 2. [Sign in](team.md) and finish setup as the owner.
 3. Add a service, then [set the rotation](schedules.md#set-the-rotation).
 4. Add your team and decide who can change what.
+
+## Jobs to try
+
+Seven things a person can do in a new installation, in a sensible order:
+
+1. **Services.** Settings → Services: add a service with its owner and runbook steps.
+2. **Alert.** Settings → Integrations → Add integration → Events API: create a source, then send the sample request it shows. The signal appears under Alerts.
+3. **Incident.** Declare an incident from the alert, add a timeline note, acknowledge it, add a follow-up, then resolve it.
+4. **Schedule.** On call → New rota: set a time zone and rotation, add an override, and watch On call now change.
+5. **Move in.** Settings → Move in: download the sample Opsgenie export on that page, choose it under Other: from a file, review, confirm the paused import and make the schedule live.
+6. **Archive.** Settings → Archive: export an archive, then restore from it.
+7. **Member sign-in.** Settings → Team: add a responder with a password, then sign in as them at `/signin/local`.

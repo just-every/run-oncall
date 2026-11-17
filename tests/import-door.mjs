@@ -440,8 +440,8 @@ try {
   assert.ok(objects.every(row=>row.value.paused===true&&row.value.paging===false&&row.value.login===false))
   const jobs=ok(await req('/api/move-in/jobs?vendor='+vendor)),job=jobs.find(j=>j.id===applied.job.id)
   assert.equal(job.principalId,session.member.id)
-  assert.ok(job.approval.startsWith('approved via Business by '+w.vars.OWNER_EMAIL))
-  assert.ok(job.approval.includes(approval.fingerprint))
+  assert.ok(job.approval.startsWith('Approved through Business by '))
+  assert.equal(job.door.fingerprint,approval.fingerprint)
   assert.equal(job.door.business,true)
 
   await w.stop();await w.start()
@@ -611,12 +611,12 @@ try {
   assertApplied:async(before,after,report)=>{
    assert.ok(after.length>before.length&&after.every(row=>row.value.paused===true&&row.value.paging===false&&row.value.login===false))
    const owned=ok(await req('/api/move-in/jobs?vendor=opsgenie')).find(j=>j.door?.planId===report.planId)
-   assert.ok(owned.approval.startsWith('approved by '+w.vars.OWNER_EMAIL+' at '),'the owner\'s import is approved by the owner, not via Business')
+   assert.ok(owned.approval.startsWith('Approved by '),'the owner\'s import is approved by the owner, not via Business')
    assert.equal(owned.door.business,false)
   },
   assertUndone:async(before,after)=>assert.deepEqual(after,before)})
  const history=ok(await req('/api/move-in/jobs?vendor=opsgenie')).map(j=>j.approval)
- assert.ok(history.some(caption=>caption?.startsWith('approved by '))&&history.some(caption=>caption?.startsWith('approved via Business by ')),'one journal lists owner and Business imports together')
+ assert.ok(history.some(caption=>caption?.startsWith('Approved by '))&&history.some(caption=>caption?.startsWith('Approved through Business by ')),'one journal lists owner and Business imports together')
  console.log('Owner import door: ADOPTING.md public HTTP conformance passed; signed-out 401, non-admin 403, cross-origin 403 and unlisted sources 400 wrote nothing; one history for owner and Business imports')
  // A Business apply the door declares failed stays failed: the journal offers no resume, the old route refuses it,
  // and Business plans the same upload again on an intact lineage.
@@ -628,7 +628,7 @@ try {
  w.sql('DROP TRIGGER injected_door_failure')
  assert.equal(ok(await call('apply','pagerduty',{planId:failed.planId,reviewedFingerprint:failed.fingerprint},failedReview),409).error,'import_door_plan_failed')
  const failedJob=ok(await req('/api/move-in/jobs?vendor=pagerduty')).find(j=>j.door?.planId===failed.planId)
- assert.equal(failedJob.state,'failed');assert.equal(failedJob.door.business,true);assert.match(failedJob.approval,/^approved, then failed \(import_door_apply_constraint\) via Business by /)
+ assert.equal(failedJob.state,'failed');assert.equal(failedJob.door.business,true);assert.match(failedJob.approval,/^Approved through Business by .*the import then failed and needs a new preview\.$/)
  assert.equal(ok(await req(`/api/move-in/${failedJob.id}/resume`,{vendor:'pagerduty'}),409).code,'IMPORT_DOOR_JOB')
  assert.equal(ok(await call('status','pagerduty',{planId:failed.planId})).job.state,'failed','the old journal route cannot complete a failed door job')
 
@@ -677,7 +677,7 @@ try {
  assert.doesNotMatch(everything(),erasedValues,'no table, door upload or plan snapshot keeps a value of the erased person')
  assert.deepEqual(w.sql('SELECT (SELECT COUNT(*) FROM ik_door_uploads) AS uploads,(SELECT COUNT(*) FROM ik_door_chunks) AS chunks,(SELECT COUNT(*) FROM ik_door_plan_chunks) AS snapshots')[0],{uploads:0,chunks:0,snapshots:0},'door bundles and snapshots are withdrawn whole')
  const crewEntry=ok(await req('/api/move-in/jobs?vendor=opsgenie')).find(j=>j.id===crewJob.id)
- assert.ok(crewEntry.approval.startsWith('approved via Business by ')&&crewEntry.approval.includes(crewPlan.fingerprint),'the surviving import is still listed via Business')
+ assert.ok(crewEntry.approval.startsWith('Approved through Business by ')&&crewEntry.door.fingerprint===crewPlan.fingerprint,'the surviving import is still listed via Business')
  ok(await req('/auth/settings/imports',{enabled:true}))
  assert.equal(ok(await call('reconcile','opsgenie',{planId:crewPlan.planId}),410).error,'snapshot_withdrawn')
  // The source's live import can no longer be compared with a new file, so the owner's next file starts a new baseline beside it.

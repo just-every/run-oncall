@@ -11,7 +11,7 @@ Oncall owns the full on-call alerting and incident-response job: receive monitor
 | Up-and-comers it must also beat | incident.io On-call, Rootly and Resolve AI |
 | First buyer | A US software/IT operations team replacing PagerDuty, Opsgenie / Jira Service Management incident response, or Splunk On-Call (VictorOps); costs in USD |
 
-The primary journey: receive a monitoring or phone-in incident, find who is on call, page them through real phone, SMS and push until someone acknowledges, coordinate verified recovery in the incident, communicate it and finish the follow-up.
+The primary journey: receive a monitoring or phone-in incident, find who is on call, page them through real phone, SMS and push until someone acknowledges, coordinate verified recovery in the incident, communicate it and finish the follow-up. New here? Seven jobs to try first (services, alert, incident, schedule, move in, archive, member sign-in) are listed in the Overview docs page under Jobs to try.
 
 ## How to read this contract
 

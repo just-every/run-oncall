@@ -33,17 +33,22 @@
 
 See the [Oncall Run page](https://run-oncall.com/run) for local launch and PATH help. Public source: [just-every/run-oncall](https://github.com/just-every/run-oncall). The `v0.5.15` release candidate includes hosted coordination. See [Getting started](docs/getting-started.md#host-for-your-team) for complete credentials and deployment instructions.
 
-One line installs the `rer` command, clones Oncall and starts it:
+Two steps, in a terminal, with no Node needed:
 
 ```sh
-curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-oncall
+curl -fsSL https://runeditrun.com/install.sh | sh
+export PATH="$HOME/.local/bin:$PATH"
+rer dev just-every/run-oncall
 ```
 
-Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-oncall` does the same.
+1. The installer puts the `rer` command in `~/.local/bin`. The `export PATH` line lets this terminal find it (add it to your shell startup file to keep it; `"$HOME/.local/bin/rer" cli path` shows the line for your shell).
+2. `rer dev just-every/run-oncall` clones Oncall into `run-oncall`, installs it and starts it.
+
+Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-oncall` is the alternative and needs no installer step.
 
 macOS, Linux or Windows with WSL2. git is required; rer brings Node and pnpm.
 
-To start it again later, run `cd run-oncall && rer dev`; after the `curl` installer, a terminal without `~/.local/bin` on PATH needs `export PATH="$HOME/.local/bin:$PATH"` first or it says `rer: command not found` (add that line to your shell startup file to keep it; `"$HOME/.local/bin/rer" cli path` shows the line for your shell). `rer dev` installs the application dependencies, creates a local development owner and prints a private `RER_OPEN` link that opens Oncall signed in. On first launch, confirm the read-only owner details at `/setup` (**Finish setup**); later launches open the app directly. To choose your own owner mailbox before the first launch, use [explicit setup](docs/getting-started.md#explicit-and-unattended-setup); unattended setup accepts a private answers file.
+To start it again later, run `cd run-oncall && rer dev`. `rer dev` installs the application dependencies, creates a local development owner and prints a private `RER_OPEN` link that opens Oncall signed in. On first launch, `/setup` (**Finish setup**) shows the owner's email, which is read-only, and lets you correct the name now or later in settings; later launches open the app directly. If the browser later shows the sign-in page after `rer dev` has detached, run `rer dev` again in the `run-oncall` folder to print a fresh link. To choose your own owner mailbox before the first launch, use [explicit setup](docs/getting-started.md#explicit-and-unattended-setup); unattended setup accepts a private answers file.
 
 Open the printed link on this computer. `rer dev --as signed-out` selects the signed-out persona. The compatibility flag `rer dev --login` still opens automatic owner entry. Ordinary `/signin` email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. The app does not capture mail or print sign-in tokens. Stop the background server with `rer dev --stop` (Ctrl-C also stops a foreground run); stop preview with `rer preview --stop` before building, verifying or deploying. A running dev or preview server owns the local state, so even a deploy dry run refuses with exit 4 until it stops.
 
@@ -133,6 +138,8 @@ rer preview --stop
 rer deploy --environment production --env-file "$HOME/.config/oncall/production.env" --dry-run
 rer deploy --environment production --env-file "$HOME/.config/oncall/production.env"
 ```
+
+Create that file first (the steps are in [Getting started](docs/getting-started.md#host-for-your-team)). If it does not exist yet, Node answers `node: …/production.env: not found` before `rer` can explain it: that means the file is missing, not that anything is broken.
 
 The dry run above remains local even with the private file. The real command without `--dry-run` uses `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `SENDGRID_API_KEY` and `MAIL_FROM` from that file to check the target and deploy; a dry-run success does not prove those inputs work.
 
