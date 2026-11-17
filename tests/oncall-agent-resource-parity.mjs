@@ -369,7 +369,7 @@ async function captureViews(browser,runtime,person,mode,cases,report,receipt){
      await page.getByLabel('Period',{exact:true}).selectOption('custom');
      await page.getByLabel('From date',{exact:true}).fill(from.slice(0,10));
      const ready=page.waitForResponse(r=>r.url().includes('/api/reports/response?')&&new URL(r.url()).searchParams.get('from')===from&&new URL(r.url()).searchParams.get('to')===to);
-     await page.getByLabel('Until date (excluded)',{exact:true}).fill(to.slice(0,10));
+     await page.getByLabel('End date',{exact:true}).fill(to.slice(0,10));
      const response=await ready;
      await page.locator('.review-snapshot').getByText(report.cohort.count+' incidents',{exact:true}).waitFor();
      if(width===1440)assert.deepEqual(await response.json(),report,'Rendered report consumes the exact same month and observation');
@@ -479,9 +479,9 @@ async function captureReviewMaterial(page,screen,person,width){
   assert.equal(rows.length,material.followups.length);
   for(const [index,action] of material.followups.entries())assert.ok(rows[index].includes(action.title));
   assert.deepEqual(await followups.getByRole('link',{name:'Evidence',exact:false}).evaluateAll(nodes=>nodes.map(node=>node.href)),material.followups.filter(row=>row.evidence).map(row=>row.evidence));
-  for(const [label,key] of [['Acknowledgement','mtta'],['Resolution','mttr'],['Human recovery attestation','recovery'],['Source-reported recovery','sourceRecovery']]){
+  for(const [label,key] of [['Acknowledgement','mtta'],['Resolution','mttr'],['Recovery reported by a person','recovery'],['Source-reported recovery','sourceRecovery']]){
    const metric=body.locator('.response-metrics section').filter({has:page.getByRole('heading',{name:label,exact:true})});
-   await metric.getByText((material.response[key].seconds/60)+' min · measured',{exact:true}).waitFor();
+   await metric.getByText((material.response[key].seconds/60)+' min · completed',{exact:true}).waitFor();
    if(material.response[key].evidence)assert.equal(await metric.getByRole('link').getAttribute('href'),material.response[key].evidence);
   }
   for(const assertion of material.assertions)if(assertion.review){

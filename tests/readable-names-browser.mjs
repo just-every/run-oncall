@@ -90,7 +90,7 @@ export async function readableNamesBrowser(page,context,{source,service,serviceN
  assert.deepEqual((await request('/api/state')).audit,before.audit,'reading names leaves raw audit unchanged');
  await proof('audit');
  const readiness=await request('/api/readiness');
- await page.goto(origin+'/settings/readiness');await page.locator('.readiness-release dd').first().waitFor();
+ await page.goto(origin+'/settings/readiness');await page.locator('.readiness-details > summary').click();await page.locator('.readiness-release dd').first().waitFor();
  assert.equal(await page.locator('.readiness-release dd').first().innerText(),'Oncall '+readiness.release.version,'release label uses the actual build version');
  assert.ok(!(await page.locator('.readiness-release').innerText()).includes(readiness.release.package),'default release label omits the implementation package');
  const authority=page.locator('[data-readiness-signal="authority"]');

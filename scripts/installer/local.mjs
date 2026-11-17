@@ -29,7 +29,7 @@ const lifecycle = {
   if (options.verb !== 'setup') return baseLifecycle.run(root, input, store, onApp, signal, options);
   const setupStore = Object.create(store);
   setupStore.step = (label, ...args) => store.step(label === labels.complete
-   ? 'Local setup is ready. The temporary app stops when setup exits; run rer dev to start Oncall.'
+   ? 'Local setup is ready. The temporary app stops when setup exits; run ~/.local/bin/rer dev to start Oncall.'
    : label, ...args);
   return baseLifecycle.run(root, input, setupStore, onApp, signal, options);
  },
@@ -38,7 +38,7 @@ export const adapter = lifecycle;
 export const { install } = lifecycle;
 export const commandAdapter = createCommandAdapter(lifecycle, {
  generatedOutputs: ['management/integration/deployment-spec.json', 'public/move-in/oncall-export.mjs.txt'],
- mailOffSignIn: 'rer signin',
+ mailOffSignIn: '~/.local/bin/rer signin',
  deployPolicy({ options, bindings, env }) {
   if (options.remove || options.unsetSecret) return;
   try { validateMailConfiguration({ ...env, ...bindings }, { required: !options.dryRun }); }

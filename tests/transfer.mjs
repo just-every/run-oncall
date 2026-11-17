@@ -269,7 +269,7 @@ try{
    const archiveResponse=await context.request.get(m.origin+'/api/archive'),nativeArchive=await archiveResponse.json()
    assert.equal(archiveResponse.status(),200)
    await page.goto(m.origin+'/settings/archive');await page.locator('.archive-restore > summary').click()
-   await page.getByLabel('Choose archive JSON').setInputFiles({name:'synthetic-oncall-restore.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(nativeArchive))})
+   await page.getByLabel('Choose backup file',{exact:true}).setInputFiles({name:'synthetic-oncall-restore.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(nativeArchive))})
    await page.getByLabel('Type REPLACE to confirm').fill('REPLACE')
    const restored=page.waitForResponse(r=>r.url().endsWith('/api/restore')&&r.request().method()==='POST')
    await page.getByRole('button',{name:'Replace workspace with this archive',exact:true}).click();assert.equal((await restored).status(),200)

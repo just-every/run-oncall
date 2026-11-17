@@ -30,8 +30,8 @@ export function onCall(workspace: State, archive: Pick<PagingArchive, 'schedules
     const ends = now.windows.flatMap(window => window.end && Date.parse(window.end) > at ? [Date.parse(window.end)] : []);
     const nextAt = ends.length ? Math.min(...ends) : null;
     const next = nextAt === null ? null : coverage(schedule, workspace.members, nextAt);
-    const from = at - DAY, to = at + 7 * DAY, weekEnd = at + 6 * DAY;
-    const values = preview(schedule, workspace.members, from, to);
+    const from = Math.max(at - DAY, Date.parse(schedule.validFrom)), to = at + 7 * DAY, weekEnd = at + 6 * DAY;
+    const values = from < weekEnd ? preview(schedule, workspace.members, from, to) : [];
     const week: OnCallBand[] = [];
     for (const role of roles) for (let index = 0; index < values.length; index++) {
       const value = values[index], end = Math.min(to, values[index + 1]?.at ?? to);
