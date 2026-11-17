@@ -40,7 +40,7 @@ function canonical(message:Record<string,unknown>):string {
   return names.map(name=>name+'\n'+field(message[name],name,name==='Message'?2*1024*1024:4096)+'\n').join('');
 }
 function instant(value:unknown,name:string):string {
-  const raw=field(value,name,100);
+  const raw=field(value,name,100).replace(/([+-]\d{2})(\d{2})$/,'$1:$2');
   if(!/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,9})?(?:Z|[+-]\d\d:\d\d)$/.test(raw)||!Number.isFinite(Date.parse(raw)))fail(`Invalid SNS ${name}`);
   return new Date(raw).toISOString();
 }

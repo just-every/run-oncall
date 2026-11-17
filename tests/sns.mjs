@@ -46,7 +46,7 @@ export async function snsJourney() {
    message.Signature=createSign(message.SignatureVersion==='1'?'RSA-SHA1':'RSA-SHA256').update(fields.map(name=>name+'\n'+message[name]+'\n').join('')).sign(privateKey,'base64');
    return message;
   }
-  const alarm=(state,offset=0,overrides={},envelope={})=>signed('Notification',{Message:JSON.stringify({AlarmName:'synthetic-oncall-cpu',AlarmDescription:'Synthetic CPU saturation',AlarmArn:'arn:aws:cloudwatch:us-east-1:'+account+':alarm:synthetic-oncall-cpu',NewStateValue:state,NewStateReason:'Synthetic threshold transition',StateChangeTime:new Date(now+offset).toISOString(),Region:'US East (N. Virginia)',AWSAccountId:account,Trigger:{Dimensions:[{name:'InstanceId',value:'synthetic-oncall-1'}]},...overrides}),...envelope});
+  const alarm=(state,offset=0,overrides={},envelope={})=>signed('Notification',{Message:JSON.stringify({AlarmName:'synthetic-oncall-cpu',AlarmDescription:'Synthetic CPU saturation',AlarmArn:'arn:aws:cloudwatch:us-east-1:'+account+':alarm:synthetic-oncall-cpu',NewStateValue:state,NewStateReason:'Synthetic threshold transition',StateChangeTime:new Date(now+offset).toISOString().replace('Z','+0000'),Region:'US East (N. Virginia)',AWSAccountId:account,Trigger:{Dimensions:[{name:'InstanceId',value:'synthetic-oncall-1'}]},...overrides}),...envelope});
   const snap=async()=>{const state=ok(await req('/api/state'));return {sources:state.intakeSources,receipts:state.intakeReceipts,alerts:state.alerts,events:state.events,audit:state.audit};};
   const beforeAudit=await snap(),beforeAuditCalls=(await w.outboundRequests()).length;
   await w.db.exec("CREATE TRIGGER sns_audit_fail BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'synthetic SNS audit failure'); END");
