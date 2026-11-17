@@ -5,7 +5,6 @@ const escape=(key:string)=>key.replaceAll('~','~0').replaceAll('/','~1')
 const referenceKinds:Record<string,string>={user:'users',schedule:'schedules',escalation_policy:'escalation_policies',team:'teams',service:'services',incident:'incidents',event_orchestration:'event_orchestrations'}
 const accountKinds=new Set(['services','integrations','teams','incidents','maintenance_windows','business_services','event_orchestrations'])
 type Binding={pointer:string;parentKind:string;parentId:string}
-type Leaf={pointer:string;path:string[]|null;original:any}
 const parentKinds:Record<string,string>={contact_methods:'users',notification_rules:'users',overrides:'schedules',integrations:'services',log_entries:'incidents',subscribers:'business_services',orchestration_routers:'event_orchestrations'}
 
 /** Empty containers and nulls are leaves too. Paths always address original bytes. */
@@ -59,10 +58,10 @@ export function pagerdutyRecords(input:ParsedRecord[],savedBindings?:unknown,ori
   if(binding) {
    if(parentKinds[row.kind]!==binding.parentKind)fail(`PagerDuty ${row.kind} at ${row.pointer} has the wrong parent kind`)
    const value=row.payload as any
-   if((value.service?.id??value.parent?.id??value.schedule_id??binding.parentId)!==binding.parentId)fail(`PagerDuty ${row.kind} at ${row.pointer} contradicts its parent binding`)
+   if((value.service?.id??value.parent?.id??value.schedule_id??value._parent?.id??value._service?.id??binding.parentId)!==binding.parentId)fail(`PagerDuty ${row.kind} at ${row.pointer} contradicts its parent binding`)
    value._pdParent={kind:binding.parentKind,id:binding.parentId,...(binding.parentKind==='users'?{type:'user_reference'}:{})}
-   if(row.kind==='overrides')value._parent={id:binding.parentId}
-   if(row.kind==='integrations')value._service={id:binding.parentId,type:'service_reference'}
+   if(row.kind==='overrides')value._parent??={id:binding.parentId}
+   if(row.kind==='integrations')value._service??={id:binding.parentId,type:'service_reference'}
    if(row.kind==='orchestration_routers')row.sourceId=String(value.parent?.id??binding.parentId)
    if(row.kind==='subscribers') {
     if(typeof value.subscriber_id!=='string'||!['user','team'].includes(value.subscriber_type))fail(`PagerDuty subscriber at ${row.pointer} needs subscriber_id and subscriber_type`)
@@ -136,12 +135,27 @@ export function pagerdutyRecords(input:ParsedRecord[],savedBindings?:unknown,ori
  // packaging leaves stay explicitly retained, attached to the first record.
  if(original!==undefined&&records.length) {
   const ordered=[...records].sort((a,b)=>(b.pointer?.length??0)-(a.pointer?.length??0))
-  const leaves=new Map(records.map(row=>[row,[] as Leaf[]]))
+  const leaves=new Map(records.map(row=>[row,[] as string[]])),envelopes=new Map(records.map(row=>[row,[] as any[]]))
+  const atPointer=new Map(records.map(row=>[row.pointer,row]))
   for(const leaf of pagerdutyLeaves(original)) {
    const row=ordered.find(row=>leaf.pointer===row.pointer||leaf.pointer.startsWith(row.pointer+'/'))
-   leaves.get(row??records[0])!.push({pointer:leaf.pointer,path:row?leaf.path.slice((row.pointer??'').split('/').length-1):null,original:leaf.original})
+   if(row) {
+    leaves.get(row)!.push(leaf.pointer)
+    if(leaf.pointer===row.pointer)(row.payload as any)._pdRootEmpty=true
+   } else {
+    // Binding metadata belongs to its child, not an unrelated first person.
+    // Erasing that parent then retires the right custody without linking all
+    // people in the file to one profile. Store original envelope values only;
+    // ordinary leaf values already exist at their exact payload paths.
+    const binding=leaf.path[0]==='_bindings'?bindings[Number(leaf.path[1])]:undefined
+    const owner=binding?atPointer.get(binding.pointer):undefined
+    envelopes.get(owner??records[0])!.push([leaf.pointer,leaf.original])
+   }
   }
-  for(const row of records)(row.payload as any)._pdLeaves=leaves.get(row)
+  for(const row of records) {
+   ;(row.payload as any)._pdFields=leaves.get(row)
+   if(envelopes.get(row)!.length)(row.payload as any)._pdEnvelope=envelopes.get(row)
+  }
  }
  return records
 }
