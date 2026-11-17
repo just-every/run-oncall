@@ -53,6 +53,12 @@ export async function coverageParity({runtime,people,browser,receipt}){
     assert.equal(nowNext.now.windows[0].origin,boundary==='start'?'override':'rotation','The exact end excludes the override');
     assert.equal(nowNext.now.windows[0].member,primary);
     assert.equal(nowNext.now.windows[1].member,participants.backup.id);
+    assert.equal(nowNext.now.windows[1].origin,'rotation');
+    if(boundary==='before')assert.equal(nowNext.now.windows[0].end,new Date(start).toISOString());
+    else{
+     assert.equal(nowNext.now.windows[0].start,new Date(boundary==='start'?start:end).toISOString());
+     if(boundary==='start')assert.equal(nowNext.now.windows[0].end,new Date(end).toISOString());
+    }
     // The oracle is protected HTTP, never the coverage evaluator, resource
     // projector or reconstructed D1 records. Native list order is retained.
     const references=new Set([nowNext.now.primary,nowNext.now.backup,...nowNext.now.windows.map(row=>row.member)]);
