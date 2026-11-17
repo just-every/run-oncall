@@ -1,0 +1,24 @@
+{
+  "api_calls_used": 2,
+  "last_call_at": "2026-11-17T11:05:12Z",
+  "superseded_runs": [
+    {
+      "conclusion": null,
+      "head_sha": "b90a3b9084a9dc414b3004e0d60d5bca2d58279e",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44070170085",
+      "id": 44070170085,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ],
+  "runs": [
+    {
+      "conclusion": null,
+      "head_sha": "bb4e179efaad0e3fa0372ed637fd0708f583d424",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44070724877",
+      "id": 44070724877,
+      "name": "Verify",
+      "status": "pending"
+    }
+  ]
+}

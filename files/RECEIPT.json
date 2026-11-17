@@ -1,0 +1,154 @@
+{
+  "tag": "sd-oncall-oc031-1",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-oc031-1",
+  "head": "bb4e179efaad0e3fa0372ed637fd0708f583d424",
+  "recorded_at": "2026-11-17T11:05:45.369282+00:00",
+  "first_published_save": "1ca9e3310bd86fae6c0e66ab2caf28a9902b75dc",
+  "candidate_commits": [
+    {
+      "head": "bb4e179efaad0e3fa0372ed637fd0708f583d424",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": "none",
+      "subject": "Accept CloudWatch state timestamps with compact timezone offsets"
+    },
+    {
+      "head": "b90a3b9084a9dc414b3004e0d60d5bca2d58279e",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": "none",
+      "subject": "Complete SNS confirmation custody, provider bounds and setup documentation"
+    },
+    {
+      "head": "1ca9e3310bd86fae6c0e66ab2caf28a9902b75dc",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": "none",
+      "subject": "Add signed SNS routed intake and synthetic public-door proof [skip ci]"
+    }
+  ],
+  "checks": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "stdout": "typecheck.stdout.txt"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "stdout": "build.stdout.txt"
+    },
+    {
+      "command": "cloud_run node tests/intake.mjs",
+      "exit": 0,
+      "stdout": "intake.stdout.txt",
+      "scope": "regression run before final SNS-only refinements"
+    },
+    {
+      "command": "cloud_run node tests/routing.mjs",
+      "exit": 0,
+      "stdout": "routing.stdout.txt"
+    },
+    {
+      "command": "ONCALL_SNS_BROWSER=1 ONCALL_SNS_PROOF_DIR=<packet> cloud_run node tests/sns.mjs",
+      "exit": 0,
+      "stdout": "sns-browser.stdout.txt",
+      "head": "bb4e179efaad0e3fa0372ed637fd0708f583d424",
+      "assertion_width": 1440,
+      "proof_widths": [
+        1440,
+        390
+      ]
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "stdout": "contract.stdout.txt"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git diff origin/main..HEAD --check",
+      "exit": 0
+    },
+    {
+      "command": "git log origin/main..HEAD --format=\"%an <%ae>%n%cn <%ce>%n%(trailers:only,unfold)\"",
+      "exit": 0,
+      "result": "all candidates fleet author/committer; no trailers"
+    },
+    {
+      "command": "local committed-addition credential-shaped diff inspection",
+      "exit": 0,
+      "result": "no embedded credentials found; synthetic keys/certificate generated at runtime"
+    },
+    {
+      "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-oncall-oc031-1",
+      "exit": 0,
+      "stdout": "push.stdout.txt",
+      "attempt": 1
+    }
+  ],
+  "ci": {
+    "api_calls_used": 2,
+    "last_call_at": "2026-11-17T11:05:12Z",
+    "superseded_runs": [
+      {
+        "conclusion": null,
+        "head_sha": "b90a3b9084a9dc414b3004e0d60d5bca2d58279e",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44070170085",
+        "id": 44070170085,
+        "name": "Verify",
+        "status": "in_progress"
+      }
+    ],
+    "runs": [
+      {
+        "conclusion": null,
+        "head_sha": "bb4e179efaad0e3fa0372ed637fd0708f583d424",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44070724877",
+        "id": 44070724877,
+        "name": "Verify",
+        "status": "pending"
+      }
+    ]
+  },
+  "counts": {
+    "contract_before": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "contract_after": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "ci_journey_registrations_before": 20,
+    "ci_journey_registrations_after": 20,
+    "sns_focused_subjourneys_before": 0,
+    "sns_focused_subjourneys_after": 1
+  },
+  "claim": "CLAIM OC-031 PARTIAL points=none tests=tests/sns.mjs#snsJourney",
+  "real_aws": "held R-12; no AWS account or credential used",
+  "publication_scan": "complete fleet scan deferred to landing machine, per cloud adaptation; local diff inspected",
+  "notes": [
+    "oncall request failure Error in SNS stdout is the deliberately injected permanent-audit storage failure, asserted to admit no state and perform no confirmation fetch.",
+    "Provider hostname trust is unchanged in application code. Only the AWS outbound edge is synthetic.",
+    "Screenshots mask the endpoint input; no generated private key/certificate or credential file is selected.",
+    "No existing test was weakened, deleted or skipped. No main/default branch push or PR was performed.",
+    "Final fixtures use the compact +0000 CloudWatch timestamp offset; parser also accepts standard colon offsets and Z."
+  ]
+}
