@@ -29,6 +29,7 @@ export function IncidentPage(incidentProps: IncidentProps) {
   const after = useMutateAfterSaves(incidentProps.mutate);
   const props = {...incidentProps, mutate: after.mutate, busy: incidentProps.busy || after.waiting};
   const Sheet = action ? sheets[action] : null;
+  useEffect(() => {if (action === 'reopen' && props.incident.state !== 'resolved') setAction(null);}, [action, props.incident.state]);
   useEffect(() => {
     const heading = document.querySelector<HTMLElement>('.incident-head h1');
     heading?.focus({preventScroll: true});
