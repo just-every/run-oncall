@@ -1664,7 +1664,7 @@
       "executable": false
     },
     "scripts/verify-shards.json": {
-      "sha256": "ab8c186d3624510d093d4e71e7bffbc35f33561e62622a6335b438c85566d80d",
+      "sha256": "184abe68b4c02d9a838f20a8f65e3aa4602d937336bfea451e2b0c1b201ce44e",
       "executable": false
     },
     "scripts/write-agent-surface.mjs": {
@@ -5220,7 +5220,7 @@
       "executable": false
     },
     "src/modules/portability/cli-options.mjs": {
-      "sha256": "b9f966f13711e879b3dbc7ed036f1c607ee81d47f8a48ba2edd4eb2a33275526",
+      "sha256": "ea9d0eeac15672c62bcd675d9563e53d8f950661aa704dbdacbfb008ba1553b3",
       "executable": false
     },
     "src/modules/portability/cli.mjs": {
@@ -6817,6 +6817,10 @@
     },
     "tests/paging-response-flow.mjs": {
       "sha256": "584bf63de2adcbffb36dbdf13536fe866299dcbd436d01cc00bc7f4fc8c03737",
+      "executable": false
+    },
+    "tests/portability-cli.mjs": {
+      "sha256": "a765441f1f28f0ccff38de107692a606b164e6e7f35a1e1afe1ed0738073ce3e",
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
