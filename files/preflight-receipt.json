@@ -1,0 +1,26 @@
+{
+  "type": "isolated pre-integration proof",
+  "emitted_worker_base": "0f19e1a989c05a824ee75024665fb5c22da06252",
+  "completion_preparation_source": "e70051e60c403f6bd99c992871751ee42d7963a0",
+  "node": "22.20.0",
+  "runtime": {
+    "command": "cloud_run timeout 180 node <scratch>/tests/focused-f264.mjs",
+    "exit": 0,
+    "log": "preflight-runtime.log"
+  },
+  "browser": {
+    "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium cloud_run timeout 300 node <scratch>/tests/browser-f264.mjs",
+    "exit": 0,
+    "log": "preflight-browser.log",
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  "sha256": {
+    "tests/oncall-agent-action-evidence-retention.mjs": "89c2fa888268dead95363f4fa2e71d75449ae88fee4b137101d0642e85fe3373",
+    "tests/oncall-agent-action-evidence-replay.mjs": "472099afa4bbbcf72595e065433f25564558b5d5e2fe54f952e09c9348e9c6f2",
+    "tests/browser-f264.mjs": "4a24d8a6288acae3478e0286fc76ced2c035005b11b324415b2c30f10b9d3a3f"
+  },
+  "candidate_ci": null
+}

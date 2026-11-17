@@ -1,0 +1,12 @@
+PROBE BASE-AGENT-012 acceptance 1 autonomous evidence-policy completion at T+86400000ms: original key and arguments with fresh authority -> equal stored result and receipt, unchanged completed action, approval, terminal call and expiry, native revisions, timeline, audit and paging; one linked replay attempt and zero outbound requests
+Browser proof follow-up-evidence-retained-autonomous 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof follow-up-evidence-retained-autonomous 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-012 retained evidence completion browser autonomous: protected review material equals MCP result; saved P2 Complete and Completes with evidence plus retained evidence link at 1440 and 390; original sponsor approval not needed; zero evidence requests
+PROBE BASE-AGENT-012 acceptance 1 autonomous evidence-policy completion at T+86401000ms: original key and arguments with fresh authority -> equal stored result and receipt, unchanged completed action, approval, terminal call and expiry, native revisions, timeline, audit and paging; one linked replay attempt and zero outbound requests
+PROBE BASE-AGENT-012 acceptance 1 held evidence-policy completion at T+86400000ms: original key and arguments with fresh authority -> equal stored result and receipt, unchanged completed action, approval, terminal call and expiry, native revisions, timeline, audit and paging; one linked replay attempt and zero outbound requests
+Browser proof follow-up-evidence-retained-held 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof follow-up-evidence-retained-held 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof follow-up-evidence-retained-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof follow-up-evidence-retained-executed 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-012 retained evidence completion browser held: protected review material equals MCP result; saved P2 Complete and Completes with evidence plus retained evidence link at 1440 and 390; original sponsor approval executed once; zero evidence requests
+PROBE BASE-AGENT-012 acceptance 1 held evidence-policy completion at T+86401000ms: original key and arguments with fresh authority -> equal stored result and receipt, unchanged completed action, approval, terminal call and expiry, native revisions, timeline, audit and paging; one linked replay attempt and zero outbound requests

@@ -1,0 +1,76 @@
+{
+  "files": [
+    {
+      "blob": "8eed748f440d86b46797a7cffec424fe13fa38e3",
+      "bytes": 2221,
+      "path": "PLAN.md",
+      "sha256": "63e3888dc01d572e3476a58ef90fd30924721cb9db02a79c998e5aae1ff4bde3"
+    },
+    {
+      "blob": "09edd6dce0373354a1a098c4a6c8df5e66e4d447",
+      "bytes": 4994,
+      "path": "REPORT.md",
+      "sha256": "fb2ec80aa4f3ca1e7eac25c3fb616f7a3f8518be7e89b62f230f551590715b69"
+    },
+    {
+      "blob": "47d7acb5e28aff04ebeb1a9823e444a8bb101a65",
+      "bytes": 2504,
+      "path": "preflight-browser.log",
+      "sha256": "0a00aaf31c087b53cfb6d696b36b8f4cc3402047628ad6b847546d0d45019539"
+    },
+    {
+      "blob": "83da258d9fbf507f73d8568fc26512fb6ef32fac",
+      "bytes": 981,
+      "path": "preflight-receipt.json",
+      "sha256": "fdf73fd584df441a70e60c559c2c6e613911f27b43eb5e5a57d51715b48e385a"
+    },
+    {
+      "blob": "b33151e71dc994ce8fb231286d7726b689a73ad1",
+      "bytes": 1332,
+      "path": "preflight-runtime.log",
+      "sha256": "2ce4d435c6cb308b7c4d6a970830ead0ec43974771659b3292bd27616c8044de"
+    },
+    {
+      "blob": "06faeb633d4d3c66cf5f36c5bcfbc5d1d514abce",
+      "bytes": 96505,
+      "path": "preflight-screens/agent-door-follow-up-evidence-retained-autonomous-1440.png",
+      "sha256": "739ea3da07c387244695c1bf70cc6df9840314b037788bd92f0b5752c3ce8316"
+    },
+    {
+      "blob": "5ac856ded0bc15b6cf13def7d4a243944916fd90",
+      "bytes": 42522,
+      "path": "preflight-screens/agent-door-follow-up-evidence-retained-autonomous-390.png",
+      "sha256": "aa294882c5fcdc4258052c471a1efb8eb7f6fcdb6b30db0243814105615fb6bc"
+    },
+    {
+      "blob": "3fc36f4353ab4c2b37b3cb4d9ccc4c8e21936b4c",
+      "bytes": 49119,
+      "path": "preflight-screens/agent-door-follow-up-evidence-retained-executed-1440.png",
+      "sha256": "d25d9d0901c9747bd62eb6a878c5c3036596b898a80b9c373022d08b7747b00e"
+    },
+    {
+      "blob": "b9eaf09e3b8ec66ab29d29af339b399fc9ac4759",
+      "bytes": 43893,
+      "path": "preflight-screens/agent-door-follow-up-evidence-retained-executed-390.png",
+      "sha256": "f170faaf8b38378d577a0e279ad5fea8367a15b9a937630076c68c518ac26544"
+    },
+    {
+      "blob": "06faeb633d4d3c66cf5f36c5bcfbc5d1d514abce",
+      "bytes": 96505,
+      "path": "preflight-screens/agent-door-follow-up-evidence-retained-held-1440.png",
+      "sha256": "739ea3da07c387244695c1bf70cc6df9840314b037788bd92f0b5752c3ce8316"
+    },
+    {
+      "blob": "5ac856ded0bc15b6cf13def7d4a243944916fd90",
+      "bytes": 42522,
+      "path": "preflight-screens/agent-door-follow-up-evidence-retained-held-390.png",
+      "sha256": "aa294882c5fcdc4258052c471a1efb8eb7f6fcdb6b30db0243814105615fb6bc"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f264",
+  "product_head": "0f19e1a989c05a824ee75024665fb5c22da06252",
+  "ref": "refs/heads/evidence/sd-oncall-c-f264",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f264"
+}
