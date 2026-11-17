@@ -11,8 +11,8 @@ export function AlertNoise({noise,state,showDefinition=true}: {noise: Noise;stat
     </dl>
     {noise.noisy.length ? <ol className="alert-noise-list">{noise.noisy.map(k => <li key={`${k.source} ${k.service} ${k.key}`}>
       <strong>{k.title}</strong> <span className="review-meta">{state?.services.find(s=>s.id===k.service)?.name??'Retained service'}</span><br />
-      <span className="review-meta">Triggers {k.triggers} · alert generations {k.alerts} · active {k.active} · suppressed {k.suppressed}</span>
-    </li>)}</ol> : <p>No alert repeated in this cohort range.</p>}
+      <span className="review-meta">Triggers {k.triggers} · alert cycles {k.alerts} · active {k.active} · suppressed {k.suppressed}</span>
+    </li>)}</ol> : <p>No alert repeated in this period.</p>}
     {showDefinition&&<p className="muted">{noise.definition}</p>}
   </section>;
 }
