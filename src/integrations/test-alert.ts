@@ -42,7 +42,7 @@ export function installTestAlerts(api: any, deps: any) {
       source = {id: input.source, name: id, kind: 'events', service: service.id, active: true};
     } else if (kind === 'intake') {
       const held = state.intakeSources?.find(source => source.id === id && source.service === service.id && source.active && !source.routing);
-      if (!held) fail('Active integration for this service required', 404);
+      if (!held || held.provider === 'sns') fail('Choose an active integration with a browser alert sample', 404);
       const row = await c.env.DB.prepare('SELECT key_custody,signing_custody FROM oc_intake_credentials WHERE source=?').bind(id).first();
       custody = row?.key_custody; signing = row?.signing_custody;
       source = {id: input.source, name: held.name, kind: held.provider === 'native' ? 'events' : held.provider, service: service.id, active: true};

@@ -1,4 +1,4 @@
-export type CompatibleProvider = 'pagerduty-v2' | 'pagerduty-v1' | 'opsgenie' | 'splunk';
+export type CompatibleProvider = 'pagerduty-v2' | 'pagerduty-v1' | 'opsgenie' | 'splunk' | 'sns';
 
 export type CompatibleInput = {
   action: 'trigger' | 'recover' | 'acknowledge' | 'note';
