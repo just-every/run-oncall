@@ -1,0 +1,266 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Owned runtime processes [["4822","4821","MainThread"],["4831","4822","esbuild"],["4840","4822","workerd"],["4846","4822","ps"]]
+Browser proof weekly-counts 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof weekly-counts 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-009 acceptance 3: native MCP at UTC week boundaries, complete paginated audit and Agents at 1440 and 390 -> 210 retained calls, 207 in period, exactly 8 cohorts, multi-class contributions once each, stable records and zero outbound requests
+Browser proof scribe-cleared-timeline 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof scribe-cleared-timeline 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof scribe-cleared-people 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof scribe-cleared-people 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-012 Scribe clear browser: autonomous and held MCP -> saved Unassigned Scribe, preserved companion roles and explicit assignee, attributed assign-role timeline; changed incident shown at 1440 and 390; zero outbound requests
+Browser proof communications-cleared-timeline 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof communications-cleared-timeline 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof communications-cleared-people 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof communications-cleared-people 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-012 Communications clear browser: autonomous and held MCP -> saved Unassigned Communications, preserved companion roles and explicit assignee, attributed assign-role timeline; changed incident shown at 1440 and 390; zero outbound requests
+Browser proof commander-cleared-timeline 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof commander-cleared-timeline 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof commander-cleared-people 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof commander-cleared-people 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-012 Lead clear browser: autonomous and held MCP -> saved Unassigned Lead, preserved companion roles and explicit assignee, attributed assign-role timeline; changed incident shown at 1440 and 390; zero outbound requests
+Browser proof manual-page-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof manual-page-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof manual-page-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof manual-page-executed 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof manual-page-timeline 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof manual-page-timeline 390: fits=true serious/critical=0 undersized-controls=0
+PROBE SURFACE-002 8 browser: autonomous manual update and held policy target -> pending without effect, returned signed-in URL submits exact saved revision and summary, one attributed operation, identical retry unchanged, zero outbound requests; screens at 1440 and 390
+PROBE BASE-AGENT-011 6 autonomous initially on: retained bearer read served; note executed; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous initially on: fresh bearer read served; note executed; zero outbound requests
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":false,"local":true} unchanged
+Browser proof pause-matrix-local 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof pause-matrix-local 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-011 6 autonomous local-only: retained and fresh bearer valid next MCP read and note -> agents_paused in 2544ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":true} unchanged
+PROBE BASE-AGENT-011 6 autonomous both: retained and fresh bearer valid next MCP read and note -> agents_paused in 732ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous: owner session reads and adds an attributed note with both flags set; paging unchanged
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":false} unchanged
+Browser proof pause-matrix-business 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof pause-matrix-business 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-011 6 autonomous Business-only after local resume: retained and fresh bearer valid next MCP read and note -> agents_paused in 2619ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":true} unchanged
+PROBE BASE-AGENT-011 6 autonomous both again: retained and fresh bearer valid next MCP read and note -> agents_paused in 842ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":false,"local":true} unchanged
+PROBE BASE-AGENT-011 6 autonomous local-only after Business resume: retained and fresh bearer valid next MCP read and note -> agents_paused in 545ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous both resumed: retained bearer read served; note executed; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous both resumed: fresh bearer read served; note executed; zero outbound requests
+Browser proof pause-matrix-resumed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof pause-matrix-resumed 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-011 6 held initially on: retained bearer read served; note held then human-approved; zero outbound requests
+PROBE BASE-AGENT-011 6 held initially on: fresh bearer read served; note held then human-approved; zero outbound requests
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":false,"local":true} unchanged
+PROBE BASE-AGENT-011 6 held local-only: retained and fresh bearer valid next MCP read and note -> agents_paused in 869ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":true} unchanged
+PROBE BASE-AGENT-011 6 held both: retained and fresh bearer valid next MCP read and note -> agents_paused in 638ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 6 held: owner session reads and adds an attributed note with both flags set; paging unchanged
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":false} unchanged
+PROBE BASE-AGENT-011 6 held Business-only after local resume: retained and fresh bearer valid next MCP read and note -> agents_paused in 883ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":true} unchanged
+PROBE BASE-AGENT-011 6 held both again: retained and fresh bearer valid next MCP read and note -> agents_paused in 775ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":false,"local":true} unchanged
+PROBE BASE-AGENT-011 6 held local-only after Business resume: retained and fresh bearer valid next MCP read and note -> agents_paused in 633ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 6 held both resumed: retained bearer read served; note held then human-approved; zero outbound requests
+PROBE BASE-AGENT-011 6 held both resumed: fresh bearer read served; note held then human-approved; zero outbound requests
+PASS independent Pause flags: both policies, valid next reads and mutations, maximum refusal 561ms, bearer resume 403 including owner cookie, human coordination and policy-appropriate resume; zero outbound requests
+Browser proof people-linked-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof people-linked-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof people-error 1440: alert=true fits=true serious/critical=0
+Browser proof people-error 390: alert=true fits=true serious/critical=0
+Browser proof incident 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof incident 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof review 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof review 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof responders 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof responders 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-executed 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-timeline 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-timeline 390: fits=true serious/critical=0 undersized-controls=0
+PASS incident resolution browser: commitment-only approval, exact saved revision, native human approver and agent preparer, one attributed resolution and effect-free retry
+Browser proof deadline-snooze-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof deadline-snooze-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof deadline-snooze-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof deadline-snooze-executed 390: fits=true serious/critical=0 undersized-controls=0
+PROBE SURFACE-002 acceptance 8 browser snooze: signed-in approval URL at 1440 and 390 -> held live class, exact saved revision approved, one attributed recorded effect, identical retry, paging unchanged and zero outbound requests
+Browser proof deadline-cancel-deadline-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof deadline-cancel-deadline-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof deadline-cancel-deadline-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof deadline-cancel-deadline-executed 390: fits=true serious/critical=0 undersized-controls=0
+PROBE SURFACE-002 acceptance 8 browser cancel-deadline: signed-in approval URL at 1440 and 390 -> held live class, exact saved revision approved, one attributed recorded effect, identical retry, paging unchanged and zero outbound requests
+Browser proof deadline-expire-deadline-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof deadline-expire-deadline-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof deadline-expire-deadline-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof deadline-expire-deadline-executed 390: fits=true serious/critical=0 undersized-controls=0
+PROBE SURFACE-002 acceptance 8 browser expire-deadline: signed-in approval URL at 1440 and 390 -> held live class, exact saved revision approved, one attributed recorded effect, identical retry, paging unchanged and zero outbound requests
+Browser proof approval-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof approval-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof approval-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof approval-executed 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof approval-paused 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof approval-paused 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof agents-paused 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof agents-paused 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof agents-blocked 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof agents-blocked 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof approval-unavailable 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof approval-unavailable 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof erase-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof erase-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof erase-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof erase-executed 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof erase-client-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof erase-client-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof erase-client-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof erase-client-executed 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-013 rendered autonomous: /docs/agents -> complete 42-tool class, scope and fixture inventory agrees with MCP; 17 resource templates; native and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-013 rendered held: /docs/agents -> complete 42-tool class, scope and fixture inventory agrees with MCP; 17 resource templates; native and paging unchanged; zero outbound requests
+Browser proof guide 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof guide 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof erasure-data 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof erasure-data 390: fits=true serious/critical=0 undersized-controls=0
+PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements
+Owned runtime processes [["4822","4821","MainThread"],["4831","4822","esbuild"],["5959","4822","workerd"],["5965","4822","ps"]]
+Browser proof autonomous admin draft review-material 1440: expanded native view captured
+Browser proof autonomous admin draft review-material 390: expanded native view captured
+PROBE BASE-AGENT-003 2 autonomous admin draft review-material: every field equals protected native material; human acceptance absent after resource policy approval; native effects unchanged
+Browser proof autonomous viewer draft review-material 1440: expanded native view captured
+Browser proof autonomous viewer draft review-material 390: expanded native view captured
+PROBE BASE-AGENT-003 2 autonomous viewer draft review-material: every field equals protected native material; human acceptance absent after resource policy approval; native effects unchanged
+PROBE BASE-AGENT-003 2 autonomous admin incidents: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin alerts: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin services: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin schedules: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin handoffs: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin changes: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin service-changes: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin reports: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous admin review-material: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+Browser proof autonomous admin incidents 1440: actual native view captured
+Browser proof autonomous admin alerts 1440: actual native view captured
+Browser proof autonomous admin services 1440: actual native view captured
+Browser proof autonomous admin schedules 1440: actual native view captured
+Browser proof autonomous admin reports 1440: actual native view captured
+Browser proof autonomous admin review-material 1440: actual native view captured
+Browser proof autonomous admin handoffs 1440: actual native view captured
+Browser proof autonomous admin incidents 390: actual native view captured
+Browser proof autonomous admin alerts 390: actual native view captured
+Browser proof autonomous admin services 390: actual native view captured
+Browser proof autonomous admin schedules 390: actual native view captured
+Browser proof autonomous admin reports 390: actual native view captured
+Browser proof autonomous admin review-material 390: actual native view captured
+Browser proof autonomous admin handoffs 390: actual native view captured
+PROBE BASE-AGENT-003 2 autonomous viewer incidents: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer alerts: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer services: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer schedules: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer handoffs: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer changes: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer service-changes: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer reports: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 autonomous viewer review-material: native protected record equals every resource field at workspace revision 70; paging and permanent state-changing audit unchanged; zero outbound requests
+Browser proof autonomous viewer incidents 1440: actual native view captured
+Browser proof autonomous viewer alerts 1440: actual native view captured
+Browser proof autonomous viewer services 1440: actual native view captured
+Browser proof autonomous viewer schedules 1440: actual native view captured
+Browser proof autonomous viewer reports 1440: actual native view captured
+Browser proof autonomous viewer review-material 1440: actual native view captured
+Browser proof autonomous viewer handoffs 1440: actual native view captured
+Browser proof autonomous viewer incidents 390: actual native view captured
+Browser proof autonomous viewer alerts 390: actual native view captured
+Browser proof autonomous viewer services 390: actual native view captured
+Browser proof autonomous viewer schedules 390: actual native view captured
+Browser proof autonomous viewer reports 390: actual native view captured
+Browser proof autonomous viewer review-material 390: actual native view captured
+Browser proof autonomous viewer handoffs 390: actual native view captured
+Browser proof held admin draft review-material 1440: expanded native view captured
+Browser proof held admin draft review-material 390: expanded native view captured
+PROBE BASE-AGENT-003 2 held admin draft review-material: every field equals protected native material; human acceptance absent after resource policy approval; native effects unchanged
+Browser proof held viewer draft review-material 1440: expanded native view captured
+Browser proof held viewer draft review-material 390: expanded native view captured
+PROBE BASE-AGENT-003 2 held viewer draft review-material: every field equals protected native material; human acceptance absent after resource policy approval; native effects unchanged
+PROBE BASE-AGENT-003 2 held admin incidents: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin alerts: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin services: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin schedules: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin handoffs: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin changes: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin service-changes: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin reports: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held admin review-material: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+Browser proof held admin incidents 1440: actual native view captured
+Browser proof held admin alerts 1440: actual native view captured
+Browser proof held admin services 1440: actual native view captured
+Browser proof held admin schedules 1440: actual native view captured
+Browser proof held admin reports 1440: actual native view captured
+Browser proof held admin review-material 1440: actual native view captured
+Browser proof held admin handoffs 1440: actual native view captured
+Browser proof held admin incidents 390: actual native view captured
+Browser proof held admin alerts 390: actual native view captured
+Browser proof held admin services 390: actual native view captured
+Browser proof held admin schedules 390: actual native view captured
+Browser proof held admin reports 390: actual native view captured
+Browser proof held admin review-material 390: actual native view captured
+Browser proof held admin handoffs 390: actual native view captured
+PROBE BASE-AGENT-003 2 held viewer incidents: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer alerts: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer services: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer schedules: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer handoffs: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer changes: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer service-changes: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer reports: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+PROBE BASE-AGENT-003 2 held viewer review-material: native protected record equals every resource field at workspace revision 87; paging and permanent state-changing audit unchanged; zero outbound requests
+Browser proof held viewer incidents 1440: actual native view captured
+Browser proof held viewer alerts 1440: actual native view captured
+Browser proof held viewer services 1440: actual native view captured
+Browser proof held viewer schedules 1440: actual native view captured
+Browser proof held viewer reports 1440: actual native view captured
+Browser proof held viewer review-material 1440: actual native view captured
+Browser proof held viewer handoffs 1440: actual native view captured
+Browser proof held viewer incidents 390: actual native view captured
+Browser proof held viewer alerts 390: actual native view captured
+Browser proof held viewer services 390: actual native view captured
+Browser proof held viewer schedules 390: actual native view captured
+Browser proof held viewer reports 390: actual native view captured
+Browser proof held viewer review-material 390: actual native view captured
+Browser proof held viewer handoffs 390: actual native view captured
+PROBE BASE-AGENT-003 2 coverage autonomous admin before: all fields equal protected native HTTP at 2026-11-04T12:00:59.999Z; exact participants and order; native records, revisions, permanent state-changing audit and paging unchanged; zero outbound requests
+Browser proof coverage autonomous admin before 1440: current native panel captured
+Browser proof coverage autonomous admin before 390: current native panel captured
+PROBE BASE-AGENT-003 2 coverage autonomous viewer before: all fields equal protected native HTTP at 2026-11-04T12:00:59.999Z; exact participants and order; native records, revisions, permanent state-changing audit and paging unchanged; zero outbound requests
+Browser proof coverage autonomous viewer before 1440: current native panel captured
+Browser proof coverage autonomous viewer before 390: current native panel captured
+PROBE BASE-AGENT-003 2 coverage autonomous admin start: all fields equal protected native HTTP at 2026-11-04T12:01:00.000Z; exact participants and order; native records, revisions, permanent state-changing audit and paging unchanged; zero outbound requests
+Browser proof coverage autonomous admin start 1440: current native panel captured
+Browser proof coverage autonomous admin start 390: current native panel captured
+PROBE BASE-AGENT-003 2 coverage autonomous viewer start: all fields equal protected native HTTP at 2026-11-04T12:01:00.000Z; exact participants and order; native records, revisions, permanent state-changing audit and paging unchanged; zero outbound requests
+Browser proof coverage autonomous viewer start 1440: current native panel captured
+Browser proof coverage autonomous viewer start 390: current native panel captured
+PROBE BASE-AGENT-003 2 coverage autonomous admin end: all fields equal protected native HTTP at 2026-11-04T12:02:00.000Z; exact participants and order; native records, revisions, permanent state-changing audit and paging unchanged; zero outbound requests
+Browser proof coverage autonomous admin end 1440: current native panel captured
+Browser proof coverage autonomous admin end 390: current native panel captured
+PROBE BASE-AGENT-003 2 coverage autonomous viewer end: all fields equal protected native HTTP at 2026-11-04T12:02:00.000Z; exact participants and order; native records, revisions, permanent state-changing audit and paging unchanged; zero outbound requests
+Browser proof coverage autonomous viewer end 1440: current native panel captured
+Browser proof coverage autonomous viewer end 390: current native panel captured
+PROBE BASE-AGENT-003 2 coverage held admin before: all fields equal protected native HTTP at 2026-11-04T12:00:59.999Z; exact participants and order; native records, revisions, permanent state-changing audit and paging unchanged; zero outbound requests
+Browser proof coverage held admin before 1440: current native panel captured
+Browser proof coverage held admin before 390: current native panel captured
+PROBE BASE-AGENT-003 2 coverage held viewer before: all fields equal protected native HTTP at 2026-11-04T12:00:59.999Z; exact participants and order; native records, revisions, permanent state-changing audit and paging unchanged; zero outbound requests
+Browser proof coverage held viewer before 1440: current native panel captured
+Browser proof coverage held viewer before 390: current native panel captured
+PROBE BASE-AGENT-003 2 coverage held admin start: all fields equal protected native HTTP at 2026-11-04T12:01:00.000Z; exact participants and order; native records, revisions, permanent state-changing audit and paging unchanged; zero outbound requests
+Browser proof coverage held admin start 1440: current native panel captured
+Browser proof coverage held admin start 390: current native panel captured
+PROBE BASE-AGENT-003 2 coverage held viewer start: all fields equal protected native HTTP at 2026-11-04T12:01:00.000Z; exact participants and order; native records, revisions, permanent state-changing audit and paging unchanged; zero outbound requests
+Browser proof coverage held viewer start 1440: current native panel captured
+Browser proof coverage held viewer start 390: current native panel captured
+PROBE BASE-AGENT-003 2 coverage held admin end: all fields equal protected native HTTP at 2026-11-04T12:02:00.000Z; exact participants and order; native records, revisions, permanent state-changing audit and paging unchanged; zero outbound requests
+Browser proof coverage held admin end 1440: current native panel captured
+Browser proof coverage held admin end 390: current native panel captured
+PROBE BASE-AGENT-003 2 coverage held viewer end: all fields equal protected native HTTP at 2026-11-04T12:02:00.000Z; exact participants and order; native records, revisions, permanent state-changing audit and paging unchanged; zero outbound requests
+Browser proof coverage held viewer end 1440: current native panel captured
+Browser proof coverage held viewer end 390: current native panel captured

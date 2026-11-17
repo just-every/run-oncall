@@ -1,0 +1,141 @@
+{
+  "schema": 1,
+  "tag": "sd-oncall-c-f252",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f252",
+  "head": "9ae2da1fcd30e5d94b92488c7330f1c90b51ba97",
+  "at": "2026-11-17T02:01:27.212704+00:00",
+  "worktreeClean": true,
+  "base": "3b9cba555f564a4d582b9909305bc8d35c9c8bf1",
+  "save": "674bca298f3416c4f372eb8e1711e827dd5d5c7a",
+  "checks": [
+    {
+      "name": "build",
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log": "build.log",
+      "sha256": "f3b622b053335ec5d16083a524ff78a1297ae7979dced4c95bc5235705b5455b"
+    },
+    {
+      "name": "typecheck",
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log",
+      "sha256": "08c5eec8f28a87ce93f20f2385278554c72ea6d72c65e147bb7e8ebf39628631"
+    },
+    {
+      "name": "first-party",
+      "command": "cloud_run npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0,
+      "log": "first-party.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "runtime",
+      "command": "cloud_run timeout 1800 env ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "exit": 0,
+      "log": "runtime.log",
+      "sha256": "ca2e6b556828b967a79287a4eb31c502cffdd87c671215f7841eb16c88290355"
+    },
+    {
+      "name": "browser",
+      "command": "cloud_run timeout 1800 node tests/agent-door-browser.mjs",
+      "exit": 0,
+      "log": "browser.log",
+      "sha256": "ad0e3f0988a9a2a1fae90f20ce2c2ec05c4827b8a044450c7a75f68e0d5791ed"
+    },
+    {
+      "name": "views",
+      "command": "node src/base/contract-docs.mjs write && node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "log": "contract-views.log",
+      "sha256": "6a3edad7783bf6c13e63dbe5a49f4f1d6a932a81c60be61934495e59874a258a"
+    },
+    {
+      "name": "lock",
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock && node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "lock-check.json",
+      "sha256": "2df4aa5289a2e950053119812908c3310ef614a4c252024771395c733f9248b7"
+    }
+  ],
+  "comparisons": {
+    "originalTemplates": 9,
+    "retainedCases": 36,
+    "addedTemplates": 1,
+    "coverageCases": 12,
+    "coverageScreens": 24,
+    "parityScreens": 168
+  },
+  "contract": {
+    "before": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "after": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "target": "BASE-AGENT-003",
+    "statusBefore": "MISSING",
+    "statusAfter": "MISSING",
+    "judgmentCellsChanged": false,
+    "acceptanceTextChanged": false,
+    "generatedViewsCommitted": false
+  },
+  "ci": {
+    "head": "9ae2da1fcd30e5d94b92488c7330f1c90b51ba97",
+    "at": "2026-11-17T02:00:17.144769+00:00",
+    "taskApiCalls": 4,
+    "command": "gh api repos/just-every/run-oncall/actions/runs?head_sha=9ae2da1fcd30e5d94b92488c7330f1c90b51ba97&per_page=100",
+    "runs": [
+      {
+        "id": 43998387328,
+        "name": "Verify",
+        "event": "push",
+        "status": "in_progress",
+        "conclusion": null,
+        "head_sha": "9ae2da1fcd30e5d94b92488c7330f1c90b51ba97",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43998387328"
+      }
+    ],
+    "observations": [
+      {
+        "at": "2026-11-17T01:54:33.144263+00:00",
+        "runId": 43998387328,
+        "conclusion": null,
+        "head_sha": "9ae2da1fcd30e5d94b92488c7330f1c90b51ba97",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43998387328",
+        "status": "in_progress"
+      },
+      {
+        "at": "2026-11-17T02:00:17.144769+00:00",
+        "runId": 43998387328,
+        "conclusion": null,
+        "head_sha": "9ae2da1fcd30e5d94b92488c7330f1c90b51ba97",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43998387328",
+        "status": "in_progress"
+      }
+    ]
+  },
+  "publicationScan": {
+    "commit": "9ae2da1fcd30e5d94b92488c7330f1c90b51ba97",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "custodian": "guarded fleet lander"
+  },
+  "productPush": {
+    "exit": 0,
+    "log": "product-push.log",
+    "branch": "cloud/sd-oncall-c-f252",
+    "head": "9ae2da1fcd30e5d94b92488c7330f1c90b51ba97"
+  },
+  "pullRequest": null,
+  "testRegistrationDelta": 0,
+  "migrationsChanged": false
+}

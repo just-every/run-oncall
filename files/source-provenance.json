@@ -1,0 +1,35 @@
+{
+  "head": "9ae2da1fcd30e5d94b92488c7330f1c90b51ba97",
+  "files": [
+    {
+      "path": "tests/oncall-agent-coverage-parity.mjs",
+      "sha256": "e5bb65f4904f28a4be5e2a149c66d0ca8208bc207d6275a94e97de71815b5e11",
+      "gitBlob": "1620c67f102d9c7635a406afbd721b2689a59c49"
+    },
+    {
+      "path": "tests/oncall-agent-resource-parity.mjs",
+      "sha256": "b33de71bbd5d2a40f0e7e8325b6fa3fb4d1e84f3d165cfb974117d0ddbfbbab4",
+      "gitBlob": "05a07d849195338d4fcd948e522f0f1140aae796"
+    },
+    {
+      "path": "tests/oncall-agent-flow.mjs",
+      "sha256": "85550b1398ec25c52d804f6e527f15090c1ab9992addd7d1966d7ac68d57d53a",
+      "gitBlob": "4a53a631785b34671d312441ff8fc122e4597243"
+    },
+    {
+      "path": "tests/agent-door-browser.mjs",
+      "sha256": "de149cd30ad2530ff14d9ff4b950599b8b58afe2c1b188a628cf74b33f7cef92",
+      "gitBlob": "911ac422d8e2b1c470bfacc07c0a1dec7095ab0d"
+    },
+    {
+      "path": "tests/agent-door-runtime.mjs",
+      "sha256": "a829a182bb444cc39b353378aea16d8255832b167bb3cfec1452d54c7563d898",
+      "gitBlob": "727aa46c853a52b0f70eef8275c8a419e15a554b"
+    },
+    {
+      "path": "src/agent-door/resources.ts",
+      "sha256": "416e8e3b9f9dfd349184a887e7978227342711bc77a28cef83c81aa47164c664",
+      "gitBlob": "c02d2b419cc788ac51f4beb119df9ae133aa5c2d"
+    }
+  ]
+}

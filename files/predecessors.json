@@ -1,0 +1,31 @@
+{
+  "main": "3b9cba555f564a4d582b9909305bc8d35c9c8bf1",
+  "matrixAssertionsPreserved": true,
+  "predecessors": [
+    {
+      "head": "0d83331a9a6072dfbed8c0dd1f6401b3cffafd97",
+      "subject": "Prove native two-role resource parity and complete report fields [skip ci]",
+      "ancestorOfMain": true
+    },
+    {
+      "head": "f264a370463fb3c86177ff0a110b3fb7d0812e90",
+      "subject": "Prove two-role recent change resource parity [skip ci]",
+      "ancestorOfMain": true
+    },
+    {
+      "head": "e433eb6928f39aa9481724c5412cb999da24541b",
+      "subject": "Prove populated review material parity for both native roles [skip ci]",
+      "ancestorOfMain": true
+    },
+    {
+      "head": "4d14b380111c77ab635448286a876a66db804055",
+      "subject": "Verify draft and accepted review material with native browser custody",
+      "ancestorOfMain": true
+    },
+    {
+      "head": "4af169eb4b7cd5ee3a0bc9867edf6e51a9ac2a8f",
+      "subject": "Wait for native review material before expanding its sections",
+      "ancestorOfMain": true
+    }
+  ]
+}
