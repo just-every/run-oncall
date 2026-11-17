@@ -1,0 +1,20 @@
+{
+  "name": "publication-preflight",
+  "command": [
+    "node",
+    "node_modules/@runeditrun/rer/scripts/publish-check.mjs",
+    "--repo",
+    "/workspace/run-oncall",
+    "--ref",
+    "9599328319a1776018f01965b581656e285324b4",
+    "--public-base",
+    "https://github.com/just-every/run-oncall.git#main",
+    "--repository",
+    "just-every/run-oncall"
+  ],
+  "head": "9599328319a1776018f01965b581656e285324b4",
+  "start": "2026-11-17T19:59:59.657415+00:00",
+  "end": "2026-11-17T19:59:59.987629+00:00",
+  "seconds": 0.33,
+  "exit": 2
+}

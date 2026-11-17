@@ -1,0 +1,13 @@
+{
+  "name": "source-lock-check",
+  "command": [
+    "node",
+    "node_modules/@runeditrun/rer/edition-authoring/cli.mjs",
+    "check"
+  ],
+  "head": "9599328319a1776018f01965b581656e285324b4",
+  "start": "2026-11-17T19:42:23.788694+00:00",
+  "end": "2026-11-17T19:42:24.290783+00:00",
+  "seconds": 0.5,
+  "exit": 0
+}

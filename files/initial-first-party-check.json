@@ -1,0 +1,16 @@
+{
+  "name": "first-party-check",
+  "command": [
+    "npx",
+    "-y",
+    "@runeditrun/rer",
+    "check",
+    "--profile",
+    "first-party"
+  ],
+  "head": "6667df3386dc26512d60bf5b3da41eff5a17aaa8",
+  "start": "2026-11-17T19:41:30.278346+00:00",
+  "end": "2026-11-17T19:41:31.906392+00:00",
+  "seconds": 1.63,
+  "exit": 0
+}

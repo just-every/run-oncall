@@ -1,0 +1,14 @@
+{
+  "head": "9599328319a1776018f01965b581656e285324b4",
+  "merge_count": 0,
+  "contract_and_generated_views": "identical to main",
+  "existing_main_test_bytes": "all retained in original order",
+  "response_loss_helper": "byte-identical to feeder",
+  "source_lock": "regenerated after staging new module",
+  "changed_paths": [
+    "sources.lock.json",
+    "tests/agent-door-browser.mjs",
+    "tests/oncall-agent-action-submit-response-loss.mjs",
+    "tests/oncall-agent-flow.mjs"
+  ]
+}

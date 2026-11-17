@@ -1,0 +1,70 @@
+{
+  "head": "9599328319a1776018f01965b581656e285324b4",
+  "chromium": "/usr/bin/chromium",
+  "args": [
+    "--no-sandbox"
+  ],
+  "assertion_width": 1440,
+  "files": [
+    {
+      "path": "browser/agent-door-follow-up-submit-loss-pending-1440.png",
+      "bytes": 50539,
+      "sha256": "f3e8cdf55efc515c157eac8e4ec4d6928356e48848ae1ba79f84387c7d38ce41",
+      "width": 1440,
+      "label": "pending"
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-loss-pending-390.png",
+      "bytes": 45188,
+      "sha256": "1ccff65d74f70a04da9046edc1e10570e8e69612e4a3b1a1b1eb674e5abf94f1",
+      "width": 390,
+      "label": "pending"
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-loss-executed-1440.png",
+      "bytes": 48846,
+      "sha256": "f1857739e152c8473aa874927d8b42734515d669fad91226c647a40c82b37a48",
+      "width": 1440,
+      "label": "executed"
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-loss-executed-390.png",
+      "bytes": 43363,
+      "sha256": "156223964286fe52edff7151bcb0b9e06b68bcbcb06f1ff92284650411439921",
+      "width": 390,
+      "label": "executed"
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-loss-autonomous-1440.png",
+      "bytes": 181795,
+      "sha256": "f12cf957a400a0ef23e2e53b6d3280073568b3e8a8661d791db842ceb46ae87d",
+      "width": 1440,
+      "label": "autonomous"
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-loss-autonomous-390.png",
+      "bytes": 100827,
+      "sha256": "104320f2a764277a5522ef96b3323e8b20fb6c2ba70add905e999363bb1bd01d",
+      "width": 390,
+      "label": "autonomous"
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-loss-held-1440.png",
+      "bytes": 197294,
+      "sha256": "7049a47a29aa357222a1b70d84837c5bac69e309b0888fbc5256a993f8803379",
+      "width": 1440,
+      "label": "held"
+    },
+    {
+      "path": "browser/agent-door-follow-up-submit-loss-held-390.png",
+      "bytes": 114956,
+      "sha256": "e6b8171f49df683399fa0493ad7be6366a2d88788dff1f505df997ee4756dc62",
+      "width": 390,
+      "label": "held"
+    }
+  ],
+  "visually_inspected": [
+    "held-1440",
+    "held-390"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "repository": "just-every/run-oncall",
+  "command": [
+    "npx",
+    "-y",
+    "@runeditrun/rer",
+    "setup",
+    "--owner-email",
+    "fleet@runeditrun.com",
+    "--non-interactive"
+  ],
+  "exit": 0,
+  "migrations": 68,
+  "temporary_app_stopped": true,
+  "node": "24.19.0",
+  "pnpm": "10.12.4",
+  "rer": "0.2.118"
+}

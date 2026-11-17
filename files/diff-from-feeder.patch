@@ -1,0 +1,1039 @@
+diff --git a/docs/team.md b/docs/team.md
+index 69e5468..6c55ff2 100644
+--- a/docs/team.md
++++ b/docs/team.md
+@@ -22,7 +22,7 @@ Roles are checked on every request, so a change takes effect on the next thing t
+ 
+ Under **Settings → Team**, an admin chooses **Add member**, fills in the person's **Name**, a **Role** and a **Password** of at least 12 characters, then presses **Create member** and shares the password with them directly. Oncall sends no invitations. Here, **local** means credentials stored in this Oncall installation, including when you host it for your team; it does not mean sign-in is limited to the same computer.
+ 
+-To change someone's access later, use **Update access** on their card. **Reset password** on their card asks for a new password and a confirmation ("This ends their current sessions."); confirming sets it and signs them out everywhere.
++**Add member** opens the form above the member list and puts the cursor in **Name**. The owner can change their own name with **Edit name** on their card in **Settings → Team**, then **Save name**. Use **Member actions** on a card to revoke or restore access or reset a password; resetting ends that person's current sessions. The only active admin must make someone else an admin before changing their own role or revoking access. A refused change explains why and leaves the saved access in place; only an interrupted save keeps **Retry**. — Run Edit Run fleet, 17 November 2026.
+ 
+ Being on the team does not put anyone on call: that is the [schedule's](schedules.md) job.
+ 
+diff --git a/scripts/verify-shards.json b/scripts/verify-shards.json
+index ec4b8ec..963e257 100644
+--- a/scripts/verify-shards.json
++++ b/scripts/verify-shards.json
+@@ -2,6 +2,7 @@
+   "lanes": {
+     "runtime": [
+       "tests/native-export.mjs",
++      "tests/portability-cli.mjs",
+       {
+         "file": "tests/runtime.mjs",
+         "part": "core"
+diff --git a/sources.lock.json b/sources.lock.json
+index 116b267..1bf7401 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -300,7 +300,7 @@
+       "executable": false
+     },
+     "docs/team.md": {
+-      "sha256": "7546dd85cf0036b762214de9d5394375aaa5c1494e7c681b39a6558ac336fd5c",
++      "sha256": "b2509d0d4ffe41718ff58e9c25ab62c3e7f297ae6994c2ec11f1a621d1b5f48c",
+       "executable": false
+     },
+     "docs/urgency.md": {
+@@ -1664,7 +1664,7 @@
+       "executable": false
+     },
+     "scripts/verify-shards.json": {
+-      "sha256": "ab8c186d3624510d093d4e71e7bffbc35f33561e62622a6335b438c85566d80d",
++      "sha256": "184abe68b4c02d9a838f20a8f65e3aa4602d937336bfea451e2b0c1b201ce44e",
+       "executable": false
+     },
+     "scripts/write-agent-surface.mjs": {
+@@ -1700,7 +1700,7 @@
+       "executable": false
+     },
+     "src/agent-door/coordination-tools.ts": {
+-      "sha256": "40f8b367eb6bfe0222939876a2dd0019044a223162f673a292be24a38530755b",
++      "sha256": "ed5773aedd5eefc00a95b4a9bee33c7588a01bdd9745719e34a52e64317735fd",
+       "executable": false
+     },
+     "src/agent-door/deadlines.ts": {
+@@ -5220,7 +5220,7 @@
+       "executable": false
+     },
+     "src/modules/portability/cli-options.mjs": {
+-      "sha256": "b9f966f13711e879b3dbc7ed036f1c607ee81d47f8a48ba2edd4eb2a33275526",
++      "sha256": "ea9d0eeac15672c62bcd675d9563e53d8f950661aa704dbdacbfb008ba1553b3",
+       "executable": false
+     },
+     "src/modules/portability/cli.mjs": {
+@@ -6368,7 +6368,7 @@
+       "executable": false
+     },
+     "src/team/MemberRow.tsx": {
+-      "sha256": "42c4c18d3250e0a33ab1abe551ff0796ff5e2f52e89d8329cb3554b848f0e8ad",
++      "sha256": "2f8b89ce3f659c365e23d5c5c94d50b9ad1da1812e711c90c333c4a39cad0189",
+       "executable": false
+     },
+     "src/team/PersonNotifications.tsx": {
+@@ -6376,11 +6376,11 @@
+       "executable": false
+     },
+     "src/team/team-section.css": {
+-      "sha256": "2514d8f3ce4d9ce891935cbdab2869b6996df5894f5fd5966ca84d3abc1a1210",
++      "sha256": "5686954592fa539b9199c312d3bcd66b969e32996bc2e7446ed2dcd91b9475d2",
+       "executable": false
+     },
+     "src/team/TeamSection.tsx": {
+-      "sha256": "548adf228cb06f7bf00a2a743c758650715df791f1d57f1ae2f9f1f6d9b980bd",
++      "sha256": "c223703fc990c3102b4c03a6257400f5d3a8051bcca19e5ed1dc68913b327199",
+       "executable": false
+     },
+     "src/team/TeamSignIn.tsx": {
+@@ -6500,7 +6500,7 @@
+       "executable": false
+     },
+     "tests/agent-door-browser.mjs": {
+-      "sha256": "1d85fdb150c1ba3e4987abd3e22402e6a82a2e473500bc5cd5dd07faba387a55",
++      "sha256": "df635cfc210c037f1809157804d19d8caf98996eba1ae955257c413e0ba8b231",
+       "executable": false
+     },
+     "tests/agent-door-runtime.mjs": {
+@@ -6672,7 +6672,7 @@
+       "executable": false
+     },
+     "tests/member-coordination-browser.mjs": {
+-      "sha256": "1d8d831b3bf492a2e98733f329eb3298bf391e378c0849a47d63dbbc4b843afe",
++      "sha256": "287efd9dd54bc174df654dd02cf31775038b5a0e3116fd6a172bf20cde907dbf",
+       "executable": false
+     },
+     "tests/native-export.mjs": {
+@@ -6683,14 +6683,22 @@
+       "sha256": "8f50f9597cb69f530c18dc1c40a8d56adfe7fa07ae0d0def8d990a8cf6904094",
+       "executable": false
+     },
++    "tests/oncall-agent-action-submit-native-revision.mjs": {
++      "sha256": "8405b84c8e132b50da16dc89afb17762abaa8c4bffe19dfbfffbf20d93bbd591",
++      "executable": false
++    },
+     "tests/oncall-agent-action-submit-replay.mjs": {
+-      "sha256": "525589c4f24ebdfb8f8b57da968f2b7d91943140d4313a5b87c6efac3b570a81",
++      "sha256": "130da4f25f7ff25eaf018d7389f1b591b696a4a46927836fcf3eac2e96d301aa",
+       "executable": false
+     },
+     "tests/oncall-agent-action-submit-response-loss.mjs": {
+       "sha256": "1ce2c7b481be4deca8992f383191ccd47c1fb62aa611dc59ef57852b76067d00",
+       "executable": false
+     },
++    "tests/oncall-agent-action-submit-retention.mjs": {
++      "sha256": "94195f567da9c6d5f3eaeaabfb553c996f66df4cc444a785fd0adb64c35654c6",
++      "executable": false
++    },
+     "tests/oncall-agent-action-submit-revisions.mjs": {
+       "sha256": "94499ac205d0ab109c01ff81f0f7983ac75e7b9e18323946f3af2f1c0738775e",
+       "executable": false
+@@ -6744,7 +6752,7 @@
+       "executable": false
+     },
+     "tests/oncall-agent-flow.mjs": {
+-      "sha256": "03a86d1c4cc739737d2319506abb4ea9a864bd71d3c62ecd6e2ec10451aa62cf",
++      "sha256": "784b1f19abcdbdd2d9ec7c329be12d21853562705cbe33249731a0d34bd9c027",
+       "executable": false
+     },
+     "tests/oncall-agent-incident-replay.mjs": {
+@@ -6819,6 +6827,10 @@
+       "sha256": "584bf63de2adcbffb36dbdf13536fe866299dcbd436d01cc00bc7f4fc8c03737",
+       "executable": false
+     },
++    "tests/portability-cli.mjs": {
++      "sha256": "a765441f1f28f0ccff38de107692a606b164e6e7f35a1e1afe1ed0738073ce3e",
++      "executable": false
++    },
+     "tests/product-browser-journey.mjs": {
+       "sha256": "c6e615105db19a6cfaad4f2b3c74c82f5f3a7f567bc7b7ec86795c767d023bc2",
+       "executable": false
+diff --git a/src/agent-door/coordination-tools.ts b/src/agent-door/coordination-tools.ts
+index a027fe0..741c4be 100644
+--- a/src/agent-door/coordination-tools.ts
++++ b/src/agent-door/coordination-tools.ts
+@@ -97,6 +97,13 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
+       }),
+       target: (args, ctx) => nativeCall(async () => {
+         const { current, incident } = await access(args, ctx)
++        if (operation.name === 'actions.submit') {
++          // Resolve the scoped follow-up before disclosing its parent revision.
++          // Base skips this admission resolver for exact completed-result retries;
++          // the execution guard below still protects changes after admission.
++          if (!incident?.actions.some(row => row.id === args.action)) throw new ToolRefusal('not_found')
++          if (args.revision !== incident.revision) throw new ToolRefusal('revision_conflict', 'Native revision changed; reload before applying', { current_revision: incident.revision })
++        }
+         if (incident) return { kind: 'incident', id: incident.id }
+         const service = current.state.services.find(row => row.id === args.service)!
+         return { kind: 'service', id: service.id }
+diff --git a/src/modules/portability/cli-options.mjs b/src/modules/portability/cli-options.mjs
+index 98ca9e0..4817ef6 100644
+--- a/src/modules/portability/cli-options.mjs
++++ b/src/modules/portability/cli-options.mjs
+@@ -21,7 +21,8 @@ export async function cookieFile(path) {
+   const info=await lstat(path);if(!info.isFile() || info.size>4096)throw new Error('The session file must be a small regular file.');
+   const file=await open(path,constants.O_RDONLY|constants.O_NOFOLLOW);
+   let value;try{value=(await file.readFile('utf8')).trim();}finally{await file.close();}
+-  if(!/^[!#$%&'*+.^_`|~0-9A-Za-z-]+=[!#-:<-~]+$/.test(value) || value.includes(';'))throw new Error('The session file must hold one cookie.');
++  // RFC 6265 cookie-octet excludes whitespace, quotes, commas, semicolons and backslashes.
++  if(!/^[!#$%&'*+.^_`|~0-9A-Za-z-]+=[\x21\x23-\x2B\x2D-\x3A\x3C-\x5B\x5D-\x7E]+$/.test(value))throw new Error('The session file must hold one cookie.');
+   return value;
+ }
+ export async function absent(path) {
+diff --git a/src/team/MemberRow.tsx b/src/team/MemberRow.tsx
+index c88c67f..1460c22 100644
+--- a/src/team/MemberRow.tsx
++++ b/src/team/MemberRow.tsx
+@@ -4,8 +4,8 @@ import {useWorkspaceContext} from '../app/shell/WorkspaceContext';
+ import {Tooltip} from '../app/Tooltip';
+ import type {Member, Role} from '../family/response-operations/domain';
+ export const roleName = (role: string) => role[0].toUpperCase() + role.slice(1);
+-type Props = {member: Member; admin: boolean; role: Role; roleChanged: (role: Role) => void; roleMark?: ReactNode; roleFeedback?: ReactNode; roleConfirm?: ReactNode; accessAction: () => void; resetAction: (password: string) => void; confirmation?: ReactNode; feedback?: ReactNode; accessFeedback?: ReactNode; busy?: boolean; openRequest?: number; resetVersion?: number};
+-export function MemberRow({member, admin, role, roleChanged, roleMark, roleFeedback, roleConfirm, accessAction, resetAction, confirmation, feedback, accessFeedback, busy, openRequest, resetVersion}: Props) {
++type Props = {nameEditor?: ReactNode; onlyAdmin?: boolean; adminReason?: string; member: Member; admin: boolean; role: Role; roleChanged: (role: Role) => void; roleMark?: ReactNode; roleFeedback?: ReactNode; roleConfirm?: ReactNode; accessAction: () => void; resetAction: (password: string) => void; confirmation?: ReactNode; feedback?: ReactNode; accessFeedback?: ReactNode; busy?: boolean; openRequest?: number; resetVersion?: number};
++export function MemberRow({nameEditor, onlyAdmin, adminReason, member, admin, role, roleChanged, roleMark, roleFeedback, roleConfirm, accessAction, resetAction, confirmation, feedback, accessFeedback, busy, openRequest, resetVersion}: Props) {
+   const {actor}=useWorkspaceContext();
+   const [tipDismissed, setTipDismissed] = useState(false);
+   const [open, setOpen] = useState(false), [resetting, setResetting] = useState(false), [password, setPassword] = useState('');
+@@ -24,13 +24,13 @@ export function MemberRow({member, admin, role, roleChanged, roleMark, roleFeedb
+     return () => {document.removeEventListener('pointerdown', outside);window.removeEventListener('keydown', escape);};
+   }, [open]);
+   return <article className="team-member" aria-label={member.name}>
+-    <div className="team-member-main"><h3>{member.name}</h3>{(!admin || !member.active) && <p>{!admin ? roleName(member.role) + (!member.active ? ' · Access revoked' : '') : 'Access revoked'}</p>}</div>
++    <div className="team-member-main"><h3>{member.name}</h3>{nameEditor}{(!admin || !member.active) && <p>{!admin ? roleName(member.role) + (!member.active ? ' · Access revoked' : '') : 'Access revoked'}</p>}</div>
+     {admin && !member.erased ? <>
+-      <div className="team-member-role"><label className="field"><span>Role</span><select aria-label={'Role for ' + member.name} value={role} onChange={event => roleChanged(event.target.value as Role)}>{(['viewer', 'stakeholder', 'responder', 'admin'] as const).map(value => <option key={value} value={value}>{roleName(value)}</option>)}</select></label>{roleMark}{roleConfirm}{roleFeedback}</div>
++      <div className="team-member-role"><label className="field"><span>Role</span><select aria-label={'Role for ' + member.name} value={role} onChange={event => roleChanged(event.target.value as Role)}>{(['viewer', 'stakeholder', 'responder', 'admin'] as const).map(value => <option key={value} value={value} disabled={onlyAdmin && value !== 'admin'}>{roleName(value)}</option>)}</select></label>{onlyAdmin && <p>{adminReason}</p>}{roleMark}{roleConfirm}{roleFeedback}</div>
+       <div className="team-member-actions" data-tip-dismissed={tipDismissed || undefined}><Tooltip label="Member actions"><button ref={opener} type="button" onMouseEnter={() => setTipDismissed(false)} onFocus={() => setTipDismissed(false)} onKeyDown={event => {if (event.key === 'Escape') setTipDismissed(true);}} aria-label="Member actions" aria-expanded={open} aria-controls={id} onClick={() => setOpen(value => !value)}>⋯</button></Tooltip>
+         {open && <div className="team-row-menu" id={id} ref={menu} role="region" aria-label={'Actions for ' + member.name} onKeyDown={event => {if (event.key === 'Escape') {event.stopPropagation(); close();}}}>
+           <h4>{member.name}</h4>
+-          {!confirmation && <button type="button" disabled={busy} onClick={accessAction}>{member.active ? 'Revoke access' : 'Restore access'}</button>}
++          {!confirmation && (onlyAdmin ? <p>{adminReason}</p> : <button type="button" disabled={busy} onClick={accessAction}>{member.active ? 'Revoke access' : 'Restore access'}</button>)}
+           {member.active && !confirmation && <button type="button" aria-expanded={resetting} onClick={() => setResetting(value => !value)}>Reset password</button>}
+           {resetting && member.active && <form onSubmit={event => {event.preventDefault(); resetAction(password);}}><label className="field">New password<input type="password" autoComplete="new-password" required minLength={12} value={password} onChange={event => setPassword(event.target.value)}/></label><button type="submit" disabled={busy}>Reset</button></form>}
+           {confirmation}{feedback}
+diff --git a/src/team/TeamSection.tsx b/src/team/TeamSection.tsx
+index b5b64c3..d3430f5 100644
+--- a/src/team/TeamSection.tsx
++++ b/src/team/TeamSection.tsx
+@@ -6,7 +6,7 @@ import {SavedState, SaveFeedback} from '../app/autosave/SavedState';
+ import {useLeaveGuard} from '../app/autosave/leaveGuard';
+ import {InlineConfirm} from '../app/autosave/InlineConfirm';
+ import {failureMessage} from '../app/FailureLine';
+-import {request} from '../useWorkspace';
++import {HttpFailure, request} from '../useWorkspace';
+ import {Field, Form} from '../forms';
+ import {TeamsPanel} from '../teams/TeamsPanel';
+ import {MemberRow} from './MemberRow';
+@@ -14,22 +14,40 @@ import {TeamSignIn} from './TeamSignIn';
+ import './team-section.css';
+ export function TeamSection() {
+   const {s, actor, admin, w, page} = useWorkspaceContext(), [adding, setAdding] = useState(false), [created, setCreated] = useState('');
++  const addForm = useRef<HTMLElement>(null);
++  const [owner, setOwner] = useState(false);
++  useEffect(() => {
++    if (page !== 'team') return;
++    let current = true;
++    void request('/auth/session').then(session => {if (current) setOwner(session.operator?.role === 'owner');}).catch(() => {if (current) setOwner(false);});
++    return () => {current = false;};
++  }, [page, actor.id]);
++  useEffect(() => {
++    if (!adding || page !== 'team') return;
++    const name = addForm.current?.querySelector<HTMLInputElement>('input[name="name"]');
++    name?.focus({preventScroll:true});
++    addForm.current?.scrollIntoView({block:'nearest'});
++  }, [adding, page]);
+   if (page !== 'team') return null;
+   return <div className="team-section">
+     <section className="panel padded">{admin && <div className="team-title"><button type="button" aria-expanded={adding} onClick={() => {setAdding(value => !value); setCreated('');}}>Add member</button></div>}
+       {!admin && <p>Admins can change roles and access.</p>}
+-      <div className="team-members">{s.members.filter(member => !member.machine).map(member => admin && !member.erased ? <MemberEditor key={member.id} member={member} state={s} admin={admin} refresh={w.refresh}/> : <MemberRow key={member.id} member={member} admin={false} role={member.role} roleChanged={() => {}} accessAction={() => {}} resetAction={() => {}}/>)}</div>
+-      {admin && adding && <section className="team-add" aria-label="Add member"><h3>Add member</h3><Form busy={w.busy} label="Create member" onSubmit={async data => {const result=await w.run('/api/members',data);if(result){w.setNotice('');setCreated(String(data.name??''));}return result;}}>
++      {admin && adding && <section ref={addForm} className="team-add" aria-label="Add member"><h3>Add member</h3><Form busy={w.busy} label="Create member" onSubmit={async data => {const result=await w.run('/api/members',data);if(result){w.setNotice('');setCreated(String(data.name??''));}return result;}}>
+         <Field name="name" label="Name"/>
+         <Field name="role" label="Role"><option value="responder">Responder</option><option value="viewer">Viewer</option><option value="stakeholder">Stakeholder</option><option value="admin">Admin</option></Field>
+         <Field name="password" label="Password" type="password"/>
+       </Form></section>}
+       {admin && (adding || created) && <TeamSignIn name={created || undefined}/>}
++      <div className="team-members">{s.members.filter(member => !member.machine).map(member => admin && !member.erased ? <MemberEditor key={member.id} member={member} state={s} admin={admin} refresh={w.refresh} ownName={owner && member.id === actor.id}/> : <MemberRow key={member.id} member={member} nameEditor={owner && member.id === actor.id && <OwnName member={member} refresh={w.refresh}/>} admin={false} role={member.role} roleChanged={() => {}} accessAction={() => {}} resetAction={() => {}}/>)}</div>
+     </section>
+     <TeamsPanel state={s} actor={actor} refresh={w.refresh}/>
+   </div>;
+ }
+-function MemberEditor({member, state, admin, refresh}: {member: Member; state: State; admin: boolean; refresh: () => Promise<void>}) {
++function MemberEditor({member, state, admin, refresh, ownName}: {member: Member; state: State; admin: boolean; refresh: () => Promise<void>; ownName: boolean}) {
++  const {actor} = useWorkspaceContext();
++  const onlyAdmin = member.active && member.role === 'admin' && state.members.filter(row => row.active && row.role === 'admin').length === 1;
++  const adminReason = `${member.id === actor.id ? 'This is your' : 'This is the'} only active admin account. Make someone else an admin first.`;
++  const [refused, setRefused] = useState<Partial<Record<'role' | 'active', string>>>({});
+   const snapshot = (member: Member, revision: number) => ({values:{role:member.role, active:member.active}, revision});
+   const save = useAutosave({storageKey:'member:'+member.id,snapshot:snapshot(member,state.revision), read:async () => {
+     const latest: State = await request('/api/state');
+@@ -37,10 +55,28 @@ function MemberEditor({member, state, admin, refresh}: {member: Member; state: S
+     if (!found) throw Error('This member is no longer available.');
+     return snapshot(found,latest.revision);
+   }, write:async change => {
+-    const result = await autosaveRequest('/api/command', {type:'member',id:member.id,field:change.field,from:change.from,to:change.to});
++    let result;
++    try {result = await autosaveRequest('/api/command', {type:'member',id:member.id,field:change.field,from:change.from,to:change.to});}
++    catch (cause) {
++      // A definite refusal is not an unfinished write. Keep Retry for uncertain
++      // transport failures and conflict comparison, never for rejected access.
++      if (!(cause instanceof HttpFailure) || cause.status < 400 || cause.status >= 500 || [408,409,429].includes(cause.status)) throw cause;
++      const reason = cause.message === 'Cannot remove last admin' ? adminReason : failureMessage(cause);
++      setRefused(value => ({...value,[change.field]:reason}));
++      const latest: State = await request('/api/state').catch(() => state);
++      void refresh();
++      return {...snapshot(latest.members.find(row => row.id === member.id) ?? member,latest.revision),changed:false};
++    }
+     const latest: State = await request('/api/state');
+     void refresh();return {...snapshot(latest.members.find(row => row.id === member.id)!,latest.revision),changed:result.changed !== false};
+   }});
++  useEffect(() => {
++    // Older versions retained impossible last-admin changes in this browser.
++    // Remove those drafts without sending another refused command.
++    if (!onlyAdmin) return;
++    if (save.states.active?.status === 'failed' && save.values.active === false) save.change('active',member.active,'choice');
++    if (save.states.role?.status === 'failed' && save.values.role !== 'admin') save.change('role',member.role,'choice');
++  }, [onlyAdmin, save.values.active, save.values.role]);
+   const [adminConfirm, setAdminConfirm] = useState(false), [action, setAction] = useState<'access' | 'password' | null>(null), [busy, setBusy] = useState(false), [error, setError] = useState('');
+   const [resetVersion, setResetVersion] = useState(0), [resetSaved, setResetSaved] = useState(false);
+   useEffect(() => {if (!resetSaved) return;const timer=setTimeout(() => setResetSaved(false),2000);return () => clearTimeout(timer);}, [resetSaved]);
+@@ -52,11 +88,13 @@ function MemberEditor({member, state, admin, refresh}: {member: Member; state: S
+   guard.current.pending = () => adminConfirm || !!action;
+   useLeaveGuard(guard.current);
+   const cancel = () => {setAction(null); setError(''); password.current = '';};
+-  return <MemberRow member={member} admin={admin} role={adminConfirm ? 'admin' : save.values.role} roleChanged={role => {if(role === 'admin' && member.role !== 'admin') setAdminConfirm(true);else {setAdminConfirm(false);save.change('role',role,'choice');}}}
+-    roleMark={<SavedState state={save.states.role}/>}
+-    roleFeedback={<SaveFeedback state={save.states.role} retry={() => save.retry('role')} useMine={() => save.useMine('role')}/>}
++  return <MemberRow member={member} admin={admin} onlyAdmin={onlyAdmin} adminReason={adminReason}
++    nameEditor={ownName && <OwnName member={member} refresh={refresh}/>}
++    role={adminConfirm ? 'admin' : save.values.role} roleChanged={role => {setRefused(value => ({...value,role:undefined}));if(role === 'admin' && member.role !== 'admin') setAdminConfirm(true);else {setAdminConfirm(false);save.change('role',role,'choice');}}}
++    roleMark={!refused.role && <SavedState state={save.states.role}/>}
++    roleFeedback={refused.role ? <p role="alert">{refused.role}</p> : <SaveFeedback state={save.states.role} retry={() => save.retry('role')} useMine={() => save.useMine('role')}/>}
+     roleConfirm={adminConfirm && <InlineConfirm action="Make admin" keep="Keep the old role" onCancel={() => setAdminConfirm(false)} onConfirm={() => {save.change('role','admin','choice');setAdminConfirm(false);}}>Make {member.name} an Admin? They can manage services, people and archives.</InlineConfirm>}
+-    accessAction={() => {setAccessTarget(!member.active);setAction('access');setError('');}}
++    accessAction={() => {setRefused(value => ({...value,active:undefined}));setAccessTarget(!member.active);setAction('access');setError('');}}
+     resetAction={value => {password.current=value;setAction('password');setError('');}}
+     busy={busy} openRequest={openRequest} resetVersion={resetVersion}
+     confirmation={action && <InlineConfirm action={action === 'password' ? 'Reset password' : accessTarget ? 'Restore access' : 'Revoke access'} keep={action === 'password' ? 'Keep the old password' : 'Keep the current access'} busy={busy} onCancel={cancel} onConfirm={async () => {
+@@ -66,6 +104,28 @@ function MemberEditor({member, state, admin, refresh}: {member: Member; state: S
+       catch (cause) {setError(failureMessage(cause));}
+       finally {setBusy(false);}
+     }}>{action === 'password' ? `Reset ${member.name}’s password? This ends their current sessions.` : !accessTarget ? `Revoke ${member.name}’s access? Their current sessions will end.` : `Restore ${member.name}’s access? They can sign in again.`}</InlineConfirm>}
+-    accessFeedback={<><SaveFeedback state={save.states.active} retry={() => save.retry('active')} useMine={() => save.useMine('active')}/>{['failed','conflict'].includes(save.states.active?.status ?? '') && <button type="button" onClick={() => save.change('active',member.active,'choice')}>Keep current access</button>}</>}
++    accessFeedback={refused.active ? <p role="alert">{refused.active}</p> : <><SaveFeedback state={save.states.active} retry={() => save.retry('active')} useMine={() => save.useMine('active')}/>{['failed','conflict'].includes(save.states.active?.status ?? '') && <button type="button" onClick={() => save.change('active',member.active,'choice')}>Keep current access</button>}</>}
+     feedback={<>{error && <p role="alert">{error}</p>}{resetSaved && <p role="status">Password reset</p>}</>}/>;
+ }
++
++function OwnName({member, refresh}: {member: Member; refresh: () => Promise<void>}) {
++  const [editing, setEditing] = useState(false), [name, setName] = useState(member.name), [busy, setBusy] = useState(false), [error, setError] = useState('');
++  const input = useRef<HTMLInputElement>(null);
++  useEffect(() => {if (editing) input.current?.focus();}, [editing]);
++  if (!editing) return <button type="button" onClick={() => {setName(member.name);setError('');setEditing(true);}}>Edit name</button>;
++  return <form className="team-own-name" onSubmit={async event => {
++    event.preventDefault();setBusy(true);setError('');
++    let saved = false;
++    try {
++      await request('/auth/display-name',{displayName:name.trim()});saved = true;
++      await refresh();setEditing(false);
++    } catch (cause) {
++      setError(saved ? 'Your name was saved. Reload to see the updated team.' : cause instanceof HttpFailure ? 'Your name could not be saved. Enter a name using 1 to 100 characters, or sign in again.' : failureMessage(cause));
++    } finally {setBusy(false);}
++  }}>
++    <label className="field">Your name<input ref={input} autoComplete="name" required maxLength={100} value={name} onChange={event => setName(event.target.value)}/></label>
++    <button type="submit" disabled={busy}>{busy ? 'Saving…' : 'Save name'}</button>
++    <button type="button" disabled={busy} onClick={() => setEditing(false)}>Cancel</button>
++    {error && <p role="alert">{error}</p>}
++  </form>;
++}
+diff --git a/src/team/team-section.css b/src/team/team-section.css
+index c37643f..16fa86c 100644
+--- a/src/team/team-section.css
++++ b/src/team/team-section.css
+@@ -24,7 +24,11 @@
+ .team-section .team-row-menu :is(input,textarea,select) {max-width:100%;}
+ .team-section .team-row-menu :is(p,button,small,label) {font-size: max(13px, 1em);}
+ .team-section .team-title {display:flex; justify-content:flex-end;}
+-.team-section .team-add {margin-top:20px;}
++.team-section .team-add {margin:20px 0; scroll-margin-top:20px;}
++.team-section .team-own-name {display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;}
++.team-section .team-own-name .field {flex-basis:100%; margin:0;}
++.team-section .team-own-name input {width:100%; min-width:0;}
++.team-section .team-member-role > p {font-size:13px; color:var(--oc-muted);}
+ .team-section .teams-panel {grid-column:1 / -1;}
+ @media(max-width:760px) {
+  .team-section .team-member {grid-template-columns:minmax(0,1fr) 44px; padding:12px;}
+@@ -46,7 +50,7 @@
+ .team-section .person-notifications {grid-column:1 / -1; min-width:0;}
+ .team-section .person-notifications fieldset {min-width:0; margin:12px 0; border:1px solid var(--oc-line); border-radius:12px;}
+ .team-section .person-notifications :is(input,select) {max-width:100%;}
+-.team-section .team-signin {margin-top:20px; padding:16px; border:1px solid var(--oc-line); border-radius:12px; display:grid; gap:8px; justify-items:start;}
++.team-section .team-signin {margin:20px 0; padding:16px; border:1px solid var(--oc-line); border-radius:12px; display:grid; gap:8px; justify-items:start;}
+ .team-section .team-signin h3 {margin:0; font-size:16px;}
+ .team-section .team-signin :is(ol,p) {margin:0; font-size:14px;}
+ .team-section .team-signin ol {padding-left:20px; display:grid; gap:4px;}
+diff --git a/tests/agent-door-browser.mjs b/tests/agent-door-browser.mjs
+index efdcd9f..cdf39a6 100644
+--- a/tests/agent-door-browser.mjs
++++ b/tests/agent-door-browser.mjs
+@@ -7,6 +7,8 @@ import {agentRuntime,agentEffectSnapshot,pauseMatrix} from './agent-door-runtime
+ import {recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy,deadlineTarget} from './oncall-agent-fixtures.mjs';
+ import specialist from './oncall-agent-native.mjs';
+ import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-revisions.mjs';
++import {actionSubmitNativeRevision} from './oncall-agent-action-submit-native-revision.mjs';
++import {agedActionSubmitRetention} from './oncall-agent-action-submit-retention.mjs';
+ import {actionSubmitResponseLoss} from './oncall-agent-action-submit-response-loss.mjs';
+ import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
+ import {openIncidentAction} from './keyboard.mjs';
+@@ -21,22 +23,22 @@ try{
+  const context=await browser.newContext({baseURL:runtime.origin,viewport:{width:1440,height:1000}});
+  await context.addCookies(runtime.cookie.split('; ').map(pair=>{const at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:runtime.origin,httpOnly:true,sameSite:'Lax'}}));
+  page=await context.newPage();
+- async function capture(label,path,prepare=async()=>{}){
++ async function capture(label,path,prepare=async()=>{},proofRuntime=runtime,proofPage=page){
+   for(const width of [1440,390]){
+-   await page.setViewportSize({width,height:1000});
+-   await page.goto(runtime.origin+path);await prepare();
+-   const fits=await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth);
+-   const findings=(await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations.filter(row=>['serious','critical'].includes(row.impact));
+-   const controls=await page.locator('button,input:not([type=hidden]),select,textarea').evaluateAll(nodes=>nodes.filter(node=>node.getClientRects().length).map(node=>({label:node.getAttribute('aria-label')??node.textContent?.trim().slice(0,60)??node.name,height:(node.matches('input[type=checkbox],input[type=radio]')?node.labels?.[0]??node:node).getBoundingClientRect().height})).filter(row=>row.height<44));
++   await proofPage.setViewportSize({width,height:1000});
++   await proofPage.goto(proofRuntime.origin+path);await prepare();
++   const fits=await proofPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth);
++   const findings=(await new AxeBuilder({page:proofPage}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations.filter(row=>['serious','critical'].includes(row.impact));
++   const controls=await proofPage.locator('button,input:not([type=hidden]),select,textarea').evaluateAll(nodes=>nodes.filter(node=>node.getClientRects().length).map(node=>({label:node.getAttribute('aria-label')??node.textContent?.trim().slice(0,60)??node.name,height:(node.matches('input[type=checkbox],input[type=radio]')?node.labels?.[0]??node:node).getBoundingClientRect().height})).filter(row=>row.height<44));
+    if(width===1440){
+     assert.ok(fits,`${label} fits ${width}px`);
+     assert.deepEqual(findings,[],`${label} has no serious/critical accessibility findings`);
+     assert.deepEqual(controls,[],`${label} controls have 44px targets`);
+    }
+    console.log(`Browser proof ${label} ${width}: fits=${fits} serious/critical=${findings.length} undersized-controls=${controls.length}`);
+-   await page.screenshot({path:`${directory}/agent-door-${label}-${width}.png`,fullPage:true});
++   await proofPage.screenshot({path:`${directory}/agent-door-${label}-${width}.png`,fullPage:true});
+   }
+-  await page.setViewportSize({width:1440,height:1000});
++  await proofPage.setViewportSize({width:1440,height:1000});
+  }
+  // A known native week spans multiple audit cursor pages. Expected cohorts
+  // are fixed by the calls below, independently of the page's SQL aggregation.
+@@ -162,6 +164,34 @@ try{
+    });
+   },
+  });
++ const submitApprovalPosts=[];
++ const recordSubmitApproval=request=>{if(request.method()==='POST'&&new URL(request.url()).pathname.endsWith('/approve'))submitApprovalPosts.push(request.url())};
++ page.on('request',recordSubmitApproval);
++ await actionSubmitNativeRevision(runtime,{
++  async approve({handle,saved,owner}){
++   await capture('follow-up-submit-pending',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="pending"]').waitFor()});
++   await page.goto(handle.url);
++   await page.getByText(owner.name,{exact:false}).first().waitFor();
++   const submitted=page.waitForRequest(request=>request.method()==='POST'&&new URL(request.url()).pathname.endsWith('/approve'));
++   await page.getByRole('button',{name:'Approve',exact:true}).click();
++   const posted=(await submitted).postDataJSON();
++   assert.equal(posted.revision,saved.revision);assert.equal(posted.summary_sha256,saved.summary_sha256);
++   await page.locator('[data-approval-state="executed"]').waitFor();
++   await capture('follow-up-submit-executed',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="executed"]').waitFor()});
++  },
++  async observe({mode,incident,action}){
++   await capture('follow-up-submit-'+mode,'/reviews/'+incident.id,async()=>{
++    await page.getByRole('dialog',{name:incident.title,exact:true}).waitFor();
++    await page.locator('.review-material-body summary').filter({hasText:/^Follow-ups \(/}).click();
++    await page.getByText('Awaiting acceptance',{exact:false}).first().waitFor();
++    const evidence=page.locator('.review-material-body').getByRole('link',{name:/^Evidence/});await evidence.waitFor();
++    if(page.viewportSize().width===1440)assert.equal(await evidence.getAttribute('href'),action.evidence);
++    await evidence.scrollIntoViewIfNeeded();
++   });
++  },
++ });
++ assert.equal(submitApprovalPosts.length,1,'One sponsor approval POST; completed-result retries never repeat the approval action');
++ page.off('request',recordSubmitApproval);
+  let lostResultApprovalPosts=0;
+  const recordLostResultApproval=request=>{
+   if(request.method()==='POST'&&new URL(request.url()).pathname.startsWith('/agents/api/approvals/')&&new URL(request.url()).pathname.endsWith('/approve'))lostResultApprovalPosts++;
+@@ -195,6 +225,49 @@ try{
+  page.off('request',recordLostResultApproval);
+  assert.deepEqual(submitEvidenceRequests,[],'The browser never fetches submitted evidence');
+  await context.unroute('https://evidence.example.invalid/**',stopEvidence);
++ // Each retained submission has isolated native custody. The browser takes
++ // the held sponsor step once at T, then only reads the retained result.
++ await agedActionSubmitRetention({async connect(retainedRuntime,mode){
++  const retainedContext=await browser.newContext({baseURL:retainedRuntime.origin,viewport:{width:1440,height:1000}});
++  await retainedContext.addCookies(retainedRuntime.cookie.split('; ').map(pair=>{const at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:retainedRuntime.origin,httpOnly:true,sameSite:'Lax'}}));
++  const retainedPage=await retainedContext.newPage(),evidenceRequests=[],approvalPosts=[];
++  await retainedContext.route('https://evidence.example.invalid/**',route=>{evidenceRequests.push(route.request().url());return route.abort()});
++  retainedPage.on('request',request=>{if(request.method()==='POST'&&new URL(request.url()).pathname.endsWith('/approve'))approvalPosts.push(request.postDataJSON())});
++  return {
++   async approve({handle,saved,owner}){
++    await retainedPage.goto(handle.url);
++    await retainedPage.locator('[data-approval-state="pending"]').waitFor();
++    await retainedPage.getByText(owner.name,{exact:false}).first().waitFor();
++    await retainedPage.getByRole('button',{name:'Approve',exact:true}).click();
++    await retainedPage.locator('[data-approval-state="executed"]').waitFor();
++    assert.deepEqual(approvalPosts,[{revision:saved.revision,summary_sha256:saved.summary_sha256}],'The sponsor posts the exact saved approval once at T');
++   },
++   async observe({elapsed,incident,action,handle,approved}){
++    // The helper compares custody at both boundaries. Capture each changed
++    // screen once per width after the last boundary on realistic native data.
++    if(elapsed!==86401000)return;
++    await capture('follow-up-submit-retained-'+mode,'/reviews/'+incident.id,async()=>{
++     await retainedPage.getByRole('dialog',{name:incident.title,exact:true}).waitFor();
++     await retainedPage.locator('.review-material-body summary').filter({hasText:/^Follow-ups \(/}).click();
++     await retainedPage.getByText('Awaiting acceptance',{exact:false}).first().waitFor();
++     const evidence=retainedPage.locator('.review-material-body').getByRole('link',{name:/^Evidence/});await evidence.waitFor();
++     if(retainedPage.viewportSize().width===1440)assert.equal(await evidence.getAttribute('href'),action.evidence);
++     await evidence.scrollIntoViewIfNeeded();
++    },retainedRuntime,retainedPage);
++    if(handle)await capture('follow-up-submit-retained-approval',new URL(handle.url).pathname,async()=>{
++     await retainedPage.locator('[data-approval-state="executed"]').waitFor();
++     if(retainedPage.viewportSize().width===1440){
++      assert.equal(await retainedPage.getByRole('button',{name:'Approve',exact:true}).count(),0);
++      const response=await retainedRuntime.http('/agents/api/approvals/'+handle.id);assert.equal(response.status,200);
++      assert.deepEqual((await response.json()).approval,approved,'The original executed approval is unchanged after retained-result retrieval');
++     }
++    },retainedRuntime,retainedPage);
++    assert.equal(approvalPosts.length,mode==='held'?1:0,'Aged retrieval never posts another approval');
++    assert.deepEqual(evidenceRequests,[],'Neither retained follow-up nor original approval fetches evidence');
++   },
++   close:()=>retainedContext.close(),
++  };
++ }});
+  await specialist({request:runtime.request,origin:runtime.origin,cookie:runtime.cookie,fixtures:runtime.fixtures,tool});
+  const native=async()=> (await (await http('/api/state')).json());
+  let state=await native();
+diff --git a/tests/member-coordination-browser.mjs b/tests/member-coordination-browser.mjs
+index f785eab..b59f4b5 100644
+--- a/tests/member-coordination-browser.mjs
++++ b/tests/member-coordination-browser.mjs
+@@ -14,9 +14,10 @@ if (process.env.ONCALL_MEMBER_JOURNEY === 'mail-off') process.exit(0)
+ // /signin/local, coordinate, reload and read attributed history; signed-out and
+ // revoked sessions get no workspace; paging refuses.
+ const worker=await localWorker({}, {clock:true})
++const focusedTeam=process.env.ONCALL_MEMBER_JOURNEY==='team-settings';
+ const focusedClients=process.env.ONCALL_MEMBER_JOURNEY==='api-clients';
+ const focusedSaves=process.env.ONCALL_MEMBER_JOURNEY==='incident-saves';
+-if(process.env.ONCALL_MEMBER_JOURNEY&&!focusedSaves&&!focusedClients)throw Error('Unknown member coordination journey');
++if(process.env.ONCALL_MEMBER_JOURNEY&&!focusedSaves&&!focusedClients&&!focusedTeam)throw Error('Unknown member coordination journey');
+ const captureDirectory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser'
+ await mkdir(captureDirectory,{recursive:true})
+ const responder={name:'Rosa Responder',password:'synthetic-responder-testing-password'},viewer={name:'Vic Viewer',password:'synthetic-viewer-testing-password'}
+@@ -45,6 +46,90 @@ async function denied(page,label,id){
+  assert.ok(!(await page.locator('body').innerText()).includes(noteText),`${label}: no coordination text in the page`)
+ }
+ // Extend the existing autosave journey through the service and review screens.
++// Settings > Team owner journeys: assert once on desktop, capture both layouts.
++async function teamSettings(page, owner) {
++ const request=async(path,data)=>ok(await call(page,path,data));
++ const capture=async name=>{
++  for(const width of [1440,390]){
++   await page.setViewportSize({width,height:1000});
++   await page.screenshot({path:`${captureDirectory}/team-${name}-${width}.png`,fullPage:true});
++  }
++  await page.setViewportSize({width:1440,height:1000});
++ };
++ await page.goto(worker.origin+'/settings/team');
++ let own=page.getByRole('article',{name:owner.name,exact:true});
++ await own.getByRole('button',{name:'Member actions',exact:true}).click();
++ const actions=own.getByRole('region',{name:'Actions for '+owner.name,exact:true});
++ await expect(actions.getByRole('button',{name:'Revoke access',exact:true})).toHaveCount(0);
++ await expect(actions.getByText(/only active admin/)).toBeVisible();
++ await capture('only-admin');
++ await actions.getByRole('button',{name:'Done',exact:true}).click();
++ for(const contactsOpen of [false,true]){
++  if(contactsOpen){await own.getByText('Contact methods and notification rules',{exact:true}).click();await own.getByRole('button',{name:'Add contact method',exact:true}).waitFor();}
++  await page.getByRole('button',{name:'Add member',exact:true}).click();
++  const form=page.getByRole('region',{name:'Add member',exact:true}),name=form.getByLabel('Name',{exact:true});
++  await expect(name).toBeFocused();
++  const box=await name.boundingBox();assert.ok(box.y>=0&&box.y+box.height<=1000,'Name opens in view even with contacts expanded');
++  assert.ok(await form.evaluate(element=>Boolean(element.compareDocumentPosition(document.querySelector('.team-members'))&Node.DOCUMENT_POSITION_FOLLOWING)),'the form precedes member cards');
++  await capture('add-'+(contactsOpen?'contacts-open':'contacts-closed'));
++  if(contactsOpen){
++   await name.fill('Example Teammate');await form.getByLabel('Password',{exact:true}).fill('synthetic-oncall-teammate-password');
++   const created=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/members'&&r.request().method()==='POST');
++   await form.getByRole('button',{name:'Create member',exact:true}).click();assert.equal((await created).status(),201);
++   await expect(page.getByRole('article',{name:'Example Teammate',exact:true})).toBeVisible();
++  }
++  await page.getByRole('button',{name:'Add member',exact:true}).click();
++ }
++ console.log('PASS Team Add member: visible focused Name with contacts closed/open, then member created through the form');
++ await own.getByRole('button',{name:'Edit name',exact:true}).click();
++ await expect(own.getByLabel('Your name',{exact:true})).toBeFocused();
++ const corrected='Example Owner';await own.getByLabel('Your name',{exact:true}).fill(corrected);
++ await capture('edit-name');
++ await own.getByRole('button',{name:'Save name',exact:true}).click();
++ own=page.getByRole('article',{name:corrected,exact:true});await expect(own.getByRole('heading',{name:corrected,exact:true})).toBeVisible();
++ await page.reload();await expect(own.getByRole('button',{name:'Edit name',exact:true})).toBeVisible();
++ assert.equal((await request('/api/session')).member.name,corrected);
++ assert.equal((await request('/auth/session')).operator.displayName,corrected,'member and native owner names agree after reload');
++ await capture('name-saved');
++ console.log('PASS Team owner name: editable after setup, native identity and member name persist after reload');
++ // Start a normal action, then let another admin cease to be an admin before
++ // confirmation. The real server refuses: the UI must clear the rejected edit.
++ const other=ok(await call(page,'/api/members',{name:'Example Deputy',role:'admin',password:'synthetic-oncall-deputy-password'}),201);
++ await page.reload();
++ await own.getByRole('button',{name:'Member actions',exact:true}).click();await own.getByRole('button',{name:'Revoke access',exact:true}).click();
++ await request('/api/command',{type:'member',id:other.id,field:'role',from:'admin',to:'viewer'});
++ const refused=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().postDataJSON()?.id===owner.id);
++ await own.locator('.autosave-confirm').getByRole('button',{name:'Revoke access',exact:true}).click();assert.equal((await refused).status(),400);
++ await expect(own.getByRole('alert')).toBeVisible();await expect(own.getByRole('button',{name:'Retry',exact:true})).toHaveCount(0);
++ await expect.poll(()=>page.evaluate(id=>localStorage.getItem('oncall:pending:member:'+id),owner.id)).toBe(null);
++ assert.equal((await request('/api/state')).members.find(m=>m.id===owner.id).active,true);
++ await capture('refused');
++ await page.reload();await expect(own.getByRole('button',{name:'Edit name',exact:true})).toBeVisible();
++ await expect(own.getByRole('alert')).toHaveCount(0);await expect(own.getByRole('button',{name:'Retry',exact:true})).toHaveCount(0);
++ await capture('refused-reload');
++ // Upgrade recovery: an older browser may still hold this rejected draft.
++ const state=await request('/api/state');
++ await page.evaluate(({id,revision})=>localStorage.setItem('oncall:pending:member:'+id,JSON.stringify({version:1,edits:[{field:'active',from:true,to:false,revision,ready:true}]})),{id:owner.id,revision:state.revision});
++ let commands=0;const count=r=>{if(new URL(r.url()).pathname==='/api/command'&&r.method()==='POST')commands++;};page.on('request',count);
++ await page.reload();await expect(own.getByRole('button',{name:'Edit name',exact:true})).toBeVisible();
++ await expect.poll(()=>page.evaluate(id=>localStorage.getItem('oncall:pending:member:'+id),owner.id)).toBe(null);
++ assert.equal(commands,0,'the old refused draft is cleared without another write');page.off('request',count);
++ await expect(own.getByRole('alert')).toHaveCount(0);
++ // Connection uncertainty still retains its edit and supports a real retry.
++ const deputy=page.getByRole('article',{name:other.name,exact:true});
++ const interrupt=route=>route.request().postDataJSON()?.type==='member'?route.abort():route.continue();
++ await page.route('**/api/command',interrupt);
++ await deputy.getByRole('button',{name:'Member actions',exact:true}).click();await deputy.getByRole('button',{name:'Revoke access',exact:true}).click();
++ await deputy.locator('.autosave-confirm').getByRole('button',{name:'Revoke access',exact:true}).click();
++ await expect(deputy.getByRole('button',{name:'Retry',exact:true})).toBeVisible();
++ await page.unroute('**/api/command',interrupt);await deputy.getByRole('button',{name:'Retry',exact:true}).click();
++ await expect.poll(async()=>(await request('/api/state')).members.find(m=>m.id===other.id).active).toBe(false);
++ await expect(deputy.getByRole('button',{name:'Retry',exact:true})).toHaveCount(0);
++ await own.getByRole('button',{name:'Edit name',exact:true}).click();await own.getByLabel('Your name',{exact:true}).fill(owner.name);await own.getByRole('button',{name:'Save name',exact:true}).click();
++ await expect(page.getByRole('article',{name:owner.name,exact:true}).getByRole('button',{name:'Edit name',exact:true})).toBeVisible();
++ console.log('PASS Team refused access: last-admin action unavailable with a next step; real refusal clears its draft and Retry across reload; older refused draft cleared; uncertain write still retries');
++}
++
+ async function incidentSaves(page) {
+  const request=async(path,data)=>ok(await call(page,path,data));
+  await page.setViewportSize({width:1440,height:1000});
+@@ -257,6 +342,8 @@ try {
+  if(await confirmation.count()){await confirmation.check();await owner.page.getByRole('button',{name:'Finish setup'}).click()}
+  await owner.page.locator('.oncall-frame').waitFor({timeout:60000})
+  const ownerMember=ok(await call(owner.page,'/api/session')).member
++ if(!focusedSaves)await teamSettings(owner.page,ownerMember);
++ if(!focusedTeam){
+  const rosaRecord=ok(await call(owner.page,'/api/members',{...responder,role:'responder'}),201)
+  ok(await call(owner.page,'/api/members',{...viewer,role:'viewer'}),201)
+  ok(await call(owner.page,'/api/command',{type:'service',id:'checkout',name:'Checkout',environment:'production',owner:rosaRecord.id,runbook:['Check payment provider status'],pager:''}))
+@@ -780,13 +867,14 @@ try {
+  console.log('OC-018 real hosted member coordination persists after reload: on the emitted production Worker a password member acknowledged and noted an incident, reloaded at 1440 and kept attribution; a viewer read it; signed-out, anonymous and revoked sessions got no workspace; paging refused (409)')
+  }
+ }
++}
+ } finally {
+  await browser?.close()
+  await worker.close()
+ }
+ 
+ // Finish identity management with owner correction, sign-out and honest mail availability.
+-if(!focusedSaves&&!focusedClients){
++if(!focusedSaves&&!focusedClients&&!focusedTeam){
+ const {default:assert}=await import('node:assert/strict')
+ const {mkdir,readFile}=await import('node:fs/promises')
+ const {chromium}=await import('@playwright/test')
+@@ -898,7 +986,7 @@ try {
+ }
+ 
+ // Configure scoped automation, inspect delivery failure and retain machine attribution in the workspace.
+-if(!focusedSaves){
++if(!focusedSaves&&!focusedTeam){
+ const {default:assert}=await import('node:assert/strict')
+ const {mkdir}=await import('node:fs/promises')
+ const {join,resolve}=await import('node:path')
+diff --git a/tests/oncall-agent-action-submit-native-revision.mjs b/tests/oncall-agent-action-submit-native-revision.mjs
+new file mode 100644
+index 0000000..ef7442e
+--- /dev/null
++++ b/tests/oncall-agent-action-submit-native-revision.mjs
+@@ -0,0 +1,75 @@
++import assert from 'node:assert/strict';
++import {randomUUID} from 'node:crypto';
++import {agentRuntime,agentEffectSnapshot} from './agent-door-runtime.mjs';
++import {actionSubmitReplay} from './oncall-agent-action-submit-replay.mjs';
++
++/** Required parent revision is checked before sensitive submission approval. */
++export async function actionSubmitNativeRevision(runtime,options={}){
++ const {db,http,tool}=runtime,name='oncall.actions.submit';
++ const rows=async(sql,...values)=>(await db.prepare(sql).bind(...values).all()).results;
++ const command=async input=>{const response=await http('/api/command',input);assert.equal(response.status,200);return response.json()};
++ const snapshot=()=>agentEffectSnapshot(runtime),audits=()=>rows('SELECT * FROM agent_door_audit ORDER BY sequence');
++ const permanent=()=>rows('SELECT * FROM oc_admin_audit ORDER BY ordinal');
++ const credential='synthetic-oncall-'+randomUUID();
++ const client=await http('/api/automation/clients',{name:'Synthetic native submission revision scope',key:credential,
++  services:['agent-service'],permissions:['services:read','incidents:read','actions:write']});
++ assert.equal(client.status,201);await client.json();
++ await actionSubmitReplay(runtime,{...options,async beforeSubmit({mode,incident,action,args,owner}){
++  assert.equal(Object.hasOwn(args,'expected_revision'),false,'The optional revision is explicitly absent');
++  assert.equal(incident.state,'declared');assert.equal(action.done,false);assert.equal(action.evidence,'');
++  assert.equal(action.submission,undefined);assert.equal(action.accepted,undefined);
++  let foreign=await command({type:'declare',service:'agent-foreign-service',title:'Synthetic private submission '+mode,
++   summary:'Ordinary coordination without protected evidence',severity:'warning',alerts:[]});
++  foreign=await command({type:'action',incident:foreign.id,revision:foreign.revision,title:'Synthetic scoped-out follow-up',
++   owner:action.owner,due:action.due,priority:'P1',completionPolicy:'human-review'});
++  for(const bearer of [undefined,credential]){
++   const admitted=await tool('oncall.services.read',{id:'agent-service'},{},bearer);
++   assert.equal(admitted.status,200);assert.equal(admitted.result.isError,false);
++   assert.equal(admitted.result.structuredContent.data[0].id,'agent-service');
++  }
++  const before=await snapshot();assert.notEqual(before.application.revision,incident.revision,'Parent and workspace revisions are distinct');
++  async function refused(input,expected,bearer){
++   assert.equal(Object.hasOwn(input,'expected_revision'),false);
++   const prior=await audits(),priorPermanent=await permanent();
++   const answer=await tool(name,input,{},bearer);
++   assert.equal(answer.status,200);assert.equal(answer.body.error,undefined);
++   assert.equal(answer.result.isError,true,'Stale required revision must refuse before opening an approval');
++   assert.deepEqual(answer.result._meta['com.runeditrun/error'],expected);
++   assert.deepEqual(JSON.parse(answer.result.content[0].text),expected);
++   assert.equal(answer.result.structuredContent,undefined);
++   assert.equal(answer.result._meta['com.runeditrun/approval'],undefined);
++   assert.equal(answer.result._meta['com.runeditrun/review'],undefined);
++   assert.deepEqual(await snapshot(),before,'Refusal preserves native records, revisions, timeline, state-changing audit, calls and outcomes, approvals, reviews and paging');
++   const after=await audits();assert.deepEqual(after.slice(0,-1),prior);assert.equal(after.length,prior.length+1);
++   const refusal=JSON.parse(after.at(-1).row);
++   assert.equal(refusal.tool,name);assert.equal(refusal.outcome,'refused');assert.equal(refusal.code,expected.code);
++   assert.equal(refusal.idempotency_key,input.idempotency_key);assert.equal(refusal.sponsor.id,owner.id);
++   assert.equal(refusal.approval,null);assert.equal(refusal.review,null);
++   const afterPermanent=await permanent();assert.deepEqual(afterPermanent.slice(0,priorPermanent.length),priorPermanent);
++   for(const row of afterPermanent.slice(priorPermanent.length)){
++    assert.equal(row.kind,'agent-door.persistence');assert.ok(['accepted','refused'].includes(row.outcome));
++    for(const family of ['workspace','paging','handoff'])assert.equal(row[family+'_before'],row[family+'_after']);
++   }
++   assert.deepEqual(await runtime.outboundRequests(),[],'No evidence URL fetch or other outbound request');
++   return answer;
++  }
++  const staleArgs={...args,revision:incident.revision-1,idempotency_key:randomUUID()};
++  const stale=await refused(staleArgs,{code:'revision_conflict',current_revision:incident.revision});
++  // A scoped-out incident and an absent incident or action disclose the same
++  // not-found diagnostic, even when their supplied parent revision is stale.
++  for(const target of [
++   {incident:foreign.id,action:foreign.actions.at(-1).id},
++   {incident:'synthetic-oncall-'+randomUUID(),action:action.id},
++   {incident:incident.id,action:'synthetic-oncall-'+randomUUID()},
++  ])await refused({...staleArgs,...target,idempotency_key:randomUUID()},{code:'not_found'},credential);
++  args.revision=stale.result._meta['com.runeditrun/error'].current_revision;
++  args.idempotency_key=randomUUID();assert.notEqual(args.idempotency_key,staleArgs.idempotency_key);
++  assert.equal(Object.hasOwn(args,'expected_revision'),false);
++  console.log('PROBE BASE-AGENT-012 acceptance 4 '+mode+' oncall.actions.submit: stale required parent revision with expected_revision absent -> isError revision_conflict and exact authorized parent current_revision '+args.revision+' in metadata and text, distinct from workspace revision '+before.application.revision+'; no private result, approval, review or native effect; missing and scoped-out targets -> identical not_found with no revision; zero outbound requests');
++ }});
++}
++
++export async function focusedActionSubmitNativeRevision(){
++ const runtime=await agentRuntime({clock:null});
++ try{await actionSubmitNativeRevision(runtime)}finally{await runtime.close()}
++}
+diff --git a/tests/oncall-agent-action-submit-replay.mjs b/tests/oncall-agent-action-submit-replay.mjs
+index 734544b..2806cd8 100644
+--- a/tests/oncall-agent-action-submit-replay.mjs
++++ b/tests/oncall-agent-action-submit-replay.mjs
+@@ -4,7 +4,7 @@ import {agentRuntime,agentEffectSnapshot} from './agent-door-runtime.mjs';
+ import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
+ 
+ /** Changed evidence cannot replace a completed human-review submission. */
+-export async function actionSubmitReplay(runtime,{approve,observe=async()=>{}}={}){
++export async function actionSubmitReplay(runtime,{approve,observe=async()=>{},beforeSubmit=async()=>{}}={}){
+  const {db,http,tool,context}=runtime,name='oncall.actions.submit';
+  const rows=async(sql,...values)=>(await db.prepare(sql).bind(...values).all()).results;
+  const read=async path=>{const response=await http(path);assert.equal(response.status,200);return response.json()};
+@@ -35,6 +35,7 @@ export async function actionSubmitReplay(runtime,{approve,observe=async()=>{}}={
+   assert.equal(action.done,false);assert.equal(action.evidence,'');assert.equal(action.submission,undefined);assert.equal(action.accepted,undefined);
+   const args={incident:incident.id,revision:incident.revision,action:action.id,
+    evidence:'https://evidence.example.invalid/synthetic-oncall-original',idempotency_key:randomUUID()};
++  await beforeSubmit({mode,incident,action,args,owner});
+   const before=await snapshot(),priorAudit=await audits();
+   const first=await tool(name,args);
+   assert.equal(first.status,200);assert.equal(first.body.error,undefined);
+diff --git a/tests/oncall-agent-action-submit-retention.mjs b/tests/oncall-agent-action-submit-retention.mjs
+new file mode 100644
+index 0000000..fb0c704
+--- /dev/null
++++ b/tests/oncall-agent-action-submit-retention.mjs
+@@ -0,0 +1,193 @@
++import assert from 'node:assert/strict';
++import {randomUUID} from 'node:crypto';
++import {agentRuntime,agentEffectSnapshot} from './agent-door-runtime.mjs';
++import {accessToken,seconds,autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
++
++/** Completed evidence submission is retained across a full day without reapproval. */
++export async function agedActionSubmitRetention({connect=async()=>({})}={}){
++ // Sessions also use SQLite's wall clock. Freeze a whole-second current hour,
++ // then age only the platform clock, keeping native signed-in sessions usable.
++ const started=Math.floor(Date.now()/3600000)*3600000,day=86400000;
++ for(const [mode,policy] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
++  const runtime=await agentRuntime({clock:started});
++  let hooks;
++  try{
++   hooks=await connect(runtime,mode);
++   const {approve,observe=async()=>{}}=hooks;
++   const envelope=async()=>JSON.parse((await runtime.db.prepare('SELECT envelope FROM agent_door_state WHERE id=1').first()).envelope);
++   const authority=({iat,exp,...value})=>value;
++   const claims=value=>JSON.parse(Buffer.from(value.split('.')[1],'base64url').toString());
++   const identity=({iat,exp,jti,...value})=>value;
++   const token=()=>accessToken(runtime.context,{act:{sub:runtime.context.agentId,name:'Responder assistant',specialist:'oncall-responder'}});
++   const bearer=await token(),originalClaims=claims(bearer),tokenIds=new Set([originalClaims.jti]);
++   assert.equal(originalClaims.iat,started/1000);assert.equal(originalClaims.exp-originalClaims.iat,300);
++  const {db,http,tool,context}=runtime,name='oncall.actions.submit';
++  const rows=async(sql,...values)=>(await db.prepare(sql).bind(...values).all()).results;
++  const read=async path=>{const response=await http(path);assert.equal(response.status,200);return response.json()};
++  const command=async input=>{const response=await http('/api/command',input);assert.equal(response.status,200);return response.json()};
++  const snapshot=()=>agentEffectSnapshot(runtime),audits=()=>rows('SELECT * FROM agent_door_audit ORDER BY sequence');
++  const permanent=()=>rows('SELECT * FROM oc_admin_audit ORDER BY ordinal');
++  const owner=(await read('/api/workspace')).member;
++  const responder=(await read('/api/state')).members.find(row=>row.active&&row.role==='responder');
++  assert.ok(responder);assert.notEqual(owner.id,responder.id);
++  const classes=[{class:'standard',facts:{measure:1}},{class:'sensitive',facts:{measure:1,kind:'personal_or_incident_evidence'}}];
++  async function bookkeeping(prior){
++   const after=await permanent();assert.deepEqual(after.slice(0,prior.length),prior);
++   for(const row of after.slice(prior.length)){
++    assert.equal(row.kind,'agent-door.persistence');assert.ok(['accepted','refused'].includes(row.outcome));
++    for(const family of ['workspace','paging','handoff'])assert.equal(row[family+'_before'],row[family+'_after']);
++   }
++  }
++
++  assert.equal((await runtime.adopt(policy)).status,200);
++  let incident=await command({type:'declare',service:'agent-service',title:'Synthetic retained evidence submission '+mode,
++   summary:'Ordinary coordination without protected evidence',severity:'warning',alerts:[]});
++  incident=await command({type:'action',incident:incident.id,revision:incident.revision,title:'Synthetic human review follow-up',
++   owner:responder.id,due:'2027-04-12',priority:'P1',completionPolicy:'human-review'});
++  const action=incident.actions.at(-1);
++  assert.equal(action.owner,responder.id);assert.equal(action.due,'2027-04-12');
++  assert.equal(action.priority,'P1');assert.equal(action.completionPolicy,'human-review');
++  assert.equal(incident.recovery,'');assert.deepEqual(incident.alerts,[]);
++  assert.equal(action.done,false);assert.equal(action.evidence,'');assert.equal(action.submission,undefined);assert.equal(action.accepted,undefined);
++  const args={incident:incident.id,revision:incident.revision,action:action.id,
++   evidence:'https://evidence.example.invalid/synthetic-oncall-original',idempotency_key:randomUUID()};
++  const before=await snapshot(),priorAudit=await audits();
++  const first=await tool(name,args,{},bearer);
++  assert.equal(first.status,200);assert.equal(first.body.error,undefined);
++  assert.deepEqual(first.decision.classes.map(({class:cls,facts})=>({class:cls,facts})),classes);
++  assert.equal(first.decision.disposition,mode==='held'?'approval':'autonomous');
++  let handle,savedApproval;
++  if(mode==='held'){
++   assert.equal(first.result.resultType,'input_required');assert.equal(first.result.structuredContent,undefined);
++   const pending=await snapshot();assert.deepEqual(pending.application,before.application);
++   for(const table of Object.keys(before.records).filter(table=>/^(oc_|paging_|workspace_)/.test(table)))
++    assert.deepEqual(pending.records[table],before.records[table],'Pending approval preserves native '+table);
++   assert.equal(pending.records.agent_door_approvals.length,before.records.agent_door_approvals.length+1);
++   assert.deepEqual(pending.records.agent_door_reviews,before.records.agent_door_reviews);
++   handle=first.result._meta['com.runeditrun/approval'];assert.ok(handle);
++   const url=new URL(handle.url);assert.equal(url.origin,runtime.origin);assert.equal(url.pathname,'/agents/approvals/'+handle.id);
++   savedApproval=(await read('/agents/api/approvals/'+handle.id)).approval;
++   assert.equal(savedApproval.state,'pending');assert.equal(savedApproval.decision_id,first.decision.id);
++   assert.equal(savedApproval.revision,context.revision);assert.match(savedApproval.summary_sha256,/^[a-f0-9]{64}$/);
++   assert.deepEqual(savedApproval.classes,classes);assert.deepEqual(savedApproval.approvers,['sponsor']);
++   assert.equal(savedApproval.prepared_by.for.id,owner.id);
++   assert.deepEqual(savedApproval.summary.nativeTarget,{kind:'incident',id:incident.id});
++   assert.ok(savedApproval.summary.items.includes('Revision '+args.revision));
++   assert.ok(savedApproval.summary.items.includes('evidence: '+args.evidence));
++   if(approve)await approve({handle,saved:savedApproval,owner,mode});
++   else{
++    const page=await http(url.pathname);assert.equal(page.status,200);await page.body.cancel();
++    const response=await http('/agents/api/approvals/'+handle.id+'/approve',{
++     revision:savedApproval.revision,summary_sha256:savedApproval.summary_sha256});
++    assert.equal(response.status,200);assert.equal((await response.json()).approval.state,'executed');
++   }
++  }else assert.equal(first.result.isError,false);
++  const once=await snapshot();
++  const retained=once.records.agent_door_calls.filter(row=>row.agent===context.agentId&&row.key===args.idempotency_key);
++  assert.equal(retained.length,1);const [call]=retained,saved=JSON.parse(call.outcome),result=saved.result;
++  assert.equal(call.state,'done');assert.equal(saved.outcome,'done');assert.equal(call.decision_id,first.decision.id);
++  assert.equal(saved.decision.id,first.decision.id);
++  assert.deepEqual(saved.decision.classes.map(({class:cls,facts})=>({class:cls,facts})),classes);
++  assert.equal(result.revision,incident.revision+1);assert.equal(result.timeline.length,incident.timeline.length+1);
++  assert.deepEqual(result.timeline.slice(0,-1),incident.timeline);
++  assert.deepEqual(result.actions,[{...action,evidence:args.evidence,submission:{by:context.agentId,at:result.timeline.at(-1).at,evidence:args.evidence}}]);
++  const entry=result.timeline.at(-1);
++  assert.equal(entry.kind,'complete');assert.equal(entry.actor,context.agentId);
++  assert.equal(entry.metadata.agent.agent.id,context.agentId);assert.equal(entry.metadata.agent.for.id,owner.id);
++  assert.equal(entry.text,'Completion evidence submitted; awaiting human acceptance: '+action.title+' — '+args.evidence);
++  assert.deepEqual(entry.metadata.agent.approvers,mode==='held'?[{id:owner.id,name:owner.name}]:[]);
++  assert.deepEqual(result,{...incident,actions:result.actions,revision:incident.revision+1,timeline:result.timeline});
++  assert.deepEqual(once.application,{...before.application,revision:before.application.revision+1,
++   incidents:before.application.incidents.map(row=>row.id===incident.id?result:row),apiOutbox:once.application.apiOutbox});
++  assert.deepEqual(JSON.parse(once.records.oc_incidents.find(row=>row.id===incident.id).data),result);
++  assert.equal(once.records.workspace_control[0].revision,before.records.workspace_control[0].revision+1);
++  const commits=once.records.oc_admin_audit.filter(row=>!before.records.oc_admin_audit.some(prior=>prior.id===row.id));
++  assert.equal(commits.length,1);assert.equal(commits[0].kind,'actions.submit');assert.equal(commits[0].outcome,'accepted');
++  assert.equal(commits[0].workspace_before,before.application.revision);assert.equal(commits[0].workspace_after,once.application.revision);
++  for(const family of ['paging','handoff'])assert.equal(commits[0][family+'_before'],commits[0][family+'_after']);
++  for(const [field,kind,id] of [['actor','agent',context.agentId],['subject','entity',incident.id],['source','member',owner.id]]){
++   const identity=await db.prepare('SELECT label FROM oc_audit_identities WHERE kind=? AND entity_id=?').bind(kind,id).first();
++   assert.ok(identity);assert.equal(commits[0][field],identity.label,'The native submission audit retains its '+field+' attribution');
++  }
++  assert.equal(once.records.agent_door_calls.length,before.records.agent_door_calls.length+1);
++  assert.deepEqual(once.records.agent_door_reviews,before.records.agent_door_reviews,'Sensitive held execution adds an approval, never a second standard review');
++  assert.equal(once.records.agent_door_approvals.length,before.records.agent_door_approvals.length+Number(mode==='held'));
++  for(const table of Object.keys(before.records).filter(table=>table.startsWith('paging_')))assert.deepEqual(once.records[table],before.records[table]);
++  if(mode==='held'){
++   const approval=once.records.agent_door_approvals.find(row=>row.id===handle.id);
++   assert.equal(approval.state,'executed');assert.deepEqual(JSON.parse(approval.result),saved);
++   assert.deepEqual(JSON.parse(approval.approvals).map(row=>({person:row.person,ref:row.ref})),[{person:owner.id,ref:'sponsor'}]);
++   assert.equal(saved.approval.id,handle.id);assert.equal(saved.receipt.approval_id,handle.id);
++   assert.equal(saved.receipt.decision_id,first.decision.id);assert.deepEqual(saved.receipt.approved_by,[owner.id]);
++   assert.equal(saved.receipt.prepared_by.agent.id,context.agentId);assert.equal(saved.receipt.prepared_by.for.id,owner.id);
++  }else{assert.deepEqual(first.result.structuredContent,result);assert.equal(saved.approval,undefined);assert.equal(saved.receipt,undefined)}
++  const committedAudit=await audits();assert.deepEqual(committedAudit.slice(0,priorAudit.length),priorAudit);
++  const original=JSON.parse(committedAudit.find(row=>row.id===call.decision_id).row);
++  assert.equal(original.tool,name);assert.equal(original.outcome,mode==='held'?'pending':'done');
++  assert.equal(original.replay_of,null);assert.equal(original.idempotency_key,args.idempotency_key);
++  if(mode==='held'){
++   const execution=JSON.parse(committedAudit.find(row=>row.id===saved.execution_id).row);
++   assert.equal(execution.outcome,'done');assert.deepEqual(execution.approval,{id:handle.id,by:[owner.id]});
++  }
++  assert.equal(call.created_at,started);assert.ok(call.expires_at>started+day);
++  assert.equal(result.timeline.at(-1).at,new Date(started).toISOString());
++  assert.equal(result.actions[0].done,false);assert.equal(result.actions[0].accepted,undefined);
++  assert.equal(saved.review,undefined,'Sensitive approval creates no standard review');
++  const approved=handle?(await read('/agents/api/approvals/'+handle.id)).approval:undefined;
++  const originalPolicy=await envelope(),ids=new Set([first.body.id]);
++  const originalRow=committedAudit.find(row=>row.id===call.decision_id);
++  // Establish each comparison after renewal: replay must not take credit for
++  // the receiving door's one new signed-policy event or refreshed custody.
++  for(const elapsed of [day,day+1000]){
++   await runtime.time(started+elapsed);
++   assert.ok(originalClaims.exp<seconds(context.now));
++   const previousPolicy=await envelope(),beforeRenewal=await snapshot();
++   assert.equal((await runtime.renewPolicy()).status,200);
++   const renewed=await envelope();
++   assert.deepEqual(authority(renewed),authority(originalPolicy),'Renew only the unchanged signed policy');
++   assert.ok(renewed.iat>previousPolicy.iat);assert.equal(renewed.exp-renewed.iat,300);
++   const fresh=await token(),freshClaims=claims(fresh);
++   assert.notEqual(fresh,bearer);assert.ok(!tokenIds.has(freshClaims.jti));tokenIds.add(freshClaims.jti);
++   assert.deepEqual(identity(freshClaims),identity(originalClaims),'Same person, agent, client, consent and scopes');
++   assert.equal(freshClaims.iat,(started+elapsed)/1000);assert.equal(freshClaims.exp-freshClaims.iat,300);
++   const before=await snapshot();assert.deepEqual(before.application,once.application);
++   for(const table of Object.keys(once.records).filter(table=>!['agent_door_state','agent_door_events'].includes(table)))
++    assert.deepEqual(before.records[table],once.records[table],'Renewal preserves retained native and original outcome custody: '+table);
++   const previousEvents=beforeRenewal.records.agent_door_events,renewedEvents=before.records.agent_door_events;
++   for(const event of previousEvents)assert.deepEqual(renewedEvents.find(row=>row.id===event.id),event);
++   const added=renewedEvents.filter(row=>!previousEvents.some(prior=>prior.id===row.id));assert.equal(added.length,1);
++   const event=JSON.parse(added[0].event),priorEvent=JSON.parse(previousEvents
++    .filter(row=>JSON.parse(row.event).type==='policy.adopted').sort((a,b)=>a.sequence-b.sequence).at(-1).event);
++   assert.equal(event.type,'policy.adopted');assert.notEqual(event.id,priorEvent.id);
++   assert.equal(event.at,new Date(started+elapsed).toISOString());
++   assert.deepEqual(event,{...priorEvent,id:event.id,at:event.at});
++   const auditBefore=await audits(),permanentBefore=await permanent(),relayBefore=await rows('SELECT * FROM agent_door_relay ORDER BY sequence');
++   const retry=await tool(name,args,{},fresh);
++   assert.equal(retry.status,200);assert.equal(retry.body.error,undefined);assert.equal(retry.result.isError,false);
++   assert.ok(!ids.has(retry.body.id),'Every retained-result retry has a new JSON-RPC id');ids.add(retry.body.id);
++   assert.deepEqual(retry.result.structuredContent,saved.result);assert.deepEqual(JSON.parse(retry.result.content[0].text),saved.result);
++   assert.deepEqual(retry.result._meta['com.runeditrun/receipt'],saved.receipt?{...saved.receipt,decision:saved.decision}:undefined);
++   assert.deepEqual(retry.result._meta['com.runeditrun/review'],saved.review);
++   assert.deepEqual(retry.decision.classes,saved.decision.classes);
++   assert.deepEqual(await rows('SELECT * FROM agent_door_calls WHERE agent=? AND key=?',context.agentId,args.idempotency_key),retained,'Original terminal call, outcome and expiry never slide');
++   assert.deepEqual(await snapshot(),before,'Aged retry preserves complete native records, revisions, timeline, state-changing audit, approvals, reviews and paging');
++   const auditAfter=await audits();assert.deepEqual(auditAfter.slice(0,-1),auditBefore);assert.equal(auditAfter.length,auditBefore.length+1);
++   assert.deepEqual(auditAfter.find(row=>row.id===call.decision_id),originalRow);
++   const attempt=JSON.parse(auditAfter.at(-1).row);
++   assert.equal(attempt.id,retry.decision.id);assert.notEqual(attempt.id,first.decision.id);
++   assert.equal(attempt.tool,name);assert.equal(attempt.outcome,'replayed');assert.equal(attempt.replay_of,call.decision_id);
++   assert.equal(attempt.operation_id,original.operation_id);assert.equal(attempt.idempotency_key,args.idempotency_key);
++   assert.equal(attempt.agent.id,context.agentId);assert.equal(attempt.sponsor.id,owner.id);
++   const relayAfter=await rows('SELECT * FROM agent_door_relay ORDER BY sequence');
++   assert.deepEqual(relayAfter.slice(0,relayBefore.length),relayBefore);
++   assert.deepEqual(relayAfter.slice(relayBefore.length).map(row=>row.decision_id),[attempt.id]);
++   await bookkeeping(permanentBefore);
++   if(handle)assert.deepEqual((await read('/agents/api/approvals/'+handle.id)).approval,approved,'Read original executed approval; never POST it again');
++   await observe({mode,elapsed,incident:result,action:result.actions[0],handle,approved});
++   assert.deepEqual(await snapshot(),before,'Signed-in retained-result inspection changes no custody');
++   assert.deepEqual(await runtime.outboundRequests(),[],'Aged submission retrieval and human inspection never fetch evidence or send requests');
++   console.log('PROBE BASE-AGENT-012 acceptance 1 '+mode+' oncall.actions.submit T+'+elapsed+'ms: unchanged policy renewal and fresh same-identity token; original arguments and key with new RPC id -> original structured outcome, receipt and review identity; original terminal call and expiry, agent-attributed submission, open human acceptance, native revisions, timeline, audit, approvals, reviews and paging unchanged; linked replay attempt only; zero outbound requests and no evidence fetch');
++  }
++  }finally{try{await hooks?.close?.()}finally{await runtime.close()}}
++ }
++}
+diff --git a/tests/oncall-agent-flow.mjs b/tests/oncall-agent-flow.mjs
+index 3a753b9..252c05a 100644
+--- a/tests/oncall-agent-flow.mjs
++++ b/tests/oncall-agent-flow.mjs
+@@ -17,8 +17,9 @@ import {staleScribeExpectedRevision} from './oncall-agent-role-revisions.mjs';
+ import {staleCommunicationsExpectedRevision,staleCommunicationsNativeRevision} from './oncall-agent-communications-revisions.mjs';
+ import {changedServiceNameReplay} from './oncall-agent-service-replay.mjs';
+ import {agedReplayRetention} from './oncall-agent-retention.mjs';
++import {agedActionSubmitRetention} from './oncall-agent-action-submit-retention.mjs';
+ import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-revisions.mjs';
+-import {focusedActionSubmitReplay} from './oncall-agent-action-submit-replay.mjs';
++import {focusedActionSubmitNativeRevision} from './oncall-agent-action-submit-native-revision.mjs';
+ import {focusedActionSubmitResponseLoss} from './oncall-agent-action-submit-response-loss.mjs';
+ import {focusedAssigneeClearReplay} from './oncall-agent-assignee-clear-replay.mjs';
+ import {focusedRoleClearReplay} from './oncall-agent-role-clear-replay.mjs';
+@@ -578,6 +579,7 @@ await (await import('./oncall-agent-alerts.mjs')).alertReads();
+ await (await import('./oncall-agent-analytics.mjs')).analyticsReads();
+ await (await import('./oncall-agent-triage.mjs')).triageReads();
+ await agedReplayRetention();
++await agedActionSubmitRetention();
+ 
+ const runtime=await agentRuntime({clock:null});
+ const code=answer=>answer.result?._meta?.['com.runeditrun/error']?.code??answer.body?.error?.data?.code;
+@@ -1035,7 +1037,7 @@ try{
+  await transitionReplay(runtime);
+  await focusedRoleClearReplay();
+  await focusedAssigneeClearReplay();
+- await focusedActionSubmitReplay();
++ await focusedActionSubmitNativeRevision();
+  await focusedActionSubmitResponseLoss();
+  await staleActionSubmitExpectedRevision(runtime);
+  assert.equal((await runtime.adopt()).status,200);
+diff --git a/tests/portability-cli.mjs b/tests/portability-cli.mjs
+new file mode 100644
+index 0000000..2fe9fb3
+--- /dev/null
++++ b/tests/portability-cli.mjs
+@@ -0,0 +1,55 @@
++import assert from 'node:assert/strict';
++import {spawn} from 'node:child_process';
++import {mkdtemp, rm, writeFile} from 'node:fs/promises';
++import {createServer} from 'node:http';
++import {tmpdir} from 'node:os';
++import {join} from 'node:path';
++
++// Exercise the real CLI and HTTP client; malformed cookies must never reach HTTP.
++const directory = await mkdtemp(join(tmpdir(), 'oncall-portability-cli-'));
++const session = join(directory, 'session.cookie');
++const requests = [];
++const status = {phase:'complete'};
++const server = createServer((request, response) => {
++  requests.push({path:request.url, cookie:request.headers.cookie});
++  response.writeHead(200, {'Content-Type':'application/json'});
++  response.end(JSON.stringify(status));
++});
++try {
++  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
++  const origin = `http://127.0.0.1:${server.address().port}`;
++  const run = () => new Promise((resolve, reject) => {
++    const child = spawn(process.execPath, ['src/modules/portability/cli.mjs', 'status',
++      '--origin', origin, '--session-file', session, '--resume', 'synthetic-oncall-1'],
++    {stdio:['ignore','pipe','pipe'], timeout:5000});
++    let stdout = '', stderr = '';
++    child.stdout.on('data', value => { stdout += value; });
++    child.stderr.on('data', value => { stderr += value; });
++    child.once('error', reject);
++    child.once('close', (code, signal) => resolve({code, signal, stdout, stderr}));
++  });
++  for (const value of ['synthetic-oncall-1', 'AZaz09-_.~+/==', "!#$%&'()*+-./0123456789:<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~"]) {
++    const cookie = 'synthetic_session=' + value;
++    await writeFile(session, cookie + '\n', {mode:0o600});
++    const before = requests.length, result = await run();
++    assert.equal(result.signal, null);
++    assert.equal(result.code, 0, result.stderr);
++    assert.equal(result.stderr, '');
++    assert.deepEqual(JSON.parse(result.stdout), status);
++    assert.deepEqual(requests.slice(before), [{path:'/api/portability/exports/synthetic-oncall-1', cookie}]);
++  }
++  for (const value of ['left,right', 'left\\right', 'left;right', 'left"right', 'left right', 'left\tright', 'left\nright', 'left\rright', 'left\x00right', 'left\x7fright', 'leftéright', '']) {
++    await writeFile(session, 'synthetic_session=' + value, {mode:0o600});
++    const before = requests.length, result = await run();
++    assert.equal(result.signal, null);
++    assert.equal(result.code, 1, 'malformed session cookie must refuse');
++    assert.equal(result.stdout, '');
++    assert.match(result.stderr, /^Transfer failed: /);
++    assert.equal(requests.length, before, 'invalid session cookie must refuse before HTTP');
++    assert.ok(!result.stderr.includes('synthetic_session='), 'diagnostics keep session content private');
++  }
++  console.log('Portability CLI forwards valid cookie octets unchanged and refuses malformed cookies before HTTP');
++} finally {
++  await new Promise(resolve => server.close(resolve));
++  await rm(directory, {recursive:true, force:true});
++}

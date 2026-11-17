@@ -1,0 +1,14 @@
+# sd-oncall-c-f262-lin-1 plan
+
+Author: Run Edit Run fleet. Date: 2026-11-17 UTC.
+
+1. Install fleet identity, launcher, decrypted-bundle Git helper, push guard and clone-local forwarding commit hooks. Clone only just-every/run-oncall, depth 1 and blobless; deepen its history for ancestry and the publication scan.
+2. Fetch fresh main and cloud/sd-oncall-c-f262. Identify round-only commits 9cc53e2b8b09057528fdf501a01127c7cde1300d and 709a43a790f9aadee8b50d89de1a12a872464934. Create cloud/sd-oncall-c-f262-lin-1 from main ecdacdd8 (full SHA recorded in provenance).
+3. Apply only the round's net test changes: restore tests/oncall-agent-action-submit-response-loss.mjs unchanged from feeder; add its HTTP and browser invocations without removing main's native-revision and retention assertions. Do not change product code, CONTRACT.md, ACCEPTANCE.md or docs/CLAIMS.md.
+4. Install the pinned dependencies through the supplied toolchain and cloud_run setup. Check contract generated views without committing them. Regenerate sources.lock.json last with the installed package, then check it. Commit a single ordinary non-merge candidate with fleet identity and active hooks.
+5. On the exact committed candidate: run the completed-result recovery proof through tests/oncall-agent-flow.mjs and tests/agent-door-browser.mjs; the browser case asserts at 1440 and captures its approval/submission screens once at 1440 and 390. Run typecheck, rer check --profile first-party and the lock check. Use Chromium /usr/bin/chromium with --no-sandbox. Stop only owned processes.
+6. Confirm no candidate merges, main's generated views byte-identical, all newer assertions preserved, and feeder-to-candidate differences attributable only to newer main. Run Base's packaged publication scan on the exact committed tree; do not run rer refresh-base or clone Base. Fetch main before push; if needed, rebase only unpublished commits and repeat exact-SHA checks.
+7. Audit all candidate identities, trailers and messages. Push the named product branch through cloud-push.py. Discover and poll exact-SHA Verify via gh api with the decrypted bundle in that process; at most ten GitHub calls and at least 300 seconds between calls for a run. Do not submit or land.
+8. Keep non-secret actual report, receipts, proof screenshots and provenance in this packet only. Publish the explicitly selected complete packet on evidence/sd-oncall-c-f262-lin-1 with cloud_evidence.py. Return the exact evidence line, clause claim and gap, CI IDs and lane POST line, then terminal custody line. Delete the clone after successful transfer and custody; preserve all unpushed work if transport is blocked.
+
+Claim scope: BASE-AGENT-012 acceptance 2 only, selected oncall.actions.submit completed-result recovery under autonomous and held policy. No clause judgment or status cells change; contract remains MISSING.

@@ -1,0 +1,186 @@
+{
+  "schema": 1,
+  "tag": "sd-oncall-c-f262-lin-1",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f262-lin-1",
+  "head": "9599328319a1776018f01965b581656e285324b4",
+  "recorded_at": "2026-11-17T20:16:29.283011+00:00",
+  "checks": [
+    {
+      "name": "typecheck",
+      "command": [
+        "pnpm",
+        "run",
+        "typecheck"
+      ],
+      "head": "9599328319a1776018f01965b581656e285324b4",
+      "start": "2026-11-17T19:42:17.922806+00:00",
+      "end": "2026-11-17T19:42:22.017364+00:00",
+      "seconds": 4.09,
+      "exit": 0
+    },
+    {
+      "name": "first-party-check",
+      "command": [
+        "npx",
+        "-y",
+        "@runeditrun/rer",
+        "check",
+        "--profile",
+        "first-party"
+      ],
+      "head": "9599328319a1776018f01965b581656e285324b4",
+      "start": "2026-11-17T19:42:22.090247+00:00",
+      "end": "2026-11-17T19:42:23.716690+00:00",
+      "seconds": 1.63,
+      "exit": 0
+    },
+    {
+      "name": "source-lock-check",
+      "command": [
+        "node",
+        "node_modules/@runeditrun/rer/edition-authoring/cli.mjs",
+        "check"
+      ],
+      "head": "9599328319a1776018f01965b581656e285324b4",
+      "start": "2026-11-17T19:42:23.788694+00:00",
+      "end": "2026-11-17T19:42:24.290783+00:00",
+      "seconds": 0.5,
+      "exit": 0
+    },
+    {
+      "name": "contract-docs-check",
+      "command": [
+        "node",
+        "src/base/contract-docs.mjs",
+        "check"
+      ],
+      "head": "9599328319a1776018f01965b581656e285324b4",
+      "start": "2026-11-17T19:42:24.364206+00:00",
+      "end": "2026-11-17T19:42:24.609916+00:00",
+      "seconds": 0.25,
+      "exit": 0
+    },
+    {
+      "name": "agent-flow",
+      "command": [
+        "node",
+        "tests/oncall-agent-flow.mjs"
+      ],
+      "head": "9599328319a1776018f01965b581656e285324b4",
+      "start": "2026-11-17T19:42:24.685027+00:00",
+      "end": "2026-11-17T19:52:52.982026+00:00",
+      "seconds": 628.3,
+      "exit": 0
+    },
+    {
+      "name": "agent-browser",
+      "command": [
+        "node",
+        "tests/agent-door-browser.mjs"
+      ],
+      "head": "9599328319a1776018f01965b581656e285324b4",
+      "start": "2026-11-17T19:52:53.108385+00:00",
+      "end": "2026-11-17T19:59:33.556593+00:00",
+      "seconds": 400.45,
+      "exit": 0
+    },
+    {
+      "name": "candidate-build",
+      "command": [
+        "npx",
+        "-y",
+        "@runeditrun/rer",
+        "build"
+      ],
+      "head": "9599328319a1776018f01965b581656e285324b4",
+      "start": "2026-11-17T19:59:47.041729+00:00",
+      "end": "2026-11-17T19:59:59.060325+00:00",
+      "seconds": 12.02,
+      "exit": 0
+    },
+    {
+      "name": "post-build-source-lock-check",
+      "command": [
+        "node",
+        "node_modules/@runeditrun/rer/edition-authoring/cli.mjs",
+        "check"
+      ],
+      "head": "9599328319a1776018f01965b581656e285324b4",
+      "start": "2026-11-17T19:59:59.138997+00:00",
+      "end": "2026-11-17T19:59:59.572395+00:00",
+      "seconds": 0.43,
+      "exit": 0
+    },
+    {
+      "name": "publication-preflight",
+      "command": [
+        "node",
+        "node_modules/@runeditrun/rer/scripts/publish-check.mjs",
+        "--repo",
+        "/workspace/run-oncall",
+        "--ref",
+        "9599328319a1776018f01965b581656e285324b4",
+        "--public-base",
+        "https://github.com/just-every/run-oncall.git#main",
+        "--repository",
+        "just-every/run-oncall"
+      ],
+      "head": "9599328319a1776018f01965b581656e285324b4",
+      "start": "2026-11-17T19:59:59.657415+00:00",
+      "end": "2026-11-17T19:59:59.987629+00:00",
+      "seconds": 0.33,
+      "exit": 2
+    },
+    {
+      "name": "product-push",
+      "command": [
+        "python3",
+        "/home/agent/rer-consolidation/.tools/cloud-push.py",
+        "origin",
+        "cloud/sd-oncall-c-f262-lin-1"
+      ],
+      "head": "9599328319a1776018f01965b581656e285324b4",
+      "start": "2026-11-17T20:00:18.153570+00:00",
+      "end": "2026-11-17T20:00:21.248012+00:00",
+      "seconds": 3.09,
+      "exit": 0
+    }
+  ],
+  "product_custody": "READY",
+  "verify": {
+    "id": 44164645057,
+    "status": "completed",
+    "head_sha": "9599328319a1776018f01965b581656e285324b4",
+    "url": "https://github.com/just-every/run-oncall/actions/runs/44164645057",
+    "conclusion": "success",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44164645057"
+  },
+  "publication": {
+    "local": "INCOMPLETE",
+    "reason": "scan.gitleaks-unavailable",
+    "fleet_scan": "required before landing"
+  },
+  "pr": null,
+  "clause_status_changes": [],
+  "claim": {
+    "clause": "BASE-AGENT-012",
+    "status": "PARTIAL",
+    "points": [
+      2
+    ],
+    "test": "tests/oncall-agent-action-submit-response-loss.mjs#actionSubmitResponseLoss"
+  },
+  "contract_status": "MISSING",
+  "owned_browser_and_server_processes": "stopped",
+  "packet_checks": {
+    "explicit_files": true,
+    "symlinks": false,
+    "injected_value_matches": 0,
+    "credential_tokens": 0,
+    "private_keys": 0,
+    "jwts": 0
+  },
+  "github_calls": 4,
+  "product_blockers": []
+}

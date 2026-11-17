@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-17T19:43:12.307410+00:00",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f262-lin-1",
+  "head": "9599328319a1776018f01965b581656e285324b4",
+  "main": "ecdacdd840fcc4f87f8147c8df1175d6f2d6fb85",
+  "feeder": "709a43a790f9aadee8b50d89de1a12a872464934",
+  "feeder_only_commits": [
+    "9cc53e2b8b09057528fdf501a01127c7cde1300d Prove completed follow-up result recovery through MCP [skip ci]",
+    "709a43a790f9aadee8b50d89de1a12a872464934 Verify lost follow-up results with once-only signed-in approval"
+  ],
+  "candidate_commits": [
+    "9599328319a1776018f01965b581656e285324b4 ecdacdd840fcc4f87f8147c8df1175d6f2d6fb85 Reapply completed follow-up result recovery proof on current main"
+  ],
+  "candidate_merges": [],
+  "changed_files": [
+    "sources.lock.json",
+    "tests/agent-door-browser.mjs",
+    "tests/oncall-agent-action-submit-response-loss.mjs",
+    "tests/oncall-agent-flow.mjs"
+  ],
+  "before_counts": {
+    "lane_registrations": 21,
+    "push_shards": 8,
+    "lanes": 12
+  },
+  "after_counts": {
+    "lane_registrations": 21,
+    "push_shards": 8,
+    "lanes": 12
+  },
+  "unchanged_contract_and_views": true,
+  "response_loss_module_identical_to_feeder": true,
+  "fresh_main_before_push": "ecdacdd840fcc4f87f8147c8df1175d6f2d6fb85",
+  "product_pushed": true,
+  "push_receipt": "product-push.json"
+}

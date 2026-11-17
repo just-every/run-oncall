@@ -1,0 +1,13 @@
+{
+  "name": "typecheck",
+  "command": [
+    "pnpm",
+    "run",
+    "typecheck"
+  ],
+  "head": "6667df3386dc26512d60bf5b3da41eff5a17aaa8",
+  "start": "2026-11-17T19:41:12.085039+00:00",
+  "end": "2026-11-17T19:41:30.174406+00:00",
+  "seconds": 18.09,
+  "exit": 0
+}

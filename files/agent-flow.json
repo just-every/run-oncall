@@ -1,0 +1,12 @@
+{
+  "name": "agent-flow",
+  "command": [
+    "node",
+    "tests/oncall-agent-flow.mjs"
+  ],
+  "head": "9599328319a1776018f01965b581656e285324b4",
+  "start": "2026-11-17T19:42:24.685027+00:00",
+  "end": "2026-11-17T19:52:52.982026+00:00",
+  "seconds": 628.3,
+  "exit": 0
+}

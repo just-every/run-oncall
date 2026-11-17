@@ -1,0 +1,12 @@
+{
+  "name": "agent-browser",
+  "command": [
+    "node",
+    "tests/agent-door-browser.mjs"
+  ],
+  "head": "9599328319a1776018f01965b581656e285324b4",
+  "start": "2026-11-17T19:52:53.108385+00:00",
+  "end": "2026-11-17T19:59:33.556593+00:00",
+  "seconds": 400.45,
+  "exit": 0
+}
