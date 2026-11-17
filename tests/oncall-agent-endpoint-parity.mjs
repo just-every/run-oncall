@@ -131,7 +131,9 @@ async function captureEndpoints({browser,runtime,person,mode,at,native,automatio
    assert.ok(bootstrap,'The protected native page carries its workspace bootstrap');
    const panel=page.locator('#response-api'),recipients=panel.locator(':scope > details').nth(1);
    await panel.waitFor();await recipients.locator(':scope > summary').click();
-   for(const actions of await recipients.locator('.integration-entry-actions').all())await actions.locator('summary').click();
+   for(const actions of await recipients.locator('.integration-entry-actions').all()){
+    const summary=actions.locator('summary');await summary.focus();await summary.press('Enter');
+   }
    if(person.member.role==='admin')for(const endpoint of automation.endpoints){
     await recipients.getByText(endpoint.name,{exact:true}).waitFor();
     await recipients.getByText(endpoint.url+(endpoint.active?'':' · Inactive'),{exact:true}).waitFor();
