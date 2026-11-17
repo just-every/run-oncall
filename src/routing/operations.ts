@@ -61,6 +61,7 @@ export function installRoutingOperations(api:any,deps:RoutingDependencies) {
       :original.monitoring||original.incomplete
       ?receiveMonitoring(state,source,{eventId:original.monitoring?.eventId??'incomplete:'+original.incomplete!.sha256,key,generation:original.monitoring?.sourceGeneration??'incomplete:'+original.incomplete!.sha256,intent:action==='recover'?'recover':'trigger',title,severity,observedAt:observedAt??at,details,links,routingInput:original.routingInput,truncated},{provider:original.provider,monitoring:original.monitoring,incomplete:original.incomplete,explanation,readmission:true},at).receipt
       :receiveCompatible(state,source,original.provider as import('../intake/provider-types.ts').CompatibleProvider,{action,key,title,severity,priority,observedAt,sender,links:structuredClone(links),details:structuredClone(details),truncated},at,{input:original.routingInput,explanation});
+    if(original.sns)receipt.sns=structuredClone(original.sns);
     state.audit.push({id:crypto.randomUUID(),at,actor:actor.id,kind:'routing-readmitted',text:`Re-admitted ${original.id} as ${receipt.id} to ${receipt.service}`,operationId});
     await routingSave(c,deps,state);return c.json(receipt,201);
   });

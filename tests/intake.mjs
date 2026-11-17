@@ -509,3 +509,6 @@ try {
 } finally {await w.close();}
 
 }
+
+// SNS shares this registered intake journey and runs through its public Worker door.
+await (await import('./sns.mjs')).snsJourney();

@@ -17,7 +17,7 @@ export function installIntakeManagement(api:any,deps:Dependencies) {
     await requireNewSubjectIdentity(state,'intake',id)
     if(!/^[a-zA-Z0-9_-]+$/.test(id))fail('Use letters, numbers, hyphens or underscores for the integration ID');
     if(input.revision!==(previous?.revision??0))fail('Integration changed; reload before saving',409);
-    if(input.provider==='native'||!intakeProviders.includes(input.provider)||!state.services.some(s=>s.id===input.service))fail('Choose a supported provider and service');
+    if(input.provider==='sns'||input.provider==='native'||!intakeProviders.includes(input.provider)||!state.services.some(s=>s.id===input.service))fail('Choose a supported provider and service');
     if(previous?.routing)fail('Use routed key management to rotate this key');
     if(previous&&!previous.active&&await c.env.DB.prepare('SELECT 1 FROM oc_incumbent_credentials WHERE source=?').bind(id).first())fail('Use the separate incumbent activation confirmation',409);
     if(previous&&(previous.service!==input.service||previous.provider!==input.provider))fail('Service and provider bindings are immutable; create another integration');
