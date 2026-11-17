@@ -1,0 +1,18 @@
+{
+  "queried_at": "2026-11-17T11:12:54.370564+00:00",
+  "github_core_call": 5,
+  "command": [
+    "gh",
+    "api",
+    "repos/just-every/run-oncall/actions/runs/44069391283",
+    "--jq",
+    "{status,conclusion,head_sha,html_url}"
+  ],
+  "run_id": 44069391283,
+  "response": {
+    "conclusion": "success",
+    "head_sha": "db9f4bf9e5f80d06fb4d055ad35e527361c6d5fe",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44069391283",
+    "status": "completed"
+  }
+}

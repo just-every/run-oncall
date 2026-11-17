@@ -30,7 +30,7 @@ DONE-RIDERS review (no DONE claim):
 
 1. PARTIAL parent; selected native submission diagnostic reached, but other acceptance outcomes remain gaps.
 2. PASS for selected outcome: stale refusal and corrected allowed submission both execute through the public door against populated native data; no-effect snapshot comparisons guard the unsafe path.
-3. Pending exact-SHA Verify; runtime and browser invocations are already selected by existing push shard commands. No workflow changes.
+3. PASS for selected scope: exact-SHA push Verify 44069391283 completed success on db9f4bf9e5f80d06fb4d055ad35e527361c6d5fe. Existing agents and hosted shard commands invoke the runtime and browser journeys. No workflow changes.
 4. Current local candidate tests execute the current committed source and test bytes; final receipt records exact head. Screens will be captured on the same candidate.
 5. Not applicable: no new receiving clause or inherited duty is claimed; native human-review boundary remains with OC-005 and OC-053.
 6. PASS mechanically: contract generator write and check succeeded, generated views restored whole from main, status cells and counts untouched, source lock regenerated using the pinned package. Existing judgment provenance is not rewritten.
@@ -56,3 +56,7 @@ PUBLICATION_SCAN head=db9f4bf9e5f80d06fb4d055ad35e527361c6d5fe complete=false hi
 
 CLAIM BASE-AGENT-012 PARTIAL points=4 tests=tests/oncall-agent-action-submit-native-revision.mjs#actionSubmitNativeRevision; tests/oncall-agent-action-submit-replay.mjs#actionSubmitReplay; tests/agent-door-browser.mjs#actionSubmitNativeRevision
 GAP BASE-AGENT-012: Only the selected required-native submission revision diagnostic is closed. The complete tool and variant matrix, remaining dropped streams and argument conflicts, 24-hour submission retention, remaining revision diagnostics including the separately launched optional expected_revision path, foreign-person job handles and long-work status remain unproved or assigned separately. All named authority, erasure, approval replay, provider, paging and release holds remain unchanged. Contract status remains MISSING; counts remain 26 DONE, 41 PARTIAL, 34 MISSING of 101.
+
+Terminal CI: Verify push run 44069391283 completed SUCCESS on exact candidate db9f4bf9e5f80d06fb4d055ad35e527361c6d5fe, observed 17 November 2026 at 11:12:54 UTC. Three polls followed discovery at intervals of at least 300 seconds; five total GitHub core calls including baseline main discovery. No failure, repair, dispatch or rerun. DONE-RIDERS rows 3 and 4 pass for this selected scope; row 1 remains incomplete for the whole clause, and row 11 awaits the guarded lander. No real product blocker remains for this bounded change.
+
+Final custody: product branch is cloud/sd-oncall-c-f260 at db9f4bf9e5f80d06fb4d055ad35e527361c6d5fe. The final main reference observation is 91984b892ad8e993e0ddd782042d5143ed63baaf. Counts and all Status, Gap and Evidence cells remain unchanged. The separate evidence save at 146122ec33c073cf044a2cb925b1e63c0553cd84 preserved product HEAD and index; this complete final packet supersedes that save with the successful CI receipt. Evidence publication conveys no acceptance or landing signal. The scratch clone and its dependencies will be deleted after final evidence transfer; actual packet files remain outside it.

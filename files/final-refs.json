@@ -1,0 +1,9 @@
+{
+  "observed_at": "2026-11-17T11:13:42.475521+00:00",
+  "refs": {
+    "refs/heads/cloud/sd-oncall-c-f260": "db9f4bf9e5f80d06fb4d055ad35e527361c6d5fe",
+    "refs/heads/evidence/sd-oncall-c-f260": "146122ec33c073cf044a2cb925b1e63c0553cd84",
+    "refs/heads/main": "91984b892ad8e993e0ddd782042d5143ed63baaf"
+  },
+  "main_untouched_by_task": true
+}

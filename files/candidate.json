@@ -39,7 +39,7 @@
     "total": 101
   },
   "contract_status": "MISSING unchanged",
-  "claim": "PARTIAL, bounded acceptance 4 required native revision diagnostic",
+  "claim": "PARTIAL points=4; contract MISSING unchanged",
   "baseline_ci": {
     "verify": 44058962092,
     "verify_conclusion": "success",
@@ -93,10 +93,10 @@
   },
   "ci": [
     {
-      "conclusion": null,
+      "conclusion": "success",
       "head_sha": "db9f4bf9e5f80d06fb4d055ad35e527361c6d5fe",
       "html_url": "https://github.com/just-every/run-oncall/actions/runs/44069391283",
-      "status": "in_progress",
+      "status": "completed",
       "id": 44069391283,
       "name": "Verify",
       "event": "push"
@@ -117,5 +117,28 @@
     "evidence": "push.log",
     "remote_ref_confirmed": true
   },
-  "github_core_calls": 3
+  "github_core_calls": 5,
+  "terminal_status": "READY",
+  "ci_final": {
+    "queried_at": "2026-11-17T11:12:54.370564+00:00",
+    "github_core_call": 5,
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-oncall/actions/runs/44069391283",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "run_id": 44069391283,
+    "response": {
+      "conclusion": "success",
+      "head_sha": "db9f4bf9e5f80d06fb4d055ad35e527361c6d5fe",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44069391283",
+      "status": "completed"
+    }
+  },
+  "main_at_final_observation": "91984b892ad8e993e0ddd782042d5143ed63baaf",
+  "main_equals_candidate": false,
+  "product_blockers": [],
+  "evidence_save_head": "146122ec33c073cf044a2cb925b1e63c0553cd84"
 }
