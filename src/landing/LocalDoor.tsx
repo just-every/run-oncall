@@ -2,7 +2,7 @@ import { HydrationUnit } from "../base/hydration/unit";
 import { useEffect, useState } from "react";
 import { Field, Form } from "../forms";
 import { useWorkspace } from "../useWorkspace";
-import { Handover } from "./Handover";
+import { installationName } from "../identity";
 import { Site } from "./Site";
 import { RestoredOwner } from "./RestoredOwner";
 import "./door.css";
@@ -26,6 +26,7 @@ export function LocalDoor() {
           </p>
           <p className="oc-door-links"><a href="/signin">Owner email sign-in</a><span aria-hidden="true">·</span><a href="/setup">First-run setup</a></p>
           {!restoring && <div className="oc-door-card">
+            <p className="oc-door-installation" data-installation-name>{installationName()}</p>
             <Form
               busy={w.busy || !w.ready}
               label={w.setup ? "Create workspace" : "Sign in"}
@@ -39,10 +40,6 @@ export function LocalDoor() {
           <RestoredOwner onLinked={w.refresh} autoOpen={restoring} />
           {restoring && <button type="button" className="oc-door-reload" onClick={() => setRestoring(false)}>Use a workspace password instead</button>}
         </section></HydrationUnit>
-        <HydrationUnit><div className="oc-door-board">
-          <p className="oc-door-sample">Sample rota · illustrative names and times</p>
-          <div aria-hidden="true"><Handover notes={false} /></div>
-        </div></HydrationUnit>
       </main>
     </Site>
   );
