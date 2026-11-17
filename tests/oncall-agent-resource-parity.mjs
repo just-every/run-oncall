@@ -8,6 +8,7 @@ import {agentRuntime,agentReadSnapshot,assertAgentReadUnchanged} from './agent-d
 import {prepareResourceRecords} from './oncall-agent-fixtures.mjs';
 import {coverageParity} from './oncall-agent-coverage-parity.mjs';
 import {actionParity} from './oncall-agent-action-parity.mjs';
+import {clientParity} from './oncall-agent-client-parity.mjs';
 import {accessToken,autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 
 const observed=Date.parse('2026-11-04T12:00:00.000Z');
@@ -164,6 +165,7 @@ export async function resourceParity({browserProof=false}={}){
   assert.equal(receipt.cases.length,36);
   assert.equal(receipt.actions.cases.length,12);
   await coverageParity({runtime,people,browser,receipt});
+  await clientParity({runtime,people,browser,receipt,client:fixture.client,scopes,at:observed});
   assert.deepEqual(await runtime.outboundRequests(),[]);
   if(evidence){await mkdir(evidence,{recursive:true});await writeFile(evidence+'/resource-parity.json',JSON.stringify(receipt,null,2)+'\n');}
   return receipt;
