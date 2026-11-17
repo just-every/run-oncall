@@ -1,0 +1,9 @@
+{
+  "head": "21764286fa20bdc27a95e537cd5258dd67a90daa",
+  "command": "node /tmp/rer-oncall-retention.mjs",
+  "entry": "import agedReplayRetention from committed tests/oncall-agent-retention.mjs, then await agedReplayRetention()",
+  "exit": 0,
+  "journey": "tests/oncall-agent-retention.mjs#agedReplayRetention",
+  "clock": "real stored outcomes aged through injected platform clock, 86400000 and 86401000 milliseconds",
+  "scope": "autonomous and held; retains assigned-responder case and adds explicit Assignee clear"
+}

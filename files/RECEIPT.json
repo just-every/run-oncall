@@ -1,0 +1,186 @@
+{
+  "schema": 1,
+  "tag": "sd-oncall-c-f253",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f253",
+  "head": "21764286fa20bdc27a95e537cd5258dd67a90daa",
+  "created_at": "2026-11-17T01:49:16.934799+00:00",
+  "starting_main": "3b9cba555f564a4d582b9909305bc8d35c9c8bf1",
+  "save_head": "e56d9d3c64b96bd2a82d0519676bba0e9c1e84fe",
+  "product_pushes": [
+    {
+      "head": "e56d9d3c64b96bd2a82d0519676bba0e9c1e84fe",
+      "result": "PUSH_OK",
+      "attempts": 1,
+      "skips_ci": true
+    },
+    {
+      "head": "21764286fa20bdc27a95e537cd5258dd67a90daa",
+      "result": "PUSH_OK",
+      "attempts": 1,
+      "skips_ci": false
+    }
+  ],
+  "main_observed": "3b9cba555f564a4d582b9909305bc8d35c9c8bf1",
+  "main_equals_candidate": false,
+  "branch_remote_matches_candidate": true,
+  "contract_judgment_changes": [],
+  "counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "local_commands": [
+    {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "exit": 0,
+      "elapsed_seconds": 385.5,
+      "log": "runtime-agents.log",
+      "relevant_bytes_unchanged_on_candidate": true
+    },
+    {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/agent-door-browser.mjs",
+      "exit": 0,
+      "log": "browser.log",
+      "relevant_bytes_match_candidate": true,
+      "proof_widths": [
+        1440,
+        390
+      ]
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "log": "first-party-final.log",
+      "head": "21764286fa20bdc27a95e537cd5258dd67a90daa"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "log": "views-write.log"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "log": "views-check.log"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "log": "lock-write.log"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "lock-check.log",
+      "ok": true
+    },
+    {
+      "head": "21764286fa20bdc27a95e537cd5258dd67a90daa",
+      "command": "node /tmp/rer-oncall-retention.mjs",
+      "entry": "import agedReplayRetention from committed tests/oncall-agent-retention.mjs, then await agedReplayRetention()",
+      "exit": 0,
+      "journey": "tests/oncall-agent-retention.mjs#agedReplayRetention",
+      "clock": "real stored outcomes aged through injected platform clock, 86400000 and 86401000 milliseconds",
+      "scope": "autonomous and held; retains assigned-responder case and adds explicit Assignee clear",
+      "log": "retention-exact-sha.log",
+      "run_id": "sd-oncall-c-f253-retention-exact-sha"
+    }
+  ],
+  "mechanical": {
+    "generated_views_restored_from_main": true,
+    "generator_wrote_documents": 0,
+    "migrations_changed": false,
+    "ledger": "not applicable",
+    "lock_ok": true,
+    "contract_diff_empty": true
+  },
+  "ci": {
+    "run_id": 43997935402,
+    "event": "push",
+    "head_sha": "21764286fa20bdc27a95e537cd5258dd67a90daa",
+    "status": "in_progress",
+    "conclusion": null,
+    "url": "https://github.com/just-every/run-oncall/actions/runs/43997935402",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43997935402",
+    "final_observation": "Status read failed after earlier in_progress; injected bundle now returns HTTP 401 Bad credentials even after launcher refresh."
+  },
+  "publication_scan": {
+    "status": "NOT RUN",
+    "reason": "cloud instructions assign full-history publication scan to the fleet lander",
+    "complete": false,
+    "historyScanned": null,
+    "findings": null
+  },
+  "landing": {
+    "status": "branch only",
+    "run_site_on_candidate": "pending lander",
+    "pr": null
+  },
+  "changed_files": [
+    {
+      "path": "sources.lock.json",
+      "sha256": "3639a3c072a599d7b3c3924c38e79a7d6540befae5bde264146de0ce97f2189b",
+      "committed_blob": "b5851e75984f4bfa0cd6bb6cee7ac3afa570deb5"
+    },
+    {
+      "path": "tests/agent-door-browser.mjs",
+      "sha256": "35ae0de86c1dfc972b7338d39c8dcd19a6899bce90cff4afd5b71f24e8101def",
+      "committed_blob": "42be1850b15faf3303e36e11df1125c97498571d"
+    },
+    {
+      "path": "tests/oncall-agent-assignee-clear-replay.mjs",
+      "sha256": "6e56ef3117169827e12efb115ab4c9a7043fa244bbebccdd1a3fb6f53864ecff",
+      "committed_blob": "08335d003d92e5b19f557a43309b30db3e6822a4"
+    },
+    {
+      "path": "tests/oncall-agent-flow.mjs",
+      "sha256": "5a279ab1c512709641a6bcac43b1bb87d84e3825e3f367a8de98ef4f7b8793ad",
+      "committed_blob": "58f53c088af3b4326ea277c0d372bf84fc7b70b8"
+    },
+    {
+      "path": "tests/oncall-agent-retention.mjs",
+      "sha256": "a06acd6ee8c2f16af6e282e5a9855eb84ce1a717c06b94c00c21e4f349984cbd",
+      "committed_blob": "6479e02c288bb598ecc43d5a4d783f7a832d4a2a"
+    },
+    {
+      "path": "tests/oncall-agent-role-clear-replay.mjs",
+      "sha256": "c226f211e0e7c46a670d93eda82f0120bf932b6d45247d018f79d1df1872ee6d",
+      "committed_blob": "3924a83f095608df25c8744b51b1211c49fefa75"
+    }
+  ],
+  "browser_screens": [
+    "browser/agent-door-assignee-cleared-timeline-1440.png",
+    "browser/agent-door-assignee-cleared-timeline-390.png",
+    "browser/agent-door-assignee-cleared-people-1440.png",
+    "browser/agent-door-assignee-cleared-people-390.png"
+  ],
+  "github_api_calls": 5,
+  "secrets_included": false,
+  "local_invocation_issue": {
+    "command": "node --input-type=module -e await_import_agedReplayRetention",
+    "exit": 247,
+    "phase": "before mf.ready, no assertions reached",
+    "diagnostic": "inherited module flag breaks CommonJS eval worker",
+    "resolved_by": "normal .mjs entry file",
+    "product_changes": false,
+    "detail": "retention-invocation-diagnostic.txt"
+  },
+  "generated_at": "2026-11-17T01:54:28.833997+00:00",
+  "github_rate_limit_diagnostic": {
+    "exit": 1,
+    "http_status": 401,
+    "message": "Bad credentials",
+    "source": "same launcher-decrypted bundle; no alternate credential used"
+  }
+}

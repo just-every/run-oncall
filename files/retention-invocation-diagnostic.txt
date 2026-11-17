@@ -1,0 +1,8 @@
+The optional standalone exact-SHA check first used Node with --input-type=module and -e. Miniflare stalled before mf.ready, without reaching any assertions or printing its owned-runtime startup receipt. Its SynchronousFetcher creates an eval worker thread containing CommonJS require calls. The parent --input-type flag propagates to that worker, interpreting the CommonJS text as an ES module.
+
+Isolated diagnostic command:
+node --input-type=module -e 'import {Worker} from "node:worker_threads"; const w=new Worker("require(\"node:worker_threads\").parentPort.postMessage(\"ready\")",{eval:true}); w.on("error",e=>console.log(e.message));'
+Observed output:
+require is not defined in ES module scope, you can use import instead
+
+Only the Node process and its esbuild and workerd children started by this optional invocation were terminated, by their recorded PIDs. No product source or test was changed. The ordinary tests/runtime.mjs command passed earlier. The replacement exact-SHA invocation uses a normal .mjs file importing the same committed retention journey, with no inherited --input-type flag.
