@@ -29,14 +29,19 @@ function payload(vendor:Vendor,kind:string,raw:any) {
  * carry the full pointer and the disposition/reason/receiving-place sentence. */
 function fieldDecisions(record:MappingRecord,result:MappingResult,emails:Map<string,string>) {
  const raw=record.payload as any,clean=withoutBindings(raw)
- const leaves=raw._pdLeaves??pagerdutyLeaves(clean,record.location.pointer??'')
- const target=result.effects[0],held='Import journal (original retained)',parent=raw._pdParent
+ const base=record.location.pointer??''
+ const leaves=raw._pdFields?[...raw._pdFields.map((pointer:string)=>{
+  const suffix=pointer.slice(base.length),path=suffix?suffix.slice(1).split('/').map(part=>part.replaceAll('~1','/').replaceAll('~0','~')):[]
+  const original=path.length?path.reduce((value:any,key:string)=>value[key],raw):raw._pdRootEmpty?{}:clean
+  return {pointer,path,original}
+ }),...(raw._pdEnvelope??[]).map(([pointer,original]:any[])=>({pointer,path:null,original}))]:pagerdutyLeaves(clean,base)
+ const target=result.effects[0],held='Import journal',parent=raw._pdParent
  return leaves.map((leaf:any)=>{
   const path=leaf.path as string[]|null,field=path?.join('.')??'',first=path?.[0]
-  let disposition='retained-only',reason='No native mapping for this field; resolve manually.',receiving=held
-  const mapped=(place:string,why='Paused data only; no access or send authority.')=>{disposition='mapped';receiving=place;reason=why}
-  if(path===null){reason='Export envelope, pagination or parent binding; provenance only.'}
-  else if(result.rejection){disposition='refused';reason=`Whole ${record.kind} object refused; see its object rejection for the conversion failure.`}
+  let disposition='retained-only',reason='No native mapping.',receiving=held
+  const mapped=(place:string,why='Paused; no access or send authority.')=>{disposition='mapped';receiving=place;reason=why}
+  if(path===null){reason='Export provenance only.'}
+  else if(result.rejection){disposition='refused';reason='Whole object refused; see its rejection.'}
   else if(record.kind==='users'&&target) {
    if(['id','name','email'].includes(first!))mapped(`Paused user.${first==='id'?'sourceId':first}`)
   } else if(record.kind==='contact_methods'&&parent) {
@@ -66,9 +71,9 @@ function fieldDecisions(record:MappingRecord,result:MappingResult,emails:Map<str
   }
   if(disposition==='retained-only'&&path!==null) {
    const difference=(result.unmapped??[]).find(note=>note.field===field||note.field===first||field.startsWith(note.field+'.'))
-   if(difference)reason=`Not converted; see object difference “${difference.field}” for the receiving limitation.`
+   if(difference)reason=`Not converted; see “${difference.field}” difference.`
   }
-  return {field:leaf.pointer,pointer:leaf.pointer,sourceId:record.sourceId,kind:record.kind,disposition,receiving,original:leaf.original,reason:`${disposition}: ${reason} Receiving place: ${receiving}.`}
+  return {field:leaf.pointer,sourceId:record.sourceId,kind:record.kind,disposition,receiving,original:leaf.original,reason:`${disposition}: ${reason} Receiving place: ${receiving}.`}
  })
 }
 export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:number):ImportMapping {
@@ -159,7 +164,7 @@ export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:numbe
    if(record.kind==='schedules') {
     if(errors.has(record.sourceId))throw Error(errors.get(record.sourceId))
     const mapped=schedules.get(record.sourceId);if(!mapped)throw Error('missing rotation definitions')
-    return {...effect('schedule',mapped.schedule.id,{schedule:mapped.schedule,sourceId:record.sourceId,equivalence:equivalence.get(record.sourceId),...mapped.history.length?{history:mapped.history}:{}}),unmapped:mapped.unmapped}
+    return {...effect('schedule',mapped.schedule.id,{schedule:mapped.schedule,sourceId:record.sourceId,equivalence:equivalence.get(record.sourceId),...mapped.history.length?{history:mapped.history}:{}}),unmapped:[...mapped.unmapped]}
    }
    if(record.kind==='timelines')return {effects:[],unmapped:[{field:'timeline',reason:'Retained final timeline is compared with every model/source boundary; no delivery is inferred.'}]}
    if(record.kind==='overrides') {

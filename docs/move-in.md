@@ -298,7 +298,7 @@ Both formats keep the same 500-object and 512 KiB bounds.
 Every original source leaf, including nulls, empty containers, wrapper fields
 and bindings, receives one field decision: **mapped**, **lossy**,
 **retained-only** or **refused**. The saved plan includes its source kind/ID,
-RFC 6901 JSON pointer, original value, reason and intended receiving place.
+RFC 6901 JSON pointer in `field`, original value, reason and intended receiving place.
 Unknown fields remain explicit retained gaps; unknown rotation/rule fields
 still refuse the whole rotation or policy. Converted E.164 contacts remain
 unverified, and immediate escalation timing remains an explicit lossy change.

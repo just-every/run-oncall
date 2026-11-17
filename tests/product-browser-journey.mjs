@@ -100,6 +100,8 @@ async function documentedPagerDutyReview(page,context) {
  assert.equal(response.status(),200);const plan=await response.json()
  assert.equal(plan.summary.sourceRecords,manifest.objects)
  const panel=page.locator('.move-in-step'),fields=plan.items.flatMap(item=>item.unmapped.filter(note=>note.disposition))
+ const leaves=(value,pointer='')=>value&&typeof value==='object'&&Object.keys(value).length?Object.entries(value).flatMap(([key,child])=>leaves(child,pointer+'/'+key.replaceAll('~','~0').replaceAll('/','~1'))):[pointer]
+ assert.deepEqual(fields.map(field=>field.field).sort(),leaves(JSON.parse(raw)).sort(),'catch-up review accounts for each original leaf exactly once, even when planning screens the same bundle repeatedly')
  const summary=panel.getByLabel('Source field accounting',{exact:true})
  await summary.waitFor();assert.ok((await summary.innerText()).includes(String(fields.length)))
  await context.grantPermissions(['clipboard-read','clipboard-write'])
