@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "productHead": "4988fbbe5e310410f02d3cfbd4ffc323bc967a6f",
+  "node": "v22.20.0",
+  "negativeControl": {
+    "kind": "remove only MAIL_FROM from emitted Wrangler vars; not a failure on current main",
+    "exit": 1,
+    "error": "Managed mail requires one public MAIL_FROM sender, not a secret MAIL_FROM"
+  },
+  "currentMain": {
+    "exit": 0,
+    "schema": 2,
+    "mailFromPublic": true,
+    "mailFromValue": "",
+    "matchesNativeDeploymentSpec": true,
+    "builtWranglerRestored": true,
+    "manifestSha256": "8574db2f5a8b3e65ba787604293caad90eac03f61d22989dff2b9393f55b0706",
+    "moduleCount": 70,
+    "assetCount": 69
+  },
+  "worktreeStatus": ""
+}

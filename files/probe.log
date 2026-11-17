@@ -1,0 +1,2 @@
+NEGATIVE CONTROL: omitted emitted MAIL_FROM reproduces the reported error (exit 1).
+CURRENT MAIN: direct packaging passes (exit 0); public empty MAIL_FROM retained; complete artifact specification equals native deployment plan.

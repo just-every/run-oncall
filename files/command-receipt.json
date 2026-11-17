@@ -1,0 +1,86 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/gr-mt-oncall-issue-1",
+  "head": "4988fbbe5e310410f02d3cfbd4ffc323bc967a6f",
+  "commands": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0,
+      "notes": "Installed dependencies and initialized local setup; private setup output excluded from packet."
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "notes": "Final build uses Node 22.20.0 and pnpm 10.12.4; earlier setup/build/typecheck on VM Node 24 were superseded by pinned validation."
+    },
+    {
+      "command": "node scripts/build-delivery-artifact.mjs",
+      "exit": 0,
+      "notes": "Unmodified current-main build and committed packaging policy; initial direct check passed."
+    },
+    {
+      "command": "node packet/probe.mjs <clone> <packet>",
+      "exit": 0,
+      "notes": "Runs direct artifact command in omitted-input negative control (expected exit 1), restores exact emitted bytes, reruns direct command (exit 0), compares complete artifact spec with native generated plan; removes only its own artifact output."
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "notes": "Final pinned toolchain."
+    },
+    {
+      "command": "git status --porcelain",
+      "exit": 0,
+      "stdout": ""
+    },
+    {
+      "command": "git ls-remote origin refs/heads/main refs/heads/evidence/gr-mt-oncall-issue-1",
+      "exit": 0,
+      "notes": "Default head matches investigated SHA; no evidence ref existed before this run."
+    },
+    {
+      "command": "git log origin/main..HEAD --format=\"%an <%ae>%n%cn <%ce>%n%(trailers:only,unfold)\"",
+      "exit": 0,
+      "stdout": "",
+      "notes": "Zero product candidate commits."
+    },
+    {
+      "command": "gh api repos/just-every/run-oncall/actions/runs?head_sha=4988fbbe5e310410f02d3cfbd4ffc323bc967a6f&per_page=100",
+      "exit": 0,
+      "notes": "One GitHub API call; exact-SHA existing runs saved in ci-runs.json. No workflow dispatch/retry, no PR."
+    }
+  ],
+  "counts": {
+    "product_commits_created": 0,
+    "product_files_changed": 0,
+    "tests_added": 0,
+    "tests_deleted": 0,
+    "tests_changed": 0,
+    "direct_packaging": {
+      "negative_control_exit": 1,
+      "current_main_exit": 0,
+      "modules": 70,
+      "assets": 69
+    },
+    "contract_before": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "contract_after": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "publication": {
+    "product_push": "not needed for verified no-change result",
+    "product_scan": "not run: zero new product commits and no product push",
+    "evidence": "separate evidence/gr-mt-oncall-issue-1 report-only tree"
+  },
+  "processes": "Setup and build commands exited; no started server or browser remains."
+}

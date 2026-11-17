@@ -1,0 +1,7 @@
+{
+  "status": "no-change",
+  "sha": "4988fbbe5e310410f02d3cfbd4ffc323bc967a6f",
+  "summary": "Verified the MAIL_FROM artifact-packaging issue is already fixed on current origin/main: the built Worker retains public MAIL_FROM and direct packaging succeeds with the committed policy; no product change is needed.",
+  "tests": "Pinned Node 22.20.0 / pnpm 10.12.4: rer build exit 0; direct node scripts/build-delivery-artifact.mjs exit 0; negative control deleting only emitted MAIL_FROM exit 1 with the reported error; restored current build exit 0 with schema-2 artifact and complete deployment spec equal to native plan; pnpm run typecheck exit 0. Exact-SHA existing Verify 44113252309 success; later Verify 44127289212 cancelled.",
+  "security": true
+}
