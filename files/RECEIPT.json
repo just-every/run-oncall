@@ -2,10 +2,17 @@
   "tag": "sd-oncall-oc031-1",
   "repository": "just-every/run-oncall",
   "branch": "cloud/sd-oncall-oc031-1",
-  "head": "bb4e179efaad0e3fa0372ed637fd0708f583d424",
-  "recorded_at": "2026-11-17T11:05:45.369282+00:00",
+  "head": "b7b365cc882699e2f4582ddb1727a8747977cea4",
+  "recorded_at": "2026-11-17T11:25:26.390280+00:00",
   "first_published_save": "1ca9e3310bd86fae6c0e66ab2caf28a9902b75dc",
   "candidate_commits": [
+    {
+      "head": "b7b365cc882699e2f4582ddb1727a8747977cea4",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": "none",
+      "subject": "Keep SNS archive configuration imports resolvable by native export"
+    },
     {
       "head": "bb4e179efaad0e3fa0372ed637fd0708f583d424",
       "author": "Run Edit Run fleet <fleet@runeditrun.com>",
@@ -58,7 +65,7 @@
       "command": "ONCALL_SNS_BROWSER=1 ONCALL_SNS_PROOF_DIR=<packet> cloud_run node tests/sns.mjs",
       "exit": 0,
       "stdout": "sns-browser.stdout.txt",
-      "head": "bb4e179efaad0e3fa0372ed637fd0708f583d424",
+      "head": "b7b365cc882699e2f4582ddb1727a8747977cea4",
       "assertion_width": 1440,
       "proof_widths": [
         1440,
@@ -97,11 +104,17 @@
       "exit": 0,
       "stdout": "push.stdout.txt",
       "attempt": 1
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer export --output /tmp/oncall-sns-portability.rer --non-interactive",
+      "exit": 0,
+      "stdout": "export.stdout.txt",
+      "note": "Local setup data only; archive is not evidence and is not selected."
     }
   ],
   "ci": {
-    "api_calls_used": 2,
-    "last_call_at": "2026-11-17T11:05:12Z",
+    "api_calls_used": 8,
+    "last_call_at": "2026-11-17T11:15:23Z",
     "superseded_runs": [
       {
         "conclusion": null,
@@ -121,7 +134,18 @@
         "name": "Verify",
         "status": "pending"
       }
-    ]
+    ],
+    "last_observed_status": {
+      "conclusion": null,
+      "head_sha": "bb4e179efaad0e3fa0372ed637fd0708f583d424",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44070724877",
+      "status": "in_progress"
+    },
+    "failed_run": 44070724877,
+    "failed_job": 133997507381,
+    "root_cause": "Node policy import cannot resolve extensionless sns-config module; Worker bundler resolves it. Fixed both Node-reachable import extensions; native rer export now exits 0.",
+    "repaired_candidate": "b7b365cc882699e2f4582ddb1727a8747977cea4",
+    "repaired_candidate_status": "pushed; exact-SHA Verify discovery deferred to conserve remaining two calls"
   },
   "counts": {
     "contract_before": {

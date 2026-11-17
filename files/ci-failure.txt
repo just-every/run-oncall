@@ -1,0 +1,83 @@
+Transfer failed job 133997507381
+shards (transfer)	Run this shard	﻿2026-11-17T11:11:20.3162863Z ##[group]Run node scripts/verify-oncall.mjs "$SHARD"
+shards (transfer)	Run this shard	2026-11-17T11:11:20.3163267Z node scripts/verify-oncall.mjs "$SHARD"
+shards (transfer)	Run this shard	2026-11-17T11:11:20.3173540Z shell: /usr/bin/bash -e {0}
+shards (transfer)	Run this shard	2026-11-17T11:11:20.3475181Z > pnpm run verify:app
+shards (transfer)	Run this shard	2026-11-17T11:11:20.5472221Z 
+shards (transfer)	Run this shard	2026-11-17T11:11:20.5473027Z > @just-every/oncall@0.5.18 verify:app /home/runner/work/run-oncall/run-oncall
+shards (transfer)	Run this shard	2026-11-17T11:11:20.5473469Z > node tests/verify.mjs
+shards (transfer)	Run this shard	2026-11-17T11:11:20.5473603Z 
+shards (transfer)	Run this shard	2026-11-17T11:11:21.2574668Z (node:2768) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (transfer)	Run this shard	2026-11-17T11:11:21.2575811Z (Use `node --trace-warnings ...` to show where the warning was created)
+shards (transfer)	Run this shard	2026-11-17T11:11:22.1413134Z Fresh-clone tests/transfer.mjs: bb4e179efaad0e3fa0372ed637fd0708f583d424
+shards (transfer)	Run this shard	2026-11-17T11:11:22.8341667Z (node:2783) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (transfer)	Run this shard	2026-11-17T11:11:22.8342338Z (Use `node --trace-warnings ...` to show where the warning was created)
+shards (transfer)	Run this shard	2026-11-17T11:12:26.9920725Z Development HTTP door passed: configured owner reads release readiness from the Vite Worker
+shards (transfer)	Run this shard	2026-11-17T11:13:01.3475603Z PROBE OC-018 native restore: Settings archive replacement -> build -> preview private owner link in the same browser -> mapped workspace without administrator selection
+shards (transfer)	Run this shard	2026-11-17T11:13:24.8007712Z Owned transfer HTTP runtime PID 4581
+shards (transfer)	Run this shard	2026-11-17T11:13:50.5049383Z OC-052 populated checkpoint: complete CLI round trip and inactive receiving state passed; activation owns refusal, rollback and concurrency
+shards (transfer)	Run this shard	2026-11-17T11:13:51.3998085Z Owned transfer HTTP runtime PID 4796
+shards (transfer)	Run this shard	2026-11-17T11:13:54.7507772Z PROBE BASE-AGENT-006 point 5 CLI refusal: pinned rer check -> exit 1; oncall.access.read has an empty, duplicate or uncatalogued class: ["standard","sensitive","synthetic-oncall-162"].
+shards (transfer)	Run this shard	2026-11-17T11:13:55.2559667Z PROBE BASE-AGENT-006 point 5 CLI restoration: exact original declaration restored -> pinned rer check exit 0
+shards (transfer)	Run this shard	2026-11-17T11:13:59.7494518Z PROBE OC-018 build: pinned rer build after removing dist -> exit 0, production Worker and client assets, no dev identity or private settings, exact settings restoration
+shards (transfer)	Run this shard	2026-11-17T11:14:09.1017771Z Managed production preview refuses anonymous state and carries no dev identity
+shards (transfer)	Run this shard	2026-11-17T11:14:13.6289606Z PROBE OC-018 deploy dry-run: stopped dev and preview, no Cloudflare or mail credentials -> exit 0, local-only completion, no deployment record, clean production artifacts and exact private settings restoration
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8037080Z Worker diagnostics (test failure):
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8037686Z [stdout] Using secrets defined in ../../oncall-flow-BB74bo/local.env
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8038354Z [stderr] (node:3831) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8038956Z [stderr] (Use `node --trace-warnings ...` to show where the warning was created)
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8039435Z [stdout] {"event":"oncall_demo_seed","rowsWritten":134,"elapsedMs":27}
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8039686Z 
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8039833Z Worker diagnostics (test failure):
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8040215Z [stdout] Using secrets defined in ../../oncall-flow-BVJ5R0/local.env
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8040784Z [stderr] (node:4423) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8041242Z [stderr] (Use `node --trace-warnings ...` to show where the warning was created)
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8041443Z 
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8050386Z node:internal/modules/run_main:123
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8050696Z     triggerUncaughtException(
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8051329Z     ^
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8051408Z 
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8051562Z AssertionError [ERR_ASSERTION]: Checking pinned pnpm
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8051784Z 10.12.4
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8051937Z Local export
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8052150Z Checking archive policy local installation data
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8052523Z The portability module refused or failed the archive operation (invalid_policy_module).
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8052850Z export: failed (exit 4)
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8052955Z 
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8052960Z 
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8053027Z 4 !== 0
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8053120Z 
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8053339Z     at Object.command (file:///tmp/oncall-native-wwJHCy/checkout/tests/transfer.mjs:192:150)
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8053782Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8054183Z     at async file:///tmp/oncall-native-wwJHCy/checkout/tests/transfer.mjs:633:2 {
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8054476Z   generatedMessage: false,
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8054675Z   code: 'ERR_ASSERTION',
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8054849Z   actual: 4,
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8055000Z   expected: 0,
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8055170Z   operator: 'strictEqual',
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8055343Z   diff: 'simple'
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8055496Z }
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8055577Z 
+shards (transfer)	Run this shard	2026-11-17T11:14:15.8055642Z Node.js v22.20.0
+shards (transfer)	Run this shard	2026-11-17T11:14:16.0358172Z  ELIFECYCLE  Command failed with exit code 1.
+shards (transfer)	Run this shard	2026-11-17T11:14:16.0508881Z ##[error]Process completed with exit code 1.
+
+Aggregate failed job 134003258167
+verify	Require the selected coverage and its proof	﻿2026-11-17T11:18:53.1998813Z ##[group]Run set -euo pipefail
+verify	Require the selected coverage and its proof	2026-11-17T11:18:53.2000145Z set -euo pipefail
+verify	Require the selected coverage and its proof	2026-11-17T11:18:53.2001519Z test "$PLAN" = success
+verify	Require the selected coverage and its proof	2026-11-17T11:18:53.2002960Z case "$CONTRACT_DOCS:$SKIP" in
+verify	Require the selected coverage and its proof	2026-11-17T11:18:53.2004541Z   success:false|skipped:true) ;;
+verify	Require the selected coverage and its proof	2026-11-17T11:18:53.2005834Z   *) exit 1 ;;
+verify	Require the selected coverage and its proof	2026-11-17T11:18:53.2007310Z esac
+verify	Require the selected coverage and its proof	2026-11-17T11:18:53.2008427Z case "$PUSH_PROOF:$NIGHTLY_PROOF" in
+verify	Require the selected coverage and its proof	2026-11-17T11:18:53.2009874Z   *failure*|*cancelled*) exit 1 ;;
+verify	Require the selected coverage and its proof	2026-11-17T11:18:53.2011333Z esac
+verify	Require the selected coverage and its proof	2026-11-17T11:18:53.2012357Z case "$COVERAGE" in
+verify	Require the selected coverage and its proof	2026-11-17T11:18:53.2014244Z   reuse) test "$SKIP" = true && test "$BUILD" = skipped && test "$SHARDS" = skipped && test "$LIGHT" = skipped ;;
+verify	Require the selected coverage and its proof	2026-11-17T11:18:53.2016928Z   light) test "$SKIP" = false && test "$LIGHT" = success && test "$BUILD" = skipped && test "$SHARDS" = skipped ;;
+verify	Require the selected coverage and its proof	2026-11-17T11:18:53.2018969Z   full) test "$LIGHT" = skipped && { { test "$BUILD" = success && test "$SHARDS" = success; } || { test "$HAS_SHARDS" = false && test "$BUILD" = skipped && test "$SHARDS" = skipped; }; } ;;
+verify	Require the selected coverage and its proof	2026-11-17T11:18:53.2020547Z   *) exit 1 ;;
+verify	Require the selected coverage and its proof	2026-11-17T11:18:53.2021136Z esac
+verify	Require the selected coverage and its proof	2026-11-17T11:18:53.2270709Z shell: /usr/bin/bash -e {0}
+verify	Require the selected coverage and its proof	2026-11-17T11:18:53.2575456Z ##[error]Process completed with exit code 1.

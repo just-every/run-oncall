@@ -1,0 +1,26 @@
+Using project Node 22.20.0 (current Node 24.19.0).
+Heavy job admitted: Oncall export:workflow [845f241f9cb2]
+Checking pinned pnpm
+10.12.4
+Local export
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+Checking archive policy local installation data
+Checking migration history for local installation data
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+Exporting local installation data
+Exporting local data (9.6 MB on disk). Archive size and time remaining are not known yet. Progress follows every few seconds.
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+Building the archive: 1 part so far (297 B).
+Building the archive: 4 of 4 parts (1.7 KB).
+Writing the archive: 1 of 4 parts (205 KB).
+Writing the archive: 4 of 4 parts (206 KB).
+Checking the written archive.
+Exported the local copy to ../../tmp/oncall-sns-portability.rer (207 KB): 113 tables, 4 rows
+Full output: .seed/installer/commands-8057/install.log
+To restore into an empty installation: rer import --input ../../tmp/oncall-sns-portability.rer --yes

@@ -1,7 +1,7 @@
 ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
 
 
-Owned runtime processes [["7402","7401","MainThread"],["7411","7402","esbuild"],["7421","7402","workerd"],["7427","7402","ps"]]
+Owned runtime processes [["8502","8501","MainThread"],["8511","8502","esbuild"],["8521","8502","workerd"],["8527","8502","ps"]]
 oncall request failure Error
-Owned runtime processes [["7402","7401","MainThread"],["7411","7402","esbuild"],["7562","7402","workerd"],["7568","7402","ps"]]
+Owned runtime processes [["8502","8501","MainThread"],["8511","8502","esbuild"],["8661","8502","workerd"],["8667","8502","ps"]]
 PASS SNS public-door subscription, RSA-SHA1/SHA256 signatures, alarm mapping, unknown state, replay/reorder, unsafe URLs, bounded provider fetches, foreign account/topic, oversize, rotation/revocation and restart; synthetic AWS edge only.

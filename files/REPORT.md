@@ -3,8 +3,8 @@
 Author: Run Edit Run fleet · 2026-11-17 UTC
 Repository: just-every/run-oncall
 Branch: cloud/sd-oncall-oc031-1
-Candidate SHA: bb4e179efaad0e3fa0372ed637fd0708f583d424
-Verify: https://github.com/just-every/run-oncall/actions/runs/44070724877 (pending when first discovered)
+Candidate SHA: b7b365cc882699e2f4582ddb1727a8747977cea4
+Verify: repaired candidate pushed; exact-SHA Verify pending. Previous failure and repair are recorded below.
 
 ## Scope and implementation
 
@@ -36,3 +36,11 @@ GAP OC-031: Acceptance point 1 requires an authorized real AWS topic and real Cl
 EVIDENCE OC-031: tests/sns.mjs#snsJourney and its registration in tests/intake.mjs; actual stdout, screenshots and exact-SHA CI provenance in this packet. All AWS fixtures and delivery outcomes here are synthetic; none are real-account evidence.
 
 No release metadata, version pin, tag, CONTRACT.md judgments or generated acceptance views were changed. Product and evidence publication are separate. No main push, PR, self-submission or landing was performed. Clones are deleted only after successful product/evidence publication and preservation of the actual packet.
+
+## Exact-SHA CI failure and repair
+
+Verify 44070724877 on bb4e179efaad0e3fa0372ed637fd0708f583d424 failed in transfer job 133997507381 at tests/transfer.mjs:633. The native `rer export` door returned `invalid_policy_module`. All other product shards, build and contract-docs passed. Aggregate job 134003258167 failed because that transfer shard failed. Each failed job archive was read once; sanitized excerpts are in ci-failure.txt, without the workflow environment dump.
+
+The new intake model imported sns-config without a `.ts` extension, and sns-config imported the domain without its `.ts` extension. The Worker bundler resolved these imports, while native Node's portability-policy loader could not. Directly loading scripts/installer/archive-policy.mjs reproduced ERR_MODULE_NOT_FOUND. Both imports now use explicit `.ts` paths, matching the surrounding Node-reachable archive graph. The native policy module loads and the public pinned `rer export` command succeeds (113 tables, four local setup rows). Its actual stdout is export.stdout.txt; the archive itself is private local recovery data and is not in this packet. No portability assertion or provider test was weakened.
+
+Repaired candidate: b7b365cc882699e2f4582ddb1727a8747977cea4. Typecheck, production build, source-lock regeneration/check and the exact-commit SNS/browser journey passed again. Four fleet-authored commits are preserved on the same branch; no published history was rewritten.
