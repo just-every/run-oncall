@@ -93,7 +93,7 @@ export function AppShell() {
     </dialog>
     <main className="workspace" id="main" tabIndex={-1}>
       <header className="header"><h1>{title}</h1></header>
-      {!w.demo && <div className="authority">Existing pager authoritative · paging OFF · schedules and coordination</div>}
+      {!w.demo && <div className="authority">Your pager wakes people. Oncall records who is on call.</div>}
       <div role="status" className="notice" aria-live="polite">{w.busy ? 'Saving…' : w.notice}</div>
       <FailureLine failure={w.failure} />
       {stakeholder ? <StatusPanel actor={actor} /> : <>
