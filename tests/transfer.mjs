@@ -1,4 +1,4 @@
-import {localMailChoiceRefusal,signedInInstallation,compiledHealth} from './installation-fit.mjs'
+import {localMailChoiceRefusal,signedInInstallation,compiledHealth,installationNaming} from './installation-fit.mjs'
 import {developmentReadiness} from './readiness.mjs'
 import {recordHealthOutcome} from './health-outcomes.mjs'
 import {generateKeyPairSync,sign,createHash,randomUUID,randomBytes,createHmac} from 'node:crypto'
@@ -247,6 +247,7 @@ await mkdir('.rer/local',{recursive:true,mode:0o700});await mkdir('exports',{rec
 const answers='.rer/local/transfer-answers.json',archive='exports/transfer-proof.rer',corrupt='exports/transfer-corrupt.rer',invalidRecords='exports/transfer-invalid-records.rer',later='exports/transfer-later.rer'
 await writeFile(answers,JSON.stringify({OWNER_EMAIL:'transfer-owner@example.test'}),{mode:0o600})
 try{
+ await installationNaming();
  await localMailChoiceRefusal(m,answers);
  await m.command(['setup','--answers',answers,'--port',String(m.port),'--non-interactive']);await business.configure();await m.start()
  let cookie=await m.owner(),req=(path,input)=>m.request(path,input,cookie),member=ok(await req('/api/session')).member

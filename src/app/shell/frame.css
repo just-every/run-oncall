@@ -42,3 +42,5 @@
   .oncall-frame .shell-sheet .navigation {display: flex; flex-direction: column; flex-wrap: nowrap; gap: 4px;}
   .oncall-frame .shell-sheet .nav {padding: 10px 12px;}
 }
+
+.general-settings {max-width: 640px; padding: 24px;}

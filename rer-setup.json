@@ -34,8 +34,8 @@
   "fields": [
     {
       "name": "APP_NAME",
-      "label": "Application name",
-      "help": "The name shown in your new application.",
+      "label": "What should we call this?",
+      "help": "For example, Brightwell Support. Shown in your header, browser tab and sign-in pages.",
       "kind": "text",
       "required": true,
       "default": "Oncall",

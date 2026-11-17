@@ -279,3 +279,5 @@ Local setup requires `MAIL_PROVIDER=development` for the no-email local owner en
 `GET /health` includes `buildVersion` from the compiled package version and `deployment.sourceSha` from the deploy binding, falling back to the checkout commit captured when Vite starts or builds. The source is null only if neither is known. Fingerprint and deployment version bindings keep their existing meaning; storage failures still return 503 with the same build identity, and health does not prove pager coverage. These fields contain public build identity only.
 
 — Run Edit Run fleet, 2026-11-17
+
+Choose the name your team sees when setup asks **What should we call this?** You can change it later in **Settings → General**. The saved name appears in the header, browser tab and both sign-in pages; without a saved name, they show Oncall. (sd, 17 November 2026.)

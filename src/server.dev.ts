@@ -1,6 +1,7 @@
+import { installationDocument } from './brand/installation';
 // Local-only Worker entry. vite.config.ts loads it only for `vite dev`; the
 // deployed main stays src/server.ts, and `rer build` refuses any output that
-// contains the dev layer. It adds dev sign-in, personas and Base's Dev/Demo label.
+// contains the dev layer. Keep its guarded owner entry and personas.
 import worker from './server'
 import { withDevIdentity } from './modules/operator-auth/dev/index.mjs'
 import { authConfig, clearWorkspaceSession, runtimeBindings, type Bindings } from './auth.server'
@@ -26,6 +27,13 @@ export default {
   // API requests must still reject sessions revoked by restore or logout.
   if(request.method === 'GET' && new URL(request.url).pathname === '/auth/dev/enter' && response.status === 303)
    response = clearWorkspaceSession(response, request)
+  if (env.RER_DEMO !== '1' && response.headers.get('content-type')?.startsWith('text/html')) {
+   // The local wrapper adds its suffix after the seed renders. Keep this
+   // installation's name on ordinary pages, including client navigation.
+   const html = (await response.text()).replace(/<style data-rer-label="Dev">[\s\S]*?<\/style><script>[\s\S]*?<\/script>/g, '')
+   const headers = new Headers(response.headers); headers.delete('content-length')
+   response = await installationDocument(new Response(html, {status: response.status, statusText: response.statusText, headers}), runtimeBindings(env), new URL(request.url).pathname)
+  }
   return response
  },
 }
