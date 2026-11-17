@@ -17,6 +17,7 @@ import {staleScribeExpectedRevision} from './oncall-agent-role-revisions.mjs';
 import {staleCommunicationsExpectedRevision,staleCommunicationsNativeRevision} from './oncall-agent-communications-revisions.mjs';
 import {changedServiceNameReplay} from './oncall-agent-service-replay.mjs';
 import {agedReplayRetention} from './oncall-agent-retention.mjs';
+import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-revisions.mjs';
 import {focusedActionSubmitReplay} from './oncall-agent-action-submit-replay.mjs';
 import {focusedAssigneeClearReplay} from './oncall-agent-assignee-clear-replay.mjs';
 import {focusedRoleClearReplay} from './oncall-agent-role-clear-replay.mjs';
@@ -1034,6 +1035,7 @@ try{
  await focusedRoleClearReplay();
  await focusedAssigneeClearReplay();
  await focusedActionSubmitReplay();
+ await staleActionSubmitExpectedRevision(runtime);
  assert.equal((await runtime.adopt()).status,200);
  await specialist({request:runtime.request,origin:runtime.origin,cookie:runtime.cookie,fixtures:runtime.fixtures,tool});
  const events=await tool('oncall.events.list',{limit:200});assert.equal(code(events),'capability_not_declared');assert.equal(events.result.structuredContent,undefined);
