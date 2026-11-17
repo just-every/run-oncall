@@ -71,13 +71,13 @@ export function MoveIn({admin,connect,request}:{admin:boolean;connect:boolean;re
  }
  const refreshAfterSave=async()=>{try{await load()}catch(error){failures.show(transportError(error),{read:true,target:null})}}
  const checkImport=async(planId:string)=>{
-  setReconciliation(null);setStep(4)
+  setReconciliation(null);setErased(null);setStep(4)
   const result=await reconcilePlan(door,planId)
   setReconciliation(result)
   return result
  }
  const applyAndCheck=async(planId:string,fingerprint:string)=>{
-  setReconciliation(null)
+  setReconciliation(null);setErased(null)
   try {
    const result=await applyPlan(door,planId,fingerprint)
    setJob(result)
@@ -134,13 +134,14 @@ export function MoveIn({admin,connect,request}:{admin:boolean;connect:boolean;re
   void run(()=>applyAndCheck(planId,fingerprint),{retryInput:Boolean(planId)})
  }}/>}
  {step===4&&<section className="scheduling-panel move-in-data" aria-live="polite">
+ {erased&&!reconciliation?<><h2>Person erased from this import</h2><p>This import no longer matches its saved export: the person and the source records kept for them are permanently gone. The rest of the imported data is unchanged.</p></>:<>
  <h2>{reconciliation?.ok?'Import complete':reconciliation?'Import differences':busy?'Checking imported data':'Import needs checking'}</h2>
  {reconciliation?<>
  <p>{reconciliation.ok?'Matched. The imported data agrees with the saved export.':'The native data differs from the saved export. Review these differences before continuing.'}</p>
  <p>{reconciliation.counts.sourceRecords} {reconciliation.counts.sourceRecords===1?'object':'objects'} in the file, {reconciliation.counts.present+reconciliation.counts.explained} accounted for ({reconciliation.counts.nativeTargets} created in Oncall, the rest kept as source evidence)</p>
  {!reconciliation.ok&&<ul>{reconciliation.sourceIds.filter(row=>row.status==='mismatched').map(row=><li key={JSON.stringify([row.kind,row.sourceId])}>{row.kind}: {row.sourceId}<ul>{row.conflicts?.map(conflict=><li key={conflict}>Changed or missing native object: {conflict}</li>)}</ul></li>)}</ul>}
  {reconciliation.ok&&<p>Review imported data below. Adopt a schedule when you’re ready.</p>}
- </>:<p>Check the native data before treating this import as complete. Use Check imported data in the saved journal to try again.</p>}
+ </>:<p>Check the native data before treating this import as complete. Use Check imported data in the saved journal to try again.</p>}</>}
  <button onClick={()=>{setStep(1);setPreview(null);setReconciliation(null)}}>Read another account or file</button></section>}
  {(jobs.length>0||job)&&<section className="scheduling-panel move-in-data">
  <ImportJournal jobs={jobs} job={job} busy={busy} select={selected=>{setJob(selected);setReconciliation(null);setStep(1)}} reconcile={()=>{void run(()=>checkImport(job.door.planId),{read:true,retryInput:true})}} resume={()=>{
@@ -162,8 +163,8 @@ export function MoveIn({admin,connect,request}:{admin:boolean;connect:boolean;re
  }}>Remove the unchanged objects from this import? Adopted or edited data cannot be undone.</InlineConfirm>}
 
 
- </section>}<section className="scheduling-panel move-in-data" hidden={!rows.length&&!erased}><h2>Imported data</h2><p>Data stays paused until you adopt a schedule or activate an integration.</p>{erased&&<p role="status">Imported person erased. Receipt {erased.receiptId.slice(0,8).toUpperCase()}.{erased.nativeMember==='kept'&&' A native member with this email was not changed.'}</p>}{rows.length?<ul className="move-in-objects">{rows.map((row,index)=>{const email=row.value.email??row.targetId,label=[row.value.name,row.value.schedule?.name,labels[row.targetKind+':'+row.targetId],row.value.email].find(value=>typeof value==='string'&&value.trim())??`${vendorNames[(row.value.vendor??row.targetId.split(':')[0]) as keyof typeof vendorNames]??'Imported'} ${row.targetKind==='user'?'person':row.targetKind==='policy'?'escalation policy':row.targetKind} ${index+1}`;return <li key={row.targetKind+row.targetId}><strong>{label}</strong> {row.value.adopted&&<span>Adopted · source paused</span>}{row.targetKind==='user'&&<> <button type="button" disabled={busy} onClick={()=>{setErasing(erasing===row.targetId?'':row.targetId);setTyped('');setErased(null)}}>Erase person</button></>}
+ </section>}<section className="scheduling-panel move-in-data" hidden={!rows.length&&!erased}><h2>Imported data</h2><p>Data stays paused until you adopt a schedule or activate an integration.</p>{erased&&<p role="status">Imported person erased{erased.recordsErased>0&&<>: {erased.recordsErased} saved {erased.recordsErased===1?'record':'records'} removed permanently</>}.{erased.nativeMember==='kept'&&' A native member with this email was not changed.'}</p>}{rows.length?<ul className="move-in-objects">{rows.map((row,index)=>{const email=row.value.email??row.targetId,label=[row.value.name,row.value.schedule?.name,labels[row.targetKind+':'+row.targetId],row.value.email].find(value=>typeof value==='string'&&value.trim())??`${vendorNames[(row.value.vendor??row.targetId.split(':')[0]) as keyof typeof vendorNames]??'Imported'} ${row.targetKind==='user'?'person':row.targetKind==='policy'?'escalation policy':row.targetKind} ${index+1}`;return <li key={row.targetKind+row.targetId}><strong>{label}</strong> {row.value.adopted&&<span>Adopted · source paused</span>}{row.targetKind==='user'&&<> <button type="button" disabled={busy} onClick={()=>{setErasing(erasing===row.targetId?'':row.targetId);setTyped('');setErased(null)}}>Erase person</button></>}
  {row.targetKind==='integration'&&<IncumbentActivation row={{...row,value:{...row.value,name:label}}} services={choices.services} request={request} reload={load}/>}
  {row.targetKind==='schedule'&&<MoveInAdoption row={row} rows={rows} choices={choices} busy={busy} adopt={input=>run(async()=>{await request('/api/move-in/adopt',input);await refreshAfterSave()},{retryInput:hasChangeBase(input)})}/>}
- {erasing===row.targetId&&<form onSubmit={e=>{e.preventDefault();void run(async()=>{const receipt=await request('/api/move-in/erase',{email,confirmation:typed});await refreshAfterSave();setErasing('');setTyped('');setErased(receipt)})}}><label className="scheduling-field">Type "erase {email}" to erase this person from imported data<input value={typed} onChange={e=>setTyped(e.target.value)} autoComplete="off"/></label><button type="submit" disabled={busy||typed!==`erase ${email}`}>Erase permanently</button></form>}</li>})}</ul>:<p>No imported objects.</p>}</section><a className="move-in-footer" href="/docs/move-in">How move-in works</a></section>
+ {erasing===row.targetId&&<form onSubmit={e=>{e.preventDefault();void run(async()=>{const receipt=await request('/api/move-in/erase',{email,confirmation:typed});await refreshAfterSave();setErasing('');setTyped('');setReconciliation(null);setErased(receipt)})}}><label className="scheduling-field">Type "erase {email}" to erase this person from imported data<input value={typed} onChange={e=>setTyped(e.target.value)} autoComplete="off"/></label><button type="submit" disabled={busy||typed!==`erase ${email}`}>Erase permanently</button></form>}</li>})}</ul>:<p>No imported objects.</p>}</section><a className="move-in-footer" href="/docs/move-in">How move-in works</a></section>
 }

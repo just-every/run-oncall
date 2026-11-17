@@ -19,6 +19,7 @@ export function ReviewSheet({incident,state,canEdit,command,onOpenIncident,onSav
   const save=useAutosave({keepSaved:true,storageKey:'review:'+draftScope+':'+incident.id,snapshot:snapshot(current),read:async()=>{const state:State=await request('/api/state');return snapshot(state.incidents.find(i=>i.id===incident.id)!);},write:async change=>{
     const result:Incident=await autosaveRequest('/api/command',{type:'review',incident:incident.id,revision:change.revision,field:change.field==='text'?'review':change.field,to:change.to});setLatest(result);onSaved?.(result);return snapshot(result);
   }});
+  const layers=useRef({menu,confirm});layers.current={menu,confirm};
   const close=()=>{void leaveAfterSaving(()=>{void navigate({to:'/reviews',resetScroll:false} as any);});};
   async function refresh(){try{const value:Material=await request('/api/reviews/'+encodeURIComponent(incident.id)+'/material');setMaterial(value);failures.clear();}catch(error){failures.show(error,{read:true,target:null,retry:refresh});}}
   useEffect(()=>{void refresh();},[incident.id,current.revision,state.revision]);
@@ -28,9 +29,19 @@ export function ReviewSheet({incident,state,canEdit,command,onOpenIncident,onSav
     const frame=requestAnimationFrame(()=>(sheet.current?.querySelector<HTMLElement>('textarea')??sheet.current?.querySelector<HTMLElement>('button'))?.focus({preventScroll:true}));
     return()=>{document.body.style.overflow=overflow;cancelAnimationFrame(frame);requestAnimationFrame(()=>previous?.isConnected&&previous.focus({preventScroll:true}));};
   },[]);
+  const closeRef=useRef(close);closeRef.current=close;
+  useEffect(()=>{
+    // Escape closes the review wherever focus is: acceptance removes the focused button and leaves focus on the page.
+    const onKey=(e:KeyboardEvent)=>{
+      if(e.key!=='Escape'||e.defaultPrevented)return;
+      e.preventDefault();
+      if(layers.current.menu)setMenu(false);else if(layers.current.confirm)setConfirm(false);else closeRef.current();
+    };
+    document.addEventListener('keydown',onKey);
+    return()=>document.removeEventListener('keydown',onKey);
+  },[]);
   return <div className="review-sheet-layer"><div className="review-sheet-shade"/>
     <div className="review-sheet panel padded" role="dialog" aria-modal="true" aria-labelledby="review-sheet-title" ref={sheet} onKeyDown={e=>{
-      if(e.key==='Escape'){e.preventDefault();if(menu)setMenu(false);else if(confirm)setConfirm(false);else close();}
       if(e.key==='Tab'){const nodes=[...sheet.current!.querySelectorAll<HTMLElement>('button:not(:disabled),a[href],textarea:not(:disabled),input:not(:disabled),summary')].filter(n=>n.getClientRects().length);const first=nodes[0],last=nodes.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}
     }}>
       <header className="review-sheet-head"><div><h2 id="review-sheet-title">{incident.title}</h2><a href={'/incidents/'+encodeURIComponent(incident.id)} onClick={e=>{e.preventDefault();void leaveAfterSaving(()=>onOpenIncident(incident.id));}}>Open incident</a></div>
