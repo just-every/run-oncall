@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Form } from '../forms';
 import { request } from '../useWorkspace';
+import { TestAlert } from './TestAlert';
 import { RequestExample } from './RequestExample';
 import { OneTimeSecret } from './OneTimeSecret';
 import { addPath, integrationKinds, newIdentity, privateKey, sourcePath, type IntegrationKind, type IntegrationProps } from './catalog';
@@ -8,7 +9,9 @@ import './integrations.css';
 
 export function AddIntegration(props: IntegrationProps & { kind?: string }) {
   const kind = props.kind && props.kind in integrationKinds ? props.kind as IntegrationKind : undefined;
-  if (!kind) return <section className="panel padded integrations" aria-label="Add integration"><h2>Add integration</h2><ul className="integration-rows">{Object.entries(integrationKinds).map(([key, name]) => <li key={key}><a href={addPath(key)}>{name}</a></li>)}</ul></section>;
+  const [emailDomain, setEmailDomain] = useState<string | null | undefined>();
+  useEffect(() => {if (props.admin) request('/api/email').then(value => setEmailDomain(value.domain)).catch(() => setEmailDomain(undefined));}, [props.admin]);
+  if (!kind) return <section className="panel padded integrations" aria-label="Add integration"><h2>Add integration</h2><ul className="integration-rows">{Object.entries(integrationKinds).sort(([a], [b]) => Number(a === 'email') - Number(b === 'email')).map(([key, name]) => <li key={key}>{key === 'email' && !emailDomain ? <><span aria-disabled="true">{name}</span><p>{emailDomain === undefined ? 'Reading receiving domain…' : 'Set up a receiving domain to receive email alerts.'}</p></> : <a href={addPath(key)}>{name}</a>}</li>)}</ul></section>;
   return <IntegrationCreate key={kind} {...props} kind={kind} />;
 }
 
@@ -20,7 +23,7 @@ export function IntegrationCreate({ state, admin, busy, run, kind }: Integration
   const readEmail = () => { setReadError(false); request('/api/email').then(value => setDomain(value.domain)).catch(() => setReadError(true)); };
   useEffect(() => { if (admin && kind === 'email') readEmail(); }, [admin, kind]);
   if (!admin) return <section className="panel padded integrations"><h2>{integrationKinds[kind]}</h2><p>An administrator can add integrations.</p></section>;
-  if (created) return <section className="panel padded integrations"><h2>{name}</h2><OneTimeSecret value={created.value} readable={kind!=='email'} label={kind === 'email' ? 'Private address' : 'Private key'} />{kind === 'events' && <RequestExample source={created.source} service={state.services.find(s => s.id === service)!} mode={mode} defaultOpen />}<a className="integration-link" href={created.path}>Open source</a></section>;
+  if (created) return <section className="panel padded integrations"><h2>{name}</h2><OneTimeSecret value={created.value} readable={kind!=='email'} label={kind === 'email' ? 'Private address' : 'Private key'} /><TestAlert services={state.services.filter(s => s.id === service)} source={!['email', 'changes'].includes(kind) ? (kind === 'events' ? 'native:' : 'intake:') + created.source : undefined} busy={busy} run={run} />{kind === 'events' && <details><summary>Details</summary><RequestExample source={created.source} service={state.services.find(s => s.id === service)!} mode={mode} privateKey={created.value} /></details>}<a className="integration-link" href={created.path}>Open source</a></section>;
   return <section className="panel padded integrations" aria-label="Create integration">
     <a className="integration-link" href="/settings/integrations">‹ Integrations</a><h2>{integrationKinds[kind]}</h2>
     {!state.services.length ? <p><a href="/settings/services">Add a service first</a></p> : kind === 'email' && domain === undefined ? <p role="status">{readError ? <>Email settings could not be read. <button onClick={readEmail}>Retry</button></> : 'Reading email settings…'}</p> : kind === 'email' && !domain ? <p>Inbound email needs a receiving domain. <a href="/docs/compatible-intake#integration-email">Set up email routing</a></p> : <Form busy={busy} label={kind === 'email' ? 'Create address' : 'Create source'} onSubmit={async () => {

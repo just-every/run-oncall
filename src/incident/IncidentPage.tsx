@@ -2,7 +2,8 @@ import {useEffect, useState} from 'react';
 import {leaveAfterSaving} from '../app/autosave/leaveGuard';
 import {IncidentHead} from './IncidentHead';
 import {PeoplePicker} from './PeoplePicker';
-import {NextStep} from './NextStep';
+import {OnCallNow} from '../on-call/OnCallNow';
+import {NextStep, Reopen} from './NextStep';
 import {Runbook} from './Runbook';
 import {Timeline} from './Timeline';
 import {MoreMenu, incidentActions, type IncidentAction} from './MoreMenu';
@@ -21,7 +22,7 @@ import {useMutateAfterSaves} from './refreshAfterWrite';
 import type {IncidentProps} from './types';
 import './incident.css';
 
-const sheets = {followups: Followups, people: People, responders: Responders, snooze: Snooze, merge: Merge, split: Split, test: TestPage, handoff: Handoff, changes: Changes, context: ServiceContext};
+const sheets = {reopen: Reopen,followups: Followups, people: People, responders: Responders, snooze: Snooze, merge: Merge, split: Split, test: TestPage, handoff: Handoff, changes: Changes, context: ServiceContext};
 export function IncidentPage(incidentProps: IncidentProps) {
   const [menu, setMenu] = useState(false);
   const [action, setAction] = useState<IncidentAction | null>(null);
@@ -38,10 +39,11 @@ export function IncidentPage(incidentProps: IncidentProps) {
     <section className="panel detail incident-page" aria-label="Incident">
       <IncidentHead {...props} actions={() => setMenu(true)} />
       <div className="incident-people"><PeoplePicker {...props} field="commander" label="Lead" /><PeoplePicker {...props} field="assignee" label="Assignee" /></div>
+      <OnCallNow service={props.incident.service} busy={props.busy} taken={props.incident.assignee === props.actor.id} onTake={props.canEdit && props.incident.state !== 'resolved' ? () => {void props.mutate({type: 'reassign', member: props.actor.id});} : undefined} />
       <NextStep {...props} />
       <div className="incident-body"><Runbook {...props} /><Timeline {...props} /></div>
     </section>
-    {menu && <MoreMenu demo={props.demo && props.incident.state !== 'resolved'} canEdit={props.canEdit} close={() => setMenu(false)} choose={action => {setMenu(false);setAction(action);}} />}
+    {menu && <MoreMenu resolved={props.incident.state === 'resolved'} demo={props.demo && props.incident.state !== 'resolved'} canEdit={props.canEdit} close={() => setMenu(false)} choose={action => {setMenu(false);setAction(action);}} />}
     {action && Sheet && <ActionSheet title={incidentActions.find(([id]) => id === action)![1]} close={() => {void leaveAfterSaving(() => setAction(null));}}><Sheet {...props} /></ActionSheet>}
   </div>;
 }

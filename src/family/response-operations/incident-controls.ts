@@ -49,14 +49,13 @@ export function incidentControl(state: State, actor: Member, i: Incident, input:
   } else {
     if (i.state === 'resolved') fail('Incident is already resolved', 409);
     const evidence = link(input.evidence);
-    if (!evidence) fail('Recovery evidence URL is required');
     i.recovery = evidence;
     i.state = 'resolved';
     description = `Resolved with human recovery attestation ${evidence}${suffix}`;
   }
   i.revision++;
   i.timeline.push({id: crypto.randomUUID(), at, actor: actor.id, kind: input.type, text: description,
-    ...(['bulk-acknowledge','bulk-resolve'].includes(input.type)?{lifecycle:{from:previousState,to:i.state,...(input.type==='bulk-resolve'?{evidence:i.recovery}:{})}}:{}),
+    ...(['bulk-acknowledge','bulk-resolve'].includes(input.type)?{lifecycle:{from:previousState,to:i.state,...(input.type==='bulk-resolve'&&i.recovery?{evidence:i.recovery}:{})}}:{}),
     ...(input.operationId ? {operationId: text(input.operationId, 'Operation ID', 100)} : {})});
   return true;
 }

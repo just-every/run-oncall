@@ -6,7 +6,7 @@ export function dailyNavigation(state: State | null, stakeholder = false): NavIt
   return [
     {id: 'on-call', label: 'On call', path: '/on-call', icon: 'on-call'},
     {id: 'incidents', label: 'Incidents', path: '/incidents', icon: 'incidents', count: state?.incidents.filter(row => row.state !== 'resolved' && !row.mergedInto).length ?? 0},
-    {id: 'alerts', label: 'Alerts', path: '/alerts', icon: 'alerts', count: state?.alerts.filter(row => row.state === 'active').length ?? 0},
+    {id: 'alerts', label: 'Alerts', path: '/alerts', icon: 'alerts', count: state?.alerts.filter(row => row.state === 'active' && row.coordination?.state !== 'closed').length ?? 0},
     {id: 'reviews', label: 'Reviews', path: '/reviews', icon: 'reviews'},
     {id: 'status', label: 'Status', path: '/status', icon: 'status'},
   ];

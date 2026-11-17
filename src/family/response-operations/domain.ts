@@ -1,3 +1,4 @@
+import {alertCommand, closeAlert} from '../../alerts/commands';
 import {validateOnCall,validOnCallEntry} from "./on-call-notifications/model.ts";
 import {validateTeams,type Team} from '../../teams/model.ts';
 import {approveWorkflow,workflowShape,type ApprovedWorkflow} from '../../orchestration/workflows.ts';
@@ -670,6 +671,7 @@ function applyCommand(
     state.incidents.unshift(incident);
     return incident;
   }
+  if (['close-alert', 'take-alert'].includes(input.type)) return alertCommand(state, actor, input, at);
   const incident = state.incidents.find((i) => i.id === input.incident);
   if (!incident) fail("Unknown incident", 404);
   if (incident.mergedInto && !["complete","accept-action"].includes(input.type)) fail("This incident is a retained alias; open the merged incident",409);
@@ -690,11 +692,22 @@ function applyCommand(
   let description = "";
   if (input.type === "note") {
     description = text(input.text, "note", 3000);
+  } else if (input.type === 'reopen') {
+    if (incident.state !== 'resolved') fail('Only resolved incidents can be reopened', 409);
+    const resolved = incident.timeline.findLastIndex(entry => entry.lifecycle?.to === 'resolved');
+    const recovery = incident.timeline[resolved - 1];
+    const previous = recovery?.kind === 'recovery-at-resolution' ? recovery.lifecycle?.from : incident.timeline[resolved]?.lifecycle?.from;
+    const target = previous && previous !== 'resolved' ? previous : 'acknowledged';
+    const why = input.reason === undefined || input.reason === '' ? '' : text(input.reason, 'Reason', 3000);
+    description = `Reopened by ${actor.name}${why ? ': ' + why : ''}`;
+    lifecycle = {from: 'resolved', to: target};
+    incident.state = target;
+    delete incident.reviewAcceptance;
   } else if (input.type === "transition") {
     const next: Record<string, string[]> = {
-      declared: ["acknowledged"],
-      acknowledged: ["mitigating", "recovered"],
-      mitigating: ["recovered"],
+      declared: ["acknowledged", "resolved"],
+      acknowledged: ["mitigating", "recovered", "resolved"],
+      mitigating: ["recovered", "resolved"],
       recovered: ["mitigating", "resolved"],
       resolved: [],
     };
@@ -706,13 +719,16 @@ function applyCommand(
       if (!incident.commander) incident.commander = responder;
       incident.assignee = responder;
     }
-    if (input.state === "recovered") {
-      incident.recovery = link(input.evidence);
-      if (!incident.recovery) fail("Recovery evidence URL is required");
+    if (['recovered', 'resolved'].includes(input.state)) {
+      if (input.evidence !== undefined) incident.recovery = link(input.evidence);
+      if (input.state === 'resolved') {
+        const earlier = input.recoveredAt ? Date.parse(input.recoveredAt) : Date.parse(at);
+        if (!Number.isFinite(earlier) || earlier < Date.parse(incident.createdAt) || earlier > Date.parse(at)) fail('Recovery time must be between declaration and now');
+        if (incident.state !== 'recovered') incident.timeline.push({...stamp(actor.id, 'recovery-at-resolution', 'Service recovered at resolution', new Date(earlier).toISOString()), lifecycle: {from: incident.state, to: 'recovered', ...(incident.recovery ? {evidence: incident.recovery} : {})}});
+        if (input.closeAlerts !== false) for (const alert of state.alerts.filter(alert => incident.alerts.includes(alert.id))) closeAlert(alert, actor, at, input.summary);
+      }
     }
-    if (input.state === "resolved" && !incident.recovery)
-      fail("Recovery must be evidenced before resolution");
-    lifecycle={from:incident.state,to:input.state,...(input.state==='recovered'?{evidence:incident.recovery}:{}),...(actor.machine&&input.state==='acknowledged'?{member:input.member}:{})};
+    lifecycle={from:input.state==='resolved'?'recovered':incident.state,to:input.state,...(input.state==='recovered'&&incident.recovery?{evidence:incident.recovery}:{}),...(actor.machine&&input.state==='acknowledged'?{member:input.member}:{})};
     incident.state = input.state;
   } else if (input.type === "runbook") {
     if (!Number.isInteger(input.index) || !incident.runbook[input.index])
@@ -1046,8 +1062,6 @@ export function validateArchive(value: any): State {
         fail("Invalid follow-up references/evidence");
     }
     link(i.recovery);
-    if (["recovered", "resolved"].includes(i.state) && !i.recovery)
-      fail("Missing recovery evidence");
     if (typeof i.review !== "string" || i.review.length > 10000)
       fail("Invalid review");
   }
