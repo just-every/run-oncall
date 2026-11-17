@@ -1,0 +1,29 @@
+{
+  "recordedUTC": "2026-11-17T19:33:41.833318+00:00",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-alert-run-1",
+  "head": "a30db902e6c9a5d69ccbd3ce6ce915e87afbc898",
+  "tree": "15c04bc8240701c238ed9d67e0d7fb0218b6cfa9",
+  "base": "ecdacdd840fcc4f87f8147c8df1175d6f2d6fb85",
+  "clean": true,
+  "candidateCommits": [
+    "a30db902e6c9a5d69ccbd3ce6ce915e87afbc898"
+  ],
+  "identitiesAndTrailers": "Run Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>",
+  "productPaths": [
+    "docs/getting-started.md",
+    "sources.lock.json",
+    "src/alerts/AlertNotificationRun.tsx",
+    "src/alerts/AlertPage.tsx",
+    "src/alerts/alerts.css",
+    "src/app/AlertsPanel.tsx",
+    "src/family/response-operations/on-call-notifications/read.ts",
+    "src/sections/alerts.tsx",
+    "tests/alert-notification-run-browser.mjs",
+    "tests/product-browser.mjs"
+  ],
+  "productFilesChanged": 10,
+  "productRemoteRef": "refs/heads/cloud/sd-oncall-alert-run-1",
+  "pushGuardResult": "PUSH_OK attempt=1",
+  "proofMeaning": "Pushed product custody only; not landing, deployment or publication-scan evidence"
+}

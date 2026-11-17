@@ -1,0 +1,40 @@
+{
+  "githubCalls": 4,
+  "discoveredAt": "2026-11-17T19:28:05.334606+00:00",
+  "head": "a30db902e6c9a5d69ccbd3ce6ce915e87afbc898",
+  "runs": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "a30db902e6c9a5d69ccbd3ce6ce915e87afbc898",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44158860004",
+      "id": 44158860004,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ],
+  "lastPolledAt": "2026-11-17T19:44:01.808146+00:00",
+  "observations": [
+    {
+      "at": "2026-11-17T19:33:19.900625+00:00",
+      "conclusion": null,
+      "head_sha": "a30db902e6c9a5d69ccbd3ce6ce915e87afbc898",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44158860004",
+      "status": "in_progress"
+    },
+    {
+      "at": "2026-11-17T19:38:45.267471+00:00",
+      "conclusion": null,
+      "head_sha": "a30db902e6c9a5d69ccbd3ce6ce915e87afbc898",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44158860004",
+      "status": "in_progress"
+    },
+    {
+      "at": "2026-11-17T19:44:01.808146+00:00",
+      "conclusion": "success",
+      "head_sha": "a30db902e6c9a5d69ccbd3ce6ce915e87afbc898",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44158860004",
+      "status": "completed"
+    }
+  ]
+}
