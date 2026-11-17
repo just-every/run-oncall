@@ -1,0 +1,205 @@
+{
+  "head": "91984b892ad8e993e0ddd782042d5143ed63baaf",
+  "views": {
+    "write": "node src/base/contract-docs.mjs write",
+    "writeExit": 0,
+    "check": "node src/base/contract-docs.mjs check",
+    "checkExit": 0,
+    "output": "Wrote 0 contract documents.\nContract prose: 0 errors, 0 warnings.\nContract documents are current.\n",
+    "committedViews": false
+  },
+  "lock": {
+    "write": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+    "writeExit": 0,
+    "check": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+    "checkExit": 0,
+    "sourceLockSha256": "12690b4793a2f7bf354a9bfe8492a3a10cd7e35e4080aec3d6da5523311d54db",
+    "postVerifyCheckExit": 0
+  },
+  "typecheck": {
+    "command": "pnpm run typecheck",
+    "exit": 0
+  },
+  "firstParty": {
+    "command": "pnpm exec rer check --profile first-party",
+    "exit": 0
+  },
+  "ledger": {
+    "command": null,
+    "exit": 0,
+    "reason": "No migration changes"
+  },
+  "contractJudgmentDiff": "",
+  "productionSourceDiff": "",
+  "statusBefore": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "statusAfter": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "runtime": {
+    "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+    "head": "91984b892ad8e993e0ddd782042d5143ed63baaf",
+    "status": "completed",
+    "exit": 0,
+    "durationSeconds": 419.9
+  },
+  "publicationScan": {
+    "status": "not_run_cloud",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "owner": "guarded Mac lander"
+  },
+  "browser": {
+    "command": "ONCALL_VERIFY_LANE=agent-browser ONCALL_CHROMIUM_PATH=/usr/bin/chromium pnpm exec rer verify",
+    "head": "91984b892ad8e993e0ddd782042d5143ed63baaf",
+    "status": "completed",
+    "exit": 0
+  },
+  "candidateVerify": {
+    "runId": 44051892480,
+    "head": "91984b892ad8e993e0ddd782042d5143ed63baaf",
+    "event": "push",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/just-every/run-oncall/actions/runs/44051892480"
+  },
+  "matrixBefore": {
+    "primary": 36,
+    "actions": 12,
+    "coverage": 12,
+    "clients": 6,
+    "endpoints": 0,
+    "total": 66
+  },
+  "matrixAfter": {
+    "primary": 36,
+    "actions": 12,
+    "coverage": 12,
+    "clients": 6,
+    "endpoints": 4,
+    "total": 70
+  },
+  "browserJourney": {
+    "command": "node tests/agent-door-browser.mjs",
+    "head": "91984b892ad8e993e0ddd782042d5143ed63baaf",
+    "exit": 0,
+    "durationSeconds": 236.4,
+    "endpointScreens": [
+      {
+        "role": "admin",
+        "mode": "autonomous",
+        "path": "/settings/integrations",
+        "kind": "endpoints",
+        "at": "2026-11-04T12:00:00.000Z",
+        "width": 1440,
+        "file": "parity-autonomous-admin-endpoints-1440.png"
+      },
+      {
+        "role": "admin",
+        "mode": "autonomous",
+        "path": "/settings/integrations",
+        "kind": "endpoints",
+        "at": "2026-11-04T12:00:00.000Z",
+        "width": 390,
+        "file": "parity-autonomous-admin-endpoints-390.png"
+      },
+      {
+        "role": "viewer",
+        "mode": "autonomous",
+        "path": "/settings/integrations",
+        "kind": "endpoints",
+        "at": "2026-11-04T12:00:00.000Z",
+        "width": 1440,
+        "file": "parity-autonomous-viewer-endpoints-1440.png"
+      },
+      {
+        "role": "viewer",
+        "mode": "autonomous",
+        "path": "/settings/integrations",
+        "kind": "endpoints",
+        "at": "2026-11-04T12:00:00.000Z",
+        "width": 390,
+        "file": "parity-autonomous-viewer-endpoints-390.png"
+      },
+      {
+        "role": "admin",
+        "mode": "held",
+        "path": "/settings/integrations",
+        "kind": "endpoints",
+        "at": "2026-11-04T12:00:00.000Z",
+        "width": 1440,
+        "file": "parity-held-admin-endpoints-1440.png"
+      },
+      {
+        "role": "admin",
+        "mode": "held",
+        "path": "/settings/integrations",
+        "kind": "endpoints",
+        "at": "2026-11-04T12:00:00.000Z",
+        "width": 390,
+        "file": "parity-held-admin-endpoints-390.png"
+      },
+      {
+        "role": "viewer",
+        "mode": "held",
+        "path": "/settings/integrations",
+        "kind": "endpoints",
+        "at": "2026-11-04T12:00:00.000Z",
+        "width": 1440,
+        "file": "parity-held-viewer-endpoints-1440.png"
+      },
+      {
+        "role": "viewer",
+        "mode": "held",
+        "path": "/settings/integrations",
+        "kind": "endpoints",
+        "at": "2026-11-04T12:00:00.000Z",
+        "width": 390,
+        "file": "parity-held-viewer-endpoints-390.png"
+      }
+    ]
+  },
+  "pinnedVerify": {
+    "command": "ONCALL_VERIFY_LANE=agent-browser ONCALL_CHROMIUM_PATH=/usr/bin/chromium pnpm exec rer verify",
+    "exit": 0,
+    "head": "91984b892ad8e993e0ddd782042d5143ed63baaf",
+    "hydrationPages": 4,
+    "hydrationLoads": 23,
+    "declaredAgentDoorPointsPassed": 9765,
+    "declaredAgentDoorPointsTotal": 9765,
+    "statementViewAndTriggerCount": 474,
+    "sizeCheck": "undeclared"
+  },
+  "productHead": "91984b892ad8e993e0ddd782042d5143ed63baaf",
+  "worktreeClean": true,
+  "refObservation": [
+    "91984b892ad8e993e0ddd782042d5143ed63baaf\trefs/heads/cloud/sd-oncall-c-f257",
+    "8dd2a0acf06b30fbc810c8a2a7e0fe8c01dd85ef\trefs/heads/main"
+  ],
+  "gitIdentityChecks": [
+    "91984b892ad8e993e0ddd782042d5143ed63baaf",
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "",
+    "8dd31437d8e5bd442b229d34067c494cae802a76",
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "",
+    "3172564c73d968a26518675700501e701cf7566a",
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    ""
+  ],
+  "githubRestCalls": 5,
+  "packetCredentialCheck": {
+    "injectedValueMatches": 0,
+    "tokenShapedMatches": 0,
+    "symlinks": 0
+  }
+}
