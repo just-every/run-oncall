@@ -143,7 +143,7 @@ try{
  await runtime.settings(team,2);
  assert.equal((await http('/api/rer/people-link',{businessId:team[0].id,memberId:responder.id,revision:2})).status,303);
  // Show each saved null response role through the ordinary incident page.
- for(const [role,label,timelineLabel] of [['scribe','Scribe','Scribe'],['communications','Communications','Communications lead'],['commander','Lead','Lead']]){
+ for(const [role,label,timelineLabel] of [['scribe','Scribe','Scribe'],['communications','Communications','Communications lead'],['commander','Lead','Lead'],['assignee','Assignee','Assignee']]){
   for(const [mode,policy] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
    assert.equal((await runtime.adopt(policy)).status,200);
    const command=async input=>{const response=await http('/api/command',input);assert.equal(response.status,200);return response.json()};
@@ -156,18 +156,25 @@ try{
    for(const [field,member] of [['scribe',role==='scribe'?responder.id:owner.id],['communications',role==='communications'?responder.id:owner.id],...(role==='commander'?[['commander',responder.id]]:[])])
     target=await command({type:'assign-role',incident:target.id,revision:target.revision,role:field,member,reason:'Synthetic companion responsibility'});
    assert.equal(target[role],responder.id);assert.equal(target.assignee,assignee.id);
-   if(role==='commander')assert.notEqual(target.assignee,target.commander);
+   if(['commander','assignee'].includes(role))assert.notEqual(target.assignee,target.commander);
    const reason='Synthetic saved '+label+' clear '+mode,edge=await runtime.outboundRequests();
-   const answer=await tool('oncall.incidents.update',{change:'assign-role',role,member:null,
+   const change=role==='assignee'?'reassign':'assign-role';
+   const answer=await tool('oncall.incidents.update',{change,...(role==='assignee'?{}:{role}),member:null,
     incident:target.id,revision:target.revision,reason,idempotency_key:randomUUID()});
    assert.equal(answer.result.isError,false);assert.deepEqual(answer.decision.classes.map(row=>row.class),['standard']);
    const saved=answer.result.structuredContent;
    assert.deepEqual(saved,{...target,[role]:null,revision:target.revision+1,timeline:saved.timeline});
    const readingBefore=await agentEffectSnapshot(runtime);
-   const lead='Lead: '+(role==='commander'?'Unassigned':owner.name),assigned='Assignee: '+assignee.name;
+   const lead='Lead: '+(role==='commander'?'Unassigned':owner.name),assigned='Assignee: '+(role==='assignee'?'Unassigned':assignee.name);
    await page.goto(runtime.origin+'/incidents/'+saved.id);
    await page.getByRole('button',{name:lead,exact:true}).waitFor();
    await page.getByRole('button',{name:assigned,exact:true}).waitFor();
+   if(role==='assignee'){
+    await page.getByRole('button',{name:assigned,exact:true}).click();
+    const picker=page.getByRole('dialog',{name:'Choose assignee',exact:true});
+    assert.equal(await picker.getByRole('option',{name:'Unassigned',exact:true}).getAttribute('aria-selected'),'true');
+    await picker.getByRole('button',{name:'Close picker',exact:true}).click();
+   }
    const people=await openIncidentAction(page,'People and priority');
    assert.equal(await people.getByRole('combobox',{name:'Scribe',exact:true}).inputValue(),role==='scribe'?'':owner.id);
    assert.equal(await people.getByRole('combobox',{name:'Communications',exact:true}).inputValue(),role==='communications'?'':owner.id);
@@ -196,7 +203,7 @@ try{
    assert.deepEqual(await agentEffectSnapshot(runtime),readingBefore,'Saved-role page reads preserve all native records, revisions, timeline, state-changing audit, calls, outcomes, expiry, approvals, reviews and paging');
    assert.deepEqual(await runtime.outboundRequests(),edge);
   }
-  console.log('PROBE BASE-AGENT-012 '+label+' clear browser: autonomous and held MCP -> saved Unassigned '+label+', preserved companion roles and explicit assignee, attributed assign-role timeline; changed incident shown at 1440 and 390; zero outbound requests');
+  console.log('PROBE BASE-AGENT-012 '+label+' clear browser: autonomous and held MCP -> saved Unassigned '+label+', preserved companion responsibilities, attributed native timeline; changed incident shown at 1440 and 390; zero outbound requests');
  }
  assert.equal((await runtime.adopt()).status,200);
  async function setLocal(paused){
