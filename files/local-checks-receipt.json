@@ -1,0 +1,77 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17T07:15:32.094666+00:00",
+  "head": "8dd2a0acf06b30fbc810c8a2a7e0fe8c01dd85ef",
+  "tree": "25b9b7f234f72fd9156c4f32e27159b0d7ec96f6",
+  "checks": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit_code": 0,
+      "result": "68 local migrations applied; first owner configured; temporary setup app stopped",
+      "private_log_excluded": true
+    },
+    {
+      "command": "cloud_run pnpm run typecheck",
+      "exit_code": 0,
+      "log": "typecheck.log",
+      "log_sha256": "e78a64be6f96853153339bb62be862f6be3fe8629ed7ff06b76debc9e36dad8b"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit_code": 0,
+      "log": "contract-check.log",
+      "log_sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit_code": 0,
+      "log": "source-lock.log",
+      "log_sha256": "57c4c569a13e6c8d8afa952bfffb92c2cd7ccf07eb4ce94e51c31d711e6a9137"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit_code": 0,
+      "log": "source-lock-check.log",
+      "log_sha256": "098656e433384183f38f571d433a1cc40d2a93062bc2e6546186a4c321df2c1f"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer check",
+      "exit_code": 0,
+      "log": "rer-check.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    },
+    {
+      "command": "git fetch origin main; env GIT_AUTHOR_NAME=... GIT_COMMITTER_NAME=... git rebase origin/main",
+      "exit_code": 0,
+      "result": "Already up to date; no new/replayed commit created"
+    },
+    {
+      "command": "git log origin/main..HEAD --format=\"%an <%ae>%n%cn <%ce>%n%(trailers:only,unfold)\" and all candidate messages",
+      "exit_code": 0,
+      "log": "identity-audit.txt",
+      "result": "One candidate; fleet author and committer; no trailers; no candidate merge commits",
+      "log_sha256": "f1336fb0119fe1de8042ca6af37c9733c36a040bd9aded7f42cd7a84cd650393"
+    },
+    {
+      "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-oncall-release-0-5-18",
+      "exit_code": 0,
+      "log": "product-push.log",
+      "result": "First attempt succeeded; one product head published",
+      "log_sha256": "5a6474b271f402ed9225eade9741426738707e52656c6fced4c6ed42bbd3ec86"
+    }
+  ],
+  "node": "24.19.0",
+  "pnpm": "10.12.4",
+  "installed_rer": "0.2.118",
+  "checks_tree_matches_committed_tree": true,
+  "notes": [
+    "The supplied toolchain keeps the available newer Node version; CI uses the checkout pin.",
+    "Local full Verify was not run; exact-SHA branch Verify supplies the full suite.",
+    "No UI changed in this metadata round, so no new browser proof was needed.",
+    "The cloud cannot run the fleet publication scan; the fleet lander must run it before landing."
+  ]
+}

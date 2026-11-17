@@ -1,0 +1,334 @@
+{
+  "author": "Run Edit Run fleet",
+  "observed_at": "2026-11-17T16:42:00+10:00",
+  "checked_at": "2026-11-17T07:12:41Z",
+  "baseline": "fd4d3556a9eca484bf85651b5733086e102139b0",
+  "previous_tag_head": "3b9cba555f564a4d582b9909305bc8d35c9c8bf1",
+  "commits_since_previous": 11,
+  "version_before": "0.5.17",
+  "version_after": "0.5.18",
+  "rer_pin_before": "0.2.118",
+  "rer_pin_after": "0.2.118",
+  "migrations_before": 68,
+  "migrations_after": 68,
+  "migration_delta": [],
+  "migration_inventory": [
+    {
+      "path": "migrations/core/0001_initial.sql",
+      "sha256": "aa7883c189dc8b0e95984ce34c6a966e7caca591a87019c32ae5e2940e31b608"
+    },
+    {
+      "path": "migrations/core/0002_source_signatures.sql",
+      "sha256": "59281221f73018b2478d2d0bc29dace49ddeae5684204e34f1095e37cfad6e37"
+    },
+    {
+      "path": "migrations/core/0003_ingress_scope.sql",
+      "sha256": "1cfb68e15f95b543ae4cd77709726188ec407eea7b7bd2f753dcd8ef5a480875"
+    },
+    {
+      "path": "migrations/core/0004_transaction_identity.sql",
+      "sha256": "1be9191280b8eb6f449076b5c9da97d295de20c6f83d99d0a2cf7261f1b00083"
+    },
+    {
+      "path": "migrations/core/0005_synthetic_escalations.sql",
+      "sha256": "9b5466a20ab4774dff009c15777d18dff941fca6053fc6153782aa41e13dbbe8"
+    },
+    {
+      "path": "migrations/core/0006_reviewed_handoffs.sql",
+      "sha256": "8c8654f8a5dffb9cdccee22dbb19a80ea700366adfdb207015a7fbe5d9f6d018"
+    },
+    {
+      "path": "migrations/core/0101_owner.sql",
+      "sha256": "a3a586a6b095cae80501c3f22fd8df98f4140e0281bc08f3b944c818a977ecde"
+    },
+    {
+      "path": "migrations/core/0102_outbox.sql",
+      "sha256": "45d6b03eadfe1e91737763ae85cdff74e7216f859869e34431550bba48294996"
+    },
+    {
+      "path": "migrations/core/0103_portability.sql",
+      "sha256": "c7db9042f6d5c571e10297c02df858ad2f3466beb4fa85649fee407cc228747b"
+    },
+    {
+      "path": "migrations/core/0104_first_run.sql",
+      "sha256": "aef92de36233195e5a03cce67b192c5c0c38033b695f7ebce6062fc89152c2a9"
+    },
+    {
+      "path": "migrations/core/0105_identity_providers.sql",
+      "sha256": "f879fb86b079e591dfe4a8513752a8e0394e252b940aa35d3f7430f27b7382c6"
+    },
+    {
+      "path": "migrations/core/0106_relational_workspace.sql",
+      "sha256": "9f365a2cf83a3973ddce0b3abc259aff30cd9d3d91cc111a13b847acf4c0ff28"
+    },
+    {
+      "path": "migrations/core/0107_move_in_journal.sql",
+      "sha256": "e8eb5daa12082608926d8cc9075bd8c1fb04bd1decf4053bedf1dfc1977864ff"
+    },
+    {
+      "path": "migrations/core/0108_pause_held_timers.sql",
+      "sha256": "3a6eebad4189484dafb639a2c4112e7b27624a2f951773671198466b9286f75f"
+    },
+    {
+      "path": "migrations/core/0109_operator_auth_providers.sql",
+      "sha256": "0012702de4b9a004c80a5bb156e4c26256e0ab0c93697970b7574aac1076797c"
+    },
+    {
+      "path": "migrations/core/0110_import_reversal_fence.sql",
+      "sha256": "76b3ab9365dc3faf7d3a91ed88ca82eae4ddc8be547ac70098b03d4faf2d9314"
+    },
+    {
+      "path": "migrations/core/0111_import_retirement.sql",
+      "sha256": "599630141e9bc39169bbdd183a2cdded5ae7cfce0320f527fa62ba4fc03f7f28"
+    },
+    {
+      "path": "migrations/core/0112_erasure.sql",
+      "sha256": "ad288956b8f7e32d7180c5a25f8d3b23747313c080b4148026251c60fac54825"
+    },
+    {
+      "path": "migrations/core/0113_retire_local_mail.sql",
+      "sha256": "69a7a70c416342b3ddbed11f0a6fa876e2da69c9e4ce5ff402d6322e3961461a"
+    },
+    {
+      "path": "migrations/core/0114_import_preparation_steps.sql",
+      "sha256": "05e1d22169d841cccbcdd26fc76f6ca4a41c1ab562d230c83b4ce4a3d66f9310"
+    },
+    {
+      "path": "migrations/core/0115_import_stream_sources.sql",
+      "sha256": "16c5fc06273046bf82587559de20942f5a4888617ab494ff6c046e689daa2dfd"
+    },
+    {
+      "path": "migrations/core/0116_owner_signin.sql",
+      "sha256": "98da904e768e35b43fb1be83d9dcc9c9b5d86ab3a795234ed5223c4fddc567d9"
+    },
+    {
+      "path": "migrations/core/0117_owner_claim.sql",
+      "sha256": "c3ffe653727bb4867b064dc2489df5013613f08f4b5998d2fe2b6a8485cdb815"
+    },
+    {
+      "path": "migrations/core/0118_incident_triage.sql",
+      "sha256": "ea1d63e01a85f9223208a5b606700e37f8b89b5a3d5a7ffc44489e35ca5ce00a"
+    },
+    {
+      "path": "migrations/core/0119_change_events.sql",
+      "sha256": "c5b43b291cb1fb4bdf6a595be677416ba5c276bd68a2e57388a7d25b3fa6d949"
+    },
+    {
+      "path": "migrations/core/0120_compatible_intake.sql",
+      "sha256": "5fe80ebe0cf007e4a43781080b3bf52afd4e5b32a40821d594328147ff867d90"
+    },
+    {
+      "path": "migrations/core/0121_business_import_door.sql",
+      "sha256": "7c1924942bfbf26eab794eaa82583bc5f3f0a1ec3480c03139402319e64694b2"
+    },
+    {
+      "path": "migrations/core/0122_import_custody_replace.sql",
+      "sha256": "6d582fd6c2f7da6fee6fedc05151faf2b67c8de7d1a8cc4f6224ae8d2ae82636"
+    },
+    {
+      "path": "migrations/core/0123_import_erasure_progress.sql",
+      "sha256": "1b19bc313f67373d54b2b992b15b287106869573952c48b735a5bfc01bd977eb"
+    },
+    {
+      "path": "migrations/core/0124_import_door_apply_failures.sql",
+      "sha256": "a7671015a54d265b7ba8b0baee8dd574266c042823962fa50631c950b99b9236"
+    },
+    {
+      "path": "migrations/core/0125_import_door_scopes.sql",
+      "sha256": "4c5b78455ddf7b3e43482351e60304482bffd5798ef6352bf269b2d409f941b5"
+    },
+    {
+      "path": "migrations/core/0126_move_in_previews.sql",
+      "sha256": "0734d00c6618a39f3841e621381a5494ff683f9101f22981f97b3919aa8af959"
+    },
+    {
+      "path": "migrations/core/0127_source_signing_custody.sql",
+      "sha256": "d6879df0c06678b85db2322e09a0fd1d9b9d56ec48a2c53a62d0a0c3fe88a6f5"
+    },
+    {
+      "path": "migrations/core/0128_import_door_archive.sql",
+      "sha256": "6a99800f2320007a4e784d896c9cb2bd96a48992b137289b090a9214f36b9e13"
+    },
+    {
+      "path": "migrations/core/0129_admin_audit.sql",
+      "sha256": "5708d0f91486a29cb9026e9e98ec579676abad086929388bbb0272038de36c5d"
+    },
+    {
+      "path": "migrations/core/0130_import_audit_lifecycle.sql",
+      "sha256": "763b53e17d4e04d9e79cd92b9196ed24bc0cbd89c571f4e71865e91a61a7e0f5"
+    },
+    {
+      "path": "migrations/core/0131_inbound_email.sql",
+      "sha256": "f8a56b7797293c8928af3da8f1fe29ad135f288573492fd740989d42eda5d5eb"
+    },
+    {
+      "path": "migrations/core/0132_scoped_automation.sql",
+      "sha256": "4fcd8119e7e867cc2a462a269a8b1bd1cbdf982e49ce80c000bb78f6854c8819"
+    },
+    {
+      "path": "migrations/core/0133_native_routed_keys.sql",
+      "sha256": "bc848633b3bf061c36ca165faafaf616429d340c54d67cd8ddb5f106457bd8db"
+    },
+    {
+      "path": "migrations/core/0134_key_allowances.sql",
+      "sha256": "e3bccf1e3a372a123a8b31e59befa6b8d6f9af2c11bd2341cdb92acae1c80391"
+    },
+    {
+      "path": "migrations/core/0135_native_prefix_custody.sql",
+      "sha256": "ad18c0ad86fb4bd501440e1dddbd25e339e4725322d7acb2fd0e725d4e4915c5"
+    },
+    {
+      "path": "migrations/core/0136_subject_erasure_fences.sql",
+      "sha256": "d4ebc124a253adc93f209d6bce6d6f74d015c854fc23c4eb48a50151ead3743a"
+    },
+    {
+      "path": "migrations/core/0137_named_responder_audit.sql",
+      "sha256": "1778e49b0260a019189cf7f29cab94a15d589f9248008bc789b547eebdcc3ec4"
+    },
+    {
+      "path": "migrations/core/0140_incumbent_intake_credentials.sql",
+      "sha256": "6d960f77ca4d255029ccb0d9d711462b5f46a0a1c2bcba8db46eb463b6372e12"
+    },
+    {
+      "path": "migrations/core/0141_business_status.sql",
+      "sha256": "9b5d0f59f3227ba0fef8f301d01e6f38d83595af432d941db5cb937a14b388f9"
+    },
+    {
+      "path": "migrations/core/0142_manual_command_receipts.sql",
+      "sha256": "8064fe877c22bf0500ff5c20d274cbd4e8b2e0dea986fa9e3e4fef4faf2c54a0"
+    },
+    {
+      "path": "migrations/core/0143_schedule_coordination.sql",
+      "sha256": "7caa6b10f36b6bea311418d8203bcd7725685218b88824c638773ad86b97537b"
+    },
+    {
+      "path": "migrations/core/0144_erased_report_cases.sql",
+      "sha256": "eb50a653819e6aa30a2aa89bba3ed81672f6f80612a37a4b63f56408f01b2f79"
+    },
+    {
+      "path": "migrations/core/0145_teams.sql",
+      "sha256": "aa085fd026b358ec4b4703d0ab7efc9eed16e52c60a0b630f74bcb30826b6ca5"
+    },
+    {
+      "path": "migrations/core/0146_move_in_consent.sql",
+      "sha256": "fc38b4efd3d493120245bc551516ab5e1f058a8dd9880e0172171753547af209"
+    },
+    {
+      "path": "migrations/core/0147_agent_door.sql",
+      "sha256": "016d8a98b964385f5c4a13447361c3c783910a76aaf4606b0e0081482bc819cc"
+    },
+    {
+      "path": "migrations/core/0148_business_settings.sql",
+      "sha256": "a16f736a781aa3fe02a2e090c993f8c360c904f9fb6d86126acdab6e1f24e773"
+    },
+    {
+      "path": "migrations/core/0149_business_people.sql",
+      "sha256": "51aa39622d866b987d71b6e37c9a8300e7f24c54a55611edaab669ed051b01cd"
+    },
+    {
+      "path": "migrations/core/0150_agent_native_custody.sql",
+      "sha256": "9b33d5031ccb95115447bac818a0befd6cc34f617fbd1cb3656523295d4c3b80"
+    },
+    {
+      "path": "migrations/core/0151_agent_operation_custody.sql",
+      "sha256": "54b5e6f410ffea2dfadf15109f0899592398a9468709cbcb1928a8e65f60a5c3"
+    },
+    {
+      "path": "migrations/core/0152_native_person_events.sql",
+      "sha256": "596ab888ae8a8231e1dad1a3d2cb6afa62bba1b3ff56e586412bad83e10a49e3"
+    },
+    {
+      "path": "migrations/core/0153_agent_deadline_custody.sql",
+      "sha256": "856587abce9157b4c71c7adecdd6ff125fdebbd20b58b43d92582c1407e6cb38"
+    },
+    {
+      "path": "migrations/core/0154_agent_schedule_receipts.sql",
+      "sha256": "0c32dc751ae6cc6fe265495609e7959df5c8ee473cfa72f165a8aea167019555"
+    },
+    {
+      "path": "migrations/core/0155_agent_erasure_receipts.sql",
+      "sha256": "20828509eeeb24cd0e5185efc85ba3d52732bbdb6a6cd6686c054715b0f655e6"
+    },
+    {
+      "path": "migrations/core/0156_agent_team_receipts.sql",
+      "sha256": "753bd673792455f4cf1474288bfd913b96ca11bab6a0b5f41d6561e82c95e812"
+    },
+    {
+      "path": "migrations/core/0157_audit_detail.sql",
+      "sha256": "375ffbbc7c74d2027d91a35346bb6707d0081a80d337ea3c9cd171193bc2e31a"
+    },
+    {
+      "path": "migrations/core/0158_agent_replay_custody.sql",
+      "sha256": "bfeb00828277bb1b7b8e21856110eb4e15789d0fb0a142b22f3613ef3e8fa7b6"
+    },
+    {
+      "path": "migrations/core/0159_agent_door_relay.sql",
+      "sha256": "8b9514ad840af9990bb2113781c48e074cf0a064bb45708d0e81127ebd0fb5d6"
+    },
+    {
+      "path": "migrations/core/0160_agent_erasure_classes.sql",
+      "sha256": "4d3f982601fc1be08cac7ca48b4f4bbc86d6a4395b56bdb736ee6902d0206722"
+    },
+    {
+      "path": "migrations/core/0161_agent_retired_refs.sql",
+      "sha256": "f479b410066f52b0c6872e07e11b62b073f26c16d8dd70b17564aad92cfe7d6a"
+    },
+    {
+      "path": "migrations/core/0162_agent_door_relay_privacy.sql",
+      "sha256": "fb9e276013234f2f3afbd10dc654e93edc361b2165fd4cb2c0273ce44ab70a7a"
+    },
+    {
+      "path": "migrations/core/0163_business_retired.sql",
+      "sha256": "1bfc79bfe6432e03a4eba9843ab10fae6a501e7ac5b9fd98caf42054c9f36c0c"
+    },
+    {
+      "path": "migrations/core/0164_alert_key_reveal.sql",
+      "sha256": "272d98066c8199868584136e00f5de5ad860bcc94ba52ff73a7099048646403c"
+    }
+  ],
+  "clause_counts_before": {
+    "Core": {
+      "done": 25,
+      "partial": 35,
+      "missing": 24,
+      "total": 84
+    },
+    "Agent surface": {
+      "done": 1,
+      "partial": 6,
+      "missing": 10,
+      "total": 17
+    },
+    "Full target": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "clause_counts_after": {
+    "Core": {
+      "done": 25,
+      "partial": 35,
+      "missing": 24,
+      "total": 84
+    },
+    "Agent surface": {
+      "done": 1,
+      "partial": 6,
+      "missing": 10,
+      "total": 17
+    },
+    "Full target": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "clause_status_changes": [],
+  "metadata_consistency": "passed",
+  "prior_upgrade_instructions_preserved": true,
+  "prior_changelog_preserved": true,
+  "dependency_lock_unchanged": true
+}

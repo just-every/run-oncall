@@ -1,0 +1,20 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-release-0-5-18",
+  "head": "8dd2a0acf06b30fbc810c8a2a7e0fe8c01dd85ef",
+  "parent": "fd4d3556a9eca484bf85651b5733086e102139b0",
+  "changed_files": [
+    "CHANGELOG.md",
+    "RELEASE.json",
+    "RELEASE.md",
+    "package.json",
+    "seed.json",
+    "sources.lock.json"
+  ],
+  "candidate_commits": [
+    "8dd2a0acf06b30fbc810c8a2a7e0fe8c01dd85ef"
+  ],
+  "candidate_merges": [],
+  "worktree_clean": true,
+  "identity_and_messages_checked": true
+}

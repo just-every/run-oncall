@@ -1,0 +1,862 @@
+diff --git a/docs/agents.md b/docs/agents.md
+index 1a45fbd..4c2f231 100644
+--- a/docs/agents.md
++++ b/docs/agents.md
+@@ -238,7 +238,13 @@ Completed team-manager edits retain native effect custody in the same transactio
+ 
+ The declared capabilities do not prove optional multi-sponsor, mail-edge, resource-refresh, timed, queued, dual-host or owner-native administration families. Built-in `oncall.events.list` remains described for a future events declaration and is withheld from this installation’s tool list. Native tools and their complete security assertions still run.
+ 
+-The contract generator preserves existing judgments. BASE-AGENT-003 retains unproved role-specific field parity and grant byte budgets. BASE-AGENT-010 (events and subscriptions), the optional parts of BASE-AGENT-001 and BASE-AGENT-013, and SURFACE-001 and SURFACE-003 remain unproved. Declaring resources does not promote a whole clause.
++The contract generator preserves existing judgments. BASE-AGENT-003 retains incomplete role-specific field parity and grant byte budgets.
++
++Coverage parity observation (Run Edit Run fleet, 17 November 2026): `tests/oncall-agent-coverage-parity.mjs` extends `resourceParity` in `tests/oncall-agent-resource-parity.mjs`, reached by the existing agent runtime and browser journeys. Active administrator and viewer sessions, explicitly linked Business identities and separately admitted agents with the same full permitted service scope compare `oncall://schedules/{id}/coverage` against their protected native paging state, now-next and member responses. One ordinary single-service schedule has distinct primary and backup responders, an override and an unrelated member. Autonomous and held policies are checked immediately before override start, exactly at start and exactly at end, including every resource field and participant membership, native order, identity, name, active state and role. The browser observes current coverage at 1440 and captures it at 1440 and 390, retaining viewer restrictions and exact sponsor approval custody. Reads retain native records, revisions, permanent state-changing audit and paging, apart from established value-free read observations, and attempt zero outbound requests.
++
++Action parity observation (Run Edit Run fleet, 17 November 2026): `tests/oncall-agent-action-parity.mjs` extends the same `resourceParity` journey with the existing `oncall://actions/{id}` resource. Active administrator and viewer sessions have explicit Business links and separately admitted agents with equivalent full permitted service scope; requested scopes add only the existing `actions:read`. Human-created open, submitted-but-open P1 human-review and separately human-accepted follow-ups compare every retained field against each role's protected native state, with incident, service and revision bound to the actual containing incident. Absent optional fields, owner, due date, priority, completion policy, distinct manual escalation recipient, evidence, submission and acceptance identities and timestamps, and completion state remain exact. Both autonomous and held policies retain their existing classes, sponsor approvals and open reviews. The existing incident Follow-up owners sheet is checked at 1440 and captured at 1440 and 390 for both roles. Submission remains distinct from acceptance. The viewer has no mutation controls; valid native creation, evidence-submission and acceptance requests also refuse without native effects. Completion policy and escalation recipient remain API field comparisons; this observation does not claim each field has a rendered control in that sheet. Reads preserve native records, revisions, permanent state-changing audit and paging, permitting only required decision custody and established value-free native read observations, with zero outbound requests.
++
++These observations preserve the preceding nine-template matrix and coverage boundary proof. Private-team and scoped-ownership parity, the six other additional templates' role parity (members, public teams, clients, endpoints, erasures and outbox) and complete write-link and target-surface coverage remain unproved. Request and body limits do not prove grant byte budgets. These observations supply no actual Business account, federation, provider, activation, delivery or release authority; paging remains OFF. BASE-AGENT-010 (events and subscriptions), the optional parts of BASE-AGENT-001 and BASE-AGENT-013, and SURFACE-001 and SURFACE-003 remain unproved. Declaring resources does not promote a whole clause.
+ 
+ Native erasure computes destructive for one erased subject. It also computes access when member or API-client authority is removed, security when integration credentials or intake email addresses are deleted, and live when retained coverage, active intake or pending delivery is affected. A history-only incident with no pending work carries destructive alone. The facts contain the one-action measure, narrowing direction, credential setting and affected service IDs as applicable; record text and caller claims cannot choose classes.
+ 
+diff --git a/docs/incidents.md b/docs/incidents.md
+index ae3d142..5229075 100644
+--- a/docs/incidents.md
++++ b/docs/incidents.md
+@@ -8,7 +8,7 @@ Under **Services**, an admin adds each system your team owns with **Service name
+ 
+ ## Declare an incident
+ 
+-On **Incidents**, press **Declare incident** and give it an **Incident title**, the **Service**, a **Severity** (critical, warning or info) and the **Customer impact and current evidence**. Viewers can read incidents but not declare them.
++On **Incidents**, press **Declare incident** and give it an **Incident title**, the **Service** and a **Severity** (critical, warning or info). Open **More options** to name responders, choose an incident type, page urgency or priority, and write the **Customer impact and current evidence**. Viewers can read incidents but not declare them.
+ 
+ The service's runbook is copied into the incident when you declare it. Editing the service later never rewrites the instructions an incident started with.
+ 
+@@ -54,17 +54,17 @@ Send `POST /api/ingress/SOURCE` with a JSON object, at most 65,536 bytes (64 KiB
+ 
+ Text values are trimmed; their limits apply before trimming. Unknown fields are discarded, so include all context you need in these supported fields.
+ 
+-To get the service UUID, open **Services** and copy the ID shown below the service's name and owner. You can also open `/api/state` in that signed-in browser and find its `id` in `services`. The **Allowed service** selector uses that ID automatically; an external sender must supply it explicitly.
++The source page's **Sample request** already holds this source's URL and the service ID: copy them from there. The page does not show a service's ID in its list; it is the last part of the address of **Settings → Services → the service**, and also appears as `id` under `services` in `/api/state` in that signed-in browser. The **Allowed service** selector uses that ID automatically; an external sender must supply it explicitly.
+ 
+-For a source configured as **Bearer token**, set `ONCALL_ORIGIN` to your hosted HTTPS app origin or the local app's printed origin, `ONCALL_SERVICE_ID` to that UUID and `ONCALL_SOURCE_KEY` to the private credential in your shell. With a source named `monitoring` authorized for that service in `production`:
++For a source configured as **Bearer token**, set `ONCALL_ORIGIN` to your hosted HTTPS app origin or the local app's printed origin, `ONCALL_SOURCE_ID` to the Source ID at the end of the sample request's URL (Oncall generates it from the name, for example `monitoring-a815be2e8fcd`), `ONCALL_SERVICE_ID` to the service's ID and `ONCALL_SOURCE_KEY` to the private credential in your shell. With a source authorized for that service in `production`:
+ 
+ ```sh
+-curl --fail-with-body "${ONCALL_ORIGIN}/api/ingress/monitoring" \
++curl --fail-with-body "${ONCALL_ORIGIN}/api/ingress/${ONCALL_SOURCE_ID}" \
+   -H 'Content-Type: application/json' \
+   -H "Authorization: Bearer ${ONCALL_SOURCE_KEY}" \
+   --data-binary @- <<JSON
+ {
+-  "source": "monitoring",
++  "source": "${ONCALL_SOURCE_ID}",
+   "eventId": "checkout-latency-001-trigger",
+   "service": "${ONCALL_SERVICE_ID}",
+   "environment": "production",
+@@ -101,7 +101,7 @@ Select up to 500 incidents individually, or select all matching after the displa
+ 
+ `POST /api/triage/bulk` accepts an `operationId`, `action`, `items: [{id, revision}]`, and `reason`; resolution also requires `evidence`, reassignment uses `member` (or null), and the label actions use `priority` or `urgency`. Each item commits independently with current authority and the selected revision. The server processes a small bounded portion per request and returns cumulative `results`, `remaining` and `interrupted`; while `remaining` is positive and `interrupted` is false, continue with the exact same request and operation ID. The web interface does this as one action. An interrupted operation stays visible and resumes only when explicitly submitted again. This keeps each invocation within [D1’s query limits](https://developers.cloudflare.com/d1/platform/limits/). Keep and replay the same operation ID and exact content after an interrupted request: previously committed results are returned without another change. Reusing the identity with different content conflicts. For `allMatching: true`, include the query, `confirmedCount`, `workspaceRevision` and the complete matching item/revision list. The current count and snapshot must still match on first admission. Storage remains bounded by the installation's documented workspace profile; capacity failures are explicit per-item outcomes.
+ 
+-The response ownership section assigns/transfers commander, scribe, communications and assignee to active responders, or leaves a role explicitly unassigned. These incident responsibilities never grant administrator or responder permissions. Every role/priority/urgency/severity change requires a reason and an incident revision. The timeline retains previous/new ownership, actor and bulk operation ID. Native archive/checkpoint and portable export include saved views, bulk outcomes and these response fields; restoring them does not start paging. The additive migration leaves held incident JSON and historical ordering unchanged.
++The response ownership section assigns/transfers commander, scribe, communications and assignee to active responders, or leaves a role explicitly unassigned. These incident responsibilities never grant administrator or responder permissions. Every role/priority/urgency/severity change is saved against the incident revision you saw. Each has an optional reason field that is kept in the timeline; lowering urgency from high to low asks for a reason before it saves. The timeline retains previous/new ownership, actor and bulk operation ID. Native archive/checkpoint and portable export include saved views, bulk outcomes and these response fields; restoring them does not start paging. The additive migration leaves held incident JSON and historical ordering unchanged.
+ 
+ ## Email alerts and source recovery
+ 
+@@ -109,7 +109,7 @@ The response ownership section assigns/transfers commander, scribe, communicatio
+ 
+ Repeated subject-mode failures append to one derived generation and one recorded obligation. A custom `FAILED: (\S+)` trigger and `OK: (\S+)` resolve can both capture group 1: `FAILED: nightly-db` and `OK: nightly-db` act on the same key; `nightly-web` stays separate. Activity explains each mode, rule version, extracted key and outcome. Recovery says **stopped by source recovery** with its email receipt. Paging is OFF, so this is a labelled non-automatic state. A declared incident remains open for the responder's recovery evidence and resolution summary.
+ 
+-For native Events API HMAC requests, save your JSON as `event.json`, export the scoped source key privately as `ONCALL_SOURCE_KEY`, and sign the exact bytes sent. This uses curl, OpenSSL and standard shell tools on macOS, Linux or WSL; no global Node is needed. Check `curl --version` and `openssl version` first:
++For native Events API HMAC requests, save your JSON as `event.json`, export the scoped source key privately as `ONCALL_SOURCE_KEY` (with `ONCALL_ORIGIN` and `ONCALL_SOURCE_ID` set as above), and sign the exact bytes sent. This uses curl, OpenSSL and standard shell tools on macOS, Linux or WSL; no global Node is needed. Check `curl --version` and `openssl version` first:
+ 
+ ```sh
+ ONCALL_TIMESTAMP=$(date +%s)
+@@ -118,7 +118,7 @@ ONCALL_SIGNATURE=$(
+     openssl dgst -sha256 -hmac "${ONCALL_SOURCE_KEY:?Set ONCALL_SOURCE_KEY privately first}" -binary |
+     od -An -v -tx1 | tr -d ' \n'
+ )
+-curl --fail-with-body "${ONCALL_ORIGIN}/api/ingress/monitoring" \
++curl --fail-with-body "${ONCALL_ORIGIN}/api/ingress/${ONCALL_SOURCE_ID}" \
+   -H 'Content-Type: application/json' \
+   -H "x-oncall-timestamp: ${ONCALL_TIMESTAMP}" \
+   -H "x-oncall-signature: ${ONCALL_SIGNATURE}" \
+diff --git a/docs/limits.md b/docs/limits.md
+index dc9a66a..69d3e90 100644
+--- a/docs/limits.md
++++ b/docs/limits.md
+@@ -20,7 +20,7 @@ Oncall sends no SMS, voice calls, push notifications or paging emails, and it ne
+ 
+ ## It does not reach into your other accounts
+ 
+-Moving in from Opsgenie or PagerDuty reads export files you saved yourself. Oncall asks for no API key, makes no request to those services and turns nothing on there. Imported schedules arrive paused for you to review. See [Move in from Opsgenie or PagerDuty](move-in.md) for exactly which rota shapes come across and which are named as differences.
++Moving in from Opsgenie or PagerDuty reads schedules once, and only to read them. You can upload an export file you saved yourself; or give **Move in** a read-only key (or sign in to PagerDuty) and Oncall reads that account's schedules for that one import. The key stays in page and request memory and is never kept. Oncall changes nothing in those accounts and turns nothing on there. Imported schedules arrive paused for you to review. See [Move in from Opsgenie or PagerDuty](move-in.md) for exactly which rota shapes come across and which are named as differences.
+ 
+ ## It does not call AI
+ 
+diff --git a/docs/readiness.md b/docs/readiness.md
+index da32107..8e313a8 100644
+--- a/docs/readiness.md
++++ b/docs/readiness.md
+@@ -66,7 +66,7 @@ unbound deployment identity cannot complete a prerequisite.
+ | Slack and Microsoft Teams apps | OC-034, OC-067 | Both not built; R-12 not run | Install and authorize scoped apps and prove real chat actions. |
+ | Independent standby, takeover and real-phone drills | OC-028, OC-047, OC-054 | Standby not built; drills unproven live; R-8 not run | Establish independent account and identity authority, takeover and failback, and human-confirmed phone drills. Paging cutover requires them; coordination beside an existing pager does not require standby. |
+ | Live handset delivery | OC-026, OC-029, OC-035, OC-064, OC-066, OC-071, OC-080, OC-082 | Unproven live; R-6 not run | Prove registered real-handset voice with DTMF, SMS replies and links, push and email, provider-disable drills and inbound calls. Local receipts and sandboxes do not prove human receipt. |
+-| OC-064 reference load | OC-064, OC-054 | Unproven live; related R-6 not run | Measure sustained and burst intake, escalation, failover, recovery and archive capacity, with p50, p95, p99 and maximum against OC-064. R-6 alone is not reference-load proof. |
++| Reference load | OC-064, OC-054 | Unproven live; related R-6 not run | Measure sustained and burst intake, escalation, failover, recovery and archive capacity, with p50, p95, p99 and maximum against OC-064. R-6 alone is not reference-load proof. |
+ | Applicable regulated-data agreements and validated controls | OC-044 | Unproven live; no field-proof row recorded | Establish applicable agreements and validated controls before any regulated-data claim. Use redacted descriptions and separately authorized references. |
+ | 911 boundary | OC-044 | Guidance working here; no field-proof row applies | Oncall is not a 911 dispatch service. For a US emergency call 911 directly; do not wait for Oncall. |
+ 
+diff --git a/docs/team.md b/docs/team.md
+index 1caa765..69e5468 100644
+--- a/docs/team.md
++++ b/docs/team.md
+@@ -20,9 +20,9 @@ Roles are checked on every request, so a change takes effect on the next thing t
+ 
+ ## Add someone
+ 
+-An admin fills in **Add local member** with the person's **Name**, a **Role** and an **Initial local password** of at least 12 characters, then presses **Create member** and shares the password with them directly. Oncall sends no invitations. Here, **local** means credentials stored in this Oncall installation, including when you host it for your team; it does not mean sign-in is limited to the same computer.
++Under **Settings → Team**, an admin chooses **Add member**, fills in the person's **Name**, a **Role** and a **Password** of at least 12 characters, then presses **Create member** and shares the password with them directly. Oncall sends no invitations. Here, **local** means credentials stored in this Oncall installation, including when you host it for your team; it does not mean sign-in is limited to the same computer.
+ 
+-To change someone's access later, use **Update access** on their card. **Reset local password** sets a new password and signs them out everywhere.
++To change someone's access later, use **Update access** on their card. **Reset password** on their card asks for a new password and a confirmation ("This ends their current sessions."); confirming sets it and signs them out everywhere.
+ 
+ Being on the team does not put anyone on call: that is the [schedule's](schedules.md) job.
+ 
+diff --git a/src/MoveInAdoption.tsx b/src/MoveInAdoption.tsx
+index 2d44af5..13374f5 100644
+--- a/src/MoveInAdoption.tsx
++++ b/src/MoveInAdoption.tsx
+@@ -2,12 +2,16 @@ import { InlineConfirm } from './app/autosave/InlineConfirm'
+ import { useState } from 'react'
+ 
+ export function MoveInAdoption({row,rows,choices,busy,adopt}:{row:any;rows:any[];choices:any;busy:boolean;adopt:(input:any)=>Promise<any>}) {
+- const [open,setOpen]=useState(false),[service,setService]=useState(''),[members,setMembers]=useState<Record<string,string>>({}),[extraServices,setExtraServices]=useState<string[]>([]),[policyId,setPolicyId]=useState('')
++ const [open,setOpen]=useState(false),[service,setService]=useState(''),[members,setMembers]=useState<Record<string,string>>({}),[extraServices,setExtraServices]=useState<string[]>([]),[policyId,setPolicyId]=useState(''),[both,setBoth]=useState(false)
+  const schedule=row.value.schedule
+  const people=[...new Set<string>([...schedule.primary.members,...schedule.backup.members,...schedule.overrides.flatMap((o:any)=>o.member===null?[]:[o.member])])]
+  const names=new Map(rows.filter(r=>r.targetKind==='user').map(r=>[r.targetId,r.value.name]))
+  const chosenService=choices.services.length===1?choices.services[0].id:service
+  const policies=rows.filter(r=>r.targetKind==='policy'&&!r.value.adopted&&r.value.steps?.every((step:any)=>step.scheduleId===row.targetId)),policy=policies.find(r=>r.targetId===policyId);
++ // A service with a rota gains a second one: say so, and make keeping both a choice.
++ const liveServices=[chosenService,...extraServices].filter(Boolean)
++ const existing=(choices.rotas??[]).filter((rota:any)=>rota.services.some((id:string)=>liveServices.includes(id)))
++ const serviceName=(id:string)=>choices.services.find((s:any)=>s.id===id)?.name??'this service'
+  const chosenMembers=Object.fromEntries(people.map(person=>[person,choices.members.length===1?choices.members[0].id:members[person]]))
+  if(row.value.adopted)return <p>Adopted into <a href="/on-call">On call</a>. Paging is OFF. Once a schedule is live, this import can no longer be undone.</p>
+  return <div><button type="button" disabled={busy} onClick={()=>setOpen(!open)}>{open?'Close adoption':'Make schedule live'}</button>
+@@ -21,6 +25,8 @@ export function MoveInAdoption({row,rows,choices,busy,adopt}:{row:any;rows:any[]
+  {!choices.services.length&&<p><a href="/settings/services">Add a service</a> before adopting.</p>}
+  {!choices.members.length&&<p><a href="/settings/team">Add a person</a> before adopting.</p>}
+  {people.some(person=>!names.has(person))&&<p>This schedule contains erased person slots. Keep it paused and create a new schedule with explicit coverage gaps.</p>}
+- {chosenService&&people.every(person=>chosenMembers[person]&&names.has(person))&&<InlineConfirm action="Confirm live schedule · paging OFF" keep="Keep paused" busy={busy} onCancel={()=>setOpen(false)} onConfirm={()=>void adopt({id:row.targetId,revision:row.revision,service:chosenService,...(extraServices.filter(id=>id!==chosenService).length?{services:[chosenService,...extraServices.filter(id=>id!==chosenService)]}:{}),...(policy?{policy:{id:policy.targetId,revision:policy.revision}}:{}),members:chosenMembers,confirm:true})}>Adopt this schedule with these people? Coverage becomes visible. Paging stays off. Adoption cannot be undone through this import.</InlineConfirm>}
++ {existing.length>0&&<><p role="alert">{existing.map((rota:any)=>serviceName(rota.services.find((id:string)=>liveServices.includes(id))))[0]} already has {existing.length===1?'the rota':'these rotas'} {existing.map((rota:any)=><strong key={rota.id}>{rota.name}</strong>).reduce((all:any[],part:any,index:number)=>index?[...all,', ',part]:[part],[])}. Making this schedule live adds another rota for the same service, and On call will list both with their own hand-overs. To replace it, edit or remove the existing rota under On call afterwards.</p>
++ <label><input type="checkbox" checked={both} onChange={e=>setBoth(e.target.checked)}/> Keep both rotas for now</label></>}
++ {chosenService&&(existing.length===0||both)&&people.every(person=>chosenMembers[person]&&names.has(person))&&<InlineConfirm action="Confirm live schedule · paging OFF" keep="Keep paused" busy={busy} onCancel={()=>setOpen(false)} onConfirm={()=>void adopt({id:row.targetId,revision:row.revision,service:chosenService,...(extraServices.filter(id=>id!==chosenService).length?{services:[chosenService,...extraServices.filter(id=>id!==chosenService)]}:{}),...(policy?{policy:{id:policy.targetId,revision:policy.revision}}:{}),members:chosenMembers,confirm:true})}>Adopt this schedule with these people? Coverage becomes visible. Paging stays off. Adoption cannot be undone through this import.</InlineConfirm>}
+  </form>}</div>
+ }
+diff --git a/src/ScheduleSummary.tsx b/src/ScheduleSummary.tsx
+index 4c7e79b..8739651 100644
+--- a/src/ScheduleSummary.tsx
++++ b/src/ScheduleSummary.tsx
+@@ -14,7 +14,7 @@ function handoffLabel(instant:string|null|undefined,timezone:string,changesHolde
+ }
+ 
+ type ReadProps = {schedule:Schedule;state:State;request:(path:string,data?:unknown)=>Promise<any>}
+-type NowNext = {now:Coverage;upcoming:Record<'primary'|'backup',Coverage|null>;searchThrough:string;limited:('primary'|'backup')[]}
++type NowNext = {now:Coverage;upcoming:Record<'primary'|'backup',Coverage|null>;handover:Record<'primary'|'backup',Coverage|null>;searchThrough:string;limited:('primary'|'backup')[]}
+ 
+ export function ScheduleNowNext({schedule,state,request}:ReadProps) {
+  const [value,setValue]=useState<NowNext|null>(null)
+@@ -26,7 +26,12 @@ export function ScheduleNowNext({schedule,state,request}:ReadProps) {
+   return ()=>{current=false}
+  },[schedule,request])
+  const name=(id:string|null|undefined)=>state.members.find(m=>m.id===id)?.name??'Nobody on call'
+- return <section className="scheduling-panel scheduling-now-next"><h2>On call now and next</h2><FailureLine failure={failures.failure}/>{value&&<div className="scheduling-form-grid two">{(['primary','backup'] as const).map(role=><div key={role} className="scheduling-now-role"><h3>{role}</h3><p className={value.now[role]?"now":"oc-now-gap"}>Now: {name(value.now[role])}</p><p className="scheduling-rule">{value.now.windows.find(w=>w.role===role)?.explanation??value.now.warnings.filter(w=>w.startsWith(role+':')).join('; ')}</p><p className="next">Next: {name(value.upcoming[role]?.[role])}</p><p className="scheduling-rule">{value.upcoming[role]?.windows.find(w=>w.role===role)?.explanation??value.upcoming[role]?.warnings.filter(w=>w.startsWith(role+':')).join('; ')}</p><p className="handoff">{value.limited.includes(role)?`No coverage scheduled through ${new Intl.DateTimeFormat('en-GB',{timeZone:schedule.timezone,dateStyle:'medium'}).format(Date.parse(value.searchThrough))} · ${schedule.timezone}`:handoffLabel(value.upcoming[role]?new Date(value.upcoming[role]!.at).toISOString():null,schedule.timezone,!!value.now[role]&&(!(schedule.layers?.length||schedule.pto?.length)||value.upcoming[role]?.[role]!==value.now[role]))}</p></div>)}</div>}</section>
++ // Layers explain themselves in one plain sentence: who covers, or that no layer does.
++ const why=(coverage:Coverage|null|undefined,role:'primary'|'backup')=>{const window=coverage?.windows.find(w=>w.role===role);const winner=window?.decisions?.find(d=>d.state==='winner');return winner?`${winner.name} covers this time.`:window?.decisions?.length?'No layer covers this time.':window?.explanation??coverage?.warnings.filter(w=>w.startsWith(role+':')).join('; ')};
++ return <section className="scheduling-panel scheduling-now-next"><h2>On call now and next</h2><FailureLine failure={failures.failure}/>{value&&<div className="scheduling-form-grid two">{(['primary','backup'] as const).map(role=>{
++  // With a holder now, next is the next hand-over to someone else; without one, the next covered time.
++  const following=value.now[role]?value.handover[role]:value.upcoming[role];
++  return <div key={role} className="scheduling-now-role"><h3>{role}</h3><p className={value.now[role]?"now":"oc-now-gap"}>Now: {name(value.now[role])}</p><p className="scheduling-rule">{why(value.now,role)}</p><p className="next">Next: {following?name(following[role]):value.now[role]?'No hand-over scheduled yet':name(null)}</p><p className="scheduling-rule">{why(following,role)}</p><p className="handoff">{following?handoffLabel(new Date(following.at).toISOString(),schedule.timezone,!!value.now[role]):value.now[role]?'No change of holder in the next 90 days':value.limited.includes(role)?`No coverage scheduled through ${new Intl.DateTimeFormat('en-GB',{timeZone:schedule.timezone,dateStyle:'medium'}).format(Date.parse(value.searchThrough))}`:handoffLabel(null,schedule.timezone)}</p></div>})}</div>}</section>
+ }
+ 
+ const escalationFields = ['primaryWaitSeconds','backupWaitSeconds','retrySeconds','maxAttempts'] as const;
+diff --git a/src/app/shell/frame.css b/src/app/shell/frame.css
+index 86fe737..eb13db2 100644
+--- a/src/app/shell/frame.css
++++ b/src/app/shell/frame.css
+@@ -1,7 +1,7 @@
+ /* O4's frame uses Oncall's existing paper, type, fields and rail. Section bodies keep their own styles. */
+ .oncall-frame .brand {min-width: 0; max-width: 100%; flex-wrap: nowrap;}
+ .oncall-frame .brand .oc-mark {flex: none;}
+-.oncall-frame .brand > span {min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
++.oncall-frame .brand > span {min-width: 0; line-height: 1.05; overflow-wrap: anywhere;}
+ .oncall-frame .shell-rail {gap: 28px;}
+ .oncall-frame .rail-foot {margin-top: auto; display: grid; gap: 16px;}
+ .oncall-frame .nav-label {min-width: 0;}
+diff --git a/src/archive/EraseData.tsx b/src/archive/EraseData.tsx
+index 62a6da7..fb9ca9f 100644
+--- a/src/archive/EraseData.tsx
++++ b/src/archive/EraseData.tsx
+@@ -21,7 +21,7 @@ export function EraseData({state,busy,run,native=[]}:{state:State;busy:boolean;r
+           setReceipt({...result,subject:subjectName});setEraseId('');setConfirmation('');setPeople([]);setSelectedPeople([]);setReviewed(false)}}finally{pending.current=false;}}}><fieldset disabled={busy}>
+         <label className="field">Erasure category<select aria-label="Erasure category" value={eraseKind} onChange={e=>{setEraseKind(e.target.value);setEraseId('');setConfirmation('');setReceipt(null)}}><option value="change-event">Retained change</option><option value="incident">Incident</option><option value="member">Native member or contact</option><option value="intake">Routed or monitoring integration</option><option value="email">Email integration</option><option value="email-list">Email-list subscriber</option><option value="change">Change integration</option><option value="client">API client and its recipients</option><option value="endpoint">Approved recipient</option><option value="native">Native integration key</option></select></label>
+         {eraseKind==='native'?<label className="field">Native integration<select aria-label="Native integration" value={eraseId} onChange={e=>{setEraseId(e.target.value);setConfirmation('');setReceipt(null)}}><option value="">Choose a source</option>{nativeSources.map(s=><option key={s.id} value={s.id}>{nativeName(s.id)}</option>)}</select></label>:<label className="field">{eraseKind==='change-event'?'Retained change':'Erasure subject'}<select aria-label={eraseKind==='change-event'?'Retained change':'Erasure subject'} value={eraseId} onChange={e=>{setEraseId(e.target.value);setConfirmation('');setReceipt(null)}}><option value="">Choose a subject</option>{eraseRows.map(row=><option key={row.id} value={row.id}>{row.label}</option>)}</select></label>}
+-        {eraseKind==='member'&&<fieldset><legend>Imported identity scope</legend><p>Select every imported identity belonging to this member. Other people stay retained. Access is revoked and fixed schedule slots become gaps.</p>{scopeError&&<p role="alert">{scopeError}</p>}{people.map(person=><label key={person.id} className="integration-checkbox"><input type="checkbox" aria-label={'Imported identity '+person.label} checked={selectedPeople.includes(person.id)} onChange={e=>{setSelectedPeople(e.target.checked?[...selectedPeople,person.id]:selectedPeople.filter(v=>v!==person.id));setReviewed(false)}}/><span style={{overflowWrap:'anywhere'}}>{person.label}</span></label>)}{scopeReady&&!people.length&&<p>No imported person records are retained.</p>}<label className="integration-checkbox"><input type="checkbox" aria-label="Imported identities reviewed" checked={reviewed} disabled={!scopeReady} onChange={e=>setReviewed(e.target.checked)}/>I reviewed the imported identities for this member.</label><p>Use another administrator to erase your own member. An installation owner’s identity is erased only through Auth. The last owner needs the protected reset or transfer path. Non-owner Auth accounts remain unchanged; only Oncall access is revoked.</p></fieldset>}
++        {eraseKind==='member'&&<fieldset><legend>Imported identity scope</legend><p>Select every imported identity belonging to this member. Other people stay retained. Access is revoked and fixed schedule slots become gaps.</p>{scopeError&&<p role="alert">{scopeError}</p>}{people.map(person=><label key={person.id} className="integration-checkbox"><input type="checkbox" aria-label={'Imported identity '+person.label} checked={selectedPeople.includes(person.id)} onChange={e=>{setSelectedPeople(e.target.checked?[...selectedPeople,person.id]:selectedPeople.filter(v=>v!==person.id));setReviewed(false)}}/><span style={{overflowWrap:'anywhere'}}>{person.label}</span></label>)}{scopeReady&&!people.length&&<p>No imported person records are retained.</p>}<label className="integration-checkbox"><input type="checkbox" aria-label="I reviewed the imported identities for this member." checked={reviewed} disabled={!scopeReady} onChange={e=>setReviewed(e.target.checked)}/>I reviewed the imported identities for this member.</label><p>Use another administrator to erase your own member. An installation owner’s identity is erased only through Auth. The last owner needs the protected reset or transfer path. Non-owner Auth accounts remain unchanged; only Oncall access is revoked.</p></fieldset>}
+         {eraseId&&<p>Type <code style={{overflowWrap:'anywhere'}}>erase {subjectName}</code> to confirm.</p>}
+         <label className="field">Erasure confirmation<input value={confirmation} onChange={e=>setConfirmation(e.target.value)} autoComplete="off"/></label>
+         <button className="primary" type="submit" disabled={!eraseId||confirmation!==`erase ${subjectName}`||eraseKind==='member'&&(!scopeReady||!reviewed)}>{eraseKind==='change-event'?'Erase retained change':'Erase selected subject'}</button>
+diff --git a/src/demo-paging.ts b/src/demo-paging.ts
+index a30fc0d..b0de79d 100644
+--- a/src/demo-paging.ts
++++ b/src/demo-paging.ts
+@@ -31,7 +31,7 @@ export async function sendDemoPage(c: any, body: (c: any) => Promise<any>) {
+   const sends = await Promise.all((selected === 'all' ? channels : [selected]).map(channel =>
+     demoEffect(deliver, () => ({ id: crypto.randomUUID(), channel, status: 'sent' as const }))))
+   command(workspace, actor, { type: 'note', incident: incident.id, revision: incident.revision,
+-    text: `Page sent to ${target.name} via ${sends.map(send => send.channel === 'sms' ? 'SMS' : send.channel).join(', ')}.` }, new Date(now).toISOString())
++    text: `Simulated page to ${target.name} via ${sends.map(send => send.channel === 'sms' ? 'SMS' : send.channel).join(', ')}. This is a demo: nothing was delivered.` }, new Date(now).toISOString())
+   const result = await c.env.DB.batch(workspaceWrite(c.env.DB, workspace, workspace.revision, {
+     sql: 'EXISTS(SELECT 1 FROM oc_current_sessions WHERE token=? AND member=? AND expires>?)',
+     values: [c.get('sessionDigest'), actor.id, now],
+diff --git a/src/demo.ts b/src/demo.ts
+index bfcc01b..8fd82aa 100644
+--- a/src/demo.ts
++++ b/src/demo.ts
+@@ -40,6 +40,8 @@ export async function seedDemo(env: Bindings, { now: seededAt }: { ownerEmail: s
+   const now = seededAt.getTime()
+   const person = (name: string, role: Member['role']): Member => ({ id: crypto.randomUUID(), name, role, active: true })
+   const admin: Member = { id: owner.id, name: 'Alex Morgan', role: 'admin', active: true }
++  // The signed-in owner is the workspace's Alex Morgan: the app takes a member's name from the owner's profile.
++  await env.DB.prepare('UPDATE oa_operators SET display_name=? WHERE id=?').bind(admin.name, owner.id).run()
+   const [priya, marcus, elena, sam] = [person('Priya Raman', 'responder'), person('Marcus Webb', 'responder'), person('Elena Rossi', 'responder'), person('Sam Okafor', 'responder')]
+   const state: State = empty()
+   state.members = [admin, priya, marcus, elena, sam, person('Jo Park', 'viewer')]
+@@ -90,7 +92,7 @@ export async function seedDemo(env: Bindings, { now: seededAt }: { ownerEmail: s
+   const live = signal('checkout-api', 'critical', 'checkout-5xx', 'g2', 'Checkout 5xx rate above 5% in eu-west', 'trigger', 38 * MIN, 'monitoring-providers')
+   const current = run(priya, { type: 'declare', service: 'checkout-api', severity: 'critical', title: 'Checkout errors in eu-west', summary: 'Customers in eu-west see failed payments at checkout.', alerts: [live.alert] }, 35 * MIN) as Incident
+   const act = (actor: Member, input: object, offset: number) => run(actor, { incident: current.id, revision: current.revision, ...input }, offset)
+-  act(admin, { type: 'note', text: `Page sent to ${priya.name} via SMS, voice, push and email.` }, 34 * MIN)
++  act(admin, { type: 'note', text: `Simulated page to ${priya.name} via SMS, voice, push and email. This is a demo: nothing was delivered.` }, 34 * MIN)
+   act(priya, { type: 'runbook', index: 0, done: true }, 28 * MIN)
+   act(priya, { type: 'runbook', index: 1, done: true }, 24 * MIN)
+   act(marcus, { type: 'note', text: 'Errors only in eu-west. A certificate rotation there finished just before the alert.' }, 20 * MIN)
+diff --git a/src/identity-link.ts b/src/identity-link.ts
+index 32c497e..942b836 100644
+--- a/src/identity-link.ts
++++ b/src/identity-link.ts
+@@ -50,7 +50,10 @@ export async function linkRestoredOwner(c:any,input:any) {
+   db.prepare(`INSERT INTO operator_members(operator_id,member_id) SELECT ?,? WHERE ${selected} AND ${mappingGate}
+    AND EXISTS(SELECT 1 FROM oa_operators WHERE id=? AND display_name=?)`)
+    .bind(native.operator.id,input.adminMapping,input.adminMapping,archived.name,native.id,native.operator.id,now,native.operator.id,name.trim()),
++  // The owner just confirmed who they are and their name: that is the first-run confirmation, so /setup never asks again.
++  db.prepare(`INSERT OR IGNORE INTO oa_first_run(singleton,completed_by,completed_at) SELECT 1,?,? WHERE EXISTS(SELECT 1 FROM operator_members WHERE operator_id=? AND member_id=?)`)
++   .bind(native.operator.id,now,native.operator.id,input.adminMapping),
+  ])
+- if(results.some((result:D1Result)=>result.meta.changes!==1))fail('Mapping refused. Keep held password access; only an unlinked credential-free restore can map an archived administrator.',409)
++ if(results.slice(0,2).some((result:D1Result)=>result.meta.changes!==1))fail('Mapping refused. Keep held password access; only an unlinked credential-free restore can map an archived administrator.',409)
+  return c.json({linked:true})
+ }
+diff --git a/src/incident-deadlines/Controls.tsx b/src/incident-deadlines/Controls.tsx
+index fedd82d..5e68f5c 100644
+--- a/src/incident-deadlines/Controls.tsx
++++ b/src/incident-deadlines/Controls.tsx
+@@ -6,10 +6,11 @@ import {Field,Form} from '../forms';
+ import type {Incident,Member,Service,State} from '../family/response-operations/domain';
+ export function DeadlineControls({incident,actor,busy,submit,compact=false,displayName=(id:string)=>id}:{incident:Incident;actor:Member;busy:boolean;submit:(input:any)=>Promise<any>;compact?:boolean;displayName?:(id:string)=>string}) {
+  const shownTime=(value:string)=>shortTime(value);
++ const kindName=(kind:string)=>({snooze:'Snooze','acknowledgment-timeout':'Acknowledgment timeout'}[kind]??kind),stateName=(state:string)=>({pending:'Waiting',fired:'Expired',cancelled:'Cancelled',held:'Held'}[state]??state);
+  const editable=['admin','responder'].includes(actor.role),pending=incident.deadlines?.find(d=>d.state==='pending');
+  return <section aria-label="Incident deadlines">{!compact&&<h3>Incident deadlines</h3>}
+- {pending&&<p role="status">Snoozed / acknowledgment held until {shownTime(pending.dueAt)} · {pending.kind} · {pending.minutes} minutes. Paging OFF.</p>}
+- {(incident.deadlines??[]).filter(d=>!compact||d.id!==pending?.id).map(d=><p key={d.id}>{d.kind} · {d.state} · due {shownTime(d.dueAt)} · {d.outcome}{d.obligation&&` · recorded obligation for ${displayName(d.obligation.target.id)} · ${d.obligation.state} · no sender`}</p>)}
++ {pending&&<p role="status">Snoozed / acknowledgment held until {shownTime(pending.dueAt)} · {kindName(pending.kind)} · {pending.minutes} minutes. Paging OFF.</p>}
++ {(incident.deadlines??[]).filter(d=>!compact||d.id!==pending?.id).map(d=><p key={d.id}>{kindName(d.kind)} · {stateName(d.state)} · due {shownTime(d.dueAt)} · {d.outcome}{d.obligation&&` · recorded obligation for ${displayName(d.obligation.target.id)} · ${d.obligation.state} · no sender`}</p>)}
+  {editable&&incident.state==='acknowledged'&&<Form key={incident.id} busy={busy} label="Snooze incident" onSubmit={input=>submit({type:'snooze',incident:incident.id,revision:incident.revision,minutes:Number(input.minutes)})}><Field name="minutes" label="Snooze duration (minutes)" type="number" value="10"/><p>1 minute to 24 hours. Expiry records a re-trigger obligation; no page is sent.</p></Form>}
+  {editable&&pending&&<button disabled={busy} onClick={()=>submit({type:'cancel-deadline',incident:incident.id,revision:incident.revision})}>Cancel pending deadline</button>}
+  </section>;
+diff --git a/src/manual-pages/Controls.tsx b/src/manual-pages/Controls.tsx
+index d5609f1..591761f 100644
+--- a/src/manual-pages/Controls.tsx
++++ b/src/manual-pages/Controls.tsx
+@@ -7,11 +7,15 @@ import {Field,Form} from '../forms';
+ import {request} from '../useWorkspace';
+ import type {Incident,Member,Service,State} from '../family/response-operations/domain';
+ import {assignmentRule} from './model';
++import {responseContext} from './context';
+ import {memberName} from '../incident/types';
+-function usePolicies(){
+- const [policies,setPolicies]=useState<{service:string;revision:number}[]|null>(null), failures=useActionFailure();
+- const load=async()=>{try{setPolicies((await request('/api/paging/state')).policies);failures.clear();}catch(error){failures.show(error,{read:true,target:null,retry:load});}};
+- useEffect(()=>{void load();},[]);return {policies,failure:failures.failure};
++function usePolicies(state?:State){
++ const [policies,setPolicies]=useState<{service:string;revision:number}[]|null>(null),[archive,setArchive]=useState<any>(null), failures=useActionFailure();
++ const load=async()=>{try{const paging=await request('/api/paging/state');setPolicies(paging.policies);setArchive(paging);failures.clear();}catch(error){failures.show(error,{read:true,target:null,retry:load});}};
++ useEffect(()=>{void load();},[]);
++ // Who the current policies would page right now, the same answer the server checks a response against.
++ const eligible=archive&&state?responseContext({archive,workspace:state} as any,Date.now()).eligible:null;
++ return {policies,eligible,failure:failures.failure};
+ }
+ function Targets({state,policies,compact=false}:{state:State;policies:{service:string;revision:number}[];compact?:boolean}){const people=state.members.filter(m=>m.active&&['admin','responder'].includes(m.role));return <>
+  {compact&&people.length===1?<label className="workflow-choice"><input type="checkbox" name="users" value={people[0].id}/><span>{people[0].name}</span></label>:<label className="field"><span>Named responders</span><select name="users" multiple aria-label="Named responders">{state.members.filter(m=>m.active&&['admin','responder'].includes(m.role)).map(m=><option key={m.id} value={m.id}>{m.name}</option>)}</select></label>}
+@@ -33,12 +37,12 @@ export function UserAssignment({service,state}:{service:Service;state:State;busy
+  </div></details>;
+ }
+ export function ResponderRequests({incident,state,actor,busy,submit,expanded=false}:{incident:Incident;state:State;actor:Member;busy:boolean;submit:(data:any)=>Promise<any>;expanded?:boolean}){
+- const {policies,failure}=usePolicies(),editable=['admin','responder'].includes(actor.role),name=(id:string)=>state.services.find(s=>s.id===id)?.name??memberName(state,id);
++ const {policies,eligible,failure}=usePolicies(state),editable=['admin','responder'].includes(actor.role),name=(id:string)=>state.services.find(s=>s.id===id)?.name??memberName(state,id);
+  const send=(data:any)=>submit({...data,incident:incident.id,revision:incident.revision});
+  return <section className="response-controls" aria-label="Manual obligations and responder requests">{!expanded&&<h3>Manual obligations and responder requests</h3>}
+  {incident.manualPage&&<><p>Created by {incident.manualPage.erasedCreator?'Erased member':name(incident.manualPage.creator)} · {incident.urgency} urgency · {incident.manualPage.assignment.mode} after {incident.manualPage.assignment.minutes} minutes (version {incident.manualPage.assignment.version}) · automatic action unavailable.</p><p>Primary acknowledgment: {incident.manualPage.acknowledgment&&incident.state!=='declared'?(incident.manualPage.erasedAcknowledgment?'Erased member':name(incident.manualPage.acknowledgment.by)):'Unacknowledged'}</p>{incident.state==='declared'&&incident.manualPage.acknowledgment&&<p>Earlier manual-page acknowledgment: {incident.manualPage.erasedAcknowledgment?'Erased member':name(incident.manualPage.acknowledgment.by)} · {shortTime(incident.manualPage.acknowledgment.at)}</p>}{incident.manualPage.obligations.map(o=><p key={o.id}>Recorded obligation · {o.target.kind}: {name(o.target.id)} · {o.state} · {o.outcome} · no sender · paging OFF</p>)}</>}
+  {!editable&&<p>Only responders and admins may create manual pages or request responders.</p>}<p>Additional responders: {(incident.responders??[]).map(name).join(', ')||'None'}</p>
+- {(incident.responderRequests??[]).map(r=><article key={r.id}><h4>Request to {name(r.obligation.target.id)}</h4><p>{r.message}</p><p>{r.status} · requested by {name(r.requester)} · {r.response&&'response by '+name(r.response.by)} · no sender · paging OFF</p>{r.notice&&<p>Requester notice: {r.notice.outcome} · {r.notice.state} · non-automatic</p>}{r.status==='pending'&&editable&&<div className="routing-actions"><button disabled={busy} onClick={()=>send({type:'respond-request',request:r.id,decision:'accept'})}>Accept request</button><button disabled={busy} onClick={()=>send({type:'respond-request',request:r.id,decision:'decline'})}>Decline request</button>{actor.id===r.requester&&<button disabled={busy} onClick={()=>send({type:'cancel-request',request:r.id})}>Cancel request</button>}</div>}</article>)}
++ {(incident.responderRequests??[]).map(r=><article key={r.id}><h4>Request to {name(r.obligation.target.id)}</h4><p>{r.message}</p><p>{[r.status,'requested by '+name(r.requester),r.response&&'response by '+name(r.response.by),'no sender','paging OFF'].filter(Boolean).join(' · ')}</p>{r.notice&&<p>Requester notice: {r.notice.outcome} · {r.notice.state} · non-automatic</p>}{r.status==='pending'&&editable&&<div className="routing-actions">{(r.obligation.target.kind==='user'?r.obligation.target.id===actor.id:!!eligible?.[r.obligation.target.id]?.includes(actor.id))&&<><button disabled={busy} onClick={()=>send({type:'respond-request',request:r.id,decision:'accept'})}>Accept request</button><button disabled={busy} onClick={()=>send({type:'respond-request',request:r.id,decision:'decline'})}>Decline request</button></>}{actor.id===r.requester&&<button disabled={busy} onClick={()=>send({type:'cancel-request',request:r.id})}>Cancel request</button>}</div>}</article>)}
+  <FailureLine failure={failure}/>{editable&&incident.state!=='resolved'&&<details open={expanded||undefined}><summary>Request responders</summary><Form busy={busy} disabled={policies===null} label="Record responder requests" onSubmit={data=>send({...data,type:'request-responders',users:Array.isArray(data.users)?data.users:data.users?[data.users]:[]})}><Targets state={state} policies={policies??[]} compact={expanded}/><Field name="message" label="Responder request message" type="textarea"/></Form></details>}
+  </section>;
+ }
+diff --git a/src/move-in/CompatibilityReview.tsx b/src/move-in/CompatibilityReview.tsx
+index 614f27a..bb50475 100644
+--- a/src/move-in/CompatibilityReview.tsx
++++ b/src/move-in/CompatibilityReview.tsx
+@@ -1,5 +1,5 @@
+ import { CopyDetails } from './CopyDetails'
+-import { reviewCopy, reviewKind } from './review-copy'
++import { reviewCopy } from './review-copy'
+ 
+ export function CompatibilityReview({preview,busy,hasJob,confirm}:{preview:any;busy:boolean;hasJob:boolean;confirm?:()=>void}) {
+  const represented=preview.items.filter((item:any)=>item.kind==='overrides'&&!item.rejection).length
+@@ -8,12 +8,12 @@ export function CompatibilityReview({preview,busy,hasJob,confirm}:{preview:any;b
+  <p>{preview.counts.unique} source objects · {preview.counts.mapped} mapped directly · {preview.counts.rejected} rejected · {preview.counts.unmapped} with differences or retained-only fields</p>
+  <p>These counts overlap: mapped or rejected objects can also have differences or fields kept only as evidence. “Mapped directly” counts objects that create a paused user, schedule, policy or inactive integration.{represented>0&&` ${represented} ${represented===1?'override is':'overrides are'} represented inside the paused schedule, so ${represented===1?'it does':'they do'} not add to the directly mapped count.`} Review the details below before confirming.</p>
+  <ul className="move-in-review">{preview.items.map((item:any,index:number)=><li key={index}>
+-  <strong>{reviewKind(item.kind)}: {item.name}</strong>
++  <strong>{copy.title(item)}</strong>
+   {copy.effect(item)&&<p>{copy.effect(item)}</p>}
+   {item.rejection&&<p>{copy.rejection(item)}</p>}
+   {item.effects?.filter((effect:any)=>effect.targetKind==='schedule').flatMap((effect:any)=>copy.comparison(item,effect.value.equivalence)).map((text:string,i:number)=><p key={'comparison-'+i}>{text}</p>)}
+   {item.effects?.filter((effect:any)=>effect.value.emailSettings).map((effect:any)=><p key={effect.targetId}>Inactive email settings: {effect.value.emailSettings.draft.mode} mode, {effect.value.emailSettings.draft.rules.length} converted rules. No address or intake. {effect.value.emailSettings.blocked?'Unconverted rules must be resolved before activation.':'An administrator must explicitly activate these settings.'}</p>)}
+-  {item.unmapped.map((value:any,i:number)=><div key={i}>{copy.difference(item,value)}{value.original!==undefined&&<details><summary>Original settings</summary><pre style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{JSON.stringify(value.original,null,2)}</pre></details>}</div>)}
++  {copy.differences(item).map(({text,originals}:{text:string;originals:any[]},i:number)=><div key={i}>{text}{originals.length>0&&<details><summary>Original settings</summary><pre style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{JSON.stringify(originals.length===1?originals[0]:originals,null,2)}</pre></details>}</div>)}
+  </li>)}</ul>
+  <CopyDetails value={preview}/>
+  {confirm&&<button disabled={busy||hasJob} onClick={confirm}>Confirm paused import</button>}</>
+diff --git a/src/move-in/ConnectStep.tsx b/src/move-in/ConnectStep.tsx
+index a44f0ae..275a623 100644
+--- a/src/move-in/ConnectStep.tsx
++++ b/src/move-in/ConnectStep.tsx
+@@ -3,8 +3,8 @@ import { ExportHelp } from './ExportHelp'
+ import { vendorNames } from './vendor-formats'
+ import type { Provider, Region } from './collect/bundle'
+ 
+-export function ConnectStep({ source, vendor, choose, fileVendor, connect, busy, read, file }: {
+- source: string; vendor: string; choose: (value: string) => void; fileVendor: (value: string) => void; connect: boolean; busy: boolean;
++export function ConnectStep({ waiting, source, vendor, choose, fileVendor, connect, busy, read, file }: {
++ waiting?: { vendor: string; name: string; continueReview: () => void; discardReview: () => void } | null; source: string; vendor: string; choose: (value: string) => void; fileVendor: (value: string) => void; connect: boolean; busy: boolean;
+  read: (source: Provider, region: Region, key?: string) => Promise<void>; file: (file: File) => void
+ }) {
+  const [key, setKey] = useState(''), [region, setRegion] = useState<Region>('us'), [useKey, setUseKey] = useState(false)
+@@ -13,6 +13,7 @@ export function ConnectStep({ source, vendor, choose, fileVendor, connect, busy,
+  return <section className="scheduling-panel move-in-step" aria-labelledby="move-in-connect-title">
+   <h2 id="move-in-connect-title">1 · Connect</h2>
+   <p>Bring your schedules across. Your existing pager stays in charge.</p>
++  {waiting&&<div role="status" className="move-in-waiting"><p>A {waiting.name} review is waiting. Nothing has been imported.</p><button type="button" className="scheduling-primary" disabled={busy} onClick={waiting.continueReview}>Continue review</button> <button type="button" className="move-in-quiet" disabled={busy} onClick={waiting.discardReview}>Discard it</button></div>}
+   <label className="scheduling-field"><span id="move-in-source">Source</span><select aria-labelledby="move-in-source" value={source} disabled={busy} onChange={event => { setKey(''); setUseKey(false); choose(event.target.value) }}>
+    <option value="pagerduty">PagerDuty</option><option value="opsgenie">Opsgenie</option><option value="file">Other: from a file</option>
+   </select></label>
+diff --git a/src/move-in/ImportJournal.tsx b/src/move-in/ImportJournal.tsx
+index 565a142..5f48fbf 100644
+--- a/src/move-in/ImportJournal.tsx
++++ b/src/move-in/ImportJournal.tsx
+@@ -1,6 +1,7 @@
+ import {vendorName} from './vendor-formats'
+ const provider=(job:any)=>vendorName(job.vendor??job.namespace)
+ const shortProvider=(job:any)=>(({splunk:'Splunk',jsm:'Jira',betterstack:'Better Stack'} as Record<string,string>)[job.vendor??job.namespace]??provider(job))
++const day=(value:string)=>Number.isFinite(Date.parse(value))?new Intl.DateTimeFormat('en-US',{dateStyle:'medium',timeStyle:'short',timeZone:'UTC'}).format(new Date(value))+' UTC':value
+ const artifactLabel=(value:string)=>value.startsWith('erased-artifact:')?'Import file containing erased data':value
+ const label=(job:any)=>[provider(job),...(job.schedules??[]).map(artifactLabel),...(job.files??[]).map(artifactLabel),job.state.replaceAll('_',' ')].join(' · ')
+ 
+@@ -14,7 +15,7 @@ export function ImportJournal({jobs,job,busy,select,resume,reconcile,undo}:{jobs
+  {jobs.length===1&&!job&&<button disabled={busy} onClick={()=>select(jobs[0])}>Open saved import</button>}
+  {job&&<div role="status"><h3>Import journal</h3><p>{label(job)} · {job.checkpoint}/{job.total} source objects processed</p>
+  {job.exportedAt&&<p>Export date from filename: {new Date(job.exportedAt).toLocaleDateString([], {month:'short',day:'numeric',year:'numeric'})}</p>}
+- {job.comparisons?.map((comparison:string)=><p key={comparison}>Coverage comparison: {comparison}</p>)}
++ {job.comparisons?.map((comparison:string)=><p key={comparison}>Coverage compared from {comparison.split(' → ').map(day).join(' to ')}</p>)}
+  {job.approval&&<details><summary>Approval details</summary><p style={{overflowWrap:'anywhere'}}>{job.approval}</p></details>}
+  {resumable(job)&&<button disabled={busy} onClick={resume}>{job.state==='rolling_back'?'Continue rollback':'Resume import'}</button>}
+  {job.door&&job.state==='completed'&&<button disabled={busy} onClick={reconcile}>Check imported data</button>}
+diff --git a/src/move-in/MoveIn.tsx b/src/move-in/MoveIn.tsx
+index 2cc0420..d235d34 100644
+--- a/src/move-in/MoveIn.tsx
++++ b/src/move-in/MoveIn.tsx
+@@ -87,10 +87,24 @@ export function MoveIn({admin,connect,request}:{admin:boolean;connect:boolean;re
+  }
+ 
+  useEffect(()=>{if(admin){const read=()=>load();void run(read,{read:true,retryInput:true})}},[admin,vendor])
++ // The server keeps an unconfirmed preview until it is confirmed, discarded or replaced. Connect says so, and the owner continues or drops it.
++ const [waiting,setWaiting]=useState<{vendor:string;review:any}|null>(null)
++ useEffect(()=>{
++  if(!admin)return
++  let current=true
++  void (async()=>{
++   const response=await fetch('/api/operator/import/pending').catch(()=>null)
++   const saved=(response?.ok?await response.json().catch(()=>null):null) as {vendor?:string;review?:any}|null
++   if(current&&saved?.review&&saved.vendor)setWaiting({vendor:saved.vendor,review:saved.review})
++  })()
++  return()=>{current=false}
++ },[admin])
++ const continueReview=()=>{if(!waiting)return;setVendor(waiting.vendor);setSourceChoice(waiting.vendor==='pagerduty'||waiting.vendor==='opsgenie'?waiting.vendor:'file');setPreview(waiting.review);setSource(null);setFilename('');setStep(2);setWaiting(null)}
++ const discardReview=()=>{const saved=waiting;if(!saved)return;void run(async()=>{await doorClient(saved.vendor)('discard',{planId:saved.review.planId});setWaiting(null)})}
+ 
+  const previewBytes=async(bytes:Uint8Array,name:string,provider=vendor)=>{
+   const result=await run(()=>previewFile(doorClient(provider),bytes,name,provider),{read:true})
+-  if(result){setSource(bytes);setFilename(name);setPreview(result);setJob(null);setReconciliation(null);setStep(2)}
++  if(result){setSource(bytes);setFilename(name);setPreview(result);setJob(null);setReconciliation(null);setWaiting(null);setStep(2)}
+  }
+  const read=async(provider:Provider,region:Region,key?:string)=>{
+   const bytes=await run(()=>readAccount(request,provider,region,key),{read:true})
+@@ -110,11 +124,11 @@ export function MoveIn({admin,connect,request}:{admin:boolean;connect:boolean;re
+  },[admin])
+  if(!admin)return <section className="panel"><h2>Move in</h2><p>An administrator reads and imports schedules.</p></section>
+  return <section className="scheduling-workspace move-in-workspace">
+- {step===1&&<ConnectStep source={sourceChoice} vendor={vendor} connect={connect} busy={busy}
++ {step===1&&<ConnectStep waiting={waiting&&{vendor:waiting.vendor,name:vendorNames[waiting.vendor as keyof typeof vendorNames]??waiting.vendor,continueReview,discardReview}} source={sourceChoice} vendor={vendor} connect={connect} busy={busy}
+   choose={value=>{setSourceChoice(value);if(value!=='file')setVendor(value);setPreview(null);failures.clear()}}
+   fileVendor={setVendor} read={read} file={file=>{void run(async()=>{await previewBytes(new Uint8Array(await file.arrayBuffer()),file.name)},{read:true})}}/>}
+  <FailureLine failure={failures.failure}/>{failures.failure&&failureDetails!=null&&(failures.failure.target?.isConnected?createPortal(<CopyDetails value={failureDetails}/>,failures.failure.target):<CopyDetails value={failureDetails}/>)} {busy&&<p role="status">Working…</p>}
+- {step===2&&preview&&<ReviewStep preview={preview} bytes={source} filename={filename} busy={busy} back={()=>setStep(1)} next={()=>setStep(3)}/>}
++ {step===2&&preview&&<ReviewStep preview={preview} bytes={source} filename={filename} busy={busy} back={()=>{void run(async()=>{ if(preview.planId)await door('discard',{planId:preview.planId}).catch(()=>null);setStep(1);setPreview(null)})}} next={()=>setStep(3)}/>}
+  {step===3&&preview&&!job&&<ImportStep busy={busy} back={()=>setStep(2)} confirm={()=>{
+   const planId=preview.planId,fingerprint=preview.fingerprint
+   void run(()=>applyAndCheck(planId,fingerprint),{retryInput:Boolean(planId)})
+@@ -123,7 +137,7 @@ export function MoveIn({admin,connect,request}:{admin:boolean;connect:boolean;re
+  <h2>{reconciliation?.ok?'Import complete':reconciliation?'Import differences':busy?'Checking imported data':'Import needs checking'}</h2>
+  {reconciliation?<>
+  <p>{reconciliation.ok?'Matched. The imported data agrees with the saved export.':'The native data differs from the saved export. Review these differences before continuing.'}</p>
+- <p>{reconciliation.counts.sourceRecords} source objects · {reconciliation.counts.present} present · {reconciliation.counts.explained} explained · {reconciliation.counts.nativeTargets} matching native objects</p>
++ <p>{reconciliation.counts.sourceRecords} {reconciliation.counts.sourceRecords===1?'object':'objects'} in the file, {reconciliation.counts.present+reconciliation.counts.explained} accounted for ({reconciliation.counts.nativeTargets} created in Oncall, the rest kept as source evidence)</p>
+  {!reconciliation.ok&&<ul>{reconciliation.sourceIds.filter(row=>row.status==='mismatched').map(row=><li key={JSON.stringify([row.kind,row.sourceId])}>{row.kind}: {row.sourceId}<ul>{row.conflicts?.map(conflict=><li key={conflict}>Changed or missing native object: {conflict}</li>)}</ul></li>)}</ul>}
+  {reconciliation.ok&&<p>Review imported data below. Adopt a schedule when you’re ready.</p>}
+  </>:<p>Check the native data before treating this import as complete. Use Check imported data in the saved journal to try again.</p>}
+diff --git a/src/move-in/ReviewStep.tsx b/src/move-in/ReviewStep.tsx
+index dff0124..ffa8c99 100644
+--- a/src/move-in/ReviewStep.tsx
++++ b/src/move-in/ReviewStep.tsx
+@@ -5,6 +5,7 @@ export function ReviewStep({ preview, bytes, filename, busy, back, next }: { pre
+  useEffect(()=>{if(!bytes)return;const url=URL.createObjectURL(new Blob([new Uint8Array(bytes).buffer],{type:'application/json'}));setDownload(url);return()=>URL.revokeObjectURL(url)},[bytes])
+  return <section className="scheduling-panel move-in-step" aria-labelledby="move-in-review-title">
+   <h2 id="move-in-review-title">2 · Review</h2><p>Nothing has been imported. Review what will arrive paused.</p>
++  {preview.conflict&&<p role="alert">{preview.conflict}</p>}
+   <CompatibilityReview preview={preview} busy={busy} hasJob={false} />
+   {download&&<a className="move-in-footer" href={download} download={filename}>Download read data</a>}
+   <div className="move-in-actions"><button disabled={busy} onClick={back}>Back to connection</button><button className="scheduling-primary" disabled={busy} onClick={next}>Import paused</button></div>
+diff --git a/src/move-in/adoption.ts b/src/move-in/adoption.ts
+index ed1e62f..e52f75c 100644
+--- a/src/move-in/adoption.ts
++++ b/src/move-in/adoption.ts
+@@ -17,7 +17,8 @@ export function installAdoption(api:any,body:(c:any)=>Promise<any>) {
+  }
+  api.get('/api/move-in/adoption',async(c:any)=>{
+   const s=await snapshot(c)
+-  return c.json({services:s.workspace.services,members:s.workspace.members.filter(m=>m.active&&['admin','responder'].includes(m.role)),paging:'OFF'})
++  // Rotas already live, so the screen can say before adoption that a service has one.
++  return c.json({services:s.workspace.services,members:s.workspace.members.filter(m=>m.active&&['admin','responder'].includes(m.role)),rotas:s.archive.schedules.map(rota=>({id:rota.id,name:rota.name,services:[...new Set([rota.service,...(rota.services??[])])]})),paging:'OFF'})
+  })
+  api.post('/api/move-in/adopt',async(c:any)=>{
+   const s=await snapshot(c),input=await body(c),db=c.env.DB as D1Database
+diff --git a/src/move-in/owner-door.ts b/src/move-in/owner-door.ts
+index 182b05a..77a8968 100644
+--- a/src/move-in/owner-door.ts
++++ b/src/move-in/owner-door.ts
+@@ -1,4 +1,5 @@
+-import {vendorName} from './vendor-formats'
++import {vendorName,vendorNames} from './vendor-formats'
++import { preview as previewResponse } from '../modules/import-kit/src/door/planning'
+ import { auditIdentity } from '../audit-store'
+ import { createImportOperatorHandler } from '../modules/import-kit/src/door/operator'
+ import { loadSnapshot, planRow } from '../modules/import-kit/src/door/store'
+@@ -59,6 +60,16 @@ const review = (plan: ImportPlan) => plan.entries.map(entry => {
+   rejection: entry.rejection, unmapped: entry.unmapped, effects: entry.effects }
+ })
+ 
++/** The saved file names of an earlier import, so a sentence can name it by provider and file. Null when its plan is gone or unreadable. */
++const importFiles = (db: D1Database, principal: string) => async (job: string, namespace: string) => {
++ try {
++  const plan = await db.prepare(`SELECT d.id FROM ik_door_plans d WHERE d.job_id=? LIMIT 1`).bind(job).first<{ id: string }>()
++  if (!plan) return null
++  const names = (await loadSnapshot(reader(db, namespace as Vendor, principal), await planRow(reader(db, namespace as Vendor, principal), plan.id))).plan.source.artifacts.map(artifact => artifact.name)
++  return names.length ? names.join(', ') : null
++ } catch { return null }
++}
++
+ /** Why Undo cannot run on this import yet, named before the door records reversal intent: a later import replaced
+  * its records (undo that one first), or something changed in Oncall since. Null when Undo can proceed. */
+ const undoRefusal = async (db: D1Database, job: string) => await supersededBy(db, job) ?? await changedSinceImport(db, job)
+@@ -76,9 +87,35 @@ const jobOf = async (db: D1Database, planId: string) => (await db.prepare("SELEC
+ const ownJob = async (db: D1Database, planId: string, vendor: string, principal: string) => (await db.prepare(`SELECT j.id FROM ik_door_plans d JOIN ik_jobs j ON j.operation_key='door:'||d.id
+  WHERE d.id=? AND d.installation_id=? AND d.namespace=? AND j.destination='oncall' AND j.principal_id=?`).bind(planId, IMPORT_DOOR_KEY, vendor, principal).first<{ id: string }>())?.id
+ 
++/** What the review screen shows for a plan: its items and classification, and anything an earlier import would refuse at apply. */
++async function reviewAnswer(db: D1Database, vendor: string, principal: string, snapshot: Awaited<ReturnType<typeof loadSnapshot>>, plan: unknown) {
++ const items = review(snapshot.plan)
++ const classification = { mapped: 0, mappedWithDifferences: 0, rejected: 0 }
++ for (const item of items) classification[item.disposition === 'mapped-with-differences' ? 'mappedWithDifferences' : item.disposition === 'rejected' ? 'rejected' : 'mapped']++
++ // Say now what apply would refuse later: people or schedules an earlier import already put in Oncall.
++ const held = await alreadyImported(db, snapshot.plan, vendor, undefined, importFiles(db, principal)).catch(() => null)
++ return { ...(plan as object), items, classification, ...(held ? { conflict: held.message } : {}) }
++}
++
++/** The owner's own unconfirmed preview, if any source holds one: a reload keeps the review it was showing. */
++async function pendingReview(c: any): Promise<Response> {
++ const actor: Member = c.get('actor'), db: D1Database = c.env.DB
++ if (actor.role !== 'admin') return answer({ error: 'Current admin required' }, 403)
++ for (const vendor of Object.keys(vendorNames)) {
++  const pending = await pendingPlan(db, vendor)
++  if (!pending?.preview || pending.started || pending.withdrawn) continue
++  try {
++   const read = reader(db, vendor as Vendor, actor.id), snapshot = await loadSnapshot(read, await planRow(read, pending.id))
++   return answer({ vendor, review: await reviewAnswer(db, vendor, actor.id, snapshot, previewResponse(snapshot, false)) })
++  } catch { continue }
++ }
++ return answer({})
++}
++
+ /** POST /api/operator/import/{uploads,plan,apply,status,reconcile,undo} with X-Import-Source naming a listed vendor. */
+ export async function ownerImport(c: any): Promise<Response> {
+  const request: Request = c.req.raw, actor: Member = c.get('actor'), base: D1Database = c.env.DB
++ if (new URL(request.url).pathname === PREFIX + 'pending') return pendingReview(c)
+  const vendor = request.headers.get('X-Import-Source') ?? '', source = importSource(vendor)
+  if (!source) return answer({ error: 'unknown_import_source' }, 400)
+  if (actor.role !== 'admin') return answer({ error: 'Current admin required' }, 403)
+@@ -146,15 +183,22 @@ export async function ownerImport(c: any): Promise<Response> {
+   if (plan.planId !== before) await db.prepare(`INSERT OR IGNORE INTO move_in_previews(plan_id) SELECT id FROM ik_door_plans WHERE id=? AND job_id IS NULL
+    AND NOT EXISTS(SELECT 1 FROM ik_jobs WHERE operation_key='door:'||?)`).bind(plan.planId, plan.planId).run()
+   const snapshot = await loadSnapshot(read, await planRow(read, plan.planId))
+-  const items=review(snapshot.plan)
+-  const classification={mapped:0,mappedWithDifferences:0,rejected:0}
+-  for(const item of items)classification[item.disposition==='mapped-with-differences'?'mappedWithDifferences':item.disposition==='rejected'?'rejected':'mapped']++
+-  return answer({ ...plan, items, classification })
++  return answer(await reviewAnswer(db, vendor, actor.id, snapshot, plan))
++ }
++ if (action === 'discard' && typeof input?.planId === 'string') {
++  // Leaving the review drops this screen's own unconfirmed preview, and nothing else: never a started job or a Business proposal.
++  const mine = await db.prepare(`SELECT 1 AS ok FROM move_in_previews v WHERE v.plan_id=? AND NOT EXISTS(SELECT 1 FROM ik_jobs j WHERE j.operation_key='door:'||v.plan_id)`).bind(input.planId).first()
++  if (!mine) return answer({ discarded: false })
++  const headers = new Headers(request.headers); headers.delete('content-length')
++  const cancelled = await send(new Request(new URL(PREFIX + 'undo', request.url), { method: 'POST', headers, body: JSON.stringify({ planId: input.planId }) }) as Request)
++  if (!cancelled.ok) return cancelled
++  await forget(db, input.planId)
++  return answer({ discarded: true })
+  }
+  if (action === 'apply' && typeof input?.planId === 'string') {
+   // Name people or schedules another import already holds before the door starts a job that could only fail.
+   const held = await (async () => {
+-   try { return await alreadyImported(db, (await loadSnapshot(read, await planRow(read, input.planId as string))).plan, vendor, await jobOf(db, input.planId as string)) }
++   try { return await alreadyImported(db, (await loadSnapshot(read, await planRow(read, input.planId as string))).plan, vendor, await jobOf(db, input.planId as string), importFiles(db, actor.id)) }
+    catch { return null }
+   })()
+   if (held) return refusal(held)
+diff --git a/src/move-in/refusals.ts b/src/move-in/refusals.ts
+index 9762987..7e36b3f 100644
+--- a/src/move-in/refusals.ts
++++ b/src/move-in/refusals.ts
+@@ -8,6 +8,7 @@ export class Refusal extends Fault {
+ }
+ 
+ const list = (names: string[]) => names.length < 3 ? names.join(' and ') : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`
++const cap = (text: string) => text[0].toUpperCase() + text.slice(1)
+ const object = (kind: string, id: string) => kind === 'user' ? id : `${kind} ${id}`
+ 
+ /** DUPLICATE_TARGET: two source records become the same Oncall object; name both records and the object they share. Null when no two do. */
+@@ -27,21 +28,33 @@ export function duplicateTargets(source: SourceBundle, mapping: ImportMapping) {
+ }
+ 
+ // A door import's kit job keeps an internal namespace (door:<hash>); its door plan names the vendor.
+-type Held = { kind: string; id: string; job: string; namespace: string }
++type Held = { kind: string; id: string; job: string; namespace: string; live: number; name: string | null }
+ async function holders(db: D1Database, effects: TargetEffect[], job?: string): Promise<Held[]> {
+  const wanted = JSON.stringify(effects.map(e => [e.targetKind, e.targetId]))
+- const rows = await db.prepare(`SELECT p.target_kind AS kind,p.target_id AS id,p.job_id AS job,COALESCE((SELECT d.namespace FROM ik_door_plans d WHERE d.job_id=j.id OR 'door:'||d.id=j.operation_key LIMIT 1),j.namespace) AS namespace FROM ik_provenance p JOIN ik_jobs j ON j.id=p.job_id WHERE p.destination='oncall' AND p.reversed=0 AND p.job_id IS NOT ? AND EXISTS(SELECT 1 FROM json_each(?) w WHERE json_extract(w.value,'$[0]')=p.target_kind AND json_extract(w.value,'$[1]')=p.target_id) ORDER BY p.target_kind,p.target_id`).bind(job ?? null, wanted).all<Held>()
++ // live: one of this import's schedules was made live, which no undo can take back.
++ const rows = await db.prepare(`SELECT p.target_kind AS kind,p.target_id AS id,p.job_id AS job,COALESCE((SELECT d.namespace FROM ik_door_plans d WHERE d.job_id=j.id OR 'door:'||d.id=j.operation_key LIMIT 1),j.namespace) AS namespace,
++  EXISTS(SELECT 1 FROM ik_provenance q JOIN move_in_objects o ON o.kind=q.target_kind AND o.id=q.target_id WHERE q.job_id=p.job_id AND q.reversed=0 AND json_extract(o.data,'$.adopted') IS NOT NULL) AS live,
++  (SELECT COALESCE(json_extract(n.data,'$.schedule.name'),json_extract(n.data,'$.name')) FROM move_in_objects n WHERE n.kind=p.target_kind AND n.id=p.target_id) AS name
++  FROM ik_provenance p JOIN ik_jobs j ON j.id=p.job_id WHERE p.destination='oncall' AND p.reversed=0 AND p.job_id IS NOT ? AND EXISTS(SELECT 1 FROM json_each(?) w WHERE json_extract(w.value,'$[0]')=p.target_kind AND json_extract(w.value,'$[1]')=p.target_id) ORDER BY p.target_kind,p.target_id`).bind(job ?? null, wanted).all<Held>()
+  return rows.results
+ }
+ const vendorName = (namespace: string) => namespace === 'pagerduty' ? 'PagerDuty' : namespace === 'opsgenie' ? 'Opsgenie' : namespace
+ 
+-/** TARGET_REVISION_CONFLICT: the file brings people or schedules an earlier import already put in Oncall; name them and that import.
+- * A catch-up's replacements carry the revision their own import wrote, so only new objects are checked. Null when nothing is held. */
+-export async function alreadyImported(db: D1Database, plan: ImportPlan, vendor: string, job?: string) {
++/** TARGET_REVISION_CONFLICT: the file brings people or schedules an earlier import already put in Oncall; name them and that import
++ * by its provider and file, and give the way out that still works. A catch-up's replacements carry the revision their own import
++ * wrote, so only new objects are checked. Null when nothing is held. `files` names an import's saved files; the preview and the
++ * refusal share this sentence so the owner hears it before confirming. */
++export async function alreadyImported(db: D1Database, plan: ImportPlan, vendor: string, job?: string, files?: (job: string, namespace: string) => Promise<string | null>) {
+  const held = await holders(db, plan.entries.flatMap(entry => entry.effects).filter(effect => effect.expectedRevision === undefined), job)
+  if (!held.length) return null
+- const imports = [...new Set(held.map(h => `the ${vendorName(h.namespace)} import ${h.job}`))]
+- return new Refusal(409, `${list(held.map(h => object(h.kind, h.id)))} ${held.length > 1 ? 'are' : 'is'} already in Oncall from ${list(imports)}. Undo that import, or erase ${held.length > 1 ? 'those people' : 'that person'}, before bringing ${held.length > 1 ? 'them' : 'it'} in again from ${vendorName(vendor)}. Nothing from this file was written.`, 'TARGET_REVISION_CONFLICT')
++ const jobs = [...new Map(held.map(h => [h.job, h])).values()]
++ const named = await Promise.all(jobs.map(async h => { const file = await files?.(h.job, h.namespace) ?? null; return { ...h, text: `the ${vendorName(h.namespace)} import${file ? ` of ${file}` : ''}` } }))
++ const many = held.length > 1, live = named.filter(h => h.live), undoable = named.filter(h => !h.live)
++ const erase = `erase ${many ? 'those people' : 'that person'} under Settings → Archive → Erase someone’s data`
++ const way = !live.length ? `Undo that import in Saved import journal, or ${erase}`
++  : !undoable.length ? `${cap(list(live.map(h => h.text)))} ${live.length > 1 ? 'have' : 'has'} a schedule that is already live, so ${live.length > 1 ? 'they' : 'it'} can no longer be undone. ${cap(erase)}`
++  : `Undo ${list(undoable.map(h => h.text))} in Saved import journal; ${list(live.map(h => h.text))} can no longer be undone because ${live.length > 1 ? 'their schedules are' : 'its schedule is'} live, so ${erase}`
++ return new Refusal(409, `${list(held.map(h => h.kind !== 'user' && h.name ? `${h.kind === 'policy' ? 'escalation policy' : h.kind} “${h.name}”` : object(h.kind, h.id)))} ${many ? 'are' : 'is'} already in Oncall from ${list(named.map(h => h.text))}. ${way}, before bringing ${many ? 'them' : 'it'} in again from ${vendorName(vendor)}. Nothing from this file was written.`, 'TARGET_REVISION_CONFLICT')
+ }
+ 
+ /** NATIVE_EDIT_CONFLICT on undo: name what changed in Oncall after the import, which undo would otherwise overwrite. Null when nothing did. */
+diff --git a/src/move-in/review-copy.ts b/src/move-in/review-copy.ts
+index ef79c8b..6646820 100644
+--- a/src/move-in/review-copy.ts
++++ b/src/move-in/review-copy.ts
+@@ -10,10 +10,11 @@ const words=(value:string)=>fields[value.replaceAll('-','_')]??value.replaceAll(
+ export const reviewKind=(kind:string)=>kinds[kind]??words(kind)
+ const sentence=(text:string)=>/[.!?]$/.test(text)?text:text+'.'
+ 
++const list=(values:string[])=>values.length<3?values.join(' and '):`${values.slice(0,-1).join(', ')} and ${values.at(-1)}`
+ export function reviewCopy(items:any[]) {
+  const names=new Map<string,string>()
+  for(const item of items) {
+-  names.set(item.id,item.name)
++  if(item.kind!=='timelines')names.set(item.id,item.name)
+   for(const effect of item.effects??[]) {
+    names.set(effect.targetId,item.name)
+    if(effect.value.email)names.set(effect.value.email,item.name)
+@@ -26,7 +27,18 @@ export function reviewCopy(items:any[]) {
+  const named=(text:string)=>pattern?text.replace(pattern,ref=>names.get(ref)!):text
+  const readable=(text:string)=>named(text).replace(/\b[a-zA-Z][a-zA-Z0-9]*(?:_[a-zA-Z0-9]+)+\b/g,words)
+  const date=(value:string)=>new Intl.DateTimeFormat('en-US',{dateStyle:'medium',timeStyle:'short',timeZone:'UTC'}).format(new Date(value))+' UTC'
+- return {
++ const retained=(item:any,value:any)=>item.kind==='schedules'&&value.reason==='Retained source metadata; not an active Oncall rule.'
++ const copy={
++  // A coverage comparison shares its schedule's source id; name it by that schedule.
++  title:(item:any)=>item.kind==='timelines'?`Coverage comparison: ${items.find(other=>other.kind==='schedules'&&other.id===item.id)?.name??'a schedule'}`:`${reviewKind(item.kind)}: ${item.name}`,
++  // One sentence per distinct difference; many fields kept for review share one line.
++  differences:(item:any):{text:string;originals:any[]}[]=>{
++   const rows:{text:string;originals:any[]}[]=[],kept=item.unmapped.filter((value:any)=>retained(item,value))
++   const add=(text:string,original:any)=>{const row=rows.find(row=>row.text===text);if(row){if(original!==undefined)row.originals.push(original)}else rows.push({text,originals:original===undefined?[]:[original]})}
++   if(kept.length)rows.push({text:`The source’s ${list(kept.map((value:any)=>words(value.field)))} for ${item.name} will be kept for review, without becoming active Oncall rules.`,originals:kept.flatMap((value:any)=>value.original===undefined?[]:[value.original])})
++   for(const value of item.unmapped)if(!retained(item,value))add(copy.difference(item,value),value.original)
++   return rows
++  },
+   rejection:(item:any)=>sentence(readable(item.rejection).replace(new RegExp('^'+item.kind+'\\s'),reviewKind(item.kind)+' ')),
+   effect:(item:any)=>{
+    if(item.rejection)return 'Oncall will keep the original for review and will not create an active object from it.'
+@@ -55,4 +67,5 @@ export function reviewCopy(items:any[]) {
+    })]
+   },
+  }
++ return copy
+ }
+diff --git a/src/on-call/RotaPage.tsx b/src/on-call/RotaPage.tsx
+index 6716926..1d332eb 100644
+--- a/src/on-call/RotaPage.tsx
++++ b/src/on-call/RotaPage.tsx
+@@ -50,8 +50,11 @@ export function RotaPage({id, state, actor, value, refresh, edit = false, render
+   const changed = async () => {await refresh();await load();};
+   const canEdit = !!schedule && (schedule.services?.length?actor.role==='admin':teamCoverage(state, actor, schedule.service)), responsive = ['admin','responder'].includes(actor.role);
+   const person = (id: string | null) => state.members.find(person => person.id === id);
+-  const bands: OnCallBand[] = windows.flatMap((window, index) => (['primary','backup'] as const).map(role => ({role, member: window[role] && person(window[role]) ? {id: window[role]!, name: person(window[role])!.name} : null, from: new Date(window.at).toISOString(), to: new Date(windows[index + 1]?.at ?? from + 14 * 86_400_000).toISOString()})));
+-  const upcomingShifts = bands.filter(band => band.member?.id === actor.id && Date.parse(band.from) > Date.now());
++  const shifts: OnCallBand[] = windows.flatMap((window, index) => (['primary','backup'] as const).map(role => ({role, member: window[role] && person(window[role]) ? {id: window[role]!, name: person(window[role])!.name} : null, from: new Date(window.at).toISOString(), to: new Date(windows[index + 1]?.at ?? from + 14 * 86_400_000).toISOString()})));
++  // Layers cut the timeline at every boundary; the chart shows one holder across several cuts as one bar. Swaps keep the cuts: cover is judged per cut.
++  const bands: OnCallBand[] = [], lastBand: Partial<Record<'primary'|'backup', OnCallBand>> = {};
++  for (const shift of shifts) {const previous = lastBand[shift.role]; if (previous && previous.member?.id === shift.member?.id && previous.to === shift.from) previous.to = shift.to; else {bands.push({...shift}); lastBand[shift.role] = bands.at(-1);}}
++  const upcomingShifts = shifts.filter(band => band.member?.id === actor.id && Date.parse(band.from) > Date.now());
+   const hasCover = (band: OnCallBand) => schedule?.overrides.some(override => override.role === band.role && Date.parse(override.start) < Date.parse(band.to) && Date.parse(override.end) > Date.parse(band.from));
+   const ownShifts = upcomingShifts.filter(band => !hasCover(band));
+   const coveredShifts = upcomingShifts.some(hasCover);
+@@ -97,7 +100,7 @@ export function RotaPage({id, state, actor, value, refresh, edit = false, render
+   const requestSwap = async () => {
+     if (!schedule || !swapShift || !substitute) return;
+     setBusy(true);failures.clear();
+-    try {await request('/api/schedule-coordination', {action:'request',schedule:id,scheduleRevision:schedule.revision,substitute,role:swapShift.role,start:swapShift.from,end:swapShift.to});await changed();for(const kept of policyDrafts('swap',id))removeLocalDraft('swap',id,kept.baseVersion);setSheet(null);}
++    try {await request('/api/schedule-coordination', {action:'request',schedule:id,scheduleRevision:schedule.revision,substitute,role:swapShift.role,start:swapShift.from,end:swapShift.to});await changed();for(const kept of policyDrafts('swap',id))removeLocalDraft('swap',id,kept.baseVersion);setSheet(null);setSavedNotice(`Swap requested. It waits under Shift coordination for ${person(substitute)?.name??'your substitute'} to accept.`);}
+     catch (error) {failures.show(error, {target:null});} finally {setBusy(false);}
+   };
+   if (edit && schedule && renderEdit) return <>{renderEdit(schedule)}</>;
+diff --git a/src/readiness/ReadinessPage.tsx b/src/readiness/ReadinessPage.tsx
+index a0b4e9e..290bae4 100644
+--- a/src/readiness/ReadinessPage.tsx
++++ b/src/readiness/ReadinessPage.tsx
+@@ -6,6 +6,8 @@ import {shortTime} from '../reviews/time';
+ 
+ const label=(value:string)=>value.replaceAll('-',' ').replace(/([a-z])([A-Z])/g,'$1 $2').replace(/^./,v=>v.toUpperCase());
+ const display=(value:string|number|boolean|null)=>value===null?'Unknown':typeof value==='boolean'?value?'Yes':'No':typeof value==='number'?value.toLocaleString():/^\d{4}-\d{2}-\d{2}T/.test(value)?shortTime(value):({ 'single-installation': 'One installation', 'not-provided': 'Not set', missing: 'Not set' }[value] ?? label(value));
++// Field-proof ids are the contract's; people read what each real-world check covers.
++const fieldProofNames:Record<string,string>={'R-1':'Hosted deployment check','R-2':'Inbound email check','R-5':'US voice and SMS registration','R-6':'Live handset delivery','R-7':'App store distribution','R-8':'Live phone drills','R-12':'Vendor tenant check'};
+ export function ReadinessSection() {
+  const {page}=useWorkspaceContext();
+  return page==='readiness'?<ReadinessPage/>:null;
+@@ -39,7 +41,7 @@ function ReadinessPage() {
+     <div className="panel readiness-matrix">{report.matrix.map(row=><article key={row.id} data-readiness-row={row.id}>
+      <div><h3>{row.area}</h3><span className="readiness-state" data-state={row.state}>{label(row.state)}</span></div>
+      <div><p>{row.limitation}</p>{row.observation&&(row.observation.state==='unavailable'?<p>Source observations unavailable</p>:<p>{row.observation.configured} configured · {row.observation.active} active with credentials<br/>Last accepted: {row.observation.lastAcceptedAt?shortTime(row.observation.lastAcceptedAt):'None retained'}</p>)}</div>
+-     <div className="readiness-evidence"><strong>{label(row.evidence.kind)}</strong></div>
++     <div className="readiness-evidence"><strong>{({'maintained-journey':'Checked by release tests','dated-owner-evidence':'Dated owner evidence',none:'No evidence yet'} as Record<string,string>)[row.evidence.kind]}</strong></div>
+     </article>)}</div>
+    </section>
+    <section aria-labelledby="installation-title" id="us-installation">
+@@ -48,9 +50,9 @@ function ReadinessPage() {
+     <p>Account steps remain not done until independently verified. Keep your existing pager authoritative.</p>
+     <div className="panel readiness-matrix">{report.installation.items.map(item=><article key={item.id} data-installation-item={item.id}>
+      <div><h3>{item.name}</h3><span className="readiness-state" data-state={item.state}>{label(item.state)}</span><p>{item.completion==='not-done'?'Not done for this installation':'Guidance only'}</p></div>
+-     <div><p>{item.requirement}</p><p>Owning clauses: {item.clauses.join(', ')}</p></div>
++     <div><p>{item.requirement}</p></div>
+      <div className="readiness-evidence"><strong>Release evidence</strong>{item.matrix.map(row=><span key={row.id}>{report.matrix.find(item=>item.id===row.id)?.area}: {label(row.state)}</span>)}
+-      {item.fieldProof.length?item.fieldProof.map(row=><span key={row.id} data-field-proof={row.id}>{row.id}: {row.state==='passed'?'Passed on '+row.date+' · dated prior evidence':'Not run'}</span>):<span>No field-proof row recorded</span>}
++      {item.fieldProof.length?item.fieldProof.map(row=><span key={row.id} data-field-proof={row.id}>{fieldProofNames[row.id]??'Field check'}: {row.state==='passed'?'Passed on '+row.date+' · dated prior evidence':'Not run'}</span>):<span>No field-proof row recorded</span>}
+      </div>
+     </article>)}</div>
+    </section>
+diff --git a/src/readiness/matrix.ts b/src/readiness/matrix.ts
+index 07bc65f..96f0c9a 100644
+--- a/src/readiness/matrix.ts
++++ b/src/readiness/matrix.ts
+@@ -36,8 +36,8 @@ export const matrixDefinitions: Definition[] = [
+ const register = new Map(__ONCALL_FIELD_PROOF__.map(row=>[row.id,row]));
+ type Dependency = {id:string;name:string;clauses:string[];matrix:string[];proof:string[];requirement:string;boundary?:boolean};
+ const dependencies:Dependency[] = [
+- {id:'hosting',name:'Hosting account and deployment identity',clauses:['OC-018'],matrix:['coordination'],proof:['R-1'],requirement:'Not done for this installation: authorize its Cloudflare account and deployment operation, bind the source SHA, artifact fingerprint and version, and verify owner access and removal. R-1 is dated prior evidence, not this deployment.'},
+- {id:'mail',name:'Remote mail for hosted sign-in',clauses:['OC-018'],matrix:['hosted-mail'],proof:['R-1','R-2'],requirement:'Not done: configure a remote mail provider, credentials and verified sender, then prove a real hosted sign-in email. Local owner entry is not mail delivery; prior R-1 does not verify this sender. R-2 is dated prior inbound intake evidence only, not hosted sign-in or paging.'},
++ {id:'hosting',name:'Hosting account and deployment identity',clauses:['OC-018'],matrix:['coordination'],proof:['R-1'],requirement:'Not done for this installation: authorize its Cloudflare account and deployment operation, bind the source SHA, artifact fingerprint and version, and verify owner access and removal. The earlier hosted check is dated prior evidence, not this deployment.'},
++ {id:'mail',name:'Remote mail for hosted sign-in',clauses:['OC-018'],matrix:['hosted-mail'],proof:['R-1','R-2'],requirement:'Not done: configure a remote mail provider, credentials and verified sender, then prove a real hosted sign-in email. Local owner entry is not mail delivery; the earlier hosted check does not verify this sender. The earlier inbound email check is dated prior evidence for intake only, not hosted sign-in or paging.'},
+  {id:'us-sending',name:'Registered US voice and SMS sending',clauses:['OC-026','OC-066'],matrix:['paging'],proof:['R-5'],requirement:'Not done: register US A2P 10DLC brand and campaign, sender numbers and caller identity; establish consent, opt-out handling and carrier tests. Paging remains OFF; account configuration grants no sending authority.'},
+  {id:'push',name:'APNs and FCM entitlements',clauses:['OC-029'],matrix:['ios','android'],proof:['R-7'],requirement:'Not done: provision APNs and FCM, iOS Critical Alerts entitlement, Android full-screen and Do Not Disturb permissions, and device acceptance. No native push adapter is built.'},
+  {id:'native-apps',name:'Native apps and store distribution',clauses:['OC-029'],matrix:['ios','android'],proof:['R-7'],requirement:'Not done: build and distribute iOS and Android apps through the App Store and Google Play, with native-device proof. A web app or local test is not distribution evidence.'},
+@@ -45,7 +45,7 @@ const dependencies:Dependency[] = [
+  {id:'chat',name:'Slack and Microsoft Teams apps',clauses:['OC-034','OC-067'],matrix:['chat-slack','chat-microsoft-teams'],proof:['R-12'],requirement:'Not done: install and authorize the scoped Slack and Teams apps and prove real chat actions. Neither connected app is built.'},
+  {id:'standby',name:'Independent standby, takeover and real-phone drills',clauses:['OC-028','OC-047','OC-054'],matrix:['standby','drills'],proof:['R-8'],requirement:'Not done: establish independent account and identity authority, takeover and failback, and human-confirmed real-phone loss drills. Required for paging cutover; hosted coordination may run beside the existing pager without standby.'},
+  {id:'handsets',name:'Live handset delivery',clauses:['OC-026','OC-029','OC-035','OC-064','OC-066','OC-071','OC-080','OC-082'],matrix:['cutover'],proof:['R-6'],requirement:'Not done: prove registered real-handset voice with DTMF, SMS replies and links, push and email, plus provider-disable and inbound-call drills. Local receipts and provider sandboxes prove no live receipt.'},
+- {id:'reference-load',name:'OC-064 reference load',clauses:['OC-064','OC-054'],matrix:['reference-load'],proof:['R-6'],requirement:'Not done: measure sustained and burst intake, escalation, failover, recovery and archive capacity with p50, p95, p99 and maximum against OC-064. R-6 covers related live delivery, not a passing reference-load measurement.'},
++ {id:'reference-load',name:'Reference load',clauses:['OC-064','OC-054'],matrix:['reference-load'],proof:['R-6'],requirement:'Not done: measure sustained and burst intake, escalation, failover, recovery and archive capacity with p50, p95, p99 and maximum against the stated reference load. Live handset delivery is a separate step and is not a reference-load measurement.'},
+  {id:'regulated-data',name:'Applicable regulated-data agreements and validated controls',clauses:['OC-044'],matrix:['regulated-data'],proof:[],requirement:'Not done: applicable agreements and validated controls are absent, and no field-proof row records them. Make no HIPAA or regulated-data suitability claim; use redacted incident descriptions and separately authorized references.'},
+  {id:'911',name:'911 emergency boundary',clauses:['OC-044'],matrix:['us-emergency'],proof:[],boundary:true,requirement:'Oncall is not a 911 dispatch service. For a US emergency, call 911 directly; do not send it to Oncall or wait for an alert or acknowledgment. This is guidance, not an emergency-service capability; no field-proof row applies.'},
+ ];
+diff --git a/src/reviews/ResponseReport.tsx b/src/reviews/ResponseReport.tsx
+index 702763b..780e742 100644
+--- a/src/reviews/ResponseReport.tsx
++++ b/src/reviews/ResponseReport.tsx
+@@ -50,7 +50,7 @@ export function ResponseReport({state}: {state: State}) {
+     {!report && loading && <p role="status">Loading response records…</p>}
+     {report && <>
+       <div className="review-snapshot">
+-        <p><strong>{report.cohort.count} incidents</strong> · {report.cohort.service ? state.services.find(s => s.id === report.cohort.service)?.name ?? report.cohort.service : 'All services'}</p>
++        <p><strong>{report.cohort.count} {report.cohort.count===1?'incident':'incidents'}</strong> · {report.cohort.service ? state.services.find(s => s.id === report.cohort.service)?.name ?? report.cohort.service : 'All services'}</p>
+ 
+ 
+ 
+diff --git a/src/schedule-coordination/Controls.tsx b/src/schedule-coordination/Controls.tsx
+index f127702..2162557 100644
+--- a/src/schedule-coordination/Controls.tsx
++++ b/src/schedule-coordination/Controls.tsx
+@@ -16,6 +16,8 @@ export function ScheduleCoordination({schedule,state,actor,onChanged,rotaPage=fa
+  useEffect(()=>{load().catch(e=>failures.show(e,{read:true,target:null,retry:async()=>{await load();failures.clear();}}));},[schedule.id,schedule.revision,state]);
+  const send=async(data:any)=>{setBusy(true);failures.clear();setUrl('');try{const result=await request('/api/schedule-coordination',data);if(result.url)setUrl(result.url);await load();await onChanged();return result;}catch(e){failures.show(e,{retry:hasChangeBase(data)?()=>send(data):undefined});return null;}finally{setBusy(false);}};
+  const name=(id:string)=>state.members.find(m=>m.id===id)?.name??'Erased member',policy=rows.find(r=>r.kind==='policy'&&r.data.schedule===schedule.id),reminder=rows.find(r=>r.kind==='reminder'&&r.member===actor.id),editable=['admin','responder'].includes(actor.role);
++ // A notice is stored once per affected member; its author is who made the change, not who reads it.
++ const author=(row:Row)=>{const id=row.data.obligation?.creator as string|undefined;return state.members.find(m=>m.id===id)?.name??state.apiClients?.find(c=>c.id===id)?.name??'Erased member';};
+  if(!ready)return <section className="scheduling-panel" aria-label="Shift coordination"><h2>Shift coordination</h2><FailureLine failure={failures.failure}/>{!failures.failure&&<p role="status">Loading shift coordination…</p>}</section>;
+  return <section className="scheduling-panel" aria-label="Shift coordination"><h2>Shift coordination</h2><FailureLine failure={failures.failure}/>
+  {!rotaPage&&<p>Substitutes decide swaps explicitly. Overdue requests remain undecided. Paging OFF.</p>}
+@@ -36,7 +38,7 @@ export function ScheduleCoordination({schedule,state,actor,onChanged,rotaPage=fa
+  {url&&<div role="status"><p>Copy this private subscription URL now. It is shown once.</p><label className="field"><span>New private calendar URL</span><input aria-label="New private calendar URL" readOnly value={url}/></label><button onClick={()=>setUrl('')}>Hide calendar URL</button></div>}
+  {rows.filter(r=>r.kind==='subscription').map(row=><p key={row.id}>{{schedule:'This rota',service:'This service',own:'My shifts'}[row.data.scope as string]??'Calendar'} · {row.active?'active':'revoked or restored inactive'} {row.active&&<button disabled={busy} onClick={()=>send({action:'revoke',id:row.id,revision:row.revision})}>Revoke subscription</button>}</p>)}</>}
+  </details>
+- <details><summary>{rotaPage?'History':'Recorded schedule changes'}</summary>{rows.filter(r=>r.kind==='notice'&&r.data.schedule===schedule.id).map(row=><p key={row.id}>{rotaPage?<>{name(row.member)} · Coverage changed · {shortTime(row.at,schedule.timezone)}</>:<>Recorded obligation · {name(row.member)} · {row.data.obligation.reason} · {row.data.obligation.outcome} · non-automatic</>}</p>)}</details>
++ <details><summary>{rotaPage?'History':'Recorded schedule changes'}</summary>{rows.filter(r=>r.kind==='notice'&&r.data.schedule===schedule.id).map(row=><p key={row.id}>{rotaPage?<>{author(row)} · Coverage changed · {shortTime(row.at,schedule.timezone)}</>:<>Recorded obligation · {name(row.member)} · {row.data.obligation.reason} · {row.data.obligation.outcome} · non-automatic</>}</p>)}</details>
+  </section>;
+ }
+ 
+diff --git a/src/schedule-coordination/model.ts b/src/schedule-coordination/model.ts
+index 70c6d17..550f498 100644
+--- a/src/schedule-coordination/model.ts
++++ b/src/schedule-coordination/model.ts
+@@ -20,7 +20,12 @@ export function swapSchedule(state:State,schedule:Schedule,requester:string,subs
+  const override={id:crypto.randomUUID(),role,start:new Date(from).toISOString(),end:new Date(to).toISOString(),member:substitute};
+  const changed=validateSchedule({...schedule,revision:schedule.revision+1,overrides:[...schedule.overrides,override]},state);
+  const after=preview(changed,state.members,from,to),other=role==='primary'?'backup':'primary';
+- for(const at of new Set([...before,...after].map(window=>window.at))){const prior=coverage(schedule,state.members,at),next=coverage(changed,state.members,at);if(next[role]!==substitute||next[other]!==prior[other])fail('Swap would create ambiguous or overlapping coverage or a new gap',409);}
++ for(const at of new Set([...before,...after].map(window=>window.at))){const prior=coverage(schedule,state.members,at),next=coverage(changed,state.members,at);if(next[role]!==substitute||next[other]!==prior[other]){
++  // Name the usual cause: a substitute who is away for part of the shift.
++  const away=schedule.pto?.find(entry=>entry.member===substitute&&Date.parse(entry.start)<to&&Date.parse(entry.end)>from);
++  if(away)fail(`${state.members.find(m=>m.id===substitute)?.name??'The substitute'} is on PTO during part of this shift. Choose someone who is available for all of it.`,409);
++  fail('Swap would create ambiguous or overlapping coverage or a new gap',409);
++ }}
+  return changed;
+ }
+ export function scheduleChanges(state:State,before:Schedule[],after:Schedule[],actor?:string) {
+diff --git a/src/schedule-coverage/CoverageRules.tsx b/src/schedule-coverage/CoverageRules.tsx
+index ded87d8..b0dde93 100644
+--- a/src/schedule-coverage/CoverageRules.tsx
++++ b/src/schedule-coverage/CoverageRules.tsx
+@@ -24,7 +24,7 @@ export function CoverageRules({draft,update,state,admin,actor,ptoOnly=false,onIC
+  return <section className="oc-coverage-rules" aria-label="Layers, holidays and PTO"><h2>{ptoOnly?'PTO proposal':'Layers, holidays and PTO'}</h2>{!ptoOnly&&<><p>Layers are ordered within each role. The first eligible layer wins; explicit gaps stop fallback. Empty and inactive slots stay gaps.</p>
+  {layers.map((layer,index)=><fieldset key={layer.id}><legend>{layer.name||'Layer'}</legend>
+  <RotaField label={<>Layer name</>}><input value={layer.name} onChange={e=>setLayer(index,{name:e.target.value})}/></RotaField>
+- <RotaField label={<>Layer role</>}><select value={layer.role} onChange={e=>setLayer(index,{role:e.target.value as Layer['role']})}><option value="primary">Primary</option><option value="backup">Secondary</option></select></RotaField>
++ <RotaField label={<>Layer role</>}><select value={layer.role} onChange={e=>setLayer(index,{role:e.target.value as Layer['role']})}><option value="primary">Primary</option><option value="backup">Backup</option></select></RotaField>
+  <RotaField label={<>Layer zone</>}><select value={layer.timezone} onChange={e=>setLayer(index,{timezone:e.target.value})}>{zoneList().map(zone=><option key={zone}>{zone}</option>)}</select></RotaField>
+  <RotaField label={<>Rotation kind</>}><select value={layer.kind} onChange={e=>{const kind=e.target.value as Layer['kind'];setLayer(index,{kind,rotation:{...layer.rotation,periodDays:kind==='weekly'?7:1}});}}>{['daily','weekly','custom','business'].map(kind=><option key={kind}>{kind}</option>)}</select></RotaField>
+  {layer.kind==='custom'&&<RotaField label={<>Interval days</>}><input type="number" min={1} max={366} value={layer.rotation.periodDays} onChange={e=>setLayer(index,{rotation:{...layer.rotation,periodDays:Number(e.target.value)}})}/></RotaField>}
+diff --git a/src/schedule-coverage/now-next.ts b/src/schedule-coverage/now-next.ts
+index 4b8497a..7b9e11e 100644
+--- a/src/schedule-coverage/now-next.ts
++++ b/src/schedule-coverage/now-next.ts
+@@ -17,14 +17,22 @@ export function scheduleNowNext(schedule:Schedule,members:CoverageMember[],at:nu
+  // The summary's look-ahead is explicit when a potential slot lies beyond it.
+  // Empty/ineligible rotations do not need a walk and can never claim coverage.
+  const through=Math.min(at+year,Date.UTC(2101,0,1),schedule.validUntil?Date.parse(schedule.validUntil):Infinity);
++ // A hand-over is the next time someone else holds the role; a boundary that keeps the same holder is not one.
++ const handover:Record<'primary'|'backup',Coverage|null>={primary:null,backup:null};
++ const changeBy=Math.min(through,at+90*86400000);
+  let current=now;
+- while(possible.some(role=>!upcoming[role])){
++ while(true){
+   const ends=current.windows.flatMap(window=>window.end&&Date.parse(window.end)>current.at?[Date.parse(window.end)]:[]);
+   if(!ends.length)break;
+   const boundary=Math.min(...ends);
+   if(boundary>=through)break;
++  const needUpcoming=possible.some(role=>!upcoming[role]),needHandover=boundary<changeBy&&possible.some(role=>now[role]&&!handover[role]);
++  if(!needUpcoming&&!needHandover)break;
+   current=coverage(schedule,members,boundary);
+-  for(const role of possible)if(!upcoming[role]&&current[role])upcoming[role]=current;
++  for(const role of possible){
++   if(!upcoming[role]&&current[role])upcoming[role]=current;
++   if(now[role]&&!handover[role]&&current[role]&&current[role]!==now[role])handover[role]=current;
++  }
+  }
+- return {now,next,upcoming,searchThrough:new Date(through).toISOString(),limited:possible.filter(role=>!upcoming[role]&&through<Math.min(Date.UTC(2101,0,1),schedule.validUntil?Date.parse(schedule.validUntil):Infinity))};
++ return {now,next,upcoming,handover,searchThrough:new Date(through).toISOString(),limited:possible.filter(role=>!upcoming[role]&&through<Math.min(Date.UTC(2101,0,1),schedule.validUntil?Date.parse(schedule.validUntil):Infinity))};
+ }
+diff --git a/src/server.dev.ts b/src/server.dev.ts
+index 6db57b2..b0d024f 100644
+--- a/src/server.dev.ts
++++ b/src/server.dev.ts
+@@ -6,15 +6,21 @@ import { withDevIdentity } from './modules/operator-auth/dev/index.mjs'
+ import { authConfig, clearWorkspaceSession, runtimeBindings, type Bindings } from './auth.server'
+ import { devPersonas } from './dev-personas'
+ 
++const linkStyle = 'a{color:var(--rer-link,var(--rer-text,#17212e));text-underline-offset:3px}a:focus-visible{outline:3px solid var(--rer-focus,#17212e);outline-offset:3px}'
+ const dev = withDevIdentity<Bindings, typeof worker>(worker, { bindings: runtimeBindings, config: authConfig, personas: devPersonas })
+ export default {
+  ...dev,
+  async fetch(request:Parameters<typeof dev.fetch>[0],env:Bindings,execution:ExecutionContext) {
+   let response = await dev.fetch(request,env,execution)
+   if (request.method === 'GET' && new URL(request.url).pathname === '/__dev/key' && response.headers.get('content-type')?.includes('text/html') && await env.DB.prepare('SELECT 1 FROM credentials LIMIT 1').first()) {
+-   response = new HTMLRewriter().on('main', { element(main) {
++   // The gate page's own style has no link rule and its CSP admits only hashed styles: add this one hashed rule so the link reads as the brand's.
++   const hash = btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(linkStyle)))))
++   const headers = new Headers(response.headers)
++   headers.set('content-security-policy', (headers.get('content-security-policy') ?? '').replace(/style-src ([^;]*)/, (_, sources) => `style-src ${sources} 'sha256-${hash}'`))
++   response = new HTMLRewriter().on('head', { element(head) { head.append(`<style>${linkStyle}</style>`, { html: true }) } })
++    .on('main', { element(main) {
+     main.append('<p>Joining this workspace as a teammate? <a href="/signin/local">Sign in with a workspace password</a> supplied by your administrator.</p>', { html: true })
+-   } }).transform(response)
++   } }).transform(new Response(response.body, { status: response.status, statusText: response.statusText, headers }))
+   }
+   // Only a successful explicit identity switch retires a workspace cookie.
+   // API requests must still reject sessions revoked by restore or logout.

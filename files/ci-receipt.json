@@ -1,0 +1,12 @@
+{
+  "repository": "just-every/run-oncall",
+  "head": "8dd2a0acf06b30fbc810c8a2a7e0fe8c01dd85ef",
+  "run_id": 44037138164,
+  "status": "completed",
+  "conclusion": "success",
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/44037138164",
+  "watcher_api_calls": 4,
+  "other_api_calls": 1,
+  "minimum_poll_interval_seconds": 300,
+  "observed_at": "2026-11-17T07:29:57.890861+00:00"
+}
