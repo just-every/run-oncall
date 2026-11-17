@@ -1,0 +1,100 @@
+91984b892ad8e993e0ddd782042d5143ed63baaf 2026-11-17T09:01:59Z Open native recipient actions through keyboard focus for parity proof
+8dd31437d8e5bd442b229d34067c494cae802a76 2026-11-17T08:47:09Z Preserve native observations and agent decision audit in endpoint parity
+3172564c73d968a26518675700501e701cf7566a 2026-11-17T08:44:09Z Extend native endpoint resource parity observations [skip ci]
+8dd2a0acf06b30fbc810c8a2a7e0fe8c01dd85ef 2026-11-17T07:13:56Z Prepare Oncall 0.5.18 release metadata
+fd4d3556a9eca484bf85651b5733086e102139b0 2026-11-17T06:06:57Z Show approved follow-up submission conflicts in the saved review journey
+21170de488af7f0991f713ef97a3c128faf5cc60 2026-11-17T06:03:42Z Prove native follow-up evidence conflict and replay [skip ci]
+38988564d2de70c8e3951e87076b609ba497e319 2026-11-17T06:01:46Z Prove native API client resource parity
+112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554 2026-11-17T03:59:37Z Merge landed assignee clear coverage into action parity
+7a433a2563e2c270f0a914c9554a4387e26b9db9 2026-11-17T03:49:49Z Verify viewer follow-up restrictions and retained completion screens
+5423daf5cf60a478cad4a04a3be3d49d593c6401 2026-11-17T03:46:17Z Prove native human follow-up resource parity [skip ci]
+24840e6b2678dc883a7f4750221d203cec5f31e6 2026-11-17T01:45:04Z Verify saved Unassigned assignee with retained incident lead
+cda7ea533fa60c84113cea36fdef035d8391cd24 2026-11-17T01:42:32Z Prove explicit assignee clear replay and retained outcomes [skip ci]
+7a9956509a78ecf18133e9ffb1b9cceb95ff062b 2026-11-17T01:48:47Z Verify exact coverage windows and document bounded native parity
+556575d4ec65e181324ea10c8ab3694e41233125 2026-11-17T01:36:04Z Prove native coverage resource parity at override boundaries [skip ci]
+f78281f191ad2f1da06e443779def84d52b8fc46 2026-11-17T10:58:28+10:00 Resolve the oncall stranger trip list
+3b9cba555f564a4d582b9909305bc8d35c9c8bf1 2026-11-16T21:08:35Z Prepare Oncall 0.5.17 release metadata
+82081ae6fb7e19c78760269a0283579be0b840bb 2026-11-16T03:40:23Z Keep rota clocks on empty coverage and prove reviewed coverage changes
+8f799c2a2a41fd14ad1794e72010a9cf4ed0b84f 2026-11-16T03:24:02Z Fix five stranger trips in docs, routing, incidents and coverage [skip ci]
+f366ecb24cd0934930ce1dc69e44c164e0b8c108 2026-11-16T09:13:42+10:00 Regenerate source lock for isolated contract docs check
+4d4c847b07666b82040a40a9d73d842649267447 2026-11-16T08:50:15+10:00 Isolate contract document validation from verification shards
+3b899cc9c0394aa30739917b2ff4fea268e8624c 2026-11-15T20:28:21Z Rebalance browser journeys across existing verification shards
+2bd3494af8b291bd93718f22a005f643d4042642 2026-11-16T05:39:18+10:00 Regenerate source lock for mail-off follow-ups
+23fb8973b129c546fabe0349c70d7108893da595 2026-11-16T05:36:22+10:00 Preserve mail-off sign-in notices and explain mail selection changes
+7f250f7e66f1377f7b4b773effd1c72e8854c025 2026-11-16T05:39:09+10:00 Prepare Oncall 0.5.16 release metadata
+948c71dcba229b46df2ac4596d0be62ea873122c 2026-11-15T17:21:46Z Align mail input classification across managed delivery and artifact proof
+5023938cf057fbfc600dcbb1d47964bbb9ca400b 2026-11-15T17:01:54Z Prove mail-off owner entry and align deployment validation
+92c4f5d9548a83b6d7129d8c0ac6c9c46cfcc515 2026-11-15T16:38:49Z Adopt explicit hosted mail-off configuration and owner entry [skip ci]
+d5d6ea3216f12db635b1f9ea67c88ef167132581 2026-11-15T15:30:08Z Upgrade re2js to patched 2.8.7
+de562d49f481af1827a59112dd172dbcc63ae033 2026-11-15T14:41:08Z Upgrade transitive seroval to patched release
+fe7d45ea1c2b89d3ed9dc4183a07d168c2fcccd0 2026-11-15T13:20:37Z Fix native export path validation backtracking
+98d633ee7d20ebbb1d68842eaab998bbdffb284b 2026-11-15T13:10:20Z Carry stranger-34 fixes onto Oncall 0.5.15
+44ca722b6a5dde173b5253df7b5e0eab762df459 2026-11-15T09:46:10Z Prepare Oncall 0.5.15 release metadata
+d8357c8e671651b9e2f2021eaf32d705a3360fd0 2026-11-15T08:04:43Z Show repeatable credential custody during source creation
+f3896cc239e600139d93674c4885028e5d9ffa53 2026-11-15T07:44:42Z Restore portable archive loading for shared escalation policies
+a6e983e5745201257bc97c7bd64280d364883ed6 2026-11-15T07:22:34Z Complete routed key readback and verify owner fault journeys
+335c4610dd0b5774d6bd5ea1a59cbd1adcf1e540 2026-11-15T07:12:36Z Fix owner key readback, person rules, shared imports and rota history [skip ci]
+b30412d15c5049718e9b19d307cfb3348e08079c 2026-11-15T14:49:57+10:00 Account for on-call holds in CLI checkpoint receiving history
+7f25832424e1f3868061affe50beb9f23ac529a9 2026-11-15T14:45:40+10:00 Expect restored on-call notification history to remain inactive
+c4adb4a906039e34da495f83cc0c62ef10a7c03e 2026-11-15T13:48:28+10:00 Keep native notification imports loadable by the installer
+f96fafc07807f8e909e75db97f853c00576fc54a 2026-11-15T13:35:28+10:00 Refuse delivery claims in recorded-notification archives
+a7bddd3815182a6318f599d66912ac35eb90d754 2026-11-15T13:33:46+10:00 Preserve restore holds and clarify recorded response recipients
+f0bff2457ff78a183452847941c0eefae6cc5c81 2026-11-15T13:28:15+10:00 Record native on-call assignment and per-person alert notifications
+b9ff7fd18d3b5e00843d3a10a89cd90bc27f7470 2026-11-15T01:11:15Z Document the independently verified agent runtime phase
+03d395d196cd2574e21169d654983f049093196b 2026-11-15T01:01:29Z Split agent replay coverage from the timed-out intake shard [skip ci]
+c6c0fd361cca4dcf0d662521b039f3160a25830f 2026-11-14T21:42:30Z Retain unrelated call custody through the complete clear matrix
+9523528c24315c40285528e7bb966350a35635ec 2026-11-14T21:40:03Z Keep the complete role clear matrix in a native fixture [skip ci]
+88a05e50237614cc360e8f40f4a1f75bb0ec2db7 2026-11-14T21:40:01Z Merge remote-tracking branch 'origin/main' into cloud/sd-oncall-c-f251
+8576019d3e3d4cc1b15d0b1f5d022ac4c152958f 2026-11-14T21:17:08Z Keep new role clear fixtures within the intake shard budget
+4af169eb4b7cd5ee3a0bc9867edf6e51a9ac2a8f 2026-11-14T20:28:03Z Wait for native review material before expanding its sections
+4d14b380111c77ab635448286a876a66db804055 2026-11-14T20:10:53Z Verify draft and accepted review material with native browser custody
+99e391e4cfd7e0cb6dea35b2c086f9777e3659ff 2026-11-14T20:09:49Z Verify saved role clears preserve complete native custody
+494405716c8fe7f8c829d872289efbfe73b82541 2026-11-14T20:09:11Z Prove populated communications and commander clears [skip ci]
+e433eb6928f39aa9481724c5412cb999da24541b 2026-11-14T20:06:32Z Prove populated review material parity for both native roles [skip ci]
+96d1b7a9ee6ed01fce1effbb889991a4a8a66d01 2026-11-14T18:05:27Z Verify saved Scribe clear in incident controls and timeline
+db9cb877170dacbdf2439359d1aa270091c3cdd7 2026-11-14T18:01:41Z Prove populated Scribe clear replay and revision custody [skip ci]
+772967384968f665f6e8363fc1b1e3d00b6fae86 2026-11-14T18:00:18Z Retain native window and sponsor provenance in parity receipts
+f264a370463fb3c86177ff0a110b3fb7d0812e90 2026-11-14T17:58:12Z Prove two-role recent change resource parity [skip ci]
+f7b5b5ea71e955081501bebf81a4f967459c8e34 2026-11-14T15:55:22Z Retain evidence-free mitigation outcomes beyond 24 hours
+5019bb1d10ef448c14f042356a4c15b1854b74a5 2026-11-14T15:54:07Z Prove evidence-free mitigation replay and conflicts [skip ci]
+f85fa75f02cceee88fea4dfeadba2d5cfe3a1eec 2026-11-14T13:59:01Z Verify scoped report fields and native role browser custody
+0d83331a9a6072dfbed8c0dd1f6401b3cffafd97 2026-11-14T13:50:45Z Prove native two-role resource parity and complete report fields [skip ci]
+c682f802d4ae3e34caa65c5c99e9c2b45f715844 2026-11-14T14:07:35Z Update vulnerable undici and zod dependencies
+837f201d33195c56650447734513059f13ea5d34 2026-11-14T14:02:13Z Prove aged replay retention for standard coordination writes
+cbf889ea4766bdc1a0bfb8fbcb9b91a5813d43ff 2026-11-14T13:48:52Z Extract aged replay retention journey [skip ci]
+183eef356bf1fd5eec173f2e5cbf27f3564ca0f7 2026-11-14T13:54:26Z Align ten agent tool clause associations with the contract
+4d1fc62d4d2b8bf90008ac87bbaa626bc1a5494b 2026-11-14T10:50:07Z fix: correct v0.5.14 release predecessor to 0.5.13
+54e2434253aeb8510759b15e3589ae2643d02abd 2026-11-14T04:59:29Z Prepare Oncall 0.5.14 release metadata
+9e11ec73dc0f3ee12cba7e846a43ff63227d873f 2026-11-14T03:32:23Z Upgrade Vite to 8.2.4 to fix launch-editor vulnerabilities
+b417d7fe46061e055ed946200317d36225f7b4a5 2026-11-14T02:28:48Z Check triage statuses within incident rows
+44ea2ea96a43a600a8d4e1cd127d2dc000ded244 2026-11-14T02:10:15Z Describe the default follow-up review requirement accurately
+f882ff90f679bb6d7f34b84e0e86a949bdc8c3f4 2026-11-14T02:06:10Z Make coordination decisions and status labels readable
+d21a61a6635cca536c972c139e1115567af26eef 2026-11-14T02:05:22Z Make installer recipes and compatible samples runnable
+60581f8ab8d130c2ac34b09424467cd7689cd77a 2026-11-14T01:59:28Z Preserve restored owner access and archived names
+d54fb7958cedddbce40483dd3d557db183842112 2026-11-14T02:04:44Z Name the rota detail timeline in schedule guidance
+d2e63dcafad4f91d65e64ebd9bb97438b75497cb 2026-11-14T02:02:56Z Align on-call docs and weekly gap summary with current screens
+8adae6c836f2fabda29e8a091b052450410c8ca5 2026-11-13T18:24:11Z Prepare Oncall 0.5.13 release metadata
+551efe44531c876c101ec928b5a93f857976e132 2026-11-13T16:57:04Z Adopt rer 0.2.113 with a complete edition source lock
+4fa65b7023d8443bdea2e1aed9e46ca4a2467b56 2026-11-13T14:04:48Z Record portable contract anchor for managed Oncall copies
+1ab915f6efdfe3398c8d7645fe56e46e123299b6 2026-11-13T13:41:54Z Prepare Oncall 0.5.12 release metadata
+37fd6d2446588971e8c611b826461d01eb192a0d 2026-11-13T08:26:27Z Show the timeline hint whenever rendered dates overflow
+bd21a32ed14a7edec11570867039545f2b1dd010 2026-11-13T17:50:02+10:00 Scope sample disclosure control around retained request details
+5485bcc656eea48799416c65c805a72759853e21 2026-11-13T17:49:07+10:00 Preserve allowance proof before readable-name continuation
+066a4b5d51d5a7e56dbe1fd436dad2e86ca89c72 2026-11-13T17:48:51+10:00 Merge current main with readable setup, audit and readiness names
+4eab299d2ca0113ef0c27743bb22e4c14e200237 2026-11-13T04:11:22Z Restore guided policy editing and public responder lookup
+12c3896ad0b9dd61b594bd9e502b30b3b11ea50f 2026-11-13T04:21:48Z Keep follow-up evidence clickable and edit existing service audiences
+618598a8c3ada05e5ac3b9fffb436f0e65bbcead 2026-11-13T03:55:28Z Keep bulk incident selection usable after committed actions
+afd7cf41c66f14385b2e4be983443acee16cd80a 2026-11-13T04:00:28Z Make test recoveries and refusal results actionable
+457a0a194a0dc97f653cdc12224cae27b6f1a79f 2026-11-13T03:54:33Z Prepare Oncall 0.5.11 release metadata
+5806ec3b37a38cfe8556d4e3ebb52f3d04a6c069 2026-11-13T03:56:11Z Make copied Oncall recipes run without global Node
+2cca6f7cd20ffe2ebe6f76f6ecf10394ca630fd3 2026-11-13T13:50:17+10:00 Merge current main clock repair into deploy proof candidate
+92a9c25ac24f71c287cd4267dccd6c73196400a1 2026-11-13T04:12:16Z Carry readable setup, audit and readiness names onto current main
+8976d008fa2ff43d9ccb3eed6ff94acaedb86cf2 2026-11-13T13:54:59+10:00 Merge current main preserving native resource and read journeys
+cc64205ca532de3ac8022838ecdd07cfa5bfae73 2026-11-13T02:44:43Z Keep agent read fixture clocks current for session expiry
+d030d5e9aaef614a015243d15115d2721955dd78 2026-11-13T10:54:59+10:00 Merge current main preserving deploy dry-run and agent transfer proof
+809d67a8fbf255ee13e8531e4246a1ffbddf2fa4 2026-11-12T23:55:43+10:00 Merge current main preserving readable and routed source samples
+1083b1a848e39863a44456fae18322cb4dd7f866 2026-11-12T12:16:44Z Merge remote-tracking branch 'origin/main' into cloud/sd-oncall-c-f243
+1dc0069324de17933e7b65bffefa14de7dabea9a 2026-11-12T12:26:02Z Prepare Oncall 0.5.10 release metadata
+5dd456d273af9816d0b666b5fca5a267c506e184 2026-11-12T19:04:26+10:00 Hand phone navigation focus to content synchronously
+ce4ccf1752c16d6ce41ad29b74a205b8f3393912 2026-11-12T19:02:18+10:00 Regenerate source lock after browser focus fixes
+45c8271de5a1e6858a8db1fd7a4095129d50793b 2026-11-12T19:01:44+10:00 Keep destination focus after phone menu navigation

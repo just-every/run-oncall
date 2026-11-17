@@ -1,0 +1,58 @@
+{
+  "files": [
+    {
+      "blob": "c7a1d4535d7079528e9e2ca25006feaceb979b96",
+      "bytes": 8340,
+      "path": "READ_RECEIPT.json",
+      "sha256": "567352e6e5a66ab6af2487e19c8fc40efb367a1c7c9df9079d5295a6b78c7d34"
+    },
+    {
+      "blob": "91c46974ecfed3d6f6a57589db224e5c4477a8e1",
+      "bytes": 108893,
+      "path": "REPORT.md",
+      "sha256": "12e7185a14c271963b8b89b08e40c5a1e00d4933bbdfa02554a961899159e32f"
+    },
+    {
+      "blob": "732d67dfdafbb234c756d63abb8dcf1dedf4197d",
+      "bytes": 165962,
+      "path": "assessments.json",
+      "sha256": "34e8bf1df4fae79b7b4113e3a6bb29d96f492ea248f0b60210de8efbb7aace22"
+    },
+    {
+      "blob": "3e4b0abc25022f231af4d3cb8cd384eae680356a",
+      "bytes": 202390,
+      "path": "branch-inventory.json",
+      "sha256": "f761434f034bbcd6e078758f56ed02152d48163df01abbf42d17e58f853f793e"
+    },
+    {
+      "blob": "1694721c0f715d8a46670a29347413783a1b4c92",
+      "bytes": 117,
+      "path": "contract-docs-check.txt",
+      "sha256": "3495413cc435af5d885d7f7f795eb1dcbdd7cfdbead99f1065eb1fe4579221a9"
+    },
+    {
+      "blob": "be5ec5c63a5dad52f5d2ef9e32aca63aedc8c86b",
+      "bytes": 90607,
+      "path": "contract-inventory.json",
+      "sha256": "b483c5653312f023920814278a82bda0a1984ccfcda66e445d908d0443fe8b8b"
+    },
+    {
+      "blob": "4985886ae8bfb91a9245babf0ba7cf692c4271e2",
+      "bytes": 12143,
+      "path": "recent-main.txt",
+      "sha256": "5a5e4125b276f54818ed28748da2bd2fddcee42472119b684d1680ff9099a0ea"
+    },
+    {
+      "blob": "a9bd8b51017d3f761dd2afd5e7bc447828decc26",
+      "bytes": 227898,
+      "path": "sd-branch-review.json",
+      "sha256": "93010a0203baa96c7e3b6af0227972cbbe07b9f1eac0af89152d95ad575ec736"
+    }
+  ],
+  "product_branch": "main",
+  "product_head": "91984b892ad8e993e0ddd782042d5143ed63baaf",
+  "ref": "refs/heads/evidence/ct-open-points-plan-oncall-1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "ct-open-points-plan-oncall-1"
+}

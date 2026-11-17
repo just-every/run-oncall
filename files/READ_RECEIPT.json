@@ -1,0 +1,255 @@
+{
+  "schema": 1,
+  "task": "ct-open-points-plan-oncall-1",
+  "role": "read-only planner",
+  "repository": "just-every/run-oncall",
+  "recorded_at": "2026-11-17T11:05:45.450099+00:00",
+  "product_branch": "main",
+  "product_head": "91984b892ad8e993e0ddd782042d5143ed63baaf",
+  "origin_main": "91984b892ad8e993e0ddd782042d5143ed63baaf",
+  "product_worktree_status": "",
+  "product_commit_count": 0,
+  "product_push_count": 0,
+  "pr_count": 0,
+  "ci_dispatch_count": 0,
+  "application_launch_count": 0,
+  "paid_api_usage": 0,
+  "clauses": {
+    "total": 101,
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "open": 75,
+    "held_external": 35,
+    "hard": 38,
+    "cheap": 2
+  },
+  "branch_inspection": {
+    "cloud_refs": 737,
+    "not_ancestors": 391,
+    "unmerged_sd_refs_reviewed": 283,
+    "method": "All cloud ref names/heads/dates; ancestry; up to 12 nonancestor commit summaries and no-renames changed paths per nonancestor sd ref. Nonancestor does not imply unlanded: source and tests checked on main. Latest f259/f260 fetched again; head changes preserved in current inventory."
+  },
+  "checks": [
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit_code": 0,
+      "output": "Contract prose: 0 errors, 0 warnings.\nContract documents are current.\n"
+    },
+    {
+      "command": "git status --porcelain=v1",
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "command": "git log origin/main..HEAD --format=\"%an <%ae>%n%cn <%ce>%n%(trailers:only,unfold)\"",
+      "exit_code": 0,
+      "output": ""
+    }
+  ],
+  "runtime_tests": "Not run: this is source-and-test inspection only. No application, CI, provider, device or gate journey was launched; cited test assertions are not fresh passing executions.",
+  "read_sources": [
+    {
+      "path": "AGENTS.md",
+      "bytes": 8096,
+      "sha256": "7c81e343168ae196006d89b509ba7d464de84e19030bc73eebf4ff4222378584"
+    },
+    {
+      "path": "CONTRACT.md",
+      "bytes": 293890,
+      "sha256": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    {
+      "path": "ACCEPTANCE.md",
+      "bytes": 263956,
+      "sha256": "875e11f85ca8473511fe5defbbdd5d6457f248e48fcbbe6796d86194701c62c3"
+    },
+    {
+      "path": "docs/CLAIMS.md",
+      "bytes": 1679,
+      "sha256": "8c57d53cb2bd436176cc5b556bd1a4ca786848e4ee2d310bed277fe8faf7d440"
+    },
+    {
+      "path": "src/teams/model.ts",
+      "bytes": 5395,
+      "sha256": "562aac3436541a0a485949c0f5b3e1f9c3a6aed01db95454de88ab024e7dd9f3"
+    },
+    {
+      "path": "src/teams/backstage.ts",
+      "bytes": 9397,
+      "sha256": "e1c0d2bceb3aabcdc215302fca015e0efb99abd65186047b820c78dbcc4fb20d"
+    },
+    {
+      "path": "src/schedule-coordination/model.ts",
+      "bytes": 8601,
+      "sha256": "b8a988dfb78fa70ef843b9fce9a4416d085e4f4009cc4b028312750270ee915c"
+    },
+    {
+      "path": "src/schedule-coordination/api.ts",
+      "bytes": 6936,
+      "sha256": "252d42a401d967e5e513f8c9aa3b3dbdb1502a077a4024e78566156318f9aa41"
+    },
+    {
+      "path": "src/schedule-coordination/Controls.tsx",
+      "bytes": 9837,
+      "sha256": "5e4d2d494eea25449bede48b57614e089e0d72119d32701aeee0fbdea08abad4"
+    },
+    {
+      "path": "src/family/response-operations/triage.ts",
+      "bytes": 14088,
+      "sha256": "2cd269de1ebf8092bb4b5454ca4b918b0480c437d223ac5fa53692a3a940c630"
+    },
+    {
+      "path": "src/app/TriageFilters.tsx",
+      "bytes": 5105,
+      "sha256": "aba4d6865071c822c38ec54aec02a4422729aba05b6ea7785f281949e79d6a9a"
+    },
+    {
+      "path": "src/triage-api.ts",
+      "bytes": 14582,
+      "sha256": "d9c711c8272394a6b70cabd69d6e2e0034a2485b575e4b70b98d4e2f731a5acd"
+    },
+    {
+      "path": "src/agent-door/read-tools.ts",
+      "bytes": 14738,
+      "sha256": "3638514f4bae81ae046099e4b6bbd65b7cc1493195d24ce6cb6dd38a4170bcac"
+    },
+    {
+      "path": "src/agent-door/triage-tools.ts",
+      "bytes": 3297,
+      "sha256": "7127064bb99e9733f001100db7ce463408564f402ce6f209e85050cde0b07822"
+    },
+    {
+      "path": "src/workspace-store.ts",
+      "bytes": 7101,
+      "sha256": "c182c8bc7e694d6375a8b203df3e3eb4b84d528df4a73d0cd8d4912f76b84bd1"
+    },
+    {
+      "path": "src/move-in/mapping.ts",
+      "bytes": 15856,
+      "sha256": "b050e82a154b9e8d3fe5634b0e8484d7fbcc2414b4de81cd7be54020c139010a"
+    },
+    {
+      "path": "src/move-in/rotations.ts",
+      "bytes": 7112,
+      "sha256": "c634f1fd2ca10941bf5f61d40e69adff8b9ceab6b97e59459b38c453a473db7e"
+    },
+    {
+      "path": "src/move-in/email-settings.ts",
+      "bytes": 11174,
+      "sha256": "a222c06d32225379ad78ca096da17f4d3ac6cbd706ab345df8e2a8d1d72700b7"
+    },
+    {
+      "path": "src/agent-door/index.server.ts",
+      "bytes": 4279,
+      "sha256": "4d3f8cf3c200731413ea99575c51db3ac79bb71fb7e68fbfda5f9840ba5cc825"
+    },
+    {
+      "path": "src/agent-door/resources.ts",
+      "bytes": 13158,
+      "sha256": "416e8e3b9f9dfd349184a887e7978227342711bc77a28cef83c81aa47164c664"
+    },
+    {
+      "path": "agent-surface.json",
+      "bytes": 62594,
+      "sha256": "eaa8ea971994d66a36fc00af829e118e0c72407aa468505bf12842ffe79cd9be"
+    },
+    {
+      "path": "src/delivery.ts",
+      "bytes": 275,
+      "sha256": "4d94a3d94ddf5ef7bffcf9d2d687e00a2a509c9a2f1d26e4e206cc3d7fcf7a77"
+    },
+    {
+      "path": "src/readiness/matrix.ts",
+      "bytes": 10324,
+      "sha256": "12938426d2187b085dc4022241abd30701e68614a5bc2cbdc8f7bd6933c03b99"
+    },
+    {
+      "path": "src/reviews/report.ts",
+      "bytes": 14981,
+      "sha256": "87e68fb88fa9d7a7075f62ea71f38b0e2e9f41e65398e85fecb3ada20a5c3ee0"
+    },
+    {
+      "path": "tests/activation.mjs",
+      "bytes": 193204,
+      "sha256": "0a837eda28f26d9f437a661dff786e00d8f1f3ca36207b7c5df7f598209519b1"
+    },
+    {
+      "path": "tests/routing.mjs",
+      "bytes": 111151,
+      "sha256": "a8940a2a8d521265e0c977e14c1edd23b2ed01b6bb4bc27c30a5602b81c08f45"
+    },
+    {
+      "path": "tests/transfer.mjs",
+      "bytes": 107409,
+      "sha256": "e4f3d6cf153d8f309b23772554f8b1028b0ed8e195efa9eba0199d2c7f3daeba"
+    },
+    {
+      "path": "tests/triage.mjs",
+      "bytes": 149470,
+      "sha256": "44b60c8f609c33f264dbf9deca0fc9d97182689703b6961fa23147fc76846c9e"
+    },
+    {
+      "path": "tests/runtime.mjs",
+      "bytes": 209847,
+      "sha256": "8cd2a1108913f05bbdaf741de75b2e827cd0e88b2d83f369290836951e217ca3"
+    },
+    {
+      "path": "tests/changes.mjs",
+      "bytes": 45116,
+      "sha256": "e651180d5688ef657b850c8c594ea75eb0093c94f5491b16ecc54f08134b19a5"
+    },
+    {
+      "path": "tests/readiness.mjs",
+      "bytes": 18701,
+      "sha256": "7a00725baf5538a7be7bf5d18e86b170309dacc1be103beaac83a943b1eb07bc"
+    },
+    {
+      "path": "tests/intake.mjs",
+      "bytes": 72693,
+      "sha256": "a45c05100401ea780e039fd5d34eb45138a0d907f9c7c84bd3603fef97c2f800"
+    },
+    {
+      "path": "tests/import-door.mjs",
+      "bytes": 95176,
+      "sha256": "495361fd00c345dbc773e5013906fa8b078a9c37e197785c0dc3ebfb087cacaf"
+    },
+    {
+      "path": "tests/product-browser.mjs",
+      "bytes": 150807,
+      "sha256": "db5d3610cb7a84ef359c2cc41bee38f9119fa80b39268325d38ebe7233d242be"
+    },
+    {
+      "path": "tests/product-browser-journey.mjs",
+      "bytes": 197650,
+      "sha256": "c6e615105db19a6cfaad4f2b3c74c82f5f3a7f567bc7b7ec86795c767d023bc2"
+    },
+    {
+      "path": "tests/keyboard.mjs",
+      "bytes": 15522,
+      "sha256": "e134038c4c1029af341dd517080c5a390d92dc159c0948334e5ac87365c161ac"
+    },
+    {
+      "path": "tests/oncall-agent-resources.mjs",
+      "bytes": 11057,
+      "sha256": "8cf8c9bafd355a973fc0f23f5ea7a72df0dbacbd7d891def04da8d8984a823cb"
+    },
+    {
+      "path": "tests/oncall-agent-retention.mjs",
+      "bytes": 24260,
+      "sha256": "a06acd6ee8c2f16af6e282e5a9855eb84ce1a717c06b94c00c21e4f349984cbd"
+    },
+    {
+      "path": "tests/oncall-agent-flow.mjs",
+      "bytes": 91575,
+      "sha256": "a7b7b9587e01972b93b0d6b3801802082ed43a4eabfba265876de178deb0dd83"
+    },
+    {
+      "path": "tests/oncall-provider-edge.mjs",
+      "bytes": 3037,
+      "sha256": "d40b7970ea06f79c49981443fdb3c7f387c5eb76ab5c144005d6309ee132af1a"
+    }
+  ],
+  "publication_scope": "Only refs/heads/evidence/ct-open-points-plan-oncall-1 via isolated report-only tree. Evidence is not product acceptance, readiness or landing.",
+  "product_provider_requests": 0
+}
