@@ -1,0 +1,13 @@
+{
+  "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+  "exit": 0,
+  "head": "3ebaba83e76354d249a2db4ee298f7dd936729ea",
+  "schemaVersion": 1,
+  "edition": "just-every/run-oncall",
+  "toolchain": {
+    "id": "runeditrun/edition-authoring",
+    "version": "1.1.0",
+    "sha256": "fae294214f81f9890955eeeaf16a061aa45270bd8f5f6733c71d389969f5dece"
+  },
+  "files_checked": 1698
+}

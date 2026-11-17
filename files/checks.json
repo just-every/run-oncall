@@ -1,0 +1,43 @@
+{
+  "head": "3ebaba83e76354d249a2db4ee298f7dd936729ea",
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "node": "22.20.0",
+  "package_manager": "pnpm@10.12.4",
+  "checks": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run pnpm add hono@4.13.11 --save-exact --lockfile-only",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run pnpm install --frozen-lockfile",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=core WRANGLER_SEND_METRICS=false cloud_run node tests/runtime.mjs",
+      "exit": 0,
+      "core_seconds": 108.2,
+      "additional_observation": "18 hosted-mode linked pages/files returned 200; no live provider deployment or new field proof claimed"
+    }
+  ]
+}

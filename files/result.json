@@ -1,0 +1,7 @@
+{
+  "status": "cannot",
+  "sha": "3ebaba83e76354d249a2db4ee298f7dd936729ea",
+  "summary": "Hono 4.13.7 upgraded to patched 4.13.11 and pushed on cloud/gr-mt-oncall-dep-2 after a complete passing publication scan; exact-SHA Verify 44097793573 was cancelled in the agents shard and the final gate failed, so the candidate is not READY.",
+  "tests": "PASS setup, pinned pnpm frozen install, edition-authoring source lock check, production build, typecheck, core HTTP coordination and hosted-mode links, Base publication scan COMPLETE/PASS zero findings. CI build, contract docs and seven shards passed; agents cancelled and verify failed. No failed assertion details were returned for agents; no rerun dispatched under the brief rule.",
+  "security": true
+}

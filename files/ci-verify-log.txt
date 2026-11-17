@@ -1,0 +1,31 @@
+Archive log; environment block omitted. Job outcomes are in ci-jobs.json.
+verify	Require the selected coverage and its proof	﻿2026-11-17T14:13:59.2973412Z ##[group]Run set -euo pipefail
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.2973950Z [36;1mset -euo pipefail[0m
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.2974405Z [36;1mtest "$PLAN" = success[0m
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.2974930Z [36;1mcase "$CONTRACT_DOCS:$SKIP" in[0m
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.2975358Z [36;1m  success:false|skipped:true) ;;[0m
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.2975771Z [36;1m  *) exit 1 ;;[0m
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.2976134Z [36;1mesac[0m
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.2976545Z [36;1mcase "$PUSH_PROOF:$NIGHTLY_PROOF" in[0m
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.2976999Z [36;1m  *failure*|*cancelled*) exit 1 ;;[0m
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.2977406Z [36;1mesac[0m
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.2977744Z [36;1mcase "$COVERAGE" in[0m
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.2978307Z [36;1m  reuse) test "$SKIP" = true && test "$BUILD" = skipped && test "$SHARDS" = skipped && test "$LIGHT" = skipped ;;[0m
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.2979110Z [36;1m  light) test "$SKIP" = false && test "$LIGHT" = success && test "$BUILD" = skipped && test "$SHARDS" = skipped ;;[0m
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.2980075Z [36;1m  full) test "$LIGHT" = skipped && { { test "$BUILD" = success && test "$SHARDS" = success; } || { test "$HAS_SHARDS" = false && test "$BUILD" = skipped && test "$SHARDS" = skipped; }; } ;;[0m
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.2980924Z [36;1m  *) exit 1 ;;[0m
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.2981295Z [36;1mesac[0m
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.3365634Z shell: /usr/bin/bash -e {0}
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.3366356Z env:
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.3366690Z   PLAN: success
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.3367061Z   CONTRACT_DOCS: success
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.3367409Z   BUILD: success
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.3367719Z   SHARDS: cancelled
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.3368116Z   LIGHT: skipped
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.3368438Z   PUSH_PROOF: skipped
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.3368797Z   NIGHTLY_PROOF: skipped
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.3369155Z   COVERAGE: full
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.3369471Z   HAS_SHARDS: true
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.3369874Z   SKIP: false
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.3370185Z ##[endgroup]
+verify	Require the selected coverage and its proof	2026-11-17T14:13:59.3590188Z ##[error]Process completed with exit code 1.

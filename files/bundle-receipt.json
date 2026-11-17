@@ -1,0 +1,10 @@
+{
+  "path": "/home/agent/rer-consolidation/work/maint/gr-mt-oncall-dep-2/candidate.bundle",
+  "head": "3ebaba83e76354d249a2db4ee298f7dd936729ea",
+  "sha256": "93403edf231f25565e4fbab568389278bb7b6d7453b960f4f1e8b43c27f46d86",
+  "bytes": 22824729,
+  "verified": true,
+  "verify_command": "git bundle verify /home/agent/rer-consolidation/work/maint/gr-mt-oncall-dep-2/candidate.bundle",
+  "verify_exit": 0,
+  "remote_product_push": "PUSH_OK"
+}

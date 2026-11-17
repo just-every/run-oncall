@@ -1,0 +1,20 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "run_id": 44097793573,
+  "head": "3ebaba83e76354d249a2db4ee298f7dd936729ea",
+  "reads": [
+    {
+      "command": "gh run view 44097793573 --repo just-every/run-oncall --job 134090689862 --log-failed",
+      "exit": 0,
+      "output_bytes": 0,
+      "observation": "Cancelled agents job returned no failed-step log text; cancellation reason is not established by this response."
+    },
+    {
+      "command": "gh run view 44097793573 --repo just-every/run-oncall --job 134100091748 --log-failed",
+      "exit": 0,
+      "output": "ci-verify-log.txt",
+      "observation": "Final gate exited 1; API job outcomes and gate control values identify SHARDS=cancelled, BUILD=success and CONTRACT_DOCS=success. Environment block omitted from the published log."
+    }
+  ]
+}

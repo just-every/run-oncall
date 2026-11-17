@@ -1,0 +1,111 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/gr-mt-oncall-dep-2",
+  "head": "3ebaba83e76354d249a2db4ee298f7dd936729ea",
+  "main_at_clone": "fb54c79d904d66342f166910d64996aa399bddf9",
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "hono_before": "4.13.7",
+  "hono_after": "4.13.11",
+  "listed_vulnerable_resolutions_before": 1,
+  "listed_vulnerable_resolutions_after": 0,
+  "files_changed": [
+    "package.json",
+    "pnpm-lock.yaml",
+    "sources.lock.json"
+  ],
+  "clause_counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "clause_counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "clause_status_changes": [],
+  "tests_added": 0,
+  "tests_removed": 0,
+  "setup_exit": 0,
+  "frozen_install_exit": 0,
+  "source_lock_check_exit": 0,
+  "build_exit": 0,
+  "typecheck_exit": 0,
+  "runtime_core": "PASS",
+  "public_scan": {
+    "status": "PASS",
+    "complete": true,
+    "findings": 0,
+    "source_commit": "3ebaba83e76354d249a2db4ee298f7dd936729ea",
+    "report": "publication-scan.json"
+  },
+  "product_push": {
+    "status": "PUSH_OK",
+    "branch": "cloud/gr-mt-oncall-dep-2",
+    "head": "3ebaba83e76354d249a2db4ee298f7dd936729ea",
+    "attempts": 1,
+    "log": "product-push.log"
+  },
+  "ci": [
+    {
+      "conclusion": "cancelled",
+      "head_sha": "3ebaba83e76354d249a2db4ee298f7dd936729ea",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44097793573",
+      "status": "completed",
+      "id": 44097793573,
+      "name": "Verify"
+    }
+  ],
+  "runtime_core_exit": 0,
+  "verification_lane_entries_before": 20,
+  "verification_lane_entries_after": 20,
+  "initial_publication_scan": {
+    "status": "FAIL",
+    "complete": true,
+    "findings": [
+      "destination.invalid"
+    ],
+    "cause": "Incorrect caller destination arguments; corrected without a product edit",
+    "report": "publication-scan-initial.json"
+  },
+  "publication_destination": {
+    "project": "just-every/run-oncall",
+    "repository": "https://github.com/just-every/run-oncall",
+    "validation": "PASS"
+  },
+  "publication_scanner": {
+    "package": "@runeditrun/rer@0.2.118",
+    "gitleaks": "8.30.1",
+    "mode": "Base sourcePublicationScan with raw exact committed tree, mirrored history and remote public main baseline"
+  },
+  "process_cleanup": {
+    "setup": "temporary server stopped by setup",
+    "build": "subreaper completed",
+    "runtime_core": "subreaper completed; no runtime server remains"
+  },
+  "ci_last_checked_unix": 1794925022.3330808,
+  "manual_github_calls": 9,
+  "ci_jobs_receipt": "ci-jobs.json",
+  "status": "BLOCKED",
+  "blocker": "Exact-SHA Verify 44097793573 completed cancelled: agents shard cancelled, aggregate verify job failed. No passing full-wall CI proof; cancellation cause not established.",
+  "ready": false,
+  "ci_successful_shards": 7,
+  "ci_cancelled_shard": "agents",
+  "ci_failed_gate": "verify",
+  "bundle": {
+    "path": "/home/agent/rer-consolidation/work/maint/gr-mt-oncall-dep-2/candidate.bundle",
+    "head": "3ebaba83e76354d249a2db4ee298f7dd936729ea",
+    "sha256": "93403edf231f25565e4fbab568389278bb7b6d7453b960f4f1e8b43c27f46d86",
+    "bytes": 22824729,
+    "verified": true,
+    "verify_command": "git bundle verify /home/agent/rer-consolidation/work/maint/gr-mt-oncall-dep-2/candidate.bundle",
+    "verify_exit": 0,
+    "remote_product_push": "PUSH_OK"
+  },
+  "evidence_ref": "refs/heads/evidence/gr-mt-oncall-dep-2"
+}
