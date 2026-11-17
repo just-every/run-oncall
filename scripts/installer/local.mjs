@@ -36,7 +36,7 @@ const lifecycle = {
 export const adapter = lifecycle;
 export const { install } = lifecycle;
 export const commandAdapter = createCommandAdapter(lifecycle, {
- generatedOutputs: ['management/integration/deployment-spec.json', 'public/move-in/oncall-export.mjs.txt'],
+ generatedOutputs: ['management/integration/deployment-spec.json', 'public/move-in/oncall-export.mjs.txt', 'public/move-in/opsgenie-sample.json', 'public/move-in/pagerduty-sample.json'],
  mailOffSignIn: 'rer signin',
  deployPolicy({ options, bindings, env }) {
   if (options.remove || options.unsetSecret) return;

@@ -24,7 +24,7 @@ function CoordinationDraft({state,busy,run,id,version,initial,confirm,setConfirm
  </div>
  {draft.stale&&<p role="alert">A newer rule is published: version {current?.version??0}, {current?.action==='suppress'?'Suppress':'Route to '+(state.members.find(m=>m.id===current?.owner)?.name??'Unassigned')}. {current?.reason} Your draft is still here. <button onClick={draft.useMine}>Use mine</button></p>}
  {(id==='new'||draft.changed)&&<button disabled={busy||draft.stale} onClick={()=>setConfirm(true)}>Publish version {next}</button>}
- {confirm&&<InlineConfirm action={'Publish version '+next} reasonRequired busy={busy} onCancel={()=>setConfirm(false)} onConfirm={async reason=>{
+ {confirm&&<InlineConfirm action={'Publish version '+next} reasonRequired markReasonRequired explainDisabled busy={busy} onCancel={()=>setConfirm(false)} onConfirm={async reason=>{
   if(await run('/api/command',{type:'policy',...value,baseVersion:draft.baseVersion,reason},'Coordination rule published')){draft.accepted(next,value);onPublished();}
  }}>Use this rule for new events? Retained events keep their original decisions.</InlineConfirm>}
  </div>;

@@ -1,0 +1,100 @@
+{
+  "users": [
+    {
+      "id": "pd-alice",
+      "name": "Alice",
+      "email": "alice@example.test"
+    },
+    {
+      "id": "pd-bob",
+      "name": "Bob",
+      "email": "bob@example.test"
+    }
+  ],
+  "schedules": [
+    {
+      "id": "pd-daily",
+      "name": "PagerDuty daily",
+      "time_zone": "UTC",
+      "schedule_layers": [
+        {
+          "id": "layer1",
+          "name": "Daily UTC",
+          "start": "2026-03-07T09:00:00Z",
+          "rotation_virtual_start": "2026-03-07T09:00:00Z",
+          "rotation_turn_length_seconds": 86400,
+          "users": [
+            {
+              "user": {
+                "id": "pd-alice"
+              }
+            },
+            {
+              "user": {
+                "id": "pd-bob"
+              }
+            }
+          ],
+          "restrictions": []
+        }
+      ],
+      "final_schedule": {
+        "rendered_schedule_entries": [
+          {
+            "start": "2026-03-07T09:00:00Z",
+            "end": "2026-03-08T09:00:00Z",
+            "user": {
+              "id": "pd-alice"
+            }
+          },
+          {
+            "start": "2026-03-08T09:00:00Z",
+            "end": "2026-03-09T09:00:00Z",
+            "user": {
+              "id": "pd-bob"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "pd-short",
+      "name": "Short UTC",
+      "time_zone": "UTC",
+      "schedule_layers": [
+        {
+          "id": "layer2",
+          "name": "Six-hour UTC",
+          "start": "2026-03-07T09:00:00Z",
+          "rotation_virtual_start": "2026-03-07T09:00:00Z",
+          "rotation_turn_length_seconds": 21600,
+          "users": [
+            {
+              "user": {
+                "id": "pd-alice"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "escalation_policies": [
+    {
+      "id": "pd-policy",
+      "name": "PagerDuty primary",
+      "num_loops": 0,
+      "escalation_rules": [
+        {
+          "escalation_delay_in_minutes": 5,
+          "targets": [
+            {
+              "id": "pd-daily",
+              "type": "schedule_reference"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

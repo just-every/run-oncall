@@ -4,11 +4,13 @@ Your schedules, incidents, team and history live in your own installation. You c
 
 ## Export everything
 
+Stop dev and preview first (Ctrl-C for a foreground server, or `rer dev --stop` and `rer preview --stop`). A running server owns the local state and export refuses until it stops.
+
 ```sh
 rer export --output exports/installation.rer
 ```
 
-The archive holds everything Oncall keeps: services, schedules, incidents with their timelines and reviews, alerts, routing rules, the team and the move-in journal. Sign-in sessions, passwords and private settings are never in it. Stop `dev` first. Keep the archive private: imported pager files you moved in from may contain people's names and email addresses.
+The archive holds everything Oncall keeps: services, schedules, incidents with their timelines and reviews, alerts, routing rules, the team and the move-in journal. Sign-in sessions, passwords and private settings are never in it. Keep the archive private: imported pager files you moved in from may contain people's names and email addresses.
 
 Shift coordination is included: swap requests and decisions, approval settings, recorded change obligations, reminder preferences and subscription records. Raw calendar URLs are never stored or exported. Native, paired-checkpoint and installation recovery retain these records inactive and clear subscription hashes. Restored swaps cannot be accepted and restored feed records grant no access. Subject erasure removes their owned and indirect person references atomically. Alert-only coordination history, revisions and replay-safe bulk results stay in the existing alert/triage categories.
 
@@ -36,7 +38,7 @@ rer import --input exports/installation.rer --yes
 
 Import checks the archive first and only restores into an empty installation, so it can never overwrite data by accident. Then run `rer setup --owner-email you@example.com` and `rer dev`. Open the private owner entry printed by dev and confirm the new installation owner. **Open your restored workspace** then asks you to map an archived administrator; it opens the chooser automatically. If you use email sign-in instead, real mail delivery must be configured first. Choose your active archived administrator and confirm the identity to link it to your installation owner. Passwords do not travel with the archive.
 
-The chooser shows archived names and IDs so you can distinguish duplicate names. Archived member records do not contain email addresses; the chooser says **email not recorded**. The list is available only to the signed-in installation owner while the installation has no password accounts and no existing owner-to-member mapping. Mapping checks these conditions and the selected administrator's current active status again when you confirm. An installation with existing password accounts must keep using its existing workspace password access.
+The chooser shows archived names and roles. Archived member records do not contain email addresses. When names are repeated, a numbered administrator label distinguishes them. The list is available only to the signed-in installation owner while the installation has no password accounts and no existing owner-to-member mapping. Mapping checks these conditions and the selected administrator's current active status again when you confirm. An installation with existing password accounts must keep using its existing workspace password access.
 
 Agent policy and audit, call, review and event history travel as retained records. Before publishing the restored installation, import sets the local agent Pause, clears admission leases and marks pending or in-flight approvals expired. The pause and expiry publish atomically with the restored records, without an active interval. Their saved proposals and attribution remain readable, but cannot be approved or executed. Local credentials must be provisioned again, and only the signed-in installation owner can resume agents. Resuming does not revive an expired approval or replay a historical action; acting on an old proposal requires a fresh request and current authorization. Private agent relay custody and installation-bound replay receipts do not travel.
 

@@ -13,7 +13,7 @@ export function MoveInAdoption({row,rows,choices,busy,adopt}:{row:any;rows:any[]
  const existing=(choices.rotas??[]).filter((rota:any)=>rota.services.some((id:string)=>liveServices.includes(id)))
  const serviceName=(id:string)=>choices.services.find((s:any)=>s.id===id)?.name??'this service'
  const chosenMembers=Object.fromEntries(people.map(person=>[person,choices.members.length===1?choices.members[0].id:members[person]]))
- if(row.value.adopted)return <p>Adopted into <a href="/on-call">On call</a>. Paging is OFF. Once a schedule is live, this import can no longer be undone.</p>
+ if(row.value.adopted)return <p role="status">Adopted into <a href="/on-call">On call</a>. Paging is OFF. Once a schedule is live, this import can no longer be undone.</p>
  return <div><button type="button" disabled={busy} onClick={()=>setOpen(!open)}>{open?'Close adoption':'Make schedule live'}</button>
  {open&&<form onSubmit={e=>e.preventDefault()}>
  <p>Choose a service and match each person to a workspace member.</p>
