@@ -44,7 +44,8 @@
     "after-390-on-call.png",
     "after-390-reviews.png",
     "EVIDENCE-FILES.json",
-    "ci-transport.txt"
+    "ci-transport.txt",
+    "terminal-product.json"
   ],
   "ref": "refs/heads/evidence/sd-oncall-missed-ack-1",
   "repository": "just-every/run-oncall"

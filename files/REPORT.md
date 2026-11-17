@@ -28,7 +28,7 @@ No contract clause claimed; these are owner-journey fixes (DIRECT 87).
 
 ## CI and custody
 
-Verify run 44088634695 on `2f02a12bc54cd0d48c46132b331239ae6562d876` is pending at report preparation. A single REST watcher waits at least 300 seconds between requests and retains actual exact-SHA results in ci-status.jsonl and ci-final.json. RECEIPT.json will carry the terminal state before evidence publication. Product push custody and evidence publication are separate. The full publication scan, independent gates and landing remain with the fleet Mac; no Base clone, refresh, self-submit, tag or default-branch push was used.
+Verify run [44088634695](https://github.com/just-every/run-oncall/actions/runs/44088634695) completed successfully on exact head `2f02a12bc54cd0d48c46132b331239ae6562d876`, observed at 2026-11-17T13:16:49 UTC. The single REST watcher waited at least 300 seconds between status requests. One HTTP 401 recovered after the prescribed launcher refresh and Git setup. Five explicit task gh calls were used, including the discarded mistyped discovery. The terminal results are in ci-status.jsonl, ci-final.json and RECEIPT.json. The remote product SHA matches the clean checkout. There are no remaining blockers. Product push custody and evidence publication are separate. The full publication scan, independent gates and landing remain with the fleet Mac; no Base clone, refresh, self-submit, tag or default-branch push was used.
 
 See PLAN.md for the complete work plan and RECEIPT.json for machine-readable provenance and check commands. Evidence is selected explicitly from this packet and published only to evidence/sd-oncall-missed-ack-1.
 
@@ -37,3 +37,5 @@ Observed outside scope: GitHub push diagnostics report 12 existing default-branc
 Recovery copy: `/home/agent/rer-consolidation/work/sd-oncall-missed-ack-1/product.bundle`, SHA-256 `c5f76a66c50325e86d305cc4248e8b903eb19bc6eb7b3cd3420a8d7a42bd618f`; git bundle verify passed. The bundle stays outside the product clone and is not part of the public evidence tree.
 
 CI transport update: the 13:11 UTC REST status request failed with `gh: Bad credentials (HTTP 401)`. No terminal Verify result is inferred. The prescribed launcher refresh and Git setup completed; subsequent status reads honor the five-minute per-run cadence and re-read only the decrypted fleet bundle.
+
+Terminal result: READY branch=cloud/sd-oncall-missed-ack-1 head=2f02a12bc54cd0d48c46132b331239ae6562d876. Evidence is report-only custody and does not authorize landing; independent fleet gates still apply.

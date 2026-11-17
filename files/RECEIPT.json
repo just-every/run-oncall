@@ -1,6 +1,7 @@
 {
   "author": "Run Edit Run fleet",
   "base": "fb54c79d904d66342f166910d64996aa399bddf9",
+  "blockers": [],
   "branch": "cloud/sd-oncall-missed-ack-1",
   "browser_after_committed_head": "2f02a12bc54cd0d48c46132b331239ae6562d876",
   "changed_files": 17,
@@ -61,13 +62,14 @@
     }
   ],
   "ci": {
-    "head": "2f02a12bc54cd0d48c46132b331239ae6562d876",
-    "observed_at": "2026-11-17T13:12:16.841832+00:00",
+    "conclusion": "success",
+    "head_sha": "2f02a12bc54cd0d48c46132b331239ae6562d876",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44088634695",
+    "observed_at": "2026-11-17T13:16:49.245146+00:00",
     "run_id": 44088634695,
-    "status": "unknown after first in_progress poll",
-    "transport_error": "gh: Bad credentials (HTTP 401)",
-    "url": "https://github.com/just-every/run-oncall/actions/runs/44088634695"
+    "status": "completed"
   },
+  "ci_transport_recovery": "One HTTP 401; launcher refresh and prescribed Git setup followed by successful cadence-respecting retry",
   "claim": "No contract clause claimed; these are owner-journey fixes (DIRECT 87).",
   "clauses_changed": [],
   "counts": {
@@ -103,6 +105,7 @@
     }
   },
   "deletions": 27,
+  "github_task_calls": 5,
   "head": "2f02a12bc54cd0d48c46132b331239ae6562d876",
   "insertions": 161,
   "notes": [
@@ -117,9 +120,10 @@
     "verified": true
   },
   "product_push": "success",
-  "recorded_at": "2026-11-17T13:03:24.411536+00:00",
+  "recorded_at": "2026-11-17T13:17:40.161272+00:00",
   "repository": "just-every/run-oncall",
   "reproduction_base": "c38d139e019e9553195d2b340e2086443e0f0e56",
   "schema": 1,
-  "sources_lock_sha256": "afe85ca995479227ac98ed7067ee395c6db921e16c94d16637b41140fd22db4d"
+  "sources_lock_sha256": "afe85ca995479227ac98ed7067ee395c6db921e16c94d16637b41140fd22db4d",
+  "terminal": "READY"
 }
