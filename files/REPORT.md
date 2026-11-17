@@ -57,8 +57,8 @@ No DONE claim is made. The rows are recorded so the lander can reconcile the bou
 | --- | --- | --- |
 | 1 | PARTIAL for whole clause; PASS selected rows | Rubric R1 to R9 pass through native public doors. R10 and other variants remain unproved. |
 | 2 | PASS selected rows | Populated native incidents; allowed clear and unsafe changed-argument, stale-revision and inaccessible-target paths; full retained-effect comparisons. |
-| 3 | CI pending at report drafting | Existing push Verify agents lane runs `tests/runtime.mjs` with agents part, which loads the agent flow exactly once; hosted lane runs the existing agent browser script. Final exact-SHA CI receipt follows. |
-| 4 | PASS relevant bytes | Runtime proof is on the exact bytes committed in save e56d9d3c64b96bd2a82d0519676bba0e9c1e84fe; final commit changes only browser assertions and its source-lock hash. The browser proof uses those exact final browser bytes and unchanged production build. Exact-candidate retention receipt follows separately. |
+| 3 | PASS exact-SHA push Verify 43997935402 | Existing push Verify agents lane runs `tests/runtime.mjs` with agents part, which loads the agent flow exactly once; hosted lane runs the existing agent browser script. Completed success on 21764286fa20bdc27a95e537cd5258dd67a90daa; ci-status-3.json is the actual REST receipt. |
+| 4 | PASS relevant bytes | Runtime proof is on the exact bytes committed in save e56d9d3c64b96bd2a82d0519676bba0e9c1e84fe; final commit changes only browser assertions and its source-lock hash. The browser proof uses those exact final browser bytes and unchanged production build. Exact-candidate retention also passed separately; retention-receipt.json binds its exit 0 to the final SHA. |
 | 5 | NOT APPLICABLE to a new receiving clause | This is the existing Base duty itself, with no inheritance or clause rewrite. |
 | 6 | PASS mechanical; judgment custody retained | Generator write and check passed. Generated views restored whole from origin main. No Status, Gap or Evidence cell changed. |
 | 7 | PASS | No acceptance sentence, clause identity, coverage map or ruling changed. |
@@ -93,3 +93,15 @@ Exact-candidate retention: PASS on 21764286fa20bdc27a95e537cd5258dd67a90daa; loc
 Final product provenance: cloud/sd-oncall-c-f253 at 21764286fa20bdc27a95e537cd5258dd67a90daa. The first save e56d9d3c64b96bd2a82d0519676bba0e9c1e84fe and final candidate both pushed successfully on their first attempts using the cloud guard. Git ref readback confirmed the exact candidate branch and unchanged main 3b9cba555f564a4d582b9909305bc8d35c9c8bf1. No PR was opened because Verify has a branch push entry point. Exact-SHA push Verify 43997935402 is in progress at the latest recorded poll.
 
 CI transport limitation: a later exact-SHA status query exited 1. After refreshing the launcher and reinstalling the fleet Git helper, the same decrypted bundle returned HTTP 401 Bad credentials from GitHub. The earlier exact-SHA run was in progress; no green conclusion is claimed without a fresh receipt. Five GitHub API calls have been used. Product commits were already successfully pushed and verified by Git ref readback before this credential failure. No alternate credential was sought. Evidence transfer will be attempted with bounded recovery; the actual packet remains outside the product clone.
+
+## Final custody
+
+Exact-SHA push Verify 43997935402 completed SUCCESS on 21764286fa20bdc27a95e537cd5258dd67a90daa. REST receipt: ci-status-3.json. The authenticated read recovered after launcher refresh; six GitHub API calls were used in total, with no run polling sooner than 300 seconds. No CI dispatch, rerun or PR was needed.
+
+Evidence transport recovered on attempt 4 after 15, 45 and 90 second delays, refreshing the same launcher bundle and reinstalling the same Git helper before retries. First successful transfer: EVIDENCE repo=just-every/run-oncall ref=refs/heads/evidence/sd-oncall-c-f253 head=b601017498c10dc5b4ebcf85a3d81b789ad7dcd2. The final updated packet is published as a descendant on that same evidence ref. No product checkout, index or head is changed by evidence transport. The prior 401 and Git ref-check failures are retained as historical diagnostics, not current blockers.
+
+A full-history recovery bundle was created outside the clone while transport recovery was running and passed git bundle verify: /home/agent/rer-consolidation/work/sd-oncall-c-f253/product-recovery.bundle, SHA-256 3673f9576751c46171ecb799af8f184fa73a41dba5e95023f02904a5d77cf868. It is recovery data only.
+
+Publication scan: NOT RUN in cloud by the explicit cloud route. Commit 21764286fa20bdc27a95e537cd5258dd67a90daa; complete=false; historyScanned=unestablished; findings=unestablished. Main is not the candidate and final Run site is pending landing. Those are fleet gates and no completed scan or landing is claimed. Initial-main Verify 43979778553 and Run site 43979778305 were success.
+
+No selected-point blocker remains. All selected explicit Assignee clear observations pass, while BASE-AGENT-012 remains MISSING and the complete parent clause is claimed only PARTIAL. Counts remain 26 DONE, 41 PARTIAL and 34 MISSING. The scratch checkout can be deleted after final evidence transfer; the report packet and verified recovery bundle remain outside it.

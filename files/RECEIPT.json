@@ -109,11 +109,11 @@
     "run_id": 43997935402,
     "event": "push",
     "head_sha": "21764286fa20bdc27a95e537cd5258dd67a90daa",
-    "status": "in_progress",
-    "conclusion": null,
+    "status": "completed",
+    "conclusion": "success",
     "url": "https://github.com/just-every/run-oncall/actions/runs/43997935402",
     "html_url": "https://github.com/just-every/run-oncall/actions/runs/43997935402",
-    "final_observation": "Status read failed after earlier in_progress; injected bundle now returns HTTP 401 Bad credentials even after launcher refresh."
+    "final_observation": "Exact-SHA completed success after fleet credential refresh and bounded transport recovery."
   },
   "publication_scan": {
     "status": "NOT RUN",
@@ -165,7 +165,7 @@
     "browser/agent-door-assignee-cleared-people-1440.png",
     "browser/agent-door-assignee-cleared-people-390.png"
   ],
-  "github_api_calls": 5,
+  "github_api_calls": 6,
   "secrets_included": false,
   "local_invocation_issue": {
     "command": "node --input-type=module -e await_import_agedReplayRetention",
@@ -176,11 +176,33 @@
     "product_changes": false,
     "detail": "retention-invocation-diagnostic.txt"
   },
-  "generated_at": "2026-11-17T01:54:28.833997+00:00",
+  "generated_at": "2026-11-17T02:03:06.417787+00:00",
   "github_rate_limit_diagnostic": {
     "exit": 1,
     "http_status": 401,
     "message": "Bad credentials",
     "source": "same launcher-decrypted bundle; no alternate credential used"
+  },
+  "evidence_transport": {
+    "status": "published; final update follows",
+    "repository": "just-every/run-oncall",
+    "ref": "refs/heads/evidence/sd-oncall-c-f253",
+    "first_success_head": "b601017498c10dc5b4ebcf85a3d81b789ad7dcd2",
+    "attempts_before_first_success": 4,
+    "delays_seconds": [
+      15,
+      45,
+      90
+    ],
+    "prior_failure": "Git ls-remote exit 128; Git supplied no HTTP status. Same bundle REST returned HTTP 401 before recovery.",
+    "credential_source": "launcher-decrypted bundle only"
+  },
+  "recovery_bundle": {
+    "path": "/home/agent/rer-consolidation/work/sd-oncall-c-f253/product-recovery.bundle",
+    "sha256": "3673f9576751c46171ecb799af8f184fa73a41dba5e95023f02904a5d77cf868",
+    "bytes": 293653687,
+    "verified": true,
+    "head": "21764286fa20bdc27a95e537cd5258dd67a90daa",
+    "publication_status": "recovery data only, never a READY or landing receipt"
   }
 }
