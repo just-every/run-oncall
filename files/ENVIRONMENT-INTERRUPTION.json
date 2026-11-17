@@ -1,0 +1,6 @@
+{
+  "observedAt": "2026-11-17T15:27:20.141754+00:00",
+  "head": "467a003cbfba15bb1f8e297d734e90d27faf6bd1",
+  "result": "Final source test interrupted by environment restart; no completion receipt and process absent after ready; not counted as pass. Typecheck and build had completed successfully.",
+  "recovery": "Resume same clean clone and branch; rerun incomplete selected checks; preserve prior published product and report refs."
+}

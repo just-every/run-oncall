@@ -1,0 +1,35 @@
+{
+  "runId": 44102820767,
+  "failedHead": "c1266e19a6a1fee81d9d83908cd06c455dc4d217",
+  "conclusion": "failure",
+  "gitHubCallsUsed": 10,
+  "currentRepairHead": "467a003cbfba15bb1f8e297d734e90d27faf6bd1",
+  "jobs": [
+    {
+      "id": 134108568753,
+      "name": "runtime",
+      "failure": "tests/triage.mjs expected missing recovery link to refuse",
+      "fix": "Required summary refusal retained; malformed optional link refusal replaces the superseded URL requirement."
+    },
+    {
+      "id": 134108568781,
+      "name": "browser",
+      "failure": "incomplete alert UI probe expected lowercase active",
+      "fix": "Probe uses the displayed Active status while preserving routed/unrouted obligation checks."
+    },
+    {
+      "id": 134108568855,
+      "name": "hosted",
+      "failure": "A clipboard wait targeted alert sample markup on a change-event page",
+      "fix": "Restore the unchanged change-event clipboard assertion; no change-event behavior weakened."
+    },
+    {
+      "id": 134108569496,
+      "name": "transfer",
+      "failure": "rer export refused invalid_policy_module",
+      "fix": "New native-domain helper imports now include .ts extensions; complete archive policy import graph loads."
+    }
+  ],
+  "transferLogSource": "gh CLI cached archive already downloaded successfully; no extra GitHub request",
+  "repairValidation": "See CI-REPAIR-CHECK.json and FINAL-CHECKS.json for actual local exits. The corrected exact-SHA CI result is not observed; GitHub budget exhausted at 10 calls."
+}

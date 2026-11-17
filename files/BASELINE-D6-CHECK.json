@@ -1,0 +1,15 @@
+{
+  "head": "fb54c79d904d66342f166910d64996aa399bddf9",
+  "observedAt": "2026-11-17T15:56:07.400920+00:00",
+  "exitCode": 0,
+  "commands": [
+    "cloud_run node tests/fleet-before-d6.mjs"
+  ],
+  "build": {
+    "command": "cloud_run npx -y @runeditrun/rer build",
+    "exitCode": 0,
+    "reusedOriginalBaselineBuild": true,
+    "log": "/tmp/oncall-baseline-d6-build.log"
+  },
+  "purpose": "Original baseline with a real primary/backup rota; alert is looked up through authorized workspace state because native sender receipts deliberately withhold alert IDs; published product unchanged."
+}

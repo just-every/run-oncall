@@ -34,5 +34,7 @@
   "revokedRefused": true,
   "archiveAccepted": true,
   "reopenDialogDismissed": true,
+  "existingRecoveryLinkRetained": true,
+  "clientArchiveHistoryValid": true,
   "paging": "OFF"
 }

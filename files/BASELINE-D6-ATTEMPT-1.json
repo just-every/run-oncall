@@ -1,0 +1,10 @@
+{
+  "head": "fb54c79d904d66342f166910d64996aa399bddf9",
+  "observedAt": "2026-11-17T15:54:23.344543+00:00",
+  "exitCode": 1,
+  "commands": [
+    "cloud_run npx -y @runeditrun/rer build",
+    "cloud_run node tests/fleet-before-d6.mjs"
+  ],
+  "purpose": "Complete the original D6 before walk with a real primary/backup rota; detached original baseline; published product remains unchanged."
+}

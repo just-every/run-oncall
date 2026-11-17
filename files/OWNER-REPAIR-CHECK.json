@@ -1,0 +1,12 @@
+{
+  "head": "70306fb0d3d8dd2b332499cc3777022189ea48e1",
+  "endedAt": "2026-11-17T15:23:51.838052+00:00",
+  "exitCode": 0,
+  "commands": [
+    "pnpm typecheck",
+    "cloud_run npx -y @runeditrun/rer build",
+    "ONCALL_PRODUCT_JOURNEY=owner-alerts node tests/product-browser.mjs"
+  ],
+  "integration": "main 09f2821d713460dcd33d0878dc3a7825daccfc5a",
+  "repair": "client fixture explicitly selects standalone autonomous policy through its public owner door; no product authority relaxed"
+}

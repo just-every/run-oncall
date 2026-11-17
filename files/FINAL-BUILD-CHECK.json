@@ -1,0 +1,9 @@
+{
+  "head": "467a003cbfba15bb1f8e297d734e90d27faf6bd1",
+  "endedAt": "2026-11-17T15:26:08.525262+00:00",
+  "exitCode": 0,
+  "commands": [
+    "pnpm typecheck",
+    "cloud_run npx -y @runeditrun/rer build"
+  ]
+}

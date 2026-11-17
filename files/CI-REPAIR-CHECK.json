@@ -1,0 +1,57 @@
+{
+  "head": "467a003cbfba15bb1f8e297d734e90d27faf6bd1",
+  "checks": [
+    {
+      "name": "typecheck and production build",
+      "exitCode": 0,
+      "receipt": "FINAL-BUILD-CHECK.json",
+      "endedAt": "2026-11-17T15:26:08.525262+00:00"
+    },
+    {
+      "name": "source samples and owner alert/incident browser",
+      "log": "/tmp/oncall-source-final.log",
+      "exitCode": 0,
+      "endedAt": "2026-11-17T15:29:52.858351+00:00"
+    },
+    {
+      "name": "settings and sender clipboard browser",
+      "log": "/tmp/oncall-browser-settings-final.log",
+      "exitCode": 0,
+      "endedAt": "2026-11-17T15:32:58.328389+00:00"
+    },
+    {
+      "name": "managed native archive transfer",
+      "log": "/tmp/oncall-transfer-final.log",
+      "exitCode": 0,
+      "endedAt": "2026-11-17T15:51:39.013886+00:00"
+    },
+    {
+      "name": "response-policy, bulk and workflow HTTP regression",
+      "log": "/tmp/oncall-triage-final.log",
+      "exitCode": 0,
+      "endedAt": "2026-11-17T15:52:44.382425+00:00"
+    },
+    {
+      "name": "native archive policy import graph",
+      "log": "/tmp/oncall-policy-final.log",
+      "exitCode": 0,
+      "endedAt": "2026-11-17T15:52:45.104879+00:00"
+    },
+    {
+      "name": "contract generated views check",
+      "log": "/tmp/oncall-contract-check-final.log",
+      "exitCode": 0,
+      "endedAt": "2026-11-17T15:52:45.717189+00:00"
+    },
+    {
+      "name": "source lock check",
+      "log": "/tmp/oncall-lock-check.log",
+      "exitCode": 0,
+      "endedAt": "2026-11-17T15:52:46.783252+00:00"
+    }
+  ],
+  "exitCode": 0,
+  "endedAt": "2026-11-17T15:52:46.824636+00:00",
+  "completed": true,
+  "scope": "all directly affected browser, response-policy and native transfer doors; no full local verify; GitHub API budget 10/10"
+}

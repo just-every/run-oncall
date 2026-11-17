@@ -1,0 +1,8 @@
+{
+  "source": "already downloaded gh run log archive",
+  "archive": "/tmp/gh-cli-cache/run-log-44102820767-1794925487.zip",
+  "job": "134108569496",
+  "extraGitHubCalls": 0,
+  "logPath": "/tmp/oncall-ci-transfer-failed.log",
+  "note": "No further gh invocation: ten-call budget exhausted; cached archive inspection only."
+}

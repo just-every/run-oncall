@@ -1,9 +1,14 @@
 {
+  "observedAt": "2026-11-17T15:54:15.155019+00:00",
   "repository": "just-every/run-oncall",
   "branch": "cloud/sd-oncall-design-alerts-1",
-  "head": "c1266e19a6a1fee81d9d83908cd06c455dc4d217",
-  "remoteRef": "refs/heads/cloud/sd-oncall-design-alerts-1",
-  "remoteHead": "c1266e19a6a1fee81d9d83908cd06c455dc4d217",
-  "verifiedAt": "2026-11-17T14:25:10.340416+00:00",
-  "worktreeClean": true
+  "head": "467a003cbfba15bb1f8e297d734e90d27faf6bd1",
+  "command": "git ls-remote origin refs/heads/cloud/sd-oncall-design-alerts-1",
+  "observedOutput": "467a003cbfba15bb1f8e297d734e90d27faf6bd1\trefs/heads/cloud/sd-oncall-design-alerts-1",
+  "remoteMatches": true,
+  "worktreeClean": true,
+  "productPushGuardExitCode": 0,
+  "pushAttempt": 1,
+  "ci": "Unobserved on this head: ten-call GitHub budget exhausted. Prior failed run 44102820767 belongs to c1266e19a6a1fee81d9d83908cd06c455dc4d217.",
+  "pr": null
 }

@@ -1,0 +1,34 @@
+{
+  "head": "fb54c79d904d66342f166910d64996aa399bddf9",
+  "observedAt": "2026-11-17T15:56:07.147Z",
+  "assertionWidth": 1440,
+  "screenshotWidths": [
+    1440,
+    390
+  ],
+  "screenshots": [
+    "before-d6-rota-1440.png",
+    "before-d6-rota-390.png",
+    "before-d6-alert-1440.png",
+    "before-d6-alert-390.png",
+    "before-d6-incident-1440.png",
+    "before-d6-incident-390.png"
+  ],
+  "coverage": {
+    "primary": {
+      "id": "87ed7f65-cd09-4d90-a546-f7e69809cbe0",
+      "name": "Synthetic before primary"
+    },
+    "backup": {
+      "id": "b3da7c7d-6ceb-43df-ac73-b1f754e94f9f",
+      "name": "Synthetic before backup"
+    }
+  },
+  "observations": {
+    "liveRotaVisibleOnCallPage": true,
+    "alertMissingCoverage": true,
+    "incidentMissingCoverage": true,
+    "incidentUnassigned": true
+  },
+  "method": "Original baseline build, native owner/member/service/rota/source/intake/incident doors; no UI mock or product changes."
+}

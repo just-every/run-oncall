@@ -1,0 +1,14 @@
+{
+  "head": "c32f1b669e01e4002bf7fc45f0c7a8ede945fade",
+  "endedAt": "2026-11-17T15:20:02.247364+00:00",
+  "exitCode": 1,
+  "commands": [
+    "pnpm typecheck",
+    "cloud_run npx -y @runeditrun/rer build",
+    "ONCALL_PRODUCT_PART=core node tests/product-browser.mjs",
+    "ONCALL_PRODUCT_PART=settings node tests/product-browser.mjs",
+    "node tests/transfer.mjs"
+  ],
+  "priorPassed": "ONCALL_TRIAGE_PART=storm on 723a754b0f66acd2e916a8c14c19d3abf02ff87a",
+  "scope": "fix all failed CI shards and preserve native export, earlier links, and machine-authored archive validity; API budget 10/10"
+}

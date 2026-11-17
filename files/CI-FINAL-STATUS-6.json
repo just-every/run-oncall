@@ -1,0 +1,9 @@
+{
+  "queriedAt": "2026-11-17T14:41:16.409907+00:00",
+  "apiCalls": 6,
+  "runId": 44102820767,
+  "conclusion": "failure",
+  "head_sha": "c1266e19a6a1fee81d9d83908cd06c455dc4d217",
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/44102820767",
+  "status": "completed"
+}

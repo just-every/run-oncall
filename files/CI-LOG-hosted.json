@@ -1,0 +1,9 @@
+{
+  "command": "gh run view 44102820767 --repo just-every/run-oncall --job 134108568855 --log-failed",
+  "exitCode": 0,
+  "apiCalls": 10,
+  "queriedAt": "2026-11-17T14:43:08.184264+00:00",
+  "job": "134108568855",
+  "logPath": "/tmp/oncall-ci-hosted-failed.log",
+  "transportError": ""
+}

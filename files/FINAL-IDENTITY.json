@@ -1,0 +1,79 @@
+{
+  "head": "467a003cbfba15bb1f8e297d734e90d27faf6bd1",
+  "checkedAt": "2026-11-17T15:57:10.768410+00:00",
+  "command": [
+    "git",
+    "log",
+    "origin/main..HEAD",
+    "--format=%an <%ae>%n%cn <%ce>%n%(trailers:only,unfold)"
+  ],
+  "candidates": [
+    {
+      "head": "467a003cbfba15bb1f8e297d734e90d27faf6bd1",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": "",
+      "message": "Wait for the recovered alert after browser navigation"
+    },
+    {
+      "head": "70306fb0d3d8dd2b332499cc3777022189ea48e1",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": "",
+      "message": "Integrate installation fixes and authorize the client regression fixture"
+    },
+    {
+      "head": "c32f1b669e01e4002bf7fc45f0c7a8ede945fade",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": "",
+      "message": "Preserve client alert history and finish modal journey cleanup"
+    },
+    {
+      "head": "723a754b0f66acd2e916a8c14c19d3abf02ff87a",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": "",
+      "message": "Retain earlier recovery links when resolving without a new link"
+    },
+    {
+      "head": "0d2a036268448f481e53e2c5f7566f39208aebd6",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": "",
+      "message": "Preserve native archive loading and align remaining incident journeys"
+    },
+    {
+      "head": "c1266e19a6a1fee81d9d83908cd06c455dc4d217",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": "",
+      "message": "Integrate current main while preserving owner alert flows"
+    },
+    {
+      "head": "2273cab15bb4aa3e0a0c1c168e1835d5eada9160",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": "",
+      "message": "Close the Reopen dialog after restoring the incident"
+    },
+    {
+      "head": "b48f59b9d15c7144b6acdf59118e12f142a16c39",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": "",
+      "message": "Prove the owner alert and incident lifecycle through the browser"
+    },
+    {
+      "head": "9d45a29f1c8dcc60f6c6138246bd970257688b8b",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": "",
+      "message": "Make alert testing and incident closure accessible from the workspace [skip ci]"
+    }
+  ],
+  "allSideParentsIncluded": true,
+  "addedLineCredentialPatternFindings": 0,
+  "contractAndReleaseMetadataUnchanged": true,
+  "forwardingCommitHookActive": true
+}
