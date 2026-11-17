@@ -6,6 +6,7 @@ import AxeBuilder from '@axe-core/playwright';
 import {agentRuntime,agentEffectSnapshot,pauseMatrix} from './agent-door-runtime.mjs';
 import {recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy,deadlineTarget} from './oncall-agent-fixtures.mjs';
 import specialist from './oncall-agent-native.mjs';
+import {actionSubmitReplay} from './oncall-agent-action-submit-replay.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {openIncidentAction} from './keyboard.mjs';
 
@@ -134,6 +135,34 @@ try{
  await runtime.time(null);
  await page.setViewportSize({width:1440,height:1000});
  assert.equal((await runtime.adopt()).status,200);
+ const submitEvidenceRequests=[];
+ const stopEvidence=route=>{submitEvidenceRequests.push(route.request().url());return route.abort()};
+ await context.route('https://evidence.example.invalid/**',stopEvidence);
+ await actionSubmitReplay(runtime,{
+  async approve({handle,saved,owner}){
+   await capture('follow-up-submit-pending',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="pending"]').waitFor()});
+   await page.goto(handle.url);
+   await page.getByText(owner.name,{exact:false}).first().waitFor();
+   const submitted=page.waitForRequest(request=>request.method()==='POST'&&new URL(request.url()).pathname.endsWith('/approve'));
+   await page.getByRole('button',{name:'Approve',exact:true}).click();
+   const posted=(await submitted).postDataJSON();
+   assert.equal(posted.revision,saved.revision);assert.equal(posted.summary_sha256,saved.summary_sha256);
+   await page.locator('[data-approval-state="executed"]').waitFor();
+   await capture('follow-up-submit-executed',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="executed"]').waitFor()});
+  },
+  async observe({mode,incident,action}){
+   await capture('follow-up-submit-'+mode,'/reviews/'+incident.id,async()=>{
+    await page.getByRole('dialog',{name:incident.title,exact:true}).waitFor();
+    await page.locator('.review-material-body summary').filter({hasText:/^Follow-ups \(/}).click();
+    await page.getByText('Awaiting acceptance',{exact:false}).first().waitFor();
+    const evidence=page.locator('.review-material-body').getByRole('link',{name:/^Evidence/});await evidence.waitFor();
+    if(page.viewportSize().width===1440)assert.equal(await evidence.getAttribute('href'),action.evidence);
+    await evidence.scrollIntoViewIfNeeded();
+   });
+  },
+ });
+ assert.deepEqual(submitEvidenceRequests,[],'The browser never fetches submitted evidence');
+ await context.unroute('https://evidence.example.invalid/**',stopEvidence);
  await specialist({request:runtime.request,origin:runtime.origin,cookie:runtime.cookie,fixtures:runtime.fixtures,tool});
  const native=async()=> (await (await http('/api/state')).json());
  let state=await native();
