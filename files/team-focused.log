@@ -1,0 +1,6 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PASS Team Add member: visible focused Name with contacts closed/open, then member created through the form
+PASS Team owner name: editable after setup, native identity and member name persist after reload
+PASS Team refused access: last-admin action unavailable with a next step; real refusal clears its draft and Retry across reload; older refused draft cleared; uncertain write still retries

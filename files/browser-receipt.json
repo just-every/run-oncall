@@ -1,0 +1,133 @@
+{
+  "author": "Run Edit Run fleet",
+  "date_utc": "2026-11-17",
+  "before_head": "c38d139e019e9553195d2b340e2086443e0f0e56",
+  "candidate_head": "b0ea6de7f2faec524d72d519b03fbd929c770da6",
+  "assertion_width": 1440,
+  "screenshots_widths": [
+    1440,
+    390
+  ],
+  "files": [
+    {
+      "path": "before/add-member-closed-1440.png",
+      "bytes": 76659,
+      "sha256": "127d3b9908f44997ae659e470b9aaa6cc04c46842a878083b0c5a0c8b9c6e1da"
+    },
+    {
+      "path": "before/add-member-closed-390.png",
+      "bytes": 46925,
+      "sha256": "f4fede07c721f7be40dc9f4ff5215ced5336a5d1d2fff19f92725ee01875c213"
+    },
+    {
+      "path": "before/add-member-open-1440.png",
+      "bytes": 70882,
+      "sha256": "048db4d019649299df518c5d5f2ca1132eb49c8a1f0df21cf66f059298384b77"
+    },
+    {
+      "path": "before/add-member-open-390.png",
+      "bytes": 51875,
+      "sha256": "8e24e313fa780c860315b4484f6d98a093feea6cbb8c2e377aa50e1eedb0363e"
+    },
+    {
+      "path": "before/revoke-confirm-1440.png",
+      "bytes": 95801,
+      "sha256": "9dcbd9e84258799f13e9f4740e00362617cce63fe695537c221455192e5a13f2"
+    },
+    {
+      "path": "before/revoke-confirm-390.png",
+      "bytes": 56738,
+      "sha256": "f929048c3cc833376ea21ccf1e2cb6510ba2b258e3a034f1c51332941a2b8635"
+    },
+    {
+      "path": "before/refused-1440.png",
+      "bytes": 92250,
+      "sha256": "023e98e271f506f4198af0957316dd248ec97268d6161c4847a2cb84a33af0a8"
+    },
+    {
+      "path": "before/refused-390.png",
+      "bytes": 55926,
+      "sha256": "48cc4268905c7a54dbcab51f7e03fa5b5b158d9029f337863757062056473369"
+    },
+    {
+      "path": "before/refused-reload-1440.png",
+      "bytes": 58648,
+      "sha256": "ea3973ac7da21c2e7eba0df9758958741cd9fa26d8d33987774c6fd7ce6c69da"
+    },
+    {
+      "path": "before/refused-reload-390.png",
+      "bytes": 44630,
+      "sha256": "a48dcc62ea9507f6ab04086515789bb1de45a931d1e14dbc745f0145970107b1"
+    },
+    {
+      "path": "after/team-only-admin-1440.png",
+      "bytes": 69921,
+      "sha256": "51e28286090c128eb1044b631c5f247b427329c636ef06be9c0760312e8c57fa"
+    },
+    {
+      "path": "after/team-only-admin-390.png",
+      "bytes": 50002,
+      "sha256": "79c616242d39c13b99d2f4fbbc6de76fbbf438adef6d0bd1f31715bdedebe73a"
+    },
+    {
+      "path": "after/team-add-contacts-closed-1440.png",
+      "bytes": 96355,
+      "sha256": "3aae818e0e96395369a821efcab6e0493e415183bc8416141259741f8d82f738"
+    },
+    {
+      "path": "after/team-add-contacts-closed-390.png",
+      "bytes": 78503,
+      "sha256": "6fc2e3f127f6bb7c308ee96daa94cd9b328989127018acaaff4054c3b04947b3"
+    },
+    {
+      "path": "after/team-add-contacts-open-1440.png",
+      "bytes": 123454,
+      "sha256": "2158ecc702f73fd3c7d30648b28d5c96cee987449d5b3e2f3aeeca8682341f5d"
+    },
+    {
+      "path": "after/team-add-contacts-open-390.png",
+      "bytes": 103605,
+      "sha256": "ebd575268ad4a2a9457db4b0b2985f7a4996279e1c3725e16f9496e7dc2f34b3"
+    },
+    {
+      "path": "after/team-edit-name-1440.png",
+      "bytes": 97934,
+      "sha256": "1bc78a94f4e3e00b6f830ed7a56e890eac2479989eeb8aa66bab806fe53cdd8f"
+    },
+    {
+      "path": "after/team-edit-name-390.png",
+      "bytes": 80237,
+      "sha256": "f54b58e56834a573e1c96b591f1ffb0a8e3f17ed5b59a65ca472a2dfbe87e133"
+    },
+    {
+      "path": "after/team-name-saved-1440.png",
+      "bytes": 65321,
+      "sha256": "c9f20b6ca85efef8795d00f7dc9653fd3c5ff99f6bad0d47f80912639d075e5e"
+    },
+    {
+      "path": "after/team-name-saved-390.png",
+      "bytes": 49786,
+      "sha256": "8e3265b6fcb7c5c6210e1773130f2c9d6d60e7c8f4ea45926cce701e51cab44f"
+    },
+    {
+      "path": "after/team-refused-1440.png",
+      "bytes": 94752,
+      "sha256": "00278e35f913ecaf313323d712e656b0faacd21641362995f8f64a8875a7fec0"
+    },
+    {
+      "path": "after/team-refused-390.png",
+      "bytes": 69590,
+      "sha256": "675c6bb14d0a0a9161caabb4d6f67d65a3d3e48cc10a3bc0af39de83b83aeb15"
+    },
+    {
+      "path": "after/team-refused-reload-1440.png",
+      "bytes": 75180,
+      "sha256": "15fb121d1cb4f1049e02a10351487610cc6ba7ba810bcf7448c26ec85fea177d"
+    },
+    {
+      "path": "after/team-refused-reload-390.png",
+      "bytes": 59214,
+      "sha256": "e95b8d87a623703564fc3610d7f403c53311eaa12df55e4fdef570d753dd213a"
+    }
+  ]
+}

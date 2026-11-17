@@ -1,0 +1,43 @@
+{
+  "width": 390,
+  "head": "b0ea6de7f2faec524d72d519b03fbd929c770da6",
+  "steps": [
+    {
+      "action": "Add member",
+      "contactsOpen": false,
+      "focused": true,
+      "box": {
+        "x": 35,
+        "y": 384.671875,
+        "width": 320,
+        "height": 44
+      }
+    },
+    {
+      "action": "Add member",
+      "contactsOpen": true,
+      "focused": true,
+      "box": {
+        "x": 35,
+        "y": 384.671875,
+        "width": 320,
+        "height": 44
+      }
+    },
+    {
+      "action": "Save name and reload",
+      "retainedName": "Example Lead"
+    },
+    {
+      "action": "Own only-admin actions",
+      "revokeButtons": 0,
+      "reason": "This is your only active admin account. Make someone else an admin first."
+    },
+    {
+      "action": "Reload Team",
+      "retryButtons": 0,
+      "alerts": 0,
+      "horizontalOverflow": false
+    }
+  ]
+}

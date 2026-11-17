@@ -1,0 +1,95 @@
+{
+  "author": "Run Edit Run fleet",
+  "date_utc": "2026-11-17",
+  "repository": "just-every/run-oncall",
+  "base": "fb54c79d904d66342f166910d64996aa399bddf9",
+  "focused_journey": {
+    "command": "ONCALL_MEMBER_JOURNEY=team-settings ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/member-coordination-browser.mjs",
+    "result": "passed",
+    "assertion_width": 1440,
+    "screenshots": [
+      1440,
+      390
+    ]
+  },
+  "typecheck": {
+    "command": "pnpm run typecheck",
+    "result": "passed"
+  },
+  "build": {
+    "command": "npx -y @runeditrun/rer build",
+    "result": "passed"
+  },
+  "source_lock": {
+    "commands": [
+      "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check"
+    ],
+    "result": "passed"
+  },
+  "files_sha256": {
+    "docs/team.md": "b2509d0d4ffe41718ff58e9c25ab62c3e7f297ae6994c2ec11f1a621d1b5f48c",
+    "sources.lock.json": "36fa46bd07d548fa2b9746a38a931ed67a48509356dd7d752e68c7a2ad1c9b67",
+    "src/team/MemberRow.tsx": "2f8b89ce3f659c365e23d5c5c94d50b9ad1da1812e711c90c333c4a39cad0189",
+    "src/team/TeamSection.tsx": "c223703fc990c3102b4c03a6257400f5d3a8051bcca19e5ed1dc68913b327199",
+    "src/team/team-section.css": "5686954592fa539b9199c312d3bcd66b969e32996bc2e7446ed2dcd91b9475d2",
+    "tests/member-coordination-browser.mjs": "287efd9dd54bc174df654dd02cf31775038b5a0e3116fd6a172bf20cde907dbf"
+  },
+  "counts": {
+    "reported_findings_before": 3,
+    "reported_findings_after": 0,
+    "verification_registrations_before": 20,
+    "verification_registrations_after": 20,
+    "contract_before": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "contract_after": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "diff_checks": {
+    "whitespace": "passed",
+    "credential_patterns": "passed",
+    "company_name_additions": "none"
+  },
+  "browser_prerequisite": {
+    "initial_full_run": "stopped: Playwright cache not installed",
+    "remediation": "pnpm exec playwright install chromium completed; tests continue using /usr/bin/chromium"
+  },
+  "full_touched_file": {
+    "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/member-coordination-browser.mjs",
+    "result": "passed",
+    "log": "member-full.log"
+  },
+  "head": "b0ea6de7f2faec524d72d519b03fbd929c770da6",
+  "timestamp_utc": "2026-11-17T13:07:48.090081+00:00",
+  "candidate_build": {
+    "command": "npx -y @runeditrun/rer build",
+    "result": "passed",
+    "head": "b0ea6de7f2faec524d72d519b03fbd929c770da6"
+  },
+  "candidate_browser": {
+    "command": "ONCALL_MEMBER_JOURNEY=team-settings ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/member-coordination-browser.mjs",
+    "result": "passed",
+    "head": "b0ea6de7f2faec524d72d519b03fbd929c770da6",
+    "assertion_width": 1440,
+    "proof_widths": [
+      1440,
+      390
+    ]
+  },
+  "exact_sha_verify": {
+    "run_id": 44089382726,
+    "head": "b0ea6de7f2faec524d72d519b03fbd929c770da6",
+    "status": "completed",
+    "conclusion": "success",
+    "gh_ci_calls": 4
+  },
+  "blockers": []
+}

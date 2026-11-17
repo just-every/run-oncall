@@ -1,0 +1,70 @@
+[
+  {
+    "width": 1440,
+    "contactsOpen": false,
+    "nameBox": {
+      "x": 275,
+      "y": 480.828125,
+      "width": 1106,
+      "height": 42
+    },
+    "focused": false
+  },
+  {
+    "width": 1440,
+    "contactsOpen": true,
+    "nameBox": {
+      "x": 275,
+      "y": 801.578125,
+      "width": 1106,
+      "height": 42
+    },
+    "focused": false
+  },
+  {
+    "width": 1440,
+    "editNameControls": 0
+  },
+  {
+    "width": 1440,
+    "refusal": "Cannot remove last admin\nRetry"
+  },
+  {
+    "width": 1440,
+    "afterReload": "Your unfinished change is still here. Saving was not confirmed.\nRetry"
+  },
+  {
+    "width": 390,
+    "contactsOpen": false,
+    "nameBox": {
+      "x": 35,
+      "y": 586.671875,
+      "width": 320,
+      "height": 44
+    },
+    "focused": false
+  },
+  {
+    "width": 390,
+    "contactsOpen": true,
+    "nameBox": {
+      "x": 35,
+      "y": 987.421875,
+      "width": 320,
+      "height": 44
+    },
+    "focused": false
+  },
+  {
+    "width": 390,
+    "editNameControls": 0
+  },
+  {
+    "width": 390,
+    "refusal": "Cannot remove last admin\nRetry"
+  },
+  {
+    "width": 390,
+    "afterReload": "Your unfinished change is still here. Saving was not confirmed.\nRetry"
+  }
+]

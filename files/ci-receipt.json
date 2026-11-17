@@ -1,0 +1,50 @@
+{
+  "timestamp_utc": "2026-11-17T13:22:09.042746+00:00",
+  "gh_calls": 4,
+  "head": "b0ea6de7f2faec524d72d519b03fbd929c770da6",
+  "command": "gh api repos/just-every/run-oncall/actions/runs?head_sha=b0ea6de7f2faec524d72d519b03fbd929c770da6&per_page=100",
+  "runs": [
+    {
+      "id": 44089382726,
+      "name": "Verify",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "b0ea6de7f2faec524d72d519b03fbd929c770da6",
+      "head_branch": "cloud/sd-oncall-members-1",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44089382726",
+      "event": "push"
+    }
+  ],
+  "polls": [
+    {
+      "timestamp_utc": "2026-11-17T13:11:40.276509+00:00",
+      "run_id": 44089382726,
+      "conclusion": null,
+      "head_sha": "b0ea6de7f2faec524d72d519b03fbd929c770da6",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44089382726",
+      "status": "in_progress"
+    },
+    {
+      "timestamp_utc": "2026-11-17T13:16:50.968616+00:00",
+      "run_id": 44089382726,
+      "conclusion": null,
+      "head_sha": "b0ea6de7f2faec524d72d519b03fbd929c770da6",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44089382726",
+      "status": "in_progress"
+    },
+    {
+      "timestamp_utc": "2026-11-17T13:22:09.042746+00:00",
+      "run_id": 44089382726,
+      "conclusion": "success",
+      "head_sha": "b0ea6de7f2faec524d72d519b03fbd929c770da6",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44089382726",
+      "status": "completed"
+    }
+  ],
+  "latest": {
+    "conclusion": "success",
+    "head_sha": "b0ea6de7f2faec524d72d519b03fbd929c770da6",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44089382726",
+    "status": "completed"
+  }
+}
