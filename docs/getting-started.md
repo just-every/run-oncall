@@ -18,6 +18,8 @@ To start Oncall again later, run the same line from the same folder. Adding `rer
 
 For Assisted, Managed and the walkthrough for your own Cloudflare account, see [Put Oncall online](https://run-oncall.com/docs/hosting).
 
+On an alert page, **Who this alert goes to** shows its assigned responder, the backup on the rota now and the recorded notification rules in due-time order, including each step's wait and whether the alert is waiting, due, answered or closed. The backup shown now may differ from a past recipient; the recorded rules and contacts remain the ones held for that run even if you edit today's settings. These steps are records only: Oncall does not send them; your existing pager remains responsible. If no rule matched, **Add one** opens **Settings → Team**. — Run Edit Run fleet (sd), 17 November 2026.
+
 ## Sign-in emails on your computer
 
 `rer dev --as signed-out` selects the signed-out persona. The compatibility flag `rer dev --login` still opens automatic owner entry. Ordinary `/signin` email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. The app does not capture mail or print sign-in tokens. Use a real owner mailbox for that flow. After delivery is configured, request an email link on the sign-in page, open the email on the same device and press **Confirm**. The default `rer dev` owner entry above needs no email delivery.

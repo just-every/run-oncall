@@ -5,7 +5,8 @@ import type {IntakeRun} from '../intake/CompatibleTest';
 import {AlertList} from '../alerts/AlertList';
 import {AlertPage} from '../alerts/AlertPage';
 import '../alerts/alerts.css';
-export function AlertsPanel(props: {state: State; canEdit: boolean; busy: boolean; run: IntakeRun; name: (id: string | null) => string; onDeclare: (data: unknown) => Promise<void>; onOpenIncident: (id: string) => void;onSaved:(alert:Alert)=>void;draftScope:string}) {
+import type {OnCall} from '../on-call/read';
+export function AlertsPanel(props: {state: State; canEdit: boolean; busy: boolean; run: IntakeRun; name: (id: string | null) => string; onDeclare: (data: unknown) => Promise<void>; onOpenIncident: (id: string) => void;onSaved:(alert:Alert)=>void;draftScope:string;onCall:OnCall|null}) {
   const state=props.state;
   const {pathname} = useLocation();
   const selected = pathname.split('/')[2] ? decodeURIComponent(pathname.split('/')[2]) : '';

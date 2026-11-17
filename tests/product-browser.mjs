@@ -1,3 +1,4 @@
+import {alertNotificationRunBrowser} from './alert-notification-run-browser.mjs';
 // Owner fault regression: synthetic data through the emitted Worker and browser doors.
 async function ownerFaultsBrowser(page,context) {
  const request=async(path,data,status=200,cookie)=>{
@@ -1097,7 +1098,7 @@ try {
   } finally { await worker.time(selectedTime) }
  }
  const focused=process.env.ONCALL_PRODUCT_JOURNEY;
- if(focused&&!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in'].includes(focused))throw Error('Unknown focused product journey');
+ if(focused&&!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','alert-run'].includes(focused))throw Error('Unknown focused product journey');
  const triageProof={snapshot:()=>durableSnapshot(worker),outbound:()=>worker.outboundRequests()};
  const setTime=async at=>{selectedTime=at;await worker.time(at);if(at===null)await page.clock.setSystemTime(new Date());else await page.clock.setFixedTime(new Date(at));};
  if(focused==='move-in'){
@@ -1105,6 +1106,7 @@ try {
   await context.request.post('/api/command',{headers:{origin:worker.origin},data:{type:'service',name:'Checkout',environment:'test',owner:session.member.id,runbook:[],pager:''}});
   const {productImport}=await import('./product-browser-journey.mjs');await productImport(page,context,1440,session,triageProof);
  }
+ if(focused==='alert-run')await alertNotificationRunBrowser(page,context,{worker,setTime});
  if(focused==='owner-faults')await ownerFaultsBrowser(page,context);
  if(focused==='rota-timeline'){
   const session=await (await context.request.get('/api/session')).json();
@@ -1138,7 +1140,7 @@ try {
  if(focused==='move-in-guide')await providerExport(page,context,1440,triageProof);
  if(['limitations','readiness'].includes(focused))await limitationsBrowser(page,context);
  if(focused==='triage')await triageFiltersBrowser(page,context,{setTime,proof:triageProof});
- if(!['sender-setup','response-policy','imported-email','events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in'].includes(focused)){
+ if(!['sender-setup','response-policy','imported-email','events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','alert-run'].includes(focused)){
  await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime,triageProof})
  if(focused!=='accessibility'){
  await incompleteIntakeBrowser(page,context)
@@ -1149,13 +1151,13 @@ try {
  console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440; overflow, axe and hydration checked')
  }
  }
- if(!['sender-setup','response-policy','imported-email','events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in'].includes(focused))await readinessBrowser(page,context)
+ if(!['sender-setup','response-policy','imported-email','events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','alert-run'].includes(focused))await readinessBrowser(page,context)
  if(!focused)await importedEmailBrowser(page,context)
  if(!focused)await responseReportBrowser(browser)
  if(!focused)await eventsSourceBrowser(page,context)
  assert.deepEqual(errors,[],'no browser application errors')
- if(!focused){await setTime(null);await ownerFaultsBrowser(page,context);assert.deepEqual(errors,[],'owner fault journey has no browser application errors');}
- console.log(focused==='owner-faults'?'Emitted Worker owner faults passed: admin key readback, person contacts/rules, shared PagerDuty mapping/adoption, bounded past coverage; paging OFF, zero outbound, proof at 1440/390':focused==='sender-setup'?'Emitted Worker sender setup journey passed at 1440; screens captured at 1440 and 390':focused==='response-policy'?'Emitted Worker response-policy journey passed at 1440':focused==='imported-email'?'Emitted Worker saved email import journey passed at 1440; changed states captured at 1440 and 390':focused==='rota-timeline'?'Emitted Worker rota timeline passed: readable phone lists and compact accessible desktop slices on overview and rota pages':focused==='readable-times'?'Emitted Worker readable-times journey passed at 1440 in Australia/Brisbane with an America/New_York rota; changed rota and readiness screens captured at 1440 and 390':focused==='events-source'?'Emitted Worker Events source journey passed at 1440; screens captured at 1440 and 390':focused==='support-start'?'Emitted Worker support-start browser journey passed at 1440; screens captured at 1440 and 390':focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
+ if(!focused){await setTime(null);await ownerFaultsBrowser(page,context);assert.deepEqual(errors,[],'owner fault journey has no browser application errors');await alertNotificationRunBrowser(page,context,{worker,setTime});assert.deepEqual(errors,[],'alert notification run has no browser application errors');}
+ console.log(focused==='alert-run'?'Emitted Worker alert notification run passed: assertions at 1440, changed screens at 1440/390; paging OFF and zero outbound':focused==='owner-faults'?'Emitted Worker owner faults passed: admin key readback, person contacts/rules, shared PagerDuty mapping/adoption, bounded past coverage; paging OFF, zero outbound, proof at 1440/390':focused==='sender-setup'?'Emitted Worker sender setup journey passed at 1440; screens captured at 1440 and 390':focused==='response-policy'?'Emitted Worker response-policy journey passed at 1440':focused==='imported-email'?'Emitted Worker saved email import journey passed at 1440; changed states captured at 1440 and 390':focused==='rota-timeline'?'Emitted Worker rota timeline passed: readable phone lists and compact accessible desktop slices on overview and rota pages':focused==='readable-times'?'Emitted Worker readable-times journey passed at 1440 in Australia/Brisbane with an America/New_York rota; changed rota and readiness screens captured at 1440 and 390':focused==='events-source'?'Emitted Worker Events source journey passed at 1440; screens captured at 1440 and 390':focused==='support-start'?'Emitted Worker support-start browser journey passed at 1440; screens captured at 1440 and 390':focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
  }
  if(productPart)console.log('Product browser part completed: '+productPart);
 } catch(error) {
@@ -1168,4 +1170,4 @@ try {
 } finally {
  try {await browser?.close()} finally {await worker.close()}
 }
-if(!productPart&&!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');
+if(!productPart&&!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','alert-run'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');
