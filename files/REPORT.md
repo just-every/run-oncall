@@ -117,3 +117,6 @@ Final product branch: cloud/sd-oncall-c-f254. Final full head: 112c6f14e2327d8e5
 
 POST lanes/fv/INBOX.md: FLAKE just-every/run-oncall run=44014050007 job=133808476291 ECONNRESET in local paging preview at tests/product-browser-journey.mjs:524; unchanged candidate and main browser shard commands passed with Node 22.20.0 on the same cloud runner; one failed-job rerun completed success on 112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554; no source repair.
 POST lanes/sd/INBOX.md: sd-oncall-c-f254 acceptance 2 action parity proved through 12 comparisons and both-role 1440 and 390 sheets; BASE-AGENT-003 MISSING retained, counts 26 DONE, 41 PARTIAL, 34 MISSING unchanged; head=112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554 Verify=44014050007 push success after one transport-flake retry; f252 and landed f253 retained; guarded publication and landing pending.
+
+
+The complete report-only publication explicitly selects 797 regular non-secret files, including all supplemental candidate and main comparison receipts. Credentials, environment dumps, private held-out material and symlinks are excluded.

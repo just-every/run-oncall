@@ -1,0 +1,30 @@
+{
+  "head": "112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554",
+  "run": 44014050007,
+  "job": 133808476291,
+  "command": "node scripts/verify-oncall.mjs browser",
+  "node": "22.20.0",
+  "chromium": "154.0.8037.57",
+  "githubChromium": "156.0.8078.4",
+  "cloudBrowserRequirement": "/usr/bin/chromium with --no-sandbox",
+  "exit": 0,
+  "seconds": 345.4,
+  "ciFailure": "route.fetch: socket hang up (ECONNRESET)",
+  "location": "tests/product-browser-journey.mjs:524",
+  "reproduced": false,
+  "sourceRepair": false,
+  "sameCloudRunnerMainComparison": {
+    "head": "24840e6b2678dc883a7f4750221d203cec5f31e6",
+    "exit": 0,
+    "seconds": 358.5,
+    "sameCommand": true,
+    "sameNode": true,
+    "sameSystemChromium": true
+  },
+  "ciFlags": {
+    "CI": "true",
+    "WRANGLER_SEND_METRICS": "false",
+    "PLAYWRIGHT_SKIP_BROWSER_GC": "1",
+    "SHARD": "browser"
+  }
+}

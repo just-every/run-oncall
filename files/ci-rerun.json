@@ -1,0 +1,14 @@
+{
+  "head": "112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554",
+  "run": 44014050007,
+  "failedJob": 133808476291,
+  "command": "gh api --method POST repos/just-every/run-oncall/actions/runs/44014050007/rerun-failed-jobs",
+  "exit": 0,
+  "requestedAt": "2026-11-17T04:24:39.169047+00:00",
+  "githubCallsUsed": 9,
+  "candidateReproductionExit": 0,
+  "candidateBrowserSeconds": 345.4,
+  "failure": "route.fetch: socket hang up (ECONNRESET) at tests/product-browser-journey.mjs:524",
+  "sourceRepair": false,
+  "note": "Single permitted failed-job rerun for transport failure; main comparison follows on the same cloud runner."
+}

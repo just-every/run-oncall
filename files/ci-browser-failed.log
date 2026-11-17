@@ -1,0 +1,84 @@
+shards (browser)	Run this shard	﻿2026-11-17T04:03:50.4911670Z ##[group]Run node scripts/verify-oncall.mjs "$SHARD"
+shards (browser)	Run this shard	2026-11-17T04:03:50.4912234Z [36;1mnode scripts/verify-oncall.mjs "$SHARD"[0m
+shards (browser)	Run this shard	2026-11-17T04:03:50.4927875Z shell: /usr/bin/bash -e {0}
+shards (browser)	Run this shard	2026-11-17T04:03:50.5229497Z > pnpm run verify:app
+shards (browser)	Run this shard	2026-11-17T04:03:50.7238565Z 
+shards (browser)	Run this shard	2026-11-17T04:03:50.7239368Z > @just-every/oncall@0.5.17 verify:app /home/runner/work/run-oncall/run-oncall
+shards (browser)	Run this shard	2026-11-17T04:03:50.7240123Z > node tests/verify.mjs
+shards (browser)	Run this shard	2026-11-17T04:03:50.7240361Z 
+shards (browser)	Run this shard	2026-11-17T04:03:51.7441621Z (node:2633) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (browser)	Run this shard	2026-11-17T04:03:51.7442993Z (Use `node --trace-warnings ...` to show where the warning was created)
+shards (browser)	Run this shard	2026-11-17T04:04:15.5783627Z OC-068 keyboard manual page: urgency, priority, replay-safe operation and recorded target obligation persisted
+shards (browser)	Run this shard	2026-11-17T04:04:20.1014343Z PROBE OC-009 declaration, acknowledgment and notes 1440: native keyboard incident and action dialog -> protected incident, commander and literal attributed note retained; focus, Tab containment, Escape return, labels, overflow and axe passed
+shards (browser)	Run this shard	2026-11-17T04:04:21.8879758Z PROBE OC-009 stale write 1440: second authenticated HTTP session wins -> real 409, alert announcement, editable losing draft and no saved claim; winning data unchanged
+shards (browser)	Run this shard	2026-11-17T04:04:22.0073794Z Workspace path / 200 /on-call hops 1
+shards (browser)	Run this shard	2026-11-17T04:04:22.1200654Z Workspace path /#incidents 200 /incidents hops 1
+shards (browser)	Run this shard	2026-11-17T04:04:22.2031912Z Workspace path /#alerts 200 /alerts hops 1
+shards (browser)	Run this shard	2026-11-17T04:04:22.2841809Z Workspace path /#services 200 /settings/services hops 1
+shards (browser)	Run this shard	2026-11-17T04:04:22.3802872Z Workspace path /#status 200 /status hops 1
+shards (browser)	Run this shard	2026-11-17T04:04:22.4710494Z Workspace path /#routing 200 /settings/routing hops 1
+shards (browser)	Run this shard	2026-11-17T04:04:22.5503427Z Workspace path /#schedules 200 /on-call hops 1
+shards (browser)	Run this shard	2026-11-17T04:04:22.6470476Z Workspace path /#move-in 200 /settings/move-in hops 1
+shards (browser)	Run this shard	2026-11-17T04:04:22.7445110Z Workspace path /#reviews 200 /reviews hops 1
+shards (browser)	Run this shard	2026-11-17T04:04:22.8660993Z Workspace path /#team 200 /settings/team hops 1
+shards (browser)	Run this shard	2026-11-17T04:04:22.9472332Z Workspace path /#archive 200 /settings/archive hops 1
+shards (browser)	Run this shard	2026-11-17T04:04:23.0250559Z Workspace path /services 200 /settings/services hops 1
+shards (browser)	Run this shard	2026-11-17T04:04:23.1038836Z Workspace path /routing 200 /settings/routing hops 1
+shards (browser)	Run this shard	2026-11-17T04:04:23.1899293Z Workspace path /schedules 200 /on-call hops 1
+shards (browser)	Run this shard	2026-11-17T04:04:23.2774774Z Workspace path /team 200 /settings/team hops 1
+shards (browser)	Run this shard	2026-11-17T04:04:23.3602533Z Workspace path /move-in 200 /settings/move-in hops 1
+shards (browser)	Run this shard	2026-11-17T04:04:23.4860314Z Workspace path /archive 200 /settings/archive hops 1
+shards (browser)	Run this shard	2026-11-17T04:04:23.5613168Z Workspace path /settings 200 /settings/services hops 1
+shards (browser)	Run this shard	2026-11-17T04:04:23.6596210Z Workspace path /?incident=6f7faab2-227e-4fb0-a317-b0f97ca5e71e#incidents 200 /incidents/6f7faab2-227e-4fb0-a317-b0f97ca5e71e hops 1
+shards (browser)	Run this shard	2026-11-17T04:04:28.8245505Z PROBE OC-057 acceptance 8: emitted Settings saves New York weekdays 09:00–17:00 without holidays; warning admitted at 2026-11-03T08:00:00Z -> active low alert, visible not-automatic notice and next support start 2026-11-03T14:00:00Z; reload at 08:30Z retains urgency history, native records, paging jobs and receipts; zero outbound requests; screens captured at 1440 and 390
+shards (browser)	Run this shard	2026-11-17T04:04:31.7888506Z Worker diagnostics (test failure):
+shards (browser)	Run this shard	2026-11-17T04:04:31.7889280Z [stdout] Using secrets defined in ../../../../../tmp/oncall-flow-igCuyI/local.env
+shards (browser)	Run this shard	2026-11-17T04:04:31.7890247Z [stderr] (node:3014) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (browser)	Run this shard	2026-11-17T04:04:31.7891113Z [stderr] (Use `node --trace-warnings ...` to show where the warning was created)
+shards (browser)	Run this shard	2026-11-17T04:04:31.7894417Z 
+shards (browser)	Run this shard	2026-11-17T04:04:31.8440585Z node:internal/process/promises:394
+shards (browser)	Run this shard	2026-11-17T04:04:31.8441288Z     triggerUncaughtException(err, true /* fromPromise */);
+shards (browser)	Run this shard	2026-11-17T04:04:31.8441675Z     ^
+shards (browser)	Run this shard	2026-11-17T04:04:31.8441799Z 
+shards (browser)	Run this shard	2026-11-17T04:04:31.8442200Z route.fetch: socket hang up (ECONNRESET)
+shards (browser)	Run this shard	2026-11-17T04:04:31.8442532Z Call log:
+shards (browser)	Run this shard	2026-11-17T04:04:31.8443224Z   - → POST http://127.0.0.1:40429/api/paging/preview
+shards (browser)	Run this shard	2026-11-17T04:04:31.8444082Z     - user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36
+shards (browser)	Run this shard	2026-11-17T04:04:31.8444728Z     - accept: */*
+shards (browser)	Run this shard	2026-11-17T04:04:31.8445002Z     - accept-encoding: gzip,deflate,br
+shards (browser)	Run this shard	2026-11-17T04:04:31.8445299Z     - connection: close
+shards (browser)	Run this shard	2026-11-17T04:04:31.8445507Z     - accept-language: en-US
+shards (browser)	Run this shard	2026-11-17T04:04:31.8445803Z     - content-type: application/json
+shards (browser)	Run this shard	2026-11-17T04:04:31.8446266Z     - cookie: <REDACTED>
+shards (browser)	Run this shard	2026-11-17T04:04:31.8446707Z     - origin: http://127.0.0.1:40429
+shards (browser)	Run this shard	2026-11-17T04:04:31.8446972Z     - referer: http://127.0.0.1:40429/on-call/new
+shards (browser)	Run this shard	2026-11-17T04:04:31.8447347Z     - sec-ch-ua: "Not:A-Brand";v="8", "Chromium";v="156", "HeadlessChrome";v="156"
+shards (browser)	Run this shard	2026-11-17T04:04:31.8447655Z     - sec-ch-ua-mobile: ?0
+shards (browser)	Run this shard	2026-11-17T04:04:31.8447879Z     - sec-ch-ua-platform: "Linux"
+shards (browser)	Run this shard	2026-11-17T04:04:31.8448105Z     - content-length: 590
+shards (browser)	Run this shard	2026-11-17T04:04:31.8448221Z 
+shards (browser)	Run this shard	2026-11-17T04:04:31.8448463Z     at /home/runner/work/run-oncall/run-oncall/tests/product-browser-journey.mjs:524:75
+shards (browser)	Run this shard	2026-11-17T04:04:31.8502386Z     at hold (/home/runner/work/run-oncall/run-oncall/tests/product-browser-journey.mjs:524:128) {
+shards (browser)	Run this shard	2026-11-17T04:04:31.8502852Z   log: [
+shards (browser)	Run this shard	2026-11-17T04:04:31.8503304Z     '  - → POST http://127.0.0.1:40429/api/paging/preview',
+shards (browser)	Run this shard	2026-11-17T04:04:31.8503880Z     '    - user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36',
+shards (browser)	Run this shard	2026-11-17T04:04:31.8504348Z     '    - accept: */*',
+shards (browser)	Run this shard	2026-11-17T04:04:31.8504583Z     '    - accept-encoding: gzip,deflate,br',
+shards (browser)	Run this shard	2026-11-17T04:04:31.8504840Z     '    - connection: close',
+shards (browser)	Run this shard	2026-11-17T04:04:31.8505066Z     '    - accept-language: en-US',
+shards (browser)	Run this shard	2026-11-17T04:04:31.8505310Z     '    - content-type: application/json',
+shards (browser)	Run this shard	2026-11-17T04:04:31.8505775Z     '    - cookie: <REDACTED>
+shards (browser)	Run this shard	2026-11-17T04:04:31.8506241Z     '    - origin: http://127.0.0.1:40429',
+shards (browser)	Run this shard	2026-11-17T04:04:31.8506513Z     '    - referer: http://127.0.0.1:40429/on-call/new',
+shards (browser)	Run this shard	2026-11-17T04:04:31.8506875Z     '    - sec-ch-ua: "Not:A-Brand";v="8", "Chromium";v="156", "HeadlessChrome";v="156"',
+shards (browser)	Run this shard	2026-11-17T04:04:31.8507202Z     '    - sec-ch-ua-mobile: ?0',
+shards (browser)	Run this shard	2026-11-17T04:04:31.8507436Z     '    - sec-ch-ua-platform: "Linux"',
+shards (browser)	Run this shard	2026-11-17T04:04:31.8507671Z     '    - content-length: 590'
+shards (browser)	Run this shard	2026-11-17T04:04:31.8507869Z   ],
+shards (browser)	Run this shard	2026-11-17T04:04:31.8508018Z   name: 'Error',
+shards (browser)	Run this shard	2026-11-17T04:04:31.8508185Z   code: 'ECONNRESET'
+shards (browser)	Run this shard	2026-11-17T04:04:31.8508351Z }
+shards (browser)	Run this shard	2026-11-17T04:04:31.8508439Z 
+shards (browser)	Run this shard	2026-11-17T04:04:31.8508873Z Node.js v22.20.0
+shards (browser)	Run this shard	2026-11-17T04:04:31.8786629Z  ELIFECYCLE  Command failed with exit code 1.
+shards (browser)	Run this shard	2026-11-17T04:04:31.9039330Z ##[error]Process completed with exit code 1.
