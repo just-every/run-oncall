@@ -6,7 +6,7 @@ import AxeBuilder from '@axe-core/playwright';
 import {agentRuntime,agentEffectSnapshot,pauseMatrix} from './agent-door-runtime.mjs';
 import {recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy,deadlineTarget} from './oncall-agent-fixtures.mjs';
 import specialist from './oncall-agent-native.mjs';
-import {actionSubmitReplay} from './oncall-agent-action-submit-replay.mjs';
+import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-revisions.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {openIncidentAction} from './keyboard.mjs';
 
@@ -138,7 +138,7 @@ try{
  const submitEvidenceRequests=[];
  const stopEvidence=route=>{submitEvidenceRequests.push(route.request().url());return route.abort()};
  await context.route('https://evidence.example.invalid/**',stopEvidence);
- await actionSubmitReplay(runtime,{
+ await staleActionSubmitExpectedRevision(runtime,{
   async approve({handle,saved,owner}){
    await capture('follow-up-submit-pending',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="pending"]').waitFor()});
    await page.goto(handle.url);
