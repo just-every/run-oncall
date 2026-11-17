@@ -6,7 +6,7 @@ import AxeBuilder from '@axe-core/playwright';
 import {agentRuntime,agentEffectSnapshot,pauseMatrix} from './agent-door-runtime.mjs';
 import {recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy,deadlineTarget} from './oncall-agent-fixtures.mjs';
 import specialist from './oncall-agent-native.mjs';
-import {actionSubmitReplay} from './oncall-agent-action-submit-replay.mjs';
+import {actionSubmitNativeRevision} from './oncall-agent-action-submit-native-revision.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {openIncidentAction} from './keyboard.mjs';
 
@@ -135,10 +135,12 @@ try{
  await runtime.time(null);
  await page.setViewportSize({width:1440,height:1000});
  assert.equal((await runtime.adopt()).status,200);
- const submitEvidenceRequests=[];
+ const submitEvidenceRequests=[],submitApprovalPosts=[];
+ const recordSubmitApproval=request=>{if(request.method()==='POST'&&new URL(request.url()).pathname.endsWith('/approve'))submitApprovalPosts.push(request.url())};
+ page.on('request',recordSubmitApproval);
  const stopEvidence=route=>{submitEvidenceRequests.push(route.request().url());return route.abort()};
  await context.route('https://evidence.example.invalid/**',stopEvidence);
- await actionSubmitReplay(runtime,{
+ await actionSubmitNativeRevision(runtime,{
   async approve({handle,saved,owner}){
    await capture('follow-up-submit-pending',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="pending"]').waitFor()});
    await page.goto(handle.url);
@@ -161,6 +163,8 @@ try{
    });
   },
  });
+ assert.equal(submitApprovalPosts.length,1,'One sponsor approval POST; completed-result retries never repeat the approval action');
+ page.off('request',recordSubmitApproval);
  assert.deepEqual(submitEvidenceRequests,[],'The browser never fetches submitted evidence');
  await context.unroute('https://evidence.example.invalid/**',stopEvidence);
  await specialist({request:runtime.request,origin:runtime.origin,cookie:runtime.cookie,fixtures:runtime.fixtures,tool});
