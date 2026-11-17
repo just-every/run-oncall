@@ -4,7 +4,7 @@ Author: Run Edit Run fleet · 2026-11-17 UTC
 Repository: just-every/run-oncall
 Branch: cloud/sd-oncall-oc031-1
 Candidate SHA: b7b365cc882699e2f4582ddb1727a8747977cea4
-Verify: repaired candidate pushed; exact-SHA Verify pending. Previous failure and repair are recorded below.
+Verify: completed/success — https://github.com/just-every/run-oncall/actions/runs/44074061627 — exact SHA b7b365cc882699e2f4582ddb1727a8747977cea4. Previous failure and repair are recorded below.
 
 ## Scope and implementation
 
@@ -44,3 +44,13 @@ Verify 44070724877 on bb4e179efaad0e3fa0372ed637fd0708f583d424 failed in transfe
 The new intake model imported sns-config without a `.ts` extension, and sns-config imported the domain without its `.ts` extension. The Worker bundler resolved these imports, while native Node's portability-policy loader could not. Directly loading scripts/installer/archive-policy.mjs reproduced ERR_MODULE_NOT_FOUND. Both imports now use explicit `.ts` paths, matching the surrounding Node-reachable archive graph. The native policy module loads and the public pinned `rer export` command succeeds (113 tables, four local setup rows). Its actual stdout is export.stdout.txt; the archive itself is private local recovery data and is not in this packet. No portability assertion or provider test was weakened.
 
 Repaired candidate: b7b365cc882699e2f4582ddb1727a8747977cea4. Typecheck, production build, source-lock regeneration/check and the exact-commit SNS/browser journey passed again. Four fleet-authored commits are preserved on the same branch; no published history was rewritten.
+
+The complete existing tests/transfer.mjs journey also passed on repaired SHA b7b365cc882699e2f4582ddb1727a8747977cea4 in an isolated clone of the declared repository. It generated native-transfer-receipt.json directly in stdout, with the exact source SHA and built Worker fingerprint. The full actual log is transfer.stdout.txt. Populated export/restore, inactive authority, malformed archive refusal, old/current erasure fences, historical audit preservation, grouping/template provenance and CLI reset all passed. No existing test was weakened.
+
+## Terminal result
+
+Exact-SHA Verify 44074061627 completed successfully on b7b365cc882699e2f4582ddb1727a8747977cea4, observed at 2026-11-17T11:47:06Z. All required branch CI passed; this is not the generator-only exception. Ten GitHub calls were used, including one read per failed job on the preceding failed candidate. No rerun or manual workflow dispatch was requested. Product code is pushed and is a landing candidate; no merge, landing, deployment, tag or release was performed. The real AWS account acceptance remains held under R-12, and the claim remains PARTIAL points=none. No product blocker remains.
+
+Complete actual packet: PLAN.md; REPORT.md; RECEIPT.json; native-transfer-receipt.json; CI discovery, status, jobs and sanitized failed-job excerpts; actual typecheck/build/intake/routing/SNS-browser/transfer/native-export/contract/push stdout; and four masked SNS screenshots at 1440 and 390. The final report-only publication selects those regular files explicitly. The isolated transfer clone has been removed; the product clone is removed after successful final evidence publication. No credential file, archive, environment dump, private key or symlink is selected.
+
+READY branch=cloud/sd-oncall-oc031-1 head=b7b365cc882699e2f4582ddb1727a8747977cea4

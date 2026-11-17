@@ -3,7 +3,7 @@
   "repository": "just-every/run-oncall",
   "branch": "cloud/sd-oncall-oc031-1",
   "head": "b7b365cc882699e2f4582ddb1727a8747977cea4",
-  "recorded_at": "2026-11-17T11:25:26.390280+00:00",
+  "recorded_at": "2026-11-17T11:47:46.504332+00:00",
   "first_published_save": "1ca9e3310bd86fae6c0e66ab2caf28a9902b75dc",
   "candidate_commits": [
     {
@@ -110,11 +110,19 @@
       "exit": 0,
       "stdout": "export.stdout.txt",
       "note": "Local setup data only; archive is not evidence and is not selected."
+    },
+    {
+      "command": "ONCALL_NATIVE_CLONE=tests/transfer.mjs ONCALL_CHROMIUM_PATH=/usr/bin/chromium cloud_run node tests/transfer.mjs",
+      "exit": 0,
+      "head": "b7b365cc882699e2f4582ddb1727a8747977cea4",
+      "isolation": "manually cloned declared product repo; fleet identity and hooks installed; original transfer wrapper bypassed only because this checkout was already isolated",
+      "stdout": "transfer.stdout.txt",
+      "actual_journey_receipt": "native-transfer-receipt.json"
     }
   ],
   "ci": {
-    "api_calls_used": 8,
-    "last_call_at": "2026-11-17T11:15:23Z",
+    "api_calls_used": 10,
+    "last_call_at": "2026-11-17T11:47:06Z",
     "superseded_runs": [
       {
         "conclusion": null,
@@ -145,7 +153,21 @@
     "failed_job": 133997507381,
     "root_cause": "Node policy import cannot resolve extensionless sns-config module; Worker bundler resolves it. Fixed both Node-reachable import extensions; native rer export now exits 0.",
     "repaired_candidate": "b7b365cc882699e2f4582ddb1727a8747977cea4",
-    "repaired_candidate_status": "pushed; exact-SHA Verify discovery deferred to conserve remaining two calls"
+    "repaired_candidate_status": "completed/success",
+    "repaired_run": {
+      "conclusion": null,
+      "head_sha": "b7b365cc882699e2f4582ddb1727a8747977cea4",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44074061627",
+      "id": 44074061627,
+      "name": "Verify",
+      "status": "in_progress"
+    },
+    "final": {
+      "conclusion": "success",
+      "head_sha": "b7b365cc882699e2f4582ddb1727a8747977cea4",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44074061627",
+      "status": "completed"
+    }
   },
   "counts": {
     "contract_before": {
@@ -174,5 +196,8 @@
     "Screenshots mask the endpoint input; no generated private key/certificate or credential file is selected.",
     "No existing test was weakened, deleted or skipped. No main/default branch push or PR was performed.",
     "Final fixtures use the compact +0000 CloudWatch timestamp offset; parser also accepts standard colon offsets and Z."
-  ]
+  ],
+  "terminal_product_custody": "READY branch=cloud/sd-oncall-oc031-1 head=b7b365cc882699e2f4582ddb1727a8747977cea4",
+  "blockers": [],
+  "remaining_acceptance_hold": "OC-031 acceptance point 1: real authorized AWS topic under R-12; no DONE claim"
 }
