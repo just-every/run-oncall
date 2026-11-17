@@ -108,15 +108,15 @@
     }
   ],
   "candidate_ci": {
-    "conclusion": null,
+    "conclusion": "success",
     "head_sha": "e70051e60c403f6bd99c992871751ee42d7963a0",
     "html_url": "https://github.com/just-every/run-oncall/actions/runs/44178727506",
-    "status": "in_progress",
+    "status": "completed",
     "id": 44178727506,
     "event": "push",
     "name": "Verify"
   },
-  "github_calls": 4,
+  "github_calls": 5,
   "pr": null,
   "publication_scan": {
     "commit": "e70051e60c403f6bd99c992871751ee42d7963a0",
@@ -146,7 +146,7 @@
     "resource_parity_cases": 36,
     "resource_parity_screens": 208,
     "failure": "No assertion or exception appeared; resource-parity.json was written. Explicit Node exit diagnosis is running.",
-    "diagnosis": "Instrumented full entry-point run on the same unchanged SHA completed all assertions and recorded Node exit 0 plus launcher exit 0; the earlier opaque nonzero exit did not reproduce."
+    "diagnosis": "Instrumented full entry-point run on the same unchanged SHA completed all assertions and recorded Node exit 0 plus launcher exit 0; the earlier opaque nonzero exit did not reproduce. Exact-SHA push Verify 44178727506 subsequently completed successfully, including the direct agent and hosted browser verification entry points."
   },
   "identity_audit": {
     "status": "PASS",
@@ -162,5 +162,7 @@
     "remote_ref": "refs/heads/cloud/sd-oncall-c-f263",
     "remote_head": "e70051e60c403f6bd99c992871751ee42d7963a0"
   },
-  "repository_clean": true
+  "repository_clean": true,
+  "terminal_product_custody": "READY",
+  "ci_repairs": 0
 }

@@ -1,11 +1,11 @@
 {
-  "observed_at": 1794951050.3312843,
-  "github_calls": 4,
+  "observed_at": 1794951351.2646563,
+  "github_calls": 5,
   "run": {
-    "conclusion": null,
+    "conclusion": "success",
     "head_sha": "e70051e60c403f6bd99c992871751ee42d7963a0",
     "html_url": "https://github.com/just-every/run-oncall/actions/runs/44178727506",
-    "status": "in_progress",
+    "status": "completed",
     "id": 44178727506,
     "event": "push",
     "name": "Verify"

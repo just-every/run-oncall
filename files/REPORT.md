@@ -34,7 +34,7 @@ Human follow-up acceptance, broader BASE-AGENT-008 attribution, erasure and appr
 | --- | --- |
 | 1 | PASS for the selected R1 to R7 observations; whole-clause coverage remains unproved and no DONE is claimed. |
 | 2 | PASS selected supported and unsafe paths use populated emitted Worker and native D1 records, with full no-effect comparisons on conflict. |
-| 3 | Local agent and browser entry points are wired into existing push Verify agents and hosted shards; exact-SHA CI receipt is recorded below when available. |
+| 3 | PASS: exact-SHA push Verify 44178727506 completed successfully for e70051e60c403f6bd99c992871751ee42d7963a0, including the existing agents and hosted browser entry points. |
 | 4 | Relevant source and test byte identities are recorded in the actual receipt; final lock changes do not alter executed code. |
 | 5 | INSPECTED: this is the Base duty itself, with no receiving-clause inheritance rewrite. |
 | 6 | Contract judgment cells remain main's text; generator write and check pass locally; generated view files are restored whole from main. |
@@ -84,8 +84,12 @@ The two temporary validation wrappers are included verbatim as browser-runner.mj
 
 ## Candidate custody
 
-Product branch cloud/sd-oncall-c-f263 is pushed at e70051e60c403f6bd99c992871751ee42d7963a0; Git ls-remote confirmed that exact remote ref and head. Exact-SHA push Verify 44178727506 is in progress at the ten-minute poll. No PR was needed because the branch push starts Verify. Main remains 53b2694d100a30707210aafa41207ff4ee451c34; main equality with the candidate is false by design. Main Verify 44167413858 and Run site 44167413855 were successful.
+Product branch cloud/sd-oncall-c-f263 is pushed at e70051e60c403f6bd99c992871751ee42d7963a0; Git ls-remote confirmed that exact remote ref and head. Exact-SHA push Verify 44178727506 completed successfully at the fifteen-minute poll. No PR was needed because the branch push starts Verify. Main remains 53b2694d100a30707210aafa41207ff4ee451c34; main equality with the candidate is false by design. Main Verify 44167413858 and Run site 44167413855 were successful.
 
 Publication scan: commit=e70051e60c403f6bd99c992871751ee42d7963a0 complete=not-run historyScanned=not-run findings=unknown. The guarded Mac lander owns the complete full-history publication scan, landing and candidate Run site. No cloud scan or main landing is claimed.
 
-This evidence publication preserves actual local results while CI is running and grants no product readiness, acceptance or landing signal. The latest actual status is also recorded in verify-run.json and receipt.json.
+The initial evidence publication preserved actual local results while CI was running. This final packet includes the completed success receipt. Evidence publication itself grants no product readiness, acceptance or landing signal; the exact product branch and SHA are handed off separately. The final actual CI status is recorded in verify-run.json and receipt.json.
+
+Final candidate: e70051e60c403f6bd99c992871751ee42d7963a0 on cloud/sd-oncall-c-f263. Exact-SHA push Verify 44178727506: completed, success, https://github.com/just-every/run-oncall/actions/runs/44178727506. Five explicit gh API calls were used; no dispatch, rerun, CI repair or PR was needed. All selected rubric items R1 to R7 pass, including direct verification in CI. No task blocker remains. The guarded lander still owns publication scan, main integration and Run site. Counts before and after remain 26 DONE, 41 PARTIAL, 34 MISSING; BASE-AGENT-012 remains MISSING.
+
+READY repo=just-every/run-oncall branch=cloud/sd-oncall-c-f263 head=e70051e60c403f6bd99c992871751ee42d7963a0
