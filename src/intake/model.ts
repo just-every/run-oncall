@@ -29,7 +29,7 @@ export function validateIntakeArchive(state:State) {
     if(s.provider==='native'?(!s.routing||!['bearer','signed'].includes(s.authentication??'')):s.authentication!==undefined)fail('Invalid native routed source');
     text(s.id,'Integration ID',80);text(s.name,'Integration name',200);
     if(!intakeProviders.includes(s.provider)||!state.services.some(v=>v.id===s.service)||!state.members.some(v=>v.id===s.createdBy)||typeof s.active!=='boolean'||!Number.isSafeInteger(s.revision)||s.revision<1||!date(s.updatedAt))fail('Invalid intake source');
-    if(s.provider==='sns'){const config=snsConfiguration(s.sns);if(!s.routing||Object.keys(s.sns!).some(k=>!['account','region','topic','status','lastNotification'].includes(k))||!['awaiting confirmation','confirmed','unsubscribed'].includes(s.sns!.status)||s.sns!.lastNotification!==undefined&&!date(s.sns!.lastNotification)||config.topic!==s.sns!.topic)fail('Invalid SNS configuration');}else if(s.sns!==undefined)fail('Unexpected SNS configuration');
+    if(s.provider==='sns'){const config=snsConfiguration(s.sns);if(!s.routing||Object.keys(s.sns!).some(k=>!['account','region','topic','status','lastNotification','failure'].includes(k))||!['awaiting confirmation','confirmed','unsubscribed'].includes(s.sns!.status)||s.sns!.lastNotification!==undefined&&!date(s.sns!.lastNotification)||s.sns!.failure!==undefined&&(typeof s.sns!.failure!=='string'||s.sns!.failure.length>200)||config.topic!==s.sns!.topic)fail('Invalid SNS configuration');}else if(s.sns!==undefined)fail('Unexpected SNS configuration');
     validateRoutingSource(state,s);
   }
   for(const r of state.intakeReceipts??[]) {
@@ -47,8 +47,8 @@ export function validateIntakeArchive(state:State) {
     if(['acknowledge','note'].includes(r.action)&&r.event!==null)fail('Invalid intake action event');
     if((r.service===null)!==(r.outcome==='unrouted'))fail('Invalid unrouted receipt');
     if(!Array.isArray(r.links)||r.links.length>8||r.links.some(v=>!v||link(v)!==v))fail('Invalid intake links');
-    if(!r.details||typeof r.details!=='object'||Array.isArray(r.details)||!nativeIncompleteDetails(r)&&new TextEncoder().encode(JSON.stringify(r.details)).length>8192)fail('Invalid intake details');
-    if(r.provider==='sns'){if(!r.sns||Object.keys(r.sns).some(k=>!['messageId','fingerprint','type'].includes(k))||typeof r.sns.messageId!=='string'||!r.sns.messageId||r.sns.messageId.length>200||!/^[a-f0-9]{64}$/.test(r.sns.fingerprint)||!['Notification','SubscriptionConfirmation','UnsubscribeConfirmation'].includes(r.sns.type))fail('Invalid SNS receipt');if(!r.routing?.readmission&&state.intakeReceipts?.some(other=>other!==r&&other.source===r.source&&!other.routing?.readmission&&other.sns?.messageId===r.sns!.messageId))fail('Duplicate SNS receipt identity');}else if(r.sns!==undefined)fail('Unexpected SNS receipt');
+    if(!r.details||typeof r.details!=='object'||Array.isArray(r.details)||!nativeIncompleteDetails(r)&&new TextEncoder().encode(JSON.stringify(r.details)).length>(r.provider==='sns'?256*1024:8192))fail('Invalid intake details');
+    if(r.provider==='sns'&&!r.incomplete){if(!r.sns||Object.keys(r.sns).some(k=>!['messageId','fingerprint','type'].includes(k))||typeof r.sns.messageId!=='string'||!r.sns.messageId||r.sns.messageId.length>200||!/^[a-f0-9]{64}$/.test(r.sns.fingerprint)||!['Notification','SubscriptionConfirmation','UnsubscribeConfirmation'].includes(r.sns.type))fail('Invalid SNS receipt');if(!r.routing?.readmission&&state.intakeReceipts?.some(other=>other!==r&&other.source===r.source&&!other.routing?.readmission&&other.sns?.messageId===r.sns!.messageId))fail('Duplicate SNS receipt identity');}else if(r.sns!==undefined)fail('Unexpected SNS receipt');
     validateRoutingReceipt(state,source,r);
     validateMonitoringReceipt(state,source,r);
     validateNativeRoutingReceipt(state,source,r);
