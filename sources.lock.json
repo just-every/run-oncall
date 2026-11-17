@@ -736,11 +736,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "1b006865e4ac2e5ed7d2a4abb654209a5fa64a96edd5e6d197a5f8aad5b26e32",
+      "sha256": "8dfa5509e5a8733aa4c2bdae9c633b4f8149ac845ecd9c8743af55a13fa0a361",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "77353f7c25d4a50d34b00a295f0a064cfd72160a31b4473e8d358ee48f26d243",
+      "sha256": "c7db0cb9c2e5dbc97cd7e1faf7fd02672ed4b00a7fe04345c67120a64c192c39",
       "executable": false
     },
     "public/brand/badge-rail-1x.webp": {
