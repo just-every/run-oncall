@@ -6716,7 +6716,7 @@
       "executable": false
     },
     "tests/oncall-agent-endpoint-parity.mjs": {
-      "sha256": "453811ab84172c1c5e5d92b335a58d671be54f65ea6062a5a528999906d09a9b",
+      "sha256": "3218b5781a3113376d9002ce74fecb98a7c67bc8868da562d17c2c400b79f9cf",
       "executable": false
     },
     "tests/oncall-agent-erase-replay.mjs": {
@@ -6756,7 +6756,7 @@
       "executable": false
     },
     "tests/oncall-agent-resource-parity.mjs": {
-      "sha256": "3a6c3ee8e1b5b05c3bde4ff54bfdd9ccab937b6d266b35fe02e2972a4c447a74",
+      "sha256": "b155e184a03519dc7359b9c6c7abcfb2ae93d348e8bbdacbb5c88d155a776bfa",
       "executable": false
     },
     "tests/oncall-agent-resources.mjs": {
