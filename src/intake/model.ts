@@ -1,4 +1,4 @@
-import {snsConfiguration,type SnsConfiguration,type SnsReceipt} from './sns-config';
+import {snsConfiguration,type SnsConfiguration,type SnsReceipt} from './sns-config.ts';
 import {identityLimit} from './identity-bounds.ts';
 import { fail, link, text, type State } from '../family/response-operations/domain.ts';
 import { validateRoutingSource, validateRoutingReceipt } from '../routing/archive.ts';
