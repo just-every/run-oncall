@@ -25,7 +25,7 @@ export function AlertPage({alert, state, canEdit, busy, run, name, onDeclare, on
       <button disabled={busy || !severity || !incidentService || alert.service === null && !scopedServices.some(service => service.id === incidentService)} onClick={() => onDeclare({type: 'declare', service: incidentService, title, severity, summary: 'Declared from alert; impact requires responder review', alerts: [alert.id]})}>Declare incident from alert</button>
     </>}
     {alert.service !== null && <RecentChanges service={alert.service} at={triggers[0]?.observedAt ?? events[0]?.observedAt} revision={state.revision} windowChoices />}
-    <details><summary>Event context</summary><p>{events.length} events received · {alert.suppressed ? 'Suppressed · Owner: '+name(alert.owner) : name(alert.owner)}{alert.priority ? ' · Priority: ' + alert.priority : ''}</p>
+    <details><summary>Event context</summary><p>{events.length} {events.length === 1 ? 'event' : 'events'} received · {alert.suppressed ? 'Suppressed · Owner: '+name(alert.owner) : name(alert.owner)}{alert.priority ? ' · Priority: ' + alert.priority : ''}</p>
       <CorrelationExplanation decision={events.at(-1)?.decision} ownerView />
       {!!held.length&&<><p>{held.length} related alert {held.length===1?'cycle is':'cycles are'} still open · paging off.</p><details><summary>Related alerts and evidence</summary>{held.flatMap(a=>a.events.map(id=>state.events.find(e=>e.id===id))).filter(e=>e!==undefined).map(event=><article key={event.id}><strong>{event.title}</strong><p>{event.intent==='trigger'?'Triggered':'Recovered'} · {shortTime(event.observedAt)}</p><EvidenceLink url={event.evidence}>Source evidence</EvidenceLink></article>)}</details></>}
 

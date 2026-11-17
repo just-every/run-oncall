@@ -52,7 +52,7 @@ async function ownerFaultsBrowser(page,context) {
  const mobile=person.locator('fieldset').filter({has:page.getByLabel('Method',{exact:true})}).last();
  await mobile.getByLabel('Method',{exact:true}).selectOption('sms');
  await mobile.getByLabel('Country',{exact:true}).selectOption('44');
- for(const number of ['+44 7700 900123','07700 900123','7700 900123']) {
+ for(const number of ['+44 7700 900123','07700 900123','7700 900123','+44 (7700) 900-123']) {
   await mobile.getByLabel('Phone number',{exact:true}).fill(number);
   const saved=page.waitForResponse(r=>new URL(r.url()).pathname===path&&r.request().method()==='POST');
   await person.getByRole('button',{name:'Save notification rules',exact:true}).click();assert.equal((await saved).status(),200);
@@ -105,6 +105,7 @@ async function ownerFaultsBrowser(page,context) {
  const replaced=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/recovery/restore'&&r.request().method()==='POST');
  await page.getByRole('button',{name:'Replace workspace with this archive',exact:true}).click();assert.equal((await replaced).status(),200);
  await page.getByRole('status').filter({hasText:'Restored.'}).waitFor();
+ for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:`evidence/browser/fault-backup-restored-${width}.png`,fullPage:true});}
  const restoredPaging=await (await context.request.get('/api/paging/state')).json();assert.deepEqual(restoredPaging.schedules,checkpoint.paging.schedules,'restoring the downloaded backup retains rota and override data');
  assert.equal(restoredPaging.paging,'OFF');
  assert.equal((await worker.outboundRequests()).length-outboundBefore,0,'fault journeys never send outbound traffic');
