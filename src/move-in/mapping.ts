@@ -9,8 +9,8 @@ import { mailbox, mapSchedule, type Mapped } from './rotations'
 import type { Vendor } from './source'
 import {pagerdutyLeaves} from './pagerduty-source'
 
-// A semantic adapter change must re-review unchanged saved source on catch-up.
-export const MOVE_IN_MAPPING_VERSION='oncall-move-in-4'
+// Existing saved records keep their mapping version when review details change.
+export const MOVE_IN_MAPPING_VERSION='oncall-move-in-3'
 type MappingRecord=Pick<SourceRecord,'kind'|'sourceId'|'payload'|'location'>
 // Parser bindings are private working metadata, never extra provider fields or
 // rotation rules. The original record and field pointers remain in custody.
@@ -27,7 +27,7 @@ function payload(vendor:Vendor,kind:string,raw:any) {
 /** Field decisions live in the ordinary saved plan, alongside object decisions.
  * Extra properties survive the shared kit unchanged; Business diagnostics also
  * carry the full pointer and the disposition/reason/receiving-place sentence. */
-function fieldDecisions(record:MappingRecord,result:MappingResult,emails:Map<string,string>) {
+function fieldDecisions(record:MappingRecord,result:MappingResult,emails:Map<string,string>,schedule?:Mapped) {
  const raw=record.payload as any,clean=withoutBindings(raw)
  const base=record.location.pointer??''
  const leaves=raw._pdFields?[...raw._pdFields.map((pointer:string)=>{
@@ -36,6 +36,13 @@ function fieldDecisions(record:MappingRecord,result:MappingResult,emails:Map<str
   return {pointer,path,original}
  }),...(raw._pdEnvelope??[]).map(([pointer,original]:any[])=>({pointer,path:null,original}))]:pagerdutyLeaves(clean,base)
  const target=result.effects[0],held='Import journal',parent=raw._pdParent
+ // Use the selected rotation's native validity to find its original layer.
+ // A converted historical layer has a finite end, while the primary in a
+ // multi-layer conversion is open. A single converted layer may be finite.
+ const validity=schedule?.schedule
+ const primary=validity&&target&&Array.isArray(clean.schedule_layers)?clean.schedule_layers.findIndex((layer:any)=>
+  Date.parse(layer.start)===Date.parse(validity.validFrom)&&
+  (layer.end?Date.parse(layer.end):null)===(validity.validUntil?Date.parse(validity.validUntil):null)):undefined
  return leaves.map((leaf:any)=>{
   const path=leaf.path as string[]|null,field=path?.join('.')??'',first=path?.[0]
   let disposition='retained-only',reason='No native mapping.',receiving=held
@@ -52,7 +59,20 @@ function fieldDecisions(record:MappingRecord,result:MappingResult,emails:Map<str
    if(['id','start','end'].includes(first!)||field==='user.id')mapped(`Paused schedule ${parent?.id??clean.schedule_id??clean._parent?.id??'named in the export'}.overrides`)
   } else if(record.kind==='schedules'&&target) {
    if(['id','name','time_zone'].includes(first!))mapped(`Paused schedule.${({id:'id',name:'name',time_zone:'timezone'} as Record<string,string>)[first!]}`)
-   else if(/^schedule_layers\.0\.(?:start|end|rotation_virtual_start|rotation_turn_length_seconds)$/.test(field)||/^schedule_layers\.0\.users\.\d+\.user\.id$/.test(field))mapped('Paused schedule.primary / validity','The complete accepted layer is converted; no partial rotation or backup coverage is inferred.')
+   else if(first==='schedule_layers'&&path) {
+    const [,index]=path,layerField=path.slice(2).join('.')
+    if(Number(index)===primary) {
+     if(['start','end','rotation_virtual_start','rotation_turn_length_seconds'].includes(layerField)||/^users\.\d+\.user\.id$/.test(layerField))
+      mapped('Paused schedule.primary / validity','The complete accepted layer is converted; no partial rotation or backup coverage is inferred.')
+    } else if(index!==undefined&&schedule?.history.length) {
+     const layer=clean.schedule_layers[Number(index)]
+     const historyReason='Ended layer history only. No rotation or member coverage is carried forward.'
+     const historyLabel=layer.name!=null?'name':layer.id!=null?'id':undefined
+     if(['start','end'].includes(layerField)||layerField===historyLabel)
+      mapped('Paused schedule history',historyReason)
+     else reason=historyReason
+    }
+   }
    else if(first==='final_schedule')reason='Saved coverage comparison evidence, scoped only to the supplied window; no live delivery proof.'
   } else if(record.kind==='escalation_policies'&&target) {
    if(first==='id'||first==='name')mapped(`Paused policy.${first==='id'?'sourceId':'name'}`)
@@ -211,7 +231,7 @@ export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:numbe
    visit(record.payload)
    if(related.size)(result.unmapped??=[]).push({field:'related-users',reason:`Retained source references: ${[...related].join(', ')}. No login or paging authority is granted.`})
   }
-  if(vendor==='pagerduty')(result.unmapped??=[]).push(...fieldDecisions(record,result,emails))
+  if(vendor==='pagerduty')(result.unmapped??=[]).push(...fieldDecisions(record,result,emails,record.kind==='schedules'?schedules.get(record.sourceId):undefined))
   return result
  }}
 }

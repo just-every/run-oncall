@@ -290,6 +290,12 @@ The manifest names the official GET endpoint for every row. There is no GET
 list-integrations endpoint: save each integration detail named by the service's
 references. In this binding format, references require matching details;
 missing, duplicate, contradictory or dangling bindings refuse the entire file.
+For a parent-scoped paginated endpoint, an outer binding can point to the
+whole response, for example `/subscribers/0`, and name its business service.
+Every page with that parent is validated in the same sequence. A response
+binding covers its children, and any individual child bindings must agree.
+A complete standalone empty response is also valid with older bundles that
+only bind individual objects.
 Offset pages must start at zero, be contiguous and end with `more: false`;
 cursor pages must end with `next_cursor: null`. Never claim a partial page as
 the whole account. Legacy embedded details still use their existing parser.

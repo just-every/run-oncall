@@ -1,4 +1,4 @@
-import type { ParsedRecord } from '../modules/import-kit/src/types'
+import type { Json, ParsedRecord } from '../modules/import-kit/src/types'
 import { fail } from '../family/response-operations/domain'
 
 const escape=(key:string)=>key.replaceAll('~','~0').replaceAll('/','~1')
@@ -6,6 +6,16 @@ const referenceKinds:Record<string,string>={user:'users',schedule:'schedules',es
 const accountKinds=new Set(['services','integrations','teams','incidents','maintenance_windows','business_services','event_orchestrations'])
 type Binding={pointer:string;parentKind:string;parentId:string}
 const parentKinds:Record<string,string>={contact_methods:'users',notification_rules:'users',overrides:'schedules',integrations:'services',log_entries:'incidents',subscribers:'business_services',orchestration_routers:'event_orchestrations'}
+
+const reportKeys=new Set(['_pdFields','_pdEnvelope','_pdRootEmpty'])
+/** Keep conversion inputs, including bound children, in the catch-up hash.
+ * Absolute pointers and envelope leaves describe custody of the whole file. */
+export function pagerdutyCatchupContent(value:Json):Json {
+ if(Array.isArray(value))return value.map(pagerdutyCatchupContent)
+ if(value&&typeof value==='object')return Object.fromEntries(Object.entries(value)
+  .filter(([key])=>!reportKeys.has(key)).map(([key,child])=>[key,pagerdutyCatchupContent(child)]))
+ return value
+}
 
 /** Empty containers and nulls are leaves too. Paths always address original bytes. */
 export function pagerdutyLeaves(value:any,pointer='',path:string[]=[]):{pointer:string;path:string[];original:any}[] {
@@ -15,28 +25,47 @@ export function pagerdutyLeaves(value:any,pointer='',path:string[]=[]):{pointer:
 
 // Validate pagination per endpoint/parent. Never infer that a more:true page is
 // a complete export, or splice the offset pages of different parents together.
-function pages(value:any,bindings:Binding[]) {
+function pages(value:any,bindings:Map<string,Binding>) {
+ const responseBindings=new Map<string,Binding>()
  for(const [kind,responses] of Object.entries(value)) {
   if(kind==='_bindings')continue
   const grouped=new Map<string,any[]>()
+  const wrapper=kind==='event_orchestrations'?'orchestrations':kind==='automation_actions'?'actions':kind
+  const parentKind=parentKinds[kind]
   for(const [index,page] of (Array.isArray(responses)?responses:[responses]).entries()) {
    if(!page||typeof page!=='object')continue
    const paged=Object.hasOwn(page,'more'),cursor=Object.hasOwn(page,'next_cursor')
    if(!paged&&!cursor)continue
-   const wrapper=kind==='event_orchestrations'?'orchestrations':kind==='automation_actions'?'actions':kind
-   const items=page[wrapper],parent=bindings.find(b=>b.pointer.startsWith(`/${escape(kind)}/${index}/${wrapper}/`))
-   const key=parent?JSON.stringify([parent.parentKind,parent.parentId]):kind
+   const pointer=`/${escape(kind)}${Array.isArray(responses)?'/'+index:''}`
+   const items=page[wrapper]
    if(!Array.isArray(items)||!Number.isSafeInteger(page.limit)||page.limit<1||items.length>page.limit||paged&&(typeof page.more!=='boolean'||!Number.isSafeInteger(page.offset)||page.offset<0)||cursor&&page.next_cursor!==null&&typeof page.next_cursor!=='string')fail(`Incomplete PagerDuty ${kind} pagination; save complete ordered response pages and preview again`)
+   const pageBinding=bindings.get(pointer)
+   if(pageBinding) {
+    if(parentKind!==pageBinding.parentKind)fail(`PagerDuty ${kind} response at ${pointer} has the wrong parent kind`)
+    responseBindings.set(pointer,pageBinding)
+   }
+   let parent=pageBinding
+   if(parentKind)for(const itemIndex of items.keys()) {
+    const childPointer=`${pointer}/${wrapper}/${itemIndex}`,child=bindings.get(childPointer)
+    if(child) {
+     if(parent&&(parent.parentKind!==child.parentKind||parent.parentId!==child.parentId))fail(`PagerDuty ${kind} response at ${pointer} has contradictory parent bindings`)
+     parent=child
+    } else if(pageBinding)bindings.set(childPointer,pageBinding)
+   }
+   // Legacy empty responses have no child or parent binding. Only a complete
+   // standalone sequence can validate without associating it with a parent.
+   const key=parent?JSON.stringify([parent.parentKind,parent.parentId]):parentKind&&!items.length?pointer:kind
    const group=grouped.get(key)??[];group.push(page);grouped.set(key,group)
   }
+  const totalItems=(group:any[])=>group.reduce((n,p)=>n+p[wrapper].length,0)
   for(const group of grouped.values())for(const [index,page] of group.entries()) {
    const prior=group[index-1],last=index===group.length-1
    if(Object.hasOwn(page,'more')&&(page.offset!==(prior?prior.offset+prior.limit:0)||page.more===last||page.total!==undefined&&page.total!==null&&(!Number.isSafeInteger(page.total)||page.total<0)))fail(`Incomplete PagerDuty ${kind} pagination; missing, repeated or out-of-order pages. Nothing was imported.`)
    if(Object.hasOwn(page,'next_cursor')&&((page.next_cursor===null)!==last||page.next_cursor!==null&&group.slice(0,index).some(p=>p.next_cursor===page.next_cursor)))fail(`Incomplete PagerDuty ${kind} cursor pagination; save all pages. Nothing was imported.`)
-   const wrapper=kind==='event_orchestrations'?'orchestrations':kind==='automation_actions'?'actions':kind
-   if(Object.hasOwn(page,'more')&&(page.more&&page[wrapper].length!==page.limit||page.total!==undefined&&page.total!==null&&page.total!==group.reduce((n,p)=>n+p[wrapper].length,0)))fail(`Incomplete PagerDuty ${kind} pagination; page counts do not reconcile with the saved total. Nothing was imported.`)
+   if(Object.hasOwn(page,'more')&&(page.more&&page[wrapper].length!==page.limit||page.total!==undefined&&page.total!==null&&page.total!==totalItems(group)))fail(`Incomplete PagerDuty ${kind} pagination; page counts do not reconcile with the saved total. Nothing was imported.`)
   }
  }
+ return responseBindings
 }
 
 /** Embedded integrations are review records in their own right, joined only to the source service.
@@ -46,7 +75,7 @@ export function pagerdutyRecords(input:ParsedRecord[],savedBindings?:unknown,ori
  if(bound&&(!Array.isArray(savedBindings)||savedBindings.some(b=>!b||typeof b!=='object'||Object.keys(b).sort().join(',')!=='parentId,parentKind,pointer'||typeof b.pointer!=='string'||typeof b.parentKind!=='string'||typeof b.parentId!=='string')))fail('PagerDuty _bindings must list pointer, parentKind and parentId outside the saved responses')
  const bindings=(savedBindings??[]) as Binding[],byPointer=new Map<string,Binding>()
  for(const binding of bindings){if(byPointer.has(binding.pointer))fail(`Duplicate PagerDuty parent binding at ${binding.pointer}`);byPointer.set(binding.pointer,binding)}
- if(bound)pages(original,bindings)
+ const responseBindings=bound?pages(original,byPointer):new Map<string,Binding>()
  const records:ParsedRecord[]=[]
  for(const row of input) {
   if(!row.payload||Array.isArray(row.payload)||typeof row.payload!=='object')fail(`PagerDuty ${row.kind} at ${row.pointer} must be a complete object detail`)
@@ -81,7 +110,7 @@ export function pagerdutyRecords(input:ParsedRecord[],savedBindings?:unknown,ori
    })
   }
  }
- for(const binding of bindings)if(!records.some(row=>row.pointer===binding.pointer))fail(`PagerDuty parent binding at ${binding.pointer} names no saved object`)
+ for(const binding of bindings)if(!responseBindings.has(binding.pointer)&&!records.some(row=>row.pointer===binding.pointer))fail(`PagerDuty parent binding at ${binding.pointer} names no saved object or paginated response`)
  const identities=new Map<string,ParsedRecord>()
  for(const row of records) {
   const key=JSON.stringify([row.kind,row.sourceId]),prior=identities.get(key)
@@ -91,6 +120,7 @@ export function pagerdutyRecords(input:ParsedRecord[],savedBindings?:unknown,ori
    fail(`PagerDuty ${row.kind} at ${row.pointer} has no source id; save the full object detail and preview again. Nothing was imported.`)
  }
  const has=(kind:string,id:unknown)=>identities.has(JSON.stringify([kind,String(id)]))
+ for(const binding of responseBindings.values())if(!has(binding.parentKind,binding.parentId))fail(`PagerDuty response at ${binding.pointer} has a dangling parent ${binding.parentId}`)
  for(const row of records) {
   const value=row.payload as any,parent=value._pdParent
   if(parent&&!has(parent.kind,parent.id))fail(`PagerDuty ${row.kind} ${row.sourceId} has a dangling parent ${parent.id}`)
@@ -148,7 +178,7 @@ export function pagerdutyRecords(input:ParsedRecord[],savedBindings?:unknown,ori
     // people in the file to one profile. Store original envelope values only;
     // ordinary leaf values already exist at their exact payload paths.
     const binding=leaf.path[0]==='_bindings'?bindings[Number(leaf.path[1])]:undefined
-    const owner=binding?atPointer.get(binding.pointer):undefined
+    const owner=binding?atPointer.get(binding.pointer)??(responseBindings.has(binding.pointer)?identities.get(JSON.stringify([binding.parentKind,binding.parentId])):undefined):undefined
     envelopes.get(owner??records[0])!.push([leaf.pointer,leaf.original])
    }
   }
