@@ -1,0 +1,14 @@
+{
+  "path": "/home/agent/rer-consolidation/work/push-rescue/gr-mt-oncall-code-10-678f3fe3ed03.bundle",
+  "head": "678f3fe3ed03e412fa211c4d54e4e8f4993eadbb",
+  "sha256": "6096ee5666f3e57a922fe974290149d66b12f527458ec4eb9efe586b17260aa4",
+  "bytes": 22732912,
+  "verified": true,
+  "verification_command": "git bundle verify /home/agent/rer-consolidation/work/push-rescue/gr-mt-oncall-code-10-678f3fe3ed03.bundle",
+  "verification_output": "The bundle contains this ref:\n678f3fe3ed03e412fa211c4d54e4e8f4993eadbb refs/heads/cloud/gr-mt-oncall-code-10\nThe bundle records a complete history.\nThe bundle uses this hash algorithm: sha1\n/home/agent/rer-consolidation/work/push-rescue/gr-mt-oncall-code-10-678f3fe3ed03.bundle is okay\n",
+  "refs": [
+    "678f3fe3ed03e412fa211c4d54e4e8f4993eadbb refs/heads/cloud/gr-mt-oncall-code-10"
+  ],
+  "clone_preserved": "/home/agent/rer-consolidation/work/maint/gr-mt-oncall-code-10/repo",
+  "reason": "Publication scan blocks product push; no transport rejection occurred."
+}

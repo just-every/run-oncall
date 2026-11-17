@@ -1,0 +1,80 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/gr-mt-oncall-code-10",
+  "head": "678f3fe3ed03e412fa211c4d54e4e8f4993eadbb",
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "checks": [
+    {
+      "name": "production-build",
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "result": "PASS",
+      "log": "production-build.log",
+      "log_sha256": "c74998d32e45128a78ef6bf73b6a72a65b1f70a4e5ca14b74dd6df4e102f3681"
+    },
+    {
+      "name": "typecheck",
+      "command": "pnpm run typecheck",
+      "result": "PASS",
+      "log": "typecheck.log",
+      "log_sha256": "835e42cbe25b9318439524453465aea7dfed21aa6051567b885e2c5c31050dd3"
+    },
+    {
+      "name": "workspace-links",
+      "command": "ONCALL_PRODUCT_JOURNEY=workspace-links ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=<packet>/browser cloud_run node tests/product-browser.mjs",
+      "result": "PASS",
+      "log": "workspace-links.log",
+      "log_sha256": "e35dd1ed41f51b710313b84daaf413b8b50bd2ab4c9cbdbabbbbc990e308a554"
+    },
+    {
+      "name": "javascript-syntax",
+      "command": "node --check tests/product-browser.mjs && node --check tests/product-browser-journey.mjs",
+      "result": "PASS"
+    },
+    {
+      "name": "diff-whitespace",
+      "command": "git diff --check",
+      "result": "PASS"
+    },
+    {
+      "name": "source-lock",
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock; node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "result": "PASS",
+      "receipt": "source-lock-check.json"
+    }
+  ],
+  "browser": {
+    "assertion_width": 1440,
+    "evidence_widths": [
+      1440,
+      390
+    ],
+    "files": [
+      "browser/workspace-navigation-1440.png",
+      "browser/workspace-navigation-390.png"
+    ]
+  },
+  "contracts": {
+    "status_changes": [],
+    "counts_before": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "counts_after": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "alert": {
+    "number": 19,
+    "rule": "js/client-side-unvalidated-url-redirection",
+    "status": "fixed-in-code",
+    "github_alert_closure": "not queried; requires independent CodeQL rerun"
+  }
+}

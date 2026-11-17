@@ -1,0 +1,57 @@
+{
+  "status": "blocked",
+  "reason": "Full publication scanner completed with historical findings; the task requires complete PASS and zero findings before product push.",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/gr-mt-oncall-code-10",
+  "head": "678f3fe3ed03e412fa211c4d54e4e8f4993eadbb",
+  "product_push": "not attempted: publication gate failed",
+  "http_status": "not applicable; no product transport attempt",
+  "ci": {
+    "status": "not run: product branch unpublished",
+    "run_ids": []
+  },
+  "publication": {
+    "status": "FAIL",
+    "complete": true,
+    "commit": "678f3fe3ed03e412fa211c4d54e4e8f4993eadbb",
+    "tree": "8f72a60d9d7adf34a448332eaf74bcea67e849d5",
+    "total_findings": 568,
+    "historical_findings": 567,
+    "findings_present_in_main_ancestry": 4,
+    "findings_by_rule": {
+      "license.missing": 1,
+      "hygiene.email": 244,
+      "hygiene.local-path": 186,
+      "SEC-3": 4,
+      "secret.assignment": 120,
+      "hygiene.github-missing": 6,
+      "hygiene.github-private": 6
+    },
+    "changed_files_named": [],
+    "destination_context": {
+      "original_project": "oncall",
+      "original_repository": "just-every/run-oncall",
+      "original_arguments_invalid": true,
+      "correct_project": "just-every/run-oncall",
+      "correct_repository": "https://github.com/just-every/run-oncall",
+      "corrected_standalone_validator": "PASS"
+    },
+    "scan_report": "publication-scan.json"
+  },
+  "clauses_changed": [],
+  "pr_url": null,
+  "bundle": {
+    "path": "/home/agent/rer-consolidation/work/push-rescue/gr-mt-oncall-code-10-678f3fe3ed03.bundle",
+    "head": "678f3fe3ed03e412fa211c4d54e4e8f4993eadbb",
+    "sha256": "6096ee5666f3e57a922fe974290149d66b12f527458ec4eb9efe586b17260aa4",
+    "bytes": 22732912,
+    "verified": true,
+    "verification_command": "git bundle verify /home/agent/rer-consolidation/work/push-rescue/gr-mt-oncall-code-10-678f3fe3ed03.bundle",
+    "verification_output": "The bundle contains this ref:\n678f3fe3ed03e412fa211c4d54e4e8f4993eadbb refs/heads/cloud/gr-mt-oncall-code-10\nThe bundle records a complete history.\nThe bundle uses this hash algorithm: sha1\n/home/agent/rer-consolidation/work/push-rescue/gr-mt-oncall-code-10-678f3fe3ed03.bundle is okay\n",
+    "refs": [
+      "678f3fe3ed03e412fa211c4d54e4e8f4993eadbb refs/heads/cloud/gr-mt-oncall-code-10"
+    ],
+    "clone_preserved": "/home/agent/rer-consolidation/work/maint/gr-mt-oncall-code-10/repo",
+    "reason": "Publication scan blocks product push; no transport rejection occurred."
+  }
+}

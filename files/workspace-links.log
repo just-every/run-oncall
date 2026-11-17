@@ -1,0 +1,26 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+(node:2264) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Workspace path / 200 /on-call hops 1
+Workspace path /#incidents 200 /incidents hops 1
+Workspace path /#alerts 200 /alerts hops 1
+Workspace path /#services 200 /settings/services hops 1
+Workspace path /#status 200 /status hops 1
+Workspace path /#routing 200 /settings/routing hops 1
+Workspace path /#schedules 200 /on-call hops 1
+Workspace path /#move-in 200 /settings/move-in hops 1
+Workspace path /#reviews 200 /reviews hops 1
+Workspace path /#team 200 /settings/team hops 1
+Workspace path /#archive 200 /settings/archive hops 1
+Workspace path /services 200 /settings/services hops 1
+Workspace path /routing 200 /settings/routing hops 1
+Workspace path /schedules 200 /on-call hops 1
+Workspace path /team 200 /settings/team hops 1
+Workspace path /move-in 200 /settings/move-in hops 1
+Workspace path /archive 200 /settings/archive hops 1
+Workspace path /settings 200 /settings/services hops 1
+Workspace path /?incident=a609e80a-e3b9-4ae6-b5ff-1fde1cb5985a#incidents 200 /incidents/a609e80a-e3b9-4ae6-b5ff-1fde1cb5985a hops 1
+PASS workspace links: canonical sections and shared incidents, signed-out lobby, retained shell, local missing destinations and hostile URL-like fragments; assertions at 1440, proof at 1440/390
+Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390

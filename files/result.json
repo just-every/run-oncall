@@ -1,0 +1,7 @@
+{
+  "status": "cannot",
+  "sha": "678f3fe3ed03e412fa211c4d54e4e8f4993eadbb",
+  "summary": "Workspace redirect validation implemented and locally verified; publication withheld because complete Base scan reports historical findings, including four in published main ancestry; branch, clone and verified bundle retained.",
+  "tests": "PASS: rer setup; production rer build; pinned-Node typecheck; focused emitted-Worker workspace-links browser journey at 1440 with 1440/390 captures; JavaScript syntax; diff check; pinned source lock regeneration/check. Publication scan complete FAIL (567 historical findings plus one invocation-context error; corrected standalone destination validator PASS). No product push, PR or CI run.",
+  "security": true
+}

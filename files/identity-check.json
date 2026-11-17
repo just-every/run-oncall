@@ -1,0 +1,13 @@
+{
+  "command": "git log origin/main..HEAD --format=\"%an <%ae>%n%cn <%ce>%n%(trailers:only,unfold)\"",
+  "includes_side_parents": true,
+  "commits": [
+    {
+      "commit": "678f3fe3ed03e412fa211c4d54e4e8f4993eadbb",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": [],
+      "pass_identity_and_trailer_check": true
+    }
+  ]
+}
