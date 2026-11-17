@@ -1,3 +1,4 @@
+import {snsConfiguration} from '../intake/sns-config';
 import { requireNewSubjectIdentity } from '../subject-erasure-identity.ts'
 import { runtimeBindings } from '../auth.server';
 import { sealCredential, sourceCustody } from '../changes/credentials';
@@ -23,7 +24,7 @@ export function routingSource(state:State,id:string) {
 export function installRoutingManagement(api:any,deps:RoutingDependencies) {
   api.post('/api/routing/keys',async(c:any)=>{
     const input=await deps.body(c),state=await deps.state(c,true),actor=c.get('actor');authority(state,actor,true);
-    exact(input,['id','name','provider','scope','owner','key','revision'],['rules','catchAll','authentication','team']);
+    exact(input,['id','name','provider','scope','owner','key','revision'],['rules','catchAll','authentication','team','sns']);
     const id=text(input.id,'Integration ID',80),previous=state.intakeSources?.find(s=>s.id===id);
     await requireNewSubjectIdentity(state,'intake',id)
     if(!/^[a-zA-Z0-9_-]+$/.test(id))fail('Use letters, numbers, hyphens or underscores for the integration ID');
@@ -38,9 +39,12 @@ export function installRoutingManagement(api:any,deps:RoutingDependencies) {
     if(!previous&&team){const outside=scope.map(id=>state.services.find(s=>s.id===id)!).find(s=>s.team!==team.id);if(outside)fail(outside.name+' is outside '+team.name+'. Choose only services owned by this team.');}
     const authentication=input.provider==='native'?(input.authentication??previous?.authentication??'bearer'):undefined;
     if(authentication!==undefined&&!['bearer','signed'].includes(authentication)||input.provider!=='native'&&input.authentication!==undefined)fail('Choose bearer or signed authentication for a native routed key');
+    if(previous?.sns&&input.sns!==undefined){const candidate=snsConfiguration(input.sns);if(['account','region','topic'].some(k=>candidate[k as 'account'|'region'|'topic']!==previous.sns![k as 'account'|'region'|'topic']))fail('SNS topic binding is immutable; create another integration');}
+    const sns=input.provider==='sns'?(previous?.sns??snsConfiguration(input.sns)):undefined;
+    if(input.provider!=='sns'&&input.sns!==undefined)fail('SNS settings require an SNS provider');
     const key=text(input.key,'Integration key',200);if(key.length<32)fail('Integration key needs at least 32 characters');
     const at=new Date().toISOString(),definition=previous?.routing??{...(team?{team:team.id}:{}),scope,owner:input.owner,versions:[{version:1,...routingRules(scope,input.rules??[],input.catchAll??null),publishedBy:actor.id,publishedAt:at}]};
-    const source:IntakeSource={id,name:text(input.name,'Integration name',200),provider:input.provider,service:scope[0],active:true,revision:(previous?.revision??0)+1,createdBy:previous?.createdBy??actor.id,updatedAt:at,routing:{...definition,owner:input.owner},...(authentication?{authentication}:{} )};
+    const source:IntakeSource={id,name:text(input.name,'Integration name',200),provider:input.provider,service:scope[0],active:true,revision:(previous?.revision??0)+1,createdBy:previous?.createdBy??actor.id,updatedAt:at,routing:{...definition,owner:input.owner},...(authentication?{authentication}:{} ),...(sns?{sns:{account:sns.account,region:sns.region,topic:sns.topic,status:'awaiting confirmation' as const,...(sns.lastNotification?{lastNotification:sns.lastNotification}:{})}}:{})};
     refuseKeyEcho([JSON.stringify(source),team?.name??''],key);
     const custody=authentication==='signed'?await sealCredential(key,runtimeBindings(c.env).SESSION_SECRET,sourceCustody):null;
     const digest=await intakeHash(key),other=await c.env.DB.prepare('SELECT source FROM oc_intake_credentials WHERE key_digest=? AND source<>?').bind(digest,id).first();

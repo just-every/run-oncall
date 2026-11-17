@@ -288,7 +288,7 @@
       "executable": false
     },
     "docs/routed-intake.md": {
-      "sha256": "bff17448173af024d6e4cf9972bbdaee7a53328bf640de2725fb92fbf3dbece6",
+      "sha256": "ffc63ac444efcef3e0c0eaf1ffdb87a39f49f5fa587adaf92aa9fcd2cc08eb58",
       "executable": false
     },
     "docs/schedules.md": {
@@ -2656,7 +2656,7 @@
       "executable": false
     },
     "src/intake/api.ts": {
-      "sha256": "3525b4eb2bd20b1a3d40b17ed8e9f40b4dde2e75f0f8b30cfb460929f3b590f1",
+      "sha256": "78a2c548d22afdc5187775898c566c235c85bd190148536f25028d7080cce5be",
       "executable": false
     },
     "src/intake/CompatibleTest.tsx": {
@@ -2688,23 +2688,35 @@
       "executable": false
     },
     "src/intake/management.ts": {
-      "sha256": "be896da782b5eacfc432733c1747f4e0d1f489caaac91d0341b5d63557d6b530",
+      "sha256": "fac4e74aa200236b17ae7ef646c069cee9e63a6d3834ebd2910749b19460cc73",
       "executable": false
     },
     "src/intake/model.ts": {
-      "sha256": "4691fbf4bba835db3485ed13dfb2e47a6d5ce19f6e0c4b28a55160a1667217f1",
+      "sha256": "de7aba101bb41c67dc7f3b58a3a5ed72d681a46905d1a30bced45eca63c7e76b",
       "executable": false
     },
     "src/intake/paths.ts": {
-      "sha256": "5dffbacfc2b701c6acfbdcc74f9f4863f7a026ac0e90f817899a8dbb5de7048a",
+      "sha256": "30b368390a70b3fb7d84049b3a64a0f2e1d09413b9263dfd4abb75344974b8b5",
       "executable": false
     },
     "src/intake/provider-types.ts": {
-      "sha256": "a8a3b4f78499cf63ddb8a8db4e9aa50778d26e35a4335fc29758e8c782276624",
+      "sha256": "e7c076be9de6e46502242c77b02ed08d01528124bb9dd1d0ce944b35eedf460b",
       "executable": false
     },
     "src/intake/providers.ts": {
       "sha256": "8f799aa66f10a4a3df9eaebfdea638374e7bd0335e0c5ff4e963b0a6be82a21f",
+      "executable": false
+    },
+    "src/intake/sns-config.ts": {
+      "sha256": "3c1db72e19ad334d699d7cdc61ba48da480024c468462b3ce57b13570a6cee8b",
+      "executable": false
+    },
+    "src/intake/sns.ts": {
+      "sha256": "aa38e02eb46961c3056caf296973394fe89e06d60d1736b6760decfa22b7246f",
+      "executable": false
+    },
+    "src/intake/SnsSettings.tsx": {
+      "sha256": "7c7003393992d4d41519040527f1f3b7da4f87d8e8fb05cb4f42f805ef60b505",
       "executable": false
     },
     "src/integrations/AddIntegration.tsx": {
@@ -6120,7 +6132,7 @@
       "executable": false
     },
     "src/routing/management.ts": {
-      "sha256": "0f4e905f8878a8b29d05a8f9021ceaaa01d65aea02c6c459d12b5b8ebec290fa",
+      "sha256": "df812990eb4520011aa9b96aabb1242d5e1a1ee35c9521efc7115c6f13b3558f",
       "executable": false
     },
     "src/routing/native-archive.ts": {
@@ -6132,7 +6144,7 @@
       "executable": false
     },
     "src/routing/operations.ts": {
-      "sha256": "11f28988e0fe8c98c752aea1c4242e46095dfd60213a256955e5703ad9388b14",
+      "sha256": "ef500eee7a85938486b792d0d26eb1c12bc84ca8a91d57728fdc7d98409bc604",
       "executable": false
     },
     "src/routing/preview.ts": {
@@ -6140,11 +6152,11 @@
       "executable": false
     },
     "src/routing/RoutedKeyCreate.tsx": {
-      "sha256": "41b9da904c2c1777b6acaf9e6a253628f63520aa32dae47fa2122ff6a63357bc",
+      "sha256": "412fb33034c0c9624b7c8e42d36200419567a7fa08e524f8802302b864c32053",
       "executable": false
     },
     "src/routing/RoutedSenderSetup.tsx": {
-      "sha256": "8766585dc058f964bf7235da875bf1cb61e664ca92402c6575defcfbd8d80972",
+      "sha256": "fc35273bf2935f550d6fa0fe758cca7ef121fb8cb315bfa0fa9eb2f9c2873743",
       "executable": false
     },
     "src/routing/routing.css": {
@@ -6160,7 +6172,7 @@
       "executable": false
     },
     "src/routing/RoutingWorkspace.tsx": {
-      "sha256": "c4e306e31573f30d95917bfb05a4bbeab7bc642b125fb3eaae295fc0251e0fa1",
+      "sha256": "c4fa0cb51d05faaab496684c24f586decb702ea2f2b7830edae3fadd1967d5ee",
       "executable": false
     },
     "src/routing/RuleEditor.tsx": {
@@ -6644,7 +6656,7 @@
       "executable": false
     },
     "tests/intake.mjs": {
-      "sha256": "a45c05100401ea780e039fd5d34eb45138a0d907f9c7c84bd3603fef97c2f800",
+      "sha256": "8b665d7c51467bee446608945ba15d285c60ec297195cc46722ba302effce158",
       "executable": false
     },
     "tests/keyboard.mjs": {
@@ -6829,6 +6841,10 @@
     },
     "tests/runtime.mjs": {
       "sha256": "8cd2a1108913f05bbdaf741de75b2e827cd0e88b2d83f369290836951e217ca3",
+      "executable": false
+    },
+    "tests/sns.mjs": {
+      "sha256": "755f2795a7c3a0433d689d5a04a4e6b665759ff672aab7a2a448efd400032ad8",
       "executable": false
     },
     "tests/stranger-trip-steps.mjs": {
