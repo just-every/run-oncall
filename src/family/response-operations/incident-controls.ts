@@ -48,7 +48,7 @@ export function incidentControl(state: State, actor: Member, i: Incident, input:
     description = `declared → acknowledged${suffix}`;
   } else {
     if (i.state === 'resolved') fail('Incident is already resolved', 409);
-    const evidence = link(input.evidence);
+    const evidence = input.evidence === undefined || input.evidence === '' ? i.recovery : link(input.evidence);
     i.recovery = evidence;
     i.state = 'resolved';
     description = `Resolved with human recovery attestation ${evidence}${suffix}`;
