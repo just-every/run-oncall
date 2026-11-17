@@ -3,10 +3,19 @@ import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { readFileSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
 import { archiveOutputGuard } from '@runeditrun/rer/archive-output'
 import { docsSite } from './src/docs/build/plugin.ts'
 import { demoSockets } from './src/modules/demo/vite.mjs'
 import pkg from './package.json' with { type: 'json' }
+
+// A checkout supplies its public commit identity even without hosted bindings.
+const sourceSha = (() => {
+ try {
+  const sha = execFileSync('git', ['rev-parse', 'HEAD'], {encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore']}).trim();
+  return /^[a-f0-9]{40}$/.test(sha) ? sha : null;
+ } catch { return null; }
+})();
 
 // Bind only public field facts at build time; the root contract is not a served
 // development source and no account inspection is performed.
@@ -26,4 +35,4 @@ const serve = { main: './src/server.dev.ts', vars: { ...local('INBOUND_EMAIL_DOM
 // key, installer state), export archives, settings or local data.
 const server = { fs: { allow: ['src', 'public', 'node_modules'], deny: ['**/.rer/**', '**/.seed/**', '**/exports/**', '**/*.rer'] } }
 
-export default defineConfig(({ command, isPreview }) => ({ server, define: { __ONCALL_FIELD_PROOF__: JSON.stringify(fieldProof), __ONCALL_RELEASE__: JSON.stringify({ package: pkg.name, version: pkg.version }) }, plugins: [demoSockets(), cloudflare({ inspectorPort: false, viteEnvironment: { name: 'ssr' }, persistState: { path: process.env.RER_STATE_DIR ?? '.wrangler/state' }, ...(command === 'serve' && !isPreview ? { config: serve } : process.env.RER_DEV_ORIGIN ? { config: { vars: local('RER_DEV_ORIGIN') } } : {}) }), docsSite(), tanstackStart(), react(), archiveOutputGuard()] }))
+export default defineConfig(({ command, isPreview }) => ({ server, define: { __ONCALL_SOURCE_SHA__: JSON.stringify(sourceSha), __ONCALL_FIELD_PROOF__: JSON.stringify(fieldProof), __ONCALL_RELEASE__: JSON.stringify({ package: pkg.name, version: pkg.version }) }, plugins: [demoSockets(), cloudflare({ inspectorPort: false, viteEnvironment: { name: 'ssr' }, persistState: { path: process.env.RER_STATE_DIR ?? '.wrangler/state' }, ...(command === 'serve' && !isPreview ? { config: serve } : process.env.RER_DEV_ORIGIN ? { config: { vars: local('RER_DEV_ORIGIN') } } : {}) }), docsSite(), tanstackStart(), react(), archiveOutputGuard()] }))
