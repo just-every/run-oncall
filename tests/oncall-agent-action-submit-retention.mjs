@@ -105,6 +105,10 @@ export async function agedActionSubmitRetention({connect=async()=>({})}={}){
   assert.equal(commits.length,1);assert.equal(commits[0].kind,'actions.submit');assert.equal(commits[0].outcome,'accepted');
   assert.equal(commits[0].workspace_before,before.application.revision);assert.equal(commits[0].workspace_after,once.application.revision);
   for(const family of ['paging','handoff'])assert.equal(commits[0][family+'_before'],commits[0][family+'_after']);
+  for(const [field,kind,id] of [['actor','agent',context.agentId],['subject','entity',incident.id],['source','member',owner.id]]){
+   const identity=await db.prepare('SELECT label FROM oc_audit_identities WHERE kind=? AND entity_id=?').bind(kind,id).first();
+   assert.ok(identity);assert.equal(commits[0][field],identity.label,'The native submission audit retains its '+field+' attribution');
+  }
   assert.equal(once.records.agent_door_calls.length,before.records.agent_door_calls.length+1);
   assert.deepEqual(once.records.agent_door_reviews,before.records.agent_door_reviews,'Sensitive held execution adds an approval, never a second standard review');
   assert.equal(once.records.agent_door_approvals.length,before.records.agent_door_approvals.length+Number(mode==='held'));

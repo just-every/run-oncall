@@ -6671,6 +6671,10 @@
       "sha256": "525589c4f24ebdfb8f8b57da968f2b7d91943140d4313a5b87c6efac3b570a81",
       "executable": false
     },
+    "tests/oncall-agent-action-submit-retention.mjs": {
+      "sha256": "94195f567da9c6d5f3eaeaabfb553c996f66df4cc444a785fd0adb64c35654c6",
+      "executable": false
+    },
     "tests/oncall-agent-action-submit-revisions.mjs": {
       "sha256": "94499ac205d0ab109c01ff81f0f7983ac75e7b9e18323946f3af2f1c0738775e",
       "executable": false
