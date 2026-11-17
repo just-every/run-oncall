@@ -1,0 +1,118 @@
+{
+  "browser_proof": {
+    "alert-run-answered-1440.png": {
+      "bytes": 142568,
+      "height": 1363,
+      "width": 1440
+    },
+    "alert-run-answered-390.png": {
+      "bytes": 99788,
+      "height": 1573,
+      "width": 390
+    },
+    "alert-run-backup-step-1440.png": {
+      "bytes": 155669,
+      "height": 1435,
+      "width": 1440
+    },
+    "alert-run-backup-step-390.png": {
+      "bytes": 104671,
+      "height": 1640,
+      "width": 390
+    },
+    "alert-run-no-rule-1440.png": {
+      "bytes": 113977,
+      "height": 1161,
+      "width": 1440
+    },
+    "alert-run-no-rule-390.png": {
+      "bytes": 74831,
+      "height": 1351,
+      "width": 390
+    },
+    "alert-run-two-rules-1440.png": {
+      "bytes": 133556,
+      "height": 1343,
+      "width": 1440
+    },
+    "alert-run-two-rules-390.png": {
+      "bytes": 97981,
+      "height": 1577,
+      "width": 390
+    }
+  },
+  "main_base": "76e7ed5eb83d6cf3dba8b591a10cf63028eb4f4a",
+  "main_drift_paths": [
+    "README.md",
+    "docs/getting-started.md",
+    "docs/overview.md",
+    "rer-setup.json",
+    "sources.lock.json",
+    "src/ScheduleSummary.tsx",
+    "src/alerts/AlertPage.tsx",
+    "src/api.ts",
+    "src/app/GeneralSection.tsx",
+    "src/app/paths.ts",
+    "src/app/shell/AppShell.tsx",
+    "src/app/shell/frame.css",
+    "src/app/shell/nav.ts",
+    "src/app/useWorkspacePath.ts",
+    "src/auth.server.ts",
+    "src/brand/installation.ts",
+    "src/identity.ts",
+    "src/landing/Hero.tsx",
+    "src/landing/LocalDoor.tsx",
+    "src/landing/Mark.tsx",
+    "src/landing/door.css",
+    "src/on-call/OnCallHome.tsx",
+    "src/on-call/PagerNotice.tsx",
+    "src/on-call/RotaPage.tsx",
+    "src/response-policy/ResponsePolicy.tsx",
+    "src/routeTree.gen.ts",
+    "src/routes/__root.tsx",
+    "src/routes/settings.general.tsx",
+    "src/routes/signin.local.tsx",
+    "src/server.dev.ts",
+    "src/server.ts",
+    "src/team/PersonNotifications.tsx",
+    "tests/agent-door-browser.mjs",
+    "tests/installation-fit.mjs",
+    "tests/oncall-agent-action-submit-response-loss.mjs",
+    "tests/oncall-agent-flow.mjs",
+    "tests/product-browser-journey.mjs",
+    "tests/product-browser.mjs",
+    "tests/transfer.mjs"
+  ],
+  "merge_commits": 0,
+  "preserved_overlaps": [
+    "docs/getting-started.md",
+    "sources.lock.json",
+    "src/alerts/AlertPage.tsx",
+    "tests/product-browser.mjs"
+  ],
+  "prior_candidate": "a30db902e6c9a5d69ccbd3ce6ce915e87afbc898",
+  "product_head": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+  "product_paths": [
+    "docs/getting-started.md",
+    "sources.lock.json",
+    "src/alerts/AlertNotificationRun.tsx",
+    "src/alerts/AlertPage.tsx",
+    "src/alerts/alerts.css",
+    "src/app/AlertsPanel.tsx",
+    "src/family/response-operations/on-call-notifications/read.ts",
+    "src/sections/alerts.tsx",
+    "tests/alert-notification-run-browser.mjs",
+    "tests/product-browser.mjs"
+  ],
+  "replay_commits": 1,
+  "verification_registrations": {
+    "after": {
+      "nightly": 0,
+      "push": 21
+    },
+    "before": {
+      "nightly": 0,
+      "push": 21
+    }
+  }
+}

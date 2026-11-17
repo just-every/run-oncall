@@ -1,0 +1,134 @@
+{
+  "ci": {
+    "discovery": {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44201936726",
+      "id": 44201936726,
+      "name": "Verify",
+      "status": "in_progress"
+    },
+    "event": "push",
+    "github_actions_api_calls": 4,
+    "polls": [
+      {
+        "checked_at": "2026-11-17T23:49:16+00:00",
+        "conclusion": null,
+        "head_sha": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44201936726",
+        "id": 44201936726,
+        "poll": 1,
+        "status": "in_progress"
+      },
+      {
+        "checked_at": "2026-11-17T23:54:17+00:00",
+        "conclusion": null,
+        "head_sha": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44201936726",
+        "id": 44201936726,
+        "poll": 2,
+        "status": "in_progress"
+      },
+      {
+        "checked_at": "2026-11-17T23:59:18+00:00",
+        "conclusion": "success",
+        "head_sha": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44201936726",
+        "id": 44201936726,
+        "poll": 3,
+        "status": "completed"
+      }
+    ],
+    "terminal": {
+      "checked_at": "2026-11-17T23:59:18+00:00",
+      "conclusion": "success",
+      "head_sha": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44201936726",
+      "id": 44201936726,
+      "poll": 3,
+      "status": "completed"
+    },
+    "workflow": "Verify"
+  },
+  "local": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "migrations": 68,
+      "status": "passed"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "status": "passed"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "status": "passed"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "status": "passed"
+    },
+    {
+      "command": "pnpm exec rer validate:release",
+      "detail": "Unknown rer command",
+      "exit": 2,
+      "status": "unavailable"
+    },
+    {
+      "command": "RER release source module inspectSource",
+      "status": "passed",
+      "version": "0.5.18"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "errors": 0,
+      "status": "passed",
+      "warnings": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "status": "passed"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "status": "passed"
+    },
+    {
+      "command": "node tests/product-browser.mjs",
+      "journeys": [
+        "alert-run",
+        "workspace-links",
+        "response-policy"
+      ],
+      "status": "passed"
+    },
+    {
+      "command": "node tests/import-door.mjs",
+      "journey": "adoptedOnCallFlow and import door",
+      "status": "passed"
+    },
+    {
+      "command": "git diff --check origin/main..HEAD",
+      "status": "passed"
+    },
+    {
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "candidate_commits": 1,
+      "command": "git log origin/main..HEAD",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "status": "passed",
+      "trailers": []
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-alert-run-2",
+  "product_head": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+  "push": {
+    "attempts": 1,
+    "readback": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+    "ref": "refs/heads/cloud/sd-oncall-alert-run-2",
+    "remote": "origin",
+    "status": "published"
+  },
+  "verified_at": "2026-11-17T23:59:29+00:00"
+}
