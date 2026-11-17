@@ -1,5 +1,9 @@
 {
   "artifacts": {
+    "REPORT.md": {
+      "bytes": 17447,
+      "sha256": "43a6352564c2492f146c4324042015c6ad99aad134a828d82dfb49cb8f568902"
+    },
     "browser.log": {
       "bytes": 45388,
       "sha256": "8f1cba48909d78f81f61a1d3d625642024cbdda7c3563200c0031b12248abb11"
@@ -8,13 +12,65 @@
       "bytes": 16714,
       "sha256": "cc04e146ff33aeec0d3665f290bd652824402911fe0ee4d1a39ba21673f2d8d7"
     },
+    "ci-discovery.json": {
+      "bytes": 244,
+      "sha256": "16eceffb526af428f92950506fcebd2ac73e0612a705ad16f508e5aca694a287"
+    },
+    "ci-poll-1.json": {
+      "bytes": 176,
+      "sha256": "6414c45937a4d138028a5abcf06ceb6dc763b8352c67b949e3a0a2c4878bbcfc"
+    },
+    "ci-poll-2.json": {
+      "bytes": 176,
+      "sha256": "6414c45937a4d138028a5abcf06ceb6dc763b8352c67b949e3a0a2c4878bbcfc"
+    },
+    "ci-poll-3.json": {
+      "bytes": 179,
+      "sha256": "cb4b0fd0b0920cf5d6967cdf7b83c749775dbdc67e1114ea70e6d777e5e0f172"
+    },
     "focused.log": {
       "bytes": 1498,
       "sha256": "925b26534e559dc6dbea18ac742b3e65d0c19e6209285d3bf41e7719ec7bb024"
     },
+    "hygiene.txt": {
+      "bytes": 184,
+      "sha256": "36dfbafab0caa4f2a64c00725a26442741ae4b9e66f7aff26003ce156859404a"
+    },
     "runtime.log": {
       "bytes": 111438,
       "sha256": "74a919d1757a62581eae3eb1a1645659057f745abffc68f010ddc3ba79835bd6"
+    },
+    "screens/agent-door-follow-up-submit-loss-autonomous-1440.png": {
+      "bytes": 136384,
+      "sha256": "0c0d018f803592412875be46a49ea472a805ace17b92af815a10f0042044a8ef"
+    },
+    "screens/agent-door-follow-up-submit-loss-autonomous-390.png": {
+      "bytes": 57627,
+      "sha256": "68907d2daeb303b5443812d4ab49092f8b3c30141af0b98c046dc9869a18aae5"
+    },
+    "screens/agent-door-follow-up-submit-loss-executed-1440.png": {
+      "bytes": 48942,
+      "sha256": "2c0549af3a48b6aabf0ae00bf05fd7c9e8dd07d40b0ebd1ca4672a427835826b"
+    },
+    "screens/agent-door-follow-up-submit-loss-executed-390.png": {
+      "bytes": 43450,
+      "sha256": "72b6c77abe908e1af57798892a8a72c5e684c5c0cc940f7aa599a8ab9749bbfc"
+    },
+    "screens/agent-door-follow-up-submit-loss-held-1440.png": {
+      "bytes": 150324,
+      "sha256": "c71c71b3502515552193772e80d866078e77a407fb5a90582c9ce36385cda336"
+    },
+    "screens/agent-door-follow-up-submit-loss-held-390.png": {
+      "bytes": 72084,
+      "sha256": "5bc3e6c131b8fee8ed063148e55d4239af0e86ae44857086abc2214febe5bb3a"
+    },
+    "screens/agent-door-follow-up-submit-loss-pending-1440.png": {
+      "bytes": 50278,
+      "sha256": "77e806e5bb95629dce8752c7976ff0da760034aedd698e8a120a71d75216bb64"
+    },
+    "screens/agent-door-follow-up-submit-loss-pending-390.png": {
+      "bytes": 44946,
+      "sha256": "7f6804938b54e47eedd3a0b290269246c0c469f55a4c77765900910422efc887"
     },
     "typecheck.log": {
       "bytes": 82,
@@ -26,6 +82,7 @@
     }
   },
   "base": "09f2821d713460dcd33d0878dc3a7825daccfc5a",
+  "blockers": [],
   "branch": "cloud/sd-oncall-c-f262",
   "ci": {
     "workflow_runs": [
@@ -40,6 +97,31 @@
       }
     ]
   },
+  "ci_latest": {
+    "conclusion": "success",
+    "head_sha": "709a43a790f9aadee8b50d89de1a12a872464934",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44121729762",
+    "status": "completed"
+  },
+  "ci_observations": [
+    {
+      "source": "ci-discovery.json",
+      "status": "in_progress"
+    },
+    {
+      "source": "ci-poll-1.json",
+      "status": "in_progress"
+    },
+    {
+      "source": "ci-poll-2.json",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": "success",
+      "source": "ci-poll-3.json",
+      "status": "completed"
+    }
+  ],
   "claim": "PARTIAL",
   "clause": "BASE-AGENT-012",
   "commands": [
@@ -75,6 +157,7 @@
       "log": "focused.log"
     }
   ],
+  "completed_utc": "2026-11-17T16:21:54.849949+00:00",
   "contract_changed": false,
   "counts_after": {
     "done": 26,
@@ -89,7 +172,7 @@
     "total": 101
   },
   "generated_views_committed": false,
-  "github_core_calls": 2,
+  "github_core_calls": 5,
   "head": "709a43a790f9aadee8b50d89de1a12a872464934",
   "identity_and_trailers": {
     "all_candidate_commits_checked": true,
@@ -129,6 +212,19 @@
   },
   "recorded_utc": "2026-11-17T16:06:03.170664+00:00",
   "repository": "just-every/run-oncall",
+  "riders": {
+    "1": "whole clause incomplete; selected point outcomes pass",
+    "10": "not applicable; no new default",
+    "11": "pending guarded landing, main equality, publication scan and Run site",
+    "2": "pass for selected path",
+    "3": "pass: exact-SHA push Verify 44121729762 success",
+    "4": "pass: local journeys and CI on exact candidate",
+    "5": "inspected unchanged",
+    "6": "generated and checked; source judgments unchanged",
+    "7": "unchanged",
+    "8": "pass for selected once-approved recovery",
+    "9": "provider and other held boundaries retained"
+  },
   "screens": [
     "screens/agent-door-follow-up-submit-loss-autonomous-1440.png",
     "screens/agent-door-follow-up-submit-loss-autonomous-390.png",
@@ -142,6 +238,15 @@
   "selected_points": [
     2
   ],
+  "selected_scope_result": "PASS; source judgment remains missing; no whole-clause promotion",
   "source_status": "missing",
-  "tag": "sd-oncall-c-f262"
+  "tag": "sd-oncall-c-f262",
+  "verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "709a43a790f9aadee8b50d89de1a12a872464934",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44121729762",
+    "id": 44121729762,
+    "status": "completed"
+  }
 }

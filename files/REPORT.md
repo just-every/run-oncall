@@ -49,8 +49,8 @@ Acceptance coverage remains bounded. Acceptance 1: the earlier immediate submiss
 | --- | --- |
 | 1 | Whole-clause FAIL: selected acceptance-2 outcomes are reached through real MCP and signed-in browser doors; omitted acceptance outcomes remain unproved. No DONE claim. |
 | 2 | PASS for selected data-loss path: populated native follow-up, destroyed real completed response, exact stored result and no repeated native effect. Pending held approval is separately consumed, retained and approved once. |
-| 3 | Pending exact-SHA Verify: existing agents and hosted browser shards load both changed journeys; no new workflow or flag gate. |
-| 4 | Candidate build and touched journeys run after the final test commit. No production source changed. |
+| 3 | PASS: exact-SHA push Verify 44121729762 completed success on 709a43a790f9aadee8b50d89de1a12a872464934. Existing agents and hosted browser shards load both changed journeys; no new workflow or flag gate. |
+| 4 | PASS: candidate build and touched journeys ran after the final test commit; exact-SHA push Verify 44121729762 completed success. No production source changed after proof. |
 | 5 | INSPECTED unchanged: this is BASE-AGENT-012 itself; existing receiving clauses and inheritance are untouched. |
 | 6 | Contract judgments and 101 rows remain unchanged; generator write and check pass before restoring generated views. Evidence and residual gaps are reported for the lander. |
 | 7 | PASS unchanged: no acceptance text, status row, coverage mapping or ct ruling was edited. |
@@ -76,3 +76,28 @@ Browser journey passed exit 0 on the same candidate, including the existing reso
 Final candidate 709a43a790f9aadee8b50d89de1a12a872464934 is pushed on cloud/sd-oncall-c-f262; exact-SHA push Verify 44121729762 is in progress at initial discovery. No PR is required or created: the repository has a branch-push Verify entry point. GitHub REST calls used so far: 2 of 10.
 
 MECHANICAL lock=node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock and check exit=0; views=node src/base/contract-docs.mjs write and check exit=0 (generated views restored from main); ledger=none exit=0.
+
+Evidence transport was exercised successfully using the supplied report-only entry point. Product HEAD and the byte hash of its index remained unchanged. The final evidence head will be reported after the final CI receipt is added. No active test Worker or browser remained after local journeys completed.
+
+CLAIM BASE-AGENT-012 PARTIAL points=2 tests=tests/oncall-agent-action-submit-response-loss.mjs#actionSubmitResponseLoss
+GAP BASE-AGENT-012: Only the selected actions.submit completed-result stream loss and recovery cases are added. Keep the source judgment MISSING; other mutating tools and variants, remaining dropped streams including the initial pending approval response, other argument combinations, evidence-policy completion, remaining revision diagnostics, foreign-person job handles, 24-hour retention and long-work status remain outside this proof. Existing f258, f260 and f261 scopes, erasure and approval replay boundaries, attribution and every retained held duty remain unchanged. No whole-clause promotion.
+PROBE BASE-AGENT-012 2 autonomous: fresh-key current-revision evidence submission to an owned due-dated P1 human-review follow-up; original completed HTTP response destroyed at headers without a body consumer -> D1 original done call and one native agent submission; new JSON-RPC id with identical arguments returns the original structured outcome; one timeline entry, one incident and workspace increment and actions.submit audit; done=false, no human acceptance, zero outbound requests and no evidence fetch.
+PROBE BASE-AGENT-012 2 held: consume input_required and preserve native no-effect pending state; named signed-in sponsor approves exact saved revision and hash once; D1 proves original executed approval, receipt and one native submission; destroy the first completed MCP result, then recover identical arguments with a new JSON-RPC id -> original outcome and approval receipt retained, reviews unchanged, no repeated native effect or approval POST, zero outbound requests and no evidence fetch.
+
+Exact-SHA Verify observation at the first permitted five-minute poll: run 44121729762 remains in_progress on 709a43a790f9aadee8b50d89de1a12a872464934; no completed conclusion yet. GitHub REST calls: 3 of 10.
+
+Second permitted Verify poll, ten minutes after discovery: run 44121729762 remains in_progress on the exact candidate SHA. GitHub REST calls used: 4 of 10. No workflow dispatch or rerun was requested.
+
+## Final outcome
+
+Exact-SHA push Verify 44121729762 completed **success** on 709a43a790f9aadee8b50d89de1a12a872464934, observed in ci-poll-3.json. It supplies the recorded push event and successful conclusion for every selected observation in the proof map and rider 3. GitHub REST calls used: 5 of 10. No workflow dispatch, rerun, CI repair or PR was required.
+
+The selected completed submission-result loss proof is complete under autonomous and held policies. Existing changed-evidence, immediate-retry, optional-revision and every retained journey assertion remains unchanged. All selected local checks passed, the product branch was read back at the exact head, the source lock is fresh, generated views are restored, and the checkout is clean. There is no implementation blocker in the selected scope.
+
+Counts are unchanged: 26 DONE, 41 PARTIAL, 34 MISSING, 101 rows. BASE-AGENT-012 stays MISSING on the candidate; PARTIAL describes the bounded claim, not a source-status promotion. All omitted acceptance outcomes, provider and authority holds, and predecessor landing gates remain unchanged. This report changes no plan queue, scope ruling or release prerequisite.
+
+Publication scan: NOT RUN in cloud; complete, historyScanned and findings are unestablished. Main does not equal the candidate. Candidate Run site is unestablished because it is a main-only landing step. The fleet lander retains those gates and all predecessor integration duties. The starting main's Verify 44112620430 and Run site 44112620293 were observed success separately; they are not used as candidate proof.
+
+Product branch: cloud/sd-oncall-c-f262
+Product head: 709a43a790f9aadee8b50d89de1a12a872464934
+Verify: https://github.com/just-every/run-oncall/actions/runs/44121729762
