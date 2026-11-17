@@ -1,0 +1,28 @@
+{
+  "observedAt": "2026-11-17T16:10:21.093Z",
+  "source": "fresh main production build with synthetic setup brand Brightwell Support",
+  "observations": [
+    {
+      "path": "/signin",
+      "title": "Sign in to Brightwell Support",
+      "sampleRotas": 0,
+      "name": [
+        "Brightwell Support"
+      ]
+    },
+    {
+      "path": "/signin/local",
+      "title": "Sign in \u00b7 Oncall",
+      "sampleRotas": 1,
+      "name": [
+        "Oncall",
+        "Oncall"
+      ]
+    }
+  ],
+  "screenshotWidths": [
+    1440,
+    390
+  ],
+  "sourceSha": "09f2821d713460dcd33d0878dc3a7825daccfc5a"
+}

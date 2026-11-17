@@ -1,0 +1,16 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-name-signin-1",
+  "head": "0a607b806e175b1abbda9f1296a1122a7116907f",
+  "base": "09f2821d713460dcd33d0878dc3a7825daccfc5a",
+  "observedAt": "2026-11-17T16:20:45.078559+00:00",
+  "productPush": {
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-oncall-name-signin-1",
+    "exitCode": 0,
+    "attempts": 1
+  },
+  "candidateCommitIdentityAndTrailers": "Run Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>\n\n",
+  "worktreeClean": true,
+  "pullRequest": null,
+  "publicationScan": "Not available in cloud; fleet gate remains required."
+}

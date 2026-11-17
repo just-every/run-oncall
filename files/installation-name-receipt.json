@@ -1,0 +1,22 @@
+{
+  "observedAt": "2026-11-17T16:16:56.450Z",
+  "setupName": "Brightwell Support",
+  "savedName": "Brightwell Operations",
+  "setupPrefilled": true,
+  "settingsRename": true,
+  "freshColleagueDoors": [
+    "/signin",
+    "/signin/local"
+  ],
+  "sampleRotas": 0,
+  "persistedAfterRestart": true,
+  "anonymousRefused": true,
+  "viewerRefused": true,
+  "revokedRefused": true,
+  "assertionWidth": 1440,
+  "screenshotWidths": [
+    1440,
+    390
+  ],
+  "browserErrors": []
+}

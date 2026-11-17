@@ -1,0 +1,18 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-name-signin-1",
+  "head": "0a607b806e175b1abbda9f1296a1122a7116907f",
+  "command": "ONCALL_TRANSFER_JOURNEY=installation-fit ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/transfer.mjs",
+  "exitCode": 0,
+  "observedAt": "2026-11-17T16:20:24.043464+00:00",
+  "freshCloneLine": "Fresh-clone tests/transfer.mjs: 0a607b806e175b1abbda9f1296a1122a7116907f",
+  "results": [
+    "PASS installation naming: setup -> General -> fresh sign-in doors -> restart; unauthorized changes refused",
+    "PASS local mail selection: public setup refuses hosted-only none on first attempt and retry, with a field-specific correction",
+    "Development HTTP door passed: configured owner reads release readiness from the Vite Worker",
+    "PASS signed-in installation: saved name in title and rail across workspace/settings, absent name falls back to product",
+    "PASS signed-in installation: saved name in title and rail across workspace/settings, built screens captured at 1440/390",
+    "PASS compiled health: actual package version and checkout SHA without deployment bindings; coordination liveness preserved",
+    "PASS installation-fit: public setup refusal, corrected setup, runnable dev, signed-in fallback and built preview identity"
+  ]
+}

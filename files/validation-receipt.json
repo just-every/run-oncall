@@ -1,0 +1,66 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-name-signin-1",
+  "head": "0a607b806e175b1abbda9f1296a1122a7116907f",
+  "checks": [
+    {
+      "command": "pnpm typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exitCode": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exitCode": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exitCode": 0
+    },
+    {
+      "command": "ONCALL_INSTALLATION_NAME_ONLY=1 ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/installation-fit.mjs",
+      "exitCode": 0,
+      "receipt": "installation-name-receipt.json"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exitCode": 0
+    },
+    {
+      "command": "ONCALL_TRANSFER_JOURNEY=installation-fit ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/transfer.mjs",
+      "exitCode": 0,
+      "receipt": "managed-installation-receipt.json"
+    }
+  ],
+  "contractCountsBefore": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "contractCountsAfter": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "clauseStatusChanges": [],
+  "publicationScan": "Fleet-owned Mac publication scan is unavailable in this cloud; not claimed here.",
+  "publicNameSerialization": {
+    "syntheticInput": "Brightwell & Support",
+    "roundTrip": "Brightwell & Support",
+    "equal": true
+  },
+  "verify": {
+    "id": 44123744609,
+    "head_sha": "0a607b806e175b1abbda9f1296a1122a7116907f",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/just-every/run-oncall/actions/runs/44123744609",
+    "recordedCalls": 4
+  }
+}
