@@ -1,0 +1,126 @@
+{
+  "head": "81afa370cb73f71e83d359a9931b3dea2742a9b9",
+  "observationAt": "2026-11-04T12:00:00.000Z",
+  "endpointCases": [
+    {
+      "phase": "active",
+      "mode": "autonomous",
+      "role": "admin",
+      "agent": "33ef8b7c-d064-43aa-8239-bb210d13ea0d",
+      "sponsor": "7727fb6f-e4d2-4cae-9ed1-c196fbf69647",
+      "disposition": "autonomous",
+      "nativeStatus": null,
+      "stateEndpointsOmitted": null,
+      "equal": true
+    },
+    {
+      "phase": "active",
+      "mode": "autonomous",
+      "role": "viewer",
+      "agent": "e7c9236e-73d4-413a-a042-875468d9b0f6",
+      "sponsor": "e1bb4c85-8e04-4ee6-80b5-924854f3cf2b",
+      "disposition": null,
+      "nativeStatus": 403,
+      "stateEndpointsOmitted": true,
+      "equal": null
+    },
+    {
+      "phase": "active",
+      "mode": "held",
+      "role": "admin",
+      "agent": "2b1317eb-eae6-4634-b131-9e4003b6b65e",
+      "sponsor": "7727fb6f-e4d2-4cae-9ed1-c196fbf69647",
+      "disposition": "review",
+      "nativeStatus": null,
+      "stateEndpointsOmitted": null,
+      "equal": true
+    },
+    {
+      "phase": "active",
+      "mode": "held",
+      "role": "viewer",
+      "agent": "763258b4-ea15-4b60-a36c-2d1c514e835f",
+      "sponsor": "e1bb4c85-8e04-4ee6-80b5-924854f3cf2b",
+      "disposition": null,
+      "nativeStatus": 403,
+      "stateEndpointsOmitted": true,
+      "equal": null
+    },
+    {
+      "phase": "inactive",
+      "mode": "autonomous",
+      "role": "admin",
+      "agent": "f230364a-8d9e-4903-a184-0e0d405e88eb",
+      "sponsor": "7727fb6f-e4d2-4cae-9ed1-c196fbf69647",
+      "disposition": "autonomous",
+      "nativeStatus": null,
+      "stateEndpointsOmitted": null,
+      "equal": true
+    },
+    {
+      "phase": "inactive",
+      "mode": "autonomous",
+      "role": "viewer",
+      "agent": "14c8860c-2896-491c-a8e2-625f26c37c74",
+      "sponsor": "e1bb4c85-8e04-4ee6-80b5-924854f3cf2b",
+      "disposition": null,
+      "nativeStatus": 403,
+      "stateEndpointsOmitted": true,
+      "equal": null
+    },
+    {
+      "phase": "inactive",
+      "mode": "held",
+      "role": "admin",
+      "agent": "5ee8ad07-e938-4ba2-a005-efb8e1a9a4e5",
+      "sponsor": "7727fb6f-e4d2-4cae-9ed1-c196fbf69647",
+      "disposition": "review",
+      "nativeStatus": null,
+      "stateEndpointsOmitted": null,
+      "equal": true
+    },
+    {
+      "phase": "inactive",
+      "mode": "held",
+      "role": "viewer",
+      "agent": "37607012-889d-4386-bf35-f3907d685458",
+      "sponsor": "e1bb4c85-8e04-4ee6-80b5-924854f3cf2b",
+      "disposition": null,
+      "nativeStatus": 403,
+      "stateEndpointsOmitted": true,
+      "equal": null
+    }
+  ],
+  "preparation": {
+    "nativeDoor": "/api/automation/endpoints/8321999d-924e-4edb-bd58-519df0b4618e/revoke",
+    "administrator": "7727fb6f-e4d2-4cae-9ed1-c196fbf69647",
+    "at": "2026-11-04T12:00:00.000Z",
+    "before": {
+      "id": "8321999d-924e-4edb-bd58-519df0b4618e",
+      "name": "Agent revocation fixture",
+      "owner": "bbbb5755-0736-4024-a89c-1c90a4deef80",
+      "client": "api-4df6a66c-40cf-4d58-b2e8-0ded984eac1f",
+      "services": [
+        "agent-service"
+      ],
+      "url": "https://8.8.8.8/oncall-revoke",
+      "active": true,
+      "revision": 1,
+      "createdAt": "2026-11-17T10:40:06.387Z"
+    },
+    "after": {
+      "id": "8321999d-924e-4edb-bd58-519df0b4618e",
+      "name": "Agent revocation fixture",
+      "owner": "bbbb5755-0736-4024-a89c-1c90a4deef80",
+      "client": "api-4df6a66c-40cf-4d58-b2e8-0ded984eac1f",
+      "services": [
+        "agent-service"
+      ],
+      "url": "https://8.8.8.8/oncall-revoke",
+      "active": false,
+      "revision": 2,
+      "createdAt": "2026-11-17T10:40:06.387Z"
+    }
+  },
+  "distinctAgents": 8
+}

@@ -1,0 +1,270 @@
+{
+  "schema": 1,
+  "tag": "sd-oncall-c-f259",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f259",
+  "head": "81afa370cb73f71e83d359a9931b3dea2742a9b9",
+  "startingMain": "91984b892ad8e993e0ddd782042d5143ed63baaf",
+  "reconciledMain": "91984b892ad8e993e0ddd782042d5143ed63baaf",
+  "remoteRefVerified": true,
+  "fullHistory": true,
+  "claim": "PARTIAL, inactive endpoint slice of acceptance 2 only",
+  "contractStatusBefore": "MISSING",
+  "contractStatusAfter": "MISSING",
+  "countsBefore": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "countsAfter": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "checks": [
+    {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/agent-door-browser.mjs",
+      "exit": 0,
+      "head": "81afa370cb73f71e83d359a9931b3dea2742a9b9"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "head": "81afa370cb73f71e83d359a9931b3dea2742a9b9"
+    },
+    {
+      "command": "npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0,
+      "head": "81afa370cb73f71e83d359a9931b3dea2742a9b9"
+    },
+    {
+      "head": "81afa370cb73f71e83d359a9931b3dea2742a9b9",
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "exit": 0,
+      "elapsedSeconds": 408.5,
+      "receipt": "runtime/resource-parity.json"
+    },
+    {
+      "head": "81afa370cb73f71e83d359a9931b3dea2742a9b9",
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "head": "81afa370cb73f71e83d359a9931b3dea2742a9b9",
+      "command": "node src/base/contract-docs.mjs write && node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "generatedViewsRestoredFromMain": true
+    },
+    {
+      "head": "81afa370cb73f71e83d359a9931b3dea2742a9b9",
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock && node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "head": "81afa370cb73f71e83d359a9931b3dea2742a9b9",
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "endpointCases": 8,
+  "endpointScreens": [
+    {
+      "role": "admin",
+      "phase": "active",
+      "mode": "autonomous",
+      "path": "/settings/integrations",
+      "kind": "endpoints",
+      "at": "2026-11-04T12:00:00.000Z",
+      "width": 1440,
+      "file": "parity-autonomous-admin-endpoints-1440.png"
+    },
+    {
+      "role": "admin",
+      "phase": "active",
+      "mode": "autonomous",
+      "path": "/settings/integrations",
+      "kind": "endpoints",
+      "at": "2026-11-04T12:00:00.000Z",
+      "width": 390,
+      "file": "parity-autonomous-admin-endpoints-390.png"
+    },
+    {
+      "role": "viewer",
+      "phase": "active",
+      "mode": "autonomous",
+      "path": "/settings/integrations",
+      "kind": "endpoints",
+      "at": "2026-11-04T12:00:00.000Z",
+      "width": 1440,
+      "file": "parity-autonomous-viewer-endpoints-1440.png"
+    },
+    {
+      "role": "viewer",
+      "phase": "active",
+      "mode": "autonomous",
+      "path": "/settings/integrations",
+      "kind": "endpoints",
+      "at": "2026-11-04T12:00:00.000Z",
+      "width": 390,
+      "file": "parity-autonomous-viewer-endpoints-390.png"
+    },
+    {
+      "role": "admin",
+      "phase": "active",
+      "mode": "held",
+      "path": "/settings/integrations",
+      "kind": "endpoints",
+      "at": "2026-11-04T12:00:00.000Z",
+      "width": 1440,
+      "file": "parity-held-admin-endpoints-1440.png"
+    },
+    {
+      "role": "admin",
+      "phase": "active",
+      "mode": "held",
+      "path": "/settings/integrations",
+      "kind": "endpoints",
+      "at": "2026-11-04T12:00:00.000Z",
+      "width": 390,
+      "file": "parity-held-admin-endpoints-390.png"
+    },
+    {
+      "role": "viewer",
+      "phase": "active",
+      "mode": "held",
+      "path": "/settings/integrations",
+      "kind": "endpoints",
+      "at": "2026-11-04T12:00:00.000Z",
+      "width": 1440,
+      "file": "parity-held-viewer-endpoints-1440.png"
+    },
+    {
+      "role": "viewer",
+      "phase": "active",
+      "mode": "held",
+      "path": "/settings/integrations",
+      "kind": "endpoints",
+      "at": "2026-11-04T12:00:00.000Z",
+      "width": 390,
+      "file": "parity-held-viewer-endpoints-390.png"
+    },
+    {
+      "role": "admin",
+      "phase": "inactive",
+      "mode": "autonomous",
+      "path": "/settings/integrations",
+      "kind": "endpoints",
+      "at": "2026-11-04T12:00:00.000Z",
+      "width": 1440,
+      "file": "parity-autonomous-admin-endpoints-inactive-1440.png"
+    },
+    {
+      "role": "admin",
+      "phase": "inactive",
+      "mode": "autonomous",
+      "path": "/settings/integrations",
+      "kind": "endpoints",
+      "at": "2026-11-04T12:00:00.000Z",
+      "width": 390,
+      "file": "parity-autonomous-admin-endpoints-inactive-390.png"
+    },
+    {
+      "role": "viewer",
+      "phase": "inactive",
+      "mode": "autonomous",
+      "path": "/settings/integrations",
+      "kind": "endpoints",
+      "at": "2026-11-04T12:00:00.000Z",
+      "width": 1440,
+      "file": "parity-autonomous-viewer-endpoints-inactive-1440.png"
+    },
+    {
+      "role": "viewer",
+      "phase": "inactive",
+      "mode": "autonomous",
+      "path": "/settings/integrations",
+      "kind": "endpoints",
+      "at": "2026-11-04T12:00:00.000Z",
+      "width": 390,
+      "file": "parity-autonomous-viewer-endpoints-inactive-390.png"
+    },
+    {
+      "role": "admin",
+      "phase": "inactive",
+      "mode": "held",
+      "path": "/settings/integrations",
+      "kind": "endpoints",
+      "at": "2026-11-04T12:00:00.000Z",
+      "width": 1440,
+      "file": "parity-held-admin-endpoints-inactive-1440.png"
+    },
+    {
+      "role": "admin",
+      "phase": "inactive",
+      "mode": "held",
+      "path": "/settings/integrations",
+      "kind": "endpoints",
+      "at": "2026-11-04T12:00:00.000Z",
+      "width": 390,
+      "file": "parity-held-admin-endpoints-inactive-390.png"
+    },
+    {
+      "role": "viewer",
+      "phase": "inactive",
+      "mode": "held",
+      "path": "/settings/integrations",
+      "kind": "endpoints",
+      "at": "2026-11-04T12:00:00.000Z",
+      "width": 1440,
+      "file": "parity-held-viewer-endpoints-inactive-1440.png"
+    },
+    {
+      "role": "viewer",
+      "phase": "inactive",
+      "mode": "held",
+      "path": "/settings/integrations",
+      "kind": "endpoints",
+      "at": "2026-11-04T12:00:00.000Z",
+      "width": 390,
+      "file": "parity-held-viewer-endpoints-inactive-390.png"
+    }
+  ],
+  "outboundEndpointObservationRequests": 0,
+  "unchangedProtectedFiles": [
+    "CONTRACT.md",
+    "ACCEPTANCE.md",
+    "docs/CLAIMS.md",
+    "src/agent-door/resources.ts",
+    "src/agent-door/native.ts",
+    "src/automation/api.ts",
+    "src/triage-api.ts",
+    "src/automation/AutomationSettings.tsx",
+    "src/modules/agent-door"
+  ],
+  "verify": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "81afa370cb73f71e83d359a9931b3dea2742a9b9",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44068675323",
+      "id": 44068675323,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ],
+  "githubCoreCallsSoFar": 2,
+  "publicationScan": {
+    "commit": "81afa370cb73f71e83d359a9931b3dea2742a9b9",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "reason": "Not run in cloud; maintained fleet landing gate"
+  },
+  "landing": {
+    "mainEqualsCandidate": false,
+    "runSiteCandidate": null,
+    "publicationAndLandingAuthority": "fleet only"
+  },
+  "pr": null,
+  "blockersInSelectedSlice": []
+}
