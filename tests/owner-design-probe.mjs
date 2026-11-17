@@ -3,7 +3,7 @@ import {mkdir,readFile} from 'node:fs/promises';
 import {chromium} from '@playwright/test';
 import {localWorker} from './worker.mjs';
 const phase=process.env.DESIGN_PHASE??'before';
-const w=await localWorker();let browser;
+const w=await localWorker({MAIL_PROVIDER:'none',MAIL_FROM:''});let browser;
 try {
  const owner=await w.request('/api/setup',{name:'Alex Morgan',password:'synthetic-owner-password'});assert.equal(owner.status,200);
  const cookie=owner.cookie,req=async(path,data)=>{const r=await w.request(path,data,cookie);assert.ok(r.status<300,`${path}: ${r.status} ${JSON.stringify(r.value)}`);return r.value;};
@@ -38,6 +38,10 @@ try {
   await page.goto(w.origin+'/settings/integrations');await page.getByRole('heading',{name:'Integrations',exact:true}).waitFor();await snap('integrations',width);
   await page.goto(w.origin+'/settings/integrations/native%3Asynthetic-monitor');await page.getByText('Send a test event',{exact:true}).click();await snap('test-event',width);
   await page.goto(w.origin+'/reviews');await page.getByText('Response numbers',{exact:true}).click();await page.locator('.response-report .response-metrics').first().waitFor();await snap('reviews',width);
-  await page.goto(w.origin+'/settings/readiness');await page.getByRole('heading',{name:/Readiness/}).first().waitFor();await snap('readiness',width);
+  await page.goto(w.origin+'/settings/readiness');await page.getByRole('heading',{name:/Readiness/}).first().waitFor();await page.locator('.readiness-checks').waitFor();await snap('readiness',width);
+  await page.goto(w.origin+'/docs/data');await page.locator('.docs-article').waitFor();await snap('backup-docs',width);
  }
+ const visitor=await browser.newContext();const signin=await visitor.newPage();
+ for(const width of [1440,390]) {await signin.setViewportSize({width,height:1000});await signin.goto(w.origin+'/signin');await signin.locator('code').filter({hasText:'~/.local/bin/rer signin'}).waitFor();await signin.screenshot({path:`evidence/design-${phase}/signin-${width}.png`,fullPage:true});}
+ await visitor.close();
 } finally {await browser?.close();await w.close();}
