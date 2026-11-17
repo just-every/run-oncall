@@ -5,7 +5,7 @@ import {expect} from '@playwright/test';
 
 // Part of the existing managed installation journey, through the real CLI.
 export async function localMailChoiceRefusal(managed, answers) {
- const selected={OWNER_EMAIL:'synthetic-oncall-owner@example.test',APP_NAME:'Example Operations',MAIL_PROVIDER:'none'};
+ const selected={OWNER_EMAIL:'transfer-owner@example.test',APP_NAME:'Example Operations',MAIL_PROVIDER:'none'};
  await writeFile(answers,JSON.stringify(selected),{mode:0o600});
  const output=await managed.command(['setup','--answers',answers,'--non-interactive'],4);
  assert.match(output,/MAIL_PROVIDER=none.*hosted.*MAIL_PROVIDER=development/);
