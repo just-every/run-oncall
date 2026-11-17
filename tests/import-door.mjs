@@ -36,17 +36,17 @@ async function syntheticPagerDutyAccount({w,req,door,call,upload,ok}) {
   if(via==='owner') {
    assert.equal(plan.items.length,manifest.objects)
    const fields=plan.items.flatMap(item=>item.unmapped.filter(note=>note.disposition))
-   assert.deepEqual(fields.map(field=>field.pointer).sort(),originalPointers,'every original leaf has exactly one decision, including response metadata')
-   assert.equal(new Set(fields.map(field=>field.pointer)).size,fields.length)
+   assert.deepEqual(fields.map(field=>field.field).sort(),originalPointers,'every original leaf has exactly one decision, including response metadata')
+   assert.equal(new Set(fields.map(field=>field.field)).size,fields.length)
    for(const item of plan.items)for(const field of item.unmapped.filter(note=>note.disposition)) {
     assert.ok(['mapped','lossy','retained-only','refused'].includes(field.disposition));assert.equal(field.sourceId,item.id)
     assert.equal(field.kind,item.kind);assert.ok(field.reason&&field.receiving)
-    let original=bundle;for(const part of field.pointer.slice(1).split('/'))original=original[part.replaceAll('~1','/').replaceAll('~0','~')]
+    let original=bundle;for(const part of field.field.slice(1).split('/'))original=original[part.replaceAll('~1','/').replaceAll('~0','~')]
     assert.deepEqual(field.original,original)
    }
-   const future=fields.find(field=>field.pointer.endsWith('/future_setting/a~1b~0c'))
+   const future=fields.find(field=>field.field.endsWith('/future_setting/a~1b~0c'))
    assert.equal(future.disposition,'retained-only');assert.equal(future.original,true)
-   assert.ok(fields.some(field=>field.disposition==='lossy'&&field.pointer.endsWith('/escalation_delay_in_minutes')))
+   assert.ok(fields.some(field=>field.disposition==='lossy'&&field.field.endsWith('/escalation_delay_in_minutes')))
    for(const user of plan.items.filter(item=>item.kind==='users'))assert.equal(user.effects[0].value.contacts.length,1,'separate phone/SMS details bind to their own person and merge the same E.164 number')
    complete=plan
   } else {
@@ -85,6 +85,8 @@ async function syntheticPagerDutyAccount({w,req,door,call,upload,ok}) {
   const changed=structuredClone(bundle);changed.users[0].users[0].name='Synthetic responder reviewed catch-up'
   changed.overrides[0].overrides[0].end='2026-12-01T11:00:00Z'
   const catchup=ok(await preview(JSON.stringify(changed),true));assert.equal(catchup.summary.updated,2);assert.equal(catchup.summary.created,0)
+  const changedFields=via==='owner'?catchup.items.flatMap(item=>item.unmapped.filter(note=>note.disposition)).map(note=>note.field):catchup.diagnostics.filter(note=>note.field?.startsWith('/')).map(note=>note.field)
+  assert.equal(new Set(changedFields).size,changedFields.length,'repeated screening never duplicates a changed-source field decision')
   await w.stop();await w.start();await finish('apply',catchup)
   assert.equal((await objects()).find(row=>row.targetId===changed.users[0].users[0].email).value.name,changed.users[0].users[0].name)
   assert.equal((await objects()).find(row=>row.value.sourceId===changed.schedules[0].schedule.id&&row.targetKind==='schedule').value.schedule.overrides[0].end,'2026-12-01T11:00:00.000Z','changed separate override updates the paused receiving schedule')
@@ -1139,7 +1141,12 @@ try {
   for(const text of [held,archive])for(const token of [person.email,person.name,person.id,contact.address,number])assert.ok(!text.includes(token),'person identity absent from native/import/field-report/export custody')
   assert.ok(!(await imported()).some(row=>row.targetId===person.email))
   assert.equal((await imported()).filter(row=>row.targetKind==='user'&&saved.users.flatMap(page=>page.users).some(user=>user.email===row.targetId)).length,59,'erasure preserves the other synthetic people')
-  assert.deepEqual(ok(await req('/api/state')),native);assert.deepEqual(ok(await req('/api/paging/state')),paging)
+  const after=ok(await req('/api/state'))
+  const {erasureFences:beforeFences=[],...beforeOperational}=native,{erasureFences:afterFences=[],...afterOperational}=after
+  assert.deepEqual(afterOperational,beforeOperational,'person erasure preserves authoritative workspace data')
+  assert.ok(afterFences.length>beforeFences.length,'erasure adds a non-personal restore fence')
+  for(const fence of beforeFences)assert.ok(afterFences.some(next=>next.id===fence.id&&next.epoch>=fence.epoch),'older erasure fences survive and never move backward')
+  assert.deepEqual(ok(await req('/api/paging/state')),paging)
   await mkdir('evidence',{recursive:true});await writeFile('evidence/pagerduty-synthetic-erasure-receipt.json',JSON.stringify({sourceObjects:preview.items.length,receipt,allD1TablesChecked:true,portableArchiveChecked:true,identityOccurrences:0,otherPeoplePreserved:59,paging:'OFF'},null,2)+'\n')
   console.log('PASS documented PagerDuty erasure: bound contacts and field-report custody removed, portable archive clean, 59 other people preserved, native authority unchanged')
  }
