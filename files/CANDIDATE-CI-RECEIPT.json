@@ -2,9 +2,19 @@
   "repository": "just-every/run-oncall",
   "branch": "cloud/sd-oncall-c-f255",
   "head": "49ee0f80092ec75f72c09c18e2650de75d4d3653",
-  "observed_at": "2026-11-17T06:24:34.600768+00:00",
+  "observed_at": "2026-11-17T06:28:44.604109+00:00",
   "discovery_command": "gh api repos/just-every/run-oncall/actions/runs?head_sha=49ee0f80092ec75f72c09c18e2650de75d4d3653&per_page=100",
-  "runs": [],
-  "github_api_calls": 2,
-  "polling": "No further discovery before 300 seconds; no duplicate dispatch. Branch push Verify is declared in the unchanged workflow. Fleet lander waits for exact-SHA success."
+  "runs": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "49ee0f80092ec75f72c09c18e2650de75d4d3653",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44030706627",
+      "id": 44030706627,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ],
+  "github_api_calls": 3,
+  "polling": "One watcher. Second discovery more than 300 seconds after the first. Verify is in progress on exact candidate SHA. No further polling, dispatch or rerun; fleet lander waits for success."
 }

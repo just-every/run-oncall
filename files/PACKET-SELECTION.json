@@ -23,6 +23,8 @@
     "views-check.log",
     "lock-regenerate.log",
     "lock-check.log",
+    "TRANSFER-VERIFICATION.json",
+    "INITIAL-CI-DISCOVERY.json",
     "browser/agent-door-agents-blocked-1440.png",
     "browser/agent-door-agents-blocked-390.png",
     "browser/agent-door-agents-paused-1440.png",
@@ -301,5 +303,5 @@
     "browser/parity-held-viewer-services-390.png"
   ],
   "screenshot_count": 276,
-  "bytes": 60713801
+  "bytes": 60779586
 }
