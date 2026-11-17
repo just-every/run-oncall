@@ -219,13 +219,21 @@ try{
     const material=await response.json();
     assert.deepEqual(material.followups,incident.actions,'Protected review material agrees with the stored MCP result');
     assert.equal(material.followups.find(row=>row.id===action.id).done,true);
+    assert.equal(material.incidentRevision,incident.revision);
+    const completion=material.assertions.find(row=>row.kind==='complete');
+    assert.equal(completion.classification,'agent coordination record');
+    assert.equal(completion.actor,evidenceRuntime.context.agentId);
+    const state=await (await evidenceRuntime.http('/api/state')).json();
+    const actionOwner=state.members.find(row=>row.id===action.owner);assert.ok(actionOwner);
     await capture('follow-up-evidence-'+mode,'/reviews/'+incident.id,async()=>{
      await evidencePage.getByRole('dialog',{name:incident.title,exact:true}).waitFor();
-     await evidencePage.locator('.review-material-body summary').filter({hasText:/^Follow-ups \(/}).click();
-     const item=evidencePage.locator('.review-material-body li').filter({hasText:action.title});await item.waitFor();
+     const followups=evidencePage.locator('.review-material-body details').filter({has:evidencePage.locator('summary').filter({hasText:/^Follow-ups \(/})});
+     await followups.locator('summary').click();
+     const item=followups.locator('li').filter({hasText:action.title});await item.waitFor();
      const evidence=item.getByRole('link',{name:/^Evidence/});await evidence.waitFor();
      if(evidencePage.viewportSize().width===1440){
       const text=await item.innerText();
+      assert.ok(text.includes(actionOwner.name));assert.match(text,/due Apr 12, end of day UTC/);
       assert.match(text,/P2/);assert.match(text,/Complete · Completes with evidence/);
       assert.ok(!text.includes('Awaiting acceptance'));
       assert.equal(await evidence.getAttribute('href'),action.evidence);

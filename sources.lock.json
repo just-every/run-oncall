@@ -6504,7 +6504,7 @@
       "executable": false
     },
     "tests/agent-door-browser.mjs": {
-      "sha256": "ba6286c07346ef9e6b812e0e8b01c7513b425646822053a492416a199bcaf4c7",
+      "sha256": "3573261226d2b31c63c14ed373a48d4014030489a839e3cb45a0db6f2a31dae6",
       "executable": false
     },
     "tests/agent-door-runtime.mjs": {
@@ -6681,6 +6681,10 @@
     },
     "tests/native-export.mjs": {
       "sha256": "e6e59eb803d16b6b6dfca71e31b5bad9aa16fa585bbd5649606df6dd59190979",
+      "executable": false
+    },
+    "tests/oncall-agent-action-evidence-replay.mjs": {
+      "sha256": "cae91e2d6b15ac641681b1fc6e710334d4b8977614c7841a387b20f9f9edce45",
       "executable": false
     },
     "tests/oncall-agent-action-parity.mjs": {
