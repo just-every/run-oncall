@@ -2,6 +2,7 @@
   "lanes": {
     "runtime": [
       "tests/native-export.mjs",
+      "tests/portability-cli.mjs",
       {
         "file": "tests/runtime.mjs",
         "part": "core"
