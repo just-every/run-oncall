@@ -1,0 +1,58 @@
+{
+  "author": "Run Edit Run fleet",
+  "recordedAt": "2026-11-17T14:17:27.344095+00:00",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-import-pagerduty-1",
+  "head": "f14b9337969e42646cc7a36272ac1e7fb6e4e8a2",
+  "productPushed": true,
+  "pullRequest": null,
+  "verifyRunId": 44096591720,
+  "verify": {
+    "conclusion": "success",
+    "head_sha": "f14b9337969e42646cc7a36272ac1e7fb6e4e8a2",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44096591720",
+    "status": "completed"
+  },
+  "githubCalls": 10,
+  "localChecks": "local-checks.json",
+  "fixture": {
+    "existingObjects": 75,
+    "existingFixtureUnchanged": true,
+    "newObjects": 498,
+    "newCategories": 17,
+    "endpointResponses": 265,
+    "sourceLeaves": 6211,
+    "fieldDispositions": {
+      "mapped": 767,
+      "lossy": 241,
+      "retained-only": 4073,
+      "refused": 1130
+    },
+    "receivingPausedTargets": 132
+  },
+  "contract": {
+    "before": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34
+    },
+    "after": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34
+    },
+    "judgmentChanges": 0,
+    "generatedViewsCommitted": false
+  },
+  "testRegistrationsAdded": 0,
+  "claims": [
+    "CLAIM OC-021 DONE points=1 tests=tests/import-door.mjs#documented PagerDuty account; tests/activation.mjs#OC-021/022 saved-response journeys; tests/product-browser-journey.mjs#documentedPagerDutyReview",
+    "CLAIM OC-022 DONE points=1 tests=tests/import-door.mjs#documented PagerDuty account; tests/activation.mjs#OC-022 unfinished checkpoint and native-edit undo conflicts",
+    "CLAIM OC-038 PARTIAL points=none tests=tests/import-door.mjs#documented PagerDuty account",
+    "CLAIM OC-040 PARTIAL points=none tests=tests/import-door.mjs#documented PagerDuty erasure",
+    "CLAIM OC-042 PARTIAL points=none tests=tests/import-door.mjs#documented PagerDuty account credential refusal"
+  ],
+  "blockers": [],
+  "scope": "Synthetic local saved responses; no real account, deployment, provider send, imported credential or live pager activation. Mac fleet owns full publication scan and landing.",
+  "terminal": "READY branch=cloud/sd-oncall-import-pagerduty-1 head=f14b9337969e42646cc7a36272ac1e7fb6e4e8a2"
+}

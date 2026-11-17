@@ -24,7 +24,7 @@ Observed HTTP account proof: both owner and signed Business doors reconcile all 
 
 Typecheck, the source-lock check, contract-document check, production build, activation journey, product browser journey and managed-installation transfer journey passed. The final browser receipt reconciles its copied/downloaded report against all original leaf pointers (498 objects, 6,211 fields, 6,916,137 copied bytes), with no serious/critical Axe findings at the asserted 1440 width; the changed review is shown at both 1440 and 390. The actual imported-person erasure receipt proves eight custody records removed, one paused schedule rewritten with a gap, all local D1 tables and the portable archive inspected, no identity occurrences, and 59 other people retained. Erasure fences advance while operational native workspace and paging stay unchanged.
 
-The final candidate is f14b9337969e42646cc7a36272ac1e7fb6e4e8a2. It was pushed through the fleet guard. Exact-SHA Verify run 44096591720 was still in progress at the ninth budgeted GitHub call (2026-11-17T14:05Z); its final status belongs in the final receipt. An earlier candidate (c17cf0d31ce4ce8aea49f04838c9f3db8f7cf88b) had a cancelled changes shard, so aggregate Verify 44085883158 failed. The retained job and aggregate-log evidence records that outcome; it is never counted as green. The complete final local import-door rerun passed with exit 0, including changed-source pointer uniqueness after fixing a cached schedule-note array. It also passed all existing vendor, OAuth custody, rollback, adoption and erasure regressions. The packet contains its newly generated actual report and receipts. The exact-SHA transfer receipt and final browser proof use the final source head.
+The final candidate is f14b9337969e42646cc7a36272ac1e7fb6e4e8a2. It was pushed through the fleet guard. Exact-SHA Verify run 44096591720 completed successfully on f14b9337969e42646cc7a36272ac1e7fb6e4e8a2, observed at the tenth budgeted GitHub call on 2026-11-17T14:16Z. The complete branch Verify is the rer-verify/full-suite wall; no local full-suite rerun was added. There is no PR and no remaining round blocker. The raw final REST response and final-receipt.json preserve the exact result. An earlier candidate (c17cf0d31ce4ce8aea49f04838c9f3db8f7cf88b) had a cancelled changes shard, so aggregate Verify 44085883158 failed. The retained job and aggregate-log evidence records that outcome; it is never counted as green. The complete final local import-door rerun passed with exit 0, including changed-source pointer uniqueness after fixing a cached schedule-note array. It also passed all existing vendor, OAuth custody, rollback, adoption and erasure regressions. The packet contains its newly generated actual report and receipts. The exact-SHA transfer receipt and final browser proof use the final source head.
 
 A computed per-kind loss table is in field-summary.md, and pagerduty-synthetic-report.json is the complete actual owner report. The exclusive dispositions reconcile to all 6,211 original leaves; summary counts and the 132 receiving targets are distinct measures.
 
@@ -40,3 +40,18 @@ GAP OC-040: This round proves local imported custody/portable-copy erasure only;
 GAP OC-042: Saved-file credential refusal and existing custody exclusions do not prove every connector, provider or model egress obligation.
 
 No real PagerDuty account, real export, production activation, paging, access grant, live provider send, standby operation or account secret is used or claimed. Public documentation is read through one GitHub API request; all other planned API calls are reserved for exact-head CI. The Mac fleet owns the complete publication scan and landing. Product publication and report-only evidence transfer are independent custody.
+
+## Builder claims and terminal custody
+
+Run Edit Run fleet, 2026-11-17 UTC. These claims do not edit existing contract judgments; the lander owns acceptance and publication.
+
+CLAIM OC-021 DONE points=1 tests=tests/import-door.mjs#documented PagerDuty account; tests/activation.mjs#OC-021/022 saved-response journeys; tests/product-browser-journey.mjs#documentedPagerDutyReview
+CLAIM OC-022 DONE points=1 tests=tests/import-door.mjs#documented PagerDuty account; tests/activation.mjs#OC-022 unfinished checkpoint and native-edit undo conflicts
+CLAIM OC-038 PARTIAL points=none tests=tests/import-door.mjs#documented PagerDuty account
+CLAIM OC-040 PARTIAL points=none tests=tests/import-door.mjs#documented PagerDuty erasure
+CLAIM OC-042 PARTIAL points=none tests=tests/import-door.mjs#documented PagerDuty account credential refusal
+
+DEFAULT OC-040: Erasure is local and atomic; preserve anonymous restore fences and explicit schedule gaps. No standby success is inferred.
+DEFAULT OC-042: Reject credential-bearing source files; no account credential is imported or activated.
+
+All eight local check groups in local-checks.json passed. Owner and signed Business receipts, complete loss report, source/schema digests, byte-identical generation, browser proof, transfer proof and CI provenance are retained in this packet. The earlier cancelled Verify remains historical evidence only. Product and evidence branches were published separately. The fleet owns main, its complete publication scan, independent acceptance and landing. No main push, self-submit, release or production deployment was attempted.
