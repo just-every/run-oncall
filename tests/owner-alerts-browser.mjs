@@ -1,4 +1,5 @@
 import {localWorker} from './worker.mjs';
+import {autonomousCoordination} from './agent-policy-fixture.mjs';
 import assert from 'node:assert/strict';
 import {randomBytes} from 'node:crypto';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -93,6 +94,7 @@ async function walkOwnerAlerts(page, context, worker) {
   await page.goto(origin+'/settings/integrations/new/events');await page.getByLabel('Name',{exact:true}).fill('Synthetic owner integration');await page.getByRole('button',{name:'Create source',exact:true}).click();
   await page.getByRole('region',{name:'Created credential'}).waitFor();await proof('created-integration');const createdTest=await send(page.locator('.test-alert'));assert.ok(createdTest.alert);assert.equal(createdTest.service,service.name);
   // Client transitions keep their existing source lifecycle and never forge a human alert-close record.
+  await autonomousCoordination(worker,(await context.cookies()).map(cookie=>cookie.name+'='+cookie.value).join('; '));
   const clientKey=randomBytes(32).toString('hex');
   await call('/api/automation/clients',{name:'Synthetic incident client',key:clientKey,services:[service.id],permissions:['incidents:write','incidents:read']},201);
   let clientIncident=await call('/api/command',{type:'declare',service:service.id,title:'Synthetic client coordination',summary:'Retain a valid machine-authored history',severity:'warning',alerts:[createdTest.alert]});
