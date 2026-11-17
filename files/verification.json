@@ -1,0 +1,93 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/gr-mt-oncall-code-1",
+  "sha": "3f73b67596555cf5ee43ffcdf336dd0907ba93d1",
+  "checks": [
+    {
+      "command": "cloud_run node tests/portability-cli.mjs",
+      "node": "22.20.0",
+      "exit": 0,
+      "result": "pass",
+      "log": "cli-test.log",
+      "cases": {
+        "accepted": 3,
+        "refused": 12
+      }
+    },
+    {
+      "command": "cloud_run pnpm run typecheck",
+      "node": "22.20.0",
+      "pnpm": "10.12.4",
+      "exit": 0,
+      "result": "pass",
+      "log": "typecheck.log"
+    },
+    {
+      "command": "node tests/portability-cli.mjs with original origin/main cli-options.mjs, restored immediately afterward",
+      "exit": 1,
+      "expected": "fail",
+      "result": "regression reproduced: malformed cookie was forwarded",
+      "log": "baseline-regression.log"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "result": "source lock regenerated"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "result": "pass",
+      "log": "source-lock-check.log"
+    },
+    {
+      "command": "git diff --cached --check",
+      "exit": 0,
+      "result": "pass"
+    }
+  ],
+  "counts": {
+    "verification_plan_entries_before": 20,
+    "verification_plan_entries_after": 21,
+    "new_cli_journeys": 1,
+    "clauses_changed": 0,
+    "contract_before": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "contract_after": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "limits": [
+    "CodeQL has not been rerun locally; the original behavior reproduces and the new journey passes.",
+    "No UI changes; browser proof is not applicable.",
+    "Full suite delegated to exact-SHA branch Verify."
+  ],
+  "publication_scan_initial": {
+    "exit": 1,
+    "complete": true,
+    "status": "FAIL",
+    "finding_rules": [
+      "destination.invalid"
+    ],
+    "explanation": "Initial invocation supplied a bare repository identity without project context. Corrected to --project just-every/run-oncall --repository https://github.com/just-every/run-oncall; destination validator passes."
+  },
+  "ci": {
+    "run_id": 44079698768,
+    "sha": "3f73b67596555cf5ee43ffcdf336dd0907ba93d1",
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44079698768",
+    "receipt": "ci-receipt.json",
+    "watcher_queries": 3
+  },
+  "blockers": []
+}

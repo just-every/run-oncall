@@ -1,0 +1,49 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/gr-mt-oncall-code-1",
+  "head": "3f73b67596555cf5ee43ffcdf336dd0907ba93d1",
+  "scan_command": "cloud_run node node_modules/@runeditrun/rer/scripts/publish-check.mjs --repo <product-checkout> --ref HEAD --public-base https://github.com/just-every/run-oncall.git#main --env-file <fleet-injected-bundle> --project just-every/run-oncall --repository https://github.com/just-every/run-oncall",
+  "scan_exit": 0,
+  "status": "PASS",
+  "complete": true,
+  "source": {
+    "commit": "3f73b67596555cf5ee43ffcdf336dd0907ba93d1",
+    "tree": "c471899750153debc8703fa2264de55c6c0bff22"
+  },
+  "findings": 0,
+  "pre_existing_findings": 4,
+  "history_counts": {
+    "commits": 1213,
+    "trees": 1167,
+    "blobs": 7304,
+    "commitMessages": 1213,
+    "tagMessages": 25
+  },
+  "guarantees": {
+    "historyScanned": true,
+    "visualRecognition": false,
+    "environmentChecked": true
+  },
+  "implementation": {
+    "version": "0.2.118",
+    "sha256": "c5f2d788f2f08764cd018e049b507c26f5ac01f651e2e8696398d89a5a886ffb",
+    "python": "3.12.14"
+  },
+  "report_sha256": "89fce4b47ead8dba3234c9b93ec11a88481badef8266771aadf9ae3b97781aa8",
+  "product_push": {
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/gr-mt-oncall-code-1",
+    "exit": 0,
+    "attempts": 1,
+    "remote_head_verified": "3f73b67596555cf5ee43ffcdf336dd0907ba93d1"
+  },
+  "candidate_commits": [
+    "3f73b67596555cf5ee43ffcdf336dd0907ba93d1"
+  ],
+  "identity_and_trailers": "Every candidate author and committer is Run Edit Run fleet <fleet@runeditrun.com>; all complete messages and trailers inspected; no trailers.",
+  "notes": [
+    "Public main was supplied as the existing-public baseline; the scanner keeps four historical entries in preExisting and zero current findings.",
+    "An initial scan invocation was COMPLETE/FAIL only because its destination arguments lacked project context and used a bare repository identity. Corrected arguments passed the destination validator and the complete rerun."
+  ]
+}

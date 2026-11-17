@@ -1,0 +1,1 @@
+Portability CLI forwards valid cookie octets unchanged and refuses malformed cookies before HTTP
