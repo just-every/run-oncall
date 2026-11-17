@@ -141,6 +141,7 @@ async function incompleteIntakeBrowser(page,context) {
   await page.goto(origin+'/alerts');await page.locator('.alert-row').filter({hasText:incompleteTitle}).click();
   const ownerCard=page.getByRole('article',{name:'Alert details',exact:true});
   await ownerCard.getByText(/Integration unrouted queue.*active$/).waitFor();await ownerCard.getByText('Event context',{exact:true}).click()
+  await ownerCard.getByText('Details',{exact:true}).click()
   await ownerCard.getByText(`Paging obligation: recorded · Integration owner: ${member.name} · high urgency · paging OFF; non-automatic.`,{exact:true}).waitFor()
   assert.ok(await ownerCard.isVisible())
   const incidentService=ownerCard.getByLabel('Incident service',{exact:true}),declare=ownerCard.getByRole('button',{name:'Declare incident from alert',exact:true})
@@ -207,30 +208,62 @@ async function responsePolicyBrowser(page,context) {
   const service=page.locator('.service-page')
   const responsePolicy=service.locator('details.urgency-policy').filter({has:page.locator('summary').filter({hasText:/^Response ·/})})
   await responsePolicy.locator(':scope > summary').click()
-  await responsePolicy.getByLabel('Default response',{exact:true}).selectOption('alert-only')
-  await responsePolicy.getByLabel('On source recovery',{exact:true}).selectOption('notified')
-  await responsePolicy.getByRole('button',{name:'Add response rule',exact:true}).click()
-  await responsePolicy.getByLabel('Rule urgency',{exact:true}).selectOption('high')
-  await responsePolicy.getByLabel('Rule severity',{exact:true}).selectOption('critical')
-  await responsePolicy.getByLabel('Rule orchestration policy',{exact:true}).selectOption(orchestration.id)
-  await responsePolicy.getByLabel('Rule response',{exact:true}).selectOption('incident')
-  await responsePolicy.getByRole('button',{name:/^Publish version/}).click();await responsePolicy.getByLabel('Reason',{exact:true}).fill('Coordinate critical checkout failures; keep warnings alert-only.')
-  const published=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/response/services/'+serviceId&&response.request().method()==='POST')
-  await responsePolicy.getByRole('button',{name:/^Publish version/}).click()
-  assert.equal((await published).status(),201,'response policy is published through the service form')
-  await expect.poll(async()=>(await request('/api/state')).services.find(item=>item.id===serviceId).responsePolicies?.length??0).toBe(1)
-  const storedPolicy=(await request('/api/state')).services.find(item=>item.id===serviceId).responsePolicies.at(-1)
-  assert.equal(storedPolicy.defaultMode,'alert-only');assert.equal(storedPolicy.recoveredNotice,'notified')
-  assert.deepEqual(storedPolicy.rules.map(rule=>[rule.urgency,rule.severity,rule.policy,rule.mode]),[['high','critical',orchestration.id,'incident']])
-  await responsePolicy.getByText('Response history (1)',{exact:true}).click()
-  await responsePolicy.getByRole('heading',{name:'Version 1 · Alert-only',exact:true}).waitFor()
-  await checkScreen('policy',width,responsePolicy.locator(':scope > summary'))
   const event=(id,intent='trigger',severity='warning')=>({source:'intake:'+source,eventId:id+'-'+intent,service:serviceId,environment:'production',key:id,generation:'checkout-cycle',intent,severity,title:`Checkout ${id} ${width}`,observedAt:new Date().toISOString(),evidence:'https://monitoring.example.test/checkout'})
   const send=async(input)=>{
    const response=await context.request.post('/api/ingress/intake:'+source,{headers:{authorization:'Bearer '+key},data:input})
    assert.equal(response.status(),201,'native monitoring admission succeeds')
    return response.json()
   }
+  const policyPath='/api/response/services/'+serviceId
+  const apply=async action=>{
+   const applied=page.waitForResponse(reply=>new URL(reply.url()).pathname===policyPath&&reply.request().method()==='POST')
+   await action();assert.equal((await applied).status(),201,'a response setting applies without a separate publication step')
+   await responsePolicy.getByRole('status').filter({hasText:'Saved.'}).waitFor()
+  }
+  // A draft left by an older installation must not appear as the live setting.
+  await page.evaluate(id=>localStorage.setItem(`oncall:draft:response:${id}:0`,JSON.stringify({kind:'response',id,baseVersion:0,value:{defaultMode:'incident',recoveredNotice:'silent',rules:[]}})),serviceId)
+  await page.reload();await responsePolicy.locator(':scope > summary').click()
+  assert.equal(await responsePolicy.getByLabel('Default response',{exact:true}).inputValue(),'alert-only','the control starts with the applied value, not an unpublished browser draft')
+  await apply(()=>responsePolicy.getByLabel('Default response',{exact:true}).selectOption('incident'))
+  await page.reload();await responsePolicy.locator(':scope > summary').click()
+  assert.equal(await responsePolicy.getByLabel('Default response',{exact:true}).inputValue(),'incident','the applied selection survives reload')
+  await expect(responsePolicy.locator(':scope > summary')).toHaveText('Response · Opens an incident')
+  const automaticReceipt=await send(event('changed-default'))
+  let currentState=await request('/api/state'),automaticAlert=currentState.alerts.find(alert=>alert.events.includes(automaticReceipt.id))
+  assert.ok(currentState.incidents.some(incident=>incident.alerts.includes(automaticAlert.id)),'the next real monitoring alert opens an incident using the changed default')
+  assert.equal(currentState.services.find(row=>row.id===serviceId).responsePolicies.at(-1).by,member.id,'automatic history attributes the change to the signed-in owner')
+  await apply(()=>responsePolicy.getByLabel('Default response',{exact:true}).selectOption('alert-only'))
+  // A refused save stays visibly unapplied, including after reload, and Retry
+  // applies the retained choice rather than claiming success from local storage.
+  await page.route('**'+policyPath,route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Synthetic save unavailable'})}))
+  const saveRefused=page.waitForResponse(reply=>new URL(reply.url()).pathname===policyPath&&reply.request().method()==='POST')
+  await responsePolicy.getByLabel('Default response',{exact:true}).selectOption('incident');assert.equal((await saveRefused).status(),503)
+  await responsePolicy.getByRole('button',{name:'Retry',exact:true}).waitFor()
+  await expect(responsePolicy.locator(':scope > summary')).toHaveText('Response · Alert-only')
+  await responsePolicy.getByRole('status').filter({hasText:'Not in effect yet.'}).waitFor()
+  await page.unroute('**'+policyPath)
+  page.once('dialog',dialog=>dialog.accept());await page.reload();await responsePolicy.locator(':scope > summary').click()
+  await responsePolicy.getByRole('status').filter({hasText:'Not in effect yet.'}).waitFor()
+  await expect(responsePolicy.locator(':scope > summary')).toHaveText('Response · Alert-only')
+  const unappliedReceipt=await send(event('unapplied-default'))
+  currentState=await request('/api/state');const unappliedAlert=currentState.alerts.find(alert=>alert.events.includes(unappliedReceipt.id))
+  assert.ok(!currentState.incidents.some(incident=>incident.alerts.includes(unappliedAlert.id)),'a failed setting does not change new-alert behaviour')
+  await apply(()=>responsePolicy.getByRole('button',{name:'Retry',exact:true}).click())
+  const retriedReceipt=await send(event('retried-default'))
+  currentState=await request('/api/state');const retriedAlert=currentState.alerts.find(alert=>alert.events.includes(retriedReceipt.id))
+  assert.ok(currentState.incidents.some(incident=>incident.alerts.includes(retriedAlert.id)),'Retry applies the retained default to the next new alert')
+  await apply(()=>responsePolicy.getByLabel('Default response',{exact:true}).selectOption('alert-only'))
+  await apply(()=>responsePolicy.getByLabel('On source recovery',{exact:true}).selectOption('notified'))
+  await apply(()=>responsePolicy.getByRole('button',{name:'Add response rule',exact:true}).click())
+  await apply(()=>responsePolicy.getByLabel('Rule urgency',{exact:true}).selectOption('high'))
+  await apply(()=>responsePolicy.getByLabel('Rule severity',{exact:true}).selectOption('critical'))
+  await apply(()=>responsePolicy.getByLabel('Rule orchestration policy',{exact:true}).selectOption(orchestration.id))
+  const storedPolicy=(await request('/api/state')).services.find(item=>item.id===serviceId).responsePolicies.at(-1)
+  assert.equal(storedPolicy.defaultMode,'alert-only');assert.equal(storedPolicy.recoveredNotice,'notified')
+  assert.deepEqual(storedPolicy.rules.map(rule=>[rule.urgency,rule.severity,rule.policy,rule.mode]),[['high','critical',orchestration.id,'incident']])
+  await responsePolicy.locator('.service-policy-history > summary').click()
+  await responsePolicy.getByRole('heading',{name:`Version ${storedPolicy.version} · Alert-only`,exact:true}).waitFor()
+  await checkScreen('policy',width,responsePolicy.locator(':scope > summary'))
   const warning=event('slow-payments'),critical=event('checkout-unavailable','trigger','critical')
   await send(warning)
   const admitted=await request('/api/state'),warningAlert=admitted.alerts.find(alert=>alert.source==='intake:'+source&&alert.key===warning.key)
@@ -1128,7 +1161,7 @@ try {
   await request('/api/command',{type:'service',id:'synthetic-oncall-1',name:'Synthetic checkout',environment:'test',owner:actor.id,runbook:[],pager:''});
   await senderSetupBrowser(page,context,worker.origin,request,()=>randomBytes(32).toString('hex'));
  }
- if(focused==='response-policy')await responsePolicyBrowser(page,context);
+ if(focused==='response-policy'){await incompleteIntakeBrowser(page,context);await responsePolicyBrowser(page,context);}
  if(focused==='support-start')await supportStartBrowser(page,context,{setTime,proof:triageProof});
  if(focused==='roles'){
   const member=(await (await context.request.get('/api/session')).json()).member;

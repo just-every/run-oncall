@@ -1,4 +1,5 @@
 import {useEffect,useState} from 'react';
+import {PagerNotice} from '../on-call/PagerNotice';
 import {request} from '../useWorkspace';
 import {failureMessage} from '../app/FailureLine';
 import type {NotificationRules} from '../family/response-operations/on-call-notifications/rules';
@@ -11,10 +12,10 @@ export function PersonNotifications({member,editable}:{member:string;editable:bo
  useEffect(()=>{if(!open)return;let active=true;void request(path).then(next=>{if(active){setValue(next);setError('');}}).catch(cause=>{if(active)setError(failureMessage(cause));});return()=>{active=false;};},[open,path]);
  const change=(next:View)=>{setValue(next);setNotice('');};
  return <details className="person-notifications" onToggle={event=>setOpen(event.currentTarget.open)}><summary>Contact methods and notification rules</summary>
-  <p>Recorded destinations only. Unverified · paging OFF · nothing is sent.</p>
+  <PagerNotice/>
   {error&&<p role="alert">{error}</p>}{notice&&<p role="status">{notice}</p>}
   {value&&<form onSubmit={async event=>{event.preventDefault();setBusy(true);setError('');setNotice('');try{setValue(await request(path,{revision:value.revision,contacts:value.contacts,rules:value.rules}));setNotice('Contact methods and notification rules saved');}catch(cause){setError(failureMessage(cause));}finally{setBusy(false);}}}>
-   <h4>Contact methods</h4>{!value.contacts.length&&<p>No contact methods recorded.</p>}
+   <h4>Contact methods</h4><p>These are for your records. Nothing is sent to them.</p>{!value.contacts.length&&<p>No contact methods recorded.</p>}
    {value.contacts.map((contact,index)=><fieldset key={contact.id} disabled={!editable||busy}><legend>Contact {index+1}</legend>
     <label className="field">Label<input required maxLength={100} value={contact.label} onChange={event=>change({...value,contacts:value.contacts.map(c=>c.id===contact.id?{...c,label:event.target.value}:c)})}/></label>
     <label className="field">Method<select aria-label="Method" value={contact.type} onChange={event=>{const type=event.target.value as 'email'|'sms'|'phone';change({...value,contacts:value.contacts.map(c=>c.id===contact.id?{...c,type,countryCode:type==='email'?null:c.countryCode??1}:c)});}}><option value="email">Email</option><option value="sms">SMS</option><option value="phone">Phone</option></select></label>
