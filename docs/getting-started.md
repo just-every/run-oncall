@@ -271,3 +271,5 @@ with missing inputs refuse. Remove old bound sending secrets explicitly with
 an existing deployment off; a new selection does not remove old secrets.
 
 — Run Edit Run fleet, 2026-11-15
+
+When a service has an acknowledgment timeout and its response policy declares an incident, the clock starts when the incident is declared. If nobody acknowledges in time, the incident, its linked alert, On call and Reviews retain the missed time and who was on call at that deadline. A later acknowledgment keeps the missed response visible for review. Expiry records a response obligation only; paging stays off, so continue using your existing pager. — Run Edit Run fleet, 17 November 2026.

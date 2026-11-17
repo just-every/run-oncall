@@ -1,3 +1,4 @@
+import {acknowledgmentStatus} from '../incident-deadlines/Status';
 import {shortDate, shortTime} from '../reviews/time';
 export {shortTime} from '../reviews/time';
 import type {Entry, Incident, Member, State} from '../family/response-operations/domain';
@@ -100,6 +101,12 @@ export function timelineText(entry: Entry, state: State) {
     return entry.text.replace(/\b(user|policy) (.+?)(?=, |\. User assignment)/g, (_, kind, id) => targetName(kind, id));
   }
   if (['incident-deadline', 'deadline-cancelled', 'deadline-fired'].includes(entry.kind)) {
+    const deadline=state.incidents.flatMap(i=>i.deadlines??[]).find(d=>d.kind==='initial-acknowledgment'&&['deadline:','deadline-fired:','deadline-cancelled:'].some(prefix=>entry.id===prefix+d.id));
+    if(deadline){
+      if(entry.kind==='deadline-fired')return acknowledgmentStatus(deadline,state);
+      if(entry.kind==='incident-deadline')return `Acknowledgment due ${shortTime(deadline.dueAt)}. Paging is off.`;
+      return `Acknowledgment deadline cancelled. ${deadline.outcome}.`;
+    }
     return entry.text.replace(/^acknowledgment-timeout:/, 'Acknowledgment timeout:')
       .replace(/\bdue (\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z)/, (_, at) => 'due ' + shortTime(at));
   }

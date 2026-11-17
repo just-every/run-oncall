@@ -1,3 +1,4 @@
+import {MissedAcknowledgments} from '../incident-deadlines/Status';
 import {useState} from 'react';
 import type {Incident, State} from '../family/response-operations/domain';
 import {Followups} from './Followups';
@@ -10,6 +11,7 @@ export function ReviewsHome(props:ReviewProps) {
   const pending=state.incidents.filter(incident=>incident.state==='resolved'&&!incident.reviewAcceptance&&!incident.mergedInto);
   const open=state.incidents.flatMap(incident=>incident.actions.filter(action=>!action.done).map(action=>({incident,action}))).sort((a,b)=>a.action.due.localeCompare(b.action.due)||a.action.title.localeCompare(b.action.title));
   return <div className="reviews-home">
+    <MissedAcknowledgments state={state}/>
     <section className="panel padded"><h2>Reviews to write</h2>{pending.length?<ul className="review-work-list">{pending.map(incident=><li key={incident.id}><a className="review-work-row" href={'/reviews/'+encodeURIComponent(incident.id)}><strong>{incident.title}</strong><span>{state.services.find(s=>s.id===incident.service)?.name} · {incident.review?'Draft started':'Ready for review'}</span></a></li>)}</ul>:<p>No reviews waiting.</p>}
       {!!state.incidents.some(i=>i.reviewAcceptance)&&<details><summary>Accepted reviews</summary>{state.incidents.filter(i=>i.reviewAcceptance).map(i=><a className="review-work-row" key={i.id} href={'/reviews/'+encodeURIComponent(i.id)}>{i.title}</a>)}</details>}
     </section>

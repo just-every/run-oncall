@@ -1,3 +1,4 @@
+import {missedAcknowledgmentFlow} from './missed-ack-flow.mjs'
 import {readinessHealth} from './readiness.mjs'
 import {healthBuildIdentity,recordHealthOutcome,recordHealthFieldOutcomes} from './health-outcomes.mjs'
 import {fileURLToPath} from 'node:url'
@@ -2073,6 +2074,7 @@ try {
  let rollback=await ack(await make());const before=await read();w.sql("CREATE TRIGGER synthetic_oncall_58_audit BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'synthetic audit failure'); END");try{ok(await req('/api/command',{type:'snooze',incident:rollback.id,revision:rollback.revision,minutes:1}),503);}finally{w.sql('DROP TRIGGER synthetic_oncall_58_audit');}assert.deepEqual(await read(),before);
  await w.time(Date.parse(rollback.deadlines.at(-1).dueAt));const beforeSweep=await read();w.sql("CREATE TRIGGER synthetic_oncall_58_sweep_audit BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'synthetic audit failure'); END");try{const failed=await w.send('/cdn-cgi/local/scheduled',undefined,{},'GET');assert.equal(failed.status,500);}finally{w.sql('DROP TRIGGER synthetic_oncall_58_sweep_audit');}assert.deepEqual(await read(),beforeSweep);await tick();assert.equal((await find(rollback.id)).deadlines.at(-1).state,'fired');
  console.log('OC-058 atomic deadline custody: failed permanent audit rolls back snooze and scheduled expiry together; the durable pending item remains visible and a later sweep commits exactly once');
+ await missedAcknowledgmentFlow({w,req,ok,admin});
 } finally {await deadlines58.close();}
 
 // OC-040 integration erasure owns the same OC-053 lease boundary as dispatch.
