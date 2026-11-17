@@ -1,0 +1,125 @@
+{
+  "author": "Run Edit Run fleet",
+  "base": "fb54c79d904d66342f166910d64996aa399bddf9",
+  "branch": "cloud/sd-oncall-missed-ack-1",
+  "browser_after_committed_head": "2f02a12bc54cd0d48c46132b331239ae6562d876",
+  "changed_files": 17,
+  "checks": [
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log",
+      "name": "Typecheck"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log": "build.log",
+      "name": "Production build"
+    },
+    {
+      "command": "cloud_run node /tmp/oncall-focused-test.mjs",
+      "exit": 0,
+      "log": "focused-test.log",
+      "name": "Focused missed acknowledgment HTTP flow"
+    },
+    {
+      "command": "cloud_run node /tmp/oncall-deadline-regression.mjs",
+      "exit": 0,
+      "log": "deadline-regression.log",
+      "name": "Existing deadline regression plus new flow",
+      "selection": "Unmodified existing OC-058 block from tests/runtime.mjs, plus its new missedAcknowledgmentFlow invocation; runner retained in packet"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "log": "contract-check.log",
+      "name": "Contract documents"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock; node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "source-lock.log",
+      "name": "Source lock"
+    },
+    {
+      "after": "browser-after.json",
+      "before": "browser-before.json",
+      "exit": 0,
+      "name": "Browser before/after",
+      "platform": "Emitted Worker, real HTTP/UI routes, controlled clock and scheduled trigger; Chromium /usr/bin/chromium --no-sandbox",
+      "source": "browser-proof.mjs",
+      "widths": [
+        1440,
+        390
+      ]
+    },
+    {
+      "exit": 0,
+      "identity_log": "commit-identities.txt",
+      "name": "Diff hygiene and candidate identity/trailers"
+    }
+  ],
+  "ci": {
+    "head": "2f02a12bc54cd0d48c46132b331239ae6562d876",
+    "observed_at": "2026-11-17T13:12:16.841832+00:00",
+    "run_id": 44088634695,
+    "status": "unknown after first in_progress poll",
+    "transport_error": "gh: Bad credentials (HTTP 401)",
+    "url": "https://github.com/just-every/run-oncall/actions/runs/44088634695"
+  },
+  "claim": "No contract clause claimed; these are owner-journey fixes (DIRECT 87).",
+  "clauses_changed": [],
+  "counts": {
+    "configured_journey_invocations": {
+      "after": 20,
+      "before": 20
+    },
+    "configured_script_files": {
+      "after": 14,
+      "before": 14
+    },
+    "contract_clauses": {
+      "after": {
+        "done": 26,
+        "missing": 34,
+        "partial": 41,
+        "total": 101
+      },
+      "before": {
+        "done": 26,
+        "missing": 34,
+        "partial": 41,
+        "total": 101
+      }
+    },
+    "initial_deadlines_per_reproduction": {
+      "after": 1,
+      "before": 0
+    },
+    "visible_miss_screens_per_width": {
+      "after": 4,
+      "before": 0
+    }
+  },
+  "deletions": 27,
+  "head": "2f02a12bc54cd0d48c46132b331239ae6562d876",
+  "insertions": 161,
+  "notes": [
+    "First focused probe used a clock jump beyond the synthetic session expiry; the fixture now uses a short cover override to exercise due-time versus sweep-time coverage within a valid session.",
+    "One initial discovery request had an incorrect full SHA and returned no runs; it was discarded. Exact-SHA discovery and all polls use the product head above.",
+    "Full publication scan and landing remain with the fleet Mac, as required by the cloud adaptation. No Base clone or refresh, PR, release metadata, generated acceptance view or default-branch push was performed."
+  ],
+  "preservation": {
+    "bundle": "/home/agent/rer-consolidation/work/sd-oncall-missed-ack-1/product.bundle",
+    "log": "bundle-verification.log",
+    "sha256": "c5f76a66c50325e86d305cc4248e8b903eb19bc6eb7b3cd3420a8d7a42bd618f",
+    "verified": true
+  },
+  "product_push": "success",
+  "recorded_at": "2026-11-17T13:03:24.411536+00:00",
+  "repository": "just-every/run-oncall",
+  "reproduction_base": "c38d139e019e9553195d2b340e2086443e0f0e56",
+  "schema": 1,
+  "sources_lock_sha256": "afe85ca995479227ac98ed7067ee395c6db921e16c94d16637b41140fd22db4d"
+}

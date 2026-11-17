@@ -1,0 +1,74 @@
+{
+  "at": "2026-11-17T12:52:47.508Z",
+  "mode": "before",
+  "results": [
+    {
+      "mode": "before",
+      "width": 1440,
+      "screen": "incident",
+      "missedVisible": false,
+      "horizontalOverflow": false
+    },
+    {
+      "mode": "before",
+      "width": 1440,
+      "screen": "alert",
+      "missedVisible": false,
+      "horizontalOverflow": false
+    },
+    {
+      "mode": "before",
+      "width": 1440,
+      "screen": "on-call",
+      "missedVisible": false,
+      "horizontalOverflow": false
+    },
+    {
+      "mode": "before",
+      "width": 1440,
+      "screen": "reviews",
+      "missedVisible": false,
+      "horizontalOverflow": false
+    },
+    {
+      "mode": "before",
+      "width": 1440,
+      "initialDeadlineCount": 0,
+      "firedDeadlineCount": 0
+    },
+    {
+      "mode": "before",
+      "width": 390,
+      "screen": "incident",
+      "missedVisible": false,
+      "horizontalOverflow": false
+    },
+    {
+      "mode": "before",
+      "width": 390,
+      "screen": "alert",
+      "missedVisible": false,
+      "horizontalOverflow": false
+    },
+    {
+      "mode": "before",
+      "width": 390,
+      "screen": "on-call",
+      "missedVisible": false,
+      "horizontalOverflow": false
+    },
+    {
+      "mode": "before",
+      "width": 390,
+      "screen": "reviews",
+      "missedVisible": false,
+      "horizontalOverflow": false
+    },
+    {
+      "mode": "before",
+      "width": 390,
+      "initialDeadlineCount": 0,
+      "firedDeadlineCount": 0
+    }
+  ]
+}

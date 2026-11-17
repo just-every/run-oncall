@@ -1,0 +1,12 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+OC-058 scheduled snooze: absolute replacement, never-early boundary, restart and concurrent/double sweep produce one deterministic re-trigger obligation with paging OFF
+OC-058 timeout: each new acknowledgment starts a new versioned deadline and current level-one coverage is resolved only when it fires
+OC-058 snooze handoff: departed assignee is replaced by current on-call at the captured level, with no invented level or delivery
+OC-058 checkpoint receiving duty: pending snooze restored held and scheduled work never resumes it
+OC-058 OC-053 API incident door: scoped snooze and repeated idempotency key retain one pending absolute deadline
+OC-058 cancellation and gaps: resolution and explicit cancellation stop deadlines; missing current on-call is a retained operator-visible failure, never silence
+OC-058 scheduled source recovery: a source recovered mid-snooze remains acknowledged after the deadline with no re-trigger obligation
+OC-058 atomic deadline custody: failed permanent audit rolls back snooze and scheduled expiry together; the durable pending item remains visible and a later sweep commits exactly once
+PASS missedAcknowledgmentFlow: initial expiry survives restart and audit rollback, repeated/concurrent cron records once, deadline coverage survives delayed processing, late acknowledgment retains the miss, on-time acknowledgment/recovery/off stop it, uncovered target is explicit, archive accepted, paging OFF

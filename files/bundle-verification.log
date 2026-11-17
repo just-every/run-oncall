@@ -1,0 +1,9 @@
+/home/agent/rer-consolidation/work/sd-oncall-missed-ack-1/product.bundle is okay
+The bundle contains these 5 refs:
+2f02a12bc54cd0d48c46132b331239ae6562d876 refs/heads/cloud/sd-oncall-missed-ack-1
+c38d139e019e9553195d2b340e2086443e0f0e56 refs/heads/main
+fb54c79d904d66342f166910d64996aa399bddf9 refs/remotes/origin/HEAD
+fb54c79d904d66342f166910d64996aa399bddf9 refs/remotes/origin/main
+2f02a12bc54cd0d48c46132b331239ae6562d876 HEAD
+The bundle records a complete history.
+The bundle uses this hash algorithm: sha1
