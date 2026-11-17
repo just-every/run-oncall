@@ -1,0 +1,21 @@
+{
+  "head": "49ee0f80092ec75f72c09c18e2650de75d4d3653",
+  "changed_test_files": [
+    {
+      "file": "tests/agent-door-browser.mjs",
+      "added_email_shaped_strings": []
+    },
+    {
+      "file": "tests/oncall-agent-action-submit-replay.mjs",
+      "added_email_shaped_strings": []
+    },
+    {
+      "file": "tests/oncall-agent-flow.mjs",
+      "added_email_shaped_strings": []
+    }
+  ],
+  "contract_judgments_unchanged": true,
+  "generated_views_not_committed": true,
+  "production_or_pin_changes": false,
+  "publication_scan": "not run in cloud; fleet lander required"
+}

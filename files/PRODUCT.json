@@ -1,0 +1,37 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f255",
+  "head": "49ee0f80092ec75f72c09c18e2650de75d4d3653",
+  "main": "112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554",
+  "full_history": true,
+  "clean": true,
+  "pushed": true,
+  "counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "target_status_before": "missing",
+  "target_status_after": "missing",
+  "claims": [
+    {
+      "id": "BASE-AGENT-012",
+      "status": "PARTIAL",
+      "selected_point": 3,
+      "whole_acceptance_complete": false
+    }
+  ],
+  "publication_scan": {
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "reason": "guarded fleet lander owns scan"
+  },
+  "landing": "branch only",
+  "pr": null
+}

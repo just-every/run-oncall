@@ -1,0 +1,341 @@
+[
+  {
+    "label": "first-party",
+    "head": "49ee0f80092ec75f72c09c18e2650de75d4d3653",
+    "command": [
+      "pnpm",
+      "exec",
+      "rer",
+      "check",
+      "--profile",
+      "first-party"
+    ],
+    "started": "2026-11-17T06:09:49.606236+00:00",
+    "source_hashes": {
+      "tests/oncall-agent-action-submit-replay.mjs": "525589c4f24ebdfb8f8b57da968f2b7d91943140d4313a5b87c6efac3b570a81",
+      "tests/oncall-agent-flow.mjs": "a7b7b9587e01972b93b0d6b3801802082ed43a4eabfba265876de178deb0dd83",
+      "tests/agent-door-browser.mjs": "7dd1d63b4e740a8f439293699af40c9e979a2b079fecb775f5c2ad21f3666567",
+      "tests/agent-door-runtime.mjs": "a829a182bb444cc39b353378aea16d8255832b167bb3cfec1452d54c7563d898",
+      "src/agent-door/coordination-tools.ts": "40f8b367eb6bfe0222939876a2dd0019044a223162f673a292be24a38530755b",
+      "src/reviews/review-controls.ts": "a98ecdb9aec084f5119f63aa1742887f9148153f53b795015054dd08bf5dea0e",
+      "src/modules/agent-door/pipeline.ts": "7647b1f8e8ab591423b645e37ac09bcddc88d99c269b1f136a69aa8db725fab3",
+      "sources.lock.json": "74a982584bce9cab24c4f94a7142f2241b65e5996806952363a3ae00e36e1293",
+      "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    "exit": 0,
+    "seconds": 0.88,
+    "completed": "2026-11-17T06:09:50.487572+00:00",
+    "source_hashes_after": {
+      "tests/oncall-agent-action-submit-replay.mjs": "525589c4f24ebdfb8f8b57da968f2b7d91943140d4313a5b87c6efac3b570a81",
+      "tests/oncall-agent-flow.mjs": "a7b7b9587e01972b93b0d6b3801802082ed43a4eabfba265876de178deb0dd83",
+      "tests/agent-door-browser.mjs": "7dd1d63b4e740a8f439293699af40c9e979a2b079fecb775f5c2ad21f3666567",
+      "tests/agent-door-runtime.mjs": "a829a182bb444cc39b353378aea16d8255832b167bb3cfec1452d54c7563d898",
+      "src/agent-door/coordination-tools.ts": "40f8b367eb6bfe0222939876a2dd0019044a223162f673a292be24a38530755b",
+      "src/reviews/review-controls.ts": "a98ecdb9aec084f5119f63aa1742887f9148153f53b795015054dd08bf5dea0e",
+      "src/modules/agent-door/pipeline.ts": "7647b1f8e8ab591423b645e37ac09bcddc88d99c269b1f136a69aa8db725fab3",
+      "sources.lock.json": "74a982584bce9cab24c4f94a7142f2241b65e5996806952363a3ae00e36e1293",
+      "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    "log": "first-party.log"
+  },
+  {
+    "label": "build",
+    "head": "49ee0f80092ec75f72c09c18e2650de75d4d3653",
+    "command": [
+      "npx",
+      "-y",
+      "@runeditrun/rer",
+      "build"
+    ],
+    "started": "2026-11-17T06:09:50.550489+00:00",
+    "source_hashes": {
+      "tests/oncall-agent-action-submit-replay.mjs": "525589c4f24ebdfb8f8b57da968f2b7d91943140d4313a5b87c6efac3b570a81",
+      "tests/oncall-agent-flow.mjs": "a7b7b9587e01972b93b0d6b3801802082ed43a4eabfba265876de178deb0dd83",
+      "tests/agent-door-browser.mjs": "7dd1d63b4e740a8f439293699af40c9e979a2b079fecb775f5c2ad21f3666567",
+      "tests/agent-door-runtime.mjs": "a829a182bb444cc39b353378aea16d8255832b167bb3cfec1452d54c7563d898",
+      "src/agent-door/coordination-tools.ts": "40f8b367eb6bfe0222939876a2dd0019044a223162f673a292be24a38530755b",
+      "src/reviews/review-controls.ts": "a98ecdb9aec084f5119f63aa1742887f9148153f53b795015054dd08bf5dea0e",
+      "src/modules/agent-door/pipeline.ts": "7647b1f8e8ab591423b645e37ac09bcddc88d99c269b1f136a69aa8db725fab3",
+      "sources.lock.json": "74a982584bce9cab24c4f94a7142f2241b65e5996806952363a3ae00e36e1293",
+      "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    "exit": 0,
+    "seconds": 9.198,
+    "completed": "2026-11-17T06:09:59.749919+00:00",
+    "source_hashes_after": {
+      "tests/oncall-agent-action-submit-replay.mjs": "525589c4f24ebdfb8f8b57da968f2b7d91943140d4313a5b87c6efac3b570a81",
+      "tests/oncall-agent-flow.mjs": "a7b7b9587e01972b93b0d6b3801802082ed43a4eabfba265876de178deb0dd83",
+      "tests/agent-door-browser.mjs": "7dd1d63b4e740a8f439293699af40c9e979a2b079fecb775f5c2ad21f3666567",
+      "tests/agent-door-runtime.mjs": "a829a182bb444cc39b353378aea16d8255832b167bb3cfec1452d54c7563d898",
+      "src/agent-door/coordination-tools.ts": "40f8b367eb6bfe0222939876a2dd0019044a223162f673a292be24a38530755b",
+      "src/reviews/review-controls.ts": "a98ecdb9aec084f5119f63aa1742887f9148153f53b795015054dd08bf5dea0e",
+      "src/modules/agent-door/pipeline.ts": "7647b1f8e8ab591423b645e37ac09bcddc88d99c269b1f136a69aa8db725fab3",
+      "sources.lock.json": "74a982584bce9cab24c4f94a7142f2241b65e5996806952363a3ae00e36e1293",
+      "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    "log": "build.log"
+  },
+  {
+    "label": "typecheck",
+    "head": "49ee0f80092ec75f72c09c18e2650de75d4d3653",
+    "command": [
+      "pnpm",
+      "run",
+      "typecheck"
+    ],
+    "started": "2026-11-17T06:09:59.803483+00:00",
+    "source_hashes": {
+      "tests/oncall-agent-action-submit-replay.mjs": "525589c4f24ebdfb8f8b57da968f2b7d91943140d4313a5b87c6efac3b570a81",
+      "tests/oncall-agent-flow.mjs": "a7b7b9587e01972b93b0d6b3801802082ed43a4eabfba265876de178deb0dd83",
+      "tests/agent-door-browser.mjs": "7dd1d63b4e740a8f439293699af40c9e979a2b079fecb775f5c2ad21f3666567",
+      "tests/agent-door-runtime.mjs": "a829a182bb444cc39b353378aea16d8255832b167bb3cfec1452d54c7563d898",
+      "src/agent-door/coordination-tools.ts": "40f8b367eb6bfe0222939876a2dd0019044a223162f673a292be24a38530755b",
+      "src/reviews/review-controls.ts": "a98ecdb9aec084f5119f63aa1742887f9148153f53b795015054dd08bf5dea0e",
+      "src/modules/agent-door/pipeline.ts": "7647b1f8e8ab591423b645e37ac09bcddc88d99c269b1f136a69aa8db725fab3",
+      "sources.lock.json": "74a982584bce9cab24c4f94a7142f2241b65e5996806952363a3ae00e36e1293",
+      "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    "exit": 0,
+    "seconds": 2.956,
+    "completed": "2026-11-17T06:10:02.760936+00:00",
+    "source_hashes_after": {
+      "tests/oncall-agent-action-submit-replay.mjs": "525589c4f24ebdfb8f8b57da968f2b7d91943140d4313a5b87c6efac3b570a81",
+      "tests/oncall-agent-flow.mjs": "a7b7b9587e01972b93b0d6b3801802082ed43a4eabfba265876de178deb0dd83",
+      "tests/agent-door-browser.mjs": "7dd1d63b4e740a8f439293699af40c9e979a2b079fecb775f5c2ad21f3666567",
+      "tests/agent-door-runtime.mjs": "a829a182bb444cc39b353378aea16d8255832b167bb3cfec1452d54c7563d898",
+      "src/agent-door/coordination-tools.ts": "40f8b367eb6bfe0222939876a2dd0019044a223162f673a292be24a38530755b",
+      "src/reviews/review-controls.ts": "a98ecdb9aec084f5119f63aa1742887f9148153f53b795015054dd08bf5dea0e",
+      "src/modules/agent-door/pipeline.ts": "7647b1f8e8ab591423b645e37ac09bcddc88d99c269b1f136a69aa8db725fab3",
+      "sources.lock.json": "74a982584bce9cab24c4f94a7142f2241b65e5996806952363a3ae00e36e1293",
+      "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    "log": "typecheck.log"
+  },
+  {
+    "label": "runtime-agents",
+    "head": "49ee0f80092ec75f72c09c18e2650de75d4d3653",
+    "command": [
+      "timeout",
+      "-k",
+      "5",
+      "1200",
+      "env",
+      "ONCALL_RUNTIME_PART=agents",
+      "node",
+      "tests/runtime.mjs"
+    ],
+    "started": "2026-11-17T06:10:02.817868+00:00",
+    "source_hashes": {
+      "tests/oncall-agent-action-submit-replay.mjs": "525589c4f24ebdfb8f8b57da968f2b7d91943140d4313a5b87c6efac3b570a81",
+      "tests/oncall-agent-flow.mjs": "a7b7b9587e01972b93b0d6b3801802082ed43a4eabfba265876de178deb0dd83",
+      "tests/agent-door-browser.mjs": "7dd1d63b4e740a8f439293699af40c9e979a2b079fecb775f5c2ad21f3666567",
+      "tests/agent-door-runtime.mjs": "a829a182bb444cc39b353378aea16d8255832b167bb3cfec1452d54c7563d898",
+      "src/agent-door/coordination-tools.ts": "40f8b367eb6bfe0222939876a2dd0019044a223162f673a292be24a38530755b",
+      "src/reviews/review-controls.ts": "a98ecdb9aec084f5119f63aa1742887f9148153f53b795015054dd08bf5dea0e",
+      "src/modules/agent-door/pipeline.ts": "7647b1f8e8ab591423b645e37ac09bcddc88d99c269b1f136a69aa8db725fab3",
+      "sources.lock.json": "74a982584bce9cab24c4f94a7142f2241b65e5996806952363a3ae00e36e1293",
+      "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    "exit": 0,
+    "seconds": 400.453,
+    "completed": "2026-11-17T06:16:43.272837+00:00",
+    "source_hashes_after": {
+      "tests/oncall-agent-action-submit-replay.mjs": "525589c4f24ebdfb8f8b57da968f2b7d91943140d4313a5b87c6efac3b570a81",
+      "tests/oncall-agent-flow.mjs": "a7b7b9587e01972b93b0d6b3801802082ed43a4eabfba265876de178deb0dd83",
+      "tests/agent-door-browser.mjs": "7dd1d63b4e740a8f439293699af40c9e979a2b079fecb775f5c2ad21f3666567",
+      "tests/agent-door-runtime.mjs": "a829a182bb444cc39b353378aea16d8255832b167bb3cfec1452d54c7563d898",
+      "src/agent-door/coordination-tools.ts": "40f8b367eb6bfe0222939876a2dd0019044a223162f673a292be24a38530755b",
+      "src/reviews/review-controls.ts": "a98ecdb9aec084f5119f63aa1742887f9148153f53b795015054dd08bf5dea0e",
+      "src/modules/agent-door/pipeline.ts": "7647b1f8e8ab591423b645e37ac09bcddc88d99c269b1f136a69aa8db725fab3",
+      "sources.lock.json": "74a982584bce9cab24c4f94a7142f2241b65e5996806952363a3ae00e36e1293",
+      "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    "log": "runtime-agents.log"
+  },
+  {
+    "label": "browser",
+    "head": "49ee0f80092ec75f72c09c18e2650de75d4d3653",
+    "command": [
+      "timeout",
+      "-k",
+      "5",
+      "1200",
+      "env",
+      "ONCALL_CHROMIUM_PATH=/usr/bin/chromium",
+      "ONCALL_BROWSER_EVIDENCE=/home/agent/rer-consolidation/work/sd-oncall-c-f255/packet/browser",
+      "node",
+      "tests/agent-door-browser.mjs"
+    ],
+    "started": "2026-11-17T06:16:43.366111+00:00",
+    "source_hashes": {
+      "tests/oncall-agent-action-submit-replay.mjs": "525589c4f24ebdfb8f8b57da968f2b7d91943140d4313a5b87c6efac3b570a81",
+      "tests/oncall-agent-flow.mjs": "a7b7b9587e01972b93b0d6b3801802082ed43a4eabfba265876de178deb0dd83",
+      "tests/agent-door-browser.mjs": "7dd1d63b4e740a8f439293699af40c9e979a2b079fecb775f5c2ad21f3666567",
+      "tests/agent-door-runtime.mjs": "a829a182bb444cc39b353378aea16d8255832b167bb3cfec1452d54c7563d898",
+      "src/agent-door/coordination-tools.ts": "40f8b367eb6bfe0222939876a2dd0019044a223162f673a292be24a38530755b",
+      "src/reviews/review-controls.ts": "a98ecdb9aec084f5119f63aa1742887f9148153f53b795015054dd08bf5dea0e",
+      "src/modules/agent-door/pipeline.ts": "7647b1f8e8ab591423b645e37ac09bcddc88d99c269b1f136a69aa8db725fab3",
+      "sources.lock.json": "74a982584bce9cab24c4f94a7142f2241b65e5996806952363a3ae00e36e1293",
+      "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    "exit": 0,
+    "seconds": 211.628,
+    "completed": "2026-11-17T06:20:14.994941+00:00",
+    "source_hashes_after": {
+      "tests/oncall-agent-action-submit-replay.mjs": "525589c4f24ebdfb8f8b57da968f2b7d91943140d4313a5b87c6efac3b570a81",
+      "tests/oncall-agent-flow.mjs": "a7b7b9587e01972b93b0d6b3801802082ed43a4eabfba265876de178deb0dd83",
+      "tests/agent-door-browser.mjs": "7dd1d63b4e740a8f439293699af40c9e979a2b079fecb775f5c2ad21f3666567",
+      "tests/agent-door-runtime.mjs": "a829a182bb444cc39b353378aea16d8255832b167bb3cfec1452d54c7563d898",
+      "src/agent-door/coordination-tools.ts": "40f8b367eb6bfe0222939876a2dd0019044a223162f673a292be24a38530755b",
+      "src/reviews/review-controls.ts": "a98ecdb9aec084f5119f63aa1742887f9148153f53b795015054dd08bf5dea0e",
+      "src/modules/agent-door/pipeline.ts": "7647b1f8e8ab591423b645e37ac09bcddc88d99c269b1f136a69aa8db725fab3",
+      "sources.lock.json": "74a982584bce9cab24c4f94a7142f2241b65e5996806952363a3ae00e36e1293",
+      "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    "log": "browser.log"
+  },
+  {
+    "label": "views-write",
+    "head": "49ee0f80092ec75f72c09c18e2650de75d4d3653",
+    "command": [
+      "node",
+      "src/base/contract-docs.mjs",
+      "write"
+    ],
+    "started": "2026-11-17T06:22:14.927683+00:00",
+    "source_hashes": {
+      "tests/oncall-agent-action-submit-replay.mjs": "525589c4f24ebdfb8f8b57da968f2b7d91943140d4313a5b87c6efac3b570a81",
+      "tests/oncall-agent-flow.mjs": "a7b7b9587e01972b93b0d6b3801802082ed43a4eabfba265876de178deb0dd83",
+      "tests/agent-door-browser.mjs": "7dd1d63b4e740a8f439293699af40c9e979a2b079fecb775f5c2ad21f3666567",
+      "tests/agent-door-runtime.mjs": "a829a182bb444cc39b353378aea16d8255832b167bb3cfec1452d54c7563d898",
+      "src/agent-door/coordination-tools.ts": "40f8b367eb6bfe0222939876a2dd0019044a223162f673a292be24a38530755b",
+      "src/reviews/review-controls.ts": "a98ecdb9aec084f5119f63aa1742887f9148153f53b795015054dd08bf5dea0e",
+      "src/modules/agent-door/pipeline.ts": "7647b1f8e8ab591423b645e37ac09bcddc88d99c269b1f136a69aa8db725fab3",
+      "sources.lock.json": "74a982584bce9cab24c4f94a7142f2241b65e5996806952363a3ae00e36e1293",
+      "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    "exit": 0,
+    "seconds": 0.102,
+    "completed": "2026-11-17T06:22:15.031205+00:00",
+    "source_hashes_after": {
+      "tests/oncall-agent-action-submit-replay.mjs": "525589c4f24ebdfb8f8b57da968f2b7d91943140d4313a5b87c6efac3b570a81",
+      "tests/oncall-agent-flow.mjs": "a7b7b9587e01972b93b0d6b3801802082ed43a4eabfba265876de178deb0dd83",
+      "tests/agent-door-browser.mjs": "7dd1d63b4e740a8f439293699af40c9e979a2b079fecb775f5c2ad21f3666567",
+      "tests/agent-door-runtime.mjs": "a829a182bb444cc39b353378aea16d8255832b167bb3cfec1452d54c7563d898",
+      "src/agent-door/coordination-tools.ts": "40f8b367eb6bfe0222939876a2dd0019044a223162f673a292be24a38530755b",
+      "src/reviews/review-controls.ts": "a98ecdb9aec084f5119f63aa1742887f9148153f53b795015054dd08bf5dea0e",
+      "src/modules/agent-door/pipeline.ts": "7647b1f8e8ab591423b645e37ac09bcddc88d99c269b1f136a69aa8db725fab3",
+      "sources.lock.json": "74a982584bce9cab24c4f94a7142f2241b65e5996806952363a3ae00e36e1293",
+      "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    "log": "views-write.log"
+  },
+  {
+    "label": "views-check",
+    "head": "49ee0f80092ec75f72c09c18e2650de75d4d3653",
+    "command": [
+      "node",
+      "src/base/contract-docs.mjs",
+      "check"
+    ],
+    "started": "2026-11-17T06:22:15.085470+00:00",
+    "source_hashes": {
+      "tests/oncall-agent-action-submit-replay.mjs": "525589c4f24ebdfb8f8b57da968f2b7d91943140d4313a5b87c6efac3b570a81",
+      "tests/oncall-agent-flow.mjs": "a7b7b9587e01972b93b0d6b3801802082ed43a4eabfba265876de178deb0dd83",
+      "tests/agent-door-browser.mjs": "7dd1d63b4e740a8f439293699af40c9e979a2b079fecb775f5c2ad21f3666567",
+      "tests/agent-door-runtime.mjs": "a829a182bb444cc39b353378aea16d8255832b167bb3cfec1452d54c7563d898",
+      "src/agent-door/coordination-tools.ts": "40f8b367eb6bfe0222939876a2dd0019044a223162f673a292be24a38530755b",
+      "src/reviews/review-controls.ts": "a98ecdb9aec084f5119f63aa1742887f9148153f53b795015054dd08bf5dea0e",
+      "src/modules/agent-door/pipeline.ts": "7647b1f8e8ab591423b645e37ac09bcddc88d99c269b1f136a69aa8db725fab3",
+      "sources.lock.json": "74a982584bce9cab24c4f94a7142f2241b65e5996806952363a3ae00e36e1293",
+      "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    "exit": 0,
+    "seconds": 0.129,
+    "completed": "2026-11-17T06:22:15.215346+00:00",
+    "source_hashes_after": {
+      "tests/oncall-agent-action-submit-replay.mjs": "525589c4f24ebdfb8f8b57da968f2b7d91943140d4313a5b87c6efac3b570a81",
+      "tests/oncall-agent-flow.mjs": "a7b7b9587e01972b93b0d6b3801802082ed43a4eabfba265876de178deb0dd83",
+      "tests/agent-door-browser.mjs": "7dd1d63b4e740a8f439293699af40c9e979a2b079fecb775f5c2ad21f3666567",
+      "tests/agent-door-runtime.mjs": "a829a182bb444cc39b353378aea16d8255832b167bb3cfec1452d54c7563d898",
+      "src/agent-door/coordination-tools.ts": "40f8b367eb6bfe0222939876a2dd0019044a223162f673a292be24a38530755b",
+      "src/reviews/review-controls.ts": "a98ecdb9aec084f5119f63aa1742887f9148153f53b795015054dd08bf5dea0e",
+      "src/modules/agent-door/pipeline.ts": "7647b1f8e8ab591423b645e37ac09bcddc88d99c269b1f136a69aa8db725fab3",
+      "sources.lock.json": "74a982584bce9cab24c4f94a7142f2241b65e5996806952363a3ae00e36e1293",
+      "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    "log": "views-check.log"
+  },
+  {
+    "label": "lock-regenerate",
+    "head": "49ee0f80092ec75f72c09c18e2650de75d4d3653",
+    "command": [
+      "node",
+      "node_modules/@runeditrun/rer/edition-authoring/cli.mjs",
+      "lock"
+    ],
+    "started": "2026-11-17T06:22:15.314051+00:00",
+    "source_hashes": {
+      "tests/oncall-agent-action-submit-replay.mjs": "525589c4f24ebdfb8f8b57da968f2b7d91943140d4313a5b87c6efac3b570a81",
+      "tests/oncall-agent-flow.mjs": "a7b7b9587e01972b93b0d6b3801802082ed43a4eabfba265876de178deb0dd83",
+      "tests/agent-door-browser.mjs": "7dd1d63b4e740a8f439293699af40c9e979a2b079fecb775f5c2ad21f3666567",
+      "tests/agent-door-runtime.mjs": "a829a182bb444cc39b353378aea16d8255832b167bb3cfec1452d54c7563d898",
+      "src/agent-door/coordination-tools.ts": "40f8b367eb6bfe0222939876a2dd0019044a223162f673a292be24a38530755b",
+      "src/reviews/review-controls.ts": "a98ecdb9aec084f5119f63aa1742887f9148153f53b795015054dd08bf5dea0e",
+      "src/modules/agent-door/pipeline.ts": "7647b1f8e8ab591423b645e37ac09bcddc88d99c269b1f136a69aa8db725fab3",
+      "sources.lock.json": "74a982584bce9cab24c4f94a7142f2241b65e5996806952363a3ae00e36e1293",
+      "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    "exit": 0,
+    "seconds": 0.397,
+    "completed": "2026-11-17T06:22:15.713198+00:00",
+    "source_hashes_after": {
+      "tests/oncall-agent-action-submit-replay.mjs": "525589c4f24ebdfb8f8b57da968f2b7d91943140d4313a5b87c6efac3b570a81",
+      "tests/oncall-agent-flow.mjs": "a7b7b9587e01972b93b0d6b3801802082ed43a4eabfba265876de178deb0dd83",
+      "tests/agent-door-browser.mjs": "7dd1d63b4e740a8f439293699af40c9e979a2b079fecb775f5c2ad21f3666567",
+      "tests/agent-door-runtime.mjs": "a829a182bb444cc39b353378aea16d8255832b167bb3cfec1452d54c7563d898",
+      "src/agent-door/coordination-tools.ts": "40f8b367eb6bfe0222939876a2dd0019044a223162f673a292be24a38530755b",
+      "src/reviews/review-controls.ts": "a98ecdb9aec084f5119f63aa1742887f9148153f53b795015054dd08bf5dea0e",
+      "src/modules/agent-door/pipeline.ts": "7647b1f8e8ab591423b645e37ac09bcddc88d99c269b1f136a69aa8db725fab3",
+      "sources.lock.json": "74a982584bce9cab24c4f94a7142f2241b65e5996806952363a3ae00e36e1293",
+      "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    "log": "lock-regenerate.log"
+  },
+  {
+    "label": "lock-check",
+    "head": "49ee0f80092ec75f72c09c18e2650de75d4d3653",
+    "command": [
+      "node",
+      "node_modules/@runeditrun/rer/edition-authoring/cli.mjs",
+      "check"
+    ],
+    "started": "2026-11-17T06:22:15.769968+00:00",
+    "source_hashes": {
+      "tests/oncall-agent-action-submit-replay.mjs": "525589c4f24ebdfb8f8b57da968f2b7d91943140d4313a5b87c6efac3b570a81",
+      "tests/oncall-agent-flow.mjs": "a7b7b9587e01972b93b0d6b3801802082ed43a4eabfba265876de178deb0dd83",
+      "tests/agent-door-browser.mjs": "7dd1d63b4e740a8f439293699af40c9e979a2b079fecb775f5c2ad21f3666567",
+      "tests/agent-door-runtime.mjs": "a829a182bb444cc39b353378aea16d8255832b167bb3cfec1452d54c7563d898",
+      "src/agent-door/coordination-tools.ts": "40f8b367eb6bfe0222939876a2dd0019044a223162f673a292be24a38530755b",
+      "src/reviews/review-controls.ts": "a98ecdb9aec084f5119f63aa1742887f9148153f53b795015054dd08bf5dea0e",
+      "src/modules/agent-door/pipeline.ts": "7647b1f8e8ab591423b645e37ac09bcddc88d99c269b1f136a69aa8db725fab3",
+      "sources.lock.json": "74a982584bce9cab24c4f94a7142f2241b65e5996806952363a3ae00e36e1293",
+      "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    "exit": 0,
+    "seconds": 0.485,
+    "completed": "2026-11-17T06:22:16.256022+00:00",
+    "source_hashes_after": {
+      "tests/oncall-agent-action-submit-replay.mjs": "525589c4f24ebdfb8f8b57da968f2b7d91943140d4313a5b87c6efac3b570a81",
+      "tests/oncall-agent-flow.mjs": "a7b7b9587e01972b93b0d6b3801802082ed43a4eabfba265876de178deb0dd83",
+      "tests/agent-door-browser.mjs": "7dd1d63b4e740a8f439293699af40c9e979a2b079fecb775f5c2ad21f3666567",
+      "tests/agent-door-runtime.mjs": "a829a182bb444cc39b353378aea16d8255832b167bb3cfec1452d54c7563d898",
+      "src/agent-door/coordination-tools.ts": "40f8b367eb6bfe0222939876a2dd0019044a223162f673a292be24a38530755b",
+      "src/reviews/review-controls.ts": "a98ecdb9aec084f5119f63aa1742887f9148153f53b795015054dd08bf5dea0e",
+      "src/modules/agent-door/pipeline.ts": "7647b1f8e8ab591423b645e37ac09bcddc88d99c269b1f136a69aa8db725fab3",
+      "sources.lock.json": "74a982584bce9cab24c4f94a7142f2241b65e5996806952363a3ae00e36e1293",
+      "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    "log": "lock-check.log"
+  }
+]
