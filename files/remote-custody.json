@@ -1,0 +1,12 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17T06:13:36.318346+00:00",
+  "repository": "just-every/run-oncall",
+  "head": "38988564d2de70c8e3951e87076b609ba497e319",
+  "refs": {
+    "refs/heads/cloud/sd-oncall-c-f256": "38988564d2de70c8e3951e87076b609ba497e319",
+    "refs/heads/main": "112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554"
+  },
+  "mainEqualsCandidate": false,
+  "productBranchVerified": true
+}

@@ -1,0 +1,143 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "head": "38988564d2de70c8e3951e87076b609ba497e319",
+  "branch": "cloud/sd-oncall-c-f256",
+  "baseline": "112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554",
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0,
+      "scope": "local installation only"
+    },
+    {
+      "command": "node tests/oncall-agent-resource-parity.mjs",
+      "exit": 0,
+      "scope": "precommit focused emitted Worker matrix"
+    },
+    {
+      "command": "node tests/oncall-agent-resource-parity.mjs --browser",
+      "exit": 1,
+      "scope": "initial precommit browser harness",
+      "failure": "page.waitForResponse timed out for /api/state; native document embeds /api/workspace bootstrap",
+      "resolution": "Read the actual protected document bootstrap and compare it with native HTTP; no assertion or authority was weakened"
+    },
+    {
+      "command": "node tests/oncall-agent-resource-parity.mjs --browser",
+      "exit": 0,
+      "scope": "precommit corrected browser matrix; same test bytes as candidate"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "result": "Wrote 0 contract documents"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "scope": "new helper staged before final lock"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "scope": "after final commit and rebase"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "git diff --cached -- CONTRACT.md",
+      "exit": 0,
+      "result": "empty"
+    },
+    {
+      "command": "git diff origin/main...HEAD -- CONTRACT.md",
+      "exit": 0,
+      "result": "empty"
+    },
+    {
+      "command": "git fetch origin main and git rebase origin/main",
+      "exit": 0,
+      "result": "current branch up to date"
+    },
+    {
+      "command": "fleet cloud-push.py origin cloud/sd-oncall-c-f256",
+      "exit": 0,
+      "attempt": 1
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "exit": 0,
+      "head": "38988564d2de70c8e3951e87076b609ba497e319",
+      "completedAt": "2026-11-17T06:08:49.515260+00:00",
+      "durationSeconds": 364.6,
+      "result": "Full existing emitted Worker agent entry point, including resourceJourney, resourceParity, clientParity, follow-ups and replay and erasure flows passed"
+    },
+    {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/agent-door-browser.mjs",
+      "exit": 0,
+      "head": "38988564d2de70c8e3951e87076b609ba497e319",
+      "completedAt": "2026-11-17T06:12:43.408965+00:00",
+      "result": "Full existing browser entry point, including parity, eight client captures at 1440 and 390 and native custody and privacy assertions passed"
+    },
+    {
+      "command": "gh api repos/just-every/run-oncall/actions/runs/44028209580 --jq {status,conclusion,head_sha,html_url}",
+      "exit": 0,
+      "head": "38988564d2de70c8e3951e87076b609ba497e319",
+      "event": "push",
+      "runId": 44028209580,
+      "status": "completed",
+      "conclusion": "success",
+      "observedAt": "2026-11-17T06:18:50.397879+00:00"
+    }
+  ],
+  "publicationScan": {
+    "head": "38988564d2de70c8e3951e87076b609ba497e319",
+    "status": "NOT RUN in cloud; maintained fleet lander owns it",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  },
+  "counts": {
+    "before": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "after": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "statusBefore": "missing",
+    "statusAfter": "missing",
+    "primaryCases": 36,
+    "actionCases": 12,
+    "coverageCases": 12,
+    "clientCases": 6,
+    "clientScreens": 8,
+    "verifyLaneEntriesBefore": 20,
+    "verifyLaneEntriesAfter": 20
+  },
+  "githubApiCalls": 5,
+  "finalProductCustody": "PUSHED with exact-SHA Verify success; awaiting fleet publication scan and guarded landing"
+}

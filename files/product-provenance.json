@@ -1,0 +1,72 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f256",
+  "head": "38988564d2de70c8e3951e87076b609ba497e319",
+  "base": "112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554",
+  "fullHistory": true,
+  "changedFiles": [
+    "sources.lock.json",
+    "tests/oncall-agent-client-parity.mjs",
+    "tests/oncall-agent-resource-parity.mjs"
+  ],
+  "sourceLockSha256": "c7fc6b13ceea34f451db39e231f3210d8653f60af1480698f1ce8840f6ef00c2",
+  "preservedBoundaries": [
+    {
+      "path": "src/agent-door/resources.ts",
+      "baselineBlob": "c02d2b419cc788ac51f4beb119df9ae133aa5c2d",
+      "candidateBlob": "c02d2b419cc788ac51f4beb119df9ae133aa5c2d",
+      "unchanged": true
+    },
+    {
+      "path": "src/agent-door/native.ts",
+      "baselineBlob": "dccb50984839d87f5be7dc0e1d6b2976f28ecd47",
+      "candidateBlob": "dccb50984839d87f5be7dc0e1d6b2976f28ecd47",
+      "unchanged": true
+    },
+    {
+      "path": "src/automation/api.ts",
+      "baselineBlob": "7536126f370c5d97f74bc98aed7609dd12ef1b81",
+      "candidateBlob": "7536126f370c5d97f74bc98aed7609dd12ef1b81",
+      "unchanged": true
+    },
+    {
+      "path": "src/triage-api.ts",
+      "baselineBlob": "a96901eb500536db7c08ddded9bd48f30addf7f7",
+      "candidateBlob": "a96901eb500536db7c08ddded9bd48f30addf7f7",
+      "unchanged": true
+    },
+    {
+      "path": "src/automation/AutomationSettings.tsx",
+      "baselineBlob": "ba05040d768dd4f5b0127fda09c5bc720f18e2bf",
+      "candidateBlob": "ba05040d768dd4f5b0127fda09c5bc720f18e2bf",
+      "unchanged": true
+    },
+    {
+      "path": "tests/oncall-agent-flow.mjs",
+      "baselineBlob": "58f53c088af3b4326ea277c0d372bf84fc7b70b8",
+      "candidateBlob": "58f53c088af3b4326ea277c0d372bf84fc7b70b8",
+      "unchanged": true
+    },
+    {
+      "path": "tests/agent-door-browser.mjs",
+      "baselineBlob": "42be1850b15faf3303e36e11df1125c97498571d",
+      "candidateBlob": "42be1850b15faf3303e36e11df1125c97498571d",
+      "unchanged": true
+    },
+    {
+      "path": "tests/oncall-agent-action-parity.mjs",
+      "baselineBlob": "780789466b167cb65537f492894fca8f2b407cbd",
+      "candidateBlob": "780789466b167cb65537f492894fca8f2b407cbd",
+      "unchanged": true
+    }
+  ],
+  "contractUnchanged": true,
+  "generatedViewsUnchanged": true,
+  "emittedWorker": {
+    "path": "dist/server/index.js",
+    "sha256": "4af58b8a34c3c7783765a740c2eed0daf769e6f719c7f1eb1655595b4831698b",
+    "applicationSourceUnchangedFromBaseline": true
+  }
+}
