@@ -1,0 +1,52 @@
+{
+  "head": "0f19e1a989c05a824ee75024665fb5c22da06252",
+  "assertionWidth": 1440,
+  "screenshotWidths": [
+    1440,
+    390
+  ],
+  "observations": {
+    "D4": {
+      "alertsTestButton": 0,
+      "emailOffered": 1,
+      "createdTestButton": 0
+    },
+    "D5": {
+      "intentAfterReload": "recover",
+      "retainedKey": true
+    },
+    "D6": {
+      "alertOnCall": 0,
+      "incidentOnCall": 0
+    },
+    "D8": {
+      "closeAlertButton": 0,
+      "alertStillActive": true
+    },
+    "D7": {
+      "requiredRecoveryLink": true
+    },
+    "D9": {
+      "reopenButton": 0,
+      "reopenMenu": 0
+    }
+  },
+  "screenshots": [
+    "before/empty-alerts-1440.png",
+    "before/empty-alerts-390.png",
+    "before/integrations-1440.png",
+    "before/integrations-390.png",
+    "before/created-integration-1440.png",
+    "before/created-integration-390.png",
+    "before/source-reload-1440.png",
+    "before/source-reload-390.png",
+    "before/alert-1440.png",
+    "before/alert-390.png",
+    "before/incident-1440.png",
+    "before/incident-390.png",
+    "before/required-recovery-1440.png",
+    "before/required-recovery-390.png",
+    "before/resolved-actions-1440.png",
+    "before/resolved-actions-390.png"
+  ]
+}

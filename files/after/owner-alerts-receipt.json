@@ -1,0 +1,40 @@
+{
+  "assertionWidth": 1440,
+  "screenshotWidths": [
+    1440,
+    390
+  ],
+  "screenshots": [
+    "owner-empty-alerts-1440.png",
+    "owner-empty-alerts-390.png",
+    "owner-integration-choices-1440.png",
+    "owner-integration-choices-390.png",
+    "owner-alert-1440.png",
+    "owner-alert-390.png",
+    "owner-resolve-1440.png",
+    "owner-resolve-390.png",
+    "owner-reopen-1440.png",
+    "owner-reopen-390.png",
+    "owner-reopened-1440.png",
+    "owner-reopened-390.png",
+    "owner-created-integration-1440.png",
+    "owner-created-integration-390.png"
+  ],
+  "items": {
+    "D4": "session test on chosen service",
+    "D5": "source journey proves fresh identities and explicit same-alert options",
+    "D6": "live primary and backup; one-click alert and incident ownership",
+    "D7": "required inline note; no link; recovery recorded",
+    "D8": "default linked closure, explicit opt-out, direct alert closure; list/nav refresh",
+    "D9": "menu and button; optional reason; attributed prior-state restoration"
+  },
+  "newAlerts": 3,
+  "anonymousRefused": true,
+  "viewerRefused": true,
+  "revokedRefused": true,
+  "archiveAccepted": true,
+  "reopenDialogDismissed": true,
+  "existingRecoveryLinkRetained": true,
+  "clientArchiveHistoryValid": true,
+  "paging": "OFF"
+}

@@ -1,0 +1,83 @@
+{
+  "recordedAt": "2026-11-17T23:18:23.942797+00:00",
+  "head": "be2d69c6021f5318eb2256584a5aaa060aba6a37",
+  "checks": [
+    {
+      "command": "pnpm run typecheck",
+      "status": "passed",
+      "completionMarker": "> tsc --noEmit",
+      "logSha256": "e78a64be6f96853153339bb62be862f6be3fe8629ed7ff06b76debc9e36dad8b",
+      "logBytes": 183
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "status": "passed",
+      "completionMarker": "build: complete (exit 0)",
+      "logSha256": "29724f5459c6842b2329e459873a8ced473f9d3421dd9f60b6063f6acadc3a9b",
+      "logBytes": 16959
+    },
+    {
+      "command": "ONCALL_PRODUCT_JOURNEY=events-source node tests/product-browser.mjs",
+      "status": "passed",
+      "completionMarker": "Emitted Worker Events source journey passed",
+      "logSha256": "4c0d8867720951d46df8a2f1d961d434dc29ee61d614446a40ae73666e316f2f",
+      "logBytes": 1052,
+      "exactSha": true
+    },
+    {
+      "command": "ONCALL_PRODUCT_JOURNEY=response-policy node tests/product-browser.mjs",
+      "status": "passed",
+      "completionMarker": "Emitted Worker response-policy journey passed",
+      "logSha256": "40e87b3c8a1baf85e17815a25a23290a1c46d44bef9a37ebd7d32fe924bb5d7c",
+      "logBytes": 190
+    },
+    {
+      "command": "ONCALL_PRODUCT_JOURNEY=roles node tests/product-browser.mjs",
+      "status": "passed",
+      "completionMarker": "Emitted Worker role and workflow browser journey passed",
+      "logSha256": "6b14eaf8ace9459a9a01745cb331f152d17fc42ffe25f49db8168a8ea773ec39",
+      "logBytes": 2390
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=core node tests/runtime.mjs",
+      "status": "passed",
+      "completionMarker": "Runtime core completed",
+      "logSha256": "aaa12b4bce3dc7e807a40f1ed976ee8193de571ae5648a045a80a6000273ad8c",
+      "logBytes": 24177
+    },
+    {
+      "command": "ONCALL_TRIAGE_PART=storm node tests/triage.mjs",
+      "status": "passed",
+      "completionMarker": "triage storm: 50 incidents",
+      "logSha256": "3322135e6743d22b631ab9d25211cf2212de6a271e756e0b4ed38fc5733d662c",
+      "logBytes": 3963
+    }
+  ],
+  "lock": {
+    "regenerate": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+    "check": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+    "exit": 0,
+    "sha256": "5f1bd144051424a1e0ccca2b21a850f4ca6fdef316665f82a3331ceed53fefba",
+    "regeneratedLast": true
+  },
+  "contractDocsCheck": "passed; unchanged sources and generated views",
+  "identityCheck": "Run Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>\n\n",
+  "candidateCommitCount": 1,
+  "candidateMergeCount": 0,
+  "push": {
+    "attempts": 1,
+    "status": "PUSH_OK",
+    "branch": "cloud/sd-oncall-design-alerts-2",
+    "head": "be2d69c6021f5318eb2256584a5aaa060aba6a37"
+  },
+  "publicationScan": "fleet-owned Mac gate; not executable in this cloud",
+  "priorTreeLocalChecks": "runtime/triage and policy/role checks ran before commit on the same code; final exact-SHA browser/build receipt follows",
+  "finalExactShaBrowser": "passed",
+  "browserBuild": {
+    "sourceSha": "be2d69c6021f5318eb2256584a5aaa060aba6a37",
+    "fingerprint": null,
+    "versionId": null
+  },
+  "finalLockCheckExit": 0,
+  "checkoutClean": true
+}

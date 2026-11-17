@@ -1,0 +1,53 @@
+{
+  "head": "be2d69c6021f5318eb2256584a5aaa060aba6a37",
+  "build": {
+    "sourceSha": "be2d69c6021f5318eb2256584a5aaa060aba6a37",
+    "fingerprint": null,
+    "versionId": null
+  },
+  "assertionWidth": 1440,
+  "presentationWidths": [
+    1440,
+    390
+  ],
+  "alertResult": {
+    "alert": "1f952b56-e0fe-4ff3-98a0-ad01813b7165",
+    "service": "Brightwell Support",
+    "effect": "New alert raised"
+  },
+  "createdResult": {
+    "alert": "f658ee7a-981a-4561-83cb-20fcb383a906",
+    "service": "Brightwell Support",
+    "effect": "New alert raised"
+  },
+  "sourceResult": {
+    "alert": "8451f553-193b-4572-adfe-a16d9a3f914a",
+    "service": "Brightwell Support",
+    "effect": "New alert raised"
+  },
+  "addResult": {
+    "alert": "f658ee7a-981a-4561-83cb-20fcb383a906",
+    "service": "Brightwell Support",
+    "effect": "Added to the open alert"
+  },
+  "closeResult": {
+    "alert": "f658ee7a-981a-4561-83cb-20fcb383a906",
+    "service": "Brightwell Support",
+    "effect": "Alert closed"
+  },
+  "inlineValidation": true,
+  "screenshots": [
+    "results/alerts-raised-result-1440.png",
+    "results/alerts-raised-result-390.png",
+    "results/created-integration-result-1440.png",
+    "results/created-integration-result-390.png",
+    "results/new-alert-result-1440.png",
+    "results/new-alert-result-390.png",
+    "results/add-alert-result-1440.png",
+    "results/add-alert-result-390.png",
+    "results/close-alert-result-1440.png",
+    "results/close-alert-result-390.png",
+    "results/resolve-inline-validation-1440.png",
+    "results/resolve-inline-validation-390.png"
+  ]
+}

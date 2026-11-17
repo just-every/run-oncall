@@ -1,0 +1,101 @@
+{
+  "baseMain": "0f19e1a989c05a824ee75024665fb5c22da06252",
+  "priorHead": "467a003cbfba15bb1f8e297d734e90d27faf6bd1",
+  "priorRoundBase": "09f2821d713460dcd33d0878dc3a7825daccfc5a",
+  "method": "3-way apply of prior net diff excluding sources.lock.json; ordinary single-parent candidate commit",
+  "overlaps": [
+    "sources.lock.json",
+    "src/alerts/AlertPage.tsx",
+    "src/api.ts",
+    "src/app/shell/nav.ts",
+    "tests/product-browser.mjs"
+  ],
+  "conflictsResolved": [
+    "src/api.ts: preserve installation-name import and test-alert installer",
+    "tests/product-browser.mjs: preserve main Details step alongside title-case alert state expectation"
+  ],
+  "allDifferenceFilesFromPriorExceptLockBelongToNewerMain": true,
+  "differenceFilesFromPrior": [
+    "README.md",
+    "docs/getting-started.md",
+    "docs/overview.md",
+    "docs/team.md",
+    "rer-setup.json",
+    "scripts/verify-shards.json",
+    "sources.lock.json",
+    "src/ScheduleSummary.tsx",
+    "src/agent-door/coordination-tools.ts",
+    "src/alerts/AlertPage.tsx",
+    "src/api.ts",
+    "src/app/GeneralSection.tsx",
+    "src/app/paths.ts",
+    "src/app/shell/AppShell.tsx",
+    "src/app/shell/frame.css",
+    "src/app/shell/nav.ts",
+    "src/auth.server.ts",
+    "src/brand/installation.ts",
+    "src/identity.ts",
+    "src/landing/Hero.tsx",
+    "src/landing/LocalDoor.tsx",
+    "src/landing/Mark.tsx",
+    "src/landing/door.css",
+    "src/modules/portability/cli-options.mjs",
+    "src/on-call/OnCallHome.tsx",
+    "src/on-call/PagerNotice.tsx",
+    "src/on-call/RotaPage.tsx",
+    "src/response-policy/ResponsePolicy.tsx",
+    "src/routeTree.gen.ts",
+    "src/routes/__root.tsx",
+    "src/routes/settings.general.tsx",
+    "src/routes/signin.local.tsx",
+    "src/server.dev.ts",
+    "src/server.ts",
+    "src/team/MemberRow.tsx",
+    "src/team/PersonNotifications.tsx",
+    "src/team/TeamSection.tsx",
+    "src/team/team-section.css",
+    "tests/agent-door-browser.mjs",
+    "tests/installation-fit.mjs",
+    "tests/member-coordination-browser.mjs",
+    "tests/oncall-agent-action-submit-native-revision.mjs",
+    "tests/oncall-agent-action-submit-replay.mjs",
+    "tests/oncall-agent-action-submit-response-loss.mjs",
+    "tests/oncall-agent-action-submit-retention.mjs",
+    "tests/oncall-agent-flow.mjs",
+    "tests/portability-cli.mjs",
+    "tests/product-browser.mjs",
+    "tests/transfer.mjs"
+  ],
+  "newerMainCommits": [
+    "0f19e1a989c05a824ee75024665fb5c22da06252 Show the installation name throughout setup and sign-in",
+    "572e4f17babb9fbc53600fe2e42da7e4df5604d3 Reapply completed follow-up result recovery proof on current main",
+    "53b2694d100a30707210aafa41207ff4ee451c34 Clarify paging limits and apply response settings immediately",
+    "ecdacdd840fcc4f87f8147c8df1175d6f2d6fb85 Reapply action submission retention proof on current main",
+    "b81d5cfbba43eff1e1c0ea90155fd1e56e3f3df3 Fix Team member forms, owner name editing and refused access",
+    "724c67633d6be128d9c12e6a9ee7d3424b470e75 Restrict portability CLI session cookies to valid octets",
+    "4988fbbe5e310410f02d3cfbd4ffc323bc967a6f Reapply native submission revision refusal on current main"
+  ],
+  "candidateMergeCommits": [],
+  "contractCounts": {
+    "before": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "after": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "configuredJourneyRegistrations": {
+    "before": 21,
+    "after": 21
+  },
+  "claimedClauses": [],
+  "candidateHead": "be2d69c6021f5318eb2256584a5aaa060aba6a37",
+  "candidateTree": "f843dbe0a007fc7e6d26ff4cd0cde00910a55a69",
+  "candidateParent": "0f19e1a989c05a824ee75024665fb5c22da06252"
+}
