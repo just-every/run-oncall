@@ -9,11 +9,11 @@ import {FailureLine, useActionFailure} from '../../app/FailureLine';
 import {request, HttpFailure, InterruptedTransport} from '../../useWorkspace';
 import {ReviewedChange} from '../../schedule-coverage/ReviewedChange';
 import type {ScheduleReview} from '../../schedule-coverage/review';
-import type {Schedule} from '../../family/response-operations/schedules';
+import {resolveLocal, type Coverage, type Schedule} from '../../family/response-operations/schedules';
 import type {Member, State} from '../../family/response-operations/domain';
 import {teamCoverage,memberPTO} from '../../teams/model';
 import {readLocalDraft, writeLocalDraft, removeLocalDraft, policyDrafts} from '../../app/autosave/localDraft';
-import {newDraft, editDraft, toSchedule, isRotaDraft, sameRota, RotaDraftError, type RotaDraft} from './draft';
+import {newDraft, editDraft, toSchedule, isRotaDraft, sameRota, RotaDraftError, localDate, type RotaDraft} from './draft';
 import {StepService} from './StepService';
 import {StepPeople} from './StepPeople';
 import {StepHandover} from './StepHandover';
@@ -32,14 +32,14 @@ export function RotaSteps({state, actor, schedule, service = '', refresh}: {stat
   const openedAt=useRef(Math.floor(Date.now()/60000)*60000).current;
   const [rangeFrom,setRangeFrom]=useState('');
   const [days,setDays]=useState(31),[icsInput,setICSInput]=useState<any>(null);
-  const [previewed, setPreviewed] = useState<Schedule | null>(null), failures = useActionFailure(), navigate = useNavigate(), form = useRef<HTMLFormElement>(null);
+  const [preview, setPreview] = useState<{schedule: Schedule; windows: Coverage[]; to: number} | null>(null), failures = useActionFailure(), navigate = useNavigate(), form = useRef<HTMLFormElement>(null);
   const validation = useMemo(() => {
     try {return {schedule: toSchedule(draft), error: null};}
     catch (error) {return {schedule: null, error: {field: error instanceof RotaDraftError ? error.field : 'handover', message: error instanceof Error ? error.message : String(error)}};}
   }, [draft]);
   useEffect(()=>{if(failures.failure){const line=document.querySelector<HTMLElement>('.oc-rota-steps .failure-line');if(line){line.tabIndex=-1;line.focus();line.scrollIntoView({block:'nearest'});}}},[failures.failure]);
   useEffect(()=>{if(schedule&&schedule.revision!==draft.revision&&draft.original){try{if(sameRota(toSchedule(draft),draft.original))setDraft(editDraft(schedule));}catch{}}},[schedule,draft]);
-  const proposed = validation.schedule;
+  const proposed = validation.schedule, previewed = preview?.schedule ?? null;
   const evaluatedFrom=rangeFrom?Date.parse(rangeFrom+'Z'):Math.max(openedAt,Date.parse(proposed?.validFrom??new Date(openedAt).toISOString()));
   const update = (value: Partial<RotaDraft>) => {setDraft(current => {const next = {...current, ...value};writeLocalDraft({kind:'rota', id:draftId, baseVersion, value:next});return next;});setReview(null);setICSInput(null);setNotice('');failures.clear();};
   const canEdit = ptoOnly||available.some(service => service.id === draft.service);
@@ -85,17 +85,22 @@ export function RotaSteps({state, actor, schedule, service = '', refresh}: {stat
   const content = {draft, update, state: {...state, services: available}};
   const blocked = step === 3 && (!proposed || JSON.stringify(proposed) !== JSON.stringify(previewed));
   const hint = blocked ? validation.error?.message ?? 'Wait for the current coverage preview to finish successfully. If it failed, open Preview coverage and try again.' : null;
-  return <div ref={tooltips} className="oc-oncall oc-rota-steps"><Link className="oc-back" to={schedule ? '/on-call/' + encodeURIComponent(schedule.id) as any : '/on-call' as any}>‹ {schedule ? schedule.name : 'On call'}</Link><header className="oc-page-head"><h1>{ptoOnly?'Your PTO':schedule ? 'Edit rota' : 'New rota'}</h1></header>
+  return <div ref={tooltips} className="oc-oncall oc-rota-steps"><Link className="oc-back" to={schedule ? '/on-call/' + encodeURIComponent(schedule.id) as any : '/on-call' as any}>‹ {schedule ? schedule.name : 'On call'}</Link><header className="oc-page-head"><h1>{ptoOnly?'Your time off':schedule ? 'Edit rota' : 'New rota'}</h1></header>
     {canEdit ? <div className="oc-step-layout"><div>{!ptoOnly&&<nav className="oc-step-nav" aria-label="Rota steps">{steps.map((label, index) => <button type="button" key={label} aria-current={step === index ? 'step' : undefined} disabled={index > step} onClick={() => {setStep(index);setReview(null);}}><span>{index + 1}</span>{label}</button>)}</nav>}
       <ValidationForm ref={form} className="oc-card oc-step-card" onSubmit={event => {event.preventDefault();if(step < 3) setStep(step + 1);else void finish();}}>
-        {!ptoOnly&&(step === 0 ? <StepService {...content}/> : step === 1 ? <StepPeople {...content}/> : step === 2 ? <StepHandover {...content}/> : <StepCheck {...content} endError={validation.error?.field === 'ends' ? validation.error.message : undefined}/>)}
-        {step===3&&<><RotaField label={<>Coverage review from (UTC)</>}><input type="datetime-local" required value={Number.isFinite(evaluatedFrom)?new Date(evaluatedFrom).toISOString().slice(0,16):''} onChange={e=>{setRangeFrom(e.target.value);setReview(null);setICSInput(null);}}/></RotaField><RotaField label={<>Coverage review elapsed days</>}><input type="number" min={1} max={366} value={days} onChange={e=>{setDays(Number(e.target.value));setReview(null);}}/></RotaField><CoverageRules draft={draft} update={update} state={state} admin={actor.role==='admin'} actor={actor} ptoOnly={ptoOnly} days={days} from={evaluatedFrom} onICSReview={(value,input)=>{setReview(value);setICSInput(input);}}/></>}
+        {!ptoOnly&&(step === 0 ? <StepService {...content}/> : step === 1 ? <StepPeople {...content}/> : step === 2 ? <StepHandover {...content}/> : <StepCheck {...content} preview={preview} endError={validation.error?.field === 'ends' ? validation.error.message : undefined}/>)}
+        {step===3&&<details open={ptoOnly || undefined}><summary>More options</summary>
+          <RotaField label={<>Check coverage from</>}><input type="datetime-local" required value={Number.isFinite(evaluatedFrom)?localDate(evaluatedFrom,draft.zone):''} onChange={e=>{const at=e.target.value?resolveLocal(e.target.value,draft.zone,draft.ambiguity):null;setRangeFrom(at===null?'':new Date(at).toISOString().slice(0,16));setReview(null);setICSInput(null);}}/></RotaField>
+          <RotaField label={<>Days to check</>}><input type="number" min={1} max={366} value={days} onChange={e=>{setDays(Number(e.target.value));setReview(null);}}/></RotaField>
+          <CoverageRules draft={draft} update={update} state={state} admin={actor.role==='admin'} actor={actor} ptoOnly={ptoOnly} days={days} from={evaluatedFrom} onICSReview={(value,input)=>{setReview(value);setICSInput(input);}}/>
+        </details>}
+
         {schedule && schedule.revision !== draft.revision && <div className="oc-draft-conflict"><p>A newer rota is available: {schedule.name}. Your draft is kept.</p><button type="button" onClick={() => update({revision:schedule.revision, original:schedule})}>Use mine</button></div>}
         {step >= 2 && validation.error?.field === 'handover' && draft.starts && draft.time && <p role="alert">{validation.error.message}</p>}
         <FailureLine failure={failures.failure}/>{notice && <p role="status">{notice}</p>}
         <div className="oc-step-actions">{!ptoOnly&&step > 0 && <button type="button" onClick={() => {setStep(step - 1);setReview(null);}}>Back</button>}<button className="primary" type="submit" aria-describedby={hint?hintId:undefined} disabled={busy || blocked}>{step < 3 ? 'Continue' : schedule ? 'Review change' : 'Create rota'}</button></div>{hint&&<p id={hintId} role="status">{hint}</p>}
       </ValidationForm>
       {review && <ReviewedChange key={review.digest} review={review} busy={busy} focusOnOpen={!icsInput} onApply={() => void apply()}/>}
-    </div><RotaPreview schedule={proposed} state={state} onReady={setPreviewed} days={days} from={schedule?evaluatedFrom:undefined}/></div> : <p>A workspace administrator or this service’s team manager can create and edit rotas.</p>}
+    </div><RotaPreview schedule={proposed} state={state} onReady={(schedule,windows,to)=>setPreview(schedule&&windows&&to?{schedule,windows,to}:null)} days={days} from={rangeFrom||schedule?evaluatedFrom:undefined}/></div> : <p>A workspace administrator or this service’s team manager can create and edit rotas.</p>}
   </div>;
 }

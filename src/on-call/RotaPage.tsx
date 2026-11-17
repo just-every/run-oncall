@@ -51,7 +51,11 @@ export function RotaPage({id, state, actor, value, refresh, edit = false, render
   const changed = async () => {await refresh();await load();};
   const canEdit = !!schedule && (schedule.services?.length?actor.role==='admin':teamCoverage(state, actor, schedule.service)), responsive = ['admin','responder'].includes(actor.role);
   const person = (id: string | null) => state.members.find(person => person.id === id);
-  const shifts: OnCallBand[] = windows.flatMap((window, index) => (['primary','backup'] as const).map(role => ({role, member: window[role] && person(window[role]) ? {id: window[role]!, name: person(window[role])!.name} : null, from: new Date(window.at).toISOString(), to: new Date(windows[index + 1]?.at ?? from + 14 * 86_400_000).toISOString()})));
+  const shifts: OnCallBand[] = windows.flatMap((window, index) => {
+    if (!schedule) return [];
+    const start = Math.max(window.at, Date.parse(schedule.validFrom)), end = windows[index + 1]?.at ?? from + 14 * 86_400_000;
+    return end > start ? (['primary','backup'] as const).map(role => ({role, member: window[role] && person(window[role]) ? {id: window[role]!, name: person(window[role])!.name} : null, from: new Date(start).toISOString(), to: new Date(end).toISOString()})) : [];
+  });
   // Layers cut the timeline at every boundary; the chart shows one holder across several cuts as one bar. Swaps keep the cuts: cover is judged per cut.
   const bands: OnCallBand[] = [], lastBand: Partial<Record<'primary'|'backup', OnCallBand>> = {};
   for (const shift of shifts) {const previous = lastBand[shift.role]; if (previous && previous.member?.id === shift.member?.id && previous.to === shift.from) previous.to = shift.to; else {bands.push({...shift}); lastBand[shift.role] = bands.at(-1);}}
@@ -105,7 +109,7 @@ export function RotaPage({id, state, actor, value, refresh, edit = false, render
     catch (error) {failures.show(error, {target:null});} finally {setBusy(false);}
   };
   if (edit && schedule && renderEdit) return <>{renderEdit(schedule)}</>;
-  return <div ref={tooltips} className="oc-oncall oc-rota-page"><aside className="oc-rota-neighbours oc-card" aria-label="Rotas"><h2>Rotas</h2>{value?.rotas.map(row=><Link key={row.id} to={'/on-call/'+encodeURIComponent(row.id) as any} aria-current={row.id===id?'page':undefined}><strong>{row.service.name}</strong><span>{row.name}</span><span>{row.now.primary?.name??'Nobody on call'}</span></Link>)}</aside><section className="oc-rota-record"><Link className="oc-back" to={'/on-call' as any}>‹ On call</Link><header className="oc-page-head"><div><h1>{schedule?.name ?? rota?.name ?? 'Rota'}</h1><p className="oc-quiet">{rota?.service.name ?? state.services.find(service => service.id === schedule?.service)?.name}</p></div>{(canEdit||!!schedule&&memberPTO(state,actor,schedule.service,actor.id)) && <Link className="oc-button" to={'/on-call/' + encodeURIComponent(id) + '/edit' as any}>{canEdit?'Edit rota':'Your PTO'}</Link>}</header>
+  return <div ref={tooltips} className="oc-oncall oc-rota-page"><aside className="oc-rota-neighbours oc-card" aria-label="Rotas"><h2>Rotas</h2>{value?.rotas.map(row=><Link key={row.id} to={'/on-call/'+encodeURIComponent(row.id) as any} aria-current={row.id===id?'page':undefined}><strong>{row.service.name}</strong><span>{row.name}</span><span>{row.now.primary?.name??'Nobody on call'}</span></Link>)}</aside><section className="oc-rota-record"><Link className="oc-back" to={'/on-call' as any}>‹ On call</Link><header className="oc-page-head"><div><h1>{schedule?.name ?? rota?.name ?? 'Rota'}</h1><p className="oc-quiet">{rota?.service.name ?? state.services.find(service => service.id === schedule?.service)?.name}</p></div>{(canEdit||!!schedule&&memberPTO(state,actor,schedule.service,actor.id)) && <Link className="oc-button" to={'/on-call/' + encodeURIComponent(id) + '/edit' as any}>{canEdit?'Edit rota':'Your time off'}</Link>}</header>
     <PagerNotice/>
     {savedNotice&&<p ref={savedLine} role="status" tabIndex={-1}>{savedNotice}</p>}
     <FailureLine failure={sheet ? null : failures.failure}/>

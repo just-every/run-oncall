@@ -10,7 +10,7 @@ import { request } from '../useWorkspace';
 import { duration, DurationSource, incidentStateLabel, severityLabel } from './display';
 import './reviews.css';
 
-const metrics = [['mtta', 'Acknowledgement'], ['mttr', 'Resolution'], ['recovery', 'Human recovery attestation'], ['sourceRecovery', 'Source-reported recovery']] as const;
+const metrics = [['mtta', 'Acknowledgement'], ['mttr', 'Resolution'], ['recovery', 'Recovery reported by a person'], ['sourceRecovery', 'Source-reported recovery']] as const;
 type Filters = {from: string; to: string; service: string};
 function parameters(filters: Filters) {
   const params = new URLSearchParams(filters);
@@ -44,7 +44,7 @@ export function ResponseReport({state}: {state: State}) {
       <label className="field">Period<select aria-label="Period" value={period} onChange={e=>setPeriod(e.target.value)}><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="quarter">This quarter</option><option value="custom">Two dates</option></select></label>
       <label className="field">Service<select aria-label="Service" value={service} onChange={e=>setService(e.target.value)}><option value="">All services</option>{state.services.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
       <label className="field">Time zone<select aria-label="Time zone" value={zone} onChange={e=>setZone(e.target.value)}>{[...new Set([browserZone(),...Intl.supportedValuesOf('timeZone'),'UTC'])].map(zone=><option key={zone} value={zone}>{zone}</option>)}</select></label>
-      {period==='custom'&&<><label className="field">From date<input type="date" value={from} onChange={e=>setFrom(e.target.value)}/></label><label className="field">Until date (excluded)<input type="date" value={to} onChange={e=>setTo(e.target.value)}/></label>{to<=from&&<p>Choose an end date after the start.</p>}</>}
+      {period==='custom'&&<><label className="field">From date<input type="date" value={from} onChange={e=>setFrom(e.target.value)}/></label><label className="field">End date<input type="date" aria-label="End date" aria-describedby="response-end-date-help" value={to} onChange={e=>setTo(e.target.value)}/><span className="review-meta" id="response-end-date-help">Stops at the start of this day.</span></label>{to<=from&&<p>Choose an end date after the start.</p>}</>}
     </div>
     <FailureLine failure={failures.failure} />
     {!report && loading && <p role="status">Loading response records…</p>}
@@ -68,21 +68,20 @@ export function ResponseReport({state}: {state: State}) {
         {metrics.map(([key, label]) => {
           const aggregate = report.aggregates[key];
           return <article className="response-metric" key={key}><h3>{label}</h3>
-            <dl className="review-stat-grid">{(['mean', 'p50', 'p90', 'p95'] as const).map(stat => <div key={stat}><dt>{stat === 'mean' ? 'Average' : stat}</dt><dd>{duration(aggregate[stat])}</dd></div>)}</dl>
-            <p className="review-meta">Total {aggregate.total} · measured {aggregate.measured} · censored {aggregate.censored} · unknown {aggregate.unknown}</p>
-            <details><summary>Distribution</summary>
-              <ul className="response-distribution">{aggregate.histogram.map(bucket => <li key={bucket.fromSeconds}>
-                <span>{duration(bucket.fromSeconds)} to {bucket.toSeconds === null ? '∞' : duration(bucket.toSeconds)} (end excluded)</span>
-                <span className="response-track"><span style={{width: `${aggregate.measured ? bucket.count / aggregate.measured * 100 : 0}%`}} /></span><strong>{bucket.count}</strong>
-              </li>)}</ul>
-            </details>
+            <dl className="review-stat-grid">{(['mean', 'p50', 'p90', 'p95'] as const).map(stat => <div key={stat}><dt>{{mean:'Average',p50:'Typical',p90:'Slowest 1 in 10',p95:'Slowest 1 in 20'}[stat]}</dt><dd>{duration(aggregate[stat])}</dd></div>)}</dl>
+            <p className="review-meta">Total {aggregate.total} · completed {aggregate.measured} · still open {aggregate.censored} · unknown {aggregate.unknown}</p>
           </article>;
         })}
       </div>
       <AlertNoise noise={report.noise} state={state} showDefinition={false}/>
-      <CoverageLoad load={report.load} showBasis={false} zone={zone}/>
-      <details className="review-material"><summary>How these are counted</summary>
-        <p>Declarations from {shortTime(report.cohort.from,zone)} inclusive to {shortTime(report.cohort.to,zone)} exclusive · {zone}.</p><p>Exact UTC bounds: {new Date(report.cohort.from).toUTCString()} inclusive to {new Date(report.cohort.to).toUTCString()} exclusive.</p><p>Observed through {shortTime(report.generatedAt,zone)}. Unassignable declaration timestamps: {report.cohort.unassignableDeclarations}; erased cases with unknown durations: {report.cohort.erased}.</p><p>Censored cases are lower bounds and are excluded from measured averages and percentiles. Unknown durations have no measurable source.</p><p>{report.noise.definition}</p><p>{report.cohort.inclusion}</p><ul>{report.load.basis.map(line=><li key={line}>{line}</li>)}</ul>
+      <details className="review-material"><summary>Details</summary>
+        <CoverageLoad load={report.load} showBasis={false} zone={zone}/>
+        <section aria-label="Response time distributions"><h3>Response time distributions</h3>{metrics.map(([key,label])=><section key={key}><h4>{label}</h4><ul className="response-distribution">{report.aggregates[key].histogram.map(bucket=><li key={bucket.fromSeconds}>
+          <span>{duration(bucket.fromSeconds)} to {bucket.toSeconds===null?'∞':duration(bucket.toSeconds)} (end excluded)</span>
+          <span className="response-track"><span style={{width:`${report.aggregates[key].measured?bucket.count/report.aggregates[key].measured*100:0}%`}}/></span><strong>{bucket.count}</strong>
+        </li>)}</ul></section>)}</section>
+        <h3>How these are counted</h3>
+        <p>Declarations from {shortTime(report.cohort.from,zone)} inclusive to {shortTime(report.cohort.to,zone)} exclusive · {zone}.</p><p>Exact UTC bounds: {new Date(report.cohort.from).toUTCString()} inclusive to {new Date(report.cohort.to).toUTCString()} exclusive.</p><p>Observed through {shortTime(report.generatedAt,zone)}. Unassignable declaration timestamps: {report.cohort.unassignableDeclarations}; erased cases with unknown durations: {report.cohort.erased}.</p><p>Still-open times are measured so far and are excluded from the averages and percentiles. Unknown durations cannot be established from the recorded times. Typical is the middle completed time; Slowest 1 in 10 is the time by which 90% of completed cases finished.</p><p>{report.noise.definition}</p><p>{report.cohort.inclusion}</p><ul>{report.load.basis.map(line=><li key={line}>{line}</li>)}</ul>
         <dl>{Object.entries(report.definitions).map(([key, value]) => <div key={key}><dt>{metrics.find(([name]) => name === key)?.[1] ?? key}</dt><dd>{value}</dd></div>)}</dl>
         <h3>Unavailable evidence and limits</h3><ul>{report.limitations.map(limit => <li key={limit}>{limit}</li>)}</ul>
       </details>

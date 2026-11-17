@@ -10,7 +10,7 @@ export function ReviewMaterial({material,state}: {material: Material;state:State
   return <div className="review-material-body">
     <p className="review-meta">Updated {utc(material.generatedAt)}</p>
     <details><summary>Timings</summary>
-      {material.response ? <div className="response-metrics">{(['mtta', 'mttr', 'recovery', 'sourceRecovery'] as const).map(key => <section key={key}><h4>{key === 'mtta' ? 'Acknowledgement' : key === 'mttr' ? 'Resolution' : key === 'recovery' ? 'Human recovery attestation' : 'Source-reported recovery'}</h4><DurationSource value={material.response![key]} /></section>)}</div> : <p>No response record could be assigned.</p>}
+      {material.response ? <div className="response-metrics">{(['mtta', 'mttr', 'recovery', 'sourceRecovery'] as const).map(key => <section key={key}><h4>{key === 'mtta' ? 'Acknowledgement' : key === 'mttr' ? 'Resolution' : key === 'recovery' ? 'Recovery reported by a person' : 'Source-reported recovery'}</h4><DurationSource value={material.response![key]} /></section>)}</div> : <p>No response record could be assigned.</p>}
     </details>
     <details><summary>Evidence ({material.observations.length})</summary>
       <p>{material.notice}</p>

@@ -110,7 +110,7 @@ export async function authResponse(request: Request, original: Bindings): Promis
     : page
    if (env.MAIL_PROVIDER === 'none') document = new HTMLRewriter().on('.notice', { element(notice) {
     if (!url.searchParams.has('notice')) notice.setInnerContent('Email is off for this installation. Email sign-in links and invitations are unavailable.')
-    notice.after('<p>The installation owner can run <code>rer signin</code> from the checkout that deployed it, using the same Cloudflare credentials and recorded deployment.</p>', { html: true })
+    notice.after('<p>The installation owner can run <code>~/.local/bin/rer signin</code> from the checkout that deployed it, using the same Cloudflare credentials and recorded deployment. If you see &apos;command not found&apos;, run <code>~/.local/bin/rer cli path</code> and paste the line it prints.</p>', { html: true })
    } }).transform(document)
    return brandDocumentResponse(document)
   }

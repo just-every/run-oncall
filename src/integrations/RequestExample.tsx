@@ -24,21 +24,19 @@ curl --fail-with-body ${quote(endpoint)} \\
   -H "Authorization: Bearer \${ONCALL_SOURCE_KEY:?Set ONCALL_SOURCE_KEY privately first}" \\
   --data-binary ${body}`;
   return <details className="ingress-example" open={defaultOpen}><summary>Sample request</summary>
-    <label className="field">Ingress URL<input readOnly value={endpoint} /></label>
+    <label className="field">Send alerts to this address<input readOnly value={endpoint} /></label>
     <button type="button" disabled={!origin || !source} onClick={async () => {
-      try { await navigator.clipboard.writeText(endpoint); setCopied('Ingress URL copied'); }
-      catch { setCopied('Select the URL above and copy it.'); }
-    }}>Copy ingress URL</button>
-    <p>Set <code>ONCALL_SOURCE_KEY</code> to the private key in your sender’s environment, then paste this request into a macOS, Linux or WSL terminal. It uses curl{mode === 'signed' ? ', OpenSSL and standard shell tools' : ''}; no Node.js is needed. Check <code>curl --version</code>{mode === 'signed' && <> and <code>openssl version</code></>} first.</p>
-    {routed ? <p>This sample is ready for {service.name}. The key’s published routing rules choose the service for each event.</p> : <p>This sample is ready to send events to {service.name}. Its service value is already filled in.</p>}
-    <details><summary>Request identifiers</summary>
-    {routed ? <p>The source value is this key’s ID, <code>{source}</code>, the same text as the end of the URL. The service value is only a hint: this key’s published routing rules choose the allowed service, so you can keep {service.name}’s internal ID from <a href="/settings/services">Services</a> or use another allowed service’s.</p> : <p>The service value is already filled in for {service.name}. The source ID in the URL was assigned when this source was created.</p>}
-    </details>
+      try { await navigator.clipboard.writeText(endpoint); setCopied('Address copied'); }
+      catch { setCopied('Select the address above and copy it.'); }
+    }}>Copy alert address</button>
+    {routed ? <p>Routing rules choose the service for each alert in this sample.</p> : <p>Use this sample to send an alert to {service.name}.</p>}
     <button type="button" disabled={!origin || !source} onClick={async () => {
       try { await navigator.clipboard.writeText(example); setCopied('Copied'); }
-      catch { setCopied('Open the request below and copy it.'); }
+      catch { setCopied('Open Details below and copy the request.'); }
     }}>Copy sample request</button><p role="status">{copied}</p>
-    <details><summary>View request code</summary>
+    <details><summary>Details</summary>
+    <p>Set <code>ONCALL_SOURCE_KEY</code> to the private key in your sender’s environment, then paste this request into a macOS, Linux or WSL terminal. It uses curl{mode === 'signed' ? ', OpenSSL and standard shell tools' : ''}; no Node.js is needed. Check <code>curl --version</code>{mode === 'signed' && <> and <code>openssl version</code></>} first.</p>
+    {routed ? <p>The source value is this key’s ID, <code>{source}</code>, the same text as the end of the URL. The service value is only a hint: this key’s published routing rules choose the allowed service, so you can keep {service.name}’s internal ID from <a href="/settings/services">Services</a> or use another allowed service’s.</p> : <p>The service value is already filled in for {service.name}. The source ID in the URL was assigned when this source was created.</p>}
     <label className="field"><span>Sample request</span><textarea aria-label="Sample request" readOnly value={example} rows={12} spellCheck={false} /></label>
     </details>
   </details>;

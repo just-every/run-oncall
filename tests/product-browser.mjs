@@ -47,6 +47,17 @@ async function ownerFaultsBrowser(page,context) {
  await request('/api/members/'+actor.id+'/notification-rules',{revision:0,contacts,rules},403,responderLogin.cookie);await request(path,{revision:1,contacts,rules},403,observerLogin.cookie);
  await page.setViewportSize({width:1440,height:1000});await page.goto(worker.origin+'/settings/team');const person=page.getByRole('article',{name:responder.name,exact:true});await person.locator('summary').filter({hasText:'Contact methods and notification rules'}).click();await person.getByLabel('Email address',{exact:true}).waitFor();assert.equal(await person.getByLabel('Email address',{exact:true}).inputValue(),contacts[0].address);
  await person.getByLabel('Delay in minutes',{exact:true}).fill('2');await person.getByRole('button',{name:'Save notification rules',exact:true}).click();await person.getByRole('status').filter({hasText:'Contact methods and notification rules saved'}).waitFor();assert.equal((await request(path)).rules[0].delayMinutes,2);
+
+ await person.getByRole('button',{name:'Add contact method',exact:true}).click();
+ const mobile=person.locator('fieldset').filter({has:page.getByLabel('Method',{exact:true})}).last();
+ await mobile.getByLabel('Method',{exact:true}).selectOption('sms');
+ await mobile.getByLabel('Country',{exact:true}).selectOption('44');
+ for(const number of ['+44 7700 900123','07700 900123','7700 900123','+44 (7700) 900-123']) {
+  await mobile.getByLabel('Phone number',{exact:true}).fill(number);
+  const saved=page.waitForResponse(r=>new URL(r.url()).pathname===path&&r.request().method()==='POST');
+  await person.getByRole('button',{name:'Save notification rules',exact:true}).click();assert.equal((await saved).status(),200);
+  const stored=(await request(path)).contacts.at(-1);assert.equal(stored.countryCode,44);assert.equal(stored.address,'7700900123');
+ }
  await checkScreen('Person notification rules');
  for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await person.scrollIntoViewIfNeeded();await page.screenshot({path:`evidence/browser/fault-person-${width}.png`,fullPage:true});}
  const observerContext=await context.browser().newContext({baseURL:worker.origin,viewport:{width:1440,height:1000}});await observerContext.addCookies(observerLogin.cookie.split('; ').map(pair=>({name:pair.split('=')[0],value:pair.split('=').slice(1).join('='),url:worker.origin})));const observerPage=await observerContext.newPage();
@@ -82,7 +93,21 @@ async function ownerFaultsBrowser(page,context) {
  await checkScreen('Created source credential');for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:`evidence/browser/fault-created-key-${width}.png`,fullPage:true,mask:[createdCredential.locator('input')]});}await page.setViewportSize({width:1440,height:1000});await page.getByRole('link',{name:'Open source',exact:true}).click();await page.getByRole('button',{name:'Show key',exact:true}).click();assert.ok(await page.getByRole('region',{name:'Created credential',exact:true}).getByLabel('Private key',{exact:true}).inputValue()===createdValue,'a newly created source can be read back after leaving the creation page');await page.getByRole('region',{name:'Created credential',exact:true}).getByRole('button',{name:'Done',exact:true}).click();
  await page.goto(worker.origin+'/settings/routing');const createRouted=page.locator('.routing-create');await createRouted.locator('summary').click();await createRouted.getByRole('textbox',{name:'Name',exact:true}).fill('New routed monitoring door');await createRouted.getByRole('checkbox').first().check();await createRouted.getByRole('button',{name:'Create routed key',exact:true}).click();const createdRouted=createRouted.getByRole('region',{name:'Created credential',exact:true});await createdRouted.getByLabel('Private key',{exact:true}).waitFor();const createdRoutedValue=await createdRouted.getByLabel('Private key',{exact:true}).inputValue();
  await checkScreen('Created routed credential');for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:`evidence/browser/fault-created-routed-key-${width}.png`,fullPage:true,mask:[createdRouted.locator('input')]});}await page.setViewportSize({width:1440,height:1000});await createdRouted.getByRole('button',{name:'Done',exact:true}).click();await page.getByRole('button',{name:'Show key',exact:true}).click();assert.ok(await page.getByRole('region',{name:'Created credential',exact:true}).getByLabel('Private key',{exact:true}).inputValue()===createdRoutedValue,'a new routed key can be read after dismissing its creation value');await page.getByRole('region',{name:'Created credential',exact:true}).getByRole('button',{name:'Done',exact:true}).click();
- assert.equal((await request('/api/paging/state')).paging,'OFF');
+
+ await page.goto(worker.origin+'/settings/archive');
+ const pendingBackup=page.waitForEvent('download');await page.getByRole('button',{name:'Download full backup',exact:true}).click();
+ const backup=await pendingBackup,checkpoint=JSON.parse(await readFile(await backup.path(),'utf8'));
+ assert.deepEqual(checkpoint.paging.schedules,(await request('/api/paging/state')).schedules,'the downloaded backup carries saved rotas and overrides');
+ assert.ok(checkpoint.coordination.scheduleRecords.some(row=>row.kind==='notification-rules'&&row.data.contacts.some(contact=>contact.type==='sms')),'the backup carries phone contacts');
+ await page.getByText('Restore a backup',{exact:true}).click();
+ await page.getByLabel('Choose backup file',{exact:true}).setInputFiles({name:backup.suggestedFilename(),mimeType:'application/json',buffer:Buffer.from(JSON.stringify(checkpoint))});
+ await page.getByLabel('Type REPLACE to confirm',{exact:true}).fill('REPLACE');
+ const replaced=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/recovery/restore'&&r.request().method()==='POST');
+ await page.getByRole('button',{name:'Replace workspace with this archive',exact:true}).click();assert.equal((await replaced).status(),200);
+ await page.getByRole('status').filter({hasText:'Restored.'}).waitFor();
+ for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:`evidence/browser/fault-backup-restored-${width}.png`,fullPage:true});}
+ const restoredPaging=await (await context.request.get('/api/paging/state')).json();assert.deepEqual(restoredPaging.schedules,checkpoint.paging.schedules,'restoring the downloaded backup retains rota and override data');
+ assert.equal(restoredPaging.paging,'OFF');
  assert.equal((await worker.outboundRequests()).length-outboundBefore,0,'fault journeys never send outbound traffic');
  await writeFile('evidence/browser/owner-faults-receipt.json',JSON.stringify({key:{createdRoutedRead:true,createdSourceRead:true,routedRead:true,repeatRead:true,audited:true,encrypted:true,auditFailureRefused:true,externalSend:true,rotationInvalidates:true,nonAdminRefused:true},person:{selfEdit:true,adminEdit:true,otherReadOnly:true},sharing:{importedPolicies:1,importedRotas:1,sourceServiceReferences:2,nativePolicies:1,nativeRotas:1,workspaceServiceReferences:2,atomicRollback:true,alertsUseSharedRota:true},history:{twoWeekPages:true,pastOverrides:true,previousAndCurrent:true},paging:'OFF',outboundRequests:0,assertionWidth:1440,seriousCriticalAccessibilityFindings:0,screenshots:[1440,390]},null,2)+'\n');
 }
@@ -274,6 +299,10 @@ async function responsePolicyBrowser(page,context) {
   await focusWorkspace(page)
   await page.locator('.alert-row').filter({hasText:warning.title}).click();
   const alertCard=page.getByRole('article',{name:'Alert details',exact:true});await alertCard.getByText('Event context',{exact:true}).click();
+  await alertCard.getByText('The response has stopped. Oncall paging is off.',{exact:true}).waitFor()
+  const eventContext=alertCard.locator(':scope > details').filter({has:page.getByText('Event context',{exact:true})});
+  assert.equal(await eventContext.getByText('stopped by source recovery',{exact:true}).isVisible(),false,'response mechanics start collapsed');
+  await eventContext.locator(':scope > details > summary').filter({hasText:/^Details$/}).click();
   await alertCard.getByText('stopped by source recovery',{exact:true}).waitFor()
   await alertCard.getByText(/Recovered notice: Everyone already notified · recorded/).waitFor()
   await alertCard.getByText(/Attempt cancellation:/).waitFor()
@@ -478,7 +507,7 @@ async function changeAndSigningBrowser(page,context){
   await service.getByText('Argo CD gateway sync',{exact:true}).waitFor();await service.getByText('payments: applied',{exact:true}).waitFor();await service.getByText('Terraform Cloud',{exact:true}).waitFor();
   assert.ok(await service.getByText('Dependency · Template gateway',{exact:true}).count());await service.scrollIntoViewIfNeeded();await check('oc065-changes',width);
   await page.goto(origin+'/settings/integrations');
-  await page.getByText(/of 1,000 retained changes/).scrollIntoViewIfNeeded();await check('oc065-retention',width);
+  await page.getByText(/Oncall keeps up to .* changes/).scrollIntoViewIfNeeded();await check('oc065-retention',width);
   const erasureKey=token(),erasureSource='synthetic-oncall-40-'+width;
   await request('/api/changes/sources',{id:erasureSource,name:'Synthetic erasure '+width,provider:'native',service:'synthetic-oncall-1',repository:'',mode:'bearer',revision:0,key:erasureKey});
   const changeResponse=await context.request.post('/api/changes/ingress/'+erasureSource,{headers:{authorization:'Bearer '+erasureKey},data:{eventId:erasureSource,summary:'Synthetic erasable change '+width,author:'synthetic-oncall-40',timestamp:new Date().toISOString()}});assert.equal(changeResponse.status(),201);
@@ -600,7 +629,7 @@ async function changeAndSigningBrowser(page,context){
   await page.goto(origin+'/settings/services/synthetic-oncall-1');await groupSettings.locator(':scope > summary').click();await groupSettings.getByLabel('Flapping trigger generations',{exact:true}).fill('2');await groupSettings.getByRole('button',{name:/^Publish version/}).click();await groupSettings.getByLabel('Reason',{exact:true}).fill('Hold repeating generations for review');const flapPublished=page.waitForResponse(r=>r.url().endsWith('/api/command')&&r.request().postDataJSON()?.correlation?.flappingCount===2);await groupSettings.getByRole('button',{name:/^Publish version/}).click();assert.equal((await flapPublished).status(),200);
   const flapTitle='Synthetic flapping browser '+width,flapIdentity='synthetic-oncall-439-'+width;
   for(const [eventId,generation,intent,offset] of [['synthetic-oncall-439-a','synthetic-oncall-439-a','trigger',2000],['synthetic-oncall-439-r','synthetic-oncall-439-a','recover',3000],['synthetic-oncall-439-b','synthetic-oncall-439-b','trigger',4000]]){const response=await groupSignal(1,eventId,generation,intent,flapIdentity,offset,flapTitle);assert.equal(response.status(),201);}
-  await page.reload();await openWorkspaceSection(page,'alerts');const activeFlap=(await request('/api/state')).alerts.find(a=>a.state==='active'&&a.key===flapIdentity);await page.locator('.alert-row[href="/alerts/'+activeFlap.id+'"]').click();const heldCard=page.getByRole('article',{name:'Alert details',exact:true});await heldCard.getByRole('heading',{name:flapTitle,exact:true}).waitFor();await heldCard.getByText('Event context',{exact:true}).click();assert.equal(await heldCard.count(),1);await heldCard.getByText(/1 held active generation/).waitFor();await heldCard.getByText('Retained generations and evidence',{exact:true}).click();await heldCard.scrollIntoViewIfNeeded();await check('oc043-flapping-held',width);
+  await page.reload();await openWorkspaceSection(page,'alerts');const activeFlap=(await request('/api/state')).alerts.find(a=>a.state==='active'&&a.key===flapIdentity);await page.locator('.alert-row[href="/alerts/'+activeFlap.id+'"]').click();const heldCard=page.getByRole('article',{name:'Alert details',exact:true});await heldCard.getByRole('heading',{name:flapTitle,exact:true}).waitFor();await heldCard.getByText('Event context',{exact:true}).click();assert.equal(await heldCard.count(),1);await heldCard.getByText('1 related alert cycle is still open · paging off.',{exact:true}).waitFor();await heldCard.getByText('Related alerts and evidence',{exact:true}).click();await heldCard.scrollIntoViewIfNeeded();await check('oc043-flapping-held',width);
   await openWorkspaceSection(page,'services');
   await openWorkspaceSection(page,'routing');await selectRoutedSource(page,groupSources[1]);await page.getByRole('button',{name:'Preview routing changes',exact:true}).click();
   const groupedPreview=page.getByRole('region',{name:'Routing preview',exact:true});await groupedPreview.getByText('4 retained events compared. No records changed.',{exact:true}).waitFor();await groupedPreview.getByText(/Joined original event/).first().waitFor();await groupedPreview.getByText(/Historical urgency: high/).first().waitFor();await groupedPreview.getByText(/Proposed urgency: high/).first().waitFor();await groupedPreview.scrollIntoViewIfNeeded();await check('oc043-grouping-routing-preview',width);
@@ -715,7 +744,7 @@ async function responseReportBrowser(browser) {
   await page.goto(origin+'/reviews');await page.getByText('Response numbers',{exact:true}).click()
   const panel=page.locator('.response-report');await panel.getByLabel('Period',{exact:true}).selectOption('custom')
   await panel.getByLabel('From date',{exact:true}).fill('2030-10-28')
-  await panel.getByLabel('Until date (excluded)',{exact:true}).fill('2030-10-30')
+  await panel.getByLabel('End date',{exact:true}).fill('2030-10-30')
   const response=page.waitForResponse(r=>{const u=new URL(r.url());return u.pathname==='/api/reports/response'&&u.searchParams.get('service')===scenario.service&&u.searchParams.get('from')==='2030-10-28T04:00:00.000Z'&&u.searchParams.get('to')==='2030-10-30T04:00:00.000Z'})
   await panel.getByLabel('Service',{exact:true}).selectOption(scenario.service)
   const reply=await response;assert.equal(reply.status(),200);const snapshot=await reply.json()
@@ -725,14 +754,14 @@ async function responseReportBrowser(browser) {
   const metric=label=>panel.locator('article.response-metric').filter({has:page.getByRole('heading',{name:label,exact:true,level:3})})
   const stat=async(card,label,value)=>expect(card.locator('dl > div').filter({has:page.locator('dt').filter({hasText:new RegExp('^'+label+'$')})}).locator('dd')).toHaveText(value)
   const elapsed=value=>value===null?'No samples':value<3600?new Intl.NumberFormat('en',{maximumFractionDigits:1}).format(value / 60)+' min':new Intl.NumberFormat('en',{maximumFractionDigits:1}).format(value / 3600)+' h'
-  for(const [key,label] of [['mtta','Acknowledgement'],['mttr','Resolution'],['recovery','Human recovery attestation'],['sourceRecovery','Source-reported recovery']]) {
+  for(const [key,label] of [['mtta','Acknowledgement'],['mttr','Resolution'],['recovery','Recovery reported by a person'],['sourceRecovery','Source-reported recovery']]) {
    const card=metric(label),aggregate=snapshot.aggregates[key]
-   for(const [name,caption] of [['mean','Average'],['p50','p50'],['p90','p90'],['p95','p95']])await stat(card,caption,elapsed(aggregate[name]))
-   await expect(card.locator(':scope > .review-meta')).toHaveText(`Total ${aggregate.total} · measured ${aggregate.measured} · censored ${aggregate.censored} · unknown ${aggregate.unknown}`)
+   for(const [name,caption] of [['mean','Average'],['p50','Typical'],['p90','Slowest 1 in 10'],['p95','Slowest 1 in 20']])await stat(card,caption,elapsed(aggregate[name]))
+   await expect(card.locator(':scope > .review-meta')).toHaveText(`Total ${aggregate.total} · completed ${aggregate.measured} · still open ${aggregate.censored} · unknown ${aggregate.unknown}`)
   }
-  await stat(metric('Acknowledgement'),'Average','38.3 min');await stat(metric('Acknowledgement'),'p50','15 min');await stat(metric('Acknowledgement'),'p95','1.6 h')
-  await metric('Acknowledgement').getByText('Distribution',{exact:true}).click()
-  assert.deepEqual(await metric('Acknowledgement').locator('.response-distribution strong').allTextContents(),['0','0','1','1','1','0','0'])
+  await stat(metric('Acknowledgement'),'Average','38.3 min');await stat(metric('Acknowledgement'),'Typical','15 min');await stat(metric('Acknowledgement'),'Slowest 1 in 20','1.6 h')
+  await panel.locator('details.review-material > summary').filter({hasText:/^Details$/}).click()
+  assert.deepEqual(await panel.getByRole('region',{name:'Response time distributions',exact:true}).locator('section').filter({has:page.getByRole('heading',{name:'Acknowledgement',level:4,exact:true})}).locator('.response-distribution strong').allTextContents(),['0','0','1','1','1','0','0'])
   const load=panel.locator('.coverage-load').filter({has:page.getByRole('heading',{name:'Load by scheduled coverage',exact:true})})
   await expect(load).toContainText('Synthetic New York night (America/New_York)')
   const person=name=>load.locator('article').filter({has:page.getByRole('heading',{name,exact:true,level:5})})
@@ -745,12 +774,11 @@ async function responseReportBrowser(browser) {
   await stat(person('Synthetic night response'),'Primary covered','8 h');await stat(person('Synthetic night response'),'Primary uncovered','23 h')
   const noise=panel.locator('.alert-noise-stats')
   for(const [label,value] of [['Alerts triggered','1'],['Trigger events','2'],['Repeated alerts','1'],['Noisy keys','1']])await stat(noise.locator('..'),label,value)
-  await panel.getByText('How these are counted',{exact:true}).click()
   await expect(panel).toContainText('Exact UTC bounds: Mon, 28 Oct 2030 04:00:00 GMT inclusive to Wed, 30 Oct 2030 04:00:00 GMT exclusive.')
   await expect(panel).toContainText('They are scheduled hours, not worked hours.')
   await panel.getByText('Incidents in this period (5)',{exact:true}).click()
   const late=panel.locator('.review-record').filter({has:page.getByRole('link',{name:scenario.late.title,exact:true})})
-  await expect(late.locator('section').filter({has:page.getByRole('heading',{name:'Acknowledgement',exact:true,level:4})})).toContainText('1.6 h · measured')
+  await expect(late.locator('section').filter({has:page.getByRole('heading',{name:'Acknowledgement',exact:true,level:4})})).toContainText('1.6 h · completed')
   const frozen=new URLSearchParams({from:snapshot.cohort.from,to:snapshot.cohort.to,service:scenario.service,at:snapshot.generatedAt,revision:String(snapshot.revision),schedulingRevision:String(snapshot.load.schedulingRevision)})
   assert.deepEqual(await scenario.req('/api/reports/response?'+frozen),snapshot)
   const csv=await scenario.req('/api/reports/response.csv?'+frozen),table=responseCsvRows(csv),column=name=>table[0].indexOf(name)
@@ -791,7 +819,7 @@ async function readinessBrowser(page,context) {
  await page.goto(origin);await page.locator('.oncall-frame').waitFor();
  await openWorkspaceSection(page,'services');
  await page.getByRole('navigation',{name:'Settings',exact:true}).getByRole('link',{name:'Readiness',exact:true}).click();
- await page.locator('.readiness [data-readiness-row]').first().waitFor();
+ await page.locator('.readiness-details > summary').click();await page.locator('.readiness [data-readiness-row]').first().waitFor();
  const before=durableSnapshot(worker),outbound=await worker.outboundRequests();
  const report=await request('/api/readiness');await assertInstallationChecklist(report);
  const checklist=page.getByRole('region',{name:'US installation and dependency checklist',exact:true});
@@ -829,7 +857,7 @@ async function readinessBrowser(page,context) {
  await page.getByRole('button',{name:'Refresh readiness',exact:true}).click();
  const refreshResponse=await refreshed;assert.equal(refreshResponse.status(),200);
  const refreshReport=await refreshResponse.json();await assertInstallationChecklist(refreshReport);
- await page.locator('.readiness [data-readiness-row]').first().waitFor();
+ await page.locator('.readiness-details > summary').click();await page.locator('.readiness [data-readiness-row]').first().waitFor();
  await assertChecklistPage(refreshReport);
  assert.deepEqual(durableSnapshot(worker),before,'reading and refreshing the populated checklist writes no durable rows, paging records, revisions or audit');
  assert.deepEqual(await worker.outboundRequests(),outbound,'reading and refreshing sends no outbound request');
@@ -872,13 +900,13 @@ async function eventsSourceBrowser(page,context) {
   await page.goto(origin+'/settings/integrations/new/events');
   await page.getByLabel('Name',{exact:true}).fill('Synthetic events '+mode);
   const select=page.getByLabel('Service',{exact:true});if(await select.count())await select.selectOption(service);
-  await page.getByLabel('Authentication',{exact:true}).selectOption(mode);
+  await page.getByText('Details',{exact:true}).click();await page.getByLabel('How your tool proves it is you',{exact:true}).selectOption(mode);
   await page.getByRole('button',{name:'Create source',exact:true}).click();
   const key=await page.getByLabel('Private key',{exact:true}).inputValue();assert.ok(key);
-  await expect(page.getByRole('button',{name:'Copy ingress URL',exact:true})).toBeEnabled();
-  const url=await page.getByLabel('Ingress URL',{exact:true}).inputValue();
+  await expect(page.getByRole('button',{name:'Copy alert address',exact:true})).toBeEnabled();
+  const url=await page.getByLabel('Send alerts to this address',{exact:true}).inputValue();
   assert.equal(new URL(url).origin,origin);assert.ok(new URL(url).pathname.startsWith('/api/ingress/'));
-  await page.getByRole('button',{name:'Copy ingress URL',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),url);
+  await page.getByRole('button',{name:'Copy alert address',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),url);
   const example=await page.getByLabel('Sample request',{exact:true}).inputValue();assert.ok(!example.includes(key),'sample never embeds the secret');
   assert.ok(!(await page.locator('.integrations').innerText()).includes(service),'source-created recipe names its service without exposing its internal identity');
   assert.equal(await page.getByLabel('Sample request',{exact:true}).isVisible(),false,'raw request code opens deliberately');
@@ -927,18 +955,18 @@ async function eventsSourceBrowser(page,context) {
  };
  const compatibleTrigger=await sendCompatible();
  assert.equal(await page.getByLabel('Private key',{exact:true}).inputValue(),compatibleKey,'test sends retain the private key in the mounted form');
- assert.equal(await page.getByLabel('Alert key (dedup key)',{exact:true}).inputValue(),compatibleTrigger.dedup_key,'the form exposes the actual compatible outage key');
- await page.getByLabel('Intent',{exact:true}).selectOption('recover');await sendCompatible();
+ assert.equal(await page.getByLabel('Alert ID (same ID = same alert)',{exact:true}).inputValue(),compatibleTrigger.dedup_key,'the form exposes the actual compatible outage key');
+ await page.getByLabel('What to do',{exact:true}).selectOption('recover');await sendCompatible();
  let compatibleState=await request('/api/state'),compatibleAlerts=compatibleState.alerts.filter(a=>a.source===compatibleId);
  assert.equal(compatibleAlerts.length,1);assert.equal(compatibleAlerts[0].state,'recovered');
  assert.equal(compatibleState.intakeReceipts.at(-1).outcome,'recovered','the test recovery has an effect on its trigger');
  // Reopen the same explicit outage key, visit Alerts, then return to recover it.
- await page.getByLabel('Intent',{exact:true}).selectOption('trigger');const reopened=await sendCompatible();assert.equal(reopened.dedup_key,compatibleTrigger.dedup_key);
+ await page.getByLabel('What to do',{exact:true}).selectOption('trigger');const reopened=await sendCompatible();assert.equal(reopened.dedup_key,compatibleTrigger.dedup_key);
  await page.goto(origin+'/alerts');await page.locator('.alert-row').filter({hasText:'Checkout gateway connection saturation'}).first().waitFor();
  await page.goto(origin+compatiblePath);await page.getByText('Send a test event',{exact:true}).click();
- assert.equal(await page.getByLabel('Alert key (dedup key)',{exact:true}).inputValue(),reopened.dedup_key,'returning to the compatible source restores the trigger key');
+ assert.equal(await page.getByLabel('Alert ID (same ID = same alert)',{exact:true}).inputValue(),reopened.dedup_key,'returning to the compatible source restores the trigger key');
  assert.equal(await page.getByLabel('Private key',{exact:true}).inputValue(),'','navigation does not persist the private key');
- await page.getByLabel('Private key',{exact:true}).fill(compatibleKey);await page.getByLabel('Intent',{exact:true}).selectOption('recover');
+ await page.getByLabel('Private key',{exact:true}).fill(compatibleKey);await page.getByLabel('What to do',{exact:true}).selectOption('recover');
  await proof('compatible-recover-form');await sendCompatible();compatibleState=await request('/api/state');
  compatibleAlerts=compatibleState.alerts.filter(a=>a.source===compatibleId);assert.equal(compatibleAlerts.length,2);
  assert.ok(compatibleAlerts.every(a=>a.state==='recovered'),'no compatible test alert remains active');
@@ -951,11 +979,11 @@ async function eventsSourceBrowser(page,context) {
  await page.locator('.failure-line').waitFor();const keyFailure=await page.locator('.failure-line').innerText();
  assert.match(keyFailure,/key|credential/i);assert.doesNotMatch(keyFailure,/allowance/i);await proof('compatible-key-refused');
  const source=await create('bearer');await page.getByRole('link',{name:'Open source',exact:true}).click();
- await page.getByLabel('Ingress URL',{exact:true}).waitFor();assert.equal(await page.locator('.ingress-example').getAttribute('open'),'','empty source opens its sample');
+ await page.getByLabel('Send alerts to this address',{exact:true}).waitFor();assert.equal(await page.locator('.ingress-example').getAttribute('open'),'','empty source opens its sample');
  await proof('empty-source');await page.getByText('Send a test event',{exact:true}).click();
  await page.getByLabel('Private key',{exact:true}).fill(source.key);await page.getByLabel('Title',{exact:true}).fill('Checkout API latency above 2 seconds');
  await page.getByLabel('Severity',{exact:true}).selectOption('critical');
- const key=await page.getByLabel('Alert key (dedup key)',{exact:true}).inputValue(),generation=await page.getByLabel('Lifecycle generation',{exact:true}).inputValue();
+ const key=await page.getByLabel('Alert ID (same ID = same alert)',{exact:true}).inputValue(),generation=await page.getByLabel('Alert cycle',{exact:true}).inputValue();
  const send=async()=>{const pending=page.waitForResponse(r=>r.url()===source.url&&r.request().method()==='POST');await page.getByRole('button',{name:'Send test event',exact:true}).click();assert.equal((await pending).status(),201);await page.getByRole('button',{name:'Send test event',exact:true}).waitFor();};
  await send();await page.goto(origin+'/alerts');
  let state=await request('/api/state'),alerts=state.alerts.filter(a=>a.source===source.source);assert.equal(alerts.length,1);assert.equal(alerts[0].state,'active');
@@ -967,9 +995,9 @@ async function eventsSourceBrowser(page,context) {
  await page.locator('.incident-page').getByRole('button',{name:'Acknowledge',exact:true}).click();
  await page.locator('.incident-state.state-acknowledged').waitFor();
  await page.goto(origin+source.path);await page.getByText('Send a test event',{exact:true}).click();
- assert.equal(await page.getByLabel('Alert key (dedup key)',{exact:true}).inputValue(),key);assert.equal(await page.getByLabel('Lifecycle generation',{exact:true}).inputValue(),generation);
+ assert.equal(await page.getByLabel('Alert ID (same ID = same alert)',{exact:true}).inputValue(),key);assert.equal(await page.getByLabel('Alert cycle',{exact:true}).inputValue(),generation);
  assert.equal(await page.getByLabel('Title',{exact:true}).inputValue(),'Checkout API latency above 2 seconds');
- await page.getByLabel('Intent',{exact:true}).selectOption('recover');assert.equal(await page.getByLabel('Severity',{exact:true}).inputValue(),'warning');
+ await page.getByLabel('What to do',{exact:true}).selectOption('recover');assert.equal(await page.getByLabel('Severity',{exact:true}).inputValue(),'warning');
  await proof('recover-form');await page.getByLabel('Private key',{exact:true}).fill(source.key);await send();
  state=await request('/api/state');alerts=state.alerts.filter(a=>a.source===source.source);assert.equal(alerts.length,1);assert.equal(alerts[0].id,alert.id);assert.equal(alerts[0].state,'recovered');assert.equal(alerts[0].events.length,2);
  assert.equal(state.incidents.find(i=>i.id===incident.id).state,'acknowledged','source recovery keeps the acknowledged incident open');
@@ -1012,7 +1040,7 @@ async function eventsSourceBrowser(page,context) {
   await page.goto(origin+sample.path);
   assert.equal(await page.getByRole('region',{name:'Integration source',exact:true}).getByRole('heading',{level:2}).innerText(),sample.name,'the existing source link names its source plainly');
   const details=page.locator('.ingress-example');if(await details.getAttribute('open')===null)await details.locator(':scope > summary').click();
-  assert.equal(await page.getByLabel('Ingress URL',{exact:true}).inputValue(),sample.url,'existing ingress address is unchanged');
+  assert.equal(await page.getByLabel('Send alerts to this address',{exact:true}).inputValue(),sample.url,'existing ingress address is unchanged');
   const example=await page.getByLabel('Sample request',{exact:true}).inputValue();
   const body=JSON.parse(example.match(/'({\n[\s\S]*\n})'/)[1].replaceAll("'\\''","'"));
   assert.equal(body.source,sample.name,'sample uses the source name shown on its page');
@@ -1021,9 +1049,9 @@ async function eventsSourceBrowser(page,context) {
   assert.ok(body.generation.includes(body.observedAt)&&body.eventId.includes(body.generation),'sample observation and lifecycle IDs use a readable timestamp');
   assert.ok(!body.eventId.includes(service)&&!/[a-f0-9]{8}-[a-f0-9]{4}-/i.test(body.eventId),'event identity contains no internal UUID');
   assert.equal(await details.getByLabel('Sample request',{exact:true}).isVisible(),false,'raw request code is deliberate');
-  await details.getByText('View request code',{exact:true}).click();
+  await details.getByText('Details',{exact:true}).click();
   assert.equal(await details.getByLabel('Sample request',{exact:true}).isVisible(),true,'advanced request code is available for inspection');
-  await details.getByText('View request code',{exact:true}).click();
+  await details.getByText('Details',{exact:true}).click();
   const setupText=await details.innerText();
   assert.ok(setupText.includes(serviceName),'the ready-to-copy sample names its service');
   assert.ok(!setupText.includes(service)&&!setupText.includes(sample.source),'default explanation omits internal identities');
@@ -1063,7 +1091,7 @@ async function eventsSourceBrowser(page,context) {
  await page.goto(origin+source.path);await page.getByText('Send a test event',{exact:true}).click();
  let limited=await request('/api/state');await request('/api/intake/allowances',{id:'source:'+source.source,requests:600,events:1,revision:limited.revision});
  const refusalBefore=await request('/api/state');
- await page.getByLabel('Private key',{exact:true}).fill(source.key);await page.getByLabel('Intent',{exact:true}).selectOption('recover');
+ await page.getByLabel('Private key',{exact:true}).fill(source.key);await page.getByLabel('What to do',{exact:true}).selectOption('recover');
  const refuse=async()=>{const pending=page.waitForResponse(r=>r.url()===source.url&&r.request().method()==='POST');await page.getByRole('button',{name:'Send test event',exact:true}).click();const response=await pending;assert.equal(response.status(),429);assert.ok(Number(response.headers()['retry-after'])>0);await page.locator('.failure-line').waitFor();await page.getByRole('button',{name:'Send test event',exact:true}).waitFor();return page.locator('.failure-line').innerText();};
  const allowanceFailure=await refuse();
  assert.match(allowanceFailure,/event.*allowance/i);assert.match(allowanceFailure,/retry|wait/i);assert.match(allowanceFailure,/New events per minute/);
@@ -1130,7 +1158,7 @@ try {
   } finally { await worker.time(selectedTime) }
  }
  const focused=process.env.ONCALL_PRODUCT_JOURNEY;
- if(focused&&!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','workspace-links'].includes(focused))throw Error('Unknown focused product journey');
+ if(focused&&!['response-numbers','sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','workspace-links'].includes(focused))throw Error('Unknown focused product journey');
  const triageProof={snapshot:()=>durableSnapshot(worker),outbound:()=>worker.outboundRequests()};
  const setTime=async at=>{selectedTime=at;await worker.time(at);if(at===null)await page.clock.setSystemTime(new Date());else await page.clock.setFixedTime(new Date(at));};
  if(focused==='workspace-links'){
@@ -1148,6 +1176,7 @@ try {
   await context.request.post('/api/command',{headers:{origin:worker.origin},data:{type:'service',name:'Checkout',environment:'test',owner:session.member.id,runbook:[],pager:''}});
   const {productImport}=await import('./product-browser-journey.mjs');await productImport(page,context,1440,session,triageProof);
  }
+ if(focused==='response-numbers')await responseReportBrowser(browser);
  if(focused==='owner-faults')await ownerFaultsBrowser(page,context);
  if(focused==='rota-timeline'){
   const session=await (await context.request.get('/api/session')).json();
@@ -1181,7 +1210,7 @@ try {
  if(focused==='move-in-guide')await providerExport(page,context,1440,triageProof);
  if(['limitations','readiness'].includes(focused))await limitationsBrowser(page,context);
  if(focused==='triage')await triageFiltersBrowser(page,context,{setTime,proof:triageProof});
- if(!['sender-setup','response-policy','imported-email','events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','workspace-links'].includes(focused)){
+ if(!['response-numbers','sender-setup','response-policy','imported-email','events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','workspace-links'].includes(focused)){
  await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime,triageProof})
  if(focused!=='accessibility'){
  await incompleteIntakeBrowser(page,context)
@@ -1192,7 +1221,7 @@ try {
  console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440; overflow, axe and hydration checked')
  }
  }
- if(!['sender-setup','response-policy','imported-email','events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','workspace-links'].includes(focused))await readinessBrowser(page,context)
+ if(!['response-numbers','sender-setup','response-policy','imported-email','events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','workspace-links'].includes(focused))await readinessBrowser(page,context)
  if(!focused)await importedEmailBrowser(page,context)
  if(!focused)await responseReportBrowser(browser)
  if(!focused)await eventsSourceBrowser(page,context)
@@ -1211,4 +1240,4 @@ try {
 } finally {
  try {await browser?.close()} finally {await worker.close()}
 }
-if(!productPart&&!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','workspace-links'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');
+if(!productPart&&!['response-numbers','sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','workspace-links'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');
