@@ -165,6 +165,7 @@ async function incompleteIntakeBrowser(page,context) {
   await page.goto(origin+'/alerts');await page.locator('.alert-row').filter({hasText:incompleteTitle}).click();
   const ownerCard=page.getByRole('article',{name:'Alert details',exact:true});
   await ownerCard.getByText(/Integration unrouted queue.*active$/).waitFor();await ownerCard.getByText('Event context',{exact:true}).click()
+  await ownerCard.getByText('Details',{exact:true}).click();
   await ownerCard.getByText(`Paging obligation: recorded · Integration owner: ${member.name} · high urgency · paging OFF; non-automatic.`,{exact:true}).waitFor()
   assert.ok(await ownerCard.isVisible())
   const incidentService=ownerCard.getByLabel('Incident service',{exact:true}),declare=ownerCard.getByRole('button',{name:'Declare incident from alert',exact:true})
