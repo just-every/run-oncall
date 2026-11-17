@@ -1792,7 +1792,7 @@
       "executable": false
     },
     "src/alerts/commands.ts": {
-      "sha256": "cef55088fa69260d75b65d2c4aff1179a761f5b99f4ba402a10518383e7c2172",
+      "sha256": "5cb8ae8245922e4f84505841c891b48a27e77b98ee39681a713fd4aa789632c1",
       "executable": false
     },
     "src/api.ts": {
@@ -6824,7 +6824,7 @@
       "executable": false
     },
     "tests/owner-alerts-browser.mjs": {
-      "sha256": "a75f3e9c70ff600750644a8da4a44b115cc3ac8f16399d700ab24f2ae698461e",
+      "sha256": "2fd747821342bc774fab9c469c2e705d2252daa9cfe761dc19110562b1248da7",
       "executable": false
     },
     "tests/paging-response-flow.mjs": {
@@ -6836,7 +6836,7 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "cf8b4f74189d16addf5f0899abfbfe7f616a96a6f137f30921b0b27e3e8e2a8f",
+      "sha256": "77b2d646f211c90bcc4a59cfc9b9460eb323a5330eea0edae6e9beeb88ed9071",
       "executable": false
     },
     "tests/readable-names-browser.mjs": {

@@ -320,6 +320,7 @@ async function responsePolicyBrowser(page,context) {
   assert.match(await page.locator('.failure-line[role="alert"]').innerText(),/summary/i)
   assert.equal((await request('/api/state')).incidents.find(item=>item.id===incident.id).state,'recovered','refused resolution leaves the incident open')
   await checkScreen('resolution-refused',width,page.locator('.failure-line[role="alert"]'))
+  await page.getByRole('dialog').getByRole('button',{name:'Close',exact:true}).click()
  }
 }
 

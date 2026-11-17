@@ -2,6 +2,7 @@ import {fail, text, type Alert, type Member, type State} from '../family/respons
 
 /** Human closure is distinct from a sender's recovery event. */
 export function closeAlert(alert: Alert, actor: Member, at: string, reason = '') {
+  if (actor.machine) return;
   if (alert.state === 'recovered' || alert.coordination?.state === 'closed') return;
   const coordination = alert.coordination ??= {state: 'open', assignee: alert.owner, snoozeDue: null, history: []};
   if (coordination.history.length >= 10000) fail('Alert history capacity reached', 429);

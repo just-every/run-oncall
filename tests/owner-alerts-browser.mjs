@@ -92,11 +92,22 @@ async function walkOwnerAlerts(page, context, worker) {
   // Newly created integrations expose the same session-only test without opening source settings.
   await page.goto(origin+'/settings/integrations/new/events');await page.getByLabel('Name',{exact:true}).fill('Synthetic owner integration');await page.getByRole('button',{name:'Create source',exact:true}).click();
   await page.getByRole('region',{name:'Created credential'}).waitFor();await proof('created-integration');const createdTest=await send(page.locator('.test-alert'));assert.ok(createdTest.alert);assert.equal(createdTest.service,service.name);
+  // Client transitions keep their existing source lifecycle and never forge a human alert-close record.
+  const clientKey=randomBytes(32).toString('hex');
+  await call('/api/automation/clients',{name:'Synthetic incident client',key:clientKey,services:[service.id],permissions:['incidents:write','incidents:read']},201);
+  let clientIncident=await call('/api/command',{type:'declare',service:service.id,title:'Synthetic client coordination',summary:'Retain a valid machine-authored history',severity:'warning',alerts:[createdTest.alert]});
+  clientIncident=await call('/api/command',{type:'transition',incident:clientIncident.id,revision:clientIncident.revision,state:'acknowledged',summary:'A responder is responsible'});
+  for(const next of ['recovered','resolved']) {
+    const response=await context.request.post('/api/v1/incidents',{headers:{authorization:'Bearer '+clientKey,'idempotency-key':'synthetic-owner-client-'+next},data:{type:'transition',incident:clientIncident.id,revision:clientIncident.revision,state:next,summary:'Client records '+next,evidence:'https://example.test/client-recovery'}});
+    assert.equal(response.status(),201);
+    clientIncident=(await call('/api/state')).incidents.find(row=>row.id===clientIncident.id);
+  }
+  assert.equal((await call('/api/state')).alerts.find(alert=>alert.id===createdTest.alert).coordination,undefined,'client resolution retains the existing source-driven alert lifecycle');
   // Optional recovery evidence remains optional through archive validation, not just the form.
   await call('/api/archive');
   const anonymous=await worker.request('/api/test-alert',{service:service.id});assert.equal(anonymous.status,401);
   const viewerPassword=randomBytes(24).toString('hex'), viewer=await call('/api/members',{name:'Synthetic alert viewer',role:'viewer',password:viewerPassword},201),viewerLogin=await worker.request('/api/login',{name:viewer.name,password:viewerPassword});assert.equal((await worker.request('/api/test-alert',{service:service.id},viewerLogin.cookie)).status,403);
   const revoked=await worker.request('/api/login',{name:viewer.name,password:viewerPassword});await worker.request('/api/logout',{},revoked.cookie);assert.equal((await worker.request('/api/test-alert',{service:service.id},revoked.cookie)).status,401);
   const after=await call('/api/state');assert.equal((await worker.outboundRequests()).length,0,'test, closure and reopen never page or send outbound requests');assert.equal(after.alerts.length-before.alerts.length,3);assert.equal((await call('/api/paging/state')).paging,'OFF');
-  await writeFile(`${directory}/owner-alerts-receipt.json`,JSON.stringify({assertionWidth:1440,screenshotWidths:[1440,390],screenshots,items:{D4:'session test on chosen service',D5:'source journey proves fresh identities and explicit same-alert options',D6:'live primary and backup; one-click alert and incident ownership',D7:'required inline note; no link; recovery recorded',D8:'default linked closure, explicit opt-out, direct alert closure; list/nav refresh',D9:'menu and button; optional reason; attributed prior-state restoration'},newAlerts:3,anonymousRefused:true,viewerRefused:true,revokedRefused:true,archiveAccepted:true,reopenDialogDismissed:true,existingRecoveryLinkRetained:true,paging:'OFF'},null,2)+'\n');
+  await writeFile(`${directory}/owner-alerts-receipt.json`,JSON.stringify({assertionWidth:1440,screenshotWidths:[1440,390],screenshots,items:{D4:'session test on chosen service',D5:'source journey proves fresh identities and explicit same-alert options',D6:'live primary and backup; one-click alert and incident ownership',D7:'required inline note; no link; recovery recorded',D8:'default linked closure, explicit opt-out, direct alert closure; list/nav refresh',D9:'menu and button; optional reason; attributed prior-state restoration'},newAlerts:3,anonymousRefused:true,viewerRefused:true,revokedRefused:true,archiveAccepted:true,reopenDialogDismissed:true,existingRecoveryLinkRetained:true,clientArchiveHistoryValid:true,paging:'OFF'},null,2)+'\n');
 }
