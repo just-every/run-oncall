@@ -9,6 +9,7 @@ import specialist from './oncall-agent-native.mjs';
 import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-revisions.mjs';
 import {actionSubmitNativeRevision} from './oncall-agent-action-submit-native-revision.mjs';
 import {agedActionSubmitRetention} from './oncall-agent-action-submit-retention.mjs';
+import {actionSubmitResponseLoss} from './oncall-agent-action-submit-response-loss.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {openIncidentAction} from './keyboard.mjs';
 
@@ -191,6 +192,37 @@ try{
  });
  assert.equal(submitApprovalPosts.length,1,'One sponsor approval POST; completed-result retries never repeat the approval action');
  page.off('request',recordSubmitApproval);
+ let lostResultApprovalPosts=0;
+ const recordLostResultApproval=request=>{
+  if(request.method()==='POST'&&new URL(request.url()).pathname.startsWith('/agents/api/approvals/')&&new URL(request.url()).pathname.endsWith('/approve'))lostResultApprovalPosts++;
+ };
+ page.on('request',recordLostResultApproval);
+ await actionSubmitResponseLoss(runtime,{
+  async approve({handle,saved,owner}){
+   await capture('follow-up-submit-loss-pending',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="pending"]').waitFor()});
+   await page.goto(handle.url);
+   await page.getByText(owner.name,{exact:false}).first().waitFor();
+   const submitted=page.waitForRequest(request=>request.method()==='POST'&&new URL(request.url()).pathname==='/agents/api/approvals/'+handle.id+'/approve');
+   await page.getByRole('button',{name:'Approve',exact:true}).click();
+   const posted=(await submitted).postDataJSON();
+   assert.equal(posted.revision,saved.revision);assert.equal(posted.summary_sha256,saved.summary_sha256);
+   await page.locator('[data-approval-state="executed"]').waitFor();
+   assert.equal(lostResultApprovalPosts,1,'The sponsor approves the saved submission exactly once');
+   await capture('follow-up-submit-loss-executed',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="executed"]').waitFor()});
+  },
+  async observe({mode,incident,action}){
+   await capture('follow-up-submit-loss-'+mode,'/reviews/'+incident.id,async()=>{
+    await page.getByRole('dialog',{name:incident.title,exact:true}).waitFor();
+    await page.locator('.review-material-body summary').filter({hasText:/^Follow-ups \(/}).click();
+    await page.getByText('Awaiting acceptance',{exact:false}).first().waitFor();
+    const evidence=page.locator('.review-material-body').getByRole('link',{name:/^Evidence/});await evidence.waitFor();
+    if(page.viewportSize().width===1440)assert.equal(await evidence.getAttribute('href'),action.evidence);
+    await evidence.scrollIntoViewIfNeeded();
+   });
+  },
+ });
+ assert.equal(lostResultApprovalPosts,1,'Completed-result recovery never repeats approval');
+ page.off('request',recordLostResultApproval);
  assert.deepEqual(submitEvidenceRequests,[],'The browser never fetches submitted evidence');
  await context.unroute('https://evidence.example.invalid/**',stopEvidence);
  // Each retained submission has isolated native custody. The browser takes
