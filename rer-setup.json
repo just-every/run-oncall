@@ -98,7 +98,7 @@
         },
         {
           "value": "none",
-          "label": "Off (owner signs in with rer signin)"
+          "label": "Hosted only: off (owner uses rer signin)"
         },
         {
           "value": "rer",
@@ -118,7 +118,7 @@
         }
       ],
       "group": "mail",
-      "help": "rer deploy reads MAIL_PROVIDER from the environment or --env-file, separately from this setup choice. Set MAIL_PROVIDER=none there for a deployment without email. Email links and invitations are unavailable; the deploying owner uses rer signin."
+      "help": "For local setup choose MAIL_PROVIDER=development (no email); MAIL_PROVIDER=none is hosted only. rer deploy reads MAIL_PROVIDER from the environment or --env-file, separately from this setup choice. Set MAIL_PROVIDER=none there for a deployment without email. Email links and invitations are unavailable; the deploying owner uses rer signin."
     },
     {
       "name": "MAIL_FROM",

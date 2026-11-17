@@ -248,7 +248,7 @@
       "executable": false
     },
     "docs/getting-started.md": {
-      "sha256": "83c888f49be1eb98299dead38b777bc894470a6da55e7ac6791edce30a78bf31",
+      "sha256": "494fd60c2c96e9962162baf4c94ef5c2ea00e2ffc2fbca41166818a9543d5c26",
       "executable": false
     },
     "docs/incidents.md": {
@@ -844,7 +844,7 @@
       "executable": false
     },
     "rer-setup.json": {
-      "sha256": "8ad205fe4a2573aa9cddafc6fd00dfd44d52cf98eb73d4e5d4a2f079fd201ae2",
+      "sha256": "65a23abb58939622d3533876405b212765c2205d60f07357f463b1e4695dcb75",
       "executable": false
     },
     "RULINGS.md": {
@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "aa06218c20dd4844ed0ec445721774ef3b6f9f54220281aee2a312af0261d15e",
+      "sha256": "76b111849cd277052738fa8da83502178d12b10a235e0b4908283a3cefc6a55f",
       "executable": false
     },
     "scripts/installer/native-prefix-archive.mjs": {
@@ -1892,11 +1892,11 @@
       "executable": false
     },
     "src/app/shell/AppShell.tsx": {
-      "sha256": "425d7179020b5eac7208df9d0c7fb4ba0abb2b2043ef7b55461b93cf827b8aad",
+      "sha256": "808b9ec076416005e577610536674236daf910c2b922451c2d3e18619c060286",
       "executable": false
     },
     "src/app/shell/frame.css": {
-      "sha256": "054dcc5f22a2bd052f9dc46ac24d6890d8b4f182c8ed7c280d46389595dab673",
+      "sha256": "d436442344a12e633d7a7b515e358b088bd15edf1441ee0e8911ac7ca2765d5b",
       "executable": false
     },
     "src/app/shell/nav.ts": {
@@ -2048,7 +2048,7 @@
       "executable": false
     },
     "src/base/deployment-health.ts": {
-      "sha256": "49f4dac80429ea7d9477b40799a6242f9af4870f3229df70d0ac1f635476b8b7",
+      "sha256": "713556cb1c8e3d25426a0b81bac300a546fa212b7f441f58d48385e99590315a",
       "executable": false
     },
     "src/base/dispatch.ts": {
@@ -5956,7 +5956,7 @@
       "executable": false
     },
     "src/routes/__root.tsx": {
-      "sha256": "f566feb157c5961b050b4d0606736c5b6cf51e72fff79f3df2ada916e689e9db",
+      "sha256": "8aa1e17598062cd13ce29c7e33f638a0ca5eff58491883b99b7a7bd9ecf3f2a8",
       "executable": false
     },
     "src/routes/$.tsx": {
@@ -6836,7 +6836,7 @@
       "executable": false
     },
     "tests/runtime.mjs": {
-      "sha256": "8cd2a1108913f05bbdaf741de75b2e827cd0e88b2d83f369290836951e217ca3",
+      "sha256": "80cdd47e231c47e895f8ce308206256a896762fdc0083ec4eb8b7eb4ea41eec3",
       "executable": false
     },
     "tests/sns.mjs": {
@@ -6848,7 +6848,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "e4f3d6cf153d8f309b23772554f8b1028b0ed8e195efa9eba0199d2c7f3daeba",
+      "sha256": "be2cbc57264e3b6970919e8409860671a01c017902d09805133af6654caef4cd",
       "executable": false
     },
     "tests/triage.mjs": {
@@ -6872,7 +6872,7 @@
       "executable": false
     },
     "vite.config.ts": {
-      "sha256": "3139c62bc76f58dac4c27680770ea04996e9012c9316195c2741d29d8e014375",
+      "sha256": "d833d4fe5079e66e16535799641f3d92029356a6b2a6b5d597eb75cd07196de7",
       "executable": false
     },
     "vite.site.config.ts": {

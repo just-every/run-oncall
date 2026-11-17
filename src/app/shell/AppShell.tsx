@@ -6,6 +6,7 @@ import {FailureLine} from '../FailureLine';
 import {WorkspaceNotFound} from '../NotFound';
 import {request} from '../../useWorkspace';
 import {Mark} from '../../landing/Mark';
+import {identity} from '../../identity';
 import {NavIcon} from '../NavIcon';
 import {dailyNavigation, settingsNavigation, settingsItem, type NavItem} from './nav';
 import {OwnerMenu} from './OwnerMenu';
@@ -24,6 +25,8 @@ import {ArchiveSection} from '../../sections/archive';
 import './frame.css';
 
 export function AppShell() {
+  const deployment = identity.deployment?.trim();
+  const installation = deployment && deployment !== identity.product ? deployment : null;
   const workspace = useWorkspaceValue();
   const {w, page, signingOut, setSigningOut, s, actor} = workspace;
   const {pathname} = useLocation();
@@ -64,15 +67,17 @@ export function AppShell() {
     {item.count !== undefined && <span className="nav-count" aria-label={`${item.count} ${item.id === 'incidents' ? 'open' : 'active'}`}>{item.count}</span>}
   </a>);
   const title = [...daily, ...settingsNavigation].find(item => item.id === page)?.label ?? 'Oncall';
+  const brand = <a href={stakeholder ? '/status' : '/on-call'} className="brand"><Mark size={30} /><span data-rer-name>{identity.product}</span></a>;
   return <WorkspaceContext.Provider value={workspace}><div className="app oncall-frame">
     <a className="skip" href="#main">Skip to content</a>
     <aside className="sidebar shell-rail">
-      {settings && !stakeholder ? <a className="nav settings-back" href="/on-call">‹ Oncall</a> : <a href={stakeholder ? '/status' : '/on-call'} className="brand"><Mark size={30} /><span data-rer-name>Oncall</span></a>}
+      <div className="installation-brand">{brand}{installation && <span className="installation-name">{installation}</span>}</div>
+      {settings && !stakeholder && <a className="nav settings-back" href="/on-call">‹ Oncall</a>}
       <nav className="navigation" aria-label={settings && !stakeholder ? 'Settings' : 'Workspace'}>{links(settings && !stakeholder ? settingsNavigation : daily)}</nav>
       <div className="rail-foot">{!settings && !stakeholder && links([settingsItem])}{owner()}</div>
     </aside>
     <div className="mobile-bar">
-      <a href={stakeholder ? '/status' : '/on-call'} className="brand"><Mark size={30} /><span data-rer-name>Oncall</span></a>
+      <div className="installation-brand">{brand}{installation && <span className="installation-name">{installation}</span>}</div>
       <button ref={menuButton} aria-haspopup="dialog" aria-expanded={sheetOpen} onClick={() => {sheetNavigation.current = false; setSheetSettings(settings && !stakeholder); setSheetOpen(true);}}>Menu</button>
     </div>
     <dialog className="shell-sheet" ref={sheet} aria-label="Menu" onClose={() => {setSheetOpen(false); if (!sheetNavigation.current) menuButton.current?.focus({preventScroll: true});}} onClick={event => {if (event.target === sheet.current) {const rect=sheet.current.getBoundingClientRect(); if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)closeSheet();}}}>
