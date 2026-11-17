@@ -1,0 +1,59 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+(node:3355) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Owned runtime processes [["3355","3354","node"],["3363","3355","esbuild"],["3372","3355","workerd"],["3378","3355","ps"]]
+Browser proof weekly-counts 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof weekly-counts 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-009 acceptance 3: native MCP at UTC week boundaries, complete paginated audit and Agents at 1440 and 390 -> 210 retained calls, 207 in period, exactly 8 cohorts, multi-class contributions once each, stable records and zero outbound requests
+Browser proof follow-up-submit-revision-autonomous 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof follow-up-submit-revision-autonomous 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-012 acceptance 4 autonomous oncall.actions.submit: current required parent revision with stale optional expected_revision -> isError revision_conflict, exact authorized current_revision 2 in metadata and text, no private result or native effect or approval or review; fresh key and returned revision in both fields -> standard plus sensitive, one agent-attributed open P1 human-review submission autonomously; new RPC id returns original stored outcome and approval identity without another effect; zero outbound requests and no evidence fetch
+PROBE BASE-AGENT-012 acceptance 4 autonomous submission non-disclosure: valid scoped client against populated foreign and missing parent incidents -> identical not_found without revision or private result; retained custody unchanged; zero outbound requests
+Browser proof follow-up-submit-revision-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof follow-up-submit-revision-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof follow-up-submit-revision-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof follow-up-submit-revision-executed 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof follow-up-submit-revision-held 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof follow-up-submit-revision-held 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-012 acceptance 4 held oncall.actions.submit: current required parent revision with stale optional expected_revision -> isError revision_conflict, exact authorized current_revision 2 in metadata and text, no private result or native effect or approval or review; fresh key and returned revision in both fields -> standard plus sensitive, one agent-attributed open P1 human-review submission after exact sponsor approval; new RPC id returns original stored outcome and approval identity without another effect; zero outbound requests and no evidence fetch
+PROBE BASE-AGENT-012 acceptance 4 held submission non-disclosure: valid scoped client against populated foreign and missing parent incidents -> identical not_found without revision or private result; retained custody unchanged; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 4 autonomous oncall.actions.submit: stale required parent revision with expected_revision absent -> isError revision_conflict and exact authorized parent current_revision 2 in metadata and text, distinct from workspace revision 31; no private result, approval, review or native effect; missing and scoped-out targets -> identical not_found with no revision; zero outbound requests
+Browser proof follow-up-submit-autonomous 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof follow-up-submit-autonomous 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-012 acceptance 3 autonomous oncall.actions.submit: one agent-attributed owned due-dated P1 human-review submission stays open; standard plus sensitive; changed evidence with original key and revision -> isError idempotency_conflict in metadata and text without private result; exact original arguments with new RPC id return stored outcome and original approval identity; native custody unchanged apart from refusal and linked replay audit; zero outbound requests and no evidence fetch
+PROBE BASE-AGENT-012 acceptance 4 held oncall.actions.submit: stale required parent revision with expected_revision absent -> isError revision_conflict and exact authorized parent current_revision 2 in metadata and text, distinct from workspace revision 36; no private result, approval, review or native effect; missing and scoped-out targets -> identical not_found with no revision; zero outbound requests
+Browser proof follow-up-submit-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof follow-up-submit-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof follow-up-submit-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof follow-up-submit-executed 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof follow-up-submit-held 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof follow-up-submit-held 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-012 acceptance 3 held oncall.actions.submit: one agent-attributed owned due-dated P1 human-review submission stays open; standard plus sensitive; changed evidence with original key and revision -> isError idempotency_conflict in metadata and text without private result; exact original arguments with new RPC id return stored outcome and original approval identity; native custody unchanged apart from refusal and linked replay audit; zero outbound requests and no evidence fetch
+Owned runtime processes [["3355","3354","node"],["3363","3355","esbuild"],["3372","3355","workerd"],["3379","3355","chromium"],["3397","3379","chromium"],["3400","3379","chromium"],["3419","3397","chromium"],["3422","3379","chromium"],["3438","3400","chromium"],["3462","3400","chromium"],["3472","3400","chromium"],["3723","3400","chromium"],["3735","3355","workerd"],["3741","3355","ps"]]
+Agent browser failed at /reviews/5231a53f-a17e-45ae-8b46-ec8334659158
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+locator.waitFor: Error: strict mode violation: locator('.review-material-body li').filter({ hasText: 'Synthetic evidence policy follow-up' }) resolved to 3 elements:
+    1) <li>…</li> aka locator('li').filter({ hasText: 'Follow-up P2: Synthetic' })
+    2) <li>…</li> aka locator('li').filter({ hasText: 'Completed under evidence' })
+    3) <li>…</li> aka getByText('Synthetic evidence policy follow-up · Mira Patel · P2 · due Apr 12, end of day')
+
+Call log:
+[2m  - waiting for locator('.review-material-body li').filter({ hasText: 'Synthetic evidence policy follow-up' }) to be visible[22m
+
+    at /workspace/oncall-f263/tests/agent-door-browser.mjs:231:108
+    at async capture (/workspace/oncall-f263/tests/agent-door-browser.mjs:29:51)
+    at async observe (/workspace/oncall-f263/tests/agent-door-browser.mjs:228:5)
+    at async actionEvidenceReplay (/workspace/oncall-f263/tests/oncall-agent-action-evidence-replay.mjs:155:3)
+    at async focusedActionEvidenceReplay (/workspace/oncall-f263/tests/oncall-agent-action-evidence-replay.mjs:167:3)
+    at async file:///workspace/oncall-f263/tests/agent-door-browser.mjs:199:2 {
+  log: [
+    "  - waiting for locator('.review-material-body li').filter({ hasText: 'Synthetic evidence policy follow-up' }) to be visible"
+  ]
+}
+
+Node.js v22.20.0

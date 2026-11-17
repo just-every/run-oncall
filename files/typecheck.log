@@ -1,0 +1,4 @@
+
+> @just-every/oncall@0.5.18 typecheck /workspace/oncall-f263
+> tsc --noEmit
+

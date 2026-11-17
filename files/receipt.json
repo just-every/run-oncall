@@ -1,0 +1,166 @@
+{
+  "tag": "sd-oncall-c-f263",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f263",
+  "head": "e70051e60c403f6bd99c992871751ee42d7963a0",
+  "initial_main": "53b2694d100a30707210aafa41207ff4ee451c34",
+  "save": "7d77358cfd4c7979d77553cf3c6b574bf2456957",
+  "runtime_source_equivalence": "No byte changed from the save in src, tests/runtime.mjs, tests/oncall-agent-flow.mjs or tests/oncall-agent-action-evidence-replay.mjs; final source commit changes only browser proof and lock.",
+  "source_sha256": {
+    "tests/oncall-agent-action-evidence-replay.mjs": "cae91e2d6b15ac641681b1fc6e710334d4b8977614c7841a387b20f9f9edce45",
+    "tests/oncall-agent-flow.mjs": "b6af18cb650b3248478f1c8e58ecefae05cb7d635f0ff9bbbd55fc25484bdd60",
+    "tests/agent-door-browser.mjs": "3573261226d2b31c63c14ed373a48d4014030489a839e3cb45a0db6f2a31dae6",
+    "tests/agent-door-runtime.mjs": "a829a182bb444cc39b353378aea16d8255832b167bb3cfec1452d54c7563d898",
+    "tests/runtime.mjs": "80cdd47e231c47e895f8ce308206256a896762fdc0083ec4eb8b7eb4ea41eec3",
+    "src/agent-door/coordination-tools.ts": "ed5773aedd5eefc00a95b4a9bee33c7588a01bdd9745719e34a52e64317735fd",
+    "src/reviews/review-controls.ts": "a98ecdb9aec084f5119f63aa1742887f9148153f53b795015054dd08bf5dea0e",
+    "src/modules/agent-door/pipeline.ts": "7647b1f8e8ab591423b645e37ac09bcddc88d99c269b1f136a69aa8db725fab3",
+    "CONTRACT.md": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac",
+    "sources.lock.json": "1bb495d03e18bc8a3f88608cf45aa2003b8b2724ad3b4c9948df710754cd779c"
+  },
+  "counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "contract_status": "missing",
+  "contract_changed": false,
+  "production_source_changed": false,
+  "generated_views_committed": false,
+  "migrations_changed": false,
+  "migration_ledger": {
+    "command": "none",
+    "exit": 0
+  },
+  "main_ci": [
+    {
+      "id": 44167413858,
+      "name": "Verify",
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "53b2694d100a30707210aafa41207ff4ee451c34"
+    },
+    {
+      "id": 44167413855,
+      "name": "Run site",
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "53b2694d100a30707210aafa41207ff4ee451c34"
+    }
+  ],
+  "commands": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run timeout -k 5 300 node /tmp/f263-focused-runner.mjs",
+      "exit": 0,
+      "note": "Temporary module imports the committed focused helper without an inherited eval ESM flag."
+    },
+    {
+      "command": "cloud_run timeout -k 5 1200 env ONCALL_RUNTIME_PART=agents ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/runtime.mjs",
+      "exit": 0,
+      "duration_seconds": 464.0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "node": "22.20.0"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "node": "22.20.0"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write; node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "wrote_documents": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run perl -e 'alarm 1800; exec @ARGV' -- env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=/tmp/f263-browser-confirmed node /tmp/f263-browser-runner.mjs",
+      "exit": 0,
+      "node_exit": 0,
+      "head": "e70051e60c403f6bd99c992871751ee42d7963a0",
+      "note": "Temporary wrapper imports the full unchanged agent-door-browser.mjs entry point and writes Node exit on process exit. All original browser and resource-parity code executes."
+    }
+  ],
+  "candidate_ci": {
+    "conclusion": null,
+    "head_sha": "e70051e60c403f6bd99c992871751ee42d7963a0",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44178727506",
+    "status": "in_progress",
+    "id": 44178727506,
+    "event": "push",
+    "name": "Verify"
+  },
+  "github_calls": 4,
+  "pr": null,
+  "publication_scan": {
+    "commit": "e70051e60c403f6bd99c992871751ee42d7963a0",
+    "complete": false,
+    "historyScanned": false,
+    "findings": null,
+    "status": "Not run in cloud; guarded Mac lander owns exact-candidate full-history scan."
+  },
+  "shallow": false,
+  "main_equals_candidate": false,
+  "selected_proof": {
+    "acceptance_1": "Immediate one-effect equal-result replay for P2 evidence-policy actions.submit under both policies.",
+    "acceptance_3": "Changed evidence only, original key and parent revision, no-effect conflict and original replay under both policies."
+  },
+  "blockers": [],
+  "whole_clause_done": false,
+  "local_browser_initial": {
+    "head": "9261360865aaa1c74f161c057433f98acc5ed48b",
+    "exit": 1,
+    "failure": "Strict mode violation: a broad review-material list-item locator matched two timeline records and the Follow-ups row.",
+    "repair": "Scope the same title and full row assertions to the Follow-ups details section; no assertion removed or weakened."
+  },
+  "local_browser_completed_nonzero": {
+    "head": "e70051e60c403f6bd99c992871751ee42d7963a0",
+    "exit": 1,
+    "assertions_completed": true,
+    "resource_parity_cases": 36,
+    "resource_parity_screens": 208,
+    "failure": "No assertion or exception appeared; resource-parity.json was written. Explicit Node exit diagnosis is running.",
+    "diagnosis": "Instrumented full entry-point run on the same unchanged SHA completed all assertions and recorded Node exit 0 plus launcher exit 0; the earlier opaque nonzero exit did not reproduce."
+  },
+  "identity_audit": {
+    "status": "PASS",
+    "candidate_commits": 2,
+    "trailers": "none",
+    "includes_side_parents": true
+  },
+  "final_fetch_main": "53b2694d100a30707210aafa41207ff4ee451c34",
+  "push": {
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-oncall-c-f263",
+    "exit": 0,
+    "attempts": 1,
+    "remote_ref": "refs/heads/cloud/sd-oncall-c-f263",
+    "remote_head": "e70051e60c403f6bd99c992871751ee42d7963a0"
+  },
+  "repository_clean": true
+}

@@ -1,0 +1,166 @@
+{
+  "files": [
+    {
+      "blob": "f3554cfe070fb9f99f1a9346b568ee58d64a611a",
+      "bytes": 2169,
+      "path": "PLAN.md",
+      "sha256": "e273a28800ed875a1626128e5425b25c302ee6e619931c17711fed77250ebe42"
+    },
+    {
+      "blob": "bf2dc6d31502cef78f25e3f35a0591e8833f0c33",
+      "bytes": 15616,
+      "path": "REPORT.md",
+      "sha256": "6be1ece5f15123c79d75cb515093f6e9f52183b79ff9ab4a0d0703a46807a6ab"
+    },
+    {
+      "blob": "2322e3150773dbea835d4a7f61c746214f7eabd6",
+      "bytes": 12,
+      "path": "browser-command-exit.json",
+      "sha256": "5bc232b82de377a5655a39a2af9d7ae0fc868de5b9df957e18905cb914606c88"
+    },
+    {
+      "blob": "405fd8f5be3a485b374eb0f354beb6bf818f2361",
+      "bytes": 52504,
+      "path": "browser-completed-nonzero.log",
+      "sha256": "90c723eba424a2383553deb325b4eae567b847cf658578c24092349aa535bdf3"
+    },
+    {
+      "blob": "7d7da3834b3571e9dae1afa520fcb33b79b44f4f",
+      "bytes": 7754,
+      "path": "browser-initial-selector-failure.log",
+      "sha256": "2bac9959a7734ac9659af215b534abc7c2cdf3cc7d52ae1eb24d07335b8336a9"
+    },
+    {
+      "blob": "65be864438808e3d4d2c2560162ba56d0eb1808f",
+      "bytes": 61,
+      "path": "browser-node-exit.json",
+      "sha256": "2ff254f4436a9a233eb85df99b91c041fe01c0e15fe3aee9733941a15b98da75"
+    },
+    {
+      "blob": "bbabd2f187b28784930a1bc66e8c8339823399ef",
+      "bytes": 344,
+      "path": "browser-runner.mjs",
+      "sha256": "82eb71eef5790465a241af208462b926c65b5b7fd59aec86e0f16ed68f9d472b"
+    },
+    {
+      "blob": "6fc90717bf73b0531c3f14006534b0b6636b6c60",
+      "bytes": 54137,
+      "path": "browser.log",
+      "sha256": "5d1a06e019292e3199875572527126191d86126d72f044f702a791ce35cc8b05"
+    },
+    {
+      "blob": "41012c6c53af3a8034a45c2aacd2e02dd48e62ee",
+      "bytes": 16714,
+      "path": "build.log",
+      "sha256": "4b8fe4f378af0f8096490cb20051cee1614932e76c4927f67e37b103ab0914d2"
+    },
+    {
+      "blob": "3c86266104500be8fe132938ed7c2e589cfed5de",
+      "bytes": 98,
+      "path": "contract-views.log",
+      "sha256": "6a3edad7783bf6c13e63dbe5a49f4f1d6a932a81c60be61934495e59874a258a"
+    },
+    {
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "path": "first-party.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "blob": "4f524e59cdcbcf50f906d0d0f0c439310e852478",
+      "bytes": 151,
+      "path": "focused-runner.mjs",
+      "sha256": "a640f51c732bdaca09b96114bca040940c3db15c3b419eb50c421eb25d84defb"
+    },
+    {
+      "blob": "73c280b14d07eedd7612883523dfbc5e0a0f0949",
+      "bytes": 1842,
+      "path": "focused.log",
+      "sha256": "ebdfcef9fac576f1d73c34cb0ec97b22c2fa76f3b22aa43d4cbaec4a94078a15"
+    },
+    {
+      "blob": "2d6a2c1a379e22d85047fc085a87c100b2b731a6",
+      "bytes": 6568,
+      "path": "receipt.json",
+      "sha256": "10d4a960d6c84b69f5919b27bf46ee3492ee2db49ed002cb8b171667f6b8c90b"
+    },
+    {
+      "blob": "6e9d4fde881ed0aebab0f330e18e3289813053b4",
+      "bytes": 114702,
+      "path": "runtime.log",
+      "sha256": "e0b5c2550ae48d69f625d2a5dd35d183527e958208158230a6f890d74cd694f7"
+    },
+    {
+      "blob": "e1b9a420cc3346ecd6f37f916ffeed50be962841",
+      "bytes": 94525,
+      "path": "screenshots/agent-door-follow-up-evidence-autonomous-1440.png",
+      "sha256": "26e2eba498ca8ced3f975c94ff0110a9ac11092e3c865862b131fa891bc962e8"
+    },
+    {
+      "blob": "98c4756910cd5026b417df5a46c74835a02c3208",
+      "bytes": 42607,
+      "path": "screenshots/agent-door-follow-up-evidence-autonomous-390.png",
+      "sha256": "54f93aa1f1eb0573fc2ac449c1149dada04689019027432b0da9ef65e4c1fdd9"
+    },
+    {
+      "blob": "ddf51327a6f045f0085720b35e8472bcf0825434",
+      "bytes": 49055,
+      "path": "screenshots/agent-door-follow-up-evidence-executed-1440.png",
+      "sha256": "b6d601f9cd1d8805e3f28bba5c0db99bf8a17e5881bfa901dbb1b3448b347cae"
+    },
+    {
+      "blob": "538bdc8e698a25d54917bd1dbafe8f4117c2bcda",
+      "bytes": 43836,
+      "path": "screenshots/agent-door-follow-up-evidence-executed-390.png",
+      "sha256": "edbff19fa44e3b6f913884be13731d8a36a8bf646d471dd967e6ff3555c19aae"
+    },
+    {
+      "blob": "ba5563aa6d8f839a0a79a365968c577241091402",
+      "bytes": 101560,
+      "path": "screenshots/agent-door-follow-up-evidence-held-1440.png",
+      "sha256": "6de11642c611623aaf9474334ef6498dc4882a32869b9a6b7f7d11626ff9c2ce"
+    },
+    {
+      "blob": "98c4756910cd5026b417df5a46c74835a02c3208",
+      "bytes": 42607,
+      "path": "screenshots/agent-door-follow-up-evidence-held-390.png",
+      "sha256": "54f93aa1f1eb0573fc2ac449c1149dada04689019027432b0da9ef65e4c1fdd9"
+    },
+    {
+      "blob": "7f731c922aeb035f944d1400b84f8a84bbd86c6a",
+      "bytes": 50560,
+      "path": "screenshots/agent-door-follow-up-evidence-pending-1440.png",
+      "sha256": "b6c2dce98716cd83d8c2e4e40eff76574e2b2a6af25781c820ee3dd43d4d35a4"
+    },
+    {
+      "blob": "f3ac5c53f993d71c634a3860670c9986f25463f4",
+      "bytes": 45431,
+      "path": "screenshots/agent-door-follow-up-evidence-pending-390.png",
+      "sha256": "f8e80f5511543f84901c1a773778f7e760e186cb60e24e5ba2a2773f19384c5a"
+    },
+    {
+      "blob": "55acaebe77ed3b711fa56899b2acd17b511fad17",
+      "bytes": 282428,
+      "path": "source-lock-check.log",
+      "sha256": "d89477ef84726826cf75d897707e8f3ce7efe63fa65465244eeb182327e61fcb"
+    },
+    {
+      "blob": "65b4c1bd4b57324bbc89be7d424e34960de5b95f",
+      "bytes": 78,
+      "path": "typecheck.log",
+      "sha256": "d3b905ce8fbcdf2b59ed56f4b3cefd9879981528e9e193105b2e288325195035"
+    },
+    {
+      "blob": "148c7cc5a3c67fc704b62e3b4bdc058a5ff12ba5",
+      "bytes": 340,
+      "path": "verify-run.json",
+      "sha256": "c762683ae3204913f328487c26c6487f7b7ccc4cda9f842a4fc97bf783b1a414"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f263",
+  "product_head": "e70051e60c403f6bd99c992871751ee42d7963a0",
+  "ref": "refs/heads/evidence/sd-oncall-c-f263",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f263"
+}
