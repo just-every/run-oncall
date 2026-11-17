@@ -7,11 +7,12 @@ import {openIncidentAction} from './keyboard.mjs';
 import {agentRuntime,agentReadSnapshot,assertAgentReadUnchanged} from './agent-door-runtime.mjs';
 import {prepareResourceRecords} from './oncall-agent-fixtures.mjs';
 import {coverageParity} from './oncall-agent-coverage-parity.mjs';
+import {actionParity} from './oncall-agent-action-parity.mjs';
 import {accessToken,autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 
 const observed=Date.parse('2026-11-04T12:00:00.000Z');
 const from='2026-10-01T00:00:00.000Z',to='2026-11-01T00:00:00.000Z';
-const scopes=['incidents:read','services:read','schedules:read','analytics:read'];
+const scopes=['incidents:read','services:read','schedules:read','analytics:read','actions:read'];
 async function json(http,path,input,status=200){
  const response=await http(path,input);assert.equal(response.status,status,path);return response.json();
 }
@@ -58,6 +59,7 @@ export async function resourceParity({browserProof=false}={}){
    assert.equal((await runtime.adopt(policy)).status,200);
    const review=await prepareReviewMaterial(runtime,people,changes,mode,browser,receipt);
    receipt.reviewMaterial??=[];receipt.reviewMaterial.push(review.receipt);
+   await actionParity({runtime,people,browser,receipt,review,mode,scopes,at:observed});
    for(const p of people){
     const native=await json(p.http,'/api/state'),paging=await json(p.http,'/api/paging/state');
     assert.equal(native.members.find(m=>m.id===p.member.id).role,p.member.role);
@@ -160,6 +162,7 @@ export async function resourceParity({browserProof=false}={}){
    }
   }
   assert.equal(receipt.cases.length,36);
+  assert.equal(receipt.actions.cases.length,12);
   await coverageParity({runtime,people,browser,receipt});
   assert.deepEqual(await runtime.outboundRequests(),[]);
   if(evidence){await mkdir(evidence,{recursive:true});await writeFile(evidence+'/resource-parity.json',JSON.stringify(receipt,null,2)+'\n');}
@@ -200,9 +203,10 @@ async function prepareReviewMaterial(runtime,people,changes,mode,browser,receipt
  const recovery=await signal('recover',start+180000);
  incident=(await json(admin.http,'/api/state')).incidents.find(row=>row.id===incident.id);
  await command('transition',{state:'recovered',summary:'The human verified the retained recovery dashboard.',evidence:evidence+'/human-recovery'},start+240000);
+ const escalationRecipient=(await json(admin.http,'/api/state')).members.find(row=>row.active&&row.role==='responder');assert.ok(escalationRecipient);
  const actions=[];
- for(const [label,priority,due] of [['completed','P1','2026-11-12'],['open later','P3','2026-11-10'],['submitted','P2','2026-11-09'],['open earlier','P2','2026-11-08']]){
-  await command('action',{title:'Checkout '+label+' follow-up',owner:admin.member.id,due,priority,completionPolicy:'human-review'},start+300000+actions.length*1000);
+ for(const [label,priority,due] of [['completed','P1','2026-11-12'],['open later','P3','2026-11-10'],['submitted','P1','2026-11-09'],['open earlier','P2','2026-11-08']]){
+  await command('action',{title:'Checkout '+label+' follow-up',owner:admin.member.id,due,priority,completionPolicy:'human-review',escalationRecipient:escalationRecipient.id},start+300000+actions.length*1000);
   actions.push(incident.actions.at(-1));
  }
  for(const action of [actions[0],actions[2]])await command('complete',{action:action.id,evidence:evidence+'/'+action.id},start+360000);
@@ -272,8 +276,8 @@ function assertReviewMaterial(material,fixture,native,at){
  assert.ok(material.changes.some(row=>row.service===fixture.changes.root&&!row.dependency));
  assert.ok(material.changes.some(row=>row.service===fixture.changes.dependency&&row.dependency));
  assert.ok(!material.changes.some(row=>row.service==='synthetic-oncall-parity-decoy'));
- assert.deepEqual(material.followups.map(row=>row.id),[fixture.actions[3].id,fixture.actions[2].id,fixture.actions[1].id,fixture.actions[0].id]);
- const [open,submitted,later,completed]=material.followups;
+ assert.deepEqual(material.followups.map(row=>row.id),[fixture.actions[2].id,fixture.actions[3].id,fixture.actions[1].id,fixture.actions[0].id]);
+ const [submitted,open,later,completed]=material.followups;
  assert.equal(open.done,false);assert.equal(open.submission,undefined);assert.equal(later.done,false);
  assert.equal(submitted.done,false);assert.ok(submitted.submission.evidence);assert.equal(submitted.accepted,undefined);
  assert.equal(completed.done,true);assert.equal(completed.accepted.by,fixture.admin.id);assert.equal(completed.evidence,completed.submission.evidence);
