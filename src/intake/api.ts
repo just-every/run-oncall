@@ -1,3 +1,4 @@
+import {installSnsIntake} from './sns';
 import {rateFaultBody} from '../intake-rate/fault';
 import {beginRate,saveRate,admittedCount} from '../intake-rate/admission';
 import { fail, Fault } from '../family/response-operations/domain.ts';
@@ -12,6 +13,7 @@ import { monitoringSanitizer } from '../monitoring/sanitize.ts';
 
 const validObject=(v:any)=>v&&typeof v==='object'&&!Array.isArray(v);
 export function installCompatibleIntake(api:any,deps:IntakeDependencies) {
+  installSnsIntake(api,deps);
   async function receive(c:any,provider:CompatibleProvider) {
     const request=await readIntakeRequest(c.req.raw,512*1024),payload=validObject(request.payload)?request.payload as Record<string,unknown>:{};
     const key=provider==='pagerduty-v2'?payload.routing_key:provider==='pagerduty-v1'?payload.service_key:provider==='opsgenie'?(c.req.header('authorization')??'').replace(/^GenieKey /,''):c.req.param('endpointKey');
