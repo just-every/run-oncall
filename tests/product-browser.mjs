@@ -913,7 +913,7 @@ async function eventsSourceBrowser(page,context) {
  state=await request('/api/state');alerts=state.alerts.filter(a=>a.source===source.source);assert.equal(alerts.length,1);assert.equal(alerts[0].id,alert.id);assert.equal(alerts[0].state,'recovered');assert.equal(alerts[0].events.length,2);
  assert.equal(state.incidents.find(i=>i.id===incident.id).state,'acknowledged','source recovery keeps the acknowledged incident open');
  const events=state.events.filter(e=>e.source===source.source);assert.deepEqual(events.map(e=>[e.intent,e.key,e.generation,e.severity]),[['trigger',key,generation,'critical'],['recover',key,generation,'warning']]);
- await page.goto(origin+'/alerts');assert.equal(await row.count(),1);assert.equal(await row.locator('xpath=..').getByRole('heading',{name:'Closed',exact:true}).count(),1);
+ await page.goto(origin+'/alerts');await row.waitFor();assert.equal(await row.count(),1);assert.equal(await row.locator('xpath=..').getByRole('heading',{name:'Closed',exact:true}).count(),1);
  assert.equal(await nav().innerText(),String(state.alerts.filter(a=>a.state==='active'&&a.coordination?.state!=='closed').length));await proof('recovered-list');
  await row.click();await page.getByRole('article',{name:'Alert details',exact:true}).waitFor();assert.match(await page.locator('.alert-meta').innerText(),/critical.*Closed/);await proof('recovered-alert');
  // Extend this source-recovery journey: readable history at desktop width and

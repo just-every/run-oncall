@@ -6840,7 +6840,7 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "77b2d646f211c90bcc4a59cfc9b9460eb323a5330eea0edae6e9beeb88ed9071",
+      "sha256": "d7e8c560e0a41f2eb247ac939f04ca66a6e174392b4b76b5c39bc1ca66be3428",
       "executable": false
     },
     "tests/readable-names-browser.mjs": {
