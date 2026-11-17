@@ -1,0 +1,26 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-chargedesk-fit-1",
+  "head": "84b9d385449a77f5d8a63b7b05070eeb561c4ac7",
+  "fullTransferExit": 0,
+  "buildExit": 0,
+  "typecheckExit": 0,
+  "lockCheckExit": 0,
+  "recordedAt": "2026-11-17T11:44:12.384742+00:00",
+  "script": "node tests/transfer.mjs (complete, no focus selector)",
+  "browserProof": {
+    "browser/installation-settings-1440.png": "56dfed122ee299ca379ce1367e4aed98f6457c45aeffc68489c0f2111060221c",
+    "browser/installation-settings-390.png": "fbbe5a53cebbabd50d2516ec61704d013933de7e06de72c3d0f88e4929f48448",
+    "browser/installation-workspace-1440.png": "85aed990d7f3de75315dcaf0e85360edf5a631ba85f3beea228576c25425d5a7",
+    "browser/installation-workspace-390.png": "b6ab4e4409d0e40f1cfccddb6cd1baa7c4d59dcae1d1eac58535a14d543855c8"
+  },
+  "proofWidths": [
+    1440,
+    390
+  ],
+  "assertionWidth": 1440,
+  "correction": "Preserved the existing transfer fixture owner email so existing signed Business grants match; production code and assertions preserved.",
+  "version": "0.5.18",
+  "productionWorkerSha256": "a502f32c68c8f3786dd2c1484be0d1aa48bba52cc1dea6af487355a02d6f5dd7",
+  "sourceLockSha256": "b5d4ae49c22b2c6bcfd32e2f9751300ee347b001d59647d8eba96c5e93ce062a"
+}

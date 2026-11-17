@@ -1,0 +1,13 @@
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+Fresh-clone tests/transfer.mjs: a60c7ec6a9288d902bfc02a70e0fce12d530891a
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+PASS local mail selection: public setup refuses hosted-only none on first attempt and retry, with a field-specific correction
+Development HTTP door passed: configured owner reads release readiness from the Vite Worker
+PASS signed-in installation: saved name in title and rail across workspace/settings, absent name falls back to product
+PASS signed-in installation: saved name in title and rail across workspace/settings, built screens captured at 1440/390
+PASS compiled health: actual package version and checkout SHA without deployment bindings; coordination liveness preserved
+PASS installation-fit: public setup refusal, corrected setup, runnable dev, signed-in fallback and built preview identity

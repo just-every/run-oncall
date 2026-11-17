@@ -1,0 +1,9 @@
+{
+  "head": "84b9d385449a77f5d8a63b7b05070eeb561c4ac7",
+  "writeExit": 0,
+  "checkExit": 0,
+  "postBuildCheckExit": 0,
+  "sourceLockSha256": "b5d4ae49c22b2c6bcfd32e2f9751300ee347b001d59647d8eba96c5e93ce062a",
+  "tool": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs",
+  "recordedAt": "2026-11-17T11:48:40.345286+00:00"
+}

@@ -1,0 +1,225 @@
+[
+  {
+    "clause": "OC-010",
+    "category": "local",
+    "outcome": "passed",
+    "recordedAt": "2026-11-17T10:54:53.775Z",
+    "provenance": {
+      "kind": "maintained-journey",
+      "journey": "tests/runtime.mjs: coordinationHealth",
+      "execution": "local",
+      "accountDeployment": false
+    },
+    "build": {
+      "sourceSha": "c089e522b479eca83b213e7d8e8c5d85032c6d1a",
+      "fingerprint": "89fde7eb55dd9acf01ca57b369c8e0a07ff3938dc8e8b3f0d7540f9d1a792952"
+    },
+    "observations": {
+      "available": {
+        "httpStatus": 200,
+        "ok": true,
+        "buildVersion": "0.5.18",
+        "deployment": {
+          "sourceSha": "c089e522b479eca83b213e7d8e8c5d85032c6d1a",
+          "fingerprint": "89fde7eb55dd9acf01ca57b369c8e0a07ff3938dc8e8b3f0d7540f9d1a792952",
+          "versionId": null
+        },
+        "paging": "not-provided",
+        "target": "coordination",
+        "status": "ok",
+        "storage": "available"
+      },
+      "unavailable": {
+        "httpStatus": 503,
+        "ok": false,
+        "buildVersion": "0.5.18",
+        "deployment": {
+          "sourceSha": "c089e522b479eca83b213e7d8e8c5d85032c6d1a",
+          "fingerprint": "89fde7eb55dd9acf01ca57b369c8e0a07ff3938dc8e8b3f0d7540f9d1a792952",
+          "versionId": null
+        },
+        "paging": "not-provided",
+        "target": "coordination",
+        "status": "unavailable",
+        "storage": "unavailable",
+        "error": "Storage or server failure; no success confirmed"
+      },
+      "unavailableStateStatus": 503,
+      "recovered": {
+        "httpStatus": 200,
+        "ok": true,
+        "buildVersion": "0.5.18",
+        "deployment": {
+          "sourceSha": "c089e522b479eca83b213e7d8e8c5d85032c6d1a",
+          "fingerprint": "89fde7eb55dd9acf01ca57b369c8e0a07ff3938dc8e8b3f0d7540f9d1a792952",
+          "versionId": null
+        },
+        "paging": "not-provided",
+        "target": "coordination",
+        "status": "ok",
+        "storage": "available"
+      },
+      "recordsUnchanged": true,
+      "commands": {
+        "available": {
+          "check": {
+            "ok": true,
+            "exitCode": 0
+          },
+          "describe": {
+            "cliVersion": "0.2.118",
+            "profile": "first-party",
+            "effects": {
+              "install": "See SEED-COMMAND-CONTRACT.md for install effects.",
+              "setup": "Build and migrate local state, save the first owner and private settings, and retain existing owner, secrets and data on repeat setup. No provider request.",
+              "dev": "Run Oncall on a loopback address, applying local migrations and printing a private RER_OPEN owner entry. First launch confirms the read-only owner at /setup; later launches open the app. --as signed-out selects the signed-out persona; --login retains automatic owner entry for compatibility. Ordinary /signin email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. --stop stops the owned server.",
+              "preview": "Serve the built Oncall app on a loopback address with local state and owner sign-in. Ordinary /signin email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. --stop stops the owned server.",
+              "build": "See SEED-COMMAND-CONTRACT.md for build effects.",
+              "verify": "See SEED-COMMAND-CONTRACT.md for verify effects.",
+              "reset": "See SEED-COMMAND-CONTRACT.md for reset effects.",
+              "deploy": "Deploy incident coordination to your own Cloudflare account, claim the configured owner and retire its one-time setup token. Requires Cloudflare credentials and either configured remote sign-in mail or an explicit MAIL_PROVIDER=none. With mail off, the owner uses rer signin from the deploying checkout with its own credentials and recorded ownership receipt; email links and invitations are unavailable. Paging stays OFF; keep your existing pager active. --remove --yes deletes owned resources and reads back their absence. --site publishes the separate Run site. --dry-run builds and validates a local plan without credentials or Cloudflare requests and changes nothing remotely. It does not check target secrets, deployment permissions, remote readiness or mail delivery. --site --dry-run builds the separate Run site with no provider request.",
+              "export": "Write a private local archive of supported durable records and import journal; exclude sessions, credentials and private settings. Stop dev and preview first.",
+              "import": "Require an empty local destination and explicit --yes; atomically restore validated records and journal, pause pending timers, hold handoff approvals and disable Business import intake. Credentials and sessions never transfer; new owners must explicitly map an archived administrator identity.",
+              "doctor": "See SEED-COMMAND-CONTRACT.md for doctor effects.",
+              "describe": "See SEED-COMMAND-CONTRACT.md for describe effects.",
+              "check": "See SEED-COMMAND-CONTRACT.md for check effects.",
+              "release": "See SEED-COMMAND-CONTRACT.md for release effects.",
+              "demo": "A throwaway demo of this seed (rer dev --demo): fresh data in .rer/demo/START (deleted when it stops: --stop, Ctrl-C or its end, one hour by default or --idle-timeout), the saved owner signed in through the demo persona, a separate RER_OWNER_OPEN link for single-use native owner entry on loopback (15-minute expiry; never saved), the seed's demo data, Demo in the app name and title, real public reads/checks and simulated external writes (RER_DEMO=1; the checkout's own data is never touched).",
+              "adopt-edition": "Add edition.json and sources.lock.json for the existing tracked local source, preserving declared project identity and existing copy/composition records. Create an empty base-copies.json only when none exists. Review and stage the new authoring inputs; no source regeneration, install setup or commit.",
+              "refresh-base": "Consent to each declared edition edit with repeatable --edition-migration ID; refresh leaves the edit owed. Refresh recorded Base copies to --ref FULL_COMMIT, preserving acknowledged adaptations and applied migrations; announce removed singleton retirement. Deliver invoked workflow helpers atomically; adopt tracked known historical Verify templates and preserve divergent workflows with adoption notices. Acquire committed source from the declared Base repository (default https://github.com/runeditrun/base.git), or read immutable trees, blobs and ancestry through authenticated gh with --from-api, or use --base CHECKOUT or --base-archive DIRECTORY with --ref FULL_COMMIT for an exported source tree. --offline requires --base or --base-archive and never acquires remote source. Refuse incomplete Git checkouts without changing their records. Review the diff and run edition tests before committing.",
+              "signin": "A one-time sign-in link for the hosted owner, without mail. Uses the Cloudflare credentials that deployed --environment (default production; from the environment or --env-file) to write a single-use grant for the recorded owner into that deployment's auth database, then prints the link once to this terminal; it is never saved. The link works once, only for that owner, expires within 15 minutes, and its use is recorded in the owner's audit log. Signed in this way, the owner can correct a wrong email in settings.",
+              "size": "Statement size against D1's limits, measured in SQLite on this computer with no account or network. D1 refuses a statement at 100 FROM items, counted with every CTE and view reference expanded in place, or at expression depth 100, and local SQLite and Miniflare accept both; rer fails at 90 of either, a margin of 10 because D1 changed how it enforces them without notice on 10 Nov 2026. With no flags it checks every view and trigger statement of the build's D1 migrations (dist/server/wrangler.json). --migrations DIR checks the objects of that migrations directory instead of the build's. --statements FILE checks the statements of FILE ({\"statements\":[{\"name\",\"sql\"}]}, the fleet runner's format) against that schema. Each failure is named with both numbers and the start of its SQL. Exit 1 if any statement fails, 0 if none, 3 with no build and no --migrations. --json lists every statement as {name, fromItems, depth, ok}. With a size-check.json at the checkout root (or --declaration FILE, a declaration kept outside it), rer then builds the declared shape at a small and a large size, each in its own disposable local D1 install served as the hosted check serves the build: the owner is signed in with the bootstrap agent-door conformance uses (the setup manifest's owner-claim step, else verification.owner), each table is generated inside D1 by chunked INSERT \u2026 SELECT so the schema's own triggers fire, and each declared table is read back. It prints, for each size and table, the declared count, the count read back and the time per phase; a generation error names the size, the table, the row range, SQLite's message and its column, exits 1 and prints no built line for that size. budget.timeoutSeconds bounds both sizes and a timeout names the phase. While it serves installs it takes verify's job-queue slot (--no-queue only in the original CI environment). Then the personas sign in and every declared flow runs on each size, small first, through a rows-read meter wrapped around the Worker's D1 bindings (fetch, scheduled, queue, Durable Objects and waitUntil work; queues are held and queue consumer work is not measured). A flow fails when it reads more rows at large than its ceiling, more at large than at small by over growthPercent of small plus growthRows (unless growth.allowed), answers the wrong status, has a statement refused or failed by local D1, or runs a statement at 90 FROM items or depth; each failure names its rule and the three statements that read the most rows at large. --json carries every flow at both sizes; --write-statements DIR writes small.json and large.json in the fleet runner's statements format. --statements runs the statement check alone. rer verify runs the schema-object check as its last step."
+            }
+          }
+        },
+        "unavailable": {
+          "check": {
+            "ok": true,
+            "exitCode": 0
+          },
+          "describe": {
+            "cliVersion": "0.2.118",
+            "profile": "first-party",
+            "effects": {
+              "install": "See SEED-COMMAND-CONTRACT.md for install effects.",
+              "setup": "Build and migrate local state, save the first owner and private settings, and retain existing owner, secrets and data on repeat setup. No provider request.",
+              "dev": "Run Oncall on a loopback address, applying local migrations and printing a private RER_OPEN owner entry. First launch confirms the read-only owner at /setup; later launches open the app. --as signed-out selects the signed-out persona; --login retains automatic owner entry for compatibility. Ordinary /signin email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. --stop stops the owned server.",
+              "preview": "Serve the built Oncall app on a loopback address with local state and owner sign-in. Ordinary /signin email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. --stop stops the owned server.",
+              "build": "See SEED-COMMAND-CONTRACT.md for build effects.",
+              "verify": "See SEED-COMMAND-CONTRACT.md for verify effects.",
+              "reset": "See SEED-COMMAND-CONTRACT.md for reset effects.",
+              "deploy": "Deploy incident coordination to your own Cloudflare account, claim the configured owner and retire its one-time setup token. Requires Cloudflare credentials and either configured remote sign-in mail or an explicit MAIL_PROVIDER=none. With mail off, the owner uses rer signin from the deploying checkout with its own credentials and recorded ownership receipt; email links and invitations are unavailable. Paging stays OFF; keep your existing pager active. --remove --yes deletes owned resources and reads back their absence. --site publishes the separate Run site. --dry-run builds and validates a local plan without credentials or Cloudflare requests and changes nothing remotely. It does not check target secrets, deployment permissions, remote readiness or mail delivery. --site --dry-run builds the separate Run site with no provider request.",
+              "export": "Write a private local archive of supported durable records and import journal; exclude sessions, credentials and private settings. Stop dev and preview first.",
+              "import": "Require an empty local destination and explicit --yes; atomically restore validated records and journal, pause pending timers, hold handoff approvals and disable Business import intake. Credentials and sessions never transfer; new owners must explicitly map an archived administrator identity.",
+              "doctor": "See SEED-COMMAND-CONTRACT.md for doctor effects.",
+              "describe": "See SEED-COMMAND-CONTRACT.md for describe effects.",
+              "check": "See SEED-COMMAND-CONTRACT.md for check effects.",
+              "release": "See SEED-COMMAND-CONTRACT.md for release effects.",
+              "demo": "A throwaway demo of this seed (rer dev --demo): fresh data in .rer/demo/START (deleted when it stops: --stop, Ctrl-C or its end, one hour by default or --idle-timeout), the saved owner signed in through the demo persona, a separate RER_OWNER_OPEN link for single-use native owner entry on loopback (15-minute expiry; never saved), the seed's demo data, Demo in the app name and title, real public reads/checks and simulated external writes (RER_DEMO=1; the checkout's own data is never touched).",
+              "adopt-edition": "Add edition.json and sources.lock.json for the existing tracked local source, preserving declared project identity and existing copy/composition records. Create an empty base-copies.json only when none exists. Review and stage the new authoring inputs; no source regeneration, install setup or commit.",
+              "refresh-base": "Consent to each declared edition edit with repeatable --edition-migration ID; refresh leaves the edit owed. Refresh recorded Base copies to --ref FULL_COMMIT, preserving acknowledged adaptations and applied migrations; announce removed singleton retirement. Deliver invoked workflow helpers atomically; adopt tracked known historical Verify templates and preserve divergent workflows with adoption notices. Acquire committed source from the declared Base repository (default https://github.com/runeditrun/base.git), or read immutable trees, blobs and ancestry through authenticated gh with --from-api, or use --base CHECKOUT or --base-archive DIRECTORY with --ref FULL_COMMIT for an exported source tree. --offline requires --base or --base-archive and never acquires remote source. Refuse incomplete Git checkouts without changing their records. Review the diff and run edition tests before committing.",
+              "signin": "A one-time sign-in link for the hosted owner, without mail. Uses the Cloudflare credentials that deployed --environment (default production; from the environment or --env-file) to write a single-use grant for the recorded owner into that deployment's auth database, then prints the link once to this terminal; it is never saved. The link works once, only for that owner, expires within 15 minutes, and its use is recorded in the owner's audit log. Signed in this way, the owner can correct a wrong email in settings.",
+              "size": "Statement size against D1's limits, measured in SQLite on this computer with no account or network. D1 refuses a statement at 100 FROM items, counted with every CTE and view reference expanded in place, or at expression depth 100, and local SQLite and Miniflare accept both; rer fails at 90 of either, a margin of 10 because D1 changed how it enforces them without notice on 10 Nov 2026. With no flags it checks every view and trigger statement of the build's D1 migrations (dist/server/wrangler.json). --migrations DIR checks the objects of that migrations directory instead of the build's. --statements FILE checks the statements of FILE ({\"statements\":[{\"name\",\"sql\"}]}, the fleet runner's format) against that schema. Each failure is named with both numbers and the start of its SQL. Exit 1 if any statement fails, 0 if none, 3 with no build and no --migrations. --json lists every statement as {name, fromItems, depth, ok}. With a size-check.json at the checkout root (or --declaration FILE, a declaration kept outside it), rer then builds the declared shape at a small and a large size, each in its own disposable local D1 install served as the hosted check serves the build: the owner is signed in with the bootstrap agent-door conformance uses (the setup manifest's owner-claim step, else verification.owner), each table is generated inside D1 by chunked INSERT \u2026 SELECT so the schema's own triggers fire, and each declared table is read back. It prints, for each size and table, the declared count, the count read back and the time per phase; a generation error names the size, the table, the row range, SQLite's message and its column, exits 1 and prints no built line for that size. budget.timeoutSeconds bounds both sizes and a timeout names the phase. While it serves installs it takes verify's job-queue slot (--no-queue only in the original CI environment). Then the personas sign in and every declared flow runs on each size, small first, through a rows-read meter wrapped around the Worker's D1 bindings (fetch, scheduled, queue, Durable Objects and waitUntil work; queues are held and queue consumer work is not measured). A flow fails when it reads more rows at large than its ceiling, more at large than at small by over growthPercent of small plus growthRows (unless growth.allowed), answers the wrong status, has a statement refused or failed by local D1, or runs a statement at 90 FROM items or depth; each failure names its rule and the three statements that read the most rows at large. --json carries every flow at both sizes; --write-statements DIR writes small.json and large.json in the fleet runner's statements format. --statements runs the statement check alone. rer verify runs the schema-object check as its last step."
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "clause": "OC-010",
+    "category": "hosted-mode",
+    "outcome": "passed",
+    "recordedAt": "2026-11-17T10:56:22.675Z",
+    "provenance": {
+      "kind": "maintained-journey",
+      "journey": "tests/runtime.mjs: hosted production output",
+      "execution": "local",
+      "accountDeployment": false
+    },
+    "build": {
+      "sourceSha": "c089e522b479eca83b213e7d8e8c5d85032c6d1a",
+      "fingerprint": "89fde7eb55dd9acf01ca57b369c8e0a07ff3938dc8e8b3f0d7540f9d1a792952"
+    },
+    "observations": {
+      "health": {
+        "httpStatus": 200,
+        "ok": true,
+        "buildVersion": "0.5.18",
+        "deployment": {
+          "sourceSha": "c089e522b479eca83b213e7d8e8c5d85032c6d1a",
+          "fingerprint": "89fde7eb55dd9acf01ca57b369c8e0a07ff3938dc8e8b3f0d7540f9d1a792952",
+          "versionId": "8f7b7180-f2d8-44d8-8c44-792f1ec06a1a"
+        },
+        "paging": "not-provided",
+        "target": "coordination",
+        "status": "ok",
+        "storage": "available"
+      },
+      "linkedPages": {
+        "checked": 18,
+        "httpStatus": 200
+      },
+      "deploymentIdentitySource": "actual checkout and emitted Worker; version binding supplied by the journey"
+    }
+  },
+  {
+    "clause": "OC-010",
+    "category": "provider",
+    "registerId": "R-1",
+    "outcome": "passed",
+    "evidenceDate": "2026-10-19",
+    "proof": "A hosted deployment on a real Cloudflare account claims the owner and retires the setup token, signs the owner in by a real emailed link, coordinates with a password member after reload at 1440 and 390, and removes the recorded resources with empty provider readback.",
+    "clauses": "OC-018",
+    "provenance": {
+      "kind": "dated-prior-evidence",
+      "source": "CONTRACT.md",
+      "receipt": {
+        "path": "docs/contract/acceptance-before-cleanup.md",
+        "section": "Hosted member coordination: OC-018",
+        "sha256": "68fba4a380b95b1b9d84b1de1160998a5157585a135ba5b1f1bb3d6f440a0ec6",
+        "sourceShas": [
+          "cd1ef1c3748cbaa43bcda89470abba29e81a4a1a"
+        ]
+      },
+      "executedInThisRun": false
+    }
+  },
+  {
+    "clause": "OC-010",
+    "category": "provider",
+    "registerId": "R-2",
+    "outcome": "passed",
+    "evidenceDate": "2026-10-21",
+    "proof": "A real inbound provider email through Cloudflare Email Routing and SendGrid opens, deduplicates and recovers generations by address mode and rule, and the rule, scratch Worker and suppressions then read back empty.",
+    "clauses": "OC-033, OC-070",
+    "provenance": {
+      "kind": "dated-prior-evidence",
+      "source": "CONTRACT.md",
+      "receipt": {
+        "path": "docs/contract/acceptance-before-cleanup.md",
+        "section": "33. **OC-033",
+        "sha256": "68fba4a380b95b1b9d84b1de1160998a5157585a135ba5b1f1bb3d6f440a0ec6",
+        "sourceShas": [
+          "77c1efb8a636d20d555d1b695140010cf383970c"
+        ]
+      },
+      "executedInThisRun": false
+    }
+  },
+  {
+    "clause": "OC-010",
+    "category": "human-drill",
+    "registerId": "R-8",
+    "outcome": "not run",
+    "evidenceDate": null,
+    "proof": "Live phone drills: main-site network, storage, identity and account loss with takeover and failback, scheduled readiness drills, and a buyer's real-device cutover checklist.",
+    "clauses": "OC-028, OC-047, OC-054",
+    "provenance": {
+      "kind": "not-run",
+      "source": "CONTRACT.md",
+      "receipt": null,
+      "executedInThisRun": false
+    }
+  }
+]

@@ -1,0 +1,30 @@
+{
+  "repository": "just-every/run-oncall",
+  "head": "a60c7ec6a9288d902bfc02a70e0fce12d530891a",
+  "version": "0.5.18",
+  "buildExit": 0,
+  "managedInstallationExit": 0,
+  "recordedAt": "2026-11-17T11:07:51.636369+00:00",
+  "productionWorkerSha256": "46c07ab1d1b11cf12654af15261f65d5f61c4326c3b82cd680dcbc0bb5a3bff6",
+  "browserProof": {
+    "browser/installation-settings-1440.png": "56dfed122ee299ca379ce1367e4aed98f6457c45aeffc68489c0f2111060221c",
+    "browser/installation-settings-390.png": "fbbe5a53cebbabd50d2516ec61704d013933de7e06de72c3d0f88e4929f48448",
+    "browser/installation-workspace-1440.png": "85aed990d7f3de75315dcaf0e85360edf5a631ba85f3beea228576c25425d5a7",
+    "browser/installation-workspace-390.png": "b6ab4e4409d0e40f1cfccddb6cd1baa7c4d59dcae1d1eac58535a14d543855c8"
+  },
+  "assertionWidth": 1440,
+  "proofWidths": [
+    1440,
+    390
+  ],
+  "doors": [
+    "rer setup none refusal and retry",
+    "rer setup development success",
+    "rer dev private owner entry",
+    "signed-in workspace and Settings",
+    "absent branding.name fallback",
+    "rer build",
+    "rer preview native owner entry",
+    "GET /health compiled version and unbound source commit"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-chargedesk-fit-1",
+  "head": "a60c7ec6a9288d902bfc02a70e0fce12d530891a",
+  "tree": "46d759edfb20ad99dd5ba86779dedf2ceda9d7fd",
+  "base": "91984b892ad8e993e0ddd782042d5143ed63baaf",
+  "recordedAt": "2026-11-17T11:01:18.333272+00:00",
+  "checks": {
+    "typecheck": 0,
+    "contract-docs check": 0,
+    "source lock regeneration": 0,
+    "source lock check": 0,
+    "managed installation focused journey on saved product code": 0,
+    "runtime core and hosted health on saved product code": 0,
+    "hosted mail-off journey": 0
+  },
+  "identityAndTrailers": "all candidate authors and committers fleet; no trailers",
+  "productCodeIdenticalToSavedHead": "c089e522b479eca83b213e7d8e8c5d85032c6d1a",
+  "finalCommitChanges": "documentation and regenerated source lock"
+}

@@ -1,0 +1,55 @@
+shards (transfer)	Run this shard	﻿2026-11-17T11:07:24.2722230Z ##[group]Run node scripts/verify-oncall.mjs "$SHARD"
+shards (transfer)	Run this shard	2026-11-17T11:07:24.2722661Z [36;1mnode scripts/verify-oncall.mjs "$SHARD"[0m
+shards (transfer)	Run this shard	2026-11-17T11:07:24.2741035Z shell: /usr/bin/bash -e {0}
+shards (transfer)	Run this shard	2026-11-17T11:07:24.3102983Z > pnpm run verify:app
+shards (transfer)	Run this shard	2026-11-17T11:07:24.5728367Z 
+shards (transfer)	Run this shard	2026-11-17T11:07:24.5729289Z > @just-every/oncall@0.5.18 verify:app /home/runner/work/run-oncall/run-oncall
+shards (transfer)	Run this shard	2026-11-17T11:07:24.5729856Z > node tests/verify.mjs
+shards (transfer)	Run this shard	2026-11-17T11:07:24.5730026Z 
+shards (transfer)	Run this shard	2026-11-17T11:07:25.7846888Z (node:2861) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (transfer)	Run this shard	2026-11-17T11:07:25.7848725Z (Use `node --trace-warnings ...` to show where the warning was created)
+shards (transfer)	Run this shard	2026-11-17T11:07:26.6868116Z Fresh-clone tests/transfer.mjs: a60c7ec6a9288d902bfc02a70e0fce12d530891a
+shards (transfer)	Run this shard	2026-11-17T11:07:27.8581425Z (node:2876) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (transfer)	Run this shard	2026-11-17T11:07:27.8582348Z (Use `node --trace-warnings ...` to show where the warning was created)
+shards (transfer)	Run this shard	2026-11-17T11:07:29.2246371Z PASS local mail selection: public setup refuses hosted-only none on first attempt and retry, with a field-specific correction
+shards (transfer)	Run this shard	2026-11-17T11:08:49.5279571Z Development HTTP door passed: configured owner reads release readiness from the Vite Worker
+shards (transfer)	Run this shard	2026-11-17T11:09:00.2296923Z PASS signed-in installation: saved name in title and rail across workspace/settings, absent name falls back to product
+shards (transfer)	Run this shard	2026-11-17T11:09:20.4437134Z PASS signed-in installation: saved name in title and rail across workspace/settings, built screens captured at 1440/390
+shards (transfer)	Run this shard	2026-11-17T11:09:20.4609885Z PASS compiled health: actual package version and checkout SHA without deployment bindings; coordination liveness preserved
+shards (transfer)	Run this shard	2026-11-17T11:09:38.0383973Z PROBE OC-018 native restore: Settings archive replacement -> build -> preview private owner link in the same browser -> mapped workspace without administrator selection
+shards (transfer)	Run this shard	2026-11-17T11:10:10.1386938Z Owned transfer HTTP runtime PID 4866
+shards (transfer)	Run this shard	2026-11-17T11:10:43.5323063Z OC-052 populated checkpoint: complete CLI round trip and inactive receiving state passed; activation owns refusal, rollback and concurrency
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1215991Z Worker diagnostics (test failure):
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1217020Z [stdout] Using secrets defined in ../../oncall-flow-BXZ9Kc/local.env
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1218292Z [stderr] (node:3977) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1219874Z [stderr] (Use `node --trace-warnings ...` to show where the warning was created)
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1221013Z [stdout] {"event":"oncall_demo_seed","rowsWritten":134,"elapsedMs":37}
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1221511Z 
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1221819Z Worker diagnostics (test failure):
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1222619Z [stdout] Using secrets defined in ../../oncall-flow-3DCSo1/local.env
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1223897Z [stderr] (node:4678) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1225422Z [stderr] (Use `node --trace-warnings ...` to show where the warning was created)
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1225972Z 
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1238439Z node:internal/modules/run_main:123
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1239361Z     triggerUncaughtException(
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1239655Z     ^
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1239836Z 
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1240230Z AssertionError [ERR_ASSERTION]: {"error":"invalid_grant"}
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1240677Z 
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1240858Z 403 !== 200
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1241065Z 
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1241520Z     at ok (file:///tmp/oncall-native-3wU7bt/checkout/tests/transfer.mjs:37:22)
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1243104Z     at Object.prepare (file:///tmp/oncall-native-3wU7bt/checkout/tests/transfer.mjs:136:19)
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1244336Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1245447Z     at async file:///tmp/oncall-native-3wU7bt/checkout/tests/transfer.mjs:498:2 {
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1246281Z   generatedMessage: false,
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1246740Z   code: 'ERR_ASSERTION',
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1247140Z   actual: 403,
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1247489Z   expected: 200,
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1247872Z   operator: 'strictEqual',
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1248269Z   diff: 'simple'
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1248933Z }
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1249128Z 
+shards (transfer)	Run this shard	2026-11-17T11:10:44.1249284Z Node.js v22.20.0
+shards (transfer)	Run this shard	2026-11-17T11:10:44.3060559Z  ELIFECYCLE  Command failed with exit code 1.
+shards (transfer)	Run this shard	2026-11-17T11:10:44.3270785Z ##[error]Process completed with exit code 1.

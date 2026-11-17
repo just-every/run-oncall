@@ -1,0 +1,11 @@
+{
+  "repository": "just-every/run-oncall",
+  "head": "a60c7ec6a9288d902bfc02a70e0fce12d530891a",
+  "ref": "refs/heads/cloud/sd-oncall-chargedesk-fit-1",
+  "remoteReadback": "a60c7ec6a9288d902bfc02a70e0fce12d530891a",
+  "productPushGuardExit": 0,
+  "firstSave": "c089e522b479eca83b213e7d8e8c5d85032c6d1a",
+  "candidate": "a60c7ec6a9288d902bfc02a70e0fce12d530891a",
+  "recordedAt": "2026-11-17T11:04:15.001016+00:00",
+  "method": "cloud-push.py followed by git ls-remote exact branch"
+}

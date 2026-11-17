@@ -1,0 +1,24 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-chargedesk-fit-1",
+  "savedHead": "c089e522b479eca83b213e7d8e8c5d85032c6d1a",
+  "base": "91984b892ad8e993e0ddd782042d5143ed63baaf",
+  "checks": {
+    "pnpm install --frozen-lockfile": 0,
+    "pnpm run typecheck": 0,
+    "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive": 0,
+    "npx -y @runeditrun/rer build": 0
+  },
+  "registeredJourneyEntries": {
+    "before": 20,
+    "after": 20
+  },
+  "contractStatusBeforeAndAfter": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "clauseStatusChanges": []
+}

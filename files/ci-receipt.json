@@ -1,0 +1,13 @@
+{
+  "conclusion": "success",
+  "head_sha": "84b9d385449a77f5d8a63b7b05070eeb561c4ac7",
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/44077621141",
+  "id": 44077621141,
+  "name": "Verify",
+  "status": "completed",
+  "repository": "just-every/run-oncall",
+  "gh_calls": 7,
+  "terminal": true,
+  "recordedAt": "2026-11-17T12:06:27.252802+00:00",
+  "priorFailedRun": 44070399922
+}

@@ -1,0 +1,6 @@
+{
+  "writeExit": 0,
+  "checkExit": 0,
+  "tool": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs",
+  "sourceLockSha256": "187a6056035adc4c867fead9f2c899ab1a09f7a767fda57e21d0667c116cf506"
+}

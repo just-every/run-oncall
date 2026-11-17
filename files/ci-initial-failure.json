@@ -1,0 +1,11 @@
+{
+  "conclusion": "failure",
+  "head_sha": "a60c7ec6a9288d902bfc02a70e0fce12d530891a",
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/44070399922",
+  "status": "completed",
+  "run_id": 44070399922,
+  "gh_calls_through_diagnostics": 6,
+  "terminal": true,
+  "failedJob": 133995906753,
+  "cause": "New setup fixture used a different owner email from the existing signed transfer grants; corrected by preserving transfer-owner@example.test"
+}

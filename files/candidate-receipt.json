@@ -1,0 +1,14 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-chargedesk-fit-1",
+  "head": "84b9d385449a77f5d8a63b7b05070eeb561c4ac7",
+  "tree": "e62c14e96b41a49bc8792f47908151215971f837",
+  "commits": [
+    "84b9d385449a77f5d8a63b7b05070eeb561c4ac7 Preserve the managed transfer fixture owner identity",
+    "a60c7ec6a9288d902bfc02a70e0fce12d530891a Document installation identity and local mail setup",
+    "c089e522b479eca83b213e7d8e8c5d85032c6d1a Show installation identity and keep local setup usable [skip ci]"
+  ],
+  "identityAndTrailers": "All three candidate authors/committers are fleet; no trailers",
+  "workingTreeClean": true,
+  "recordedAt": "2026-11-17T11:46:26.161790+00:00"
+}
