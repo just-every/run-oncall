@@ -111,3 +111,9 @@ body:has(.incident-sheet[open], .incident-people-dialog[open]) { overflow: hidde
 }
 
 .incident-sheet .recent-changes > summary { display: none; }
+.on-call-now { padding: 12px 16px; border: 1px solid var(--oc-line); border-radius: 12px; background: var(--oc-paper); }
+.on-call-now p { margin: 0 0 8px; font-size: 14px; }
+.on-call-now p:last-child { margin-bottom: 0; }
+.incident-other-steps { display: grid; gap: 12px; }
+.incident-other-steps p { margin: 6px 0 0; }
+.incident-sheet .workflow-choice input { accent-color: var(--oc-ink); }
