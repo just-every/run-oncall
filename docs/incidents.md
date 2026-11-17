@@ -8,7 +8,7 @@ Under **Services**, an admin adds each system your team owns with **Service name
 
 ## Declare an incident
 
-On **Incidents**, press **Declare incident** and give it an **Incident title**, the **Service**, a **Severity** (critical, warning or info) and the **Customer impact and current evidence**. Viewers can read incidents but not declare them.
+On **Incidents**, press **Declare incident** and give it an **Incident title**, the **Service** and a **Severity** (critical, warning or info). Open **More options** to name responders, choose an incident type, page urgency or priority, and write the **Customer impact and current evidence**. Viewers can read incidents but not declare them.
 
 The service's runbook is copied into the incident when you declare it. Editing the service later never rewrites the instructions an incident started with.
 
@@ -54,17 +54,17 @@ Send `POST /api/ingress/SOURCE` with a JSON object, at most 65,536 bytes (64 KiB
 
 Text values are trimmed; their limits apply before trimming. Unknown fields are discarded, so include all context you need in these supported fields.
 
-To get the service UUID, open **Services** and copy the ID shown below the service's name and owner. You can also open `/api/state` in that signed-in browser and find its `id` in `services`. The **Allowed service** selector uses that ID automatically; an external sender must supply it explicitly.
+The source page's **Sample request** already holds this source's URL and the service ID: copy them from there. The page does not show a service's ID in its list; it is the last part of the address of **Settings → Services → the service**, and also appears as `id` under `services` in `/api/state` in that signed-in browser. The **Allowed service** selector uses that ID automatically; an external sender must supply it explicitly.
 
-For a source configured as **Bearer token**, set `ONCALL_ORIGIN` to your hosted HTTPS app origin or the local app's printed origin, `ONCALL_SERVICE_ID` to that UUID and `ONCALL_SOURCE_KEY` to the private credential in your shell. With a source named `monitoring` authorized for that service in `production`:
+For a source configured as **Bearer token**, set `ONCALL_ORIGIN` to your hosted HTTPS app origin or the local app's printed origin, `ONCALL_SOURCE_ID` to the Source ID at the end of the sample request's URL (Oncall generates it from the name, for example `monitoring-a815be2e8fcd`), `ONCALL_SERVICE_ID` to the service's ID and `ONCALL_SOURCE_KEY` to the private credential in your shell. With a source authorized for that service in `production`:
 
 ```sh
-curl --fail-with-body "${ONCALL_ORIGIN}/api/ingress/monitoring" \
+curl --fail-with-body "${ONCALL_ORIGIN}/api/ingress/${ONCALL_SOURCE_ID}" \
   -H 'Content-Type: application/json' \
   -H "Authorization: Bearer ${ONCALL_SOURCE_KEY}" \
   --data-binary @- <<JSON
 {
-  "source": "monitoring",
+  "source": "${ONCALL_SOURCE_ID}",
   "eventId": "checkout-latency-001-trigger",
   "service": "${ONCALL_SERVICE_ID}",
   "environment": "production",
@@ -101,7 +101,7 @@ Select up to 500 incidents individually, or select all matching after the displa
 
 `POST /api/triage/bulk` accepts an `operationId`, `action`, `items: [{id, revision}]`, and `reason`; resolution also requires `evidence`, reassignment uses `member` (or null), and the label actions use `priority` or `urgency`. Each item commits independently with current authority and the selected revision. The server processes a small bounded portion per request and returns cumulative `results`, `remaining` and `interrupted`; while `remaining` is positive and `interrupted` is false, continue with the exact same request and operation ID. The web interface does this as one action. An interrupted operation stays visible and resumes only when explicitly submitted again. This keeps each invocation within [D1’s query limits](https://developers.cloudflare.com/d1/platform/limits/). Keep and replay the same operation ID and exact content after an interrupted request: previously committed results are returned without another change. Reusing the identity with different content conflicts. For `allMatching: true`, include the query, `confirmedCount`, `workspaceRevision` and the complete matching item/revision list. The current count and snapshot must still match on first admission. Storage remains bounded by the installation's documented workspace profile; capacity failures are explicit per-item outcomes.
 
-The response ownership section assigns/transfers commander, scribe, communications and assignee to active responders, or leaves a role explicitly unassigned. These incident responsibilities never grant administrator or responder permissions. Every role/priority/urgency/severity change requires a reason and an incident revision. The timeline retains previous/new ownership, actor and bulk operation ID. Native archive/checkpoint and portable export include saved views, bulk outcomes and these response fields; restoring them does not start paging. The additive migration leaves held incident JSON and historical ordering unchanged.
+The response ownership section assigns/transfers commander, scribe, communications and assignee to active responders, or leaves a role explicitly unassigned. These incident responsibilities never grant administrator or responder permissions. Every role/priority/urgency/severity change is saved against the incident revision you saw. Each has an optional reason field that is kept in the timeline; lowering urgency from high to low asks for a reason before it saves. The timeline retains previous/new ownership, actor and bulk operation ID. Native archive/checkpoint and portable export include saved views, bulk outcomes and these response fields; restoring them does not start paging. The additive migration leaves held incident JSON and historical ordering unchanged.
 
 ## Email alerts and source recovery
 
@@ -109,7 +109,7 @@ The response ownership section assigns/transfers commander, scribe, communicatio
 
 Repeated subject-mode failures append to one derived generation and one recorded obligation. A custom `FAILED: (\S+)` trigger and `OK: (\S+)` resolve can both capture group 1: `FAILED: nightly-db` and `OK: nightly-db` act on the same key; `nightly-web` stays separate. Activity explains each mode, rule version, extracted key and outcome. Recovery says **stopped by source recovery** with its email receipt. Paging is OFF, so this is a labelled non-automatic state. A declared incident remains open for the responder's recovery evidence and resolution summary.
 
-For native Events API HMAC requests, save your JSON as `event.json`, export the scoped source key privately as `ONCALL_SOURCE_KEY`, and sign the exact bytes sent. This uses curl, OpenSSL and standard shell tools on macOS, Linux or WSL; no global Node is needed. Check `curl --version` and `openssl version` first:
+For native Events API HMAC requests, save your JSON as `event.json`, export the scoped source key privately as `ONCALL_SOURCE_KEY` (with `ONCALL_ORIGIN` and `ONCALL_SOURCE_ID` set as above), and sign the exact bytes sent. This uses curl, OpenSSL and standard shell tools on macOS, Linux or WSL; no global Node is needed. Check `curl --version` and `openssl version` first:
 
 ```sh
 ONCALL_TIMESTAMP=$(date +%s)
@@ -118,7 +118,7 @@ ONCALL_SIGNATURE=$(
     openssl dgst -sha256 -hmac "${ONCALL_SOURCE_KEY:?Set ONCALL_SOURCE_KEY privately first}" -binary |
     od -An -v -tx1 | tr -d ' \n'
 )
-curl --fail-with-body "${ONCALL_ORIGIN}/api/ingress/monitoring" \
+curl --fail-with-body "${ONCALL_ORIGIN}/api/ingress/${ONCALL_SOURCE_ID}" \
   -H 'Content-Type: application/json' \
   -H "x-oncall-timestamp: ${ONCALL_TIMESTAMP}" \
   -H "x-oncall-signature: ${ONCALL_SIGNATURE}" \

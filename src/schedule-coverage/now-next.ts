@@ -17,14 +17,22 @@ export function scheduleNowNext(schedule:Schedule,members:CoverageMember[],at:nu
  // The summary's look-ahead is explicit when a potential slot lies beyond it.
  // Empty/ineligible rotations do not need a walk and can never claim coverage.
  const through=Math.min(at+year,Date.UTC(2101,0,1),schedule.validUntil?Date.parse(schedule.validUntil):Infinity);
+ // A hand-over is the next time someone else holds the role; a boundary that keeps the same holder is not one.
+ const handover:Record<'primary'|'backup',Coverage|null>={primary:null,backup:null};
+ const changeBy=Math.min(through,at+90*86400000);
  let current=now;
- while(possible.some(role=>!upcoming[role])){
+ while(true){
   const ends=current.windows.flatMap(window=>window.end&&Date.parse(window.end)>current.at?[Date.parse(window.end)]:[]);
   if(!ends.length)break;
   const boundary=Math.min(...ends);
   if(boundary>=through)break;
+  const needUpcoming=possible.some(role=>!upcoming[role]),needHandover=boundary<changeBy&&possible.some(role=>now[role]&&!handover[role]);
+  if(!needUpcoming&&!needHandover)break;
   current=coverage(schedule,members,boundary);
-  for(const role of possible)if(!upcoming[role]&&current[role])upcoming[role]=current;
+  for(const role of possible){
+   if(!upcoming[role]&&current[role])upcoming[role]=current;
+   if(now[role]&&!handover[role]&&current[role]&&current[role]!==now[role])handover[role]=current;
+  }
  }
- return {now,next,upcoming,searchThrough:new Date(through).toISOString(),limited:possible.filter(role=>!upcoming[role]&&through<Math.min(Date.UTC(2101,0,1),schedule.validUntil?Date.parse(schedule.validUntil):Infinity))};
+ return {now,next,upcoming,handover,searchThrough:new Date(through).toISOString(),limited:possible.filter(role=>!upcoming[role]&&through<Math.min(Date.UTC(2101,0,1),schedule.validUntil?Date.parse(schedule.validUntil):Infinity))};
 }

@@ -31,7 +31,7 @@ export async function sendDemoPage(c: any, body: (c: any) => Promise<any>) {
   const sends = await Promise.all((selected === 'all' ? channels : [selected]).map(channel =>
     demoEffect(deliver, () => ({ id: crypto.randomUUID(), channel, status: 'sent' as const }))))
   command(workspace, actor, { type: 'note', incident: incident.id, revision: incident.revision,
-    text: `Page sent to ${target.name} via ${sends.map(send => send.channel === 'sms' ? 'SMS' : send.channel).join(', ')}.` }, new Date(now).toISOString())
+    text: `Simulated page to ${target.name} via ${sends.map(send => send.channel === 'sms' ? 'SMS' : send.channel).join(', ')}. This is a demo: nothing was delivered.` }, new Date(now).toISOString())
   const result = await c.env.DB.batch(workspaceWrite(c.env.DB, workspace, workspace.revision, {
     sql: 'EXISTS(SELECT 1 FROM oc_current_sessions WHERE token=? AND member=? AND expires>?)',
     values: [c.get('sessionDigest'), actor.id, now],

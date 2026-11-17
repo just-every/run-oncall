@@ -3,8 +3,8 @@ import { ExportHelp } from './ExportHelp'
 import { vendorNames } from './vendor-formats'
 import type { Provider, Region } from './collect/bundle'
 
-export function ConnectStep({ source, vendor, choose, fileVendor, connect, busy, read, file }: {
- source: string; vendor: string; choose: (value: string) => void; fileVendor: (value: string) => void; connect: boolean; busy: boolean;
+export function ConnectStep({ waiting, source, vendor, choose, fileVendor, connect, busy, read, file }: {
+ waiting?: { vendor: string; name: string; continueReview: () => void; discardReview: () => void } | null; source: string; vendor: string; choose: (value: string) => void; fileVendor: (value: string) => void; connect: boolean; busy: boolean;
  read: (source: Provider, region: Region, key?: string) => Promise<void>; file: (file: File) => void
 }) {
  const [key, setKey] = useState(''), [region, setRegion] = useState<Region>('us'), [useKey, setUseKey] = useState(false)
@@ -13,6 +13,7 @@ export function ConnectStep({ source, vendor, choose, fileVendor, connect, busy,
  return <section className="scheduling-panel move-in-step" aria-labelledby="move-in-connect-title">
   <h2 id="move-in-connect-title">1 · Connect</h2>
   <p>Bring your schedules across. Your existing pager stays in charge.</p>
+  {waiting&&<div role="status" className="move-in-waiting"><p>A {waiting.name} review is waiting. Nothing has been imported.</p><button type="button" className="scheduling-primary" disabled={busy} onClick={waiting.continueReview}>Continue review</button> <button type="button" className="move-in-quiet" disabled={busy} onClick={waiting.discardReview}>Discard it</button></div>}
   <label className="scheduling-field"><span id="move-in-source">Source</span><select aria-labelledby="move-in-source" value={source} disabled={busy} onChange={event => { setKey(''); setUseKey(false); choose(event.target.value) }}>
    <option value="pagerduty">PagerDuty</option><option value="opsgenie">Opsgenie</option><option value="file">Other: from a file</option>
   </select></label>

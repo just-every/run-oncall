@@ -7,11 +7,15 @@ import {Field,Form} from '../forms';
 import {request} from '../useWorkspace';
 import type {Incident,Member,Service,State} from '../family/response-operations/domain';
 import {assignmentRule} from './model';
+import {responseContext} from './context';
 import {memberName} from '../incident/types';
-function usePolicies(){
- const [policies,setPolicies]=useState<{service:string;revision:number}[]|null>(null), failures=useActionFailure();
- const load=async()=>{try{setPolicies((await request('/api/paging/state')).policies);failures.clear();}catch(error){failures.show(error,{read:true,target:null,retry:load});}};
- useEffect(()=>{void load();},[]);return {policies,failure:failures.failure};
+function usePolicies(state?:State){
+ const [policies,setPolicies]=useState<{service:string;revision:number}[]|null>(null),[archive,setArchive]=useState<any>(null), failures=useActionFailure();
+ const load=async()=>{try{const paging=await request('/api/paging/state');setPolicies(paging.policies);setArchive(paging);failures.clear();}catch(error){failures.show(error,{read:true,target:null,retry:load});}};
+ useEffect(()=>{void load();},[]);
+ // Who the current policies would page right now, the same answer the server checks a response against.
+ const eligible=archive&&state?responseContext({archive,workspace:state} as any,Date.now()).eligible:null;
+ return {policies,eligible,failure:failures.failure};
 }
 function Targets({state,policies,compact=false}:{state:State;policies:{service:string;revision:number}[];compact?:boolean}){const people=state.members.filter(m=>m.active&&['admin','responder'].includes(m.role));return <>
  {compact&&people.length===1?<label className="workflow-choice"><input type="checkbox" name="users" value={people[0].id}/><span>{people[0].name}</span></label>:<label className="field"><span>Named responders</span><select name="users" multiple aria-label="Named responders">{state.members.filter(m=>m.active&&['admin','responder'].includes(m.role)).map(m=><option key={m.id} value={m.id}>{m.name}</option>)}</select></label>}
@@ -33,12 +37,12 @@ export function UserAssignment({service,state}:{service:Service;state:State;busy
  </div></details>;
 }
 export function ResponderRequests({incident,state,actor,busy,submit,expanded=false}:{incident:Incident;state:State;actor:Member;busy:boolean;submit:(data:any)=>Promise<any>;expanded?:boolean}){
- const {policies,failure}=usePolicies(),editable=['admin','responder'].includes(actor.role),name=(id:string)=>state.services.find(s=>s.id===id)?.name??memberName(state,id);
+ const {policies,eligible,failure}=usePolicies(state),editable=['admin','responder'].includes(actor.role),name=(id:string)=>state.services.find(s=>s.id===id)?.name??memberName(state,id);
  const send=(data:any)=>submit({...data,incident:incident.id,revision:incident.revision});
  return <section className="response-controls" aria-label="Manual obligations and responder requests">{!expanded&&<h3>Manual obligations and responder requests</h3>}
  {incident.manualPage&&<><p>Created by {incident.manualPage.erasedCreator?'Erased member':name(incident.manualPage.creator)} · {incident.urgency} urgency · {incident.manualPage.assignment.mode} after {incident.manualPage.assignment.minutes} minutes (version {incident.manualPage.assignment.version}) · automatic action unavailable.</p><p>Primary acknowledgment: {incident.manualPage.acknowledgment&&incident.state!=='declared'?(incident.manualPage.erasedAcknowledgment?'Erased member':name(incident.manualPage.acknowledgment.by)):'Unacknowledged'}</p>{incident.state==='declared'&&incident.manualPage.acknowledgment&&<p>Earlier manual-page acknowledgment: {incident.manualPage.erasedAcknowledgment?'Erased member':name(incident.manualPage.acknowledgment.by)} · {shortTime(incident.manualPage.acknowledgment.at)}</p>}{incident.manualPage.obligations.map(o=><p key={o.id}>Recorded obligation · {o.target.kind}: {name(o.target.id)} · {o.state} · {o.outcome} · no sender · paging OFF</p>)}</>}
  {!editable&&<p>Only responders and admins may create manual pages or request responders.</p>}<p>Additional responders: {(incident.responders??[]).map(name).join(', ')||'None'}</p>
- {(incident.responderRequests??[]).map(r=><article key={r.id}><h4>Request to {name(r.obligation.target.id)}</h4><p>{r.message}</p><p>{r.status} · requested by {name(r.requester)} · {r.response&&'response by '+name(r.response.by)} · no sender · paging OFF</p>{r.notice&&<p>Requester notice: {r.notice.outcome} · {r.notice.state} · non-automatic</p>}{r.status==='pending'&&editable&&<div className="routing-actions"><button disabled={busy} onClick={()=>send({type:'respond-request',request:r.id,decision:'accept'})}>Accept request</button><button disabled={busy} onClick={()=>send({type:'respond-request',request:r.id,decision:'decline'})}>Decline request</button>{actor.id===r.requester&&<button disabled={busy} onClick={()=>send({type:'cancel-request',request:r.id})}>Cancel request</button>}</div>}</article>)}
+ {(incident.responderRequests??[]).map(r=><article key={r.id}><h4>Request to {name(r.obligation.target.id)}</h4><p>{r.message}</p><p>{[r.status,'requested by '+name(r.requester),r.response&&'response by '+name(r.response.by),'no sender','paging OFF'].filter(Boolean).join(' · ')}</p>{r.notice&&<p>Requester notice: {r.notice.outcome} · {r.notice.state} · non-automatic</p>}{r.status==='pending'&&editable&&<div className="routing-actions">{(r.obligation.target.kind==='user'?r.obligation.target.id===actor.id:!!eligible?.[r.obligation.target.id]?.includes(actor.id))&&<><button disabled={busy} onClick={()=>send({type:'respond-request',request:r.id,decision:'accept'})}>Accept request</button><button disabled={busy} onClick={()=>send({type:'respond-request',request:r.id,decision:'decline'})}>Decline request</button></>}{actor.id===r.requester&&<button disabled={busy} onClick={()=>send({type:'cancel-request',request:r.id})}>Cancel request</button>}</div>}</article>)}
  <FailureLine failure={failure}/>{editable&&incident.state!=='resolved'&&<details open={expanded||undefined}><summary>Request responders</summary><Form busy={busy} disabled={policies===null} label="Record responder requests" onSubmit={data=>send({...data,type:'request-responders',users:Array.isArray(data.users)?data.users:data.users?[data.users]:[]})}><Targets state={state} policies={policies??[]} compact={expanded}/><Field name="message" label="Responder request message" type="textarea"/></Form></details>}
  </section>;
 }

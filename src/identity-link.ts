@@ -50,7 +50,10 @@ export async function linkRestoredOwner(c:any,input:any) {
   db.prepare(`INSERT INTO operator_members(operator_id,member_id) SELECT ?,? WHERE ${selected} AND ${mappingGate}
    AND EXISTS(SELECT 1 FROM oa_operators WHERE id=? AND display_name=?)`)
    .bind(native.operator.id,input.adminMapping,input.adminMapping,archived.name,native.id,native.operator.id,now,native.operator.id,name.trim()),
+  // The owner just confirmed who they are and their name: that is the first-run confirmation, so /setup never asks again.
+  db.prepare(`INSERT OR IGNORE INTO oa_first_run(singleton,completed_by,completed_at) SELECT 1,?,? WHERE EXISTS(SELECT 1 FROM operator_members WHERE operator_id=? AND member_id=?)`)
+   .bind(native.operator.id,now,native.operator.id,input.adminMapping),
  ])
- if(results.some((result:D1Result)=>result.meta.changes!==1))fail('Mapping refused. Keep held password access; only an unlinked credential-free restore can map an archived administrator.',409)
+ if(results.slice(0,2).some((result:D1Result)=>result.meta.changes!==1))fail('Mapping refused. Keep held password access; only an unlinked credential-free restore can map an archived administrator.',409)
  return c.json({linked:true})
 }

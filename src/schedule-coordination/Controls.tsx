@@ -16,6 +16,8 @@ export function ScheduleCoordination({schedule,state,actor,onChanged,rotaPage=fa
  useEffect(()=>{load().catch(e=>failures.show(e,{read:true,target:null,retry:async()=>{await load();failures.clear();}}));},[schedule.id,schedule.revision,state]);
  const send=async(data:any)=>{setBusy(true);failures.clear();setUrl('');try{const result=await request('/api/schedule-coordination',data);if(result.url)setUrl(result.url);await load();await onChanged();return result;}catch(e){failures.show(e,{retry:hasChangeBase(data)?()=>send(data):undefined});return null;}finally{setBusy(false);}};
  const name=(id:string)=>state.members.find(m=>m.id===id)?.name??'Erased member',policy=rows.find(r=>r.kind==='policy'&&r.data.schedule===schedule.id),reminder=rows.find(r=>r.kind==='reminder'&&r.member===actor.id),editable=['admin','responder'].includes(actor.role);
+ // A notice is stored once per affected member; its author is who made the change, not who reads it.
+ const author=(row:Row)=>{const id=row.data.obligation?.creator as string|undefined;return state.members.find(m=>m.id===id)?.name??state.apiClients?.find(c=>c.id===id)?.name??'Erased member';};
  if(!ready)return <section className="scheduling-panel" aria-label="Shift coordination"><h2>Shift coordination</h2><FailureLine failure={failures.failure}/>{!failures.failure&&<p role="status">Loading shift coordination…</p>}</section>;
  return <section className="scheduling-panel" aria-label="Shift coordination"><h2>Shift coordination</h2><FailureLine failure={failures.failure}/>
  {!rotaPage&&<p>Substitutes decide swaps explicitly. Overdue requests remain undecided. Paging OFF.</p>}
@@ -36,7 +38,7 @@ export function ScheduleCoordination({schedule,state,actor,onChanged,rotaPage=fa
  {url&&<div role="status"><p>Copy this private subscription URL now. It is shown once.</p><label className="field"><span>New private calendar URL</span><input aria-label="New private calendar URL" readOnly value={url}/></label><button onClick={()=>setUrl('')}>Hide calendar URL</button></div>}
  {rows.filter(r=>r.kind==='subscription').map(row=><p key={row.id}>{{schedule:'This rota',service:'This service',own:'My shifts'}[row.data.scope as string]??'Calendar'} · {row.active?'active':'revoked or restored inactive'} {row.active&&<button disabled={busy} onClick={()=>send({action:'revoke',id:row.id,revision:row.revision})}>Revoke subscription</button>}</p>)}</>}
  </details>
- <details><summary>{rotaPage?'History':'Recorded schedule changes'}</summary>{rows.filter(r=>r.kind==='notice'&&r.data.schedule===schedule.id).map(row=><p key={row.id}>{rotaPage?<>{name(row.member)} · Coverage changed · {shortTime(row.at,schedule.timezone)}</>:<>Recorded obligation · {name(row.member)} · {row.data.obligation.reason} · {row.data.obligation.outcome} · non-automatic</>}</p>)}</details>
+ <details><summary>{rotaPage?'History':'Recorded schedule changes'}</summary>{rows.filter(r=>r.kind==='notice'&&r.data.schedule===schedule.id).map(row=><p key={row.id}>{rotaPage?<>{author(row)} · Coverage changed · {shortTime(row.at,schedule.timezone)}</>:<>Recorded obligation · {name(row.member)} · {row.data.obligation.reason} · {row.data.obligation.outcome} · non-automatic</>}</p>)}</details>
  </section>;
 }
 

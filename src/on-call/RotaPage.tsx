@@ -50,8 +50,11 @@ export function RotaPage({id, state, actor, value, refresh, edit = false, render
   const changed = async () => {await refresh();await load();};
   const canEdit = !!schedule && (schedule.services?.length?actor.role==='admin':teamCoverage(state, actor, schedule.service)), responsive = ['admin','responder'].includes(actor.role);
   const person = (id: string | null) => state.members.find(person => person.id === id);
-  const bands: OnCallBand[] = windows.flatMap((window, index) => (['primary','backup'] as const).map(role => ({role, member: window[role] && person(window[role]) ? {id: window[role]!, name: person(window[role])!.name} : null, from: new Date(window.at).toISOString(), to: new Date(windows[index + 1]?.at ?? from + 14 * 86_400_000).toISOString()})));
-  const upcomingShifts = bands.filter(band => band.member?.id === actor.id && Date.parse(band.from) > Date.now());
+  const shifts: OnCallBand[] = windows.flatMap((window, index) => (['primary','backup'] as const).map(role => ({role, member: window[role] && person(window[role]) ? {id: window[role]!, name: person(window[role])!.name} : null, from: new Date(window.at).toISOString(), to: new Date(windows[index + 1]?.at ?? from + 14 * 86_400_000).toISOString()})));
+  // Layers cut the timeline at every boundary; the chart shows one holder across several cuts as one bar. Swaps keep the cuts: cover is judged per cut.
+  const bands: OnCallBand[] = [], lastBand: Partial<Record<'primary'|'backup', OnCallBand>> = {};
+  for (const shift of shifts) {const previous = lastBand[shift.role]; if (previous && previous.member?.id === shift.member?.id && previous.to === shift.from) previous.to = shift.to; else {bands.push({...shift}); lastBand[shift.role] = bands.at(-1);}}
+  const upcomingShifts = shifts.filter(band => band.member?.id === actor.id && Date.parse(band.from) > Date.now());
   const hasCover = (band: OnCallBand) => schedule?.overrides.some(override => override.role === band.role && Date.parse(override.start) < Date.parse(band.to) && Date.parse(override.end) > Date.parse(band.from));
   const ownShifts = upcomingShifts.filter(band => !hasCover(band));
   const coveredShifts = upcomingShifts.some(hasCover);
@@ -97,7 +100,7 @@ export function RotaPage({id, state, actor, value, refresh, edit = false, render
   const requestSwap = async () => {
     if (!schedule || !swapShift || !substitute) return;
     setBusy(true);failures.clear();
-    try {await request('/api/schedule-coordination', {action:'request',schedule:id,scheduleRevision:schedule.revision,substitute,role:swapShift.role,start:swapShift.from,end:swapShift.to});await changed();for(const kept of policyDrafts('swap',id))removeLocalDraft('swap',id,kept.baseVersion);setSheet(null);}
+    try {await request('/api/schedule-coordination', {action:'request',schedule:id,scheduleRevision:schedule.revision,substitute,role:swapShift.role,start:swapShift.from,end:swapShift.to});await changed();for(const kept of policyDrafts('swap',id))removeLocalDraft('swap',id,kept.baseVersion);setSheet(null);setSavedNotice(`Swap requested. It waits under Shift coordination for ${person(substitute)?.name??'your substitute'} to accept.`);}
     catch (error) {failures.show(error, {target:null});} finally {setBusy(false);}
   };
   if (edit && schedule && renderEdit) return <>{renderEdit(schedule)}</>;

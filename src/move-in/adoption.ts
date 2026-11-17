@@ -17,7 +17,8 @@ export function installAdoption(api:any,body:(c:any)=>Promise<any>) {
  }
  api.get('/api/move-in/adoption',async(c:any)=>{
   const s=await snapshot(c)
-  return c.json({services:s.workspace.services,members:s.workspace.members.filter(m=>m.active&&['admin','responder'].includes(m.role)),paging:'OFF'})
+  // Rotas already live, so the screen can say before adoption that a service has one.
+  return c.json({services:s.workspace.services,members:s.workspace.members.filter(m=>m.active&&['admin','responder'].includes(m.role)),rotas:s.archive.schedules.map(rota=>({id:rota.id,name:rota.name,services:[...new Set([rota.service,...(rota.services??[])])]})),paging:'OFF'})
  })
  api.post('/api/move-in/adopt',async(c:any)=>{
   const s=await snapshot(c),input=await body(c),db=c.env.DB as D1Database

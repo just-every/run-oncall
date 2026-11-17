@@ -20,7 +20,7 @@ Oncall sends no SMS, voice calls, push notifications or paging emails, and it ne
 
 ## It does not reach into your other accounts
 
-Moving in from Opsgenie or PagerDuty reads export files you saved yourself. Oncall asks for no API key, makes no request to those services and turns nothing on there. Imported schedules arrive paused for you to review. See [Move in from Opsgenie or PagerDuty](move-in.md) for exactly which rota shapes come across and which are named as differences.
+Moving in from Opsgenie or PagerDuty reads schedules once, and only to read them. You can upload an export file you saved yourself; or give **Move in** a read-only key (or sign in to PagerDuty) and Oncall reads that account's schedules for that one import. The key stays in page and request memory and is never kept. Oncall changes nothing in those accounts and turns nothing on there. Imported schedules arrive paused for you to review. See [Move in from Opsgenie or PagerDuty](move-in.md) for exactly which rota shapes come across and which are named as differences.
 
 ## It does not call AI
 

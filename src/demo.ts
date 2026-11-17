@@ -40,6 +40,8 @@ export async function seedDemo(env: Bindings, { now: seededAt }: { ownerEmail: s
   const now = seededAt.getTime()
   const person = (name: string, role: Member['role']): Member => ({ id: crypto.randomUUID(), name, role, active: true })
   const admin: Member = { id: owner.id, name: 'Alex Morgan', role: 'admin', active: true }
+  // The signed-in owner is the workspace's Alex Morgan: the app takes a member's name from the owner's profile.
+  await env.DB.prepare('UPDATE oa_operators SET display_name=? WHERE id=?').bind(admin.name, owner.id).run()
   const [priya, marcus, elena, sam] = [person('Priya Raman', 'responder'), person('Marcus Webb', 'responder'), person('Elena Rossi', 'responder'), person('Sam Okafor', 'responder')]
   const state: State = empty()
   state.members = [admin, priya, marcus, elena, sam, person('Jo Park', 'viewer')]
@@ -90,7 +92,7 @@ export async function seedDemo(env: Bindings, { now: seededAt }: { ownerEmail: s
   const live = signal('checkout-api', 'critical', 'checkout-5xx', 'g2', 'Checkout 5xx rate above 5% in eu-west', 'trigger', 38 * MIN, 'monitoring-providers')
   const current = run(priya, { type: 'declare', service: 'checkout-api', severity: 'critical', title: 'Checkout errors in eu-west', summary: 'Customers in eu-west see failed payments at checkout.', alerts: [live.alert] }, 35 * MIN) as Incident
   const act = (actor: Member, input: object, offset: number) => run(actor, { incident: current.id, revision: current.revision, ...input }, offset)
-  act(admin, { type: 'note', text: `Page sent to ${priya.name} via SMS, voice, push and email.` }, 34 * MIN)
+  act(admin, { type: 'note', text: `Simulated page to ${priya.name} via SMS, voice, push and email. This is a demo: nothing was delivered.` }, 34 * MIN)
   act(priya, { type: 'runbook', index: 0, done: true }, 28 * MIN)
   act(priya, { type: 'runbook', index: 1, done: true }, 24 * MIN)
   act(marcus, { type: 'note', text: 'Errors only in eu-west. A certificate rotation there finished just before the alert.' }, 20 * MIN)

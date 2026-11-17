@@ -701,6 +701,7 @@ try {
   await requests68.getByRole('button',{name:'Record responder requests',exact:true}).click()
   await requests68.getByText(message,{exact:true}).waitFor()
  }
+ assert.equal(await requests68.getByRole('button',{name:'Accept request',exact:true}).count(),0,'the requester is not offered Accept for another responder')
  await openIncident(rosa.page,manual68.id);await rosa.page.reload()
  await openIncidentAction(rosa.page,'Request responders')
  const responseRegion=rosa.page.getByRole('region',{name:'Manual obligations and responder requests'})
@@ -747,7 +748,7 @@ try {
  const expired58=await worker.send('/cdn-cgi/local/scheduled',undefined,{},'GET');assert.equal(expired58.status,200)
  await openIncident(owner.page,incident58.id)
  await openIncidentAction(owner.page,'Snooze')
- await owner.page.getByRole('region',{name:'Incident deadlines'}).getByText(/snooze · fired/).waitFor()
+ await owner.page.getByRole('region',{name:'Incident deadlines'}).getByText(/Snooze · Expired/).waitFor()
  await owner.page.getByRole('button',{name:'Close',exact:true}).click()
  await openIncidentAction(owner.page,'Request responders')
  assert.equal(ok(await call(owner.page,'/api/state')).incidents.find(i=>i.id===incident58.id).state,'declared')

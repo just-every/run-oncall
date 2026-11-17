@@ -10,10 +10,11 @@ const words=(value:string)=>fields[value.replaceAll('-','_')]??value.replaceAll(
 export const reviewKind=(kind:string)=>kinds[kind]??words(kind)
 const sentence=(text:string)=>/[.!?]$/.test(text)?text:text+'.'
 
+const list=(values:string[])=>values.length<3?values.join(' and '):`${values.slice(0,-1).join(', ')} and ${values.at(-1)}`
 export function reviewCopy(items:any[]) {
  const names=new Map<string,string>()
  for(const item of items) {
-  names.set(item.id,item.name)
+  if(item.kind!=='timelines')names.set(item.id,item.name)
   for(const effect of item.effects??[]) {
    names.set(effect.targetId,item.name)
    if(effect.value.email)names.set(effect.value.email,item.name)
@@ -26,7 +27,18 @@ export function reviewCopy(items:any[]) {
  const named=(text:string)=>pattern?text.replace(pattern,ref=>names.get(ref)!):text
  const readable=(text:string)=>named(text).replace(/\b[a-zA-Z][a-zA-Z0-9]*(?:_[a-zA-Z0-9]+)+\b/g,words)
  const date=(value:string)=>new Intl.DateTimeFormat('en-US',{dateStyle:'medium',timeStyle:'short',timeZone:'UTC'}).format(new Date(value))+' UTC'
- return {
+ const retained=(item:any,value:any)=>item.kind==='schedules'&&value.reason==='Retained source metadata; not an active Oncall rule.'
+ const copy={
+  // A coverage comparison shares its schedule's source id; name it by that schedule.
+  title:(item:any)=>item.kind==='timelines'?`Coverage comparison: ${items.find(other=>other.kind==='schedules'&&other.id===item.id)?.name??'a schedule'}`:`${reviewKind(item.kind)}: ${item.name}`,
+  // One sentence per distinct difference; many fields kept for review share one line.
+  differences:(item:any):{text:string;originals:any[]}[]=>{
+   const rows:{text:string;originals:any[]}[]=[],kept=item.unmapped.filter((value:any)=>retained(item,value))
+   const add=(text:string,original:any)=>{const row=rows.find(row=>row.text===text);if(row){if(original!==undefined)row.originals.push(original)}else rows.push({text,originals:original===undefined?[]:[original]})}
+   if(kept.length)rows.push({text:`The source’s ${list(kept.map((value:any)=>words(value.field)))} for ${item.name} will be kept for review, without becoming active Oncall rules.`,originals:kept.flatMap((value:any)=>value.original===undefined?[]:[value.original])})
+   for(const value of item.unmapped)if(!retained(item,value))add(copy.difference(item,value),value.original)
+   return rows
+  },
   rejection:(item:any)=>sentence(readable(item.rejection).replace(new RegExp('^'+item.kind+'\\s'),reviewKind(item.kind)+' ')),
   effect:(item:any)=>{
    if(item.rejection)return 'Oncall will keep the original for review and will not create an active object from it.'
@@ -55,4 +67,5 @@ export function reviewCopy(items:any[]) {
    })]
   },
  }
+ return copy
 }

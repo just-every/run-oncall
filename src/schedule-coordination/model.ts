@@ -20,7 +20,12 @@ export function swapSchedule(state:State,schedule:Schedule,requester:string,subs
  const override={id:crypto.randomUUID(),role,start:new Date(from).toISOString(),end:new Date(to).toISOString(),member:substitute};
  const changed=validateSchedule({...schedule,revision:schedule.revision+1,overrides:[...schedule.overrides,override]},state);
  const after=preview(changed,state.members,from,to),other=role==='primary'?'backup':'primary';
- for(const at of new Set([...before,...after].map(window=>window.at))){const prior=coverage(schedule,state.members,at),next=coverage(changed,state.members,at);if(next[role]!==substitute||next[other]!==prior[other])fail('Swap would create ambiguous or overlapping coverage or a new gap',409);}
+ for(const at of new Set([...before,...after].map(window=>window.at))){const prior=coverage(schedule,state.members,at),next=coverage(changed,state.members,at);if(next[role]!==substitute||next[other]!==prior[other]){
+  // Name the usual cause: a substitute who is away for part of the shift.
+  const away=schedule.pto?.find(entry=>entry.member===substitute&&Date.parse(entry.start)<to&&Date.parse(entry.end)>from);
+  if(away)fail(`${state.members.find(m=>m.id===substitute)?.name??'The substitute'} is on PTO during part of this shift. Choose someone who is available for all of it.`,409);
+  fail('Swap would create ambiguous or overlapping coverage or a new gap',409);
+ }}
  return changed;
 }
 export function scheduleChanges(state:State,before:Schedule[],after:Schedule[],actor?:string) {

@@ -54,6 +54,7 @@ export async function productImport(page,context,width,session,proof) {
   await imported.getByRole('button',{name:'Make schedule live',exact:true}).click()
   if(await imported.getByLabel('Service for '+rota,{exact:true}).count())await imported.getByLabel('Service for '+rota,{exact:true}).selectOption({label:'Checkout'})
   if(await imported.getByLabel('Workspace member for Erase '+width,{exact:false}).count())await imported.getByLabel('Workspace member for Erase '+width,{exact:false}).selectOption(session.member.id)
+  if(await imported.getByLabel('Keep both rotas for now').count())await imported.getByLabel('Keep both rotas for now').check()
   await imported.getByRole('button',{name:'Confirm live schedule · paging OFF',exact:true}).click()
   await page.getByRole('listitem').filter({hasText:rota}).getByRole('link',{name:'On call',exact:true}).click()
   await page.waitForURL('**/on-call')
@@ -481,6 +482,7 @@ export async function plainMoveInReview(page,context,session) {
  if(await servicePicker.count())await servicePicker.selectOption(choices.services[0].id)
  const memberPicker=imported.getByLabel('Workspace member for '+person.name,{exact:true})
  if(await memberPicker.count())await memberPicker.selectOption(session.member.id)
+ if(await imported.getByLabel('Keep both rotas for now').count())await imported.getByLabel('Keep both rotas for now').check()
  await imported.getByRole('button',{name:'Confirm live schedule · paging OFF',exact:true}).click()
  await imported.getByText(/Adopted into/).waitFor()
  const adopted=await request('/api/paging/state'),objects=await request('/api/move-in/objects')
@@ -776,7 +778,7 @@ export async function coverageRulesBrowser(page,context,width,session,{ownerLink
  const state=await api('/api/state'),now=Date.now(),date=new Date(now-86400000).toISOString().slice(0,10),id='synthetic-oncall-'+(3000+width);
  const rotation={anchorLocal:date+'T00:00',periodDays:1,members:[session.member.id],ambiguity:'earlier'},layer={id:id+'-layer',name:'synthetic-oncall-'+(4000+width),role:'primary',timezone:'UTC',kind:'daily',rotation,start:date+'T00:00:00.000Z',end:null,weekdays:[1,2,3,4,5],startHour:9,endHour:17,holidayCalendars:[],holidayAction:'next',ptoAction:'next'};
  await api('/api/paging/schedules',{id,name:'synthetic-oncall-'+(5000+width),service:state.services[0].id,revision:0,timezone:'UTC',validFrom:date+'T00:00:00.000Z',validUntil:null,primary:rotation,backup:{...rotation,members:[]},overrides:[],layers:[layer]});
- await page.goto(origin+'/on-call/'+id);const current=await api('/api/schedules/'+id+'/now-next');assert.ok((await page.locator('.scheduling-now-role').first().innerText()).includes(current.now.windows[0].explanation));
+ await page.goto(origin+'/on-call/'+id);const current=await api('/api/schedules/'+id+'/now-next');{const summary=await page.locator('.scheduling-now-role').first().innerText();assert.ok(summary.includes(current.now.windows[0].decisions.some(d=>d.state==='winner')?layer.name+' covers this time.':'No layer covers this time.'),'the summary says in one sentence whether a layer covers now');assert.ok(!summary.includes(current.now.windows[0].explanation),'the per-layer precedence text stays out of the summary');}
  const inView=async locator=>{await locator.waitFor();await page.waitForFunction(el=>el===document.activeElement,await locator.elementHandle());assert.equal(await locator.evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight&&r.left>=0&&r.right<=innerWidth;}),true);assert.equal(await locator.evaluate(el=>el===document.activeElement),true);};
  const edit=async()=>{await page.getByRole('link',{name:'Edit rota',exact:true}).click();for(let i=0;i<3;i++)await page.getByRole('button',{name:'Continue',exact:true}).click();await page.getByLabel('Coverage review elapsed days',{exact:true}).fill('366');await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);};
  const directory=process.env.ONCALL_BROWSER_EVIDENCE;await edit();

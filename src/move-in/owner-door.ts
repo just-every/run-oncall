@@ -1,4 +1,5 @@
-import {vendorName} from './vendor-formats'
+import {vendorName,vendorNames} from './vendor-formats'
+import { preview as previewResponse } from '../modules/import-kit/src/door/planning'
 import { auditIdentity } from '../audit-store'
 import { createImportOperatorHandler } from '../modules/import-kit/src/door/operator'
 import { loadSnapshot, planRow } from '../modules/import-kit/src/door/store'
@@ -59,6 +60,16 @@ const review = (plan: ImportPlan) => plan.entries.map(entry => {
   rejection: entry.rejection, unmapped: entry.unmapped, effects: entry.effects }
 })
 
+/** The saved file names of an earlier import, so a sentence can name it by provider and file. Null when its plan is gone or unreadable. */
+const importFiles = (db: D1Database, principal: string) => async (job: string, namespace: string) => {
+ try {
+  const plan = await db.prepare(`SELECT d.id FROM ik_door_plans d WHERE d.job_id=? LIMIT 1`).bind(job).first<{ id: string }>()
+  if (!plan) return null
+  const names = (await loadSnapshot(reader(db, namespace as Vendor, principal), await planRow(reader(db, namespace as Vendor, principal), plan.id))).plan.source.artifacts.map(artifact => artifact.name)
+  return names.length ? names.join(', ') : null
+ } catch { return null }
+}
+
 /** Why Undo cannot run on this import yet, named before the door records reversal intent: a later import replaced
  * its records (undo that one first), or something changed in Oncall since. Null when Undo can proceed. */
 const undoRefusal = async (db: D1Database, job: string) => await supersededBy(db, job) ?? await changedSinceImport(db, job)
@@ -76,9 +87,35 @@ const jobOf = async (db: D1Database, planId: string) => (await db.prepare("SELEC
 const ownJob = async (db: D1Database, planId: string, vendor: string, principal: string) => (await db.prepare(`SELECT j.id FROM ik_door_plans d JOIN ik_jobs j ON j.operation_key='door:'||d.id
  WHERE d.id=? AND d.installation_id=? AND d.namespace=? AND j.destination='oncall' AND j.principal_id=?`).bind(planId, IMPORT_DOOR_KEY, vendor, principal).first<{ id: string }>())?.id
 
+/** What the review screen shows for a plan: its items and classification, and anything an earlier import would refuse at apply. */
+async function reviewAnswer(db: D1Database, vendor: string, principal: string, snapshot: Awaited<ReturnType<typeof loadSnapshot>>, plan: unknown) {
+ const items = review(snapshot.plan)
+ const classification = { mapped: 0, mappedWithDifferences: 0, rejected: 0 }
+ for (const item of items) classification[item.disposition === 'mapped-with-differences' ? 'mappedWithDifferences' : item.disposition === 'rejected' ? 'rejected' : 'mapped']++
+ // Say now what apply would refuse later: people or schedules an earlier import already put in Oncall.
+ const held = await alreadyImported(db, snapshot.plan, vendor, undefined, importFiles(db, principal)).catch(() => null)
+ return { ...(plan as object), items, classification, ...(held ? { conflict: held.message } : {}) }
+}
+
+/** The owner's own unconfirmed preview, if any source holds one: a reload keeps the review it was showing. */
+async function pendingReview(c: any): Promise<Response> {
+ const actor: Member = c.get('actor'), db: D1Database = c.env.DB
+ if (actor.role !== 'admin') return answer({ error: 'Current admin required' }, 403)
+ for (const vendor of Object.keys(vendorNames)) {
+  const pending = await pendingPlan(db, vendor)
+  if (!pending?.preview || pending.started || pending.withdrawn) continue
+  try {
+   const read = reader(db, vendor as Vendor, actor.id), snapshot = await loadSnapshot(read, await planRow(read, pending.id))
+   return answer({ vendor, review: await reviewAnswer(db, vendor, actor.id, snapshot, previewResponse(snapshot, false)) })
+  } catch { continue }
+ }
+ return answer({})
+}
+
 /** POST /api/operator/import/{uploads,plan,apply,status,reconcile,undo} with X-Import-Source naming a listed vendor. */
 export async function ownerImport(c: any): Promise<Response> {
  const request: Request = c.req.raw, actor: Member = c.get('actor'), base: D1Database = c.env.DB
+ if (new URL(request.url).pathname === PREFIX + 'pending') return pendingReview(c)
  const vendor = request.headers.get('X-Import-Source') ?? '', source = importSource(vendor)
  if (!source) return answer({ error: 'unknown_import_source' }, 400)
  if (actor.role !== 'admin') return answer({ error: 'Current admin required' }, 403)
@@ -146,15 +183,22 @@ export async function ownerImport(c: any): Promise<Response> {
   if (plan.planId !== before) await db.prepare(`INSERT OR IGNORE INTO move_in_previews(plan_id) SELECT id FROM ik_door_plans WHERE id=? AND job_id IS NULL
    AND NOT EXISTS(SELECT 1 FROM ik_jobs WHERE operation_key='door:'||?)`).bind(plan.planId, plan.planId).run()
   const snapshot = await loadSnapshot(read, await planRow(read, plan.planId))
-  const items=review(snapshot.plan)
-  const classification={mapped:0,mappedWithDifferences:0,rejected:0}
-  for(const item of items)classification[item.disposition==='mapped-with-differences'?'mappedWithDifferences':item.disposition==='rejected'?'rejected':'mapped']++
-  return answer({ ...plan, items, classification })
+  return answer(await reviewAnswer(db, vendor, actor.id, snapshot, plan))
+ }
+ if (action === 'discard' && typeof input?.planId === 'string') {
+  // Leaving the review drops this screen's own unconfirmed preview, and nothing else: never a started job or a Business proposal.
+  const mine = await db.prepare(`SELECT 1 AS ok FROM move_in_previews v WHERE v.plan_id=? AND NOT EXISTS(SELECT 1 FROM ik_jobs j WHERE j.operation_key='door:'||v.plan_id)`).bind(input.planId).first()
+  if (!mine) return answer({ discarded: false })
+  const headers = new Headers(request.headers); headers.delete('content-length')
+  const cancelled = await send(new Request(new URL(PREFIX + 'undo', request.url), { method: 'POST', headers, body: JSON.stringify({ planId: input.planId }) }) as Request)
+  if (!cancelled.ok) return cancelled
+  await forget(db, input.planId)
+  return answer({ discarded: true })
  }
  if (action === 'apply' && typeof input?.planId === 'string') {
   // Name people or schedules another import already holds before the door starts a job that could only fail.
   const held = await (async () => {
-   try { return await alreadyImported(db, (await loadSnapshot(read, await planRow(read, input.planId as string))).plan, vendor, await jobOf(db, input.planId as string)) }
+   try { return await alreadyImported(db, (await loadSnapshot(read, await planRow(read, input.planId as string))).plan, vendor, await jobOf(db, input.planId as string), importFiles(db, actor.id)) }
    catch { return null }
   })()
   if (held) return refusal(held)

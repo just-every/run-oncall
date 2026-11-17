@@ -87,10 +87,24 @@ export function MoveIn({admin,connect,request}:{admin:boolean;connect:boolean;re
  }
 
  useEffect(()=>{if(admin){const read=()=>load();void run(read,{read:true,retryInput:true})}},[admin,vendor])
+ // The server keeps an unconfirmed preview until it is confirmed, discarded or replaced. Connect says so, and the owner continues or drops it.
+ const [waiting,setWaiting]=useState<{vendor:string;review:any}|null>(null)
+ useEffect(()=>{
+  if(!admin)return
+  let current=true
+  void (async()=>{
+   const response=await fetch('/api/operator/import/pending').catch(()=>null)
+   const saved=(response?.ok?await response.json().catch(()=>null):null) as {vendor?:string;review?:any}|null
+   if(current&&saved?.review&&saved.vendor)setWaiting({vendor:saved.vendor,review:saved.review})
+  })()
+  return()=>{current=false}
+ },[admin])
+ const continueReview=()=>{if(!waiting)return;setVendor(waiting.vendor);setSourceChoice(waiting.vendor==='pagerduty'||waiting.vendor==='opsgenie'?waiting.vendor:'file');setPreview(waiting.review);setSource(null);setFilename('');setStep(2);setWaiting(null)}
+ const discardReview=()=>{const saved=waiting;if(!saved)return;void run(async()=>{await doorClient(saved.vendor)('discard',{planId:saved.review.planId});setWaiting(null)})}
 
  const previewBytes=async(bytes:Uint8Array,name:string,provider=vendor)=>{
   const result=await run(()=>previewFile(doorClient(provider),bytes,name,provider),{read:true})
-  if(result){setSource(bytes);setFilename(name);setPreview(result);setJob(null);setReconciliation(null);setStep(2)}
+  if(result){setSource(bytes);setFilename(name);setPreview(result);setJob(null);setReconciliation(null);setWaiting(null);setStep(2)}
  }
  const read=async(provider:Provider,region:Region,key?:string)=>{
   const bytes=await run(()=>readAccount(request,provider,region,key),{read:true})
@@ -110,11 +124,11 @@ export function MoveIn({admin,connect,request}:{admin:boolean;connect:boolean;re
  },[admin])
  if(!admin)return <section className="panel"><h2>Move in</h2><p>An administrator reads and imports schedules.</p></section>
  return <section className="scheduling-workspace move-in-workspace">
- {step===1&&<ConnectStep source={sourceChoice} vendor={vendor} connect={connect} busy={busy}
+ {step===1&&<ConnectStep waiting={waiting&&{vendor:waiting.vendor,name:vendorNames[waiting.vendor as keyof typeof vendorNames]??waiting.vendor,continueReview,discardReview}} source={sourceChoice} vendor={vendor} connect={connect} busy={busy}
   choose={value=>{setSourceChoice(value);if(value!=='file')setVendor(value);setPreview(null);failures.clear()}}
   fileVendor={setVendor} read={read} file={file=>{void run(async()=>{await previewBytes(new Uint8Array(await file.arrayBuffer()),file.name)},{read:true})}}/>}
  <FailureLine failure={failures.failure}/>{failures.failure&&failureDetails!=null&&(failures.failure.target?.isConnected?createPortal(<CopyDetails value={failureDetails}/>,failures.failure.target):<CopyDetails value={failureDetails}/>)} {busy&&<p role="status">Working…</p>}
- {step===2&&preview&&<ReviewStep preview={preview} bytes={source} filename={filename} busy={busy} back={()=>setStep(1)} next={()=>setStep(3)}/>}
+ {step===2&&preview&&<ReviewStep preview={preview} bytes={source} filename={filename} busy={busy} back={()=>{void run(async()=>{ if(preview.planId)await door('discard',{planId:preview.planId}).catch(()=>null);setStep(1);setPreview(null)})}} next={()=>setStep(3)}/>}
  {step===3&&preview&&!job&&<ImportStep busy={busy} back={()=>setStep(2)} confirm={()=>{
   const planId=preview.planId,fingerprint=preview.fingerprint
   void run(()=>applyAndCheck(planId,fingerprint),{retryInput:Boolean(planId)})
@@ -123,7 +137,7 @@ export function MoveIn({admin,connect,request}:{admin:boolean;connect:boolean;re
  <h2>{reconciliation?.ok?'Import complete':reconciliation?'Import differences':busy?'Checking imported data':'Import needs checking'}</h2>
  {reconciliation?<>
  <p>{reconciliation.ok?'Matched. The imported data agrees with the saved export.':'The native data differs from the saved export. Review these differences before continuing.'}</p>
- <p>{reconciliation.counts.sourceRecords} source objects · {reconciliation.counts.present} present · {reconciliation.counts.explained} explained · {reconciliation.counts.nativeTargets} matching native objects</p>
+ <p>{reconciliation.counts.sourceRecords} {reconciliation.counts.sourceRecords===1?'object':'objects'} in the file, {reconciliation.counts.present+reconciliation.counts.explained} accounted for ({reconciliation.counts.nativeTargets} created in Oncall, the rest kept as source evidence)</p>
  {!reconciliation.ok&&<ul>{reconciliation.sourceIds.filter(row=>row.status==='mismatched').map(row=><li key={JSON.stringify([row.kind,row.sourceId])}>{row.kind}: {row.sourceId}<ul>{row.conflicts?.map(conflict=><li key={conflict}>Changed or missing native object: {conflict}</li>)}</ul></li>)}</ul>}
  {reconciliation.ok&&<p>Review imported data below. Adopt a schedule when you’re ready.</p>}
  </>:<p>Check the native data before treating this import as complete. Use Check imported data in the saved journal to try again.</p>}

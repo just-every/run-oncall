@@ -1,7 +1,7 @@
 /* O4's frame uses Oncall's existing paper, type, fields and rail. Section bodies keep their own styles. */
 .oncall-frame .brand {min-width: 0; max-width: 100%; flex-wrap: nowrap;}
 .oncall-frame .brand .oc-mark {flex: none;}
-.oncall-frame .brand > span {min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+.oncall-frame .brand > span {min-width: 0; line-height: 1.05; overflow-wrap: anywhere;}
 .oncall-frame .shell-rail {gap: 28px;}
 .oncall-frame .rail-foot {margin-top: auto; display: grid; gap: 16px;}
 .oncall-frame .nav-label {min-width: 0;}

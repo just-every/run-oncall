@@ -50,7 +50,7 @@ export function ResponseReport({state}: {state: State}) {
     {!report && loading && <p role="status">Loading response records…</p>}
     {report && <>
       <div className="review-snapshot">
-        <p><strong>{report.cohort.count} incidents</strong> · {report.cohort.service ? state.services.find(s => s.id === report.cohort.service)?.name ?? report.cohort.service : 'All services'}</p>
+        <p><strong>{report.cohort.count} {report.cohort.count===1?'incident':'incidents'}</strong> · {report.cohort.service ? state.services.find(s => s.id === report.cohort.service)?.name ?? report.cohort.service : 'All services'}</p>
 
 
 

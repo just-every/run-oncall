@@ -20,9 +20,9 @@ Roles are checked on every request, so a change takes effect on the next thing t
 
 ## Add someone
 
-An admin fills in **Add local member** with the person's **Name**, a **Role** and an **Initial local password** of at least 12 characters, then presses **Create member** and shares the password with them directly. Oncall sends no invitations. Here, **local** means credentials stored in this Oncall installation, including when you host it for your team; it does not mean sign-in is limited to the same computer.
+Under **Settings → Team**, an admin chooses **Add member**, fills in the person's **Name**, a **Role** and a **Password** of at least 12 characters, then presses **Create member** and shares the password with them directly. Oncall sends no invitations. Here, **local** means credentials stored in this Oncall installation, including when you host it for your team; it does not mean sign-in is limited to the same computer.
 
-To change someone's access later, use **Update access** on their card. **Reset local password** sets a new password and signs them out everywhere.
+To change someone's access later, use **Update access** on their card. **Reset password** on their card asks for a new password and a confirmation ("This ends their current sessions."); confirming sets it and signs them out everywhere.
 
 Being on the team does not put anyone on call: that is the [schedule's](schedules.md) job.
 

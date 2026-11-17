@@ -524,7 +524,7 @@ async function changeAndSigningBrowser(page,context){
   const memberPlan=await importDoor.preview('pagerduty',JSON.stringify({users:[{id:'synthetic-oncall-413-'+width,name:'Synthetic erasable contact',email:memberName}]}));assert.equal(memberPlan.status,200);assert.equal((await importDoor.apply('pagerduty',memberPlan.value)).status,200);
   await focusWorkspace(page);
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('member');await settings.getByLabel('Erasure subject',{exact:true}).selectOption(erasedMember.id);
-  await settings.getByLabel('Imported identity Synthetic erasable contact',{exact:true}).check();await settings.getByLabel('Imported identities reviewed',{exact:true}).check();
+  await settings.getByLabel('Imported identity Synthetic erasable contact',{exact:true}).check();await settings.getByLabel('I reviewed the imported identities for this member.',{exact:true}).check();
   await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+await settings.locator('select').nth(1).evaluate(select=>select.selectedOptions[0].label));await settings.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await check('oc040-member-review',width);
   const memberResponse=page.waitForResponse(r=>r.url().endsWith('/api/erasure/member/'+erasedMember.id));await settings.getByRole('button',{name:'Erase selected subject',exact:true}).click();const memberReply=await memberResponse;assert.equal(memberReply.status(),200,await memberReply.text());
   await settings.getByText('Imported records cleared locally.',{exact:true}).waitFor();await settings.getByRole('status').scrollIntoViewIfNeeded();await settings.getByText(/Approved response recipient .*Provider deletion requires the owner’s consent/).waitFor();await check('oc040-member-receipt',width);
@@ -770,7 +770,7 @@ async function readinessBrowser(page,context) {
   const row=checklist.locator('[data-installation-item="'+item.id+'"]'),text=await row.innerText();
   assert.equal(await row.locator('[data-state]').getAttribute('data-state'),item.state);
   assert.ok(text.includes(item.name));assert.ok(text.includes(item.requirement));
-  for(const clause of item.clauses)assert.ok(text.includes(clause),'owning clause is visible');
+  assert.doesNotMatch(text,/\bOC-\d+\b|\bR-\d+\b|tests\/[\w-]+\.mjs/,'checklist names no internal contract id, field-proof id or test path');
   for(const matrix of item.matrix){
    const capability=report.matrix.find(row=>row.id===matrix.id),state={'working-here':'Working here',off:'Off','not-built':'Not built','unproven-live':'Unproven live'}[matrix.state];
    assert.ok(text.includes(capability.area+': '+state),'each constituent release state is readable beside its dependency');
@@ -1003,8 +1003,8 @@ async function eventsSourceBrowser(page,context) {
    await request('/api/sources',{id:'monitoring',key:sample.key,mode:'signed',scopes:[service]});
    await page.goto(origin+'/docs/incidents');
    const recipe=await page.locator('pre code').filter({hasText:'ONCALL_SIGNATURE='}).innerText();
-   // Supply only the documented origin, key and exact file, including its trailing newline.
-   const documented=await runSenderRecipe('ONCALL_ORIGIN='+JSON.stringify(origin)+'\n'+recipe,sample.key,'sh send.sh',{'event.json':JSON.stringify({...body,source:'monitoring',eventId:body.eventId+'-reference'})+'\n'});
+   // Supply only the documented origin, source ID, key and exact file, including its trailing newline.
+   const documented=await runSenderRecipe('ONCALL_ORIGIN='+JSON.stringify(origin)+'\nONCALL_SOURCE_ID=monitoring\n'+recipe,sample.key,'sh send.sh',{'event.json':JSON.stringify({...body,source:'monitoring',eventId:body.eventId+'-reference'})+'\n'});
    assert.equal(JSON.parse(documented).service,service,'the published HMAC reference accepts exact file bytes without global Node');
    await proof('hmac-reference');
   }

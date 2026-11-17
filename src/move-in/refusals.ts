@@ -8,6 +8,7 @@ export class Refusal extends Fault {
 }
 
 const list = (names: string[]) => names.length < 3 ? names.join(' and ') : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`
+const cap = (text: string) => text[0].toUpperCase() + text.slice(1)
 const object = (kind: string, id: string) => kind === 'user' ? id : `${kind} ${id}`
 
 /** DUPLICATE_TARGET: two source records become the same Oncall object; name both records and the object they share. Null when no two do. */
@@ -27,21 +28,33 @@ export function duplicateTargets(source: SourceBundle, mapping: ImportMapping) {
 }
 
 // A door import's kit job keeps an internal namespace (door:<hash>); its door plan names the vendor.
-type Held = { kind: string; id: string; job: string; namespace: string }
+type Held = { kind: string; id: string; job: string; namespace: string; live: number; name: string | null }
 async function holders(db: D1Database, effects: TargetEffect[], job?: string): Promise<Held[]> {
  const wanted = JSON.stringify(effects.map(e => [e.targetKind, e.targetId]))
- const rows = await db.prepare(`SELECT p.target_kind AS kind,p.target_id AS id,p.job_id AS job,COALESCE((SELECT d.namespace FROM ik_door_plans d WHERE d.job_id=j.id OR 'door:'||d.id=j.operation_key LIMIT 1),j.namespace) AS namespace FROM ik_provenance p JOIN ik_jobs j ON j.id=p.job_id WHERE p.destination='oncall' AND p.reversed=0 AND p.job_id IS NOT ? AND EXISTS(SELECT 1 FROM json_each(?) w WHERE json_extract(w.value,'$[0]')=p.target_kind AND json_extract(w.value,'$[1]')=p.target_id) ORDER BY p.target_kind,p.target_id`).bind(job ?? null, wanted).all<Held>()
+ // live: one of this import's schedules was made live, which no undo can take back.
+ const rows = await db.prepare(`SELECT p.target_kind AS kind,p.target_id AS id,p.job_id AS job,COALESCE((SELECT d.namespace FROM ik_door_plans d WHERE d.job_id=j.id OR 'door:'||d.id=j.operation_key LIMIT 1),j.namespace) AS namespace,
+  EXISTS(SELECT 1 FROM ik_provenance q JOIN move_in_objects o ON o.kind=q.target_kind AND o.id=q.target_id WHERE q.job_id=p.job_id AND q.reversed=0 AND json_extract(o.data,'$.adopted') IS NOT NULL) AS live,
+  (SELECT COALESCE(json_extract(n.data,'$.schedule.name'),json_extract(n.data,'$.name')) FROM move_in_objects n WHERE n.kind=p.target_kind AND n.id=p.target_id) AS name
+  FROM ik_provenance p JOIN ik_jobs j ON j.id=p.job_id WHERE p.destination='oncall' AND p.reversed=0 AND p.job_id IS NOT ? AND EXISTS(SELECT 1 FROM json_each(?) w WHERE json_extract(w.value,'$[0]')=p.target_kind AND json_extract(w.value,'$[1]')=p.target_id) ORDER BY p.target_kind,p.target_id`).bind(job ?? null, wanted).all<Held>()
  return rows.results
 }
 const vendorName = (namespace: string) => namespace === 'pagerduty' ? 'PagerDuty' : namespace === 'opsgenie' ? 'Opsgenie' : namespace
 
-/** TARGET_REVISION_CONFLICT: the file brings people or schedules an earlier import already put in Oncall; name them and that import.
- * A catch-up's replacements carry the revision their own import wrote, so only new objects are checked. Null when nothing is held. */
-export async function alreadyImported(db: D1Database, plan: ImportPlan, vendor: string, job?: string) {
+/** TARGET_REVISION_CONFLICT: the file brings people or schedules an earlier import already put in Oncall; name them and that import
+ * by its provider and file, and give the way out that still works. A catch-up's replacements carry the revision their own import
+ * wrote, so only new objects are checked. Null when nothing is held. `files` names an import's saved files; the preview and the
+ * refusal share this sentence so the owner hears it before confirming. */
+export async function alreadyImported(db: D1Database, plan: ImportPlan, vendor: string, job?: string, files?: (job: string, namespace: string) => Promise<string | null>) {
  const held = await holders(db, plan.entries.flatMap(entry => entry.effects).filter(effect => effect.expectedRevision === undefined), job)
  if (!held.length) return null
- const imports = [...new Set(held.map(h => `the ${vendorName(h.namespace)} import ${h.job}`))]
- return new Refusal(409, `${list(held.map(h => object(h.kind, h.id)))} ${held.length > 1 ? 'are' : 'is'} already in Oncall from ${list(imports)}. Undo that import, or erase ${held.length > 1 ? 'those people' : 'that person'}, before bringing ${held.length > 1 ? 'them' : 'it'} in again from ${vendorName(vendor)}. Nothing from this file was written.`, 'TARGET_REVISION_CONFLICT')
+ const jobs = [...new Map(held.map(h => [h.job, h])).values()]
+ const named = await Promise.all(jobs.map(async h => { const file = await files?.(h.job, h.namespace) ?? null; return { ...h, text: `the ${vendorName(h.namespace)} import${file ? ` of ${file}` : ''}` } }))
+ const many = held.length > 1, live = named.filter(h => h.live), undoable = named.filter(h => !h.live)
+ const erase = `erase ${many ? 'those people' : 'that person'} under Settings → Archive → Erase someone’s data`
+ const way = !live.length ? `Undo that import in Saved import journal, or ${erase}`
+  : !undoable.length ? `${cap(list(live.map(h => h.text)))} ${live.length > 1 ? 'have' : 'has'} a schedule that is already live, so ${live.length > 1 ? 'they' : 'it'} can no longer be undone. ${cap(erase)}`
+  : `Undo ${list(undoable.map(h => h.text))} in Saved import journal; ${list(live.map(h => h.text))} can no longer be undone because ${live.length > 1 ? 'their schedules are' : 'its schedule is'} live, so ${erase}`
+ return new Refusal(409, `${list(held.map(h => h.kind !== 'user' && h.name ? `${h.kind === 'policy' ? 'escalation policy' : h.kind} “${h.name}”` : object(h.kind, h.id)))} ${many ? 'are' : 'is'} already in Oncall from ${list(named.map(h => h.text))}. ${way}, before bringing ${many ? 'them' : 'it'} in again from ${vendorName(vendor)}. Nothing from this file was written.`, 'TARGET_REVISION_CONFLICT')
 }
 
 /** NATIVE_EDIT_CONFLICT on undo: name what changed in Oncall after the import, which undo would otherwise overwrite. Null when nothing did. */
