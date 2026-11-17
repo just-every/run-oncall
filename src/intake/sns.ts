@@ -1,3 +1,5 @@
+import {readIntakeRequest} from '../monitoring/request';
+import {incompleteEvidence,retainIncomplete} from '../monitoring/incomplete';
 import { X509Certificate, createVerify } from 'node:crypto';
 import { fail, Fault, type State } from '../family/response-operations/domain';
 import { intakeCredential, credentialGuard, type IntakeDependencies } from '../monitoring/credentials';
@@ -65,14 +67,6 @@ async function verify(message:Record<string,unknown>,config:SnsConfiguration) {
   } catch(error) {if(error instanceof Fault)throw error;fail('Invalid SNS signing certificate or signature',403);}
   return {subscribe,fingerprint:await intakeHash(signed)};
 }
-async function readMessage(request:Request):Promise<Record<string,unknown>> {
-  const reader=request.body?.getReader();let size=0;const chunks:Uint8Array[]=[];
-  try {if(reader)for(;;){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>2*1024*1024)fail('SNS request exceeds 2 MiB',413);chunks.push(value);}}
-  finally {await reader?.cancel().catch(()=>{});}
-  const bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.byteLength;}
-  let value:unknown;try{value=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));}catch{fail('Invalid SNS JSON');}
-  if(!record(value))fail('SNS message must be an object');return value;
-}
 async function alarmInput(message:Record<string,unknown>,source:IntakeSource,state:State):Promise<CompatibleInput> {
   let alarm:unknown;try{alarm=JSON.parse(String(message.Message));}catch{fail('Invalid CloudWatch alarm JSON');}
   if(!record(alarm))fail('CloudWatch alarm must be an object');
@@ -90,12 +84,12 @@ async function alarmInput(message:Record<string,unknown>,source:IntakeSource,sta
   const trigger=alarm.Trigger;
   if(!record(trigger)||!Array.isArray(trigger.Dimensions)||trigger.Dimensions.length>30)fail('CloudWatch Trigger dimensions are required and bounded to 30');
   const dimensions=trigger.Dimensions.map(d=>{if(!record(d))fail('Invalid CloudWatch dimension');return {name:field(d.name,'dimension name',255),value:field(d.value,'dimension value',1024)};});
-  const description=alarm.AlarmDescription==null||alarm.AlarmDescription===''?'':field(alarm.AlarmDescription,'AlarmDescription',1024),reason=field(alarm.NewStateReason,'NewStateReason',4096);
+  const description=alarm.AlarmDescription==null||alarm.AlarmDescription===''?'':field(alarm.AlarmDescription,'AlarmDescription',1024),reason=field(alarm.NewStateReason,'NewStateReason',1024);
   const key='sns:'+await intakeHash(JSON.stringify([account,config.region,name]));
   const previous=(state.intakeReceipts??[]).filter(r=>r.source===source.id&&r.key===key&&r.observedAt).sort((a,b)=>Date.parse(b.observedAt!)-Date.parse(a.observedAt!))[0];
   const reordered=!!previous&&Date.parse(previous.observedAt!)>=Date.parse(observedAt);
   const details={AlarmName:name,AlarmArn:arn,AlarmDescription:description,NewStateValue:alarm.NewStateValue,NewStateReason:reason,StateChangeTime:observedAt,Region:region,region:config.region,AWSAccountId:account,Trigger:{Dimensions:dimensions},reordered};
-  if(new TextEncoder().encode(JSON.stringify(details)).length>8192)fail('CloudWatch retained alarm context exceeds 8 KiB');
+  if(new TextEncoder().encode(JSON.stringify(details)).length>256*1024)fail('CloudWatch retained alarm context exceeds 256 KiB');
   return {action:reordered||alarm.NewStateValue==='INSUFFICIENT_DATA'?'note':alarm.NewStateValue==='OK'?'recover':'trigger',key,title:name.slice(0,300),severity:alarm.NewStateValue==='ALARM'?'critical':'info',priority:null,observedAt,sender:'sns:'+config.region,links:[],details,truncated:false};
 }
 export function installSnsIntake(api:any,deps:IntakeDependencies) {
@@ -103,18 +97,36 @@ export function installSnsIntake(api:any,deps:IntakeDependencies) {
     try {
       const {state,source,digest}=await intakeCredential(c,deps,c.req.param('key'),'sns',c.req.param('source'));
       if(!source.sns||!source.routing)fail('SNS integration not configured',403);
-      const message=await readMessage(c.req.raw),verified=await verify(message,source.sns);
+      const request=await readIntakeRequest(c.req.raw,2*1024*1024);
+      if(request.incomplete||!record(request.payload)) {
+        // The endpoint credential authenticates incomplete custody only. Never
+        // trust partial SNS fields, fetch URLs, confirm or infer alarm recovery.
+        const rate=await beginRate(c,deps,state,{id:'intake:'+source.id,name:source.name,owner:source.routing.owner},credentialGuard(source,digest)),before=structuredClone(state);
+        const held=retainIncomplete(state,source,'sns',incompleteEvidence(request,[],null,['SNS envelope incomplete; signature and alarm state unverified']));
+        await saveRate(c,deps,state,state.revision,rate,admittedCount(before,state));
+        return c.json({duplicate:held.duplicate,id:held.receipt.id,truncation:true},202);
+      }
+      const message=request.payload,verified=await verify(message,source.sns);
+      const rate=await beginRate(c,deps,state,{id:'intake:'+source.id,name:source.name,owner:source.routing.owner},credentialGuard(source,digest)),before=structuredClone(state);
       const previous=state.intakeReceipts?.find(r=>r.source===source.id&&r.sns?.messageId===message.MessageId);
       if(previous) {if(previous.sns!.fingerprint!==verified.fingerprint)fail('SNS MessageId content changed',409);return c.json({duplicate:true,id:previous.id},200);}
-      const rate=await beginRate(c,deps,state,{id:'intake:'+source.id,name:source.name,owner:source.routing.owner},credentialGuard(source,digest)),before=structuredClone(state);
       const notification=message.Type==='Notification',input=notification?await alarmInput(message,source,state):{action:'note' as const,key:'sns:subscription',title:String(message.Type),severity:'info' as const,priority:null,observedAt:instant(message.Timestamp,'Timestamp'),sender:'sns:'+source.sns.region,links:[],details:{type:message.Type,topic:source.sns.topic},truncated:false};
       if(JSON.stringify(input).includes(c.req.param('key')))fail('Keep the integration credential out of alarm content');
       // Foreign/forged/unsafe messages have performed no mutation or confirmation.
       if(verified.subscribe) {
         const current=await intakeCredential(c,deps,c.req.param('key'),'sns',source.id);
         if(current.state.revision!==state.revision)fail('Admission changed; retry the request',409);
-        await boundedFetch(verified.subscribe);
-        source.sns.status='confirmed';
+        source.sns.failure='SNS confirmation pending or interrupted. Retry the subscription and maintain alternate coverage.';
+        state.audit.push({id:crypto.randomUUID(),at:new Date().toISOString(),actor:'source:intake:'+source.id,kind:'sns-confirmation-pending',text:`Integration owner ${source.routing.owner}: SNS confirmation pending; retry after interruption; paging OFF`});
+        // Commit the attempt before the only external action. An interrupted
+        // confirmation remains visibly uncertain and retries the idempotent token.
+        await saveRate(c,deps,state,state.revision,rate,0);
+        try {await boundedFetch(verified.subscribe);}catch(error){
+          source.sns.failure='SNS confirmation failed. Retry the subscription and maintain alternate coverage.';
+          state.audit.push({id:crypto.randomUUID(),at:new Date().toISOString(),actor:'source:intake:'+source.id,kind:'sns-confirmation-failed',text:`Integration owner ${source.routing.owner}: SNS confirmation failed; alternate coverage must be maintained; paging OFF`});
+          await saveRate(c,deps,state,state.revision,rate,0);throw error;
+        }
+        source.sns.status='confirmed';delete source.sns.failure;
       } else if(message.Type==='UnsubscribeConfirmation')source.sns.status='unsubscribed';
       if(notification)source.sns.lastNotification=new Date().toISOString();
       const receipt=receiveCompatible(state,source,'sns',input);

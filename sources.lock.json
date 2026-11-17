@@ -288,7 +288,7 @@
       "executable": false
     },
     "docs/routed-intake.md": {
-      "sha256": "bff17448173af024d6e4cf9972bbdaee7a53328bf640de2725fb92fbf3dbece6",
+      "sha256": "ffc63ac444efcef3e0c0eaf1ffdb87a39f49f5fa587adaf92aa9fcd2cc08eb58",
       "executable": false
     },
     "docs/schedules.md": {
@@ -2692,7 +2692,7 @@
       "executable": false
     },
     "src/intake/model.ts": {
-      "sha256": "a65393ce30ca1282d4d6f0b43cece9d13aae2764790a4ee53f8a294800b2cd7b",
+      "sha256": "3eac14119e3c5b171633dda87a9580a2754aa02067f3cfb967a874670757d777",
       "executable": false
     },
     "src/intake/paths.ts": {
@@ -2705,6 +2705,18 @@
     },
     "src/intake/providers.ts": {
       "sha256": "8f799aa66f10a4a3df9eaebfdea638374e7bd0335e0c5ff4e963b0a6be82a21f",
+      "executable": false
+    },
+    "src/intake/sns-config.ts": {
+      "sha256": "3147b5ba421caaac0f4f4cc385a0d12d50bad22cc12fc92e6c78bf919dd64d32",
+      "executable": false
+    },
+    "src/intake/sns.ts": {
+      "sha256": "ca4187e9cf7d00ee5416b23923e67e6e4201111b443dc067f6306da028c466d7",
+      "executable": false
+    },
+    "src/intake/SnsSettings.tsx": {
+      "sha256": "7c7003393992d4d41519040527f1f3b7da4f87d8e8fb05cb4f42f805ef60b505",
       "executable": false
     },
     "src/integrations/AddIntegration.tsx": {
@@ -6120,7 +6132,7 @@
       "executable": false
     },
     "src/routing/management.ts": {
-      "sha256": "bf7b9974c0e7c0e5d995ddb4b52f7586fa4d031775f30d4b5d80f82c68226553",
+      "sha256": "df812990eb4520011aa9b96aabb1242d5e1a1ee35c9521efc7115c6f13b3558f",
       "executable": false
     },
     "src/routing/native-archive.ts": {
@@ -6825,6 +6837,10 @@
     },
     "tests/runtime.mjs": {
       "sha256": "8cd2a1108913f05bbdaf741de75b2e827cd0e88b2d83f369290836951e217ca3",
+      "executable": false
+    },
+    "tests/sns.mjs": {
+      "sha256": "5e2d4234991e216e8618fd5f0d33d3493fc65ba57b36a0e1a15a4e51aef81286",
       "executable": false
     },
     "tests/stranger-trip-steps.mjs": {

@@ -1,5 +1,5 @@
 import {fail} from '../family/response-operations/domain';
-export type SnsConfiguration = {account:string;region:string;topic:string;status:'awaiting confirmation'|'confirmed'|'unsubscribed';lastNotification?:string};
+export type SnsConfiguration = {account:string;region:string;topic:string;status:'awaiting confirmation'|'confirmed'|'unsubscribed';lastNotification?:string;failure?:string};
 export type SnsReceipt = {messageId:string;fingerprint:string;type:string};
 export const regions:Record<string,string> = {'us-east-1':'aws','us-east-2':'aws','us-west-1':'aws','us-west-2':'aws','us-gov-east-1':'aws-us-gov','us-gov-west-1':'aws-us-gov','cn-north-1':'aws-cn','cn-northwest-1':'aws-cn'};
 export const record=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v);
