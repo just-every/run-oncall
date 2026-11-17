@@ -6488,7 +6488,7 @@
       "executable": false
     },
     "tests/agent-door-browser.mjs": {
-      "sha256": "3f08213cd806037c7d70e157a0946422692aea4a8e1fcae6d2e4ee5a9cd916f7",
+      "sha256": "69784b84ddf3331c0dd1814ef7dbc7de18c9dbce033c8af9b8cb5f2ebd7b324c",
       "executable": false
     },
     "tests/agent-door-runtime.mjs": {
@@ -6675,6 +6675,10 @@
       "sha256": "130da4f25f7ff25eaf018d7389f1b591b696a4a46927836fcf3eac2e96d301aa",
       "executable": false
     },
+    "tests/oncall-agent-action-submit-revisions.mjs": {
+      "sha256": "94499ac205d0ab109c01ff81f0f7983ac75e7b9e18323946f3af2f1c0738775e",
+      "executable": false
+    },
     "tests/oncall-agent-alerts.mjs": {
       "sha256": "f0f9a6414de4b55e79c05f8e1eaa868172babb0c39a0d0dc7e56be584b4b1e06",
       "executable": false
@@ -6704,7 +6708,7 @@
       "executable": false
     },
     "tests/oncall-agent-endpoint-parity.mjs": {
-      "sha256": "453811ab84172c1c5e5d92b335a58d671be54f65ea6062a5a528999906d09a9b",
+      "sha256": "3218b5781a3113376d9002ce74fecb98a7c67bc8868da562d17c2c400b79f9cf",
       "executable": false
     },
     "tests/oncall-agent-erase-replay.mjs": {
@@ -6724,7 +6728,7 @@
       "executable": false
     },
     "tests/oncall-agent-flow.mjs": {
-      "sha256": "5157a00b9faf7ff30d6abe653aa0f54594bd69c979cd07314247ac0f54119b56",
+      "sha256": "467b676789381f126fbc1e09684200735a5284cab3eb073fc546414f715ec771",
       "executable": false
     },
     "tests/oncall-agent-incident-replay.mjs": {
@@ -6744,7 +6748,7 @@
       "executable": false
     },
     "tests/oncall-agent-resource-parity.mjs": {
-      "sha256": "3a6c3ee8e1b5b05c3bde4ff54bfdd9ccab937b6d266b35fe02e2972a4c447a74",
+      "sha256": "b155e184a03519dc7359b9c6c7abcfb2ae93d348e8bbdacbb5c88d155a776bfa",
       "executable": false
     },
     "tests/oncall-agent-resources.mjs": {
