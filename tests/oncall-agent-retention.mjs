@@ -97,10 +97,17 @@ export async function agedReplayRetention(){
        assert.deepEqual(entry.lifecycle,{from:'acknowledged',to:'mitigating'});
        assert.equal(entry.text,'acknowledged → mitigating: '+args.summary);
       }else if(args.change==='reassign'){
-       assert.equal(prior.assignee,owner.id);assert.equal(result.assignee,responder.id);
-       changed.assignee=responder.id;
+       const clearing=args.member===null;
+       if(clearing){
+        assert.equal(prior.assignee,responder.id);assert.equal(prior.commander,owner.id);
+        assert.notEqual(prior.assignee,prior.commander);
+        assert.equal(prior.scribe,responder.id);assert.equal(prior.communications,owner.id);
+        assert.equal(prior.state,'acknowledged');assert.equal(prior.recovery,'');
+        assert.deepEqual(prior.alerts,[]);assert.deepEqual(prior.actions,[]);
+       }else{assert.equal(prior.assignee,owner.id);assert.equal(result.assignee,responder.id)}
+       assert.equal(result.assignee,args.member);changed.assignee=args.member;
        assert.equal(entry.kind,'reassign');
-       assert.equal(entry.text,'assignee: '+owner.name+' → '+responder.name+': '+args.reason);
+       assert.equal(entry.text,'assignee: '+(clearing?responder.name+' → Unassigned':owner.name+' → '+responder.name)+': '+args.reason);
        assert.equal(result.timeline.filter(row=>row.kind==='reassign').length,prior.timeline.filter(row=>row.kind==='reassign').length+1);
       }else{
        assert.equal(args.change,'assign-role');
@@ -170,8 +177,12 @@ export async function agedReplayRetention(){
     ...(originalService.dependencies===undefined?{}:{dependencies:service.dependencies}),idempotency_key:randomUUID()});
    let reassign=await ordinary('reassignment');
    reassign=await command({type:'transition',incident:reassign.id,revision:reassign.revision,state:'acknowledged',summary:'Synthetic initial human responsibility'});
-   await complete('oncall.incidents.update',{change:'reassign',incident:reassign.id,revision:reassign.revision,member:responder.id,
+   reassign=await complete('oncall.incidents.update',{change:'reassign',incident:reassign.id,revision:reassign.revision,member:responder.id,
     reason:'Synthetic retained reassignment reason',idempotency_key:randomUUID()},'reassign');
+   for(const [role,member] of [['scribe',responder.id],['communications',owner.id]])
+    reassign=await command({type:'assign-role',incident:reassign.id,revision:reassign.revision,role,member,reason:'Synthetic retained companion responsibility'});
+   await complete('oncall.incidents.update',{change:'reassign',member:null,incident:reassign.id,revision:reassign.revision,
+    reason:'Synthetic retained Assignee clear reason',idempotency_key:randomUUID()},'reassign Assignee clear');
    for(const role of ['scribe','communications','commander']){
     let target=await ordinary(role+' assignment');
     // Populate companion roles and an explicit assignee before Commander changes.

@@ -6,6 +6,7 @@ import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance
 /** Clearing a populated response role keeps its original outcome across conflicts and response loss. */
 export async function roleClearReplay(runtime,role='scribe',label='Scribe'){
  const {db,http,tool,adopt,context}=runtime,name='oncall.incidents.update';
+ const change=role==='assignee'?'reassign':'assign-role';
  const rows=async(sql,...values)=>(await db.prepare(sql).bind(...values).all()).results;
  const read=async path=>{const response=await http(path);assert.equal(response.status,200);return response.json()};
  const command=async input=>{const response=await http('/api/command',input);assert.equal(response.status,200);return response.json()};
@@ -35,10 +36,10 @@ export async function roleClearReplay(runtime,role='scribe',label='Scribe'){
   assert.deepEqual(incident.alerts,[]);assert.deepEqual(incident.actions,[]);
   assert.equal(incident.assignee,assignee.id);assert.equal(incident[role],responder.id);
   for(const companion of ['commander','scribe','communications'].filter(value=>value!==role))assert.equal(incident[companion],owner.id);
-  if(role==='commander')assert.notEqual(incident.assignee,incident.commander,'Explicit assignee is independent of the lead fallback');
+  if(['commander','assignee'].includes(role))assert.notEqual(incident.assignee,incident.commander,'Explicit assignee is independent of the lead fallback');
   return incident;
  }
- const argumentsFor=incident=>({change:'assign-role',role,member:null,incident:incident.id,revision:incident.revision,
+ const argumentsFor=incident=>({change,...(role==='assignee'?{}:{role}),member:null,incident:incident.id,revision:incident.revision,
   reason:'Synthetic literal '+label+' clear <retain this text> & coordination',idempotency_key:randomUUID()});
  async function bookkeeping(before){
   const after=await permanent();assert.deepEqual(after.slice(0,before.length),before);
@@ -71,8 +72,8 @@ export async function roleClearReplay(runtime,role='scribe',label='Scribe'){
   assert.equal(result.timeline.length,incident.timeline.length+1);assert.deepEqual(result.timeline.slice(0,-1),incident.timeline);
   assert.deepEqual(result,{...incident,[role]:null,revision:incident.revision+1,timeline:result.timeline},'All companion roles and every other field survive');
   const entry=result.timeline.at(-1);
-  assert.equal(entry.kind,'assign-role');assert.equal(entry.text,role+': '+responder.name+' → Unassigned: '+args.reason);
-  assert.equal(result.timeline.filter(row=>row.kind==='assign-role').length,incident.timeline.filter(row=>row.kind==='assign-role').length+1);
+  assert.equal(entry.kind,change);assert.equal(entry.text,role+': '+responder.name+' → Unassigned: '+args.reason);
+  assert.equal(result.timeline.filter(row=>row.kind===change).length,incident.timeline.filter(row=>row.kind===change).length+1);
   assert.equal(entry.lifecycle,undefined);
   assert.equal(entry.actor,context.agentId);assert.notEqual(entry.actor,responder.id);assert.notEqual(entry.actor,owner.id);
   assert.equal(entry.metadata.agent.agent.id,context.agentId);assert.equal(entry.metadata.agent.for.id,owner.id);
