@@ -1,0 +1,77 @@
+{
+  "observed_at": "2026-11-17T10:54:54.218024+00:00",
+  "sources": [
+    {
+      "name": "pd-openapi",
+      "url": "https://raw.githubusercontent.com/PagerDuty/api-schema/main/reference/REST/openapiv3.json",
+      "status": 200,
+      "bytes": 2839803,
+      "sha256": "cbae7d77f588e8fb5b14118003c9b8a71f274c57719ddc39eb8e77a71994f6d8",
+      "version": "2.0.0"
+    },
+    {
+      "name": "pd-cloudwatch",
+      "url": "https://support.pagerduty.com/main/docs/amazon-cloudwatch-integration-guide",
+      "final_url": "https://docs.pagerduty.com/integrations/amazon-cloudwatch-integration-guide",
+      "status": 200,
+      "bytes": 112167,
+      "sha256": "dbad8180d2959ba10463d3088c5eaf44be9fe853d67c3a3b1a98c60323419fab",
+      "title": "Amazon CloudWatch Integration Guide | PagerDuty Docs"
+    },
+    {
+      "name": "aws-sns-http",
+      "url": "https://docs.aws.amazon.com/sns/latest/dg/http-notification-json.html",
+      "final_url": "https://docs.aws.amazon.com/sns/latest/dg/http-notification-json.html",
+      "status": 200,
+      "bytes": 20311,
+      "sha256": "7246d62e8218d8b6cd37309f1dc68a057aaf9f0cc75135d90a3cb80850750b3b",
+      "title": "HTTP/HTTPS notification JSON format - Amazon Simple Notification Service"
+    },
+    {
+      "name": "aws-sns-confirm",
+      "url": "https://docs.aws.amazon.com/sns/latest/dg/http-subscription-confirmation-json.html",
+      "final_url": "https://docs.aws.amazon.com/sns/latest/dg/http-subscription-confirmation-json.html",
+      "status": 200,
+      "bytes": 20779,
+      "sha256": "06cf8c0bed87b76358da79f314ed99b977ea31ea03a743268c44e98070aaa7bc",
+      "title": "HTTP/HTTPS subscription confirmation JSON format - Amazon Simple Notification Service"
+    },
+    {
+      "name": "aws-sns-signature",
+      "url": "https://docs.aws.amazon.com/sns/latest/dg/sns-verify-signature-of-message.html",
+      "final_url": "https://docs.aws.amazon.com/sns/latest/dg/sns-verify-signature-of-message.html",
+      "status": 200,
+      "bytes": 14513,
+      "sha256": "30f62b4da5f943b0b796886383604480a2998c9353416eb98de40b83d251b580",
+      "title": "Verifying the signatures of Amazon SNS messages - Amazon Simple Notification Service"
+    },
+    {
+      "name": "aws-cloudwatch",
+      "url": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Notify_Users_Alarm_Changes.html",
+      "final_url": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Notify_Users_Alarm_Changes.html",
+      "status": 200,
+      "bytes": 36329,
+      "sha256": "3ab1a8f2c55399e8614f93c6989d2180b0201111b3f7e556b9f811be4e1e7848",
+      "title": "Notifying users on alarm changes - Amazon CloudWatch"
+    },
+    {
+      "name": "pd-users",
+      "url": "https://docs.pagerduty.com/developer/api/reference/rest/users/get-user",
+      "final_url": "https://docs.pagerduty.com/developer/api/reference/rest/users/get-user",
+      "status": 200,
+      "bytes": 484652,
+      "sha256": "03b034b0ccf37b3cb6e249255c0644dfe9f8e764b4d24baab551636fc67297fd",
+      "title": "Get a user | PagerDuty API Reference"
+    },
+    {
+      "name": "owner-direction",
+      "url": "https://raw.githubusercontent.com/just-every/run-runeditrun/main/DIRECTION.md",
+      "error": "HTTPError: HTTP Error 404: Not Found"
+    },
+    {
+      "name": "owner-agents",
+      "url": "https://raw.githubusercontent.com/just-every/run-runeditrun/main/AGENTS.md",
+      "error": "HTTPError: HTTP Error 404: Not Found"
+    }
+  ]
+}

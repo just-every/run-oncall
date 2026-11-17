@@ -1,0 +1,157 @@
+{
+  "task": "ct-import-plan-oncall-1",
+  "role": "read-only planner",
+  "observed_at": "2026-11-17T11:03:30.263609+00:00",
+  "repository": "just-every/run-oncall",
+  "product_branch": "main",
+  "product_head": "91984b892ad8e993e0ddd782042d5143ed63baaf",
+  "origin_main": "91984b892ad8e993e0ddd782042d5143ed63baaf",
+  "product_status_porcelain": "",
+  "product_candidate_commit_log": "",
+  "product_changes": false,
+  "product_commits": false,
+  "product_pushes": false,
+  "prs": false,
+  "ci_dispatch": false,
+  "app_started": false,
+  "product_tests_run": [],
+  "validation_scope": "Read source and public docs, parse JSON, count existing fixture records, compare documented field names; no runtime or browser execution and no release acceptance claimed.",
+  "fixture_audit": {
+    "path": "tests/fixtures/pagerduty-account.json",
+    "bytes": 97658,
+    "sha256": "59c0c5e36cf2365e8e499bd33b03dcff287dd1c1ba78da3781a0c4bf2f7b2e66",
+    "counts": {
+      "users": 12,
+      "schedules": 8,
+      "overrides": 1,
+      "escalation_policies": 8,
+      "services": 8,
+      "teams": 4,
+      "incidents": 12,
+      "maintenance_windows": 2,
+      "business_services": 3,
+      "event_orchestrations": 1,
+      "integrations": 16
+    },
+    "total_source_records": 75,
+    "generator_found": false,
+    "generator_search": "rg under scripts/ and tests/ for pagerduty-account and its literal user IDs; only consumers found",
+    "documented_shape_gaps": [
+      "Team schema has no members property; GET /teams/{id}/members returns {members:[{user,role}],limit,offset,more,total}; fixture instead nests members in Team.",
+      "Collector GET /users lacks include[]=contact_methods, include[]=notification_rules and include[]=teams; only users, detailed schedules/overrides and policies are collected.",
+      "Current EscalationRule documents escalation_rule_assignment_strategy; mapper step allowlist excludes it and refuses the policy.",
+      "No AWS SNS adapter exists; CloudWatch integration is retained as unsupported inventory."
+    ]
+  },
+  "owner_context": {
+    "clone": "https://github.com/just-every/run-runeditrun.git",
+    "result": "Repository not found; raw main AGENTS.md and DIRECTION.md also HTTP 404; no copies cited in seed Markdown found. Owner direction was attempted before seed inspection; scope continues under explicit user brief."
+  },
+  "files_read": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "7c81e343168ae196006d89b509ba7d464de84e19030bc73eebf4ff4222378584"
+    },
+    {
+      "path": "CONTRACT.md",
+      "sha256": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    {
+      "path": "ACCEPTANCE.md",
+      "sha256": "875e11f85ca8473511fe5defbbdd5d6457f248e48fcbbe6796d86194701c62c3"
+    },
+    {
+      "path": "MOVE-IN.md",
+      "sha256": "620bdb8fde28873b1b4c9689ec6c3023f41b1636a65b429d8ce7b4100812247c"
+    },
+    {
+      "path": "docs/move-in.md",
+      "sha256": "a89fe1aa2406db050f38c726b9feb3fd7cc5455af374d5d42877e72283c5037c"
+    },
+    {
+      "path": "src/move-in/source.ts",
+      "sha256": "920b66f605cc25803c9227ab208d7c7ae3c79d54c3f0b3157a6d9c6c45d6d7a7"
+    },
+    {
+      "path": "src/move-in/pagerduty-source.ts",
+      "sha256": "a4d42b52e4ed0bdfcc378b8dc2f52faeab1fbda2377f74acf4c9e27fc2c7f2e5"
+    },
+    {
+      "path": "src/move-in/pagerduty-mapping.ts",
+      "sha256": "86de7e1b4f225bafd12997cad7102819c00095e4e9f43c0373df1ab8b11d6370"
+    },
+    {
+      "path": "src/move-in/mapping.ts",
+      "sha256": "b050e82a154b9e8d3fe5634b0e8484d7fbcc2414b4de81cd7be54020c139010a"
+    },
+    {
+      "path": "src/move-in/rotations.ts",
+      "sha256": "c634f1fd2ca10941bf5f61d40e69adff8b9ceab6b97e59459b38c453a473db7e"
+    },
+    {
+      "path": "src/move-in/email-settings.ts",
+      "sha256": "a222c06d32225379ad78ca096da17f4d3ac6cbd706ab345df8e2a8d1d72700b7"
+    },
+    {
+      "path": "src/move-in/collect/pagerduty.ts",
+      "sha256": "8c9a3b5801c5090dc7af906b2513213dbb4f7372ddff14cbe3a4840663c3ee4d"
+    },
+    {
+      "path": "src/move-in/collect/bundle.ts",
+      "sha256": "aa3a0a4df9efea28c96a37542b444b5f9c514da721d7c67b402860034485d60f"
+    },
+    {
+      "path": "src/move-in/owner-door.ts",
+      "sha256": "5d2730c9aa945ea5a6f7bcc38683946f73e3c545ac5f90207870260033ddbf6c"
+    },
+    {
+      "path": "src/move-in/door.ts",
+      "sha256": "cf5c9990cce6d32fbe47cade6bcf669b65faca58f6b8b26df037638f6f3929e6"
+    },
+    {
+      "path": "src/move-in/target.ts",
+      "sha256": "cb39d01e72c49b0ce52f3f1f5834de796bbc07223d396dcf56ac63ffb2717911"
+    },
+    {
+      "path": "src/move-in/CompatibilityReview.tsx",
+      "sha256": "4bf8cca3bd242854ce4f53d4c837f485277fece957ec586f6d93a4012f633467"
+    },
+    {
+      "path": "tests/import-door.mjs",
+      "sha256": "495361fd00c345dbc773e5013906fa8b078a9c37e197785c0dc3ebfb087cacaf"
+    },
+    {
+      "path": "tests/activation.mjs",
+      "sha256": "0a837eda28f26d9f437a661dff786e00d8f1f3ca36207b7c5df7f598209519b1"
+    },
+    {
+      "path": "tests/product-browser-journey.mjs",
+      "sha256": "c6e615105db19a6cfaad4f2b3c74c82f5f3a7f567bc7b7ec86795c767d023bc2"
+    },
+    {
+      "path": "tests/transfer.mjs",
+      "sha256": "e4f3d6cf153d8f309b23772554f8b1028b0ed8e195efa9eba0199d2c7f3daeba"
+    },
+    {
+      "path": "tests/fixtures/pagerduty-account.json",
+      "sha256": "59c0c5e36cf2365e8e499bd33b03dcff287dd1c1ba78da3781a0c4bf2f7b2e66"
+    }
+  ],
+  "packet_validation": {
+    "observed_at": "2026-11-17T11:13:02.222378+00:00",
+    "explicitly_selected_files": [
+      "REPORT.md",
+      "PLANNER-RECEIPT.json",
+      "SOURCE-RESEARCH.json",
+      "FIELD-INVENTORY.json"
+    ],
+    "regular_files_no_symlinks": true,
+    "json_parse_passed": true,
+    "report_queue_blocks": 1,
+    "queue_entries": 5,
+    "report_ends_with_queue_block": true,
+    "known_token_prefix_and_private_key_scan": "no matches",
+    "scope": "Authorship, provenance, source and plan integrity checks only; not runtime acceptance.",
+    "report_sha256": "f5410e41834809c1b5f4d804d411f6cc84a432586ea356ef90b5147278bfa5a7"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "files": [
+    {
+      "blob": "2916256997af16a0ce1fd3b7cae7ef02feb9cc28",
+      "bytes": 47690,
+      "path": "FIELD-INVENTORY.json",
+      "sha256": "d19aac01490002ceb0c53817cc80fc33d27f4c0e8b1fe13eb0b25b9f81a8b639"
+    },
+    {
+      "blob": "fec57f0f7737b3adcf6d17812c0c4a1444f4f739",
+      "bytes": 6052,
+      "path": "PLANNER-RECEIPT.json",
+      "sha256": "b75d7fa1eec8b93de580479354556711eb8a3bd814248cfc7df3e61554f939a5"
+    },
+    {
+      "blob": "ba14db19c56b9c0cab9f9219eb9f9684c7e40f99",
+      "bytes": 53306,
+      "path": "REPORT.md",
+      "sha256": "f5410e41834809c1b5f4d804d411f6cc84a432586ea356ef90b5147278bfa5a7"
+    },
+    {
+      "blob": "656c44525118f1996a1a8204ed93eb28f76bd2ac",
+      "bytes": 3452,
+      "path": "SOURCE-RESEARCH.json",
+      "sha256": "db2eb042207621a36c45a602921bb0752d5668910a240e02c1c971c180cc3f6d"
+    }
+  ],
+  "product_branch": "main",
+  "product_head": "91984b892ad8e993e0ddd782042d5143ed63baaf",
+  "ref": "refs/heads/evidence/ct-import-plan-oncall-1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "ct-import-plan-oncall-1"
+}

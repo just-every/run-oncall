@@ -1,0 +1,2233 @@
+{
+  "schema_url": "https://raw.githubusercontent.com/PagerDuty/api-schema/main/reference/REST/openapiv3.json",
+  "schema_sha256": "cbae7d77f588e8fb5b14118003c9b8a71f274c57719ddc39eb8e77a71994f6d8",
+  "version": "2.0.0",
+  "scope": "Classic REST v2 resources requested by this brief; dynamic dictionaries are inventoried by concrete JSON pointer in the builder plan, not assumed closed schemas.",
+  "schema_fields": {
+    "User": [
+      {
+        "field": "id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "summary",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "self",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "html_url",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "name",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "email",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "time_zone",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "color",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "role",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "avatar_url",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "description",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "invitation_sent",
+        "type": "boolean",
+        "ref": null
+      },
+      {
+        "field": "job_title",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "created_via_sso",
+        "type": "boolean",
+        "ref": null
+      },
+      {
+        "field": "teams",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/TeamReference",
+        "items_type": null
+      },
+      {
+        "field": "contact_methods",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/ContactMethodReference",
+        "items_type": null
+      },
+      {
+        "field": "notification_rules",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/NotificationRuleReference",
+        "items_type": null
+      },
+      {
+        "field": "http_cal_url",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "web_cal_url",
+        "type": "string",
+        "ref": null
+      }
+    ],
+    "UserReference": [
+      {
+        "field": "id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "summary",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "self",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "html_url",
+        "type": "string",
+        "ref": null
+      }
+    ],
+    "Team": [
+      {
+        "field": "id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "summary",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "self",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "html_url",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "name",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "description",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "default_role",
+        "type": "string",
+        "ref": null
+      }
+    ],
+    "Schedule": [
+      {
+        "field": "id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "summary",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "self",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "html_url",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "schedule_layers",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/ScheduleLayer",
+        "items_type": null
+      },
+      {
+        "field": "time_zone",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "name",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "description",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "final_schedule",
+        "type": null,
+        "ref": "#/components/schemas/SubSchedule"
+      },
+      {
+        "field": "overrides_subschedule",
+        "type": null,
+        "ref": "#/components/schemas/SubSchedule"
+      },
+      {
+        "field": "escalation_policies",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/EscalationPolicyReference",
+        "items_type": null
+      },
+      {
+        "field": "users",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/UserReference",
+        "items_type": null
+      },
+      {
+        "field": "teams",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/TeamReference",
+        "items_type": null
+      },
+      {
+        "field": "next_oncall_for_user",
+        "type": "object",
+        "ref": null
+      },
+      {
+        "field": "next_oncall_for_user.start",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "next_oncall_for_user.end",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "next_oncall_for_user.user",
+        "type": null,
+        "ref": "#/components/schemas/Reference"
+      }
+    ],
+    "ScheduleLayer": [
+      {
+        "field": "id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "start",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "end",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "users",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/ScheduleLayerUser",
+        "items_type": null
+      },
+      {
+        "field": "restrictions",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/Restriction",
+        "items_type": null
+      },
+      {
+        "field": "rotation_virtual_start",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "rotation_turn_length_seconds",
+        "type": "integer",
+        "ref": null
+      },
+      {
+        "field": "name",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "rendered_schedule_entries",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/ScheduleLayerEntry",
+        "items_type": null
+      },
+      {
+        "field": "rendered_coverage_percentage",
+        "type": "number",
+        "ref": null
+      }
+    ],
+    "SubSchedule": [
+      {
+        "field": "name",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "rendered_schedule_entries",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/ScheduleLayerEntry",
+        "items_type": null
+      },
+      {
+        "field": "rendered_coverage_percentage",
+        "type": "number",
+        "ref": null
+      }
+    ],
+    "ScheduleLayerEntry": [
+      {
+        "field": "user",
+        "type": null,
+        "ref": "#/components/schemas/UserReference"
+      },
+      {
+        "field": "start",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "end",
+        "type": "string",
+        "ref": null
+      }
+    ],
+    "ScheduleLayerUser": [
+      {
+        "field": "user",
+        "type": null,
+        "ref": "#/components/schemas/UserReference"
+      }
+    ],
+    "Restriction": [
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "duration_seconds",
+        "type": "integer",
+        "ref": null
+      },
+      {
+        "field": "start_time_of_day",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "start_day_of_week",
+        "type": "integer",
+        "ref": null
+      }
+    ],
+    "EscalationPolicy": [
+      {
+        "field": "id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "summary",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "self",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "html_url",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "name",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "description",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "num_loops",
+        "type": "integer",
+        "ref": null
+      },
+      {
+        "field": "on_call_handoff_notifications",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "escalation_rules",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/EscalationRule",
+        "items_type": null
+      },
+      {
+        "field": "services",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/ServiceReference",
+        "items_type": null
+      },
+      {
+        "field": "teams",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/TeamReference",
+        "items_type": null
+      }
+    ],
+    "EscalationRule": [
+      {
+        "field": "id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "escalation_delay_in_minutes",
+        "type": "integer",
+        "ref": null
+      },
+      {
+        "field": "targets",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/EscalationTargetReference",
+        "items_type": null
+      },
+      {
+        "field": "escalation_rule_assignment_strategy",
+        "type": "string",
+        "ref": null
+      }
+    ],
+    "EscalationTargetReference": [
+      {
+        "field": "id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "summary",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "self",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "html_url",
+        "type": "string",
+        "ref": null
+      }
+    ],
+    "Service": [
+      {
+        "field": "id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "summary",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "self",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "html_url",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "name",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "description",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "auto_resolve_timeout",
+        "type": "integer",
+        "ref": null
+      },
+      {
+        "field": "acknowledgement_timeout",
+        "type": "integer",
+        "ref": null
+      },
+      {
+        "field": "created_at",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "status",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "last_incident_timestamp",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "escalation_policy",
+        "type": null,
+        "ref": "#/components/schemas/EscalationPolicyReference"
+      },
+      {
+        "field": "response_play",
+        "type": null,
+        "ref": null
+      },
+      {
+        "field": "teams",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/TeamReference",
+        "items_type": null
+      },
+      {
+        "field": "integrations",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/IntegrationReference",
+        "items_type": null
+      },
+      {
+        "field": "incident_urgency_rule",
+        "type": null,
+        "ref": "#/components/schemas/IncidentUrgencyRule"
+      },
+      {
+        "field": "support_hours",
+        "type": null,
+        "ref": "#/components/schemas/SupportHours"
+      },
+      {
+        "field": "scheduled_actions",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/ScheduledAction",
+        "items_type": null
+      },
+      {
+        "field": "addons",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/AddonReference",
+        "items_type": null
+      },
+      {
+        "field": "alert_creation",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "alert_grouping_parameters",
+        "type": null,
+        "ref": null
+      },
+      {
+        "field": "alert_grouping",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "alert_grouping_timeout",
+        "type": "integer",
+        "ref": null
+      },
+      {
+        "field": "auto_pause_notifications_parameters",
+        "type": null,
+        "ref": "#/components/schemas/AutoPauseNotificationsParameters"
+      }
+    ],
+    "Integration": [
+      {
+        "field": "id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "summary",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "self",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "html_url",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "name",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "service",
+        "type": null,
+        "ref": "#/components/schemas/ServiceReference"
+      },
+      {
+        "field": "created_at",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "vendor",
+        "type": null,
+        "ref": "#/components/schemas/VendorReference"
+      },
+      {
+        "field": "integration_email",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "email_incident_creation",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "email_filter_mode",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "email_parsers",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/EmailParser",
+        "items_type": null
+      },
+      {
+        "field": "email_parsing_fallback",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "email_filters",
+        "type": "array",
+        "ref": null,
+        "items_ref": null,
+        "items_type": "object"
+      },
+      {
+        "field": "email_filters[].subject_mode",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "email_filters[].subject_regex",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "email_filters[].body_mode",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "email_filters[].body_regex",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "email_filters[].from_email_mode",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "email_filters[].from_email_regex",
+        "type": "string",
+        "ref": null
+      }
+    ],
+    "MaintenanceWindow": [
+      {
+        "field": "id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "summary",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "self",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "html_url",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "sequence_number",
+        "type": "integer",
+        "ref": null
+      },
+      {
+        "field": "start_time",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "end_time",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "description",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "created_by",
+        "type": null,
+        "ref": "#/components/schemas/UserReference"
+      },
+      {
+        "field": "services",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/ServiceReference",
+        "items_type": null
+      },
+      {
+        "field": "teams",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/TeamReference",
+        "items_type": null
+      }
+    ],
+    "Incident": [
+      {
+        "field": "id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "summary",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "self",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "html_url",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "incident_number",
+        "type": "integer",
+        "ref": null
+      },
+      {
+        "field": "title",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "created_at",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "updated_at",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "status",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "incident_key",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "service",
+        "type": null,
+        "ref": null
+      },
+      {
+        "field": "assignments",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/Assignment",
+        "items_type": null
+      },
+      {
+        "field": "assigned_via",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "last_status_change_at",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "resolved_at",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "first_trigger_log_entry",
+        "type": null,
+        "ref": null
+      },
+      {
+        "field": "alert_counts",
+        "type": null,
+        "ref": "#/components/schemas/AlertCount"
+      },
+      {
+        "field": "is_mergeable",
+        "type": "boolean",
+        "ref": null
+      },
+      {
+        "field": "incident_type",
+        "type": "object",
+        "ref": null
+      },
+      {
+        "field": "incident_type.name",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "escalation_policy",
+        "type": null,
+        "ref": null
+      },
+      {
+        "field": "teams",
+        "type": "array",
+        "ref": null,
+        "items_ref": null,
+        "items_type": null
+      },
+      {
+        "field": "pending_actions",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/IncidentAction",
+        "items_type": null
+      },
+      {
+        "field": "acknowledgements",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/Acknowledgement",
+        "items_type": null
+      },
+      {
+        "field": "alert_grouping",
+        "type": "object",
+        "ref": null
+      },
+      {
+        "field": "alert_grouping.grouping_type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "alert_grouping.started_at",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "alert_grouping.ended_at",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "alert_grouping.alert_grouping_active",
+        "type": "boolean",
+        "ref": null
+      },
+      {
+        "field": "last_status_change_by",
+        "type": null,
+        "ref": null
+      },
+      {
+        "field": "priority",
+        "type": null,
+        "ref": "#/components/schemas/Priority"
+      },
+      {
+        "field": "resolve_reason",
+        "type": null,
+        "ref": "#/components/schemas/ResolveReason"
+      },
+      {
+        "field": "conference_bridge",
+        "type": null,
+        "ref": null
+      },
+      {
+        "field": "incidents_responders",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/IncidentsRespondersReference",
+        "items_type": null
+      },
+      {
+        "field": "responder_requests",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/ResponderRequest",
+        "items_type": null
+      },
+      {
+        "field": "urgency",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "body",
+        "type": null,
+        "ref": null
+      }
+    ],
+    "LogEntry": [
+      {
+        "field": "id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "summary",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "self",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "html_url",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "created_at",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "channel",
+        "type": null,
+        "ref": "#/components/schemas/Channel"
+      },
+      {
+        "field": "agent",
+        "type": null,
+        "ref": "#/components/schemas/AgentReference"
+      },
+      {
+        "field": "note",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "contexts",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/Context",
+        "items_type": null
+      },
+      {
+        "field": "service",
+        "type": null,
+        "ref": "#/components/schemas/ServiceReference"
+      },
+      {
+        "field": "incident",
+        "type": null,
+        "ref": "#/components/schemas/IncidentReference"
+      },
+      {
+        "field": "teams",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/TeamReference",
+        "items_type": null
+      },
+      {
+        "field": "event_details",
+        "type": "object",
+        "ref": null
+      },
+      {
+        "field": "event_details.description",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "changeset",
+        "type": "array",
+        "ref": null,
+        "items_ref": null,
+        "items_type": "string"
+      }
+    ],
+    "NotificationRule": [
+      {
+        "field": "id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "summary",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "self",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "html_url",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "start_delay_in_minutes",
+        "type": "integer",
+        "ref": null
+      },
+      {
+        "field": "contact_method",
+        "type": null,
+        "ref": "#/components/schemas/ContactMethodReference"
+      },
+      {
+        "field": "urgency",
+        "type": "string",
+        "ref": null
+      }
+    ],
+    "ContactMethod": [
+      {
+        "field": "id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "summary",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "self",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "html_url",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "label",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "address",
+        "type": "string",
+        "ref": null
+      }
+    ],
+    "PhoneContactMethod": [
+      {
+        "field": "id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "summary",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "self",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "html_url",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "label",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "address",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "country_code",
+        "type": "integer",
+        "ref": null
+      },
+      {
+        "field": "enabled",
+        "type": "boolean",
+        "ref": null
+      },
+      {
+        "field": "blacklisted",
+        "type": "boolean",
+        "ref": null
+      }
+    ],
+    "EmailContactMethod": [
+      {
+        "field": "id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "summary",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "self",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "html_url",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "label",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "address",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "send_short_email",
+        "type": "boolean",
+        "ref": null
+      },
+      {
+        "field": "enabled",
+        "type": "boolean",
+        "ref": null
+      }
+    ],
+    "PushContactMethod": [
+      {
+        "field": "id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "summary",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "self",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "html_url",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "label",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "address",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "device_type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "sounds",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/PushContactMethodSound",
+        "items_type": null
+      },
+      {
+        "field": "created_at",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "blacklisted",
+        "type": "boolean",
+        "ref": null
+      }
+    ],
+    "WhatsAppContactMethod": [
+      {
+        "field": "id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "summary",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "self",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "html_url",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "label",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "address",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "country_code",
+        "type": "integer",
+        "ref": null
+      },
+      {
+        "field": "enabled",
+        "type": "boolean",
+        "ref": null
+      },
+      {
+        "field": "blacklisted",
+        "type": "boolean",
+        "ref": null
+      }
+    ],
+    "EmailParser": [
+      {
+        "field": "action",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "match_predicate",
+        "type": null,
+        "ref": "#/components/schemas/MatchPredicate"
+      },
+      {
+        "field": "value_extractors",
+        "type": "array",
+        "ref": null,
+        "items_ref": null,
+        "items_type": "object"
+      },
+      {
+        "field": "value_extractors[].type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "value_extractors[].part",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "value_extractors[].value_name",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "value_extractors[].regex",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "value_extractors[].starts_after",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "value_extractors[].ends_with",
+        "type": "string",
+        "ref": null
+      }
+    ],
+    "MatchPredicate": [
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "matcher",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "part",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "children",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/MatchPredicate",
+        "items_type": null
+      }
+    ],
+    "IncidentUrgencyRule": [
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "urgency",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "during_support_hours",
+        "type": null,
+        "ref": "#/components/schemas/IncidentUrgencyType"
+      },
+      {
+        "field": "outside_support_hours",
+        "type": null,
+        "ref": "#/components/schemas/IncidentUrgencyType"
+      }
+    ],
+    "IncidentUrgencyType": [
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "urgency",
+        "type": "string",
+        "ref": null
+      }
+    ],
+    "SupportHours": [
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "time_zone",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "days_of_week",
+        "type": "array",
+        "ref": null,
+        "items_ref": null,
+        "items_type": "integer"
+      },
+      {
+        "field": "start_time",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "end_time",
+        "type": "string",
+        "ref": null
+      }
+    ],
+    "ScheduledAction": [
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "at",
+        "type": "object",
+        "ref": null
+      },
+      {
+        "field": "at.type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "at.name",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "to_urgency",
+        "type": "string",
+        "ref": null
+      }
+    ],
+    "AlertGroupingParameters": [
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "config",
+        "type": null,
+        "ref": null
+      }
+    ],
+    "IncidentNote": [
+      {
+        "field": "id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "user",
+        "type": null,
+        "ref": null
+      },
+      {
+        "field": "channel",
+        "type": "object",
+        "ref": null
+      },
+      {
+        "field": "channel.summary",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "channel.id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "channel.type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "channel.self",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "channel.html_url",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "content",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "created_at",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "updated_at",
+        "type": "string",
+        "ref": null
+      }
+    ],
+    "Acknowledgement": [
+      {
+        "field": "at",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "acknowledger",
+        "type": null,
+        "ref": null
+      }
+    ],
+    "Assignment": [
+      {
+        "field": "at",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "assignee",
+        "type": null,
+        "ref": null
+      }
+    ],
+    "Alert": [
+      {
+        "field": "id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "summary",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "self",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "html_url",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "created_at",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "status",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "alert_key",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "service",
+        "type": null,
+        "ref": "#/components/schemas/ServiceReference"
+      },
+      {
+        "field": "first_trigger_log_entry",
+        "type": null,
+        "ref": "#/components/schemas/LogEntryReference"
+      },
+      {
+        "field": "incident",
+        "type": null,
+        "ref": "#/components/schemas/IncidentReference"
+      },
+      {
+        "field": "suppressed",
+        "type": "boolean",
+        "ref": null
+      },
+      {
+        "field": "severity",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "integration",
+        "type": null,
+        "ref": "#/components/schemas/IntegrationReference"
+      },
+      {
+        "field": "body",
+        "type": "object",
+        "ref": null
+      },
+      {
+        "field": "body.type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "body.contexts",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/Context",
+        "items_type": null
+      },
+      {
+        "field": "body.details",
+        "type": "object",
+        "ref": null
+      }
+    ],
+    "Context": [
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "href",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "src",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "text",
+        "type": "string",
+        "ref": null
+      }
+    ],
+    "Channel": [
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "user",
+        "type": "object",
+        "ref": null
+      },
+      {
+        "field": "team",
+        "type": "object",
+        "ref": null
+      },
+      {
+        "field": "notification",
+        "type": null,
+        "ref": "#/components/schemas/Notification"
+      },
+      {
+        "field": "channel",
+        "type": "object",
+        "ref": null
+      },
+      {
+        "field": "changeset",
+        "type": "object",
+        "ref": null
+      },
+      {
+        "field": "changeset.customer_fields",
+        "type": "array",
+        "ref": null,
+        "items_ref": null,
+        "items_type": "object"
+      },
+      {
+        "field": "changeset.customer_fields[].id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "changeset.customer_fields[].name",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "changeset.customer_fields[].value",
+        "type": null,
+        "ref": null
+      },
+      {
+        "field": "changeset.customer_fields[].namespace",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "changeset.customer_fields[].old_value",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "changeset.application_fields",
+        "type": "array",
+        "ref": null,
+        "items_ref": null,
+        "items_type": "object"
+      },
+      {
+        "field": "changeset.application_fields[].id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "changeset.application_fields[].name",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "changeset.application_fields[].value",
+        "type": null,
+        "ref": null
+      },
+      {
+        "field": "changeset.application_fields[].namespace",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "changeset.application_fields[].old_value",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "changeset.custom_attributes",
+        "type": "object",
+        "ref": null
+      },
+      {
+        "field": "changeset.customer_schema",
+        "type": "object",
+        "ref": null
+      },
+      {
+        "field": "changeset.customer_schema.old_value",
+        "type": "string",
+        "ref": null
+      }
+    ],
+    "AgentReference": [
+      {
+        "field": "id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "summary",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "self",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "html_url",
+        "type": "string",
+        "ref": null
+      }
+    ],
+    "ResolveReason": [
+      {
+        "field": "type",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "incident",
+        "type": null,
+        "ref": "#/components/schemas/IncidentReference"
+      }
+    ],
+    "ConferenceBridge": [
+      {
+        "field": "conference_number",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "conference_url",
+        "type": "string",
+        "ref": null
+      }
+    ],
+    "ResponderRequest": [
+      {
+        "field": "id",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "incident",
+        "type": null,
+        "ref": "#/components/schemas/IncidentReference"
+      },
+      {
+        "field": "requester",
+        "type": null,
+        "ref": "#/components/schemas/UserReference"
+      },
+      {
+        "field": "requested_at",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "message",
+        "type": "string",
+        "ref": null
+      },
+      {
+        "field": "responder_request_targets",
+        "type": "array",
+        "ref": null,
+        "items_ref": "#/components/schemas/ResponderRequestTargetReference",
+        "items_type": null
+      }
+    ],
+    "Pagination": [
+      {
+        "field": "offset",
+        "type": "integer",
+        "ref": null
+      },
+      {
+        "field": "limit",
+        "type": "integer",
+        "ref": null
+      },
+      {
+        "field": "more",
+        "type": "boolean",
+        "ref": null
+      },
+      {
+        "field": "total",
+        "type": "integer",
+        "ref": null
+      }
+    ]
+  },
+  "existing_fixture_fields": {
+    "users": [
+      "contact_methods[].address",
+      "contact_methods[].blacklisted",
+      "contact_methods[].country_code",
+      "contact_methods[].device_type",
+      "contact_methods[].enabled",
+      "contact_methods[].id",
+      "contact_methods[].label",
+      "contact_methods[].send_short_email",
+      "contact_methods[].type",
+      "email",
+      "id",
+      "name",
+      "notification_rules[].contact_method.id",
+      "notification_rules[].contact_method.type",
+      "notification_rules[].id",
+      "notification_rules[].start_delay_in_minutes",
+      "notification_rules[].type",
+      "notification_rules[].urgency",
+      "role",
+      "teams[].id",
+      "teams[].self",
+      "teams[].summary",
+      "teams[].type",
+      "time_zone",
+      "type"
+    ],
+    "schedules": [
+      "description",
+      "id",
+      "name",
+      "schedule_layers[].end",
+      "schedule_layers[].id",
+      "schedule_layers[].name",
+      "schedule_layers[].restrictions[]",
+      "schedule_layers[].restrictions[].duration_seconds",
+      "schedule_layers[].restrictions[].start_time_of_day",
+      "schedule_layers[].restrictions[].type",
+      "schedule_layers[].rotation_turn_length_seconds",
+      "schedule_layers[].rotation_virtual_start",
+      "schedule_layers[].start",
+      "schedule_layers[].users[].user.id",
+      "schedule_layers[].users[].user.self",
+      "schedule_layers[].users[].user.summary",
+      "schedule_layers[].users[].user.type",
+      "teams[].id",
+      "teams[].self",
+      "teams[].summary",
+      "teams[].type",
+      "time_zone",
+      "type"
+    ],
+    "overrides": [
+      "end",
+      "id",
+      "start",
+      "user.id",
+      "user.self",
+      "user.summary",
+      "user.type"
+    ],
+    "escalation_policies": [
+      "escalation_rules[].escalation_delay_in_minutes",
+      "escalation_rules[].id",
+      "escalation_rules[].targets[].id",
+      "escalation_rules[].targets[].self",
+      "escalation_rules[].targets[].summary",
+      "escalation_rules[].targets[].type",
+      "id",
+      "name",
+      "num_loops",
+      "on_call_handoff_notifications",
+      "teams[].id",
+      "teams[].self",
+      "teams[].summary",
+      "teams[].type",
+      "type"
+    ],
+    "services": [
+      "acknowledgement_timeout",
+      "alert_grouping_parameters.config.timeout",
+      "alert_grouping_parameters.type",
+      "auto_resolve_timeout",
+      "created_at",
+      "description",
+      "escalation_policy.id",
+      "escalation_policy.self",
+      "escalation_policy.summary",
+      "escalation_policy.type",
+      "id",
+      "incident_urgency_rule.during_support_hours.type",
+      "incident_urgency_rule.during_support_hours.urgency",
+      "incident_urgency_rule.outside_support_hours.type",
+      "incident_urgency_rule.outside_support_hours.urgency",
+      "incident_urgency_rule.type",
+      "integrations[].created_at",
+      "integrations[].email_filter_mode",
+      "integrations[].email_incident_creation",
+      "integrations[].email_parsers[].action",
+      "integrations[].email_parsers[].match_predicate.children[].children[].matcher",
+      "integrations[].email_parsers[].match_predicate.children[].children[].part",
+      "integrations[].email_parsers[].match_predicate.children[].children[].type",
+      "integrations[].email_parsers[].match_predicate.children[].matcher",
+      "integrations[].email_parsers[].match_predicate.children[].part",
+      "integrations[].email_parsers[].match_predicate.children[].type",
+      "integrations[].email_parsers[].match_predicate.matcher",
+      "integrations[].email_parsers[].match_predicate.part",
+      "integrations[].email_parsers[].match_predicate.type",
+      "integrations[].email_parsers[].value_extractors[].ends_with",
+      "integrations[].email_parsers[].value_extractors[].part",
+      "integrations[].email_parsers[].value_extractors[].regex",
+      "integrations[].email_parsers[].value_extractors[].starts_after",
+      "integrations[].email_parsers[].value_extractors[].type",
+      "integrations[].email_parsers[].value_extractors[].value_name",
+      "integrations[].email_parsing_fallback",
+      "integrations[].id",
+      "integrations[].integration_email",
+      "integrations[].name",
+      "integrations[].summary",
+      "integrations[].type",
+      "name",
+      "status",
+      "support_hours.days_of_week[]",
+      "support_hours.end_time",
+      "support_hours.start_time",
+      "support_hours.time_zone",
+      "support_hours.type",
+      "teams[].id",
+      "teams[].self",
+      "teams[].summary",
+      "teams[].type",
+      "type"
+    ],
+    "teams": [
+      "description",
+      "id",
+      "members[].role",
+      "members[].user.id",
+      "members[].user.self",
+      "members[].user.summary",
+      "members[].user.type",
+      "name",
+      "type"
+    ],
+    "incidents": [
+      "acknowledgements[]",
+      "acknowledgements[].acknowledger.id",
+      "acknowledgements[].acknowledger.self",
+      "acknowledgements[].acknowledger.summary",
+      "acknowledgements[].acknowledger.type",
+      "acknowledgements[].at",
+      "assignments[]",
+      "assignments[].assignee.id",
+      "assignments[].assignee.self",
+      "assignments[].assignee.summary",
+      "assignments[].assignee.type",
+      "assignments[].at",
+      "created_at",
+      "escalation_policy.id",
+      "escalation_policy.self",
+      "escalation_policy.summary",
+      "escalation_policy.type",
+      "id",
+      "incident_number",
+      "last_status_change_at",
+      "resolved_at",
+      "service.id",
+      "service.self",
+      "service.summary",
+      "service.type",
+      "status",
+      "title",
+      "type",
+      "urgency"
+    ],
+    "maintenance_windows": [
+      "created_by.id",
+      "created_by.self",
+      "created_by.summary",
+      "created_by.type",
+      "description",
+      "end_time",
+      "id",
+      "services[].id",
+      "services[].self",
+      "services[].summary",
+      "services[].type",
+      "start_time",
+      "type"
+    ],
+    "business_services": [
+      "description",
+      "id",
+      "name",
+      "point_of_contact",
+      "team.id",
+      "team.self",
+      "team.summary",
+      "team.type",
+      "type"
+    ],
+    "event_orchestrations": [
+      "catch_all.actions.route_to",
+      "created_at",
+      "created_by.id",
+      "created_by.self",
+      "created_by.summary",
+      "created_by.type",
+      "parent.id",
+      "parent.type",
+      "sets[].id",
+      "sets[].rules[].actions.dynamic_route_to.lookup_by",
+      "sets[].rules[].actions.dynamic_route_to.regex",
+      "sets[].rules[].actions.dynamic_route_to.source",
+      "sets[].rules[].actions.route_to",
+      "sets[].rules[].conditions[]",
+      "sets[].rules[].conditions[].expression",
+      "sets[].rules[].id",
+      "sets[].rules[].label",
+      "type"
+    ]
+  }
+}
