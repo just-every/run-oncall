@@ -1,3 +1,5 @@
+Rotas, alerts and incident notes for your team. Works beside your pager.
+
 <p align="center">
   <a href="https://run-oncall.com">
     <picture>

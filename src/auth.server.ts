@@ -1,3 +1,5 @@
+import { checkedInstallationName, savedInstallationName } from './brand/installation';
+import { businessSettings } from './agent-door/business';
 import { auditIdentity } from './audit-store'
 import { createOwnerClaimHandler } from './modules/owner-claim/index.mjs'
 import { firstRunResponse } from './base/setup'
@@ -142,8 +144,30 @@ export async function authResponse(request: Request, original: Bindings): Promis
   return brandDocumentResponse(response)
  }
  if (url.pathname === '/setup' || url.pathname === '/app' || url.pathname.startsWith('/app/')) {
-  const setup = await firstRunResponse(request, env, operatorAuth(env), { theme })
-  if (setup) return brandDocumentResponse(setup)
+  let installation: string | null = null
+  if (url.pathname === '/setup' && request.method === 'POST' && request.headers.get('content-type')?.startsWith('application/x-www-form-urlencoded')) {
+   const form = await request.clone().formData()
+   if (form.has('installationName')) {
+    installation = checkedInstallationName(form.get('installationName'))
+    if (!installation) return Response.json({error: 'Enter an installation name of 1 to 80 characters.'}, {status: 400, headers: privateHeaders})
+   }
+  }
+  const auth = operatorAuth(env)
+  const setup = await firstRunResponse(request, env, auth, { theme })
+  if (setup) {
+   if (installation && setup.status === 303 && setup.headers.get('location') === '/app' && installation !== await savedInstallationName(env)) {
+    const session = await auth.getSession(request)
+    if (session?.operator.role === 'owner') await businessSettings(env).setOverride('display_name', installation, session.operator.id)
+   }
+   if (url.pathname === '/setup' && request.method === 'GET' && setup.ok) {
+    const name = await savedInstallationName(env)
+    const escape = (value: string) => value.replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]!))
+    return brandDocumentResponse(new HTMLRewriter().on('form', {element(form) {
+     form.prepend(`<label>What should we call this? <input name="installationName" required maxlength="80" placeholder="Brightwell Support" value="${escape(name)}"></label>`, {html: true})
+    }}).transform(setup))
+   }
+   return brandDocumentResponse(setup)
+  }
  }
  if (url.pathname === '/app') return new Response(null,{status:303,headers:{location:'/'}})
  return null

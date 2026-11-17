@@ -24,7 +24,11 @@
 .team-section .team-row-menu :is(input,textarea,select) {max-width:100%;}
 .team-section .team-row-menu :is(p,button,small,label) {font-size: max(13px, 1em);}
 .team-section .team-title {display:flex; justify-content:flex-end;}
-.team-section .team-add {margin-top:20px;}
+.team-section .team-add {margin:20px 0; scroll-margin-top:20px;}
+.team-section .team-own-name {display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;}
+.team-section .team-own-name .field {flex-basis:100%; margin:0;}
+.team-section .team-own-name input {width:100%; min-width:0;}
+.team-section .team-member-role > p {font-size:13px; color:var(--oc-muted);}
 .team-section .teams-panel {grid-column:1 / -1;}
 @media(max-width:760px) {
  .team-section .team-member {grid-template-columns:minmax(0,1fr) 44px; padding:12px;}
@@ -46,7 +50,7 @@
 .team-section .person-notifications {grid-column:1 / -1; min-width:0;}
 .team-section .person-notifications fieldset {min-width:0; margin:12px 0; border:1px solid var(--oc-line); border-radius:12px;}
 .team-section .person-notifications :is(input,select) {max-width:100%;}
-.team-section .team-signin {margin-top:20px; padding:16px; border:1px solid var(--oc-line); border-radius:12px; display:grid; gap:8px; justify-items:start;}
+.team-section .team-signin {margin:20px 0; padding:16px; border:1px solid var(--oc-line); border-radius:12px; display:grid; gap:8px; justify-items:start;}
 .team-section .team-signin h3 {margin:0; font-size:16px;}
 .team-section .team-signin :is(ol,p) {margin:0; font-size:14px;}
 .team-section .team-signin ol {padding-left:20px; display:grid; gap:4px;}

@@ -122,7 +122,7 @@ import {mkdir,readFile,writeFile} from 'node:fs/promises'
 import {chromium,expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import {localWorker,ownerDoor,durableSnapshot} from './worker.mjs'
-import {importedEmailBrowser,productBrowserJourney,triageFiltersBrowser,incidentRolesBrowser,providerExport,supportStartBrowser,scheduleCoordinationBrowser,keyboardCoordination,coverageRulesBrowser} from './product-browser-journey.mjs'
+import {importedEmailBrowser,productBrowserJourney,triageFiltersBrowser,incidentRolesBrowser,providerExport,supportStartBrowser,scheduleCoordinationBrowser,keyboardCoordination,coverageRulesBrowser,sharedIncidentLinks} from './product-browser-journey.mjs'
 import {redact} from './diagnostics.mjs'
 // OC-059: one oversized real intake produces readable service custody and an owner queue alert.
 async function incompleteIntakeBrowser(page,context) {
@@ -233,30 +233,62 @@ async function responsePolicyBrowser(page,context) {
   const service=page.locator('.service-page')
   const responsePolicy=service.locator('details.urgency-policy').filter({has:page.locator('summary').filter({hasText:/^Response ·/})})
   await responsePolicy.locator(':scope > summary').click()
-  await responsePolicy.getByLabel('Default response',{exact:true}).selectOption('alert-only')
-  await responsePolicy.getByLabel('On source recovery',{exact:true}).selectOption('notified')
-  await responsePolicy.getByRole('button',{name:'Add response rule',exact:true}).click()
-  await responsePolicy.getByLabel('Rule urgency',{exact:true}).selectOption('high')
-  await responsePolicy.getByLabel('Rule severity',{exact:true}).selectOption('critical')
-  await responsePolicy.getByLabel('Rule orchestration policy',{exact:true}).selectOption(orchestration.id)
-  await responsePolicy.getByLabel('Rule response',{exact:true}).selectOption('incident')
-  await responsePolicy.getByRole('button',{name:/^Publish version/}).click();await responsePolicy.getByLabel('Reason',{exact:true}).fill('Coordinate critical checkout failures; keep warnings alert-only.')
-  const published=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/response/services/'+serviceId&&response.request().method()==='POST')
-  await responsePolicy.getByRole('button',{name:/^Publish version/}).click()
-  assert.equal((await published).status(),201,'response policy is published through the service form')
-  await expect.poll(async()=>(await request('/api/state')).services.find(item=>item.id===serviceId).responsePolicies?.length??0).toBe(1)
-  const storedPolicy=(await request('/api/state')).services.find(item=>item.id===serviceId).responsePolicies.at(-1)
-  assert.equal(storedPolicy.defaultMode,'alert-only');assert.equal(storedPolicy.recoveredNotice,'notified')
-  assert.deepEqual(storedPolicy.rules.map(rule=>[rule.urgency,rule.severity,rule.policy,rule.mode]),[['high','critical',orchestration.id,'incident']])
-  await responsePolicy.getByText('Response history (1)',{exact:true}).click()
-  await responsePolicy.getByRole('heading',{name:'Version 1 · Alert-only',exact:true}).waitFor()
-  await checkScreen('policy',width,responsePolicy.locator(':scope > summary'))
   const event=(id,intent='trigger',severity='warning')=>({source:'intake:'+source,eventId:id+'-'+intent,service:serviceId,environment:'production',key:id,generation:'checkout-cycle',intent,severity,title:`Checkout ${id} ${width}`,observedAt:new Date().toISOString(),evidence:'https://monitoring.example.test/checkout'})
   const send=async(input)=>{
    const response=await context.request.post('/api/ingress/intake:'+source,{headers:{authorization:'Bearer '+key},data:input})
    assert.equal(response.status(),201,'native monitoring admission succeeds')
    return response.json()
   }
+  const policyPath='/api/response/services/'+serviceId
+  const apply=async action=>{
+   const applied=page.waitForResponse(reply=>new URL(reply.url()).pathname===policyPath&&reply.request().method()==='POST')
+   await action();assert.equal((await applied).status(),201,'a response setting applies without a separate publication step')
+   await responsePolicy.getByRole('status').filter({hasText:'Saved.'}).waitFor()
+  }
+  // A draft left by an older installation must not appear as the live setting.
+  await page.evaluate(id=>localStorage.setItem(`oncall:draft:response:${id}:0`,JSON.stringify({kind:'response',id,baseVersion:0,value:{defaultMode:'incident',recoveredNotice:'silent',rules:[]}})),serviceId)
+  await page.reload();await responsePolicy.locator(':scope > summary').click()
+  assert.equal(await responsePolicy.getByLabel('Default response',{exact:true}).inputValue(),'alert-only','the control starts with the applied value, not an unpublished browser draft')
+  await apply(()=>responsePolicy.getByLabel('Default response',{exact:true}).selectOption('incident'))
+  await page.reload();await responsePolicy.locator(':scope > summary').click()
+  assert.equal(await responsePolicy.getByLabel('Default response',{exact:true}).inputValue(),'incident','the applied selection survives reload')
+  await expect(responsePolicy.locator(':scope > summary')).toHaveText('Response · Opens an incident')
+  const automaticReceipt=await send(event('changed-default'))
+  let currentState=await request('/api/state'),automaticAlert=currentState.alerts.find(alert=>alert.events.includes(automaticReceipt.id))
+  assert.ok(currentState.incidents.some(incident=>incident.alerts.includes(automaticAlert.id)),'the next real monitoring alert opens an incident using the changed default')
+  assert.equal(currentState.services.find(row=>row.id===serviceId).responsePolicies.at(-1).by,member.id,'automatic history attributes the change to the signed-in owner')
+  await apply(()=>responsePolicy.getByLabel('Default response',{exact:true}).selectOption('alert-only'))
+  // A refused save stays visibly unapplied, including after reload, and Retry
+  // applies the retained choice rather than claiming success from local storage.
+  await page.route('**'+policyPath,route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Synthetic save unavailable'})}))
+  const saveRefused=page.waitForResponse(reply=>new URL(reply.url()).pathname===policyPath&&reply.request().method()==='POST')
+  await responsePolicy.getByLabel('Default response',{exact:true}).selectOption('incident');assert.equal((await saveRefused).status(),503)
+  await responsePolicy.getByRole('button',{name:'Retry',exact:true}).waitFor()
+  await expect(responsePolicy.locator(':scope > summary')).toHaveText('Response · Alert-only')
+  await responsePolicy.getByRole('status').filter({hasText:'Not in effect yet.'}).waitFor()
+  await page.unroute('**'+policyPath)
+  page.once('dialog',dialog=>dialog.accept());await page.reload();await responsePolicy.locator(':scope > summary').click()
+  await responsePolicy.getByRole('status').filter({hasText:'Not in effect yet.'}).waitFor()
+  await expect(responsePolicy.locator(':scope > summary')).toHaveText('Response · Alert-only')
+  const unappliedReceipt=await send(event('unapplied-default'))
+  currentState=await request('/api/state');const unappliedAlert=currentState.alerts.find(alert=>alert.events.includes(unappliedReceipt.id))
+  assert.ok(!currentState.incidents.some(incident=>incident.alerts.includes(unappliedAlert.id)),'a failed setting does not change new-alert behaviour')
+  await apply(()=>responsePolicy.getByRole('button',{name:'Retry',exact:true}).click())
+  const retriedReceipt=await send(event('retried-default'))
+  currentState=await request('/api/state');const retriedAlert=currentState.alerts.find(alert=>alert.events.includes(retriedReceipt.id))
+  assert.ok(currentState.incidents.some(incident=>incident.alerts.includes(retriedAlert.id)),'Retry applies the retained default to the next new alert')
+  await apply(()=>responsePolicy.getByLabel('Default response',{exact:true}).selectOption('alert-only'))
+  await apply(()=>responsePolicy.getByLabel('On source recovery',{exact:true}).selectOption('notified'))
+  await apply(()=>responsePolicy.getByRole('button',{name:'Add response rule',exact:true}).click())
+  await apply(()=>responsePolicy.getByLabel('Rule urgency',{exact:true}).selectOption('high'))
+  await apply(()=>responsePolicy.getByLabel('Rule severity',{exact:true}).selectOption('critical'))
+  await apply(()=>responsePolicy.getByLabel('Rule orchestration policy',{exact:true}).selectOption(orchestration.id))
+  const storedPolicy=(await request('/api/state')).services.find(item=>item.id===serviceId).responsePolicies.at(-1)
+  assert.equal(storedPolicy.defaultMode,'alert-only');assert.equal(storedPolicy.recoveredNotice,'notified')
+  assert.deepEqual(storedPolicy.rules.map(rule=>[rule.urgency,rule.severity,rule.policy,rule.mode]),[['high','critical',orchestration.id,'incident']])
+  await responsePolicy.locator('.service-policy-history > summary').click()
+  await responsePolicy.getByRole('heading',{name:`Version ${storedPolicy.version} · Alert-only`,exact:true}).waitFor()
+  await checkScreen('policy',width,responsePolicy.locator(':scope > summary'))
   const warning=event('slow-payments'),critical=event('checkout-unavailable','trigger','critical')
   await send(warning)
   const admitted=await request('/api/state'),warningAlert=admitted.alerts.find(alert=>alert.source==='intake:'+source&&alert.key===warning.key)
@@ -1126,9 +1158,19 @@ try {
   } finally { await worker.time(selectedTime) }
  }
  const focused=process.env.ONCALL_PRODUCT_JOURNEY;
- if(focused&&!['response-numbers','sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in'].includes(focused))throw Error('Unknown focused product journey');
+ if(focused&&!['response-numbers','sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','workspace-links'].includes(focused))throw Error('Unknown focused product journey');
  const triageProof={snapshot:()=>durableSnapshot(worker),outbound:()=>worker.outboundRequests()};
  const setTime=async at=>{selectedTime=at;await worker.time(at);if(at===null)await page.clock.setSystemTime(new Date());else await page.clock.setFixedTime(new Date(at));};
+ if(focused==='workspace-links'){
+  const request=async(path,data)=>{
+   const response=data===undefined?await context.request.get(path):await context.request.post(path,{headers:{origin:worker.origin},data});
+   assert.equal(response.status(),200,'workspace-links fixture '+path);return response.json();
+  };
+  const session=await request('/api/session'),service='synthetic-workspace-links';
+  await request('/api/command',{type:'service',id:service,name:'Synthetic workspace links',environment:'test',owner:session.member.id,runbook:[],pager:''});
+  await request('/api/command',{type:'declare',service,title:'Synthetic shared incident',summary:'Synthetic coordination incident for shared workspace links',severity:'warning'});
+  await sharedIncidentLinks(page,context);
+ }
  if(focused==='move-in'){
   const session=await (await context.request.get('/api/session')).json();
   await context.request.post('/api/command',{headers:{origin:worker.origin},data:{type:'service',name:'Checkout',environment:'test',owner:session.member.id,runbook:[],pager:''}});
@@ -1158,7 +1200,7 @@ try {
   await request('/api/command',{type:'service',id:'synthetic-oncall-1',name:'Synthetic checkout',environment:'test',owner:actor.id,runbook:[],pager:''});
   await senderSetupBrowser(page,context,worker.origin,request,()=>randomBytes(32).toString('hex'));
  }
- if(focused==='response-policy')await responsePolicyBrowser(page,context);
+ if(focused==='response-policy'){await incompleteIntakeBrowser(page,context);await responsePolicyBrowser(page,context);}
  if(focused==='support-start')await supportStartBrowser(page,context,{setTime,proof:triageProof});
  if(focused==='roles'){
   const member=(await (await context.request.get('/api/session')).json()).member;
@@ -1168,7 +1210,7 @@ try {
  if(focused==='move-in-guide')await providerExport(page,context,1440,triageProof);
  if(['limitations','readiness'].includes(focused))await limitationsBrowser(page,context);
  if(focused==='triage')await triageFiltersBrowser(page,context,{setTime,proof:triageProof});
- if(!['response-numbers','sender-setup','response-policy','imported-email','events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in'].includes(focused)){
+ if(!['response-numbers','sender-setup','response-policy','imported-email','events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','workspace-links'].includes(focused)){
  await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime,triageProof})
  if(focused!=='accessibility'){
  await incompleteIntakeBrowser(page,context)
@@ -1179,13 +1221,13 @@ try {
  console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440; overflow, axe and hydration checked')
  }
  }
- if(!['response-numbers','sender-setup','response-policy','imported-email','events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in'].includes(focused))await readinessBrowser(page,context)
+ if(!['response-numbers','sender-setup','response-policy','imported-email','events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','workspace-links'].includes(focused))await readinessBrowser(page,context)
  if(!focused)await importedEmailBrowser(page,context)
  if(!focused)await responseReportBrowser(browser)
  if(!focused)await eventsSourceBrowser(page,context)
  assert.deepEqual(errors,[],'no browser application errors')
  if(!focused){await setTime(null);await ownerFaultsBrowser(page,context);assert.deepEqual(errors,[],'owner fault journey has no browser application errors');}
- console.log(focused==='owner-faults'?'Emitted Worker owner faults passed: admin key readback, person contacts/rules, shared PagerDuty mapping/adoption, bounded past coverage; paging OFF, zero outbound, proof at 1440/390':focused==='sender-setup'?'Emitted Worker sender setup journey passed at 1440; screens captured at 1440 and 390':focused==='response-policy'?'Emitted Worker response-policy journey passed at 1440':focused==='imported-email'?'Emitted Worker saved email import journey passed at 1440; changed states captured at 1440 and 390':focused==='rota-timeline'?'Emitted Worker rota timeline passed: readable phone lists and compact accessible desktop slices on overview and rota pages':focused==='readable-times'?'Emitted Worker readable-times journey passed at 1440 in Australia/Brisbane with an America/New_York rota; changed rota and readiness screens captured at 1440 and 390':focused==='events-source'?'Emitted Worker Events source journey passed at 1440; screens captured at 1440 and 390':focused==='support-start'?'Emitted Worker support-start browser journey passed at 1440; screens captured at 1440 and 390':focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
+ console.log(focused==='workspace-links'?'Emitted Worker workspace-links journey passed: 19 canonical entries and five hostile legacy fragments; no external document navigation, encoded unknown-workspace HTTP 404s; assertions at 1440, captures at 1440 and 390':focused==='owner-faults'?'Emitted Worker owner faults passed: admin key readback, person contacts/rules, shared PagerDuty mapping/adoption, bounded past coverage; paging OFF, zero outbound, proof at 1440/390':focused==='sender-setup'?'Emitted Worker sender setup journey passed at 1440; screens captured at 1440 and 390':focused==='response-policy'?'Emitted Worker response-policy journey passed at 1440':focused==='imported-email'?'Emitted Worker saved email import journey passed at 1440; changed states captured at 1440 and 390':focused==='rota-timeline'?'Emitted Worker rota timeline passed: readable phone lists and compact accessible desktop slices on overview and rota pages':focused==='readable-times'?'Emitted Worker readable-times journey passed at 1440 in Australia/Brisbane with an America/New_York rota; changed rota and readiness screens captured at 1440 and 390':focused==='events-source'?'Emitted Worker Events source journey passed at 1440; screens captured at 1440 and 390':focused==='support-start'?'Emitted Worker support-start browser journey passed at 1440; screens captured at 1440 and 390':focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
  }
  if(productPart)console.log('Product browser part completed: '+productPart);
 } catch(error) {
@@ -1198,4 +1240,4 @@ try {
 } finally {
  try {await browser?.close()} finally {await worker.close()}
 }
-if(!productPart&&!['response-numbers','sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');
+if(!productPart&&!['response-numbers','sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','workspace-links'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');

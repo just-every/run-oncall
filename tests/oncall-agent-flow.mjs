@@ -17,8 +17,10 @@ import {staleScribeExpectedRevision} from './oncall-agent-role-revisions.mjs';
 import {staleCommunicationsExpectedRevision,staleCommunicationsNativeRevision} from './oncall-agent-communications-revisions.mjs';
 import {changedServiceNameReplay} from './oncall-agent-service-replay.mjs';
 import {agedReplayRetention} from './oncall-agent-retention.mjs';
+import {agedActionSubmitRetention} from './oncall-agent-action-submit-retention.mjs';
 import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-revisions.mjs';
 import {focusedActionSubmitNativeRevision} from './oncall-agent-action-submit-native-revision.mjs';
+import {focusedActionSubmitResponseLoss} from './oncall-agent-action-submit-response-loss.mjs';
 import {focusedAssigneeClearReplay} from './oncall-agent-assignee-clear-replay.mjs';
 import {focusedRoleClearReplay} from './oncall-agent-role-clear-replay.mjs';
 import {transitionReplay} from './oncall-agent-transition-replay.mjs';
@@ -577,6 +579,7 @@ await (await import('./oncall-agent-alerts.mjs')).alertReads();
 await (await import('./oncall-agent-analytics.mjs')).analyticsReads();
 await (await import('./oncall-agent-triage.mjs')).triageReads();
 await agedReplayRetention();
+await agedActionSubmitRetention();
 
 const runtime=await agentRuntime({clock:null});
 const code=answer=>answer.result?._meta?.['com.runeditrun/error']?.code??answer.body?.error?.data?.code;
@@ -1035,6 +1038,7 @@ try{
  await focusedRoleClearReplay();
  await focusedAssigneeClearReplay();
  await focusedActionSubmitNativeRevision();
+ await focusedActionSubmitResponseLoss();
  await staleActionSubmitExpectedRevision(runtime);
  assert.equal((await runtime.adopt()).status,200);
  await specialist({request:runtime.request,origin:runtime.origin,cookie:runtime.cookie,fixtures:runtime.fixtures,tool});

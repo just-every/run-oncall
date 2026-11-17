@@ -14,7 +14,7 @@ Oncall is 100% free and open source under the MIT license. You run it yourself, 
 
 ## Beside your pager
 
-Oncall does not page, call or text anyone. Your existing pager stays in charge of waking people up, and Oncall keeps the rota, the hand-overs and the coordination around it. The app says so at the top of every screen: *Existing pager authoritative · paging OFF*. [What Oncall does not do](limits.md) lists the rest plainly.
+Oncall doesn't text, call or page anyone. Keep your pager to wake people; Oncall keeps your rota, alerts and incident notes beside it. In Settings > Services, changing the default response saves and applies it to new alerts; response rules can override that default. The applied value appears in the Response heading, and Response history keeps who changed each version. A failed save says the change is not in effect yet. [What Oncall does not do](limits.md) lists the delivery limits. — Run Edit Run fleet, 17 November 2026.
 
 If your rota lives in Opsgenie or PagerDuty today, you can bring it across from saved export files. See [Move in from Opsgenie or PagerDuty](move-in.md).
 

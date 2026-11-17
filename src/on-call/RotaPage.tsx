@@ -1,3 +1,4 @@
+import {PagerNotice} from './PagerNotice';
 import {ValidationForm} from '../form-validation';
 import {useId} from 'react';
 import {RotaField} from './Field';
@@ -109,6 +110,7 @@ export function RotaPage({id, state, actor, value, refresh, edit = false, render
   };
   if (edit && schedule && renderEdit) return <>{renderEdit(schedule)}</>;
   return <div ref={tooltips} className="oc-oncall oc-rota-page"><aside className="oc-rota-neighbours oc-card" aria-label="Rotas"><h2>Rotas</h2>{value?.rotas.map(row=><Link key={row.id} to={'/on-call/'+encodeURIComponent(row.id) as any} aria-current={row.id===id?'page':undefined}><strong>{row.service.name}</strong><span>{row.name}</span><span>{row.now.primary?.name??'Nobody on call'}</span></Link>)}</aside><section className="oc-rota-record"><Link className="oc-back" to={'/on-call' as any}>‹ On call</Link><header className="oc-page-head"><div><h1>{schedule?.name ?? rota?.name ?? 'Rota'}</h1><p className="oc-quiet">{rota?.service.name ?? state.services.find(service => service.id === schedule?.service)?.name}</p></div>{(canEdit||!!schedule&&memberPTO(state,actor,schedule.service,actor.id)) && <Link className="oc-button" to={'/on-call/' + encodeURIComponent(id) + '/edit' as any}>{canEdit?'Edit rota':'Your time off'}</Link>}</header>
+    <PagerNotice/>
     {savedNotice&&<p ref={savedLine} role="status" tabIndex={-1}>{savedNotice}</p>}
     <FailureLine failure={sheet ? null : failures.failure}/>
     {data && !schedule && <p>Rota not found. <Link to={'/on-call' as any}>Return to On call</Link></p>}
