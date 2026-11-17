@@ -1,0 +1,158 @@
+{
+  "tag": "sd-oncall-c-f254",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f254",
+  "head": "112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554",
+  "base": "24840e6b2678dc883a7f4750221d203cec5f31e6",
+  "contractStatus": "missing",
+  "countsBefore": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "countsAfter": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "newComparisons": 12,
+  "priorComparisons": 48,
+  "allComparisons": 60,
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "head": "112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "head": "112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554"
+    },
+    {
+      "command": "npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0,
+      "head": "112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554"
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "exit": 0,
+      "seconds": 379.3,
+      "head": "112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "generatedChanges": 0,
+      "head": "112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "head": "112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "head": "112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "head": "112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554"
+    },
+    {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/agent-door-browser.mjs",
+      "exit": 0,
+      "head": "112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554",
+      "actionScreens": 16,
+      "allResourceScreens": 184
+    }
+  ],
+  "publicationScan": {
+    "status": "not-run-in-cloud",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "owner": "guarded fleet lander"
+  },
+  "mainRuns": {
+    "verify": [
+      44010884052,
+      44008355761
+    ],
+    "runSite": 44010883843,
+    "head": "7a9956509a78ecf18133e9ffb1b9cceb95ff062b",
+    "conclusion": "success"
+  },
+  "predecessor": {
+    "tag": "sd-oncall-c-f253",
+    "head": "21764286fa20bdc27a95e537cd5258dd67a90daa",
+    "verify": 43997935402,
+    "conclusion": "success",
+    "relation": "Merged landed predecessor; final runtime and browser retain both f252 coverage and f253 assignee clear.",
+    "landedMain": "24840e6b2678dc883a7f4750221d203cec5f31e6"
+  },
+  "candidateVerify": {
+    "conclusion": "success",
+    "head_sha": "112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44014050007",
+    "status": "completed",
+    "id": 44014050007,
+    "observedAt": "2026-11-17T04:34:19.462558+00:00",
+    "githubCallsUsed": 10,
+    "permittedFailedJobRerun": true
+  },
+  "push": {
+    "status": "succeeded",
+    "head": "112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554",
+    "branch": "cloud/sd-oncall-c-f254",
+    "guard": "cloud-push.py",
+    "attempt": 1
+  },
+  "proofSummary": {
+    "actions": 12,
+    "originalProjections": 36,
+    "coverage": 12,
+    "actionScreens": 16,
+    "zeroOutbound": true,
+    "nativeEffectsUnchanged": true,
+    "viewerRefusalsPerPolicy": 5
+  },
+  "initialBase": "7a9956509a78ecf18133e9ffb1b9cceb95ff062b",
+  "reproduction": {
+    "head": "112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554",
+    "run": 44014050007,
+    "job": 133808476291,
+    "command": "node scripts/verify-oncall.mjs browser",
+    "node": "22.20.0",
+    "chromium": "154.0.8037.57",
+    "githubChromium": "156.0.8078.4",
+    "cloudBrowserRequirement": "/usr/bin/chromium with --no-sandbox",
+    "exit": 0,
+    "seconds": 345.4,
+    "ciFailure": "route.fetch: socket hang up (ECONNRESET)",
+    "location": "tests/product-browser-journey.mjs:524",
+    "reproduced": false,
+    "sourceRepair": false,
+    "sameCloudRunnerMainComparison": {
+      "head": "24840e6b2678dc883a7f4750221d203cec5f31e6",
+      "exit": 0,
+      "seconds": 358.5,
+      "sameCommand": true,
+      "sameNode": true,
+      "sameSystemChromium": true
+    },
+    "ciFlags": {
+      "CI": "true",
+      "WRANGLER_SEND_METRICS": "false",
+      "PLAYWRIGHT_SKIP_BROWSER_GC": "1",
+      "SHARD": "browser"
+    }
+  },
+  "githubCallsUsed": 10
+}

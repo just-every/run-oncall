@@ -1,0 +1,164 @@
+{
+  "head": "112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554",
+  "base": "24840e6b2678dc883a7f4750221d203cec5f31e6",
+  "observedAt": "2026-11-17T04:11:08.139001+00:00",
+  "matrixCases": 60,
+  "actionCases": 12,
+  "actionScreens": [
+    {
+      "role": "admin",
+      "mode": "autonomous",
+      "path": "/incidents/41fe922a-e582-4f4f-9c07-e2ff2f7ecdfc",
+      "kind": "actions",
+      "width": 1440,
+      "file": "parity-autonomous-admin-actions-1440.png"
+    },
+    {
+      "role": "admin",
+      "mode": "autonomous",
+      "path": "/incidents/41fe922a-e582-4f4f-9c07-e2ff2f7ecdfc",
+      "kind": "actions",
+      "stage": "accepted",
+      "width": 1440,
+      "file": "parity-autonomous-admin-actions-completion-1440.png"
+    },
+    {
+      "role": "admin",
+      "mode": "autonomous",
+      "path": "/incidents/41fe922a-e582-4f4f-9c07-e2ff2f7ecdfc",
+      "kind": "actions",
+      "width": 390,
+      "file": "parity-autonomous-admin-actions-390.png"
+    },
+    {
+      "role": "admin",
+      "mode": "autonomous",
+      "path": "/incidents/41fe922a-e582-4f4f-9c07-e2ff2f7ecdfc",
+      "kind": "actions",
+      "stage": "accepted",
+      "width": 390,
+      "file": "parity-autonomous-admin-actions-completion-390.png"
+    },
+    {
+      "role": "viewer",
+      "mode": "autonomous",
+      "path": "/incidents/41fe922a-e582-4f4f-9c07-e2ff2f7ecdfc",
+      "kind": "actions",
+      "width": 1440,
+      "file": "parity-autonomous-viewer-actions-1440.png"
+    },
+    {
+      "role": "viewer",
+      "mode": "autonomous",
+      "path": "/incidents/41fe922a-e582-4f4f-9c07-e2ff2f7ecdfc",
+      "kind": "actions",
+      "stage": "accepted",
+      "width": 1440,
+      "file": "parity-autonomous-viewer-actions-completion-1440.png"
+    },
+    {
+      "role": "viewer",
+      "mode": "autonomous",
+      "path": "/incidents/41fe922a-e582-4f4f-9c07-e2ff2f7ecdfc",
+      "kind": "actions",
+      "width": 390,
+      "file": "parity-autonomous-viewer-actions-390.png"
+    },
+    {
+      "role": "viewer",
+      "mode": "autonomous",
+      "path": "/incidents/41fe922a-e582-4f4f-9c07-e2ff2f7ecdfc",
+      "kind": "actions",
+      "stage": "accepted",
+      "width": 390,
+      "file": "parity-autonomous-viewer-actions-completion-390.png"
+    },
+    {
+      "role": "admin",
+      "mode": "held",
+      "path": "/incidents/c2b8162a-7907-4201-b2b2-8cc5eb91645f",
+      "kind": "actions",
+      "width": 1440,
+      "file": "parity-held-admin-actions-1440.png"
+    },
+    {
+      "role": "admin",
+      "mode": "held",
+      "path": "/incidents/c2b8162a-7907-4201-b2b2-8cc5eb91645f",
+      "kind": "actions",
+      "stage": "accepted",
+      "width": 1440,
+      "file": "parity-held-admin-actions-completion-1440.png"
+    },
+    {
+      "role": "admin",
+      "mode": "held",
+      "path": "/incidents/c2b8162a-7907-4201-b2b2-8cc5eb91645f",
+      "kind": "actions",
+      "width": 390,
+      "file": "parity-held-admin-actions-390.png"
+    },
+    {
+      "role": "admin",
+      "mode": "held",
+      "path": "/incidents/c2b8162a-7907-4201-b2b2-8cc5eb91645f",
+      "kind": "actions",
+      "stage": "accepted",
+      "width": 390,
+      "file": "parity-held-admin-actions-completion-390.png"
+    },
+    {
+      "role": "viewer",
+      "mode": "held",
+      "path": "/incidents/c2b8162a-7907-4201-b2b2-8cc5eb91645f",
+      "kind": "actions",
+      "width": 1440,
+      "file": "parity-held-viewer-actions-1440.png"
+    },
+    {
+      "role": "viewer",
+      "mode": "held",
+      "path": "/incidents/c2b8162a-7907-4201-b2b2-8cc5eb91645f",
+      "kind": "actions",
+      "stage": "accepted",
+      "width": 1440,
+      "file": "parity-held-viewer-actions-completion-1440.png"
+    },
+    {
+      "role": "viewer",
+      "mode": "held",
+      "path": "/incidents/c2b8162a-7907-4201-b2b2-8cc5eb91645f",
+      "kind": "actions",
+      "width": 390,
+      "file": "parity-held-viewer-actions-390.png"
+    },
+    {
+      "role": "viewer",
+      "mode": "held",
+      "path": "/incidents/c2b8162a-7907-4201-b2b2-8cc5eb91645f",
+      "kind": "actions",
+      "stage": "accepted",
+      "width": 390,
+      "file": "parity-held-viewer-actions-completion-390.png"
+    }
+  ],
+  "sourceLockCheckExit": 0,
+  "generatedViewsCommitted": false,
+  "outboundRequests": 0,
+  "changes": [
+    "docs/agents.md",
+    "sources.lock.json",
+    "tests/oncall-agent-action-parity.mjs",
+    "tests/oncall-agent-resource-parity.mjs"
+  ],
+  "verify": {
+    "conclusion": "success",
+    "head_sha": "112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44014050007",
+    "status": "completed",
+    "id": 44014050007,
+    "observedAt": "2026-11-17T04:34:19.462558+00:00",
+    "githubCallsUsed": 10,
+    "permittedFailedJobRerun": true
+  }
+}

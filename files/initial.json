@@ -1,0 +1,11 @@
+{
+  "tag": "sd-oncall-c-f254",
+  "base": "7a9956509a78ecf18133e9ffb1b9cceb95ff062b",
+  "contractStatusCounts": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "target": "BASE-AGENT-003",
+  "targetStatus": "missing"
+}

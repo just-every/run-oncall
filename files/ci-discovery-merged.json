@@ -1,0 +1,16 @@
+{
+  "head": "112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554",
+  "observedAt": "2026-11-17T04:00:29.117047+00:00",
+  "runs": [
+    {
+      "id": 44014050007,
+      "name": "Verify",
+      "event": "push",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "112c6f14e2327d8e5cc1ac6bd9b9a6eac92a7554",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44014050007"
+    }
+  ],
+  "githubCallsUsed": 4
+}
