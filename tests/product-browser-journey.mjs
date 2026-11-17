@@ -3,7 +3,7 @@ import {savedEmailBundle} from './email-fixtures.mjs'
 import {pathToFileURL} from 'node:url'
 import {resolve} from 'node:path'
 import {isDeepStrictEqual} from 'node:util'
-import {readFile,mkdir} from 'node:fs/promises'
+import {readFile,mkdir,writeFile} from 'node:fs/promises'
 import {selectRoutedSource,openIncidentAction,focusWorkspace,openWorkspaceSection,routingBrowser,openHistoryComparison,keyboardUser} from './keyboard.mjs'
 import {randomBytes,randomUUID} from 'node:crypto'
 import AxeBuilder from '@axe-core/playwright'
@@ -85,6 +85,47 @@ export async function productImport(page,context,width,session,proof) {
   await incumbentActivation(page,context,width)
   await reconciliationJourney(page,context,session)
   await plainMoveInReview(page,context,session)
+  await documentedPagerDutyReview(page,context)
+}
+
+// Same move-in journey and screen: assert once at 1440, capture the reviewed
+// 498-object summary at desktop and phone widths, and compare complete bytes.
+async function documentedPagerDutyReview(page,context) {
+ const viewport=page.viewportSize(),directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser',origin=new URL(page.url()).origin
+ await page.setViewportSize({width:1440,height:1000})
+ const raw=await readFile('tests/fixtures/pagerduty-synthetic/account.json'),manifest=JSON.parse(await readFile('tests/fixtures/pagerduty-synthetic/manifest.json','utf8'))
+ const before=await (await context.request.get('/api/move-in/objects')).json(),paging=await (await context.request.get('/api/paging/state')).json()
+ await fileSource(page,'pagerduty')
+ const [response]=await Promise.all([page.waitForResponse(response=>new URL(response.url()).pathname==='/api/operator/import/plan'),page.getByLabel('Export JSON',{exact:true}).setInputFiles({name:'synthetic-oncall-account.json',mimeType:'application/json',buffer:raw})])
+ assert.equal(response.status(),200);const plan=await response.json()
+ assert.equal(plan.summary.sourceRecords,manifest.objects)
+ const panel=page.locator('.move-in-step'),fields=plan.items.flatMap(item=>item.unmapped.filter(note=>note.disposition))
+ const summary=panel.getByLabel('Source field accounting',{exact:true})
+ await summary.waitFor();assert.ok((await summary.innerText()).includes(String(fields.length)))
+ await context.grantPermissions(['clipboard-read','clipboard-write'])
+ await panel.getByRole('button',{name:'Copy details',exact:true}).click();await panel.getByText('Details copied',{exact:true}).waitFor()
+ const copied=await page.evaluate(()=>navigator.clipboard.readText());assert.deepEqual(JSON.parse(copied),plan)
+ const [download]=await Promise.all([page.waitForEvent('download'),panel.getByRole('button',{name:'Download details',exact:true}).click()])
+ const path=await download.path();assert.deepEqual(JSON.parse(await readFile(path,'utf8')),plan,'download includes all object and field decisions without a presentation cap')
+ await panel.getByText(`Source object decisions (${manifest.objects})`,{exact:true}).click()
+ await panel.locator('.move-in-review > li').first().waitFor({state:'visible'})
+ assert.equal(await panel.locator('.move-in-review > li').count(),manifest.objects)
+ await panel.getByText(`Source object decisions (${manifest.objects})`,{exact:true}).click()
+ assert.deepEqual(await (await context.request.get('/api/move-in/objects')).json(),before)
+ assert.deepEqual(await (await context.request.get('/api/paging/state')).json(),paging)
+ for(const width of [1440,390]) {
+  await page.setViewportSize({width,height:1000})
+  await panel.getByRole('heading',{name:'Compatibility review',exact:true}).scrollIntoViewIfNeeded()
+  await panel.screenshot({path:`${directory}/pagerduty-account-review-${width}.png`})
+ }
+ await page.setViewportSize({width:1440,height:1000})
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))
+ const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()
+ assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[])
+ await writeFile(`${directory}/pagerduty-account-review-receipt.json`,JSON.stringify({objects:manifest.objects,fields:fields.length,copyBytes:Buffer.byteLength(copied),copyExact:true,downloadExact:true,zeroNativeEffects:true,assertionWidth:1440,screenshots:[1440,390],seriousCriticalAccessibilityFindings:0},null,2)+'\n')
+ await panel.getByRole('button',{name:'Back to connection',exact:true}).click()
+ await page.setViewportSize(viewport)
+ console.log('PASS documentedPagerDutyReview: all source fields copied/downloaded exactly, zero native effects, summary and disclosure, 1440 assertions with 1440/390 screenshots')
 }
 
 async function incumbentActivation(page,context,width) {

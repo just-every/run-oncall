@@ -1,10 +1,128 @@
 import {adoptedOnCallFlow} from './paging-response-flow.mjs'
 import assert from 'node:assert/strict'
 import {generateKeyPairSync,sign,createHash,randomUUID} from 'node:crypto'
-import {readFile,readdir,writeFile} from 'node:fs/promises'
+import {readFile,readdir,writeFile,mkdir} from 'node:fs/promises'
 import {tmpdir} from 'node:os'
 import {join} from 'node:path'
 import {localWorker,ownerDoor} from './worker.mjs'
+
+// Extended existing registration: actual emitted Worker/D1, both public doors,
+// independent enumeration of every original JSON leaf (including empty lists).
+async function syntheticPagerDutyAccount({w,req,door,call,upload,ok}) {
+ const raw=await readFile('tests/fixtures/pagerduty-synthetic/account.json'),bundle=JSON.parse(raw),manifest=JSON.parse(await readFile('tests/fixtures/pagerduty-synthetic/manifest.json','utf8'))
+ const leaves=(value,pointer='')=>value&&typeof value==='object'&&Object.keys(value).length?Object.entries(value).flatMap(([key,child])=>leaves(child,pointer+'/'+key.replaceAll('~','~0').replaceAll('/','~1'))):[pointer]
+ const originalPointers=leaves(bundle).sort(),objects=async()=>ok(await req('/api/move-in/objects'))
+ const native=ok(await req('/api/state')),paging=ok(await req('/api/paging/state')),results=[]
+ let complete
+ for(const via of ['owner','business']) {
+  console.log('Synthetic account door: '+via)
+  const before=await objects(),send=(action,input,approval)=>via==='owner'?door.call('pagerduty',action,input):call(action,'pagerduty',input,approval)
+  const approvalFor=plan=>({fingerprint:plan.fingerprint,approvalRecordId:'synthetic-oncall-account-'+plan.planId,approvedAt:'2026-11-17T12:00:00.000Z'})
+  const preview=async(bytes,catchup=false)=>via==='owner'?door.preview('pagerduty',bytes):call('plan','pagerduty',{uploadId:await upload('pagerduty',Buffer.from(bytes),'synthetic-oncall-account.json'),...(catchup?{catchup:true}:{})})
+  const finish=async(action,plan)=>{
+   const approval=action==='apply'?approvalFor(plan):undefined
+   for(let step=0;step<100;step++) {
+    const value=ok(await send(action,{planId:plan.planId,...(action==='apply'?{reviewedFingerprint:plan.fingerprint}:{})},approval))
+    if(value.job.state===(action==='apply'?'completed':'undone'))return value.job
+    assert.ok(['queued','applying','undoing'].includes(value.job.state))
+   }
+   assert.fail('Synthetic account did not finish '+action)
+  }
+  let plan=ok(await preview(raw))
+  assert.equal(plan.summary.sourceRecords,manifest.objects)
+  assert.deepEqual(plan.counts.byKind,manifest.byKind)
+  assert.deepEqual(await objects(),before,'full-account preview writes no imported targets')
+  assert.deepEqual(ok(await req('/api/state')),native)
+  if(via==='owner') {
+   assert.equal(plan.items.length,manifest.objects)
+   const fields=plan.items.flatMap(item=>item.unmapped.filter(note=>note.disposition))
+   assert.deepEqual(fields.map(field=>field.pointer).sort(),originalPointers,'every original leaf has exactly one decision, including response metadata')
+   assert.equal(new Set(fields.map(field=>field.pointer)).size,fields.length)
+   for(const item of plan.items)for(const field of item.unmapped.filter(note=>note.disposition)) {
+    assert.ok(['mapped','lossy','retained-only','refused'].includes(field.disposition));assert.equal(field.sourceId,item.id)
+    assert.equal(field.kind,item.kind);assert.ok(field.reason&&field.receiving)
+    let original=bundle;for(const part of field.pointer.slice(1).split('/'))original=original[part.replaceAll('~1','/').replaceAll('~0','~')]
+    assert.deepEqual(field.original,original)
+   }
+   const future=fields.find(field=>field.pointer.endsWith('/future_setting/a~1b~0c'))
+   assert.equal(future.disposition,'retained-only');assert.equal(future.original,true)
+   assert.ok(fields.some(field=>field.disposition==='lossy'&&field.pointer.endsWith('/escalation_delay_in_minutes')))
+   for(const user of plan.items.filter(item=>item.kind==='users'))assert.equal(user.effects[0].value.contacts.length,1,'separate phone/SMS details bind to their own person and merge the same E.164 number')
+   complete=plan
+  } else {
+   const fields=plan.diagnostics.filter(note=>note.field?.startsWith('/'))
+   assert.deepEqual(fields.map(field=>field.field).sort(),originalPointers,'signed diagnostics also account for every original field without truncation')
+   assert.ok(fields.every(field=>field.sourceId&&field.location.pointer&&/^(mapped|lossy|retained-only|refused):/.test(field.message)&&field.message.includes('Receiving place:')))
+   // Current Business authority is rechecked in the committing SQL batch.
+   w.sql('CREATE TRIGGER synthetic_full_revocation AFTER INSERT ON ik_jobs BEGIN UPDATE ik_door_settings SET enabled=0; END')
+   assert.equal((await send('apply',{planId:plan.planId,reviewedFingerprint:plan.fingerprint},approvalFor(plan))).status,409)
+   w.sql('DROP TRIGGER synthetic_full_revocation');assert.deepEqual(await objects(),before)
+   assert.equal(ok(await req('/auth/settings/imports')).enabled,true,'revocation rolls back with the refused publication')
+   plan=ok(await preview(raw))
+   w.sql("CREATE TRIGGER synthetic_full_failure BEFORE INSERT ON move_in_objects BEGIN SELECT RAISE(ABORT,'SYNTHETIC_FULL_FAILURE'); END")
+   assert.equal(ok(await send('apply',{planId:plan.planId,reviewedFingerprint:plan.fingerprint},approvalFor(plan)),409).error,'import_door_apply_constraint','the native SQL failure itself refuses this batch')
+   w.sql('DROP TRIGGER synthetic_full_failure');assert.deepEqual(await objects(),before)
+   plan=ok(await preview(raw))
+  }
+  const bad=(plan.fingerprint[0]==='0'?'1':'0')+plan.fingerprint.slice(1)
+  assert.equal((await send('apply',{planId:plan.planId,reviewedFingerprint:bad},approvalFor(plan))).status,403)
+  const approval=approvalFor(plan)
+  console.log('Synthetic account reviewed for apply: '+via)
+  const first=ok(await send('apply',{planId:plan.planId,reviewedFingerprint:plan.fingerprint},approval)).job
+  assert.ok(first.checkpoint>0&&first.checkpoint<first.total)
+  const prefix=await objects();assert.ok(prefix.length>before.length)
+  await w.stop();await w.start();assert.deepEqual(await objects(),prefix)
+  const job=await finish('apply',plan),applied=await objects()
+  console.log('Synthetic account applied: '+via)
+  assert.equal(applied.length-before.length,plan.counts.effects)
+  for(const row of applied.filter(row=>!before.some(old=>old.targetKind===row.targetKind&&old.targetId===row.targetId)))assert.ok(row.value.paused&&row.value.paging===false&&row.value.login===false)
+  const reconciled=ok(await send('reconcile',{planId:plan.planId}))
+  assert.equal(reconciled.ok,true);assert.equal(reconciled.sourceIds.length,manifest.objects)
+  assert.equal(reconciled.counts.present+reconciled.counts.explained,manifest.objects)
+  assert.equal(new Set(reconciled.sourceIds.map(row=>JSON.stringify([row.kind,row.sourceId]))).size,manifest.objects)
+  const identical=ok(await preview(raw));assert.equal(identical.planId,plan.planId)
+  assert.equal((await finish('apply',identical)).id,job.id);assert.deepEqual(await objects(),applied)
+  const changed=structuredClone(bundle);changed.users[0].users[0].name='Synthetic responder reviewed catch-up'
+  changed.overrides[0].overrides[0].end='2026-12-01T11:00:00Z'
+  const catchup=ok(await preview(JSON.stringify(changed),true));assert.equal(catchup.summary.updated,2);assert.equal(catchup.summary.created,0)
+  await w.stop();await w.start();await finish('apply',catchup)
+  assert.equal((await objects()).find(row=>row.targetId===changed.users[0].users[0].email).value.name,changed.users[0].users[0].name)
+  assert.equal((await objects()).find(row=>row.value.sourceId===changed.schedules[0].schedule.id&&row.targetKind==='schedule').value.schedule.overrides[0].end,'2026-12-01T11:00:00.000Z','changed separate override updates the paused receiving schedule')
+  assert.equal(ok(await send('reconcile',{planId:catchup.planId})).ok,true)
+  await finish('undo',catchup);assert.deepEqual((await objects()).map(row=>[row.targetKind,row.targetId,row.value]),applied.map(row=>[row.targetKind,row.targetId,row.value]))
+  await finish('undo',plan);assert.deepEqual(await objects(),before)
+  console.log('Synthetic account catch-up and undo: '+via)
+  assert.deepEqual(ok(await req('/api/state')),native);assert.deepEqual(ok(await req('/api/paging/state')),paging)
+  // Wrong wrappers, missing or contradictory parents, incomplete pagination,
+  // duplicate identities and credential fields must not leave native effects.
+  const hostile=[
+   ['malformed',()=>'{'],
+   ['wrong wrapper',value=>{value.users={data:[]}}],
+   ['missing binding',value=>value._bindings.shift()],
+   ['wrong parent',value=>{value._bindings[0].parentId='synthetic-oncall-absent'}],
+   ['duplicate parent',value=>value._bindings.push(value._bindings[0])],
+   ['missing detail',value=>value.integrations.shift()],
+   ['incomplete pages',value=>value.users.pop()],
+   ['incomplete cursor',value=>value.automation_actions.pop()],
+   ['wrong total',value=>{value.users[0].total=1}],
+   ['duplicate source',value=>{value.users[0].users[1].id=value.users[0].users[0].id}],
+   ['credential',value=>{value.services[0].services[0].integration_key='synthetic-oncall-refused-value'}],
+  ]
+  for(const [name,mutate] of hostile) {
+   const value=structuredClone(bundle),returned=mutate(value),bytes=name==='malformed'?returned:JSON.stringify(value)
+   const refused=await preview(bytes)
+   assert.ok([400,413,422].includes(refused.status),name+': '+JSON.stringify(refused.value))
+   assert.deepEqual(await objects(),before,name+' preserves imported targets')
+   assert.deepEqual(ok(await req('/api/state')),native);assert.deepEqual(ok(await req('/api/paging/state')),paging)
+  }
+  results.push({door:via,sourceObjects:manifest.objects,fields:originalPointers.length,targets:plan.counts.effects,checkpoint:first.checkpoint,total:first.total,reconcile:reconciled.counts,identicalReplay:true,changedCatchup:true,restart:true,layeredUndo:true,hostileCases:hostile.map(([name])=>name),nativeEffects:0})
+ }
+ await mkdir('evidence',{recursive:true})
+ await writeFile('evidence/pagerduty-synthetic-report.json',JSON.stringify(complete,null,2)+'\n')
+ const fields=complete.items.flatMap(item=>item.unmapped.filter(note=>note.disposition)),byDisposition=Object.fromEntries(['mapped','lossy','retained-only','refused'].map(disposition=>[disposition,fields.filter(field=>field.disposition===disposition).length]))
+ await writeFile('evidence/pagerduty-synthetic-receipt.json',JSON.stringify({fixtureSha256:manifest.sha256,sourceObjects:manifest.objects,sourceLeaves:originalPointers.length,fieldDispositions:byDisposition,objects:complete.classification,results,paging:'OFF'},null,2)+'\n')
+ console.log('PASS documented PagerDuty account: '+JSON.stringify({objects:manifest.objects,fields:originalPointers.length,byDisposition,doors:results}))
+}
 // import-door-catchup: part of this public journey.
 // Part of the existing import-door registration. Only the signed HTTP client and
 // owner-session public APIs cross this boundary; native observations never use SQL.
@@ -409,6 +527,8 @@ try {
  // Enable through the same owner setting used by its HTML form.
  ok(await req('/auth/settings/imports',{enabled:true}))
  assert.equal(ok(await req('/auth/settings/imports')).enabled,true)
+
+ await syntheticPagerDutyAccount({w,req,door,call,upload,ok})
 
  const member=ok(await req('/api/members',{name:'Workspace admin',password:'synthetic-import-door-password',role:'admin'}),201)
  const teammate=await w.request('/api/login',{name:member.name,password:'synthetic-import-door-password'});ok(teammate)
@@ -1004,6 +1124,25 @@ try {
  ok(await req('/api/intake/sources/synthetic-oncall-adoption/revoke',{revision:active.source.revision}))
  assert.equal(ok(await req('/api/intake/sources/synthetic-oncall-adoption/incumbent')).keySupplied,false)
  console.log('OC-055 import activation: separate key supply, inactive receiving, explicit activation, no supplied-key echo and revoke passed')
+ // Bound contact details and complete field reports participate in the same
+ // imported-person erasure, including the raw file, plans and portable copies.
+ {
+  const raw=await readFile('tests/fixtures/pagerduty-synthetic/account.json','utf8'),saved=JSON.parse(raw),person=saved.users.flatMap(page=>page.users)[23]
+  const contact=saved.contact_methods.flatMap(page=>page.contact_methods).find(method=>method.id===person.contact_methods[0].id),number='+'+contact.country_code+contact.address
+  const preview=ok(await door.preview('pagerduty',raw));ok(await door.apply('pagerduty',preview))
+  const native=ok(await req('/api/state')),paging=ok(await req('/api/paging/state'))
+  const receipt=ok(await req('/api/move-in/erase',{email:person.email,confirmation:'erase '+person.email}))
+  assert.equal(receipt.importedUser,'removed');assert.ok(receipt.receiptId&&receipt.recordsErased>0&&receipt.schedulesRewritten>0)
+  const tables=w.sql("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%'").map(row=>row.name)
+  const held=JSON.stringify(w.statements(tables.map(table=>'SELECT * FROM "'+table.replaceAll('"','""')+'"').join(';')))
+  const archive=JSON.stringify(ok(await req('/api/archive')))
+  for(const text of [held,archive])for(const token of [person.email,person.name,person.id,contact.address,number])assert.ok(!text.includes(token),'person identity absent from native/import/field-report/export custody')
+  assert.ok(!(await imported()).some(row=>row.targetId===person.email))
+  assert.equal((await imported()).filter(row=>row.targetKind==='user'&&saved.users.flatMap(page=>page.users).some(user=>user.email===row.targetId)).length,59,'erasure preserves the other synthetic people')
+  assert.deepEqual(ok(await req('/api/state')),native);assert.deepEqual(ok(await req('/api/paging/state')),paging)
+  await mkdir('evidence',{recursive:true});await writeFile('evidence/pagerduty-synthetic-erasure-receipt.json',JSON.stringify({sourceObjects:preview.items.length,receipt,allD1TablesChecked:true,portableArchiveChecked:true,identityOccurrences:0,otherPeoplePreserved:59,paging:'OFF'},null,2)+'\n')
+  console.log('PASS documented PagerDuty erasure: bound contacts and field-report custody removed, portable archive clean, 59 other people preserved, native authority unchanged')
+ }
  await adoptedOnCallFlow({w,req,ok,admin,alice,bob,schedule})
  console.log('Move-in: explicit timing difference, named people, validated adoption, authority, concurrent publication, atomic rollback, now/next, ICS and protected undo passed')
 } finally {await w.close()}
