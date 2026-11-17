@@ -1,0 +1,55 @@
+{
+  "schema": {
+    "url": "https://github.com/PagerDuty/api-schema/blob/main/reference/REST/openapiv3.json",
+    "readAt": "2026-11-17",
+    "version": "2.0.0",
+    "sha256": "cbae7d77f588e8fb5b14118003c9b8a71f274c57719ddc39eb8e77a71994f6d8"
+  },
+  "objects": 498,
+  "byKind": {
+    "users": 60,
+    "teams": 6,
+    "contact_methods": 120,
+    "notification_rules": 60,
+    "schedules": 12,
+    "overrides": 12,
+    "escalation_policies": 12,
+    "services": 24,
+    "integrations": 48,
+    "incidents": 48,
+    "log_entries": 48,
+    "business_services": 6,
+    "subscribers": 18,
+    "maintenance_windows": 6,
+    "event_orchestrations": 6,
+    "orchestration_routers": 6,
+    "automation_actions": 6
+  },
+  "bytes": 201278,
+  "sha256": "99e7758d46ad1301af71738e3b02f8535247d85a882c5c0f2ad1ca29668dfe0e",
+  "endpoints": {
+    "users": "GET /users",
+    "contact_methods": "GET /users/{id}/contact_methods",
+    "notification_rules": "GET /users/{id}/notification_rules",
+    "teams": "GET /teams",
+    "schedules": "GET /schedules/{id}",
+    "overrides": "GET /schedules/{id}/overrides",
+    "escalation_policies": "GET /escalation_policies",
+    "services": "GET /services",
+    "integrations": "GET /services/{id}/integrations/{integration_id}",
+    "incidents": "GET /incidents",
+    "log_entries": "GET /incidents/{id}/log_entries",
+    "business_services": "GET /business_services",
+    "subscribers": "GET /business_services/{id}/subscribers",
+    "maintenance_windows": "GET /maintenance_windows",
+    "event_orchestrations": "GET /event_orchestrations",
+    "orchestration_routers": "GET /event_orchestrations/{id}/router",
+    "automation_actions": "GET /automation_actions/actions"
+  },
+  "limitations": [
+    "Synthetic documented-shape data, not a customer export or live account receipt.",
+    "_bindings is Oncall packaging metadata outside every original endpoint response.",
+    "No keys, tokens, API calls, active paging, access grants or executable actions.",
+    "PTO, reviews and action items not returned by these endpoints remain missing data, not invented export objects."
+  ]
+}
