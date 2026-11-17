@@ -5,11 +5,17 @@
   "existingJourneyExtended": "tests/product-browser.mjs#eventsSourceBrowser and ownerAlertsBrowser continuation",
   "contractClauseChanges": 0,
   "designItems": 6,
-  "baselineIssuesConfirmed": 6,
   "contractSourceUnchanged": true,
   "releaseMetadataUnchanged": true,
   "productCommits": [
+    "c1266e19a6a1fee81d9d83908cd06c455dc4d217 Integrate current main while preserving owner alert flows",
+    "2273cab15bb4aa3e0a0c1c168e1835d5eada9160 Close the Reopen dialog after restoring the incident",
     "b48f59b9d15c7144b6acdf59118e12f142a16c39 Prove the owner alert and incident lifecycle through the browser",
     "9d45a29f1c8dcc60f6c6138246bd970257688b8b Make alert testing and incident closure accessible from the workspace [skip ci]"
-  ]
+  ],
+  "namedIssuesFromBrief": 6,
+  "baselineIssuesDirectlyCaptured": 5,
+  "baselineOnCallLimit": "Before fixture did not seed a rota; source inspection confirms no current-coverage line, and after proof uses a real primary/backup rota.",
+  "finalHead": "c1266e19a6a1fee81d9d83908cd06c455dc4d217",
+  "integratedMain": "708271f0cbd8bb35ae45a5b402a97faa6197cc1a"
 }

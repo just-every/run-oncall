@@ -79,7 +79,14 @@
     "readable-names-routed-throttled-1440.png",
     "readable-names-routed-throttled-390.png",
     "timeline-recovery-1440.png",
-    "timeline-recovery-390.png"
+    "timeline-recovery-390.png",
+    "PACKET-CHECK.json",
+    "CI-STATUS-2.json",
+    "EVIDENCE-UPLOAD-1.json",
+    "REOPEN-CHECK.json",
+    "MERGE-CHECK.json",
+    "browser-owner-final.log",
+    "CI-FINAL-DISCOVERY.json"
   ],
   "pngFiles": 62,
   "filesAreRegular": true,

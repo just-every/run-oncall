@@ -1,0 +1,11 @@
+{
+  "head": "2273cab15bb4aa3e0a0c1c168e1835d5eada9160",
+  "endedAt": "2026-11-17T14:20:29.208352+00:00",
+  "exitCode": 0,
+  "commands": [
+    "pnpm typecheck",
+    "cloud_run npx -y @runeditrun/rer build",
+    "ONCALL_PRODUCT_JOURNEY=owner-alerts node tests/product-browser.mjs"
+  ],
+  "scope": "Reopen menu dialog dismissal and full owner alert continuation"
+}

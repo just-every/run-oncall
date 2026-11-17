@@ -14,7 +14,7 @@ Author: sd (Run Edit Run fleet), 17 November 2026. Task: sd-oncall-design-alerts
 
 ## Baseline
 
-`BEFORE.json` identifies the baseline head and twelve desktop/phone captures. The baseline had no Alerts test button, a reused source-test key with Recover selected after a trigger, mandatory recovery URL, active linked alert after resolution, and no Reopen action.
+`BEFORE.json` identifies the baseline head and twelve desktop/phone captures. The before fixture did not seed a rota: the old alert/incident code has no current-coverage line, while the after journey explicitly creates and reads a real primary/backup rota. Thus five confusers were directly captured before; D6’s original rota-based reproduction is supplied by the signed brief, with source inspection and after proof here. The baseline had no Alerts test button, a reused source-test key with Recover selected after a trigger, mandatory recovery URL, active linked alert after resolution, and no Reopen action.
 
 ## Decisions and truth checks
 
@@ -35,15 +35,29 @@ Final checks, exact product provenance, counts and CI receipt are recorded in th
 
 ## Local validation provenance
 
-The complete touched-check sequence passed on 680402aadade887c59a7f0943078b331b2a773e5: typecheck, production build, source/owner browser continuation, response-policy browser regression, runtime core (including archive restore and authority), and source-lock/contract-view checks. `LOCAL-CHECKS.json` is the actual exit receipt. The final candidate b48f59b9d15c7144b6acdf59118e12f142a16c39 changes only two copied-command test arguments and their generated source lock; production code is identical. It is rebuilt and the source/owner journey is rerun with no sender key preconfigured; `COPY-CHECK.json` records that run. Browser assertions use 1440; changed-screen captures use 1440 and 390. The retained earlier timeline fit regression also checks its existing 390 layout.
+The complete touched-check sequence passed on 680402aadade887c59a7f0943078b331b2a773e5: typecheck, production build, source/owner browser continuation, response-policy browser regression, runtime core (including archive restore and authority), and source-lock/contract-view checks. `LOCAL-CHECKS.json` is the actual exit receipt. The intermediate candidate b48f59b9d15c7144b6acdf59118e12f142a16c39 changes only two copied-command test arguments and their generated source lock; production code is identical. It is rebuilt and the source/owner journey is rerun with no sender key preconfigured; `COPY-CHECK.json` records that run. Browser assertions use 1440; changed-screen captures use 1440 and 390. The retained earlier timeline fit regression also checks its existing 390 layout.
 
 Verification plan entries: 20 before, 20 after; no new journey registration. Six named UX items are implemented, with zero contract clause status changes. The public API/browser tests retain refusal and rollback coverage instead of asserting fixed prose. The only replaced obsolete assertion was the recovery URL requirement explicitly superseded by D7.
 
 
 ## Product custody
 
-First durable save: 9d45a29f1c8dcc60f6c6138246bd970257688b8b, pushed with `[skip ci]`. Final product candidate: b48f59b9d15c7144b6acdf59118e12f142a16c39, pushed without a skip marker to cloud/sd-oncall-design-alerts-1. `PRODUCT-REF.json` is the actual matching remote-ref receipt. Main was fetched before publication and had no commits missing from the candidate; no merge or published-history rewrite was needed. Every candidate author/committer is Run Edit Run fleet <fleet@runeditrun.com>; there are no trailers. No PR was created because the fleet lands the named branch. No default branch, release metadata, tags, repository dependency pins, contract clause or generated contract view was changed.
+First durable save: 9d45a29f1c8dcc60f6c6138246bd970257688b8b, pushed with `[skip ci]`. Intermediate product candidate: b48f59b9d15c7144b6acdf59118e12f142a16c39, pushed without a skip marker to cloud/sd-oncall-design-alerts-1. `PRODUCT-REF.json` is the actual matching remote-ref receipt. At that earlier publication, main had no missing commits. A later fetch found four SNS commits, integrated by an ordinary merge as required for a published cloud branch; published history was never rewritten. Every candidate author/committer is Run Edit Run fleet <fleet@runeditrun.com>; there are no trailers. No PR was created because the fleet lands the named branch. No default branch, release metadata, tags, repository dependency pins, contract clause or generated contract view was changed.
 
-Exact-SHA Verify run discovered: 44099698247, https://github.com/just-every/run-oncall/actions/runs/44099698247. Its first observed state is in `CI-DISCOVERY.json`; final status is recorded separately after the required polling interval. The cloud task uses at most ten GitHub calls and a single watcher with at least 300 seconds between reads of this run.
+Superseded-head Verify run discovered: 44099698247, https://github.com/just-every/run-oncall/actions/runs/44099698247. Its observed in-progress states are in `CI-DISCOVERY.json` and `CI-STATUS-2.json`; they are not used as the final candidate gate. The cloud task uses at most ten GitHub calls and a single watcher with at least 300 seconds between reads of this run.
 
 The full Base publication scan is reserved for the landing machine by the cloud instructions. A local added-line credential-pattern check found zero matches; it is not represented as the full publication scan.
+
+
+## Final integration follow-up
+
+Screenshot review caught that the Reopen action from the menu succeeded but left its dialog open. Commit 2273cab15bb4aa3e0a0c1c168e1835d5eada9160 dismisses that dialog when the incident returns to an open state, and the browser now asserts dismissal before capturing the reopened incident. `REOPEN-CHECK.json` records the passing rebuild, typecheck and full owner continuation.
+
+Fresh main then advanced by four SNS intake commits to 708271f0cbd8bb35ae45a5b402a97faa6197cc1a. The cloud policy requires merging updated main after published saves; merge candidate c1266e19a6a1fee81d9d83908cd06c455dc4d217 retains all of those changes. The sample endpoint explicitly excludes the new SNS provider from its existing service-bound browser sample kinds, consistent with that provider’s routed signed-message flow. Contract generation/write/check ran successfully, both generated views were restored from main, and the source lock was regenerated last. `MERGE-CHECK.json` records the combined candidate’s typecheck, production build and source/owner browser regression.
+
+
+## Final candidate
+
+The final integrated candidate is c1266e19a6a1fee81d9d83908cd06c455dc4d217 on cloud/sd-oncall-design-alerts-1, with its matching remote in `PRODUCT-REF.json`. Its exact-SHA Verify run is 44102820767, https://github.com/just-every/run-oncall/actions/runs/44102820767. `CI-FINAL-DISCOVERY.json` is the actual discovery receipt. The earlier run 44099698247 belongs to b48f59b9d15c7144b6acdf59118e12f142a16c39 and is superseded; no success on that head is used for READY.
+
+All four candidate commits (including the merge and every side parent outside origin/main) were inspected before the push; author and committer are the fleet identity and every trailer set is empty. The merge retains main’s full SNS changes and regenerated source lock, without changing any contract clause or generated view relative to that main.

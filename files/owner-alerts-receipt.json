@@ -33,5 +33,6 @@
   "viewerRefused": true,
   "revokedRefused": true,
   "archiveAccepted": true,
+  "reopenDialogDismissed": true,
   "paging": "OFF"
 }

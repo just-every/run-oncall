@@ -1,0 +1,12 @@
+{
+  "head": "c1266e19a6a1fee81d9d83908cd06c455dc4d217",
+  "endedAt": "2026-11-17T14:24:25.955089+00:00",
+  "exitCode": 0,
+  "commands": [
+    "pnpm typecheck",
+    "cloud_run npx -y @runeditrun/rer build",
+    "ONCALL_PRODUCT_JOURNEY=events-source node tests/product-browser.mjs"
+  ],
+  "main": "708271f",
+  "scope": "retain SNS main changes; source/owner browser flow with Reopen dismissal"
+}
