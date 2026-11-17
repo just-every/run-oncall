@@ -4,7 +4,7 @@ import {agentRuntime,agentEffectSnapshot} from './agent-door-runtime.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 
 /** Changed evidence cannot replace a completed human-review submission. */
-export async function actionSubmitReplay(runtime,{approve,observe=async()=>{}}={}){
+export async function actionSubmitReplay(runtime,{approve,observe=async()=>{},beforeSubmit=async()=>{}}={}){
  const {db,http,tool,context}=runtime,name='oncall.actions.submit';
  const rows=async(sql,...values)=>(await db.prepare(sql).bind(...values).all()).results;
  const read=async path=>{const response=await http(path);assert.equal(response.status,200);return response.json()};
@@ -35,6 +35,7 @@ export async function actionSubmitReplay(runtime,{approve,observe=async()=>{}}={
   assert.equal(action.done,false);assert.equal(action.evidence,'');assert.equal(action.submission,undefined);assert.equal(action.accepted,undefined);
   const args={incident:incident.id,revision:incident.revision,action:action.id,
    evidence:'https://evidence.example.invalid/synthetic-oncall-original',idempotency_key:randomUUID()};
+  await beforeSubmit({mode,incident,action,args,owner});
   const before=await snapshot(),priorAudit=await audits();
   const first=await tool(name,args);
   assert.equal(first.status,200);assert.equal(first.body.error,undefined);
