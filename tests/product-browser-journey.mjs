@@ -2051,3 +2051,29 @@ export async function importedEmailBrowser(page,context) {
  }
  console.log('PASS OC-070 email import browser: mapping reports and original unsupported action, inactive custody, explicit administrator activation and one-time address; assertions at 1440; changed screens captured once at 1440 and 390');
 }
+
+// Read the actual MCP-saved service after reloading its Settings route.
+export async function savedServiceRunbookBrowser(page,origin,service){
+ const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';
+ await mkdir(directory,{recursive:true});
+ const path='/settings/services/'+encodeURIComponent(service.id);
+ const panel=page.locator('.service-page-head');
+ const runbook=panel.getByRole('textbox',{name:'Runbook steps (one per line)',exact:true});
+ await page.goto(origin+path);
+ await runbook.waitFor();
+ for(const width of [1440,390]){
+  await page.setViewportSize({width,height:1000});
+  const response=await page.reload();
+  await runbook.waitFor();
+  if(width===1440){
+   assert.equal(response.status(),200);
+   assert.equal(new URL(page.url()).pathname,path);
+   await expect(panel.getByRole('heading',{name:service.name,exact:true})).toBeVisible();
+   await expect(runbook).toHaveValue(service.runbook.join('\n'));
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  }
+  await runbook.scrollIntoViewIfNeeded();
+  await page.screenshot({path:directory+'/surface-002-saved-runbook-'+width+'.png'});
+ }
+ console.log('PASS savedServiceRunbookBrowser: service settings reload displayed the MCP-saved literal steps at 1440, with reload captures at 1440 and 390');
+}
