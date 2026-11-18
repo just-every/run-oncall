@@ -1220,6 +1220,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 | `oncall.members.update` | Add members, change roles and deactivate | OC-003, OC-039 | access (+ live) | Not yet shipped |
 | `oncall.access.read` | Read member access and roles | OC-003, OC-023 | standard (+ sensitive) | Shipped |
 | `oncall.access.update` | Change an existing member's role and active access under a current administrator sponsor | OC-003, OC-041, OC-053 | access | Shipped |
+| `oncall.responders.list` | Look up active responder and administrator IDs and names | OC-053 | standard (+ sensitive) | Shipped read with `responders:read` |
 | `oncall.contacts.update` | Enroll and verify a responder's destinations and notification rules | OC-026, OC-066 | standard (+ gated) (+ live) | Not yet shipped |
 | `oncall.handoffs.prepare` | Prepare or withdraw hand-off copy | OC-017 | standard | Not yet shipped |
 | `oncall.handoffs.review` | Review exact hand-off copy | OC-017 | commitment | Not yet shipped |
