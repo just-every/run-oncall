@@ -10,6 +10,7 @@ import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-re
 import {actionSubmitNativeRevision} from './oncall-agent-action-submit-native-revision.mjs';
 import {agedActionSubmitRetention} from './oncall-agent-action-submit-retention.mjs';
 import {actionSubmitResponseLoss} from './oncall-agent-action-submit-response-loss.mjs';
+import {changedReassignmentReasonConflict} from './oncall-agent-incident-replay.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {openIncidentAction} from './keyboard.mjs';
 
@@ -137,6 +138,18 @@ try{
  console.log('PROBE BASE-AGENT-009 acceptance 3: native MCP at UTC week boundaries, complete paginated audit and Agents at 1440 and 390 -> 210 retained calls, 207 in period, exactly 8 cohorts, multi-class contributions once each, stable records and zero outbound requests');
  await runtime.time(null);
  await page.setViewportSize({width:1440,height:1000});
+ await changedReassignmentReasonConflict(runtime,{async observe({mode,saved,assignee,responder,reason,agentLabel}){
+  const before=await agentEffectSnapshot(runtime);
+  await capture('reassignment-readback-'+mode,'/incidents/'+saved.id,async()=>{
+   await page.getByRole('button',{name:'Assignee: '+responder.name,exact:true}).waitFor();
+   const readable=responder.name+' is now assignee. Previously '+assignee.name+'. Reason: '+reason;
+   const entry=page.getByRole('region',{name:'Timeline',exact:true}).getByRole('listitem').filter({hasText:readable});
+   await entry.getByText(readable,{exact:true}).waitFor();
+   await entry.getByText(agentLabel,{exact:true}).waitFor();
+  });
+  assert.deepEqual(await agentEffectSnapshot(runtime),before,'Viewing the saved reassignment changes no durable records');
+  assert.deepEqual(await runtime.outboundRequests(),[]);
+ }});
  assert.equal((await runtime.adopt()).status,200);
  const submitEvidenceRequests=[];
  const stopEvidence=route=>{submitEvidenceRequests.push(route.request().url());return route.abort()};
