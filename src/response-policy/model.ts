@@ -1,3 +1,4 @@
+import {startAcknowledgmentDeadline} from '../incident-deadlines/model.ts';
 import {markOnCallStart} from '../family/response-operations/on-call-notifications/model.ts';
 import {launchRuleWorkflow} from '../orchestration/workflows.ts';
 import { instantiateIncidentTemplate } from '../incident-workflows/template.ts';
@@ -84,6 +85,7 @@ export function finishResponseAdmission(state: State, alert: Alert, event: Event
     runbook: service.runbook.map(text => ({text, done: false})), actions: [], recovery: '', review: '', urgency: alert.urgency ?? 'high',
     automaticDeclaration: {alert: alert.id, event: event.id, receipt: receiptId, policyVersion: policy.version, rule: obligation.policy.rule, by: policy.by}};
   instantiateIncidentTemplate(state,incident);
+  startAcknowledgmentDeadline(state,incident,author.id);
   state.incidents.unshift(incident);
   enqueueEvents(state, incident, {type: 'declare'}, author);
 }

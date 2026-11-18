@@ -2,10 +2,23 @@ import {authority,fail,type Incident,type Member,type State} from '../family/res
 import type {PolicyContext} from '../manual-pages/model.ts';
 import type {IncidentDeadline} from './types.ts';
 export const deadlineActor='system:incident-deadlines';
+/** Initial response starts at declaration, independently of later re-trigger timers. */
+export function startAcknowledgmentDeadline(state:State,incident:Incident,actor:string) {
+ const policy=state.services.find(s=>s.id===incident.service)?.ackTimeouts?.at(-1);
+ if(!policy?.minutes)return;
+ const deadline:IncidentDeadline={id:crypto.randomUUID(),kind:'initial-acknowledgment',state:'pending',actor,
+  createdAt:incident.createdAt,dueAt:new Date(Date.parse(incident.createdAt)+policy.minutes*60000).toISOString(),
+  minutes:policy.minutes,level:0,policyVersion:policy.version,endedAt:null,outcome:'Waiting for someone to acknowledge; paging is off',obligation:null};
+ (incident.deadlines??=[]).push(deadline);
+ incident.timeline.push({id:'deadline:'+deadline.id,actor,at:incident.createdAt,kind:'incident-deadline',text:`Acknowledgment due at ${deadline.dueAt}; paging is off`});
+}
+export function deadlineEntryText(d:IncidentDeadline) {
+ return d.kind==='initial-acknowledgment'?d.outcome:`${d.kind}: ${d.minutes} minutes, due ${d.dueAt}: ${d.outcome}; paging OFF`;
+}
 const pending=(i:Incident)=>(i.deadlines??[]).filter(d=>d.state==='pending');
 export function cancelDeadlines(incident:Incident,at:string,reason:string,actor=deadlineActor) {
  let changed=false;
- for(const d of pending(incident)){changed=true;d.state='cancelled';d.endedAt=at;d.outcome=reason;incident.timeline.push({id:'deadline-cancelled:'+d.id,actor,at,kind:'deadline-cancelled',text:`${d.kind}: ${d.minutes} minutes, due ${d.dueAt}: ${d.outcome}; paging OFF`});}
+ for(const d of pending(incident)){changed=true;d.state='cancelled';d.endedAt=at;d.outcome=reason;incident.timeline.push({id:'deadline-cancelled:'+d.id,actor,at,kind:'deadline-cancelled',text:deadlineEntryText(d)});}
  for(const d of incident.deadlines??[])if(d.obligation?.state==='recorded'){changed=true;d.obligation.state='stopped';d.obligation.outcome=reason;}
  if(changed)incident.revision++;
 }
@@ -27,7 +40,7 @@ export function deadlineCommand(state:State,actor:Member,input:any,at:string,con
   if(!Number.isSafeInteger(input.minutes)||input.minutes<0||input.minutes>1440)fail('Timeout must be off (0) or 1–1440 minutes');
   if((service.ackTimeouts?.length??0)>=100)fail('Timeout policy history capacity reached',429);
   (service.ackTimeouts??=[]).push({version:(previous?.version??0)+1,minutes:input.minutes,by:actor.id,at});
-  if(input.minutes===0)for(const i of state.incidents.filter(i=>i.service===service.id))for(const d of pending(i).filter(d=>d.kind==='acknowledgment-timeout')){d.state='cancelled';d.endedAt=at;d.outcome='Timeout policy turned off';i.revision++;i.timeline.push({id:'deadline-cancelled:'+d.id,actor:actor.id,at,kind:'deadline-cancelled',text:`${d.kind}: ${d.minutes} minutes, due ${d.dueAt}: ${d.outcome}; paging OFF`});}
+  if(input.minutes===0)for(const i of state.incidents.filter(i=>i.service===service.id))for(const d of pending(i).filter(d=>d.kind==='acknowledgment-timeout'||d.kind==='initial-acknowledgment')){d.state='cancelled';d.endedAt=at;d.outcome='Timeout policy turned off';i.revision++;i.timeline.push({id:'deadline-cancelled:'+d.id,actor:actor.id,at,kind:'deadline-cancelled',text:deadlineEntryText(d)});}
   state.audit.push({id:crypto.randomUUID(),actor:actor.id,at,kind:input.type,text:`Acknowledgment timeout ${service.id}, version ${(previous?.version??0)+1}: ${input.minutes===0?'off':input.minutes+' minutes'}`});return service;
  }
  const incident=state.incidents.find(i=>i.id===input.incident);if(!incident)fail('Unknown incident',404);
@@ -38,6 +51,8 @@ export function deadlineCommand(state:State,actor:Member,input:any,at:string,con
 }
 export function afterDeadlineCommand(state:State,incident:Incident,actor:Member,input:any,at:string,context:PolicyContext) {
  if(input.type==='bulk-acknowledge'||input.type==='transition'&&input.state==='acknowledged') {
+  // A late acknowledgment must not erase a miss just because cron has not run yet.
+  for(const d of pending(incident).filter(d=>d.kind==='initial-acknowledgment'))fireDeadline(state,incident,d,at,context);
   cancelDeadlines(incident,at,'Replaced by new acknowledgment',actor.id);
   const minutes=state.services.find(s=>s.id===incident.service)?.ackTimeouts?.at(-1)?.minutes??0;
   if(minutes)record(state,incident,actor,'acknowledgment-timeout',minutes,at,context);
@@ -50,10 +65,18 @@ export function stopRecoveredDeadlines(state:State,at:string) {
 export function fireDeadline(state:State,incident:Incident,d:IncidentDeadline,at:string,context:PolicyContext) {
  if(d.state!=='pending'||Date.parse(d.dueAt)>Date.parse(at))return false;
  const eligible=context.levels?.[incident.service]??context.eligible[incident.service]??[],assignee=incident.assignee;
- const target=d.kind==='snooze'&&assignee&&eligible.includes(assignee)?assignee:d.level===null?undefined:eligible[d.level];
+ const target=d.kind==='initial-acknowledgment'?context.acknowledgmentTargets?.[d.id]??undefined:d.kind==='snooze'&&assignee&&eligible.includes(assignee)?assignee:d.level===null?undefined:eligible[d.level];
+ if(d.kind==='initial-acknowledgment') {
+  d.state='fired';d.endedAt=at;
+  d.outcome=target?'Not acknowledged in time. Response obligation recorded; paging is off':'Not acknowledged in time. No one was on call; assign a responder. Paging is off';
+  if(target)d.obligation={id:'deadline-obligation:'+d.id,state:'recorded',paging:'off',automatic:false,label:'no sender',target:{kind:'user',id:target},urgency:incident.urgency??'high',creator:d.actor,at:d.dueAt,outcome:d.outcome};
+  incident.revision++;
+  incident.timeline.push({id:'deadline-fired:'+d.id,actor:deadlineActor,at,kind:'deadline-fired',text:deadlineEntryText(d)});
+  return true;
+ }
  d.state='fired';d.endedAt=at;d.outcome=target?'Re-trigger obligation recorded; no sender':'No eligible on-call target at the recorded level; operator action required';
  if(target)d.obligation={id:'deadline-obligation:'+d.id,state:'recorded',paging:'off',automatic:false,label:'no sender',target:{kind:'user',id:target},urgency:incident.urgency??'high',creator:d.actor,at,outcome:d.kind==='acknowledgment-timeout'?'Restart at level one recorded; no sender':'Snooze expired; re-trigger recorded; no sender'};
  incident.state='declared';incident.commander=null;incident.assignee=target??null;incident.revision++;
- incident.timeline.push({id:'deadline-fired:'+d.id,actor:deadlineActor,at,kind:'deadline-fired',text:`${d.kind}: ${d.minutes} minutes, due ${d.dueAt}: ${d.outcome}; paging OFF`});return true;
+ incident.timeline.push({id:'deadline-fired:'+d.id,actor:deadlineActor,at,kind:'deadline-fired',text:deadlineEntryText(d)});return true;
 }
 export function holdDeadlines(state:State) {for(const i of state.incidents)for(const d of i.deadlines??[]){if(d.state==='pending'){d.state='held';d.outcome='Restored inactive; deadline will not resume';}if(d.obligation)d.obligation.state='stopped';}}
