@@ -259,8 +259,8 @@ try{
  page.off('request',recordLostResultApproval);
  assert.deepEqual(submitEvidenceRequests,[],'The browser never fetches submitted evidence');
  await context.unroute('https://evidence.example.invalid/**',stopEvidence);
- // Evidence policy completes the existing P2 follow-up. Its saved material
- // and one sponsor approval are observed in a separate emitted installation.
+ // Observe the original P2 write and linked read beside the held revision
+ // corrections in the signed-in sponsor and review pages.
  async function connectEvidenceBrowser(evidenceRuntime,{retained=false}={}){
   const evidenceContext=await browser.newContext({baseURL:evidenceRuntime.origin,viewport:{width:1440,height:1000}});
   await evidenceContext.addCookies(evidenceRuntime.cookie.split('; ').map(pair=>{const at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:evidenceRuntime.origin,httpOnly:true,sameSite:'Lax'}}));
@@ -270,11 +270,14 @@ try{
    const path=new URL(request.url()).pathname;
    if(request.method()==='POST'&&path.endsWith('/approve'))approvalPosts.push({path,body:request.postDataJSON()});
   });
+  const proofLabel=revisionCase=>retained?'follow-up-evidence-retained':
+   revisionCase?'follow-up-evidence-'+revisionCase+'-revision':'follow-up-evidence';
+  let observedApprovalCount=0;
   return {
-   async approve({handle,saved,owner,kind='write'}){
+   async approve({handle,saved,owner,kind='write',revisionCase}){
     const before=approvalPosts.length;
     const approvalPath=new URL(handle.url).pathname;
-    if(!retained)await capture(kind==='read'?'follow-up-evidence-read-pending':'follow-up-evidence-pending',approvalPath,async()=>{
+    if(!retained)await capture(kind==='read'?'follow-up-evidence-read-pending':proofLabel(revisionCase)+'-pending',approvalPath,async()=>{
      await evidencePage.locator('[data-approval-state="pending"]').waitFor();
      await evidencePage.getByText(owner.name,{exact:false}).first().waitFor();
     },evidenceRuntime,evidencePage);
@@ -287,7 +290,8 @@ try{
      body:{revision:saved.revision,summary_sha256:saved.summary_sha256}}],
      'The named sponsor approves this exact saved decision once');
    },
-   async observe({mode,incident,action,handle,approved,linkedIncident}){
+   async observe({mode,revisionCase,incident,action,handle,approved,linkedIncident}){
+    if(revisionCase&&mode==='autonomous')return;
     const response=await evidenceRuntime.http('/api/reviews/'+incident.id+'/material');assert.equal(response.status,200);
     const material=await response.json();
     assert.deepEqual(material.followups,incident.actions,'Protected review material agrees with the stored MCP result');
@@ -302,7 +306,7 @@ try{
     }
     const state=await (await evidenceRuntime.http('/api/state')).json();
     const actionOwner=state.members.find(row=>row.id===action.owner);assert.ok(actionOwner);
-    const label=retained?'follow-up-evidence-retained':'follow-up-evidence';
+    const label=proofLabel(revisionCase);
     await capture(label+'-'+mode,'/reviews/'+incident.id,async()=>{
      await evidencePage.getByRole('dialog',{name:incident.title,exact:true}).waitFor();
      const followups=evidencePage.locator('.review-material-body details').filter({has:evidencePage.locator('summary').filter({hasText:/^Follow-ups \(/})});
@@ -334,10 +338,11 @@ try{
       }
      }
     },evidenceRuntime,evidencePage);
-    assert.equal(approvalPosts.length,mode==='held'?(linkedIncident?2:1):0,
+    if(mode==='held')observedApprovalCount+=linkedIncident?2:1;
+    assert.equal(approvalPosts.length,observedApprovalCount,
      'The held write and linked read each use their own approval without repeats');
     assert.deepEqual(evidenceRequests,[],'Saved material and approval never fetch the evidence URL');
-    console.log('PROBE BASE-AGENT-012 '+(retained?'aged ':'')+'evidence completion browser '+mode+': protected review material equals MCP result; saved P2 Complete and Completes with evidence plus retained evidence link at 1440 and 390; original sponsor approval '+(handle?'executed once':'not needed')+'; zero evidence requests');
+    console.log('PROBE BASE-AGENT-012 '+(retained?'aged ':'')+'evidence completion browser '+mode+(revisionCase?' '+revisionCase+' revision correction':'')+': protected review material equals MCP result; saved P2 Complete and Completes with evidence plus retained evidence link at 1440 and 390; original sponsor approval '+(handle?'executed once':'not needed')+'; zero evidence requests');
    },
    close:()=>evidenceContext.close(),
   };

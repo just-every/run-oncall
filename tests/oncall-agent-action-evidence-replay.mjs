@@ -22,10 +22,10 @@ export async function actionEvidenceReplay(runtime,{approve,observe=async()=>{}}
    for(const family of ['workspace','paging','handoff'])assert.equal(row[family+'_before'],row[family+'_after']);
   }
  }
- async function approveSaved({handle,saved,owner,mode,kind}){
+ async function approveSaved({handle,saved,owner,mode,kind,revisionCase}){
   const url=new URL(handle.url);
   assert.equal(url.origin,runtime.origin);assert.equal(url.pathname,'/agents/approvals/'+handle.id);
-  if(approve)await approve({handle,saved,owner,mode,kind});
+  if(approve)await approve({handle,saved,owner,mode,kind,revisionCase});
   else{
    const page=await http(url.pathname);assert.equal(page.status,200);await page.body.cancel();
    const response=await http('/agents/api/approvals/'+handle.id+'/approve',{
@@ -33,12 +33,13 @@ export async function actionEvidenceReplay(runtime,{approve,observe=async()=>{}}
    assert.equal(response.status,200);assert.equal((await response.json()).approval.state,'executed');
   }
  }
- for(const [mode,policy] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
-  assert.equal((await runtime.adopt(policy)).status,200);
-  let incident=await command({type:'declare',service:'agent-service',title:'Synthetic evidence completion replay '+mode,
+ async function exercise(mode,revisionCase){
+  const label=revisionCase?mode+' '+revisionCase+' revision':mode;
+  let incident=await command({type:'declare',service:'agent-service',title:'Synthetic evidence completion replay '+label,
    summary:'Ordinary coordination without protected evidence',severity:'warning',alerts:[]});
   incident=await command({type:'action',incident:incident.id,revision:incident.revision,title:'Synthetic companion follow-up',
    owner:owner.id,due:'2027-04-13',priority:'P3',completionPolicy:'human-review'});
+  const staleRevision=incident.revision;
   incident=await command({type:'action',incident:incident.id,revision:incident.revision,title:'Synthetic evidence policy follow-up',
    owner:responder.id,escalationRecipient:owner.id,due:'2027-04-12',priority:'P2',completionPolicy:'evidence'});
   const action=incident.actions.at(-1);
@@ -49,7 +50,40 @@ export async function actionEvidenceReplay(runtime,{approve,observe=async()=>{}}
   assert.equal(action.done,false);assert.equal(action.evidence,'');assert.equal(action.submission,undefined);assert.equal(action.accepted,undefined);
   const args={incident:incident.id,revision:incident.revision,action:action.id,
    evidence:'https://evidence.example.invalid/synthetic-oncall-evidence-original',idempotency_key:randomUUID()};
-  const before=await snapshot(),priorAudit=await audits();
+  const before=await snapshot();
+  if(revisionCase){
+   const staleArgs={...args,idempotency_key:randomUUID()};
+   if(revisionCase==='optional')staleArgs.expected_revision=staleRevision;
+   else staleArgs.revision=staleRevision;
+   assert.notEqual(staleArgs.idempotency_key,args.idempotency_key);
+   assert.notEqual(before.application.revision,incident.revision,'The authorized parent revision differs from the workspace revision');
+   assert.ok(before.records.agent_door_calls.some(row=>row.agent===context.agentId&&row.outcome),'The fixture already has an original outcome to preserve');
+   const auditBefore=await audits(),permanentBefore=await permanent();
+   const refused=await tool(name,staleArgs);
+   const expected={code:'revision_conflict',current_revision:incident.revision};
+   assert.equal(refused.status,200);assert.equal(refused.body.error,undefined);
+   assert.equal(refused.result.isError,true);
+   assert.deepEqual(refused.result._meta['com.runeditrun/error'],expected);
+   assert.equal(refused.result.content.length,1);
+   assert.equal(refused.result.content[0].type,'text');
+   assert.deepEqual(JSON.parse(refused.result.content[0].text),expected);
+   assert.equal(refused.result.structuredContent,undefined);
+   assert.equal(refused.result._meta['com.runeditrun/approval'],undefined);
+   assert.equal(refused.result._meta['com.runeditrun/review'],undefined);
+   assert.deepEqual(await snapshot(),before,'Stale submission preserves native records, revisions, timeline, state-changing audit, calls and outcomes, approvals, reviews and paging');
+   const afterAudit=await audits();
+   assert.deepEqual(afterAudit.slice(0,-1),auditBefore);assert.equal(afterAudit.length,auditBefore.length+1);
+   const refusal=JSON.parse(afterAudit.at(-1).row);
+   assert.equal(refusal.tool,name);assert.equal(refusal.outcome,'refused');assert.equal(refusal.code,'revision_conflict');
+   assert.equal(refusal.agent.id,context.agentId);assert.equal(refusal.sponsor.id,owner.id);
+   assert.equal(refusal.idempotency_key,staleArgs.idempotency_key);assert.equal(refusal.approval,null);assert.equal(refusal.review,null);
+   await bookkeeping(permanentBefore);
+   assert.deepEqual(await runtime.outboundRequests(),[],'Revision refusal makes no outbound request');
+   const currentRevision=refused.result._meta['com.runeditrun/error'].current_revision;
+   args.revision=currentRevision;
+   if(revisionCase==='optional')args.expected_revision=currentRevision;
+  }
+  const priorAudit=await audits();
   const first=await tool(name,args);
   assert.equal(first.status,200);assert.equal(first.body.error,undefined);
   assert.deepEqual(first.decision.classes.map(({class:cls,facts})=>({class:cls,facts})),classes);
@@ -72,7 +106,7 @@ export async function actionEvidenceReplay(runtime,{approve,observe=async()=>{}}
    assert.deepEqual(savedApproval.summary.nativeTarget,{kind:'incident',id:incident.id});
    assert.ok(savedApproval.summary.items.includes('Revision '+args.revision));
    assert.ok(savedApproval.summary.items.includes('evidence: '+args.evidence));
-   await approveSaved({handle,saved:savedApproval,owner,mode,kind:'write'});
+   await approveSaved({handle,saved:savedApproval,owner,mode,kind:'write',revisionCase});
   }else assert.equal(first.result.isError,false);
   const once=await snapshot();
   const retained=once.records.agent_door_calls.filter(row=>row.agent===context.agentId&&row.key===args.idempotency_key);
@@ -122,6 +156,14 @@ export async function actionEvidenceReplay(runtime,{approve,observe=async()=>{}}
   if(mode==='held'){
    const execution=JSON.parse(committedAudit.find(row=>row.id===saved.execution_id).row);
    assert.equal(execution.outcome,'done');assert.deepEqual(execution.approval,{id:handle.id,by:[owner.id]});
+  }
+  if(revisionCase){
+   await observe({mode,revisionCase,incident:result,action:result.actions.find(row=>row.id===action.id),handle,saved:savedApproval});
+   assert.deepEqual(await snapshot(),once,'Reading the saved follow-up leaves the retained outcome unchanged');
+   assert.deepEqual(await runtime.outboundRequests(),[],'Submission, approval and readback never fetch evidence or send requests');
+   const input=revisionCase==='optional'?'current required revision with stale expected_revision':'stale required revision with expected_revision absent';
+   console.log('PROBE BASE-AGENT-012 acceptance 4 '+label+' oncall.actions.submit: '+input+' -> isError revision_conflict, exact parent current_revision '+incident.revision+' in metadata and text, no private result or native effect; fresh corrected call completes one P2 follow-up with agent submission and acceptance attribution '+(mode==='held'?'after exact sponsor approval':'autonomously')+'; zero outbound requests');
+   return;
   }
   async function replay(previous){
    const auditBefore=await audits(),permanentBefore=await permanent();
@@ -228,6 +270,12 @@ export async function actionEvidenceReplay(runtime,{approve,observe=async()=>{}}
   console.log('PROBE BASE-AGENT-003 4 '+mode+': first completed P2 evidence submission link -> full incident matches completed MCP write and protected native state; '+(mode==='held'?'separate sponsor approval withholds content until exact authorization':'autonomous read without approval')+'; original write outcome and receipt, native records, revisions, mutation audit and paging preserved; zero outbound requests');
   assert.deepEqual(await runtime.outboundRequests(),[]);
   console.log('PROBE BASE-AGENT-012 acceptances 1 and 3 '+mode+' oncall.actions.submit: one owned due-dated P2 evidence-policy completion, agent submission and accepted attribution, one complete timeline entry and native revision and actions.submit audit commit; standard plus sensitive; immediate exact replay with new RPC id equals stored outcome; changed evidence with original key and revision -> isError idempotency_conflict in metadata and text without private result; original arguments replay unchanged again with original executed approval and receipt where present; complete native custody unchanged apart from refusal and linked replay audit and capacity bookkeeping; zero outbound requests and no evidence fetch');
+ }
+ for(const [mode,policy] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
+  assert.equal((await runtime.adopt(policy)).status,200);
+  await exercise(mode);
+  await exercise(mode,'optional');
+  await exercise(mode,'required');
  }
  assert.equal((await runtime.adopt()).status,200);
 }
