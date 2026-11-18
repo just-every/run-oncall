@@ -528,3 +528,153 @@ export async function declareFromAlertParity(runtime, declareAsPerson) {
   assert.equal((await adopt()).status, 200);
   return pairs;
 }
+
+export async function acknowledgeParity(runtime, responder, acknowledgeAsPerson) {
+  const { db, http, tool, adopt, context } = runtime;
+  const { autonomousPolicy, heldPolicy } = await import('../src/modules/agent-door/conformance/crypto.mjs');
+  const fixture = context.surface.journey.find(row => row.id === 'acknowledge');
+  const rows = async (sql, ...args) => (await db.prepare(sql).bind(...args).all()).results;
+  async function json(path, input) {
+    const response = await http(path, input);
+    assert.equal(response.status, 200, path);
+    return response.json();
+  }
+  const state = () => json('/api/state');
+  const audit = () => rows('SELECT * FROM oc_admin_audit ORDER BY ordinal');
+  const reviews = () => rows('SELECT * FROM agent_door_reviews ORDER BY id');
+  async function paging() {
+    const { workspaceRevision, ...custody } = await json('/api/paging/state');
+    return custody;
+  }
+  async function label(kind, id) {
+    const [identity] = await rows('SELECT label FROM oc_audit_identities WHERE kind=? AND entity_id=?', kind, id);
+    assert.ok(identity, 'Permanent audit retains ' + kind + ' attribution');
+    return identity.label;
+  }
+  function oneTransition(before, after, revision) {
+    assert.deepEqual(after.slice(0, before.length), before, 'Prior permanent audit is immutable');
+    const events = after.slice(before.length).filter(row =>
+      row.workspace_before !== row.workspace_after || ['command.transition', 'incidents.acknowledge'].includes(row.kind));
+    assert.equal(events.length, 1, 'One acknowledgment appends one permanent native event');
+    const [event] = events;
+    assert.equal(event.kind, 'command.transition');
+    assert.equal(event.outcome, 'accepted');
+    assert.equal(event.workspace_before, revision);
+    assert.equal(event.workspace_after, revision + 1);
+    return event;
+  }
+
+  const sponsor = (await json('/api/workspace')).member;
+  assert.ok(responder.active);
+  assert.notEqual(responder.id, sponsor.id);
+  const service = 'synthetic-oncall-acknowledgment';
+  await json('/api/command', { type: 'service', id: service, name: 'Synthetic acknowledgment service',
+    environment: 'production', owner: sponsor.id, runbook: ['Check coordination status'], pager: '' });
+  const summary = 'Acknowledge';
+  const pairs = [];
+  for (const [mode, policy, disposition] of [
+    ['autonomous', autonomousPolicy(), 'autonomous'],
+    ['held', heldPolicy(), 'review'],
+  ]) {
+    assert.equal((await adopt(policy)).status, 200);
+    const declaration = { type: 'declare', service, severity: 'warning', alerts: [],
+      title: 'Synthetic ordinary acknowledgment under ' + mode + ' policy', summary: 'Coordinate an ordinary incident' };
+    const humanBefore = await json('/api/command', declaration);
+    const agentBefore = await json('/api/command', declaration);
+    assert.notEqual(humanBefore.id, agentBefore.id);
+    for (const incident of [humanBefore, agentBefore]) {
+      assert.equal(incident.state, 'declared');
+      assert.ok(!incident.commander);
+      assert.ok(!incident.assignee);
+      assert.ok(!incident.recovery);
+      assert.deepEqual(incident.alerts, []);
+      assert.deepEqual(incident.actions, []);
+      assert.deepEqual(incident.responderRequests ?? [], []);
+    }
+
+    const before = await state(), auditBefore = await audit(), pagingBefore = await paging(), reviewsBefore = await reviews();
+    assert.equal(pagingBefore.paging, 'OFF');
+    assert.ok((before.apiOutbox ?? []).every(row => row.service !== service), 'The acknowledgment service starts with no pending delivery');
+    const human = await acknowledgeAsPerson(humanBefore, summary);
+    const humanState = await state(), humanAudit = await audit();
+    assert.deepEqual(await reviews(), reviewsBefore, 'The signed-in acknowledgment opens no review');
+    assert.deepEqual(await paging(), pagingBefore);
+
+    const reply = await tool(fixture.tool, {
+      ...fixture.args, incident: agentBefore.id, revision: agentBefore.revision, member: responder.id, summary,
+      idempotency_key: randomUUID(),
+    }, { scope: 'incidents:write' });
+    assert.equal(reply.status, 200);
+    assert.equal(reply.result?.isError, false, JSON.stringify(reply.body));
+    assert.equal(reply.decision.disposition, disposition);
+    assert.deepEqual(reply.decision.classes.map(row => row.class), ['standard']);
+    const agent = reply.result.structuredContent;
+    const after = await state();
+    for (const [saved, prior, stateBefore, stateAfter] of [
+      [human, humanBefore, before, humanState],
+      [agent, agentBefore, humanState, after],
+    ]) {
+      assert.deepEqual(stateAfter, {
+        ...stateBefore, revision: stateBefore.revision + 1,
+        incidents: stateBefore.incidents.map(row => row.id === prior.id ? saved : row),
+      }, 'Protected state changes only the target incident and workspace revision');
+      const [entry] = saved.timeline.slice(prior.timeline.length);
+      assert.deepEqual(saved, {
+        ...prior, state: 'acknowledged', commander: responder.id, assignee: responder.id, revision: prior.revision + 1,
+        timeline: [...prior.timeline, entry],
+      }, 'Acknowledgment changes lifecycle, responsibility and revision once');
+      assert.equal(entry.kind, 'transition');
+      assert.equal(entry.text, 'declared → acknowledged: ' + summary);
+    }
+    const humanEntry = human.timeline.at(-1), agentEntry = agent.timeline.at(-1);
+    assert.equal(humanEntry.actor, responder.id);
+    assert.equal(humanEntry.metadata?.agent, undefined);
+    assert.deepEqual(humanEntry.lifecycle, { from: 'declared', to: 'acknowledged' });
+    assert.equal(agentEntry.actor, context.agentId);
+    assert.deepEqual(agentEntry.lifecycle, { ...humanEntry.lifecycle, member: responder.id });
+    const attribution = agentEntry.metadata.agent;
+    assert.equal(attribution.agent.id, context.agentId);
+    assert.deepEqual(attribution.for, { id: sponsor.id, name: sponsor.name });
+    assert.equal(attribution.label, 'Responder assistant for ' + sponsor.name);
+
+    const humanEvent = oneTransition(auditBefore, humanAudit, before.revision);
+    const agentEvent = oneTransition(humanAudit, await audit(), humanState.revision);
+    assert.equal(humanEvent.actor, await label('member', responder.id));
+    assert.equal(humanEvent.subject, await label('entity', human.id));
+    assert.equal(humanEvent.named_member, null);
+    assert.equal(agentEvent.actor, await label('agent', context.agentId));
+    assert.notEqual(agentEvent.actor, humanEvent.actor);
+    assert.equal(agentEvent.subject, await label('entity', agent.id));
+    assert.equal(agentEvent.source, await label('member', sponsor.id), 'The permanent agent event retains its sponsor');
+    assert.notEqual(agentEvent.source, humanEvent.actor);
+    assert.equal(agentEvent.named_member, humanEvent.actor, 'The permanent agent event retains the explicit named member');
+    const [attempt] = await rows('SELECT row FROM agent_door_audit WHERE id=?', reply.decision.id);
+    const decision = JSON.parse(attempt.row);
+    assert.equal(decision.tool, fixture.tool);
+    assert.equal(decision.outcome, 'done');
+    assert.deepEqual(decision.resource, { kind: 'incident', id: agent.id });
+    assert.equal(decision.agent.id, context.agentId);
+    assert.equal(decision.sponsor.id, sponsor.id);
+
+    const review = reply.result._meta['com.runeditrun/review'];
+    const afterReviews = await reviews();
+    const known = new Set(reviewsBefore.map(row => row.id));
+    assert.deepEqual(afterReviews.filter(row => known.has(row.id)), reviewsBefore);
+    const added = afterReviews.filter(row => !known.has(row.id));
+    if (mode === 'held') {
+      assert.equal(added.length, 1);
+      assert.equal(added[0].id, review.id);
+      assert.equal(added[0].state, 'open');
+      assert.equal(JSON.parse(added[0].saved).decision_id, reply.decision.id);
+    } else {
+      assert.deepEqual(added, []);
+      assert.equal(review, undefined);
+    }
+    assert.deepEqual(await paging(), pagingBefore, 'Acknowledgment preserves paging custody');
+    assert.deepEqual(await runtime.outboundRequests(), []);
+    pairs.push({ mode, human, agent, humanLabel: responder.name, agentLabel: attribution.label });
+    console.log('PROBE BASE-AGENT-002 5 acknowledgment ' + mode + ': equivalent ordinary incidents -> acknowledged with matching Lead and Assignee, incident and workspace revisions +1 per action, one command.transition per door, distinct attribution and explicit agent named-member history, ' + added.length + ' open reviews, paging OFF and zero outbound requests');
+  }
+  assert.equal((await adopt()).status, 200);
+  return pairs;
+}

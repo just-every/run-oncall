@@ -6,7 +6,7 @@ import {lexer} from 'marked';
 import {agentRuntime,agentEffectSnapshot,pauseMatrix,policyAdoption,consentRevocationMatrix} from './agent-door-runtime.mjs';
 import {resourceJourney} from './oncall-agent-resources.mjs';
 import {resourceParity} from './oncall-agent-resource-parity.mjs';
-import {declareFromAlertParity,recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
+import {declareFromAlertParity,acknowledgeParity,recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
 import {manualPageClassification,deadlineClassification} from './oncall-agent-live.mjs';
 import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
@@ -654,6 +654,12 @@ try{
  await pauseMatrix(runtime);
  await declareFromAlertParity(runtime,async input=>{
   const response=await http('/api/command',{type:'declare',...input});
+  assert.equal(response.status,200);
+  return response.json();
+ });
+ const acknowledgmentResponder=await runtime.memberSession('Synthetic acknowledgment responder','responder');
+ await acknowledgeParity(runtime,acknowledgmentResponder.member,async (incident,summary)=>{
+  const response=await acknowledgmentResponder.http('/api/command',{type:'transition',state:'acknowledged',incident:incident.id,revision:incident.revision,summary});
   assert.equal(response.status,200);
   return response.json();
  });
