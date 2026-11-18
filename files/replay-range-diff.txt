@@ -1,0 +1,65 @@
+1:  e45028c ! 1:  22dfa7c Record and show missed initial incident acknowledgments
+    @@ Commit message
+     
+      ## docs/getting-started.md ##
+     @@ docs/getting-started.md: Local setup requires `MAIL_PROVIDER=development` for the no-email local owner en
+    - `GET /health` includes `buildVersion` from the compiled package version and `deployment.sourceSha` from the deploy binding, falling back to the checkout commit captured when Vite starts or builds. The source is null only if neither is known. Fingerprint and deployment version bindings keep their existing meaning; storage failures still return 503 with the same build identity, and health does not prove pager coverage. These fields contain public build identity only.
+    - 
+      — Run Edit Run fleet, 2026-11-17
+    + 
+    + Choose the name your team sees when setup asks **What should we call this?** You can change it later in **Settings → General**. The saved name appears in the header, browser tab and both sign-in pages; without a saved name, they show Oncall. (sd, 17 November 2026.)
+     +
+     +When a service has an acknowledgment timeout and its response policy declares an incident, the clock starts when the incident is declared. If nobody acknowledges in time, the incident, its linked alert, On call and Reviews retain the missed time and who was on call at that deadline. A later acknowledgment keeps the missed response visible for review. Expiry records a response obligation only; paging stays off, so continue using your existing pager. — Run Edit Run fleet, 17 November 2026.
+     
+    @@ sources.lock.json
+            "executable": false
+          },
+          "docs/getting-started.md": {
+    --      "sha256": "f89cd6643a8b7473ab05521033113ba6f6e313fadc7fd43cc84a3428ca70cd92",
+    -+      "sha256": "dcdfd2b366b53b13c6ef650eb8d68ace8c0ceb2dc0f250eb018217ec1b8e02cb",
+    +-      "sha256": "14b8e4ef5c62bd0c66e26520c016a44332b2f858e86ee920448c8a57eee5f01a",
+    ++      "sha256": "78b32f8260c2a88deca880130410735015498fcfb8a44ada90930cd97b6f422d",
+            "executable": false
+          },
+          "docs/incidents.md": {
+    @@ sources.lock.json
+            "executable": false
+          },
+          "src/alerts/AlertPage.tsx": {
+    --      "sha256": "3baee96dd19fe429b596defd84a3b96307b6ad9c34602283a9255eee8acf8961",
+    -+      "sha256": "410e5475f212c24f4bde6ac28fc95332d57ce2c14c619913eb085555cef0863a",
+    +-      "sha256": "de749f99c7438354efb09390bad6b5e75a5d624044b6c2aeabfc630d0aa78cd2",
+    ++      "sha256": "2a9b690d6c06cdfe3b4d6fc50498b82fcb5d379d5464f316bc061b97eb460c7b",
+            "executable": false
+          },
+          "src/alerts/alerts.css": {
+    @@ sources.lock.json
+            "executable": false
+          },
+          "src/on-call/OnCallHome.tsx": {
+    --      "sha256": "6f87a69cb57e070e7729cfb338464d335aa75d6f56c744c0c77b05d0861fb422",
+    -+      "sha256": "ed419c06c44338b2cc2e18e516a81a747020ab2725b0781d8b721249b2aaacee",
+    +-      "sha256": "c84d083e84967330e4e0377f6dc097c6eb262df9b21b8bb5100d707e0ba2204c",
+    ++      "sha256": "d3b38ce5e3e47539441728d840c4d09a86c54a4556c278643cba22bfaccbb4c7",
+            "executable": false
+          },
+          "src/on-call/OnCallScreen.tsx": {
+    @@ sources.lock.json
+          },
+          "src/reviews/time.ts": {
+     @@
+    -       "sha256": "1d8d831b3bf492a2e98733f329eb3298bf391e378c0849a47d63dbbc4b843afe",
+    +       "sha256": "287efd9dd54bc174df654dd02cf31775038b5a0e3116fd6a172bf20cde907dbf",
+            "executable": false
+          },
+     +    "tests/missed-ack-flow.mjs": {
+    @@ src/on-call/OnCallHome.tsx
+      import {Link} from '@tanstack/react-router';
+      import type {Member, State} from '../family/response-operations/domain';
+     @@ src/on-call/OnCallHome.tsx: export function OnCallHome({state, actor, value}: {state: State; actor: Member;
+    -   const canCreate = state.services.some(service => teamCoverage(state, actor, service.id));
+        return <div ref={tooltips} className="oc-oncall"><header className="oc-page-head"><h1>On call</h1>{canCreate && <Link className="oc-button oc-primary" to={'/on-call/new' as any}>New rota</Link>}</header>
+    +     <PagerNotice/>
+          <OpenLine state={state}/>
+     +    <MissedAcknowledgments state={state} openOnly/>
+          {value && !value.rotas.length && !value.unrostered.length && <section className="oc-card"><h2>Start with a service</h2>{actor.role==='admin'?<Link className="oc-button" to={'/settings/services' as any}>Add service</Link>:<p>A workspace administrator can add a service for your rota.</p>}</section>}

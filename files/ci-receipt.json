@@ -1,0 +1,78 @@
+{
+  "discovery": {
+    "runs": [
+      {
+        "conclusion": null,
+        "event": "push",
+        "head_sha": "22dfa7c115773cd59de20d1662183119b15638bb",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44201744450",
+        "id": 44201744450,
+        "name": "Verify",
+        "status": "in_progress"
+      }
+    ],
+    "utc": "Tue Nov 17 23:43:38 UTC 2026"
+  },
+  "first_attempt_gate_archive": {
+    "command_exit": 0,
+    "job_id": 134469575030,
+    "observed": "Final gate lacked successful build and shards after the build checkout timed out.",
+    "utc": "Wed Nov 18 00:18:38 UTC 2026"
+  },
+  "first_attempt_jobs": {
+    "file": "ci-first-attempt-jobs.json",
+    "utc": "Wed Nov 18 00:13:38 UTC 2026"
+  },
+  "first_attempt_polls": [
+    {
+      "conclusion": null,
+      "head_sha": "22dfa7c115773cd59de20d1662183119b15638bb",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44201744450",
+      "status": "in_progress",
+      "utc": "Tue Nov 17 23:48:38 UTC 2026"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "22dfa7c115773cd59de20d1662183119b15638bb",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44201744450",
+      "status": "in_progress",
+      "utc": "Tue Nov 17 23:53:38 UTC 2026"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "22dfa7c115773cd59de20d1662183119b15638bb",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44201744450",
+      "status": "in_progress",
+      "utc": "Tue Nov 17 23:58:38 UTC 2026"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "22dfa7c115773cd59de20d1662183119b15638bb",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44201744450",
+      "status": "in_progress",
+      "utc": "Wed Nov 18 00:03:38 UTC 2026"
+    },
+    {
+      "conclusion": "cancelled",
+      "head_sha": "22dfa7c115773cd59de20d1662183119b15638bb",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44201744450",
+      "status": "completed",
+      "utc": "Wed Nov 18 00:08:38 UTC 2026"
+    }
+  ],
+  "github_calls": 10,
+  "repository": "just-every/run-oncall",
+  "rerun": {
+    "http_status": 201,
+    "job_id": 134457504545,
+    "utc": "Wed Nov 18 00:23:38 UTC 2026"
+  },
+  "rerun_terminal": {
+    "conclusion": "failure",
+    "head_sha": "22dfa7c115773cd59de20d1662183119b15638bb",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44201744450",
+    "status": "completed",
+    "utc": "Wed Nov 18 00:46:38 UTC 2026"
+  },
+  "run_id": 44201744450
+}
