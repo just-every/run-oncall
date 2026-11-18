@@ -67,6 +67,6 @@ export function SourceTest({ source, service, busy, run, events = [] }: { source
       </>}
       {source.kind === 'grafana' && <label className="field">Signing secret, if enabled<input type="password" autoComplete="off" value={signing} onChange={e => setSigning(e.target.value)} /></label>}
     </Form></details>
-    {source.kind === 'events' ? <RequestExample source={source.id.slice(source.id.indexOf(':') + 1)} service={service} mode={source.native?.authentication || 'bearer'} defaultOpen={!events.length} /> : <ProviderRequest key={source.id} source={source} service={service} />}
+    {source.kind === 'events' ? <RequestExample source={source.id.slice(source.id.indexOf(':') + 1)} service={service} mode={source.native?.authentication || 'bearer'} defaultOpen={!events.length} singleService={source.native?.scopes.length===1} /> : <ProviderRequest key={source.id} source={source} service={service} />}
   </>;
 }

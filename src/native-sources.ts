@@ -56,6 +56,16 @@ async function currentAdmin(c: any, deps: Dependencies) {
   return state;
 }
 
+async function namedSourceId(db: D1Database, state: State, name: string) {
+  const slug = name.normalize('NFC').replace(/[^\p{L}\p{M}\p{N}]+/gu, '-').replace(/^-|-$/g, '');
+  if (!slug) fail('Enter a source name with letters or numbers');
+  const existing = await db.prepare('SELECT id FROM sources').all<{id: string}>();
+  const taken = new Set([...existing.results.map(row => row.id), ...state.events.map(event => event.source)]);
+  let id = slug;
+  for (let suffix = 2; taken.has(id); suffix++) id = `${slug}-${suffix}`;
+  return id;
+}
+
 export function installNativeSources(api: any, deps: Dependencies) {
   api.get('/api/sources', async (c: any) => {
     await currentAdmin(c, deps);
@@ -66,13 +76,14 @@ export function installNativeSources(api: any, deps: Dependencies) {
   api.post('/api/sources', async (c: any) => {
     if (c.get('actor').role !== 'admin') fail('Admin required', 403);
     const input = await deps.body(c);
-    const id = text(input.id, 'source', 100);
-    auditIdentity(c.env.DB,{source:{kind:"source",id}});
-    setAuditSubject(c.env.DB,"source",id);
-    if (id.startsWith('intake:')||id.startsWith('email:')) fail('This source namespace is reserved for compatible integrations');
+    const create = input.name !== undefined;
     const key = text(input.key, 'source key', 200);
     if (key.length < 32) fail('Source key needs at least 32 characters');
     const state = await currentAdmin(c, deps);
+    const id = create ? await namedSourceId(c.env.DB, state, text(input.name, 'source name', 80)) : text(input.id, 'source', 100);
+    auditIdentity(c.env.DB,{source:{kind:"source",id}});
+    setAuditSubject(c.env.DB,"source",id);
+    if (id.startsWith('intake:')||id.startsWith('email:')) fail('This source namespace is reserved for compatible integrations');
     await requireNewSubjectIdentity(state,'native',id)
     if (!Array.isArray(input.scopes) || input.scopes.length === 0 || input.scopes.some((scope: string) => !state.services.some(s => s.id === scope)))
       fail('Choose explicit service scopes');
@@ -80,10 +91,11 @@ export function installNativeSources(api: any, deps: Dependencies) {
     const signed = input.mode === 'signed', authority = deps.guard(c);
     const keyCustody = await sealCredential(key, runtimeBindings(c.env).SESSION_SECRET, sourceCustody);
     const custody = signed ? keyCustody : null;
-    // One statement rotates the key: the previous key stops admitting events as this commits.
-    const saved = await c.env.DB.prepare(`INSERT INTO sources(id,digest,signing_custody,scopes,key_custody) SELECT ?,?,?,?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE revision=?) AND ${authority.sql} ON CONFLICT(id) DO UPDATE SET digest=excluded.digest,signing_custody=excluded.signing_custody,scopes=excluded.scopes,key_custody=excluded.key_custody`)
+    // A simultaneous named creation must never rotate another source's key.
+    const conflict = create ? 'DO NOTHING' : 'DO UPDATE SET digest=excluded.digest,signing_custody=excluded.signing_custody,scopes=excluded.scopes,key_custody=excluded.key_custody';
+    const saved = await c.env.DB.prepare(`INSERT INTO sources(id,digest,signing_custody,scopes,key_custody) SELECT ?,?,?,?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE revision=?) AND ${authority.sql} ON CONFLICT(id) ${conflict}`)
       .bind(id, await changeHash(key), custody, JSON.stringify(input.scopes), keyCustody, state.revision, ...authority.values).run();
-    if (saved.meta.changes !== 1) fail('Authority changed; reload', 409);
+    if (saved.meta.changes !== 1) fail(create ? 'The workspace or source name changed. Try creating the source again.' : 'Authority changed; reload', 409);
     return c.json({ id, authentication: signed ? 'signed' : 'bearer',
       credential: signed ? 'encrypted in this installation; never returned' : 'stored as digest; never returned', effect: 'intake only; no read access' });
   });

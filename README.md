@@ -35,17 +35,25 @@ Rotas, alerts and incident notes for your team. Works beside your pager.
 
 See the [Oncall Run page](https://run-oncall.com/run) for local launch and PATH help. Public source: [just-every/run-oncall](https://github.com/just-every/run-oncall). The `v0.5.15` release candidate includes hosted coordination. See [Getting started](docs/getting-started.md#host-for-your-team) for complete credentials and deployment instructions.
 
-One line installs the `rer` command, clones Oncall and starts it:
+You need Git on macOS, Linux or Windows with WSL2. The installer provides Node and pnpm.
 
-```sh
-curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-oncall
-```
+1. Install the `rer` command.
 
-Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-oncall` does the same.
+   ```sh
+   curl -fsSL https://runeditrun.com/install.sh | sh
+   ```
 
-macOS, Linux or Windows with WSL2. git is required; rer brings Node and pnpm.
+   The installer puts `rer` in `~/.local/bin`. If that directory is missing from your PATH, run `export PATH="$HOME/.local/bin:$PATH"` in Bash or Zsh. For a setup that also works in future terminals, or for a different shell, run `"$HOME/.local/bin/rer" cli path` and follow the printed instructions.
 
-To start it again later, run `cd run-oncall && rer dev`; after the `curl` installer, a terminal without `~/.local/bin` on PATH needs `export PATH="$HOME/.local/bin:$PATH"` first or it says `rer: command not found` (add that line to your shell startup file to keep it; `"$HOME/.local/bin/rer" cli path` shows the line for your shell). `rer dev` installs the application dependencies, creates a local development owner and prints a private `RER_OPEN` link that opens Oncall signed in. On first launch, confirm the read-only owner details at `/setup` (**Finish setup**); later launches open the app directly. To choose your own owner mailbox before the first launch, use [explicit setup](docs/getting-started.md#explicit-and-unattended-setup); unattended setup accepts a private answers file.
+2. Download and start Oncall.
+
+   ```sh
+   rer dev just-every/run-oncall
+   ```
+
+**Alternative for Node 22 or later.** Run `npx -y @runeditrun/rer dev just-every/run-oncall`.
+
+To start it again later, run `cd run-oncall && rer dev`. `rer dev` installs the application dependencies, creates a local development owner and prints a private link that opens Oncall signed in. On first launch, review the owner details and select **Finish setup**. Later launches open the app directly. To choose your own owner mailbox before the first launch, use [explicit setup](docs/getting-started.md#explicit-and-unattended-setup), which also accepts a private answers file for unattended runs.
 
 Open the printed link on this computer. `rer dev --as signed-out` selects the signed-out persona. The compatibility flag `rer dev --login` still opens automatic owner entry. Ordinary `/signin` email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. The app does not capture mail or print sign-in tokens. Stop the background server with `rer dev --stop` (Ctrl-C also stops a foreground run); stop preview with `rer preview --stop` before building, verifying or deploying. A running dev or preview server owns the local state, so even a deploy dry run refuses with exit 4 until it stops.
 
@@ -101,12 +109,14 @@ node scripts/rer.mjs dev --stop
 node scripts/rer.mjs preview --stop
 ```
 
-Then, from this checkout on `main`, update and start it with `npx`, which needs no separate install of `rer`:
+Then, from this checkout on `main`, update and start it with the installed `rer`.
 
 ```sh
 git pull --ff-only
-npx -y @runeditrun/rer dev
+rer dev
 ```
+
+**Alternative for Node 22 or later.** After pulling, run `npx -y @runeditrun/rer dev`.
 
 The update applies Oncall's additive migrations. Your data, owner and password accounts are kept; people who sign in with a workspace password sign in once more after updating to 0.3.0. Do not reset to upgrade.
 

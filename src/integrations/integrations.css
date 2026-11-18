@@ -17,6 +17,7 @@
 .integration-checkbox { display: flex; gap: 12px; align-items: center; min-height: 44px; }
 .integration-checkbox input { flex: 0 0 auto; }
 .integrations .intake-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.integrations .ingress-url { overflow-wrap: anywhere; }
 .one-time-secret { min-width: 0; }
 .integrations .integration-group h3 { font-size: 13px; line-height: 1.3; margin: 5px 0 4px; color: var(--oc-muted); }
 .integrations .integration-group .integration-rows { margin: 0; }
