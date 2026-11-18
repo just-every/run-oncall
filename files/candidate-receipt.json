@@ -1,0 +1,235 @@
+{
+  "tag": "sd-oncall-c-f280",
+  "branch": "cloud/sd-oncall-c-f280",
+  "head": "e8f3230211887a68c606ae64402b2f8ae027c021",
+  "main": "93b25a01d22f5b16bf679c6f4008f0e444980196",
+  "save": "43fe407f735957c30ca07e31e4cf4a2275462f3d",
+  "productAdvertised": true,
+  "previewAcceptance": "OC-070 7",
+  "claim": "PARTIAL",
+  "countsBefore": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "countsAfter": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "checkedBlobs": {
+    "src/email/EmailActivity.tsx": "203ad9ade35ff271042013991790aebe99f01411",
+    "src/email/EmailWorkspace.tsx": "e15e427990e4a5f5be4fd35779c08230b58f0988",
+    "src/email/email.css": "f5c05814affc114aadc8c65c4a932747f9d888bb",
+    "src/email/types.ts": "f6c159d9c9e5a387528af19e080e59176f9e6da8",
+    "tests/product-browser.mjs": "ae7e5dd37344cebc579635176356accf5adebbd3",
+    "tests/product-browser-journey.mjs": "b65fad7684daee36397484905f2f9e0851b79359",
+    "tests/routing.mjs": "e00a916b2d447b22da77440a4540bb526cde15e6",
+    "tests/email-fixtures.mjs": "10c9b4b75293a441a46570768917327aa809e88a"
+  },
+  "checks": {
+    "setup": {
+      "command": "rer setup, non-interactive",
+      "exit": 0
+    },
+    "build": {
+      "command": "rer build",
+      "exit": 0
+    },
+    "browser": {
+      "command": "ONCALL_PRODUCT_JOURNEY=imported-email node tests/product-browser.mjs",
+      "exit": 0
+    },
+    "routing": {
+      "command": "node tests/routing.mjs",
+      "exit": 0
+    },
+    "intake": {
+      "command": "node tests/intake.mjs",
+      "exit": 0
+    },
+    "readiness": {
+      "command": "ONCALL_PRODUCT_JOURNEY=move-in-guide node tests/product-browser.mjs",
+      "exit": 0
+    },
+    "typecheck": {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    "firstParty": {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    "viewsWrite": {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    "viewsCheckAfterWrite": {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    "sourceLock": {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    "sourceLockCheck": {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    "browserCore": {
+      "command": "ONCALL_PRODUCT_PART=core node tests/product-browser.mjs",
+      "exit": 0
+    }
+  },
+  "viewsRestoredFromMain": true,
+  "migrationLedger": "no migrations changed",
+  "candidatePublicationScan": "pending fleet lander",
+  "mainVerifyIds": [
+    44283231598,
+    44279924349
+  ],
+  "mainRunSiteId": 44283231793,
+  "verify": {
+    "conclusion": "failure",
+    "event": "push",
+    "head_branch": "cloud/sd-oncall-c-f280",
+    "head_sha": "e8f3230211887a68c606ae64402b2f8ae027c021",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44286481603",
+    "id": 44286481603,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "readiness": "All eight shards, build and full-push proof passed. The only independent failure was the expected generated ACCEPTANCE.md freshness check in job 134740585006. Job 134749313852 failed on that dependency. Archived logs confirmed both. The fleet readiness exception applies and the lander will regenerate the views.",
+  "verifyJobs": [
+    {
+      "conclusion": "success",
+      "head_sha": "e8f3230211887a68c606ae64402b2f8ae027c021",
+      "id": 134740359190,
+      "name": "plan",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "e8f3230211887a68c606ae64402b2f8ae027c021",
+      "id": 134740584768,
+      "name": "build",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "failure",
+      "head_sha": "e8f3230211887a68c606ae64402b2f8ae027c021",
+      "id": 134740585006,
+      "name": "contract-docs",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "failure",
+          "name": "Check the generated contract documents"
+        }
+      ]
+    },
+    {
+      "conclusion": "skipped",
+      "head_sha": "e8f3230211887a68c606ae64402b2f8ae027c021",
+      "id": 134740586068,
+      "name": "light",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "e8f3230211887a68c606ae64402b2f8ae027c021",
+      "id": 134742092017,
+      "name": "shards (transfer)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "e8f3230211887a68c606ae64402b2f8ae027c021",
+      "id": 134742092021,
+      "name": "shards (runtime)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "e8f3230211887a68c606ae64402b2f8ae027c021",
+      "id": 134742092033,
+      "name": "shards (changes)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "e8f3230211887a68c606ae64402b2f8ae027c021",
+      "id": 134742092056,
+      "name": "shards (intake)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "e8f3230211887a68c606ae64402b2f8ae027c021",
+      "id": 134742092060,
+      "name": "shards (browser)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "e8f3230211887a68c606ae64402b2f8ae027c021",
+      "id": 134742092095,
+      "name": "shards (agents)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "e8f3230211887a68c606ae64402b2f8ae027c021",
+      "id": 134742092219,
+      "name": "shards (triage)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "e8f3230211887a68c606ae64402b2f8ae027c021",
+      "id": 134742092292,
+      "name": "shards (hosted)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "e8f3230211887a68c606ae64402b2f8ae027c021",
+      "id": 134749274081,
+      "name": "full-push-proof",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "skipped",
+      "head_sha": "e8f3230211887a68c606ae64402b2f8ae027c021",
+      "id": 134749277324,
+      "name": "nightly-proof",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "failure",
+      "head_sha": "e8f3230211887a68c606ae64402b2f8ae027c021",
+      "id": 134749313852,
+      "name": "verify",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "failure",
+          "name": "Require the selected coverage and its proof"
+        }
+      ]
+    }
+  ]
+}

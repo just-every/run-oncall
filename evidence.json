@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "173cbd7a53c3e5c1cadd2c620565eb45bbd0d532",
+      "bytes": 8295,
+      "path": "REPORT.md",
+      "sha256": "8a8ef134ab62549bb172d62288deebc79f14edda170d05a4a3a9329998036c76"
+    },
+    {
+      "blob": "b4ebeb3a32d64c2e2a8eede16b707a2d7ed0e55c",
+      "bytes": 6769,
+      "path": "candidate-receipt.json",
+      "sha256": "a149b8d209436fc0430da1ed3cfb4577a44bda50b04f037c22f375a03ea3522d"
+    },
+    {
+      "blob": "2ecc64486045a684c14a38c0200ac7ef3d957ece",
+      "bytes": 87332,
+      "path": "email-draft-comparison-1440.png",
+      "sha256": "f44dd8294f1eaf2ca62f1b81357673059d25db3c22887df0fcaf52bdf6244a0e"
+    },
+    {
+      "blob": "1f8ae1bf929a4bd8cf6e20947f08b0921678d96f",
+      "bytes": 84092,
+      "path": "email-draft-comparison-390.png",
+      "sha256": "d75b5d4605f7c67227204e0eb2c05b3c6271d479273cd7240c02ebad98ed72dc"
+    },
+    {
+      "blob": "81701fcc3e2565de8c723fbfc828f1973220ee54",
+      "bytes": 1856,
+      "path": "email-draft-receipt.json",
+      "sha256": "92d20954564e6de1a10857ff47e0e3c96f1dbc8e76c99bbd2a3c3f29a6a7fb99"
+    },
+    {
+      "blob": "c17d409ffbe8173710db9772d49e83d6f7dcf03c",
+      "bytes": 6446,
+      "path": "imported-email-receipts.json",
+      "sha256": "fd3903dce37add8dd66eb5f6a847440575ac17a596b99399dbb6027643bbabe4"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f280",
+  "product_head": "e8f3230211887a68c606ae64402b2f8ae027c021",
+  "ref": "refs/heads/evidence/sd-oncall-c-f280",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f280"
+}
