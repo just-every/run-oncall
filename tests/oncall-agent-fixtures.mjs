@@ -541,6 +541,7 @@ export async function declareFromAlertParity(runtime, declareAsPerson) {
     assert.deepEqual(writeOutcome.review, review);
     const readMethod = ['resources', 'read'].join('/');
     const priorAudit = await rows('SELECT * FROM agent_door_audit ORDER BY sequence');
+    const priorRelay = await rows('SELECT * FROM agent_door_relay ORDER BY sequence');
 
     const { initial, answer, content, value } = await completeResource(link.uri, {
       overrides: { scope: 'incidents:read' },
@@ -595,6 +596,12 @@ export async function declareFromAlertParity(runtime, declareAsPerson) {
     assert.equal(readDecision.agent.id, context.agentId);
     assert.equal(readDecision.sponsor.id, actor.id);
     assert.deepEqual(readDecision.scopes, ['incidents:read']);
+
+    const relay = await rows('SELECT * FROM agent_door_relay ORDER BY sequence');
+    assert.deepEqual(relay.slice(0, priorRelay.length), priorRelay, 'The read preserves existing decision relay custody');
+    assert.equal(relay.length, priorRelay.length + 1);
+    assert.equal(relay.at(-1).decision_id, readId);
+    assert.equal(relay.at(-1).business, context.business);
     assert.deepEqual(await paging(), pagingBefore);
     assert.deepEqual(await runtime.outboundRequests(), []);
 
