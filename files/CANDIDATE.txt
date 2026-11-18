@@ -1,0 +1,11 @@
+Checked at 2026-11-18T08:43:01Z
+Repository just-every/run-oncall
+Branch cloud/sd-oncall-design-owner-4
+Candidate 8cde90725feb7a75b7dc75964e0cb636f208b86f
+Parent 731bacf72abc4538e728628d85bf9d844d3b4da0
+Candidate commits 1
+Candidate merge commits 0
+Contract, generated views, release metadata and migrations match the parent.
+Contract document generation and check passed. Pinned source lock regeneration and check passed.
+Author and committer are Run Edit Run fleet <fleet@runeditrun.com>; no trailers.
+Published cloud/sd-oncall-design-owner-4 8cde90725feb7a75b7dc75964e0cb636f208b86f at 2026-11-18T08:43:05Z

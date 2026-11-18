@@ -1,0 +1,22 @@
+{
+  "journey": "alertNotificationRunBrowser",
+  "assertionWidth": 1440,
+  "proofWidths": [
+    1440,
+    390
+  ],
+  "cases": [
+    "two-rules-and-backup",
+    "ordered-snapshot",
+    "settings-change-preserves-run",
+    "no-matching-rule",
+    "acknowledged",
+    "actual-backup-step",
+    "source-recovered",
+    "no-recorded-run",
+    "anonymous-refused"
+  ],
+  "outboundRequests": 0,
+  "paging": "OFF",
+  "seriousCriticalAccessibilityFindings": 0
+}

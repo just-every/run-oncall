@@ -1,0 +1,26 @@
+Candidate 8cde90725feb7a75b7dc75964e0cb636f208b86f
+Full core and settings browser lanes ran against the exact candidate production build. Desktop assertions at 1440 with the existing 390 keyboard leg. Selected paired captures use synthetic records.
+1440 oc009-rota-preview-1440.png
+390 oc009-rota-preview-390.png
+1440 rota-check-1440.png
+390 rota-check-390.png
+1440 rota-timeline-overview-1440.png
+390 rota-timeline-overview-390.png
+1440 refusal-cover-review-1440.png
+390 refusal-cover-review-390.png
+1440 events-empty-source-1440.png
+390 events-empty-source-390.png
+1440 oc037-response-report-1440.png
+390 oc037-response-report-390.png
+1440 oc054-readiness-1440.png
+390 oc054-readiness-390.png
+1440 fault-person-1440.png
+390 fault-person-390.png
+1440 fault-backup-1440.png
+390 fault-backup-390.png
+1440 fault-backup-restored-1440.png
+390 fault-backup-restored-390.png
+1440 oc043-flapping-held-1440.png
+390 oc043-flapping-held-390.png
+1440 oc065-retention-1440.png
+390 oc065-retention-390.png

@@ -1,0 +1,13 @@
+2026-11-18T08:07:45Z shard=browser exit=0
+2026-11-18T08:07:48Z shard=transfer exit=1
+2026-11-18T08:12:15Z shard=hosted exit=1
+2026-11-18T08:12:15Z shard=runtime exit=1
+2026-11-18T08:13:21Z head=ea2e47bbb9dd35bd7e9f5594eaa9b15d1ff57a7d build exit=0
+2026-11-18T08:28:08Z head=ea2e47bbb9dd35bd7e9f5594eaa9b15d1ff57a7d shard=transfer exit=0
+2026-11-18T08:36:05Z head=ea2e47bbb9dd35bd7e9f5594eaa9b15d1ff57a7d shard=runtime exit=0
+2026-11-18T08:48:51Z head=ea2e47bbb9dd35bd7e9f5594eaa9b15d1ff57a7d shard=hosted exit=0
+2026-11-18T08:48:53Z head=ea2e47bbb9dd35bd7e9f5594eaa9b15d1ff57a7d browser=owner-faults exit=1
+2026-11-18T08:48:55Z head=ea2e47bbb9dd35bd7e9f5594eaa9b15d1ff57a7d browser=rota-timeline exit=1
+2026-11-18T08:49:27Z head=8cde90725feb7a75b7dc75964e0cb636f208b86f post-rebase build exit=0
+2026-11-18T08:57:06Z head=8cde90725feb7a75b7dc75964e0cb636f208b86f post-rebase lane=browser exit=0
+2026-11-18T08:59:23Z head=8cde90725feb7a75b7dc75964e0cb636f208b86f post-rebase lane=browser-settings exit=0
