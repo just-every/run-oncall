@@ -1,0 +1,42 @@
+{
+  "key": {
+    "createdRoutedRead": true,
+    "createdSourceRead": true,
+    "routedRead": true,
+    "repeatRead": true,
+    "audited": true,
+    "encrypted": true,
+    "auditFailureRefused": true,
+    "externalSend": true,
+    "rotationInvalidates": true,
+    "nonAdminRefused": true
+  },
+  "person": {
+    "selfEdit": true,
+    "adminEdit": true,
+    "otherReadOnly": true
+  },
+  "sharing": {
+    "importedPolicies": 1,
+    "importedRotas": 1,
+    "sourceServiceReferences": 2,
+    "nativePolicies": 1,
+    "nativeRotas": 1,
+    "workspaceServiceReferences": 2,
+    "atomicRollback": true,
+    "alertsUseSharedRota": true
+  },
+  "history": {
+    "twoWeekPages": true,
+    "pastOverrides": true,
+    "previousAndCurrent": true
+  },
+  "paging": "OFF",
+  "outboundRequests": 0,
+  "assertionWidth": 1440,
+  "seriousCriticalAccessibilityFindings": 0,
+  "screenshots": [
+    1440,
+    390
+  ]
+}

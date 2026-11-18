@@ -1,0 +1,10 @@
+{
+  "conclusion": "success",
+  "head_sha": "588b45da0cdd4a0f09774688e48cce743552dbe2",
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/44205374436",
+  "status": "completed",
+  "id": 44205374436,
+  "workflow": "Verify",
+  "event": "push",
+  "observed_at": "2026-11-18T00:23:45Z"
+}
