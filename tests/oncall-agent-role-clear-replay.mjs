@@ -4,7 +4,7 @@ import {agentRuntime,agentEffectSnapshot} from './agent-door-runtime.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 
 /** Clearing a populated response role keeps its original outcome across conflicts and response loss. */
-export async function roleClearReplay(runtime,role='scribe',label='Scribe'){
+export async function roleClearReplay(runtime,role='scribe',label='Scribe',observe=async()=>{}){
  const {db,http,tool,adopt,context}=runtime,name='oncall.incidents.update';
  const change=role==='assignee'?'reassign':'assign-role';
  const rows=async(sql,...values)=>(await db.prepare(sql).bind(...values).all()).results;
@@ -200,6 +200,7 @@ export async function roleClearReplay(runtime,role='scribe',label='Scribe'){
    assert.deepEqual(denials[0],denials[1],'Scoped-out and missing targets have identical not_found without revision disclosure');
    assert.deepEqual(await runtime.outboundRequests(),[]);
   }
+  await observe({mode,first});
   observed.push({mode,incident:completion.saved.result});
  }
  assert.equal((await adopt()).status,200);
