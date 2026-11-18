@@ -193,14 +193,16 @@ try{
  });
  assert.equal(submitApprovalPosts.length,1,'One sponsor approval POST; completed-result retries never repeat the approval action');
  page.off('request',recordSubmitApproval);
- let lostResultApprovalPosts=0;
+ const lostResultApprovalPosts=[];
  const recordLostResultApproval=request=>{
-  if(request.method()==='POST'&&new URL(request.url()).pathname.startsWith('/agents/api/approvals/')&&new URL(request.url()).pathname.endsWith('/approve'))lostResultApprovalPosts++;
+  const path=new URL(request.url()).pathname;
+  if(request.method()==='POST'&&path.startsWith('/agents/api/approvals/')&&path.endsWith('/approve'))lostResultApprovalPosts.push(path);
  };
  page.on('request',recordLostResultApproval);
  await actionSubmitResponseLoss(runtime,{
-  async approve({handle,saved,owner}){
-   await capture('follow-up-submit-loss-pending',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="pending"]').waitFor()});
+  async approve({handle,saved,owner,completionPolicy}){
+   const label=completionPolicy==='evidence'?'follow-up-complete-loss':'follow-up-submit-loss';
+   await capture(label+'-pending',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="pending"]').waitFor()});
    await page.goto(handle.url);
    await page.getByText(owner.name,{exact:false}).first().waitFor();
    const submitted=page.waitForRequest(request=>request.method()==='POST'&&new URL(request.url()).pathname==='/agents/api/approvals/'+handle.id+'/approve');
@@ -208,10 +210,23 @@ try{
    const posted=(await submitted).postDataJSON();
    assert.equal(posted.revision,saved.revision);assert.equal(posted.summary_sha256,saved.summary_sha256);
    await page.locator('[data-approval-state="executed"]').waitFor();
-   assert.equal(lostResultApprovalPosts,1,'The sponsor approves the saved submission exactly once');
-   await capture('follow-up-submit-loss-executed',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="executed"]').waitFor()});
+   assert.equal(lostResultApprovalPosts.filter(path=>path==='/agents/api/approvals/'+handle.id+'/approve').length,1,'The sponsor approves the saved submission exactly once');
+   await capture(label+'-executed',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="executed"]').waitFor()});
   },
   async observe({mode,incident,action}){
+   if(action.completionPolicy==='evidence'){
+    await capture('follow-up-complete-loss-'+mode,'/reviews/'+incident.id,async()=>{
+     await page.getByRole('dialog',{name:incident.title,exact:true}).waitFor();
+     const material=page.locator('.review-material-body');
+     await material.locator('summary').filter({hasText:/^Follow-ups \(/}).click();
+     const completed=material.getByRole('listitem').filter({hasText:action.title}).filter({hasText:/· P2 · due .+ · Complete · Completes with evidence/});
+     const evidence=completed.getByRole('link',{name:/^Evidence\b/});
+     await evidence.waitFor();
+     if(page.viewportSize().width===1440)assert.equal(await evidence.getAttribute('href'),action.evidence);
+     await evidence.scrollIntoViewIfNeeded();
+    });
+    return;
+   }
    await capture('follow-up-submit-loss-'+mode,'/reviews/'+incident.id,async()=>{
     await page.getByRole('dialog',{name:incident.title,exact:true}).waitFor();
     await page.locator('.review-material-body summary').filter({hasText:/^Follow-ups \(/}).click();
@@ -222,7 +237,7 @@ try{
    });
   },
  });
- assert.equal(lostResultApprovalPosts,1,'Completed-result recovery never repeats approval');
+ assert.equal(lostResultApprovalPosts.length,2,'Each held submission receives one approval across both losses and recoveries');
  page.off('request',recordLostResultApproval);
  assert.deepEqual(submitEvidenceRequests,[],'The browser never fetches submitted evidence');
  await context.unroute('https://evidence.example.invalid/**',stopEvidence);
