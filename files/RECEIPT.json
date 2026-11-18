@@ -1,0 +1,62 @@
+{
+  "candidate_author_and_committer": "fleet identity verified",
+  "candidate_commit_count": 1,
+  "candidate_trailers": 0,
+  "contract_counts_before_and_after": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "handoff_verify_observations": [
+    {
+      "conclusion": "success",
+      "head_sha": "d043b91abfe1b99baf3bad37a178811e91dfe71e",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44310882732",
+      "id": 44310882732,
+      "observed_at": "2026-11-18T13:15:03+00:00",
+      "status": "completed"
+    }
+  ],
+  "local_checks": {
+    "git diff --check origin/main..HEAD": "passed",
+    "node --check tests/agent-door-browser.mjs": "passed",
+    "node --check tests/oncall-agent-action-evidence-replay.mjs": "passed",
+    "node src/base/contract-docs.mjs check": "passed, 0 errors and 0 warnings"
+  },
+  "new_product_commits": 0,
+  "pr_operations": 0,
+  "product_custody": "READY",
+  "product_files_edited_during_handoff": 0,
+  "product_head": "d043b91abfe1b99baf3bad37a178811e91dfe71e",
+  "product_push": "created on first guarded attempt and read back",
+  "product_refs_verified": {
+    "refs/heads/cloud/sd-oncall-c-f273-lin-2": "d043b91abfe1b99baf3bad37a178811e91dfe71e",
+    "refs/heads/cloud/sd-oncall-c-f273-lin-2-c1": "d043b91abfe1b99baf3bad37a178811e91dfe71e"
+  },
+  "publication_base": "6ef9bc1294fc981c71e990df9bf12104337c81b3",
+  "repository": "just-every/run-oncall",
+  "tag": "sd-oncall-c-f273-lin-2-c1",
+  "verify_discovery": [
+    {
+      "conclusion": "success",
+      "head_branch": "cloud/sd-oncall-c-f273-lin-2",
+      "head_sha": "d043b91abfe1b99baf3bad37a178811e91dfe71e",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44296143431",
+      "id": 44296143431,
+      "run_attempt": 2,
+      "status": "completed"
+    },
+    {
+      "conclusion": null,
+      "head_branch": "cloud/sd-oncall-c-f273-lin-2-c1",
+      "head_sha": "d043b91abfe1b99baf3bad37a178811e91dfe71e",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44310882732",
+      "id": 44310882732,
+      "run_attempt": 1,
+      "status": "queued"
+    }
+  ],
+  "verify_discovery_utc": "2026-11-18T13:10:01Z",
+  "workflow_dispatches_or_reruns_during_handoff": 0
+}

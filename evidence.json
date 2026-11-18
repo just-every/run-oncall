@@ -1,0 +1,22 @@
+{
+  "files": [
+    {
+      "blob": "aae4669e272f88675177cc019eea8f7522e23a1a",
+      "bytes": 2255,
+      "path": "RECEIPT.json",
+      "sha256": "da995e6f16629a1ce2eff8f97b22d63c5b07d50bb37c75f341ac2af54d6bc62e"
+    },
+    {
+      "blob": "800323ff94fc6c321cd070f2f01121ec101eb83b",
+      "bytes": 3064,
+      "path": "REPORT.md",
+      "sha256": "97e620e81c1a9157b0513a4701dda060fb4f4e5321d727c69d39371456f7200a"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f273-lin-2-c1",
+  "product_head": "d043b91abfe1b99baf3bad37a178811e91dfe71e",
+  "ref": "refs/heads/evidence/sd-oncall-c-f273-lin-2-c1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f273-lin-2-c1"
+}
