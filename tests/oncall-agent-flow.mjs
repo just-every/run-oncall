@@ -73,6 +73,9 @@ async function droppedDeclarationReplay(runtime){
   const declarations=incident.timeline.filter(row=>row.kind==='declared');
   assert.equal(declarations.length,1);assert.equal(declarations[0].metadata.agent.agent.id,context.agentId);
   assert.equal(once.commits.length,before.commits.length+1,'The lost response follows exactly one native application audit commit');
+  assert.equal(once.commits.at(-1).kind,'command.declare');
+  assert.equal(once.commits.at(-1).workspace_before,beforeState.revision);
+  assert.equal(once.commits.at(-1).workspace_after,onceState.revision);
   assert.deepEqual(once.jobs,before.jobs);assert.deepEqual(once.receipts,before.receipts);assert.deepEqual(once.paging,before.paging);
   assert.equal(onceState.revision,beforeState.revision+1);
   assert.equal(onceReviews.length,beforeReviews.length+Number(mode==='held'));
@@ -84,6 +87,7 @@ async function droppedDeclarationReplay(runtime){
   assert.equal(originalRows.length,1);
   const original=JSON.parse(originalRows[0].row);
   assert.equal(original.outcome,'done');assert.equal(original.replay_of,null);
+  assert.equal(original.tool,'oncall.incidents.declare');
   assert.equal(original.idempotency_key,args.idempotency_key);
   const attempts=await rows('SELECT * FROM agent_door_audit WHERE agent=? AND json_extract(row,\'$.idempotency_key\')=? ORDER BY sequence',context.agentId,args.idempotency_key);
   assert.equal(attempts.length,1);
