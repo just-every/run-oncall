@@ -314,6 +314,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 **Acceptance.**
 1. Request, accept and race two swaps, reject an unauthorized substitute, revoke a calendar subscription, view the effective rotation in Google/Outlook, and observe automatic change/reminder delivery plus a visible failed-notification outcome.
 
+**Observed (18 November 2026, Run Edit Run fleet).** In `tests/activation.mjs`, a responder issued a service-scoped subscription for the second service linked to a shared rota. The bearer feed matched 31 days of protected UTC coverage for both roles before and after a reviewed override. It omitted unrelated rotas, raw member names and IDs, and the bearer token. A different responder could not revoke it. Revocation by the subscriber made the same URL return 404 immediately. Saved assignments, protected coverage and paging records were unchanged by revocation, and the Worker made zero outbound requests.
+
 #### OC-026 — Native US phone, SMS, push and email paging
 
 *Tier:* Core · *Cites:* BASE-MAIL-001 · *Rules:* D-1, D-3, D-4 · *Register:* R-5, R-6

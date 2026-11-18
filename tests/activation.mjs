@@ -110,6 +110,9 @@ export async function pagingHistory(w,cookie) {
 }
 
 
+const calendarDate=at=>new Date(at).toISOString().replace(/[-:]/g,'').replace('.000','')
+const calendarEvents=text=>text.replace(/\r\n[ \t]/g,'').split('BEGIN:VEVENT\r\n').slice(1).map(block=>Object.fromEntries(block.split('END:VEVENT')[0].trim().split('\r\n').map(line=>{const colon=line.indexOf(':');return [line.slice(0,colon),line.slice(colon+1)]})))
+
 // schedule-coordination: part of this public journey.
 export async function scheduleCoordination(){
  await scheduleLayers();
@@ -198,10 +201,87 @@ export async function scheduleCoordination(){
   for(const scope of ['schedule','service','own']){
    const created=ok(await coord({action:'subscribe',scope,target:scope==='service'?service.id:schedule.id}));subscriptions.push(created);
    const feed=await w.send(new URL(created.url).pathname,undefined,{},'GET');assert.equal(feed.status,200);assert.match(feed.value,/BEGIN:VCALENDAR/);assert.match(feed.value,/BEGIN:VEVENT/);
+   if(scope==='service')assert.ok(calendarEvents(feed.value).some(event=>event.SUMMARY.startsWith(schedule.name+' / ')),'legacy single-service rota appears in its service feed');
    for(const forbidden of ['CONTACT','ATTENDEE','mailto:',owner.value.member.name,substitute.name,'synthetic-oncall-250-password',created.url])assert.ok(!feed.value.includes(forbidden),'capability feed contains schedule windows only');
    const stored=w.sql("SELECT data FROM oc_schedule_records WHERE id='"+created.record.id+"'")[0].data;
    assert.ok(!stored.includes(new URL(created.url).pathname.split('/').at(-1).replace('.ics','')),'only a token hash is stored');
    assert.ok(!(await rows()).some(r=>r.kind==='subscription'&&Object.hasOwn(r.data,'hash')),'normal reads never disclose hashes or bearer URLs');
+  }
+  // The secondary service has one shared rota. The existing legacy rotas belong to other services.
+  {
+   const secondary=ok(await req('/api/command',{type:'service',id:'synthetic-oncall-257',name:'Synthetic secondary service',environment:'test',owner:outsider.id,runbook:[],pager:''}));
+   const clock=Date.parse('2026-01-05T12:34:56.789Z');
+   const start='2026-01-05T15:00:00.000Z',end='2026-01-05T16:00:00.000Z';
+   const anchorLocal=start.slice(0,16);
+   const shared=ok(await req('/api/paging/schedules',{
+    ...schedule,id:'synthetic-oncall-258',name:'Synthetic shared rota',services:[service.id,secondary.id],revision:0,
+    validFrom:start,primary:{...schedule.primary,anchorLocal},
+    backup:{...schedule.backup,anchorLocal,members:[substitute.id]},overrides:[]
+   }));
+   const outbound=await w.outboundRequests();
+   assert.deepEqual(outbound,[],'coordination has no outbound requests before the subscription');
+   const issued=ok(await as(substituteCookie,{action:'subscribe',scope:'service',target:secondary.id}));
+   const path=new URL(issued.url).pathname,token=path.slice('/calendar/'.length,-'.ics'.length);
+   const from=Math.floor(clock/1000)*1000,to=from+31*86400000;
+   const preview=()=>req('/api/paging/preview',{scheduleId:shared.id,from,to});
+   const readFeed=async()=>{
+    await w.time(clock);
+    try{return await w.send(path,undefined,{},'GET');}
+    finally{await w.time(null);}
+   };
+   const paging=async()=>ok(await req('/api/paging/state'));
+   const compareFeed=async()=>{
+    const before=await paging(),windows=ok(await preview()),feed=await readFeed();
+    assert.equal(feed.status,200);
+    assert.match(feed.headers.get('content-type'),/^text\/calendar/);
+    assert.equal(feed.headers.get('cache-control'),'private, no-store');
+    const unfolded=feed.value.replace(/\r\n[ \t]/g,'');
+    for(const forbidden of [
+     schedule.name,overlap.id,moved.id,shared.id,token,'CONTACT','ATTENDEE','mailto:',
+     ...[owner.value.member,substitute,outsider,viewer].flatMap(member=>[member.id,member.name])
+    ])assert.ok(!unfolded.includes(forbidden),'service feed exposes neither unrelated rotas nor raw member or capability data');
+    const events=calendarEvents(feed.value);
+    const expected=windows.flatMap((window,index)=>['primary','backup'].map(role=>({
+     DTSTART:calendarDate(window.at),DTEND:calendarDate(windows[index+1]?.at??to),
+     SUMMARY:shared.name+' / '+role+': '+(window[role]?'Responder':'Coverage gap')
+    })));
+    assert.deepEqual(events.map(({DTSTART,DTEND,SUMMARY})=>({DTSTART,DTEND,SUMMARY})),expected,'only the shared rota matches the protected UTC coverage intervals');
+    assert.equal(events[0].DTSTART,calendarDate(from));
+    assert.equal(events.at(-1).DTEND,calendarDate(to));
+    assert.deepEqual(await paging(),before,'a feed read preserves the paging snapshot');
+    return {windows,events};
+   };
+   const initial=await compareFeed();
+   const override={id:'synthetic-oncall-259',role:'primary',start,end,member:outsider.id};
+   const change={schedule:{...shared,overrides:[override]},from,to};
+   const review=ok(await req('/api/schedules/'+shared.id+'/review',change));
+   assert.ok(review.intervals.some(row=>row.start===Date.parse(start)&&row.end===Date.parse(end)
+     &&row.role==='primary'&&row.before===owner.value.member.id&&row.after===outsider.id));
+   ok(await req('/api/schedules/'+shared.id+'/apply',{...change,digest:review.digest,confirmed:true}));
+   const updated=await compareFeed();
+   assert.equal(initial.windows.find(window=>window.at===Date.parse(start)).primary,owner.value.member.id);
+   assert.equal(updated.windows.find(window=>window.at===Date.parse(start)).primary,outsider.id);
+   assert.equal(updated.windows.find(window=>window.at===Date.parse(end)).primary,owner.value.member.id);
+   assert.ok(updated.events.some(event=>event.DTSTART===calendarDate(Date.parse(start))
+     &&event.DTEND===calendarDate(Date.parse(end))&&event.SUMMARY===shared.name+' / primary: Responder'));
+   assert.ok(!initial.events.some(event=>event.DTEND===calendarDate(Date.parse(end))),'the reviewed override adds a visible interval boundary');
+
+   const {revision,workspaceRevision,...history}=await paging();
+   assert.equal(history.paging,'OFF');
+   const assignment=ok(await preview());
+   const revoke={action:'revoke',id:issued.record.id,revision:issued.record.revision};
+   ok(await as(outsiderCookie,revoke),403);
+   assert.equal((await readFeed()).status,200,'another responder cannot revoke this subscription');
+   ok(await as(substituteCookie,revoke));
+   const refused=await readFeed();
+   assert.equal(refused.status,404,'the same bearer stops working immediately');
+   assert.doesNotMatch(refused.value,/BEGIN:VCALENDAR/);
+   assert.ok(!refused.value.includes(token),'a refused request never echoes the bearer');
+   const {revision:afterRevision,workspaceRevision:afterWorkspaceRevision,...retained}=await paging();
+   assert.deepEqual(retained,history,'revocation preserves assignments, policies, jobs, receipts and callbacks');
+   assert.deepEqual(ok(await preview()),assignment,'protected coverage retains the reviewed override');
+   assert.deepEqual(await w.outboundRequests(),outbound,'subscription, override, reads and revocation make zero outbound requests');
+   console.log('PASS OC-025 secondary service feed: bounded UTC coverage before and after reviewed override, unrelated rota and member data excluded, immediate 404 after revocation, assignments and paging retained, zero outbound requests');
   }
   const otherFeed=ok(await as(substituteCookie,{action:'subscribe',scope:'own'}));ok(await coord({action:'revoke',id:otherFeed.record.id,revision:otherFeed.record.revision}));assert.equal((await w.send(new URL(otherFeed.url).pathname,undefined,{},'GET')).status,404,'admin revocation takes effect immediately for another member');
   const revoked=subscriptions[0],history=ok(await req('/api/paging/state')).schedules;
@@ -547,8 +627,6 @@ try {
  ok(await w.request('/api/schedules/daily/calendar.ics'),401)
  // OC-020: compare the downloaded events to resolved coverage, with an independent DST and override oracle.
  const calendarFrom=Date.parse('2026-03-07T14:00:00Z'),calendarTo=Date.parse('2026-03-09T13:00:00Z'),calendarPath='/api/schedules/daily/calendar.ics'
- const calendarDate=at=>new Date(at).toISOString().replace(/[-:]/g,'').replace('.000','')
- const calendarEvents=text=>text.replace(/\r\n[ \t]/g,'').split('BEGIN:VEVENT\r\n').slice(1).map(block=>Object.fromEntries(block.split('END:VEVENT')[0].trim().split('\r\n').map(line=>{const colon=line.indexOf(':');return [line.slice(0,colon),line.slice(colon+1)]})))
  const checkCalendar=async(response,from,to)=>{
   ok(response);assert.equal(response.headers.get('cache-control'),'private, no-store')
   const events=calendarEvents(response.value),windows=ok(await req('/api/paging/preview',{scheduleId:'daily',from,to})),members=ok(await req('/api/state')).members
