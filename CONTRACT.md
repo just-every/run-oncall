@@ -1166,6 +1166,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 **Oncall schedule overrides.** When the required native revision is stale, the authorized override refusal returns the current rota revision in MCP error metadata and text even when the request omits the optional expected revision. An out-of-scope rota and an absent rota return the same not-found error with no revision. The schedule replay journey in `tests/oncall-agent-schedule-replay.mjs` exercises the refusal and a fresh-key override under both company policies.
 
+**Oncall incident resolution.** When the required native revision is current but the first resolution call supplies a stale optional `expected_revision`, an authorized caller receives `revision_conflict` with the current incident revision in the MCP error metadata and text. A scoped-out or absent incident returns `not_found` without a revision. Under autonomous and held policy, the refusal preserves the incident and retains no call outcome, approval or review. A fresh key with the current revision in both fields resolves once, after exact sponsor approval where required. The same corrected call retrieves the original result without another resolution or outbound request. The resolution leg in `tests/oncall-agent-flow.mjs` exercises both policies through the emitted Worker.
+
 **Acceptance.**
 1. Two calls with one key give one effect and equal results.
 2. A retry with a new JSON-RPC id and the same key, after a dropped stream, returns the recorded outcome.
