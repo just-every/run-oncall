@@ -1700,7 +1700,7 @@
       "executable": false
     },
     "src/agent-door/coordination-tools.ts": {
-      "sha256": "ed5773aedd5eefc00a95b4a9bee33c7588a01bdd9745719e34a52e64317735fd",
+      "sha256": "a30469232a419978677cb5573e4018847de8c2c11dec2c8cefeb65d92b860c99",
       "executable": false
     },
     "src/agent-door/deadlines.ts": {
@@ -6792,7 +6792,7 @@
       "executable": false
     },
     "tests/oncall-agent-flow.mjs": {
-      "sha256": "7cc49ad9d49e21e0a7206c57cbaf3459f096ffbd94f75e134014fa054618fb34",
+      "sha256": "e4eaf211b49450a4758075ad2c5d8948bb1419ba60d5a85f5dbb9e9ced25ea58",
       "executable": false
     },
     "tests/oncall-agent-incident-replay.mjs": {
