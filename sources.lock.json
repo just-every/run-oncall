@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "831ba92eb6dc8bd2ca423108375906e190045ccf2669cf02a167a4145932fc37",
+      "sha256": "caddebb8f07acd401eaa118766911e52ba648d054dd9e4b5b5f07adee8a4d516",
       "executable": false
     },
     "DEMO.md": {
@@ -6224,7 +6224,7 @@
       "executable": false
     },
     "src/schedule-coordination/feed.ts": {
-      "sha256": "3101f70c05f719ac898f752baab98e58d74d440fa4854bc2e0ad9a120ef74735",
+      "sha256": "275d65d842ef3ff40548e3e452d08898236fb85ec11082093ea7129c48bdbae0",
       "executable": false
     },
     "src/schedule-coordination/model.ts": {
@@ -6520,7 +6520,7 @@
       "executable": false
     },
     "tests/activation.mjs": {
-      "sha256": "0a837eda28f26d9f437a661dff786e00d8f1f3ca36207b7c5df7f598209519b1",
+      "sha256": "99e452106fb2251701acba0510b6a9938ce01ec38526480fc0cdac1dc3176531",
       "executable": false
     },
     "tests/agent-door-browser.mjs": {
