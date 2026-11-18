@@ -15,7 +15,7 @@ import {teamReplay} from './oncall-agent-team-replay.mjs';
 import {staleReassignmentNativeRevision} from './oncall-agent-incident-revisions.mjs';
 import {staleScribeExpectedRevision} from './oncall-agent-role-revisions.mjs';
 import {staleCommunicationsExpectedRevision,staleCommunicationsNativeRevision} from './oncall-agent-communications-revisions.mjs';
-import {changedServiceNameReplay} from './oncall-agent-service-replay.mjs';
+import {changedServiceNameReplay,standardServiceRunbookUpdate} from './oncall-agent-service-replay.mjs';
 import {agedReplayRetention} from './oncall-agent-retention.mjs';
 import {agedActionSubmitRetention} from './oncall-agent-action-submit-retention.mjs';
 import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-revisions.mjs';
@@ -657,6 +657,7 @@ try{
  await droppedCommunicationsAssignmentReplay(runtime);
  await changedArgumentConflicts(runtime);
  await changedServiceNameReplay(runtime);
+ await standardServiceRunbookUpdate(runtime);
  await changedReassignmentReasonConflict(runtime);
  await changedScribeReasonConflict(runtime);
  await changedCommunicationsReasonConflict(runtime);
