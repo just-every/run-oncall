@@ -882,6 +882,8 @@ Core · target · **partial** · Rules D-2, D-3
 5. A private team's business service is invisible to stakeholders outside its scope.
 6. A manual status override is attributed.
 
+**Observed (18 November 2026, Run Edit Run fleet).** The installation owner opened populated incident, alert and service runbook pages through their direct web addresses. At 1440 and 390 pixels, a signed-in Checkout subscriber in the explicit member audience opened those same addresses and was redirected to `/status`. Checkout still showed degraded status and the subscriber's recorded impact obligation. The initial HTML and workspace bootstrap, browser API responses and hydrated views disclosed none of the private incident, alert, timeline or runbook data from the fixture. The stakeholder reads left native records, paging and subscription custody unchanged. The browser and Worker attempted zero outbound requests.
+
 **Evidence.** `src/business-status/`; `src/alert-obligation.ts`; `tests/triage.mjs`; `tests/member-coordination-browser.mjs`; `tests/transfer.mjs`; `tests/checkpoint-cli.mjs`; `tests/activation.mjs`
 **Gap.** Explicit member audiences deny stakeholder access by default. Only an active communications owner or admin may override. Impact notices are recorded non-automatic obligations with paging OFF and no sender; email, push and chat delivery (OC-042 custody/OC-029) are not built. Team and channel subscribers, SSO/SCIM assignment (OC-039), the private-team acceptance sentence (OC-023), OC-051 approved updates beyond the absent current source, and mobile remain gaps. Records only; email-list subscriber records are exercised here, and delivery remains under OC-042 with the held SendGrid sender.
 
