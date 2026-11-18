@@ -743,6 +743,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 5. A private team's business service is invisible to stakeholders outside its scope.
 6. A manual status override is attributed.
 
+**Observed (18 November 2026, Run Edit Run fleet).** The installation owner opened populated incident, alert and service runbook pages through their direct web addresses. At 1440 and 390 pixels, a signed-in Checkout subscriber in the explicit member audience opened those same addresses and was redirected to `/status`. Checkout still showed degraded status and the subscriber's recorded impact obligation. The initial HTML and workspace bootstrap, browser API responses and hydrated views disclosed none of the private incident, alert, timeline or runbook data from the fixture. The stakeholder reads left native records, paging and subscription custody unchanged. The browser and Worker attempted zero outbound requests.
+
 #### OC-062 — Configuration as code with Terraform and OpenTofu
 
 *Tier:* Core · *Rules:* D-3 · *Register:* R-10
