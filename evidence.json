@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "4aea0bfe9f0e3629bbe10eaf750d5672d07fb7f1",
+      "bytes": 4591,
+      "path": "REPORT.md",
+      "sha256": "39f21bd33157903563e697785b5d3b2abae6db58acdf33b777e74c97b2dac1f2"
+    },
+    {
+      "blob": "a585c6857e8d894e8ac3e7cb2c2c6fde3f7dae20",
+      "bytes": 87332,
+      "path": "browser/email-draft-comparison-1440.png",
+      "sha256": "c6e60d3117eb23dc981be3ca2c06e9941fc2a29b66914a5b5c2b999f6c939697"
+    },
+    {
+      "blob": "23650dbece0e1f3edf00e21131127fe9a5d9dff2",
+      "bytes": 84093,
+      "path": "browser/email-draft-comparison-390.png",
+      "sha256": "7ed73bd9f95bd1c7c67a213951e29bf33d0a4af23c3d35ff34d5e04ebb692fc2"
+    },
+    {
+      "blob": "81701fcc3e2565de8c723fbfc828f1973220ee54",
+      "bytes": 1856,
+      "path": "browser/email-draft-receipt.json",
+      "sha256": "92d20954564e6de1a10857ff47e0e3c96f1dbc8e76c99bbd2a3c3f29a6a7fb99"
+    },
+    {
+      "blob": "4f7e26e3880245a12ed9d0647792e099bfce6862",
+      "bytes": 1729,
+      "path": "local-checks-receipt.json",
+      "sha256": "3e6db72fcd5ea38e6f5368d7992649a4fe70b3a2f9cd75e212036685ec8808d0"
+    },
+    {
+      "blob": "949a93b5a393d307e0c482453bd04ef3d153c3ed",
+      "bytes": 43331,
+      "path": "verify-receipt.json",
+      "sha256": "a350bef79e0dff9859dbab87506f6d2c211a29ceea7cd1b01df7dab88bf2450d"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f280-lin-1",
+  "product_head": "785efc54b0ab59a7435583ac3df04279e366fa12",
+  "ref": "refs/heads/evidence/sd-oncall-c-f280-lin-1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f280-lin-1"
+}

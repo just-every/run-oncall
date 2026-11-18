@@ -1,0 +1,60 @@
+{
+  "affected_clause": {
+    "clause": "OC-070",
+    "points_proved": [
+      7
+    ],
+    "status_after": "partial",
+    "status_before": "partial"
+  },
+  "base": "39e6d289a2fbae32c9901640f61646ca0ff9ca53",
+  "branch": "cloud/sd-oncall-c-f280-lin-1",
+  "checks": {
+    "build": "passed",
+    "contract_check_as_committed": "generated content differs only in ACCEPTANCE.md",
+    "contract_generate_and_check": "passed",
+    "edition_source_lock_check": "passed",
+    "pinned_touched_checks": {
+      "finished_utc": "2026-11-18T21:25:50Z",
+      "head": "785efc54b0ab59a7435583ac3df04279e366fa12",
+      "node": "22.20.0",
+      "routing": "passed",
+      "saved_email_browser": "passed",
+      "started_utc": "2026-11-18T21:22:41Z"
+    },
+    "rer_check_first_party": "passed",
+    "routing": "passed",
+    "saved_email_browser": "passed",
+    "setup": "passed",
+    "typecheck": "passed",
+    "verify_oncall_build": {
+      "finished_utc": "2026-11-18T21:07:49Z",
+      "node": "22.20.0",
+      "result": "passed",
+      "sha": "785efc54b0ab59a7435583ac3df04279e366fa12"
+    }
+  },
+  "clause_counts_after": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "clause_counts_before": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "feeder_head": "e8f3230211887a68c606ae64402b2f8ae027c021",
+  "head": "785efc54b0ab59a7435583ac3df04279e366fa12",
+  "identities_and_trailers_checked": true,
+  "linear_commits": [
+    "c6ae2b9312d20a98978bed4028807ae58b8ed8f9",
+    "785efc54b0ab59a7435583ac3df04279e366fa12"
+  ],
+  "local_started_utc": "2026-11-18T21:02:18Z",
+  "merge_commits": 0,
+  "push_finished_utc": "2026-11-18T21:06:33Z",
+  "repository": "just-every/run-oncall"
+}

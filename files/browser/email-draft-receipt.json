@@ -1,0 +1,83 @@
+{
+  "assertionWidth": 1440,
+  "layouts": [
+    {
+      "width": 1440,
+      "documentWidth": 1440,
+      "minimumTextSize": 14
+    },
+    {
+      "width": 390,
+      "documentWidth": 390,
+      "minimumTextSize": 14
+    }
+  ],
+  "previewStatus": 200,
+  "anonymousStatus": 401,
+  "publishedVersion": 1,
+  "publishedFallback": "subject",
+  "draftFallback": "quarantine",
+  "samples": [
+    {
+      "subject": "FAILED: synthetic-oncall-db",
+      "outcome": "opened",
+      "historical": {
+        "mode": "custom",
+        "version": 1,
+        "rule": "failed",
+        "key": "synthetic-oncall-db",
+        "action": "trigger"
+      },
+      "proposed": {
+        "mode": "custom",
+        "version": 2,
+        "rule": "failed",
+        "key": "synthetic-oncall-db",
+        "action": "trigger"
+      }
+    },
+    {
+      "subject": "OK: synthetic-oncall-db",
+      "outcome": "recovered",
+      "historical": {
+        "mode": "custom",
+        "version": 1,
+        "rule": "ok",
+        "key": "synthetic-oncall-db",
+        "action": "resolve"
+      },
+      "proposed": {
+        "mode": "custom",
+        "version": 2,
+        "rule": "ok",
+        "key": "synthetic-oncall-db",
+        "action": "resolve"
+      }
+    },
+    {
+      "subject": "Unmatched observation",
+      "outcome": "opened",
+      "historical": {
+        "mode": "custom",
+        "version": 1,
+        "rule": null,
+        "key": "Unmatched observation",
+        "action": "trigger"
+      },
+      "proposed": {
+        "mode": "custom",
+        "version": 2,
+        "rule": null,
+        "key": null,
+        "action": "quarantine"
+      }
+    }
+  ],
+  "unchangedDurableRows": true,
+  "unchangedAudit": true,
+  "unchangedPaging": true,
+  "unchangedArchive": true,
+  "workerOutboundRequests": 0,
+  "browserOutboundRequests": 0,
+  "seriousCriticalAccessibilityFindings": 0
+}
