@@ -1,0 +1,43 @@
+Exact candidate f0b38b2ca9669faa3944622cc46f268e1dd1f688
+Local verification completed 2026-11-18T16:40:53Z
+
+PASS pnpm install --frozen-lockfile and local owner setup
+PASS pnpm exec rer check --profile first-party
+PASS npx -y @runeditrun/rer build
+PASS pnpm run typecheck
+PASS node src/base/contract-docs.mjs write and check (zero generated changes)
+PASS pinned edition-authoring lock generation and check, including after build and rebase
+PASS focusedAssigneeClearReplay and focusedRoleClearReplay under Node 22.20.0
+PASS tests/agent-door-browser.mjs under Node 22.20.0 and system Chromium
+PASS linear ancestry, clean diff, both candidate identities and empty trailers
+Added test lines: no credential-shaped matches in the local diff check.
+
+Focused replay observations
+PROBE BASE-AGENT-003 4 autonomous assignee clear: first returned resource link matched full native incident, explicit null assignee, new revision, companion roles and attributed reassign history; autonomous read; original write outcome, native records, revisions, state-changing audit and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-003 4 held assignee clear: first returned resource link matched full native incident, explicit null assignee, new revision, companion roles and attributed reassign history; separate open read review; original write outcome, native records, revisions, state-changing audit and paging unchanged; zero outbound requests
+
+Browser observations
+PROBE BASE-AGENT-003 4 autonomous assignee clear: first returned resource link matched full native incident, explicit null assignee, new revision, companion roles and attributed reassign history; autonomous read; original write outcome, native records, revisions, state-changing audit and paging unchanged; zero outbound requests
+Browser proof assignee-autonomous-cleared-timeline 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof assignee-autonomous-cleared-timeline 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof assignee-autonomous-cleared-people 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof assignee-autonomous-cleared-people 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-003 4 held assignee clear: first returned resource link matched full native incident, explicit null assignee, new revision, companion roles and attributed reassign history; separate open read review; original write outcome, native records, revisions, state-changing audit and paging unchanged; zero outbound requests
+Browser proof assignee-cleared-timeline 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof assignee-cleared-timeline 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof assignee-cleared-people 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof assignee-cleared-people 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-012 Assignee clear browser: autonomous and held MCP -> saved Unassigned Assignee, preserved companion responsibilities, attributed native timeline; changed incident shown at 1440 and 390; zero outbound requests
+
+Image SHA-256
+cefecc9a9edbe75b0d4c4996a35b94e8d3857c00a4191a185e64934801e9a885  browser/agent-door-assignee-autonomous-cleared-people-1440.png
+80766e3a31e8a147acdc88f5b629560c037e3f44e84598e73df82bd7db26e0b9  browser/agent-door-assignee-autonomous-cleared-people-390.png
+d73b1528007517cbc29948a9e7d566cfbf9e06483daf574749fcde895f1395dc  browser/agent-door-assignee-autonomous-cleared-timeline-1440.png
+080877f6ca086f21ba25070516a6493dc4b7c766ad821f35466c4a315fe61a7d  browser/agent-door-assignee-autonomous-cleared-timeline-390.png
+5bb403206a973d3dfe02b38e8eb3e7c168396ecb12c32bacfca306c539617da0  browser/agent-door-assignee-cleared-people-1440.png
+5702c0228ccfe2d1a9a06c9a3c9149e0a1cbe7fa335ef2787415ff8022dca699  browser/agent-door-assignee-cleared-people-390.png
+71dfb7b83889804c68d02e68282c33fe52860795728ad58d9e846c6c7259583e  browser/agent-door-assignee-cleared-timeline-1440.png
+ff836655a12059dab28cc7272f69d5fe0c512d4868f79d7cc4c18b0ca3585be8  browser/agent-door-assignee-cleared-timeline-390.png
+
+Pinned Node 22.20.0 repeat completed 2026-11-18T16:49:42Z
+PASS first-party profile, build, typecheck and source-lock check on the advertised SHA

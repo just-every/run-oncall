@@ -1,0 +1,5 @@
+Repository just-every/run-oncall
+Product head f0b38b2ca9669faa3944622cc46f268e1dd1f688
+Advertised ref refs/heads/cloud/sd-oncall-c-f279-lin-1
+Verified advertisement 2026-11-18T16:41:04Z
+PUSH_OK branch=cloud/sd-oncall-c-f279-lin-1

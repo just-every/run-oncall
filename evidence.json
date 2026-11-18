@@ -1,0 +1,82 @@
+{
+  "files": [
+    {
+      "blob": "27a052624dd663a2c90a68042bcaca19ee743684",
+      "bytes": 357,
+      "path": "CI-VERIFY.json",
+      "sha256": "d50c03056bc954e7e82854e492833bf6b7ffb719c0976b3c091babfcba6a974b"
+    },
+    {
+      "blob": "bb55ecdeca40328654b90a84f6db71ab3e418cd7",
+      "bytes": 4309,
+      "path": "LOCAL-VERIFY.txt",
+      "sha256": "4731d62a4132bb88693ecdbeba661de335c65b21296cf22575ab058faaf62f52"
+    },
+    {
+      "blob": "00d22ec10674bc290216c99e540efbc29c74cf8f",
+      "bytes": 230,
+      "path": "PUSH-RECEIPT.txt",
+      "sha256": "87a5678561781cb394112883826a9fe35f384f4db962aca997d22943e4657284"
+    },
+    {
+      "blob": "5a1dcb0697d66be195e054142d34759cb5c0d5ce",
+      "bytes": 3862,
+      "path": "REPORT.md",
+      "sha256": "4b1361675c70060e99e431a19d459c5ec7b8eb86ca0be84263f44bd54e37d294"
+    },
+    {
+      "blob": "5013bd07ed56caa6e5a63c4568e03fecfbee838c",
+      "bytes": 558263,
+      "path": "browser/agent-door-assignee-autonomous-cleared-people-1440.png",
+      "sha256": "cefecc9a9edbe75b0d4c4996a35b94e8d3857c00a4191a185e64934801e9a885"
+    },
+    {
+      "blob": "a673abdd307a40a1b32a741c8ec15249eb25ed13",
+      "bytes": 72645,
+      "path": "browser/agent-door-assignee-autonomous-cleared-people-390.png",
+      "sha256": "80766e3a31e8a147acdc88f5b629560c037e3f44e84598e73df82bd7db26e0b9"
+    },
+    {
+      "blob": "d1154570f739049b0b4e1f9b817fd0e83767dce3",
+      "bytes": 573339,
+      "path": "browser/agent-door-assignee-autonomous-cleared-timeline-1440.png",
+      "sha256": "d73b1528007517cbc29948a9e7d566cfbf9e06483daf574749fcde895f1395dc"
+    },
+    {
+      "blob": "21b9e53680436bc8f56fdb90e7f9625bfb533da4",
+      "bytes": 108521,
+      "path": "browser/agent-door-assignee-autonomous-cleared-timeline-390.png",
+      "sha256": "080877f6ca086f21ba25070516a6493dc4b7c766ad821f35466c4a315fe61a7d"
+    },
+    {
+      "blob": "26e2a7964c1ea368bb9bf228c8078e17e36f3362",
+      "bytes": 550889,
+      "path": "browser/agent-door-assignee-cleared-people-1440.png",
+      "sha256": "5bb403206a973d3dfe02b38e8eb3e7c168396ecb12c32bacfca306c539617da0"
+    },
+    {
+      "blob": "0eb14ce3ba4a1d833c88cc788adac39697e093e3",
+      "bytes": 72161,
+      "path": "browser/agent-door-assignee-cleared-people-390.png",
+      "sha256": "5702c0228ccfe2d1a9a06c9a3c9149e0a1cbe7fa335ef2787415ff8022dca699"
+    },
+    {
+      "blob": "e31c57ed4ea26734aabe555d310caa3902992516",
+      "bytes": 570770,
+      "path": "browser/agent-door-assignee-cleared-timeline-1440.png",
+      "sha256": "71dfb7b83889804c68d02e68282c33fe52860795728ad58d9e846c6c7259583e"
+    },
+    {
+      "blob": "ced011d53f84e5a60765463bb382901be81abae8",
+      "bytes": 106919,
+      "path": "browser/agent-door-assignee-cleared-timeline-390.png",
+      "sha256": "ff836655a12059dab28cc7272f69d5fe0c512d4868f79d7cc4c18b0ca3585be8"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f279-lin-1",
+  "product_head": "f0b38b2ca9669faa3944622cc46f268e1dd1f688",
+  "ref": "refs/heads/evidence/sd-oncall-c-f279-lin-1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f279-lin-1"
+}
