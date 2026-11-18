@@ -9,6 +9,7 @@ import specialist from './oncall-agent-native.mjs';
 import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-revisions.mjs';
 import {actionSubmitNativeRevision} from './oncall-agent-action-submit-native-revision.mjs';
 import {focusedActionEvidenceReplay} from './oncall-agent-action-evidence-replay.mjs';
+import {agedActionEvidenceRetention} from './oncall-agent-action-evidence-retention.mjs';
 import {agedActionSubmitRetention} from './oncall-agent-action-submit-retention.mjs';
 import {actionSubmitResponseLoss} from './oncall-agent-action-submit-response-loss.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
@@ -228,7 +229,7 @@ try{
  await context.unroute('https://evidence.example.invalid/**',stopEvidence);
  // Evidence policy completes the existing P2 follow-up. Its saved material
  // and one sponsor approval are observed in a separate emitted installation.
- await focusedActionEvidenceReplay({async connect(evidenceRuntime){
+ async function connectEvidenceBrowser(evidenceRuntime,{retained=false}={}){
   const evidenceContext=await browser.newContext({baseURL:evidenceRuntime.origin,viewport:{width:1440,height:1000}});
   await evidenceContext.addCookies(evidenceRuntime.cookie.split('; ').map(pair=>{const at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:evidenceRuntime.origin,httpOnly:true,sameSite:'Lax'}}));
   const evidencePage=await evidenceContext.newPage(),evidenceRequests=[],approvalPosts=[];
@@ -236,17 +237,19 @@ try{
   evidencePage.on('request',request=>{if(request.method()==='POST'&&new URL(request.url()).pathname.endsWith('/approve'))approvalPosts.push(request.postDataJSON())});
   return {
    async approve({handle,saved,owner}){
-    await capture('follow-up-evidence-pending',new URL(handle.url).pathname,async()=>{
+    if(!retained)await capture('follow-up-evidence-pending',new URL(handle.url).pathname,async()=>{
      await evidencePage.locator('[data-approval-state="pending"]').waitFor();
      await evidencePage.getByText(owner.name,{exact:false}).first().waitFor();
     },evidenceRuntime,evidencePage);
     await evidencePage.goto(handle.url);
+    await evidencePage.locator('[data-approval-state="pending"]').waitFor();
+    await evidencePage.getByText(owner.name,{exact:false}).first().waitFor();
     await evidencePage.getByRole('button',{name:'Approve',exact:true}).click();
     await evidencePage.locator('[data-approval-state="executed"]').waitFor();
     assert.deepEqual(approvalPosts,[{revision:saved.revision,summary_sha256:saved.summary_sha256}],
      'The named sponsor approves the exact saved revision and summary once');
    },
-   async observe({mode,incident,action,handle}){
+   async observe({mode,incident,action,handle,approved}){
     const response=await evidenceRuntime.http('/api/reviews/'+incident.id+'/material');assert.equal(response.status,200);
     const material=await response.json();
     assert.deepEqual(material.followups,incident.actions,'Protected review material agrees with the stored MCP result');
@@ -257,7 +260,8 @@ try{
     assert.equal(completion.actor,evidenceRuntime.context.agentId);
     const state=await (await evidenceRuntime.http('/api/state')).json();
     const actionOwner=state.members.find(row=>row.id===action.owner);assert.ok(actionOwner);
-    await capture('follow-up-evidence-'+mode,'/reviews/'+incident.id,async()=>{
+    const label=retained?'follow-up-evidence-retained':'follow-up-evidence';
+    await capture(label+'-'+mode,'/reviews/'+incident.id,async()=>{
      await evidencePage.getByRole('dialog',{name:incident.title,exact:true}).waitFor();
      const followups=evidencePage.locator('.review-material-body details').filter({has:evidencePage.locator('summary').filter({hasText:/^Follow-ups \(/})});
      await followups.locator('summary').click();
@@ -272,17 +276,25 @@ try{
      }
      await evidence.scrollIntoViewIfNeeded();
     },evidenceRuntime,evidencePage);
-    if(handle)await capture('follow-up-evidence-executed',new URL(handle.url).pathname,async()=>{
+    if(handle)await capture(label+'-executed',new URL(handle.url).pathname,async()=>{
      await evidencePage.locator('[data-approval-state="executed"]').waitFor();
-     if(evidencePage.viewportSize().width===1440)assert.equal(await evidencePage.getByRole('button',{name:'Approve',exact:true}).count(),0);
+     if(evidencePage.viewportSize().width===1440){
+      assert.equal(await evidencePage.getByRole('button',{name:'Approve',exact:true}).count(),0);
+      if(approved){
+       const response=await evidenceRuntime.http('/agents/api/approvals/'+handle.id);assert.equal(response.status,200);
+       assert.deepEqual((await response.json()).approval,approved);
+      }
+     }
     },evidenceRuntime,evidencePage);
     assert.equal(approvalPosts.length,mode==='held'?1:0,'Completed result retrieval never repeats approval');
     assert.deepEqual(evidenceRequests,[],'Saved material and approval never fetch the evidence URL');
-    console.log('PROBE BASE-AGENT-012 evidence completion browser '+mode+': protected review material equals MCP result; saved P2 Complete and Completes with evidence plus retained evidence link at 1440 and 390; original sponsor approval '+(handle?'executed once':'not needed')+'; zero evidence requests');
+    console.log('PROBE BASE-AGENT-012 '+(retained?'aged ':'')+'evidence completion browser '+mode+': protected review material equals MCP result; saved P2 Complete and Completes with evidence plus retained evidence link at 1440 and 390; original sponsor approval '+(handle?'executed once':'not needed')+'; zero evidence requests');
    },
    close:()=>evidenceContext.close(),
   };
- }});
+ }
+ await focusedActionEvidenceReplay({connect:connectEvidenceBrowser});
+ await agedActionEvidenceRetention({connect:runtime=>connectEvidenceBrowser(runtime,{retained:true})});
  // Each retained submission has isolated native custody. The browser takes
  // the held sponsor step once at T, then only reads the retained result.
  await agedActionSubmitRetention({async connect(retainedRuntime,mode){

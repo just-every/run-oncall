@@ -6520,7 +6520,7 @@
       "executable": false
     },
     "tests/agent-door-browser.mjs": {
-      "sha256": "8689fdee277dd75018a320849bc53ba6f682f48c72faafac8c8a15e4bd8704d0",
+      "sha256": "c542ab66e5de4ff01cc8e2d80e77212b1ac3676d90db48d9a10a2b5f49b3b860",
       "executable": false
     },
     "tests/agent-door-runtime.mjs": {
@@ -6707,6 +6707,10 @@
       "sha256": "cae91e2d6b15ac641681b1fc6e710334d4b8977614c7841a387b20f9f9edce45",
       "executable": false
     },
+    "tests/oncall-agent-action-evidence-retention.mjs": {
+      "sha256": "6b34226a96186d68e0613603e20e020894150090ef6451fe5ae11ab5f10c456d",
+      "executable": false
+    },
     "tests/oncall-agent-action-parity.mjs": {
       "sha256": "8f50f9597cb69f530c18dc1c40a8d56adfe7fa07ae0d0def8d990a8cf6904094",
       "executable": false
@@ -6780,7 +6784,7 @@
       "executable": false
     },
     "tests/oncall-agent-flow.mjs": {
-      "sha256": "531f0346dcf7510acdd0b2cb7ed453212b1b14e543c72f6a1b6e934f63dcf721",
+      "sha256": "84839a5c2d1876670dcf6f182ec063470d8aa8e1881898dc34f9c68bb3d15494",
       "executable": false
     },
     "tests/oncall-agent-incident-replay.mjs": {
