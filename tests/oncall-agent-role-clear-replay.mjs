@@ -16,6 +16,7 @@ export async function scribeClearReadback(runtime,write,bearer,mode){
  const json=async path=>{const response=await http(path);assert.equal(response.status,200);return response.json()};
  const reviews=async()=>(await db.prepare('SELECT * FROM agent_door_reviews ORDER BY id').all()).results;
  const before=await agentReadSnapshot(runtime),paging=await json('/api/paging/state'),reviewsBefore=await reviews();
+ const outboundBefore=await runtime.outboundRequests();
  const resource=await runtime.completeResource(link.uri,{bearer});
  assert.equal(resource.answer,resource.initial,'Standard read completes on the original request');
  assert.equal(resource.content.uri,link.uri);
@@ -50,7 +51,7 @@ export async function scribeClearReadback(runtime,write,bearer,mode){
   assert.equal(readReview,undefined);
   assert.deepEqual(reviewsAfter,reviewsBefore);
  }
- assert.deepEqual(await runtime.outboundRequests(),[]);
+ assert.deepEqual(await runtime.outboundRequests(),outboundBefore,'The resource read makes no outbound requests');
  console.log(`PROBE BASE-AGENT-003 4 ${mode} Scribe clear: original MCP resource link matches the entire saved incident and protected sponsor state at revision ${saved.revision}, with null Scribe and attributed assign-role history; ${mode==='held'?'distinct open read review, original write review unchanged':'direct read without review'}; native records, revisions, state-changing audit and paging unchanged; outbound requests=0`);
 }
 

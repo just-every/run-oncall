@@ -4,8 +4,14 @@ import {agentRuntime,agentEffectSnapshot} from './agent-door-runtime.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 
 /** Recover only a lost completed result; pending approval and its POST are consumed once. */
-export async function actionSubmitResponseLoss(runtime,{approve,observe=async()=>{}}={}){
+export async function actionSubmitResponseLoss(runtime,options={}){
+ await followUpResponseLoss(runtime,'P1','human-review',options);
+ await followUpResponseLoss(runtime,'P2','evidence',options);
+}
+
+async function followUpResponseLoss(runtime,priority,completionPolicy,{approve,observe=async()=>{}}){
  const {db,http,tool,discardToolResponse,context}=runtime,name='oncall.actions.submit';
+ const completesWithEvidence=completionPolicy==='evidence';
  const rows=async(sql,...values)=>(await db.prepare(sql).bind(...values).all()).results;
  const read=async path=>{const response=await http(path);assert.equal(response.status,200);return response.json()};
  const command=async input=>{const response=await http('/api/command',input);assert.equal(response.status,200);return response.json()};
@@ -28,13 +34,13 @@ export async function actionSubmitResponseLoss(runtime,{approve,observe=async()=
  };
  for(const [mode,policy] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
   assert.equal((await runtime.adopt(policy)).status,200);
-  let incident=await command({type:'declare',service:'agent-service',title:'Synthetic lost submission result '+mode,
+  let incident=await command({type:'declare',service:'agent-service',title:`Synthetic lost submission result ${priority} ${mode}`,
    summary:'Ordinary coordination without protected evidence',severity:'warning',alerts:[]});
-  incident=await command({type:'action',incident:incident.id,revision:incident.revision,title:'Synthetic human review follow-up',
-   owner:responder.id,due:'2027-04-12',priority:'P1',completionPolicy:'human-review'});
+  incident=await command({type:'action',incident:incident.id,revision:incident.revision,title:`Synthetic ${priority} ${completionPolicy} follow-up`,
+   owner:responder.id,due:'2027-04-12',priority,completionPolicy});
   const action=incident.actions.at(-1);
   assert.equal(action.owner,responder.id);assert.equal(action.due,'2027-04-12');
-  assert.equal(action.priority,'P1');assert.equal(action.completionPolicy,'human-review');
+  assert.equal(action.priority,priority);assert.equal(action.completionPolicy,completionPolicy);
   assert.equal(action.done,false);assert.equal(action.evidence,'');assert.equal(action.submission,undefined);assert.equal(action.accepted,undefined);
   const args={incident:incident.id,revision:incident.revision,action:action.id,
    evidence:'https://evidence.example.invalid/synthetic-oncall-lost-result',idempotency_key:randomUUID()};
@@ -64,7 +70,8 @@ export async function actionSubmitResponseLoss(runtime,{approve,observe=async()=
    assert.deepEqual(savedApproval.summary.nativeTarget,{kind:'incident',id:incident.id});
    assert.ok(savedApproval.summary.items.includes('Revision '+args.revision));
    assert.ok(savedApproval.summary.items.includes('evidence: '+args.evidence));
-   if(approve)await approve({handle,saved:savedApproval,owner,mode});
+   assert.deepEqual(await runtime.outboundRequests(),[],'A pending submission performs no outbound work');
+   if(approve)await approve({handle,saved:savedApproval,owner,mode,completionPolicy});
    else{
     const page=await http(url.pathname);assert.equal(page.status,200);await page.body.cancel();
     const response=await http('/agents/api/approvals/'+handle.id+'/approve',{
@@ -86,12 +93,18 @@ export async function actionSubmitResponseLoss(runtime,{approve,observe=async()=
   if(pendingCall)assert.equal(call.decision_id,pendingCall.decision.id);
   assert.equal(result.revision,incident.revision+1);assert.equal(result.timeline.length,incident.timeline.length+1);
   assert.deepEqual(result.timeline.slice(0,-1),incident.timeline);
-  assert.deepEqual(result.actions,[{...action,evidence:args.evidence,submission:{by:context.agentId,at:result.timeline.at(-1).at,evidence:args.evidence}}]);
-  assert.equal(result.actions[0].done,false);assert.equal(result.actions[0].accepted,undefined);
   const entry=result.timeline.at(-1);
+  const accepted=completesWithEvidence?{by:context.agentId,at:entry.at}:undefined;
+  assert.deepEqual(result.actions,[{
+   ...action,done:completesWithEvidence,evidence:args.evidence,
+   submission:{by:context.agentId,at:entry.at,evidence:args.evidence},
+   ...(accepted&&{accepted}),
+  }]);
+  assert.equal(result.actions[0].done,completesWithEvidence);assert.deepEqual(result.actions[0].accepted,accepted);
   assert.equal(entry.kind,'complete');assert.equal(entry.actor,context.agentId);
   assert.equal(entry.metadata.agent.agent.id,context.agentId);assert.equal(entry.metadata.agent.for.id,owner.id);
-  assert.equal(entry.text,'Completion evidence submitted; awaiting human acceptance: '+action.title+' — '+args.evidence);
+  const completionText=completesWithEvidence?'Completed under evidence policy':'Completion evidence submitted; awaiting human acceptance';
+  assert.equal(entry.text,completionText+': '+action.title+' — '+args.evidence);
   assert.deepEqual(entry.metadata.agent.approvers,mode==='held'?[{id:owner.id,name:owner.name}]:[]);
   assert.deepEqual(result,{...incident,actions:result.actions,revision:incident.revision+1,timeline:result.timeline});
   assert.deepEqual(once.application,{...before.application,revision:before.application.revision+1,
@@ -112,6 +125,9 @@ export async function actionSubmitResponseLoss(runtime,{approve,observe=async()=
   if(mode==='held'){
    const approval=once.records.agent_door_approvals.find(row=>row.id===handle.id);
    assert.equal(approval.state,'executed');assert.deepEqual(JSON.parse(approval.result),saved);
+   const executed=(await read('/agents/api/approvals/'+handle.id)).approval;
+   assert.equal(executed.state,'executed');assert.equal(executed.revision,savedApproval.revision);
+   assert.equal(executed.summary_sha256,savedApproval.summary_sha256);
    assert.deepEqual(JSON.parse(approval.approvals).map(row=>({person:row.person,ref:row.ref})),[{person:owner.id,ref:'sponsor'}]);
    assert.equal(saved.approval.id,handle.id);assert.equal(saved.receipt.approval_id,handle.id);
    assert.equal(saved.receipt.decision_id,call.decision_id);assert.deepEqual(saved.receipt.approved_by,[owner.id]);
@@ -155,7 +171,8 @@ export async function actionSubmitResponseLoss(runtime,{approve,observe=async()=
   await observe({mode,incident:result,action:result.actions[0],handle,saved:savedApproval});
   assert.deepEqual(await snapshot(),once,'Reading the saved follow-up preserves terminal custody');
   assert.deepEqual(await runtime.outboundRequests(),[],'No submission or recovery fetches the evidence URL or sends outbound requests');
-  console.log('PROBE BASE-AGENT-012 acceptance 2 '+mode+' oncall.actions.submit: completed MCP stream destroyed at headers with unread body; D1 terminal original and one agent-attributed owned due-dated P1 human-review submission established before recovery; new RPC id returns original outcome and executed approval receipt where present; one native audit commit and revision increment; done=false and no human acceptance; custody unchanged apart from linked replay-attempt audit and capacity bookkeeping; zero outbound requests and no evidence fetch');
+  const nativeOutcome=completesWithEvidence?'done=true with agent submission and acceptance attribution':'done=false with agent submission and no human acceptance';
+  console.log(`PROBE BASE-AGENT-012 acceptance 2 ${mode} oncall.actions.submit: completed MCP stream destroyed at headers with unread body; D1 terminal original and one owned due-dated ${priority} ${completionPolicy} follow-up with ${nativeOutcome} before recovery; new RPC id returns original outcome and executed approval receipt where present; one native audit commit and revision increment; custody unchanged apart from linked replay-attempt audit and capacity bookkeeping; zero outbound requests and no evidence fetch`);
  }
  assert.equal((await runtime.adopt()).status,200);
 }

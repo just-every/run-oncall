@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "45225c95d128908ffa651e5ca8949874e8c302e18b051d87a584d1ff957d00eb",
+      "sha256": "bdcdae210f2f716c2a53be9e0ec90fe56907dc7358a84e048d2e2d25a19fc499",
       "executable": false
     },
     "DEMO.md": {
@@ -6520,7 +6520,7 @@
       "executable": false
     },
     "tests/agent-door-browser.mjs": {
-      "sha256": "705fd842dc1d742c747628544770e07f1a8c82f4682743066e26454493a9b2fd",
+      "sha256": "1e15fcbe8b1dbcafd03bd1b9c5b760a8ad729714812e5699c3bd96f60e947a33",
       "executable": false
     },
     "tests/agent-door-runtime.mjs": {
@@ -6720,7 +6720,7 @@
       "executable": false
     },
     "tests/oncall-agent-action-submit-response-loss.mjs": {
-      "sha256": "1ce2c7b481be4deca8992f383191ccd47c1fb62aa611dc59ef57852b76067d00",
+      "sha256": "5ead9fcb192649d09b0273a68dddfd96494eb3f37b83f854b75c79b3d0901fc8",
       "executable": false
     },
     "tests/oncall-agent-action-submit-retention.mjs": {
@@ -6812,7 +6812,7 @@
       "executable": false
     },
     "tests/oncall-agent-role-clear-replay.mjs": {
-      "sha256": "fead9ccd942f21c0d087b4eeccb63b9a6ba922260eaa90e2ff131f99f691cff5",
+      "sha256": "e572d91d81f5de64cbae3eb86d17b15005d26a00a1008847c9aefdd4793ac8ec",
       "executable": false
     },
     "tests/oncall-agent-role-replay.mjs": {

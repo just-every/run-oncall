@@ -1027,6 +1027,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 5. Bytes over budget return `budget_exhausted` and no partial content.
 6. Customer-sourced text carries the untrusted marker.
 
+**Observed (18 November 2026, Run Edit Run fleet).** For acceptance 4, the admitted agent used standard-only `oncall.incidents.update` with `change=assign-role`, `role=scribe` and `member=null` on an evidence-free acknowledged incident with an assigned Scribe. The same agent followed the URI in the original `resource_link`. Under autonomous and held company policies, the complete resource matched the write result and the sponsor's protected `GET /api/state` record, including the new revision, null Scribe, attributed role assignment history and retained companion roles. The autonomous read completed without review. The held read opened its own review and preserved the original write review. The reads preserved native records, revisions, state-changing audit and paging and made zero outbound requests. The saved incident and timeline showed the cleared role and attribution at 1440 and 390 pixels. The shipped path is `src/agent-door/coordination-tools.ts:140–147`, `src/agent-door/resources.ts:154–157` and `src/modules/agent-door/wire.ts:41–43`. The journeys are `tests/oncall-agent-role-clear-replay.mjs` and `tests/agent-door-browser.mjs`.
+
 #### BASE-AGENT-004 — Business identity and short-lived, audience-bound tokens
 
 *Tier:* Agent surface
