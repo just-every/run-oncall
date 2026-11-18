@@ -1,10 +1,10 @@
 import {readableErasure,coveredSwap,nextCoverageBrowser} from './stranger-trip-steps.mjs'
-import {savedEmailBundle} from './email-fixtures.mjs'
-import {ruleDeclarationAuditFault} from './worker.mjs'
+import {localPart,mail,recoveryRules,savedEmailBundle} from './email-fixtures.mjs'
+import {durableSnapshot,ruleDeclarationAuditFault} from './worker.mjs'
 import {pathToFileURL} from 'node:url'
 import {resolve} from 'node:path'
 import {isDeepStrictEqual} from 'node:util'
-import {readFile,mkdir} from 'node:fs/promises'
+import {readFile,mkdir,writeFile} from 'node:fs/promises'
 import {selectRoutedSource,openIncidentAction,focusWorkspace,openWorkspaceSection,routingBrowser,openHistoryComparison,keyboardUser} from './keyboard.mjs'
 import {randomBytes,randomUUID} from 'node:crypto'
 import AxeBuilder from '@axe-core/playwright'
@@ -2115,7 +2115,7 @@ async function unknownWorkspaceLinks(page,context) {
 
 
 // Saved email import is exercised at one width; 390 is visual evidence only.
-export async function importedEmailBrowser(page,context) {
+export async function importedEmailBrowser(page,context,worker) {
  const directory=process.env.ONCALL_BROWSER_EVIDENCE??'./evidence/browser',origin=new URL(page.url()).origin;
  await mkdir(directory,{recursive:true});await page.setViewportSize({width:1440,height:1000});
  const api=async(path,data)=>{
@@ -2173,6 +2173,116 @@ export async function importedEmailBrowser(page,context) {
   assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0);
  }
  console.log('PASS OC-070 email import browser: mapping reports and original unsupported action, inactive custody, explicit administrator activation and one-time address; assertions at 1440; changed screens captured once at 1440 and 390');
+ await savedMailDraftBrowser(page,context,worker,{api,directory,service,owner:session.member.id});
+}
+
+async function savedMailDraftBrowser(page,context,worker,{api,directory,service,owner}) {
+ const id='synthetic-oncall-mail-draft',part=localPart();
+ const address=await api('/api/email/addresses',{
+  id,name:'Saved mail comparison',service,owner,localPart:part,mode:'custom',fallback:'subject',rules:recoveryRules(),
+ });
+ const cases=[
+  {subject:'FAILED: synthetic-oncall-db',rule:'failed',key:'synthetic-oncall-db',action:'trigger',outcome:'opened'},
+  {subject:'OK: synthetic-oncall-db',rule:'ok',key:'synthetic-oncall-db',action:'resolve',outcome:'recovered'},
+  {subject:'Unmatched observation',rule:null,key:'Unmatched observation',action:'trigger',outcome:'opened'},
+ ];
+ for(const {subject} of cases) {
+  assert.equal((await mail(worker,part,subject)).status,200,'emitted email door admitted '+subject);
+ }
+ const saved=await api('/api/email'),samples=saved.samples.filter(sample=>sample.address===id);
+ const published=saved.versions.find(version=>version.address===id);
+ assert.deepEqual(samples.map(sample=>sample.subject),cases.map(row=>row.subject));
+ assert.equal(published.fallback,'subject');
+ const previewPath='/api/email/addresses/'+id+'/preview';
+ const draft={revision:address.revision,mode:published.mode,fallback:'quarantine',rules:published.rules,samples:samples.map(s=>s.id)};
+ assert.equal((await worker.request(previewPath,draft)).status,401,'anonymous callers cannot compare saved mail');
+ await page.goto('/settings/integrations/'+encodeURIComponent('email:'+id));
+ await page.getByText('Rules · version '+published.version,{exact:true}).click();
+ const comparison=page.getByText('Test draft against saved mail',{exact:true});
+ await comparison.click();
+ const panel=comparison.locator('..'),test=panel.getByRole('button',{name:'Test draft rules',exact:true});
+ const beforeArchive=await api('/api/archive'),beforePaging=await api('/api/paging/state');
+ const beforeDurable=durableSnapshot(worker),beforeOutbound=await worker.outboundRequests();
+ const browserOutbound=[],browserMutations=[];
+ const record=request=>{
+  const url=new URL(request.url());
+  if(url.origin!==worker.origin)browserOutbound.push(url.origin);
+  else if(request.method()!=='GET')browserMutations.push({method:request.method(),path:url.pathname});
+ };
+ context.on('request',record);
+ try {
+  await expect(page.getByLabel('Unmatched mail',{exact:true})).toHaveValue('subject');
+  await page.getByLabel('Unmatched mail',{exact:true}).selectOption('quarantine');
+  const preview=page.waitForResponse(response=>new URL(response.url()).pathname===previewPath&&response.request().method()==='POST');
+  await test.click();
+  const response=await preview;
+  assert.equal(response.status(),200);
+  assert.deepEqual(response.request().postDataJSON(),draft,'the control sends only the draft fallback change and the current saved samples');
+  const result=await response.json();
+  assert.equal(result.sideEffects,false);
+  assert.deepEqual(result.decisions.map(row=>row.sample),samples.map(s=>s.id));
+  await expect(panel.getByRole('status')).toContainText(cases.length+' saved messages compared');
+  const list=panel.getByRole('list',{name:'Saved mail decisions'});
+  await expect(list.getByRole('listitem')).toHaveCount(cases.length);
+  const actions={trigger:'Trigger an alert',resolve:'Recover the matching alert',quarantine:'Held for review'};
+  const fields=decision=>({mode:decision.mode,version:decision.version,rule:decision.rule,key:decision.key,action:decision.action});
+  const observed=[];
+  for(const expected of cases) {
+   const sample=samples.find(s=>s.subject===expected.subject);
+   const archived=beforeArchive.emailReceipts.find(r=>r.sample===sample.id);
+   const {historical,proposed}=result.decisions.find(row=>row.sample===sample.id);
+   assert.equal(archived.outcome,expected.outcome);
+   assert.deepEqual(historical,archived.decision);
+   const retained={mode:'custom',version:published.version,rule:expected.rule,key:expected.key,action:expected.action};
+   assert.deepEqual(fields(historical),retained);
+   assert.deepEqual(fields(proposed),{
+    ...retained,version:published.version+1,key:expected.rule?expected.key:null,action:expected.rule?expected.action:'quarantine',
+   });
+   const row=list.getByRole('listitem').filter({has:page.getByText(sample.subject,{exact:true})});
+   for(const [label,decision] of [['Historical decision',historical],['Tested draft decision',proposed]]) {
+    const side=row.getByRole('group',{name:label,exact:true});
+    for(const text of [actions[decision.action],'Mode: Custom rules','Rules version: '+decision.version,
+     'Matched rule: '+(decision.rule??'None'),'Key: '+(decision.key??'None')]) {
+     await expect(side.getByText(text,{exact:true})).toBeVisible();
+    }
+   }
+   observed.push({subject:sample.subject,outcome:archived.outcome,historical:fields(historical),proposed:fields(proposed)});
+  }
+  assert.deepEqual(await api('/api/email'),saved,'published rules, address revision, samples, receipts and quarantine are unchanged');
+  assert.deepEqual(await api('/api/paging/state'),beforePaging,'paging state and custody are unchanged');
+  assert.ok(isDeepStrictEqual(durableSnapshot(worker),beforeDurable),'the preview changes no durable records or audit rows');
+  assert.ok(isDeepStrictEqual(await api('/api/archive'),beforeArchive),'alerts, revisions and archived decisions are unchanged');
+  assert.deepEqual(await worker.outboundRequests(),beforeOutbound);
+  assert.deepEqual(beforeOutbound,[],'the Worker makes zero outbound requests');
+  const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();
+  assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
+  const layouts=[];
+  for(const width of [1440,390]) {
+   await page.setViewportSize({width,height:1000});
+   const layout=await panel.evaluate(node=>({
+    width:innerWidth,documentWidth:document.documentElement.scrollWidth,
+    minimumTextSize:Math.min(...[...node.querySelectorAll('summary,button,p,strong')].map(element=>parseFloat(getComputedStyle(element).fontSize))),
+   }));
+   if(width===1440) {
+    assert.ok(layout.documentWidth<=width,'saved mail comparison fits desktop');
+    assert.ok(layout.minimumTextSize>=13,'saved mail comparison text is readable');
+   }
+   layouts.push(layout);
+   await panel.screenshot({path:directory+'/email-draft-comparison-'+width+'.png'});
+  }
+  assert.deepEqual(browserMutations,[{method:'POST',path:previewPath}],'the browser only posts to the read-only preview door');
+  assert.deepEqual(browserOutbound,[],'the browser makes zero outbound requests');
+  await writeFile(directory+'/email-draft-receipt.json',JSON.stringify({
+   assertionWidth:1440,layouts,previewStatus:response.status(),anonymousStatus:401,publishedVersion:published.version,
+   publishedFallback:published.fallback,draftFallback:draft.fallback,samples:observed,unchangedDurableRows:true,
+   unchangedAudit:true,unchangedPaging:true,unchangedArchive:true,workerOutboundRequests:0,browserOutboundRequests:0,
+   seriousCriticalAccessibilityFindings:0,
+  },null,2)+'\n');
+ } finally {
+  context.off('request',record);
+  await page.setViewportSize({width:1440,height:1000});
+ }
+ console.log('PROBE OC-070 7: savedMailDraftBrowser compared three saved decisions through the admin preview; matched trigger and resolve agreed with the archive; unmatched trigger became proposed quarantine; zero writes and outbound requests; captures at 1440 and 390');
 }
 
 // Read the actual MCP-saved service after reloading its Settings route.

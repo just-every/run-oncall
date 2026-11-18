@@ -1165,7 +1165,7 @@ try {
   await coverageRulesBrowser(page,context,1440,session,{setTime});
   await readinessBrowser(page,context);
  }
- if(focused==='imported-email')await importedEmailBrowser(page,context);
+ if(focused==='imported-email')await importedEmailBrowser(page,context,worker);
  if(focused==='events-source')await eventsSourceBrowser(page,context);
  if(focused==='sender-setup'){
   const request=async(path,data)=>{const r=await worker.request(path,data,owner.cookie);assert.ok(r.status>=200&&r.status<300,JSON.stringify(r.value));return r.value;};
@@ -1195,7 +1195,7 @@ try {
  }
  }
  if(!['sender-setup','response-policy','imported-email','events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','workspace-links','alert-run'].includes(focused))await readinessBrowser(page,context)
- if(!focused)await importedEmailBrowser(page,context)
+ if(!focused)await importedEmailBrowser(page,context,worker)
  if(!focused)await responseReportBrowser(browser)
  if(!focused)await eventsSourceBrowser(page,context)
  assert.deepEqual(errors,[],'no browser application errors')
