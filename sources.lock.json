@@ -2344,11 +2344,11 @@
       "executable": false
     },
     "src/email/email.css": {
-      "sha256": "8105135a609cae3b00a7ec9a1d21baf4e30ab8e2d4df138e4907381e6c70dff1",
+      "sha256": "ad50540ece6fdbf911017758b0a0f7cbdf0b77b53d660a0851e835a228560251",
       "executable": false
     },
     "src/email/EmailActivity.tsx": {
-      "sha256": "fc55439569d9e742223a30d05e2c80df775e1f19afbec212730be31863910a30",
+      "sha256": "ddbcb6ccbe91ad918c4ab5ac7e567bcfb3d82ecd0f8c03da3b8c545642fd2a81",
       "executable": false
     },
     "src/email/EmailRuleEditor.tsx": {
@@ -2356,7 +2356,7 @@
       "executable": false
     },
     "src/email/EmailWorkspace.tsx": {
-      "sha256": "7925060222b47656edee4634bd556149400db034fc946f7c5f76d7da2f262a66",
+      "sha256": "6ec2dbde9ecf6d37c9846aa482f9ac593d7f9d3ee82974baf9de2ba3e13d5e88",
       "executable": false
     },
     "src/email/fence.ts": {
@@ -2384,7 +2384,7 @@
       "executable": false
     },
     "src/email/types.ts": {
-      "sha256": "7627af8c6bcdde2ea61384cdcd36394587b0f2d3dedd69182b0c8c8f3b5e3da6",
+      "sha256": "fa9694e08765e38fcbf51a230f48e9a2a1fcc4f0301934b13253e8029e8f51ce",
       "executable": false
     },
     "src/erasure-fence.ts": {
