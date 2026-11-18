@@ -1,0 +1,352 @@
+{
+  "repository": "just-every/run-oncall",
+  "tag": "sd-oncall-c-f278",
+  "branch": "cloud/sd-oncall-c-f278",
+  "head": "cd0db34aa24058645045604b9601f92d5bee4aa5",
+  "pushed": true,
+  "save": "a0f87bbf151bf170139617c4a0b95a0457e60381",
+  "main_base": "93b25a01d22f5b16bf679c6f4008f0e444980196",
+  "remote_main_at_readback": "6ef9bc1294fc981c71e990df9bf12104337c81b3",
+  "counts": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "target": {
+    "id": "BASE-AGENT-012",
+    "status": "missing",
+    "builder_claim": "partial",
+    "selected_observation": 4
+  },
+  "built_with": {
+    "node": "24.19.0",
+    "pnpm": "10.12.4",
+    "browser": "system Chromium"
+  },
+  "local_checks": [
+    {
+      "command": "cloud_run timeout 1200 npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "exit": 0
+    },
+    {
+      "command": "node tests/agent-door-browser.mjs with system Chromium",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check after generation",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "generated_views_restored": true,
+  "migration_ledger": "out of scope because the migration tree is unchanged",
+  "runtime_seconds": 544.2,
+  "probes": [
+    "PROBE BASE-AGENT-012 4 autonomous: override native revision 1, no expected_revision -> revision_conflict, current_revision 2 in metadata and text; scoped-out and absent indistinguishable; fresh revision -> one native override and audit, autonomous; replay unchanged; zero outbound requests",
+    "PROBE BASE-AGENT-012 4 held: override native revision 1, no expected_revision -> revision_conflict, current_revision 2 in metadata and text; scoped-out and absent indistinguishable; fresh revision -> one native override and audit, one exact sponsor approval; replay unchanged; zero outbound requests",
+    "PROBE BASE-AGENT-012 4 autonomous: override native revision 2, stale expected_revision 1 -> revision_conflict, current_revision 2 in metadata and text; scoped-out and absent indistinguishable; fresh revision -> one native override and audit, autonomous; replay unchanged; zero outbound requests",
+    "PROBE BASE-AGENT-012 4 held: override native revision 2, stale expected_revision 1 -> revision_conflict, current_revision 2 in metadata and text; scoped-out and absent indistinguishable; fresh revision -> one native override and audit, one exact sponsor approval; replay unchanged; zero outbound requests"
+  ],
+  "browser_observations": [
+    "Browser proof override-revision-retained-autonomous 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof override-revision-retained-autonomous 390: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof override-revision-retained-held 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof override-revision-retained-held 390: fits=true serious/critical=0 undersized-controls=0"
+  ],
+  "screenshots": [
+    {
+      "file": "agent-door-override-revision-retained-autonomous-1440.png",
+      "mode": "autonomous",
+      "width": 1440,
+      "height": 3837,
+      "bytes": 376879,
+      "sha256": "463f3b5f822cab852bca92dce620ad22cb6bdd5c66d6c3fcdc96445573f605df"
+    },
+    {
+      "file": "agent-door-override-revision-retained-autonomous-390.png",
+      "mode": "autonomous",
+      "width": 390,
+      "height": 4286,
+      "bytes": 304228,
+      "sha256": "956af7ba26f0bc15ecff52db56a67ad73d775e2d9d2ace00d8fd7e3cfea05957"
+    },
+    {
+      "file": "agent-door-override-revision-retained-held-1440.png",
+      "mode": "held",
+      "width": 1440,
+      "height": 3837,
+      "bytes": 374716,
+      "sha256": "50a9ab8d5bd68fc6f52ecf2e4c48ed0a6c025ca5496f11494cbe7257afd265ec"
+    },
+    {
+      "file": "agent-door-override-revision-retained-held-390.png",
+      "mode": "held",
+      "width": 390,
+      "height": 4254,
+      "bytes": 300526,
+      "sha256": "d988fd24609ca94e74aea3d85e7f562b8fd3423f60addcb4399916144fb21584"
+    }
+  ],
+  "proof_lines": {
+    "clause_evidence": {
+      "path": "CONTRACT.md",
+      "line": 1157
+    },
+    "runtime_enrollment": {
+      "path": "tests/runtime.mjs",
+      "line": 142
+    },
+    "journey_enrollment": {
+      "path": "tests/oncall-agent-flow.mjs",
+      "line": 1035
+    },
+    "metadata_and_text": {
+      "path": "tests/oncall-agent-schedule-replay.mjs",
+      "line": 101
+    },
+    "independent_edit": {
+      "path": "tests/oncall-agent-schedule-replay.mjs",
+      "line": 132
+    },
+    "scope_and_effect_custody": {
+      "path": "tests/oncall-agent-schedule-replay.mjs",
+      "line": 153
+    },
+    "one_approval_and_write": {
+      "path": "tests/oncall-agent-schedule-replay.mjs",
+      "line": 169
+    },
+    "one_audit": {
+      "path": "tests/oncall-agent-schedule-replay.mjs",
+      "line": 207
+    },
+    "identical_retrieval": {
+      "path": "tests/oncall-agent-schedule-replay.mjs",
+      "line": 240
+    },
+    "browser_readback": {
+      "path": "tests/agent-door-browser.mjs",
+      "line": 160
+    },
+    "scoped_native_target": {
+      "path": "src/agent-door/schedule-tools.ts",
+      "line": 73
+    },
+    "base_optional_check": {
+      "path": "src/modules/agent-door/pipeline.ts",
+      "line": 142
+    }
+  },
+  "main_runs": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "93b25a01d22f5b16bf679c6f4008f0e444980196",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44283231598",
+      "id": 44283231598,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "93b25a01d22f5b16bf679c6f4008f0e444980196",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44283231793",
+      "id": 44283231793,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "93b25a01d22f5b16bf679c6f4008f0e444980196",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44279924349",
+      "id": 44279924349,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "verify": {
+    "name": "Verify",
+    "event": "push",
+    "head_sha": "cd0db34aa24058645045604b9601f92d5bee4aa5",
+    "status": "completed",
+    "conclusion": "failure",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44287329926",
+    "id": 44287329926
+  },
+  "verify_jobs": [
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 134743250998,
+      "name": "plan",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        {
+          "conclusion": "failure",
+          "name": "Check the generated contract documents"
+        }
+      ],
+      "id": 134743473903,
+      "name": "contract-docs",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 134743473998,
+      "name": "build",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "id": 134743477022,
+      "name": "light",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 134745459756,
+      "name": "shards (transfer)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 134745459770,
+      "name": "shards (intake)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 134745459783,
+      "name": "shards (hosted)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 134745459817,
+      "name": "shards (agents)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 134745459818,
+      "name": "shards (runtime)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 134745459848,
+      "name": "shards (browser)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 134745459851,
+      "name": "shards (changes)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 134745460099,
+      "name": "shards (triage)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 134751878725,
+      "name": "full-push-proof",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "id": 134751881829,
+      "name": "nightly-proof",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        {
+          "conclusion": "failure",
+          "name": "Require the selected coverage and its proof"
+        }
+      ],
+      "id": 134751923236,
+      "name": "verify",
+      "status": "completed"
+    }
+  ],
+  "verify_note": "The only originating failure was contract-docs job 134743473903 on the restored generated ACCEPTANCE.md view. Verify aggregate job 134751923236 failed on that dependency. Build, all eight shards and full-push-proof passed, including agents job 134745459817 and hosted job 134745459783. The generated-view exception applies.",
+  "terminal": "ready",
+  "publication_scan": {
+    "commit": "cd0db34aa24058645045604b9601f92d5bee4aa5",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "owner": "guarded lander"
+  },
+  "captured_at": "2026-11-18T11:15:18+00:00",
+  "verify_failed_job_archives": [
+    {
+      "job": 134743473903,
+      "archive_exit": 0,
+      "check_exit": 1,
+      "observed": "ACCEPTANCE.md: generated content differs; run contract-docs write."
+    },
+    {
+      "job": 134751923236,
+      "archive_exit": 0,
+      "check_exit": 1,
+      "observed": {
+        "CONTRACT_DOCS": "failure",
+        "BUILD": "success",
+        "SHARDS": "success",
+        "PUSH_PROOF": "success"
+      }
+    }
+  ]
+}

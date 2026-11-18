@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "d7e43c2185e8a98c9adb1ce746c1f905050d43c3",
+      "bytes": 13045,
+      "path": "REPORT.md",
+      "sha256": "a02686e1a012fe7112c060f1565a2c2669998c80166fc492e1798eb3d4d26752"
+    },
+    {
+      "blob": "23bd99edba0b96611be9aa9f546dc52435c8d76d",
+      "bytes": 376879,
+      "path": "agent-door-override-revision-retained-autonomous-1440.png",
+      "sha256": "463f3b5f822cab852bca92dce620ad22cb6bdd5c66d6c3fcdc96445573f605df"
+    },
+    {
+      "blob": "65b9221e34a64493fc5eb13696d0177eec9a1e3c",
+      "bytes": 304228,
+      "path": "agent-door-override-revision-retained-autonomous-390.png",
+      "sha256": "956af7ba26f0bc15ecff52db56a67ad73d775e2d9d2ace00d8fd7e3cfea05957"
+    },
+    {
+      "blob": "8d87682f118ba147102a9e84c3d0b9eb2c533d62",
+      "bytes": 374716,
+      "path": "agent-door-override-revision-retained-held-1440.png",
+      "sha256": "50a9ab8d5bd68fc6f52ecf2e4c48ed0a6c025ca5496f11494cbe7257afd265ec"
+    },
+    {
+      "blob": "1fa51cf40d11d402fe2c30e633ebd544e4981117",
+      "bytes": 300526,
+      "path": "agent-door-override-revision-retained-held-390.png",
+      "sha256": "d988fd24609ca94e74aea3d85e7f562b8fd3423f60addcb4399916144fb21584"
+    },
+    {
+      "blob": "2eac0d4d83021f51d117b6380f1698c0e390b6c0",
+      "bytes": 10658,
+      "path": "receipt.json",
+      "sha256": "011b4f5b7d6d8c0e9b2a9ee26cbbe52095e6c93274dd89a96c34697dcfe867d1"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f278",
+  "product_head": "cd0db34aa24058645045604b9601f92d5bee4aa5",
+  "ref": "refs/heads/evidence/sd-oncall-c-f278",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f278"
+}
