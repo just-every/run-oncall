@@ -1,0 +1,216 @@
+{
+  "branch": "cloud/sd-oncall-c-f283",
+  "candidate_jobs": [
+    {
+      "conclusion": "success",
+      "head_sha": "2b35bfca9945f8a0e288a7e76de93864770abd45",
+      "id": 134870010959,
+      "name": "plan",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "failure",
+      "head_sha": "2b35bfca9945f8a0e288a7e76de93864770abd45",
+      "id": 134870296576,
+      "name": "contract-docs",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "failure",
+          "name": "Check the generated contract documents"
+        }
+      ]
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "2b35bfca9945f8a0e288a7e76de93864770abd45",
+      "id": 134870296683,
+      "name": "build",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "skipped",
+      "head_sha": "2b35bfca9945f8a0e288a7e76de93864770abd45",
+      "id": 134870299985,
+      "name": "light",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "2b35bfca9945f8a0e288a7e76de93864770abd45",
+      "id": 134872756839,
+      "name": "shards (hosted)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "2b35bfca9945f8a0e288a7e76de93864770abd45",
+      "id": 134872756858,
+      "name": "shards (changes)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "2b35bfca9945f8a0e288a7e76de93864770abd45",
+      "id": 134872756940,
+      "name": "shards (transfer)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "2b35bfca9945f8a0e288a7e76de93864770abd45",
+      "id": 134872756969,
+      "name": "shards (browser)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "2b35bfca9945f8a0e288a7e76de93864770abd45",
+      "id": 134872756979,
+      "name": "shards (intake)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "2b35bfca9945f8a0e288a7e76de93864770abd45",
+      "id": 134872756989,
+      "name": "shards (runtime)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "2b35bfca9945f8a0e288a7e76de93864770abd45",
+      "id": 134872757002,
+      "name": "shards (agents)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "2b35bfca9945f8a0e288a7e76de93864770abd45",
+      "id": 134872757018,
+      "name": "shards (triage)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "2b35bfca9945f8a0e288a7e76de93864770abd45",
+      "id": 134881457086,
+      "name": "full-push-proof",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "skipped",
+      "head_sha": "2b35bfca9945f8a0e288a7e76de93864770abd45",
+      "id": 134881461039,
+      "name": "nightly-proof",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "failure",
+      "head_sha": "2b35bfca9945f8a0e288a7e76de93864770abd45",
+      "id": 134881536706,
+      "name": "verify",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "failure",
+          "name": "Require the selected coverage and its proof"
+        }
+      ]
+    }
+  ],
+  "candidate_run_site": "Pending main landing",
+  "candidate_verify": {
+    "conclusion": "failure",
+    "event": "push",
+    "head_sha": "2b35bfca9945f8a0e288a7e76de93864770abd45",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44323938445",
+    "id": 44323938445,
+    "status": "completed"
+  },
+  "candidate_verify_note": "The build, all eight shards and full-push-proof passed. The only underlying failure was the expected ACCEPTANCE.md freshness difference (contract-docs job 134870296576). The final verify job 134881536706 failed on that dependency. Both job logs were read successfully. The cloud handoff rule treats this generated-view-only result as eligible for READY.",
+  "contract": {
+    "counts_after": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41,
+      "total": 101
+    },
+    "counts_before": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41,
+      "total": 101
+    },
+    "differing_generated_view": [
+      "ACCEPTANCE.md"
+    ],
+    "generated_views_check_after_restore": 1,
+    "generated_views_on_candidate": "Kept from main for the lander",
+    "status": {
+      "after": "PARTIAL",
+      "before": "PARTIAL",
+      "id": "OC-060"
+    }
+  },
+  "head": "2b35bfca9945f8a0e288a7e76de93864770abd45",
+  "lease_base": "443c3613cefdf7359fac0ca728da428cf9e280a0",
+  "local": {
+    "ONCALL_PRODUCT_JOURNEY=triage node tests/product-browser.mjs": 0,
+    "contract-docs write and check before restoring views": 0,
+    "edition-authoring lock and check": 0,
+    "migration ledger": "No migrations changed",
+    "node tests/triage.mjs": 0,
+    "npx rer build": 0,
+    "pnpm exec rer check --profile first-party": 0,
+    "pnpm typecheck": 0
+  },
+  "main_push_runs": {
+    "Run site": 44322242470,
+    "Verify": 44322242486
+  },
+  "parent": "518317b385c4535599bfc670dd676da46069b451",
+  "product_push": "published",
+  "publication_scan": "Pending fleet full-history scan",
+  "regression": {
+    "command": "ONCALL_TRIAGE_PART=bulk node tests/triage.mjs",
+    "exit": 1,
+    "failure": "Mine returned 2 rows after explicit unassignment. Expected 1.",
+    "test": "triageBulkCompletion"
+  },
+  "repository": "just-every/run-oncall",
+  "screens": [
+    "OC-060-assignment-mine-1440.png",
+    "OC-060-assignment-mine-390.png",
+    "OC-060-assignment-unassigned-1440.png",
+    "OC-060-assignment-unassigned-390.png",
+    "OC-060-triggered-1440.png",
+    "OC-060-triggered-390.png",
+    "OC-060-snoozed-1440.png",
+    "OC-060-snoozed-390.png",
+    "OC-060-low-open-1440.png",
+    "OC-060-low-open-390.png",
+    "OC-060-low-acknowledged-1440.png",
+    "OC-060-low-acknowledged-390.png",
+    "OC-060-low-resolved-1440.png",
+    "OC-060-low-resolved-390.png"
+  ],
+  "source_and_test_sha256": {
+    "src/family/response-operations/triage.ts": "a0074c3c31f940b7662f03e698a84881e956238b46fa39fa58031b4fff3609c5",
+    "tests/product-browser-journey.mjs": "9067633772a3a284317e71840df48f1b4b44af15b28fae6e73e936a68812efd2",
+    "tests/triage.mjs": "58a888607ff06bccdf492957fa3b0267e2b1aee9aeeaab3fd5396bbfc699431b"
+  }
+}
