@@ -1,0 +1,34 @@
+{
+  "files": [
+    {
+      "blob": "47728b0a74ac3bcb19c88972c7d3e3bffa15c4f5",
+      "bytes": 8926,
+      "path": "REPORT.md",
+      "sha256": "f7a697f48b9f8d4c787c598d98d940bd765bfd0cebfb6c6601ba9d92a6e1df07"
+    },
+    {
+      "blob": "84a0386d004c8a17d71435013f779dc6fbdc0457",
+      "bytes": 9939,
+      "path": "candidate-receipt.json",
+      "sha256": "04ec38b7d4c2e07fb3a6e6883be789f25abb32a01b89859fc7f3cab7fa2f34f5"
+    },
+    {
+      "blob": "23f98835965b9de5bc7108965806634d6f5a7905",
+      "bytes": 108522,
+      "path": "surface-002-saved-runbook-1440.png",
+      "sha256": "eab6614165347dbca0ffdb76af14bafbd5fbb2c436c0d680fb9832646d721268"
+    },
+    {
+      "blob": "2a65e967916bf2811d813ec1c517bb4e1bf501ae",
+      "bytes": 59367,
+      "path": "surface-002-saved-runbook-390.png",
+      "sha256": "da1864ec0db2ac9ab2fc76d9882ba14d36e5547ea64584c84579a142bbb83708"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f275",
+  "product_head": "fda8a76bcfc8f093b36092239f3d423f59a4407b",
+  "ref": "refs/heads/evidence/sd-oncall-c-f275",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f275"
+}

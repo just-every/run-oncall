@@ -1,0 +1,251 @@
+{
+  "base_ci": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "fd67732578ab13b03f883bbbe1dc9bbd70bc114f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44260227040",
+      "id": 44260227040,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "fd67732578ab13b03f883bbbe1dc9bbd70bc114f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44260227102",
+      "id": 44260227102,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "fd67732578ab13b03f883bbbe1dc9bbd70bc114f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44257340422",
+      "id": 44257340422,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "branch": "cloud/sd-oncall-c-f275",
+  "browser_captures": [
+    {
+      "file": "surface-002-saved-runbook-1440.png",
+      "height": 1000,
+      "sha256": "eab6614165347dbca0ffdb76af14bafbd5fbb2c436c0d680fb9832646d721268",
+      "width": 1440
+    },
+    {
+      "file": "surface-002-saved-runbook-390.png",
+      "height": 1000,
+      "sha256": "da1864ec0db2ac9ab2fc76d9882ba14d36e5547ea64584c84579a142bbb83708",
+      "width": 390
+    }
+  ],
+  "browser_layout": [
+    {
+      "documentWidth": 390,
+      "iconOnlyButtons": 0,
+      "minimumTextPx": 15,
+      "width": 390
+    },
+    {
+      "documentWidth": 1440,
+      "iconOnlyButtons": 0,
+      "minimumTextPx": 15,
+      "width": 1440
+    }
+  ],
+  "browser_output": [
+    "PROBE SURFACE-002 1 autonomous: current service ETag and one literal step replacement -> standard only, autonomous, one workspace revision and one attributed service commit; protected service, original incident copy, paging OFF and zero outbound confirmed",
+    "PROBE SURFACE-002 1 held: current service ETag and one literal step replacement -> standard only, review, one workspace revision and one attributed service commit; protected service, original incident copy, paging OFF and zero outbound confirmed",
+    "PASS savedServiceRunbookBrowser: service settings reload displayed the MCP-saved literal steps at 1440, with reload captures at 1440 and 390",
+    "PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements"
+  ],
+  "candidate_verify": {
+    "agent_browser_job": 134670376078,
+    "agents_job": 134670376071,
+    "conclusion": "failure",
+    "event": "push",
+    "head_sha": "fda8a76bcfc8f093b36092239f3d423f59a4407b",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44265632835",
+    "id": 44265632835,
+    "interpretation": "The build, all eight shards and full push proof passed. The archived contract-docs log identified only stale ACCEPTANCE.md. The aggregate verify log attributed failure to that prerequisite. The brief's generated-view exception applies.",
+    "name": "Verify",
+    "status": "completed"
+  },
+  "checks": {
+    "agent_browser": 0,
+    "contract_docs_write": 0,
+    "exact_focused": 0,
+    "first_party": 0,
+    "generated_acceptance_checked_after_restore": 1,
+    "lock_check": 0,
+    "lock_write": 0,
+    "regenerated_contract_docs_check": 0,
+    "rer_build": 0,
+    "runtime_agents": 0,
+    "typecheck": 0
+  },
+  "ci_jobs_json": [
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44265632835/job/134669327363",
+      "id": 134669327363,
+      "name": "plan",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44265632835/job/134669474432",
+      "id": 134669474432,
+      "name": "build",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Check the generated contract documents"
+      ],
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44265632835/job/134669474437",
+      "id": 134669474437,
+      "name": "contract-docs",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44265632835/job/134669476080",
+      "id": 134669476080,
+      "name": "light",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44265632835/job/134670376043",
+      "id": 134670376043,
+      "name": "shards (changes)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44265632835/job/134670376071",
+      "id": 134670376071,
+      "name": "shards (agents)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44265632835/job/134670376078",
+      "id": 134670376078,
+      "name": "shards (hosted)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44265632835/job/134670376111",
+      "id": 134670376111,
+      "name": "shards (intake)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44265632835/job/134670376120",
+      "id": 134670376120,
+      "name": "shards (browser)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44265632835/job/134670376145",
+      "id": 134670376145,
+      "name": "shards (runtime)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44265632835/job/134670376188",
+      "id": 134670376188,
+      "name": "shards (triage)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44265632835/job/134670376390",
+      "id": 134670376390,
+      "name": "shards (transfer)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44265632835/job/134677006827",
+      "id": 134677006827,
+      "name": "full-push-proof",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44265632835/job/134677008327",
+      "id": 134677008327,
+      "name": "nightly-proof",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Require the selected coverage and its proof"
+      ],
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44265632835/job/134677053172",
+      "id": 134677053172,
+      "name": "verify",
+      "status": "completed"
+    }
+  ],
+  "ci_root_failure_txt": "Run 44265632835, job 134669474437, Check the generated contract documents, exit 1\nACCEPTANCE.md: generated content differs; run contract-docs write.\nRun 44265632835, job 134677053172, Require the selected coverage and its proof, exit 1\nCONTRACT_DOCS: failure",
+  "counts": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "exact_focused_output": [
+    "EMITTED SOURCE fda8a76bcfc8f093b36092239f3d423f59a4407b",
+    "PROBE SURFACE-002 1 autonomous: current service ETag and one literal step replacement -> standard only, autonomous, one workspace revision and one attributed service commit; protected service, original incident copy, paging OFF and zero outbound confirmed",
+    "PROBE SURFACE-002 1 held: current service ETag and one literal step replacement -> standard only, review, one workspace revision and one attributed service commit; protected service, original incident copy, paging OFF and zero outbound confirmed",
+    "PASS savedServiceRunbookBrowser: service settings reload displayed the MCP-saved literal steps at 1440, with reload captures at 1440 and 390",
+    "SERVICE_HEAD_LAYOUT {\"width\":390,\"documentWidth\":390,\"minimumTextPx\":15,\"iconOnlyButtons\":0}",
+    "SERVICE_HEAD_LAYOUT {\"width\":1440,\"documentWidth\":1440,\"minimumTextPx\":15,\"iconOnlyButtons\":0}"
+  ],
+  "head": "fda8a76bcfc8f093b36092239f3d423f59a4407b",
+  "main_at_push": "fd67732578ab13b03f883bbbe1dc9bbd70bc114f",
+  "publication_scan": {
+    "complete": null,
+    "findings": null,
+    "historyScanned": null,
+    "owner": "fleet lander"
+  },
+  "repository": "just-every/run-oncall",
+  "runtime_output": [
+    "PROBE SURFACE-002 1 autonomous: current service ETag and one literal step replacement -> standard only, autonomous, one workspace revision and one attributed service commit; protected service, original incident copy, paging OFF and zero outbound confirmed",
+    "PROBE SURFACE-002 1 held: current service ETag and one literal step replacement -> standard only, review, one workspace revision and one attributed service commit; protected service, original incident copy, paging OFF and zero outbound confirmed",
+    "Runtime agents completed (476.8s)"
+  ],
+  "save_head": "dd0912e6e627f2caa3e9e5c943f0957594eb504b",
+  "status_after": "missing",
+  "status_before": "missing",
+  "tag": "sd-oncall-c-f275",
+  "tested_tree": "649b46ee64b872e751d7aa1ba38b32394e278549"
+}
