@@ -111,6 +111,11 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
       revision: (args, ctx) => nativeCall(async () => { const { current, incident } = await access(args, ctx); return incident?.revision ?? current.state.revision }),
       summary: (args, ctx) => nativeCall(async () => {
         const { current, incident, manual } = await access(args, ctx)
+        // Fresh preparation checks the scoped incident before creating an approval.
+        // Replays skip summary; approval execution checks drift at the write guard.
+        if (operation.name === 'incidents.resolve' && incident && !ctx.approvers.length && args.revision !== incident.revision) {
+          throw new ToolRefusal('revision_conflict', 'Native revision changed; reload before applying', { current_revision: incident.revision })
+        }
         const target = incident ?? current.state.services.find(row => row.id === args.service)!
         const action = incident?.actions.find(row => row.id === args.action)
         const deadlinePaging = operation.name === 'incidents.update' && ['snooze', 'cancel-deadline', 'expire-deadline'].includes(String(args.change))
