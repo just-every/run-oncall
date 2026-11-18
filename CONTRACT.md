@@ -1019,6 +1019,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 **Requirement.** Each primary record type has a URI template, and tools return `resource_link`s to the records they touch. A read returns exactly the fields the caller's role sees in the UI. File bytes count against any byte budget on the grant. A record the caller cannot open reads as not found, identical to a missing id. Text from customers, imports or files carries an untrusted marker in `_meta`.
 
+**Observed readback.** The admitted agent followed the `resource_link` returned by `oncall.incidents.update` after reassigning an evidence-free acknowledged incident to a distinct active responder. Under both company policies the full incident matched the write result and the sponsor's protected GET `/api/state` incident, including the new assignee, attributed reassignment and unchanged companion roles. The autonomous read needed no review. The held read opened a separate review and preserved the original open write review. Native records and revisions, state-changing audit and paging were unchanged across the read, with zero outbound requests. The saved assignee and attributed timeline were observed on the incident page at 1440 and 390 pixels in `tests/agent-door-browser.mjs`, using the reassignment fixture in `tests/oncall-agent-incident-replay.mjs`.
+
 **Acceptance.**
 1. `resources / templates / list` names every record type in the Agent surface.
 2. Reads as two roles return exactly what the UI shows each.
