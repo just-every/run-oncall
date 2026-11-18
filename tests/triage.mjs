@@ -576,7 +576,37 @@ try {
   workflowSource=ok(await req('/api/command',{type:'accept-action',incident:workflowSource.id,revision:workflowSource.revision,action:workflowSource.actions[0].id,reason:'Reviewed the retained dependency follow-up'}));
   assert.equal(workflowSource.actions[0].done,true,'retained source remediation stays editable without changing alias lifecycle or roles');
   assert.equal(ok(await w.request('/api/v1/actions/'+workflowSource.actions[0].id,undefined,undefined,{authorization:'Bearer '+workflowApiKey})).incident,workflowSource.id,'scoped actions keep their original custody after merging');
-  for(const member of [actor.id,backup.id])workflowTarget=ok(await w.request('/api/command',{type:'assign-role',incident:workflowTarget.id,revision:workflowTarget.revision,role:'communications',member,reason:'Transfer merged customer communication responsibility'},workflowResponder));
+  const communicationsChange = member => ({type: 'assign-role', incident: workflowTarget.id, revision: workflowTarget.revision, role: 'communications', member, reason: 'Transfer merged customer communication responsibility'});
+  workflowTarget = ok(await w.request('/api/command', communicationsChange(actor.id), workflowResponder));
+  const beforeRoleRefusal = await workflowState();
+  const currentRoleIncident = beforeRoleRefusal.incidents.find(i => i.id === workflowTarget.id);
+  assert.deepEqual([currentRoleIncident.state, currentRoleIncident.communications, currentRoleIncident.revision], ['acknowledged', actor.id, workflowTarget.revision]);
+  const replacement = beforeRoleRefusal.members.find(member => member.id === backup.id);
+  assert.equal(replacement.role, 'responder');
+  assert.equal(replacement.active, true);
+  const beforeRolePaging = ok(await req('/api/paging/state'));
+  const auditOrdinal = w.sql('SELECT MAX(ordinal) AS value FROM oc_admin_audit')[0].value;
+  const transferCommunications = communicationsChange(replacement.id);
+  ok(await w.request('/api/command', transferCommunications, viewerCookie), 403);
+  assert.deepEqual(await workflowState(), beforeRoleRefusal, 'the refusal preserves the role, timeline, workspace and incident revisions');
+  assert.deepEqual(ok(await req('/api/paging/state')), beforeRolePaging, 'the refusal preserves paging');
+  assert.deepEqual(await w.outboundRequests(), []);
+  const roleRefusals = w.sql('SELECT * FROM oc_admin_audit WHERE ordinal > ' + auditOrdinal);
+  assert.equal(roleRefusals.length, 1);
+  const [roleRefusal] = roleRefusals;
+  const identities = w.sql('SELECT kind, entity_id, label FROM oc_audit_identities');
+  const auditLabel = (kind, id) => identities.find(row => row.kind === kind && row.entity_id === id).label;
+  assert.deepEqual(
+    [roleRefusal.kind, roleRefusal.outcome, roleRefusal.actor, roleRefusal.subject],
+    ['command.assign-role', 'refused', auditLabel('member', viewer.id), auditLabel('entity', workflowTarget.id)],
+  );
+  assert.equal(roleRefusal.before_revision, roleRefusal.after_revision);
+  assert.equal(roleRefusal.workspace_before, beforeRoleRefusal.revision);
+  assert.equal(roleRefusal.workspace_after, beforeRoleRefusal.revision);
+  assert.equal(roleRefusal.paging_before, roleRefusal.paging_after);
+  assert.equal(roleRefusal.handoff_before, roleRefusal.handoff_after);
+  workflowTarget = ok(await w.request('/api/command', transferCommunications, workflowResponder));
+  console.log('PROBE OC-050 acceptance 2: viewer Communications transfer -> 403, one refusal attributed to the viewer and incident, unchanged role, timeline, revisions and paging, zero outbound requests. The same command succeeded for the responder.');
   workflowTarget=ok(await w.request('/api/command',{type:'note',incident:workflowTarget.id,revision:workflowTarget.revision,text:'Merged response decision remains attributed to the current responder'},workflowResponder));
   assert.equal(workflowTarget.communications,backup.id);assert.equal(workflowTarget.timeline.at(-1).actor,backup.id);
 
