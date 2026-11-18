@@ -1,0 +1,70 @@
+{
+  "files": [
+    {
+      "blob": "af2b47dba5f719d3d2a529f06c7058421baf47fa",
+      "bytes": 10709,
+      "path": "REPORT.md",
+      "sha256": "1f742ac6e44ac01135eeb1d560dabaafaca45e0dae661a18be29b5bb60507849"
+    },
+    {
+      "blob": "a9bcca7a7bf05115b2af6aa1e93c45afa5378811",
+      "bytes": 524936,
+      "path": "browser/autonomous-people-1440.png",
+      "sha256": "c226433356fb7f3b0a39ca418ee313183b020192bb29ed647bf78887b57f210c"
+    },
+    {
+      "blob": "646da1ee1dbe9e588edc5c2c169ab7f1a31a00e2",
+      "bytes": 72511,
+      "path": "browser/autonomous-people-390.png",
+      "sha256": "c95e02e65b2c91b646873ace80e1ffd7b2007e2a2ff52e091d52b1f72fafaf84"
+    },
+    {
+      "blob": "bb9588a044de6b6cd6a529488450cb93143788e7",
+      "bytes": 539870,
+      "path": "browser/autonomous-timeline-1440.png",
+      "sha256": "d6d7c03e0acbcea2dc6039dfbe216662721b155db5d9e01b6e6dc2708d65e6c0"
+    },
+    {
+      "blob": "704f584261a6ee093b86439a26f308f6592a4fea",
+      "bytes": 108092,
+      "path": "browser/autonomous-timeline-390.png",
+      "sha256": "9389c4f47a23834cd2ca7fd98328c30ed0482a7384e1456af0027f063d72d785"
+    },
+    {
+      "blob": "1da2a65a0f759a62e1d332232283c6aac790dcfb",
+      "bytes": 532932,
+      "path": "browser/held-people-1440.png",
+      "sha256": "d0772d90f215834883e9ecee903df1c7bc3cc1a9a293ae4bec070a4e9284e1f2"
+    },
+    {
+      "blob": "dac4862c7a43fe536b56862d06833ddacd808fc9",
+      "bytes": 71992,
+      "path": "browser/held-people-390.png",
+      "sha256": "f9d900735f1260aa65822fe5b3939b92aaf105ae6a88dc18193085524de06b91"
+    },
+    {
+      "blob": "ab772f2989cd813fecad3a4cd10910ffba7d4ab4",
+      "bytes": 552398,
+      "path": "browser/held-timeline-1440.png",
+      "sha256": "2b880b327f5dba9a7aff7a1d9bae5793993fd49c1e2e1214ce96d2f652b8294a"
+    },
+    {
+      "blob": "06b10043fe30e585701248c794ac16c3b2788f4e",
+      "bytes": 106546,
+      "path": "browser/held-timeline-390.png",
+      "sha256": "29f5402c9262c7ed0b0b08ad31f9d8e17ef15b3a23c4ce2496e865ba669c22f7"
+    },
+    {
+      "blob": "866eed3c066fc74367d352573b5aa485aa150b5a",
+      "bytes": 12364,
+      "path": "candidate-receipt.json",
+      "sha256": "6ae45d8c8e2c95b67931fafa10a47501bec07036da0ba840f001e04a51e3d8ed"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f279",
+  "product_head": "ae8aaa0285d20d0abc75b9db90d3e74f27e7ffa8",
+  "ref": "refs/heads/evidence/sd-oncall-c-f279",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f279"
+}

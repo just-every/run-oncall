@@ -1,0 +1,330 @@
+{
+  "base_run_site": {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "93b25a01d22f5b16bf679c6f4008f0e444980196",
+    "id": 44283231793
+  },
+  "base_verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "93b25a01d22f5b16bf679c6f4008f0e444980196",
+    "id": 44283231598
+  },
+  "branch": "cloud/sd-oncall-c-f279",
+  "browser_files": {
+    "browser/autonomous-people-1440.png": "c226433356fb7f3b0a39ca418ee313183b020192bb29ed647bf78887b57f210c",
+    "browser/autonomous-people-390.png": "c95e02e65b2c91b646873ace80e1ffd7b2007e2a2ff52e091d52b1f72fafaf84",
+    "browser/autonomous-timeline-1440.png": "d6d7c03e0acbcea2dc6039dfbe216662721b155db5d9e01b6e6dc2708d65e6c0",
+    "browser/autonomous-timeline-390.png": "9389c4f47a23834cd2ca7fd98328c30ed0482a7384e1456af0027f063d72d785",
+    "browser/held-people-1440.png": "d0772d90f215834883e9ecee903df1c7bc3cc1a9a293ae4bec070a4e9284e1f2",
+    "browser/held-people-390.png": "f9d900735f1260aa65822fe5b3939b92aaf105ae6a88dc18193085524de06b91",
+    "browser/held-timeline-1440.png": "2b880b327f5dba9a7aff7a1d9bae5793993fd49c1e2e1214ce96d2f652b8294a",
+    "browser/held-timeline-390.png": "29f5402c9262c7ed0b0b08ad31f9d8e17ef15b3a23c4ce2496e865ba669c22f7"
+  },
+  "browser_measurements": [
+    "Browser proof assignee-cleared-autonomous-timeline 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof assignee-cleared-autonomous-timeline 390: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof assignee-cleared-autonomous-people 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof assignee-cleared-autonomous-people 390: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof assignee-cleared-timeline 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof assignee-cleared-timeline 390: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof assignee-cleared-people 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof assignee-cleared-people 390: fits=true serious/critical=0 undersized-controls=0"
+  ],
+  "browser_observations": [
+    "PROBE BASE-AGENT-003 4 autonomous assignee clear: first returned resource link matched full native incident, explicit null assignee, new revision, companion roles and attributed reassign history; autonomous read; original write outcome, native records, revisions, state-changing audit and paging unchanged; zero outbound requests",
+    "PROBE BASE-AGENT-003 4 held assignee clear: first returned resource link matched full native incident, explicit null assignee, new revision, companion roles and attributed reassign history; separate open read review; original write outcome, native records, revisions, state-changing audit and paging unchanged; zero outbound requests"
+  ],
+  "candidate_main_run_site": null,
+  "counts_after": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "counts_before": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "created_utc": "2026-11-18T11:26:59.369174+00:00",
+  "first_save": "ce7bcb3a263b17d4e2400649b8dd5f904fede8ea",
+  "head": "ae8aaa0285d20d0abc75b9db90d3e74f27e7ffa8",
+  "local_checks": {
+    "agent_browser": {
+      "chromium": "system Chromium 154",
+      "command": "node tests/agent-door-browser.mjs",
+      "exit": 0
+    },
+    "agent_runtime": {
+      "command": "node tests/runtime.mjs",
+      "completion": "Runtime agents completed (575.6s)",
+      "exit": 0,
+      "part": "agents"
+    },
+    "contract_views_generated": {
+      "commands": [
+        "node src/base/contract-docs.mjs write",
+        "node src/base/contract-docs.mjs check"
+      ],
+      "exit": 0,
+      "output": [
+        "Wrote 1 contract documents.",
+        "Contract prose: 0 errors, 0 warnings.",
+        "Contract documents are current."
+      ]
+    },
+    "contract_views_restored": {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 1,
+      "output": [
+        "Contract prose: 0 errors, 0 warnings.",
+        "ACCEPTANCE.md: generated content differs; run contract-docs write."
+      ]
+    },
+    "first_party": {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    "focused_assignee_runtime_before_save": {
+      "command": "focusedAssigneeClearReplay through the existing emitted Worker fixture",
+      "exit": 0
+    },
+    "migration_ledger": {
+      "applicable": false
+    },
+    "source_lock": {
+      "commands": [
+        "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+        "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check"
+      ],
+      "exit": 0
+    },
+    "typecheck": {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    "worker_build": {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    }
+  },
+  "main_at_candidate": "93b25a01d22f5b16bf679c6f4008f0e444980196",
+  "main_at_report": "6ef9bc1294fc981c71e990df9bf12104337c81b3",
+  "post_push_main_drift": {
+    "candidate_merge_preview_conflicts": [
+      "CONTRACT.md",
+      "sources.lock.json"
+    ],
+    "landed_predecessor_commit": "9b45b5855714925909e811aeba2709792642061a",
+    "predecessor": "f276"
+  },
+  "predecessors": {
+    "f229": {
+      "ancestor_of_integrated_main": true,
+      "head": "8976d008fa2ff43d9ccb3eed6ff94acaedb86cf2"
+    },
+    "f253": {
+      "ancestor_of_integrated_main": true,
+      "head": "24840e6b2678dc883a7f4750221d203cec5f31e6"
+    },
+    "f266": {
+      "ancestor_of_integrated_main": true,
+      "head": "0e0e4ea19bea1c8f64a53d76f8a43583c63adbff"
+    },
+    "f269": {
+      "ancestor_of_integrated_main": true,
+      "head": "9d231f52d960302f31ddd68dd19d41df01e0c633"
+    },
+    "f271": {
+      "ancestor_of_integrated_main": false,
+      "head": "b137b6349f252df6296e31c3abdf2eaf19a29a94"
+    },
+    "f276": {
+      "ancestor_of_integrated_main": false,
+      "head": "2bfdce0c3d35d10a95d43a059f5c8c55bad4d794"
+    }
+  },
+  "product_ref_advertised": true,
+  "publication_scan": {
+    "commit": "ae8aaa0285d20d0abc75b9db90d3e74f27e7ffa8",
+    "complete": null,
+    "custody": "guarded Mac lander",
+    "findings": null,
+    "historyScanned": null
+  },
+  "repository": "just-every/run-oncall",
+  "runtime_observations": [
+    "PROBE BASE-AGENT-003 4 autonomous assignee clear: first returned resource link matched full native incident, explicit null assignee, new revision, companion roles and attributed reassign history; autonomous read; original write outcome, native records, revisions, state-changing audit and paging unchanged; zero outbound requests",
+    "PROBE BASE-AGENT-003 4 held assignee clear: first returned resource link matched full native incident, explicit null assignee, new revision, companion roles and attributed reassign history; separate open read review; original write outcome, native records, revisions, state-changing audit and paging unchanged; zero outbound requests"
+  ],
+  "tag": "sd-oncall-c-f279",
+  "target": {
+    "id": "BASE-AGENT-003",
+    "selected_point": 4,
+    "status_after": "MISSING",
+    "status_before": "MISSING"
+  },
+  "tested_source_sha256": {
+    "tests/agent-door-browser.mjs": "00af3b80a6a6580de961f5df381bc5765666a012d37af4167c3bd50b89649fac",
+    "tests/oncall-agent-assignee-clear-replay.mjs": "040ec1da0c765fb6c6ea959674ea4a6d4bf51dbe49500e869edff85d50e01fdd",
+    "tests/oncall-agent-role-clear-replay.mjs": "3f2a8dc1940e6a906ac026507e3aef7cd596d5b63b0660640bb983a688d051aa"
+  },
+  "verify": {
+    "conclusion": "failure",
+    "event": "push",
+    "failed_job_archive_checks": [
+      {
+        "job": 134750164504,
+        "result": [
+          "rer toolchain: node v24.19.0 pnpm 10.12.4 (pins 22.20.0 / 10.12.4)",
+          "Job log archive command failed: gh run view 44289287171 --repo just-every/run-oncall --job 134750164504 --log-failed",
+          "failed to get job: HTTP 401: Bad credentials (https://api.github.com/repos/just-every/run-oncall/actions/jobs/134750164504)",
+          "Try authenticating with:  gh auth login",
+          ""
+        ]
+      },
+      {
+        "job": 134758183847,
+        "result": [
+          "rer toolchain: node v24.19.0 pnpm 10.12.4 (pins 22.20.0 / 10.12.4)",
+          "Job log 134758183847 read successfully",
+          "verify\tRequire the selected coverage and its proof\t2026-11-18T11:06:56.6834831Z ##[error]Process completed with exit code 1."
+        ]
+      }
+    ],
+    "handoff_classification": "generated-views-only",
+    "head_sha": "ae8aaa0285d20d0abc75b9db90d3e74f27e7ffa8",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44289287171",
+    "id": 44289287171,
+    "jobs": [
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "ae8aaa0285d20d0abc75b9db90d3e74f27e7ffa8",
+        "id": 134749986275,
+        "name": "plan",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          "Check the generated contract documents"
+        ],
+        "head_sha": "ae8aaa0285d20d0abc75b9db90d3e74f27e7ffa8",
+        "id": 134750164504,
+        "name": "contract-docs",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "ae8aaa0285d20d0abc75b9db90d3e74f27e7ffa8",
+        "id": 134750164583,
+        "name": "build",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "head_sha": "ae8aaa0285d20d0abc75b9db90d3e74f27e7ffa8",
+        "id": 134750167351,
+        "name": "light",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "ae8aaa0285d20d0abc75b9db90d3e74f27e7ffa8",
+        "id": 134751184126,
+        "name": "shards (changes)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "ae8aaa0285d20d0abc75b9db90d3e74f27e7ffa8",
+        "id": 134751184147,
+        "name": "shards (transfer)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "ae8aaa0285d20d0abc75b9db90d3e74f27e7ffa8",
+        "id": 134751184150,
+        "name": "shards (runtime)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "ae8aaa0285d20d0abc75b9db90d3e74f27e7ffa8",
+        "id": 134751184244,
+        "name": "shards (agents)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "ae8aaa0285d20d0abc75b9db90d3e74f27e7ffa8",
+        "id": 134751184314,
+        "name": "shards (triage)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "ae8aaa0285d20d0abc75b9db90d3e74f27e7ffa8",
+        "id": 134751184320,
+        "name": "shards (intake)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "ae8aaa0285d20d0abc75b9db90d3e74f27e7ffa8",
+        "id": 134751184348,
+        "name": "shards (browser)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "ae8aaa0285d20d0abc75b9db90d3e74f27e7ffa8",
+        "id": 134751184355,
+        "name": "shards (hosted)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "ae8aaa0285d20d0abc75b9db90d3e74f27e7ffa8",
+        "id": 134758144808,
+        "name": "full-push-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "head_sha": "ae8aaa0285d20d0abc75b9db90d3e74f27e7ffa8",
+        "id": 134758147031,
+        "name": "nightly-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          "Require the selected coverage and its proof"
+        ],
+        "head_sha": "ae8aaa0285d20d0abc75b9db90d3e74f27e7ffa8",
+        "id": 134758183847,
+        "name": "verify",
+        "status": "completed"
+      }
+    ],
+    "status": "completed"
+  }
+}
