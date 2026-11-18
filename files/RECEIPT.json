@@ -1,0 +1,90 @@
+{
+  "repository": "just-every/run-oncall",
+  "checkout": {
+    "branch": "cloud/gr-mt-oncall-dep-9",
+    "head": "82a4b02d2be3a0031afbeb08bca7ccdd25cc5a72",
+    "public_base": "main",
+    "clean": true
+  },
+  "advisory": {
+    "id": "GHSA-fc5q-39xc-vjpf",
+    "cve": "CVE-2026-112366",
+    "cve_state": "PUBLISHED",
+    "withdrawn_at": "2026-11-18T15:38:56Z",
+    "historical_range": "<= 4.0.7",
+    "first_patched_version": null,
+    "repository_alert_http": 403,
+    "repository_alert_attempts": 5
+  },
+  "lockfile": {
+    "path": "pnpm-lock.yaml",
+    "sha256": "77353f7c25d4a50d34b00a295f0a064cfd72160a31b4473e8d358ee48f26d243",
+    "matches_checkout_commit": true,
+    "resolution_before": "4.0.7",
+    "resolution_after": "4.0.7",
+    "resolution_count_before": 1,
+    "resolution_count_after": 1,
+    "registry_latest": "4.0.7",
+    "parents": [
+      "@tanstack/start-plugin-core@1.171.49",
+      "fdir@6.5.0 (optional peer)",
+      "tinyglobby@0.2.17",
+      "unplugin@3.3.0",
+      "vite@8.2.4"
+    ]
+  },
+  "toolchain": {
+    "node": "22.20.0",
+    "pnpm": "10.12.4"
+  },
+  "checks": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "status": "pass"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "status": "pass"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "status": "pass"
+    },
+    {
+      "command": "pnpm exec vite build --sourcemap",
+      "status": "pass"
+    },
+    {
+      "check": "client and server source map and JavaScript matcher inventory",
+      "status": "pass",
+      "client": {
+        "scripts": 41,
+        "mapped": 41,
+        "distinct_sources": 382,
+        "matches": 0
+      },
+      "server": {
+        "scripts": 62,
+        "mapped": 61,
+        "distinct_sources": 1025,
+        "matches": 0,
+        "unmapped_reviewed": "generated route manifest, no module imports"
+      }
+    }
+  ],
+  "clauses": {
+    "before": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34
+    },
+    "after": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34
+    },
+    "changed": []
+  },
+  "product_pushed": false,
+  "ci_run_ids": []
+}

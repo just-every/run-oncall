@@ -1,0 +1,7 @@
+{
+  "status": "no-change",
+  "sha": "82a4b02d2be3a0031afbeb08bca7ccdd25cc5a72",
+  "summary": "GitHub withdrew GHSA-fc5q-39xc-vjpf and exact-main Worker and browser build outputs exclude the flagged matcher.",
+  "tests": "pnpm install --frozen-lockfile, npx -y @runeditrun/rer build, pnpm run typecheck, and pnpm exec vite build --sourcemap plus emitted-module inspection passed on Node 22.20.0 and pnpm 10.12.4. No touched test suite.",
+  "security": true
+}

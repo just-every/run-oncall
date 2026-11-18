@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "blob": "db9f145cf0bd6b5d672f60d3ee84c5fdcd7cf259",
+      "bytes": 2131,
+      "path": "RECEIPT.json",
+      "sha256": "014482b096d49dc5a875bd239ae0e9de26727bb5176e5d63049cb37181f39fb8"
+    },
+    {
+      "blob": "5b4696dd7c30ac3f9dd7457c96ca2ec5f674466d",
+      "bytes": 3288,
+      "path": "REPORT.md",
+      "sha256": "457d917b53d81d2915984f9839ff547997bfdbfe4fb9fa4c2240cb0d8a7db17f"
+    },
+    {
+      "blob": "4dee1635b9d221829f2d1bca76d35f1dd3b549da",
+      "bytes": 458,
+      "path": "result.json",
+      "sha256": "35f65d3a33a87e2d661fb0d0b694d91d7beeb03e804858a554f1ad089846dc4e"
+    }
+  ],
+  "product_branch": "cloud/gr-mt-oncall-dep-9",
+  "product_head": "82a4b02d2be3a0031afbeb08bca7ccdd25cc5a72",
+  "ref": "refs/heads/evidence/gr-mt-oncall-dep-9",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "gr-mt-oncall-dep-9"
+}
