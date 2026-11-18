@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "66b100e13099565e027a8a378a266606b73dea450710a18144741ac2814b25d4",
+      "sha256": "fee1d1d90b7e0f541e2da72a7cd8ca9b405d5c25dda47b89d9df37b532cdae24",
       "executable": false
     },
     "DEMO.md": {
@@ -1836,7 +1836,7 @@
       "executable": false
     },
     "src/app/FailureLine.tsx": {
-      "sha256": "b74efe2e19fbc842b9e3138e52cab48a109bf3f05e5e422762a76b80b131e9fe",
+      "sha256": "1c45819466e2bf1dbb1acb884a1baa24db096a3c70738b7ebb4c9b14e0341845",
       "executable": false
     },
     "src/app/flows.css": {
@@ -6872,11 +6872,11 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "a9bf4d7a2119bbcc4851b6012d0f99958c395fdfa83e3d4766a82734c2264ae4",
+      "sha256": "1f1be1766f16b3c10dc4db539890d91631eb94f90cf03172dbb08072562f69c0",
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "dab416cc819575a4ac33fa18c1898ae4a513abd819df5e41be8c8d2e8c03fbc5",
+      "sha256": "d70fa2d3d7a5780d930e1487840e37c7fb2474f607a6e29ad7af4753991ed28e",
       "executable": false
     },
     "tests/readable-names-browser.mjs": {

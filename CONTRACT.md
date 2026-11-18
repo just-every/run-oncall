@@ -175,6 +175,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 1. Run declaration, acknowledgment, notes, schedules, overrides and preview against BASE-ACCESSIBILITY-001.
 2. A real stale-write failure is announced with no saved claim.
 
+**Native proof.** The signed-in incident journey in `tests/product-browser-journey.mjs` exercises keyboard note refusal at 390 and 1440 CSS pixels. An independently authenticated session commits one note. The stale keyboard submission returns HTTP 409, announces the conflict in an alert, restores visible focus to Add note and leaves the draft editable without a saved confirmation. Protected readback contains exactly the winning note and revision advance. Paging records and outbound work stay unchanged, and the failure state fits both widths with zero serious or critical axe findings.
+
 #### OC-010 — Health and honest commands
 
 **Requirement.** Health identifies the deployed version, operating commands describe actual local and hosted effects, and acceptance records distinguish local evidence from remote, provider and pilot outcomes. Capacity promises require measured evidence. Pager, timer, mobile and standby health are OC-026 to OC-029's, and paging measurements are OC-064's. Each new execution class proves its own durable failure diagnostics under door rule D-1 before it ships.
