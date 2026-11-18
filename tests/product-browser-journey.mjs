@@ -1,5 +1,6 @@
 import {readableErasure,coveredSwap,nextCoverageBrowser} from './stranger-trip-steps.mjs'
 import {savedEmailBundle} from './email-fixtures.mjs'
+import {ruleDeclarationAuditFault} from './worker.mjs'
 import {pathToFileURL} from 'node:url'
 import {resolve} from 'node:path'
 import {isDeepStrictEqual} from 'node:util'
@@ -1049,7 +1050,7 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
 }
 
 // triage-bulk-browser: part of this public journey.
-export async function triageBulkBrowser(page,context,width){
+export async function triageBulkBrowser(page,context,width,worker){
  const origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
  const call=async(path,data,status=200)=>{const response=data===undefined?await context.request.get(origin+path):await context.request.post(origin+path,{headers:{origin},data});assert.equal(response.status(),status,path);return response.json();};
  // A changed and an already-acknowledged item leave a usable selection. The
@@ -1209,7 +1210,8 @@ export async function triageBulkBrowser(page,context,width){
  // Versioned declaration/notification steps reuse the same saved workflow and progress area.
  const coordinator=(await call('/api/session')).member,newServiceId='synthetic-oncall-443-'+width;
  await call('/api/command',{type:'service',id:newServiceId,name:'Synthetic coordination '+width,environment:'test',owner:coordinator.id,runbook:['Synthetic frozen runbook'],pager:''});
- await call('/api/command',{type:'service-template',service:newServiceId,baseVersion:0,severityWording:{critical:'Synthetic blocked',warning:'Synthetic delayed',info:'Synthetic investigation'},impactPrompt:'Synthetic impact',incidentTypes:[],checklist:[{id:'synthetic-oncall-443',text:'Synthetic frozen checklist'}],reason:'Synthetic reviewed template'});
+ const template={type:'service-template',service:newServiceId,baseVersion:0,severityWording:{critical:'Synthetic blocked',warning:'Synthetic delayed',info:'Synthetic investigation'},impactPrompt:'Synthetic impact',incidentTypes:[],checklist:[{id:'synthetic-oncall-443',text:'Synthetic frozen checklist'}],reason:'Synthetic reviewed template'};
+ await call('/api/command',template);
  const newSource='synthetic-oncall-444-'+width,newKey=randomBytes(32).toString('hex'),newTitle='Synthetic declaration workflow '+width;await call('/api/sources',{id:newSource,key:newKey,scopes:[newServiceId]});
  for(let n=0;n<2;n++){const identity='synthetic-oncall-444-'+width+'-'+n;const response=await context.request.post(origin+'/api/ingress/'+newSource,{headers:{origin,authorization:'Bearer '+newKey},data:{source:newSource,eventId:identity,service:newServiceId,environment:'test',key:identity,generation:identity,intent:'trigger',severity:'warning',title:newTitle+' '+n,observedAt:new Date().toISOString(),evidence:''}});assert.equal(response.status(),201);}
  await page.goto(origin+'/incidents?triage_kind=alerts&triage_q='+encodeURIComponent(newTitle));await page.getByText('2 matching alert-only items',{exact:true}).waitFor();
@@ -1258,14 +1260,171 @@ export async function triageBulkBrowser(page,context,width){
  const approvedState=await call('/api/state'),approvedPolicy=approvedState.policies.find(p=>p.service===newServiceId&&p.severity==='*'),ruleIdentity='synthetic-oncall-446-'+width;
  const ruleSignal={source:newSource,eventId:ruleIdentity,service:newServiceId,environment:'test',key:ruleIdentity,generation:ruleIdentity,intent:'trigger',severity:'warning',title:'Synthetic approved launch '+width,observedAt:new Date().toISOString(),evidence:''};
  await openWorkspaceSection(page,'routing');await openHistoryComparison(page);await page.getByLabel('Event JSON',{exact:true}).fill(JSON.stringify([ruleSignal]));await page.getByRole('button',{name:'Compare pasted events',exact:true}).click();const ruleReplay=page.getByRole('region',{name:'Replay comparison',exact:true});await ruleReplay.getByText(/^Proposed workflow: reassign → declare → notify\. Recorded obligation only; no effects\.$/).waitFor();await ruleReplay.scrollIntoViewIfNeeded();await workflowCheck('rule-replay');await page.getByRole('button',{name:'Close comparison',exact:true}).click();
- const admitted=await context.request.post(origin+'/api/ingress/'+newSource,{headers:{origin,authorization:'Bearer '+newKey},data:ruleSignal});assert.equal(admitted.status(),201);
- const launched=(await call('/api/state')).triage.find(r=>r.kind==='bulk'&&r.rule?.policy===approvedPolicy.id);assert.equal(launched.results.length,1);assert.equal(launched.results[0].step,'reassign');
- await page.goto(origin+'/incidents');await page.getByText('Recorded coordination workflows',{exact:true}).click();
- const launchedProgress=page.locator('details.triage-bulk > ul > li').filter({hasText:'Operation '+launched.id});await launchedProgress.getByText('1 of 3 processed · 0 refused',{exact:true}).waitFor();await launchedProgress.scrollIntoViewIfNeeded();await workflowCheck('rule-launched');
- await page.reload();await page.getByText('Recorded coordination workflows',{exact:true}).click();await launchedProgress.getByRole('button',{name:'Resume recorded workflow',exact:true}).click();await launchedProgress.getByText('2 of 3 processed · 0 refused',{exact:true}).waitFor();await workflowCheck('rule-declared');
- await launchedProgress.getByRole('button',{name:'Resume recorded workflow',exact:true}).click();await launchedProgress.getByText('3 of 3 processed · 0 refused',{exact:true}).waitFor();await workflowCheck('rule-complete');
- assert.equal((await call('/api/state')).triage.find(r=>r.id===launched.id).rule.state,'complete');
- console.log(`OC-043 approved rule browser ${width}: Settings approval, launch versions, saved progress across reload, explicit declaration/notification, axe, overflow and hydration passed`);
+ const auditRows=async()=>(await call('/api/audit/export')).rows.filter(row=>row.kind!=='audit.export');
+ const pagingRecords=async()=>{const {workspaceRevision,...records}=await call('/api/paging/state');return records;};
+ const auditBefore=await auditRows(),pagingBefore=await pagingRecords(),outboundBefore=await worker.outboundRequests();
+ const auditIds=new Set(auditBefore.map(row=>row.id));
+ const newAudit=async()=> (await auditRows()).filter(row=>!auditIds.has(row.id));
+ const approvingAudit=auditBefore.findLast(row=>row.kind==='command.policy'&&row.outcome==='accepted');
+ assert.equal(approvedPolicy.workflow.by,coordinator.id);
+ const admitted=await context.request.post(origin+'/api/ingress/'+newSource,{headers:{origin,authorization:'Bearer '+newKey},data:ruleSignal});
+ assert.equal(admitted.status(),201);
+ const admittedState=await call('/api/state');
+ const launchedRuns=admittedState.triage.filter(r=>r.kind==='bulk'&&r.rule?.policy===approvedPolicy.id);
+ assert.equal(launchedRuns.length,1);
+ const [launched]=launchedRuns;
+ const alert=admittedState.alerts.find(row=>row.id===launched.rule.alert);
+ const originals=admittedState.events.filter(event=>alert.events.includes(event.id));
+ assert.equal(originals.length,1);
+ assert.equal(originals[0].eventId,ruleSignal.eventId);
+ assert.equal(originals[0].title,ruleSignal.title);
+ assert.equal(launched.actor,coordinator.id);
+ assert.equal(launched.rule.workflowVersion,approvedPolicy.workflow.version);
+ assert.deepEqual(launched.results.map(({step,ok})=>[step,ok]),[['reassign',true]]);
+ assert.deepEqual(alert.coordination.history.map(({kind,actor,operationId})=>[kind,actor,operationId]),[['bulk-reassign',coordinator.id,launched.id]]);
+ const linkedIncidents=state=>state.incidents.filter(incident=>incident.alerts.includes(alert.id));
+ const readRun=state=>state.triage.find(row=>row.id===launched.id);
+ const workflowSummary=page.getByText('Recorded coordination workflows',{exact:true});
+ const incidentHeading=page.getByRole('region',{name:'Incident triage'}).getByRole('heading',{name:ruleSignal.title,exact:true});
+ const launchedProgress=page.getByRole('list',{name:'Recorded workflow progress'}).locator(':scope > li').filter({has:page.getByText('Operation '+launched.id,{exact:true})});
+ const resume=launchedProgress.getByRole('button',{name:'Resume recorded workflow',exact:true});
+ const clear=launchedProgress.getByRole('button',{name:'Clear expired workflow',exact:true});
+ const workflowPath='/api/triage/workflows/'+encodeURIComponent(launched.id);
+ const clickWorkflow=async(button,action)=>{
+  const [response]=await Promise.all([
+   page.waitForResponse(r=>new URL(r.url()).pathname===workflowPath+'/'+action&&r.request().method()==='POST'),
+   button.click(),
+  ]);
+  return response;
+ };
+ const reloadProgress=async()=>{await page.reload();await workflowSummary.click();};
+ const showProgress=async(run,stateLabel)=>{
+  await launchedProgress.getByText(run.results.length+' of 3 processed · 0 refused',{exact:true}).waitFor();
+  await launchedProgress.getByText('Rule v'+run.rule.policyVersion+' · approved workflow v'+run.rule.workflowVersion+' · '+stateLabel+' · non-automatic · paging OFF',{exact:true}).waitFor();
+ };
+ const captureProgress=async(label,widths)=>{
+  for(const proofWidth of widths){
+   await page.setViewportSize({width:proofWidth,height:1000});
+   await launchedProgress.evaluate(row=>row.scrollIntoView({block:'center'}));
+   await page.screenshot({path:directory+'/oc043-rule-'+label+'-'+proofWidth+'.png'});
+  }
+  await page.setViewportSize({width,height:1000});
+ };
+
+ await page.goto(origin+'/incidents');await workflowSummary.click();
+ await showProgress(launched,'ready');await launchedProgress.scrollIntoViewIfNeeded();await workflowCheck('rule-launched');
+ await call('/api/command',{...template,baseVersion:1,checklist:[{id:template.checklist[0].id,text:'Synthetic later checklist'}]});
+ await reloadProgress();
+ worker.sql(ruleDeclarationAuditFault.install);
+ try{assert.equal((await clickWorkflow(resume,'resume')).status(),503);}
+ finally{worker.sql(ruleDeclarationAuditFault.remove);}
+ await reloadProgress();
+ const uncertainState=await call('/api/state'),uncertain=readRun(uncertainState);
+ assert.equal(uncertain.rule.state,'running');
+ assert.equal(uncertain.rule.outcome,'uncertain');
+ assert.ok(uncertain.rule.lease&&Number.isFinite(Date.parse(uncertain.rule.leaseUntil)));
+ assert.deepEqual(uncertain.results,launched.results);
+ assert.deepEqual(uncertainState.alerts.find(row=>row.id===alert.id),alert);
+ assert.deepEqual(linkedIncidents(uncertainState),[]);
+ await showProgress(uncertain,'Execution uncertain until its lease is cleared');
+ const interruptedAudit=await newAudit();
+ assert.equal(interruptedAudit.filter(row=>row.feature==='ingest'&&row.outcome==='accepted'&&row.workspaceBefore===admittedState.revision-1&&row.workspaceAfter===admittedState.revision).length,1,'admission and reassignment share one permanent audit commit');
+ const reservations=interruptedAudit.filter(row=>row.kind==='triage.workflow-reserve'&&row.outcome==='accepted');
+ assert.equal(reservations.length,1);
+ const [reservation]=reservations;
+ assert.equal(reservation.actor,approvingAudit.actor);
+ assert.equal(reservation.workspaceAfter,uncertainState.revision);
+ assert.equal(interruptedAudit.filter(row=>row.kind==='triage.workflow-declare'&&row.outcome==='accepted').length,0);
+
+ const premature=await clickWorkflow(clear,'clear-expired');
+ assert.equal(premature.status(),409);
+ await page.getByRole('alert').getByText('Only an expired workflow lease can be explicitly cleared.',{exact:true}).waitFor();
+ assert.deepEqual(await call('/api/state'),uncertainState,'premature clearance preserves the lease and leaves declaration absent');
+ const [refusal]=(await newAudit()).filter(row=>row.feature==='triage'&&row.outcome==='refused');
+ assert.equal(refusal.actor,reservation.actor);
+ assert.equal(refusal.workspaceBefore,uncertainState.revision);
+ assert.equal(refusal.workspaceAfter,uncertainState.revision);
+ await reloadProgress();
+ await showProgress(uncertain,'Execution uncertain until its lease is cleared');
+ await expect(incidentHeading).toHaveCount(0);
+ await captureProgress('uncertain',[1440,390]);
+
+ // Backdate only the stored lease. The real clearance command and SQL guard still run.
+ worker.sql("UPDATE oc_triage SET data=json_set(data,'$.rule.leaseUntil',strftime('%Y-%m-%dT%H:%M:%fZ','now','-1 second')) WHERE id='"+launched.id.replaceAll("'","''")+"'");
+ assert.equal((await clickWorkflow(clear,'clear-expired')).status(),200);
+ await reloadProgress();
+ const clearedState=await call('/api/state'),cleared=readRun(clearedState);
+ assert.deepEqual(cleared.rule,{...uncertain.rule,state:'interrupted',outcome:'interrupted',lease:null,leaseUntil:null,revision:uncertain.rule.revision+1});
+ assert.deepEqual(cleared.results,launched.results);
+ assert.deepEqual(linkedIncidents(clearedState),[]);
+ await showProgress(cleared,'interrupted');
+ await launchedProgress.getByText('Pending · recorded declaration and notification',{exact:true}).waitFor();
+ await expect(clear).toHaveCount(0);
+ await expect(resume).toBeEnabled();
+ await expect(incidentHeading).toHaveCount(0);
+ const clearedAudit=await newAudit(),[clearance]=clearedAudit.filter(row=>row.kind==='triage.workflow-clear-expired');
+ assert.equal(clearance.outcome,'interrupted');
+ assert.equal(clearance.actor,reservation.actor);
+ assert.equal(clearance.workspaceBefore,uncertainState.revision);
+ assert.equal(clearance.workspaceAfter,clearedState.revision);
+ assert.equal(clearedAudit.filter(row=>['triage.workflow-declare','triage.workflow-notify'].includes(row.kind)&&row.outcome==='accepted').length,0,'clearance and reload do not run either pending step');
+ await captureProgress('cleared',[1440,390]);
+
+ assert.equal((await clickWorkflow(resume,'resume')).status(),200);
+ await launchedProgress.getByText('2 of 3 processed · 0 refused',{exact:true}).waitFor();await workflowCheck('rule-declared');
+ await reloadProgress();
+ const declaredState=await call('/api/state'),declaredRun=readRun(declaredState);
+ await showProgress(declaredRun,'ready');
+ assert.deepEqual(declaredRun.results.map(({step,ok})=>[step,ok]),[['reassign',true],['declare',true]]);
+ const incidents=linkedIncidents(declaredState);
+ assert.equal(incidents.length,1);
+ const [incident]=incidents;
+ assert.equal(incident.id,declaredRun.results[1].incident);
+ assert.equal(incident.template.version,launched.rule.templateVersion);
+ assert.deepEqual(incident.template.checklist,template.checklist.map(item=>({...item,done:false,history:[]})));
+ assert.deepEqual(incident.timeline.filter(entry=>entry.kind==='declared').map(({actor,operationId})=>[actor,operationId]),[[coordinator.id,launched.id]]);
+ assert.deepEqual(incident.responderRequests??[],[],'declaration and reload do not run notification');
+
+ assert.equal((await clickWorkflow(resume,'resume')).status(),200);
+ await launchedProgress.getByText('3 of 3 processed · 0 refused',{exact:true}).waitFor();await workflowCheck('rule-complete');
+ await reloadProgress();
+ const completedState=await call('/api/state'),completedRuleRun=readRun(completedState);
+ assert.equal(completedRuleRun.rule.state,'complete');
+ assert.deepEqual(completedRuleRun.results.slice(0,2),declaredRun.results);
+ assert.deepEqual(completedRuleRun.results.map(({step,ok})=>[step,ok]),[['reassign',true],['declare',true],['notify',true]]);
+ assert.equal(completedRuleRun.results[2].incident,incident.id);
+ await showProgress(completedRuleRun,'complete');
+ await expect(resume).toHaveCount(0);
+ await expect(incidentHeading).toBeVisible();
+ const completedIncidents=linkedIncidents(completedState);
+ assert.equal(completedIncidents.length,1);
+ const [completedIncident]=completedIncidents;
+ assert.deepEqual(completedIncident.template,incident.template);
+ assert.equal(completedIncident.responderRequests.length,1);
+ const [notification]=completedIncident.responderRequests;
+ assert.equal(notification.requester,coordinator.id);
+ assert.equal(notification.obligation.creator,coordinator.id);
+ assert.equal(notification.obligation.target.id,approvedPolicy.workflow.member);
+ assert.equal(notification.obligation.label,'no sender');
+ assert.equal(notification.obligation.state,'recorded');
+ assert.equal(notification.obligation.paging,'off');
+ assert.equal(notification.obligation.automatic,false);
+ assert.deepEqual(completedIncident.timeline.slice(0,-1),incident.timeline);
+ assert.equal(completedIncident.timeline.at(-1).kind,'request-responders');
+ assert.equal(completedIncident.timeline.at(-1).actor,coordinator.id);
+ assert.equal(completedIncident.timeline.at(-1).operationId,launched.id);
+ const completedAudit=await newAudit(),stepAudit=completedAudit.filter(row=>['triage.workflow-declare','triage.workflow-notify'].includes(row.kind)&&row.outcome==='accepted');
+ assert.equal(completedAudit.filter(row=>row.kind==='triage.workflow-reserve'&&row.outcome==='accepted').length,3,'each explicit resume reserves exactly one lease');
+ assert.deepEqual(stepAudit.map(row=>row.kind),['triage.workflow-declare','triage.workflow-notify']);
+ assert.deepEqual(stepAudit.map(row=>row.workspaceAfter),[declaredState.revision,completedState.revision]);
+ for(const row of stepAudit){assert.equal(row.actor,reservation.actor);assert.equal(row.workspaceAfter,row.workspaceBefore+1);}
+ const completedById=new Map(completedAudit.map(row=>[row.id,row]));
+ for(const row of clearedAudit)assert.deepEqual(completedById.get(row.id),row);
+ assert.equal(pagingBefore.paging,'OFF');
+ assert.deepEqual(await pagingRecords(),pagingBefore,'the full workflow creates no paging jobs or receipts');
+ assert.deepEqual((await worker.outboundRequests()).slice(outboundBefore.length),[],'the full workflow makes no provider requests');
+ await captureProgress('completed',[390]);
+ console.log('PASS OC-043 approved rule browser: one admitted original and attributed reassignment, audit fault and uncertain lease, premature clear refused, expired clear retained interrupted progress after reload, separate explicit declaration and unsent notification, frozen checklist, permanent audit, paging OFF and zero outbound; screens at 1440 and 390');
 
 }
 
@@ -1692,7 +1851,7 @@ export async function incidentRolesBrowser(page,context,incident,{proof}={}) {
 }
 
 // One desktop journey through the emitted production Worker and its browser UI.
-export async function productBrowserJourney(page,context,{ownerLink,openSession,accessibilityOnly=false,setTime=async()=>{},triageProof}={}) {
+export async function productBrowserJourney(page,context,{ownerLink,openSession,accessibilityOnly=false,setTime=async()=>{},triageProof,worker}={}) {
  const key=keyboardUser(page)
  const session=await page.evaluate(async()=>await (await fetch('/api/session')).json())
  assert.equal(session.member.role,'admin');assert.ok(!page.url().includes('rer-dev'))
@@ -1715,7 +1874,7 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession,
   await supportStartBrowser(page,context,{setTime,proof:triageProof})
   if(width===1440)await productSchedule(page,context,width,session,{ownerLink,setTime})
   await triageFiltersBrowser(page,context,{setTime,proof:triageProof})
-  await triageBulkBrowser(page,context,width)
+  await triageBulkBrowser(page,context,width,worker)
   await productImport(page,context,width,session,triageProof)
   await routingBrowser(page,context,width)
   await openWorkspaceSection(page,'routing');await openHistoryComparison(page);await page.getByLabel('Event JSON',{exact:true}).fill(JSON.stringify([{source:'browser',eventId:'replay-'+width,service:'checkout',environment:'production',key:'browser',generation:'g1',intent:'trigger',severity:'critical',title:'Replay '+width,observedAt:'2026-10-12T00:00:00.000Z'}]))
