@@ -1,0 +1,172 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f274",
+  "head": "012bdc342a362ee1882ebc623718ef7498224986",
+  "base": "fd67732578ab13b03f883bbbe1dc9bbd70bc114f",
+  "local_checks": [
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "exit": 0,
+      "observed": "Runtime agents completed (474.3s)"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "observed": "Wrote 1 contract documents."
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check after write",
+      "exit": 0,
+      "observed": "Contract documents are current."
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check after restoring main views",
+      "exit": 1,
+      "observed": "ACCEPTANCE.md: generated content differs; run contract-docs write."
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check at committed HEAD",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer build at committed HEAD",
+      "exit": 0
+    },
+    {
+      "command": "Chromium retained rota proof at committed HEAD",
+      "exit": 0,
+      "receipt": "browser-receipt.json"
+    }
+  ],
+  "regression_control": {
+    "build": "fd67732578ab13b03f883bbbe1dc9bbd70bc114f",
+    "exit": 1,
+    "actual": {
+      "code": "revision_conflict"
+    },
+    "expected": {
+      "code": "revision_conflict",
+      "current_revision": 2
+    },
+    "assertion": "staleOverrideRevision"
+  },
+  "candidate_probes": [
+    "PROBE BASE-AGENT-012 4 autonomous: stale required override revision 1 -> revision_conflict, current_revision 2 in metadata and text; scoped-out and absent indistinguishable; fresh revision -> one native override and audit, autonomous; replay unchanged; zero outbound requests",
+    "PROBE BASE-AGENT-012 4 held: stale required override revision 1 -> revision_conflict, current_revision 2 in metadata and text; scoped-out and absent indistinguishable; fresh revision -> one native override and audit, one exact sponsor approval; replay unchanged; zero outbound requests"
+  ],
+  "predecessor_p2_observations": [
+    "PROBE BASE-AGENT-012 acceptance 2 autonomous oncall.actions.submit: completed MCP stream destroyed at headers with unread body; D1 terminal original and one owned due-dated P2 evidence follow-up with done=true with agent submission and acceptance attribution before recovery; new RPC id returns original outcome and executed approval receipt where present; one native audit commit and revision increment; custody unchanged apart from linked replay-attempt audit and capacity bookkeeping; zero outbound requests and no evidence fetch",
+    "PROBE BASE-AGENT-012 acceptance 2 held oncall.actions.submit: completed MCP stream destroyed at headers with unread body; D1 terminal original and one owned due-dated P2 evidence follow-up with done=true with agent submission and acceptance attribution before recovery; new RPC id returns original outcome and executed approval receipt where present; one native audit commit and revision increment; custody unchanged apart from linked replay-attempt audit and capacity bookkeeping; zero outbound requests and no evidence fetch",
+    "PROBE BASE-AGENT-012 acceptances 1 and 3 autonomous oncall.actions.submit: one owned due-dated P2 evidence-policy completion, agent submission and accepted attribution, one complete timeline entry and native revision and actions.submit audit commit; standard plus sensitive; immediate exact replay with new RPC id equals stored outcome; changed evidence with original key and revision -> isError idempotency_conflict in metadata and text without private result; original arguments replay unchanged again with original executed approval and receipt where present; complete native custody unchanged apart from refusal and linked replay audit and capacity bookkeeping; zero outbound requests and no evidence fetch",
+    "PROBE BASE-AGENT-012 acceptances 1 and 3 held oncall.actions.submit: one owned due-dated P2 evidence-policy completion, agent submission and accepted attribution, one complete timeline entry and native revision and actions.submit audit commit; standard plus sensitive; immediate exact replay with new RPC id equals stored outcome; changed evidence with original key and revision -> isError idempotency_conflict in metadata and text without private result; original arguments replay unchanged again with original executed approval and receipt where present; complete native custody unchanged apart from refusal and linked replay audit and capacity bookkeeping; zero outbound requests and no evidence fetch",
+    "PROBE BASE-AGENT-012 acceptance 1 autonomous evidence-policy completion at T+86400000ms: original key and arguments with fresh authority -> equal stored result and original receipt where present, unchanged completed action, approval, terminal call and expiry, native revisions, timeline, audit and paging. One linked replay attempt and zero outbound requests.",
+    "PROBE BASE-AGENT-012 acceptance 1 autonomous evidence-policy completion at T+86401000ms: original key and arguments with fresh authority -> equal stored result and original receipt where present, unchanged completed action, approval, terminal call and expiry, native revisions, timeline, audit and paging. One linked replay attempt and zero outbound requests.",
+    "PROBE BASE-AGENT-012 acceptance 1 held evidence-policy completion at T+86400000ms: original key and arguments with fresh authority -> equal stored result and original receipt where present, unchanged completed action, approval, terminal call and expiry, native revisions, timeline, audit and paging. One linked replay attempt and zero outbound requests.",
+    "PROBE BASE-AGENT-012 acceptance 1 held evidence-policy completion at T+86401000ms: original key and arguments with fresh authority -> equal stored result and original receipt where present, unchanged completed action, approval, terminal call and expiry, native revisions, timeline, audit and paging. One linked replay attempt and zero outbound requests."
+  ],
+  "before_counts": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "after_counts": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "clause_status": "missing",
+  "git": {
+    "publish": "pushed",
+    "candidate_commits": 1,
+    "author_and_committer": "Run Edit Run fleet",
+    "trailers": 0,
+    "verified_remote_head": "012bdc342a362ee1882ebc623718ef7498224986",
+    "main_at_product_readback": "fd67732578ab13b03f883bbbe1dc9bbd70bc114f",
+    "shallow": false
+  },
+  "publication_scan": {
+    "commit": "012bdc342a362ee1882ebc623718ef7498224986",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "status": "guarded lander pending"
+  },
+  "main_runs": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "fd67732578ab13b03f883bbbe1dc9bbd70bc114f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44260227040",
+      "id": 44260227040,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "fd67732578ab13b03f883bbbe1dc9bbd70bc114f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44260227102",
+      "id": 44260227102,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "fd67732578ab13b03f883bbbe1dc9bbd70bc114f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44257340422",
+      "id": 44257340422,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "predecessor_refs": [
+    {
+      "branch": "cloud/sd-oncall-c-f232",
+      "head": "25c0fe55b1f2928c526119d79d3629dfb8be7931",
+      "tip_is_ancestor": false
+    },
+    {
+      "branch": "cloud/sd-oncall-c-f263",
+      "head": "e70051e60c403f6bd99c992871751ee42d7963a0",
+      "tip_is_ancestor": false
+    },
+    {
+      "branch": "cloud/sd-oncall-c-f264",
+      "head": "96f3bf2624da756947ec15fb1977024e0746bb51",
+      "tip_is_ancestor": false
+    },
+    {
+      "branch": "cloud/sd-oncall-c-f270",
+      "head": "7b506110e8e8f38a8a87c6e0ba01f8da93f2cb83",
+      "tip_is_ancestor": false
+    },
+    {
+      "branch": "cloud/sd-oncall-c-f273",
+      "head": "b068148c87bcfdc84150ea3e73578a355176ebdc",
+      "tip_is_ancestor": false
+    }
+  ]
+}

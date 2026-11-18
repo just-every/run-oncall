@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "c7e9f4204981dd75338bd55b457ca0914c71676c",
+      "bytes": 9949,
+      "path": "REPORT.md",
+      "sha256": "3c9a51f4c3d55334ab387ed09e911277bac109cca88019989286111980fad458"
+    },
+    {
+      "blob": "3975f444b9b822391078220b236c4c555993caad",
+      "bytes": 1127,
+      "path": "browser-receipt.json",
+      "sha256": "1166e1d1a60095834938485f13a26ec7e9201968adacda5fc281dd0a6ce4c52b"
+    },
+    {
+      "blob": "c6316a88f63a80b965e0a8ac54d5b67c73f8b5df",
+      "bytes": 8907,
+      "path": "candidate-receipt.json",
+      "sha256": "33909a67fbfc68627651bb102f6ca100d41309afcf53fa1e5a125ac5f25c58c7"
+    },
+    {
+      "blob": "63f20c5d4b9c09b79f8d399c12f048baf9345457",
+      "bytes": 6780,
+      "path": "ci-receipt.json",
+      "sha256": "5a6816106e42c0bff1419d4b16c46942dcb08e695caae89002900e327d729f5e"
+    },
+    {
+      "blob": "dc9ee1f78423e2fb01f38ec7e8692b580516fe35",
+      "bytes": 356252,
+      "path": "rota-1440.png",
+      "sha256": "a5c6e213a00d3905936b545f5783ec88935d9d93d4c333997afab55cb46c7d71"
+    },
+    {
+      "blob": "5f27ad88c153c0039767c87ca8ca5f3687ae5df7",
+      "bytes": 276534,
+      "path": "rota-390.png",
+      "sha256": "8e1fe9e65f1de004526232bb8a91385831276b9527ccc73c8be4237b00c6431d"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f274",
+  "product_head": "012bdc342a362ee1882ebc623718ef7498224986",
+  "ref": "refs/heads/evidence/sd-oncall-c-f274",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f274"
+}

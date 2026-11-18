@@ -1,0 +1,43 @@
+{
+  "sha": "012bdc342a362ee1882ebc623718ef7498224986",
+  "result": "pass",
+  "browser": "Chromium",
+  "assertionWidth": 1440,
+  "nativeRevision": 3,
+  "role": "primary",
+  "start": "2026-11-19T08:01:00.000Z",
+  "end": "2026-11-19T09:01:00.000Z",
+  "screenshots": [
+    {
+      "file": "rota-1440.png",
+      "width": 1440,
+      "layout": {
+        "viewport": 1440,
+        "documentWidth": 1440,
+        "textSizes": [
+          15,
+          14
+        ]
+      },
+      "rota": "Payments retained rota held",
+      "holder": "Rota relief held",
+      "cover": "Rota relief held\n\nprimary · Nov 19, 2026, 08:01 AM UTC (GMT+0) – Nov 19, 2026, 09:01 AM UTC (GMT+0)\n\n×"
+    },
+    {
+      "file": "rota-390.png",
+      "width": 390,
+      "layout": {
+        "viewport": 390,
+        "documentWidth": 390,
+        "textSizes": [
+          15,
+          14
+        ]
+      },
+      "rota": "Payments retained rota held",
+      "holder": "Rota relief held",
+      "cover": "Rota relief held\n\nprimary · Nov 19, 2026, 08:01 AM UTC (GMT+0) – Nov 19, 2026, 09:01 AM UTC (GMT+0)\n\n×"
+    }
+  ],
+  "outboundRequests": 0
+}
