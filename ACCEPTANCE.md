@@ -1297,8 +1297,8 @@ Agent surface · target · **missing**
 5. Bytes over budget return `budget_exhausted` and no partial content.
 6. Customer-sourced text carries the untrusted marker.
 
-**Evidence.** None.
-**Gap.** Not yet judged through this seed's own doors.
+**Evidence.** `tests/oncall-agent-transition-replay.mjs` — transitionReplay fixture, one-off emitted Worker and D1 observation: the admitted agent followed the link actually returned by oncall.incidents.update for an evidence-free acknowledged incident marked mitigating. Under autonomous and held policies, the full resource matched the write result and the sponsor’s protected native state, including the new revision, attributed transition and companion roles. The standard read completed autonomously without review or under held policy with its own open review and the original write review unchanged. The read preserved native records and revisions, state-changing audit and paging, with zero outbound requests. `tests/agent-door-browser.mjs` — one-off saved incident and timeline inspection: both policies showed the mitigating state and agent attribution at 1440 and 390 pixels.
+**Gap.** The clause has not been fully judged through this seed’s own doors. Other write links and complete target-surface coverage remain unproved. Private-team and scoped-ownership parity remains held, including the viewer authority mismatch for members and public teams, the complete lease-free outbox projection and independent matching native erasure evidence. Role parity for those four templates remains unproved. Grant byte budgets depend on unfinished Base work. Existing discovery, non-disclosure and untrusted-text proof remains bounded. Team privacy remains held under OC-023. Agent and AI egress remains held under OC-045, OC-046, OC-048 and OC-049. Broader conformance remains with BASE-AGENT-013.
 
 #### BASE-AGENT-004 — Business identity and short-lived, audience-bound tokens
 
