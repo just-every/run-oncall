@@ -20,6 +20,7 @@ import {agedReplayRetention} from './oncall-agent-retention.mjs';
 import {agedActionSubmitRetention} from './oncall-agent-action-submit-retention.mjs';
 import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-revisions.mjs';
 import {focusedActionEvidenceReplay} from './oncall-agent-action-evidence-replay.mjs';
+import {agedActionEvidenceRetention} from './oncall-agent-action-evidence-retention.mjs';
 import {focusedActionSubmitNativeRevision} from './oncall-agent-action-submit-native-revision.mjs';
 import {focusedActionSubmitResponseLoss} from './oncall-agent-action-submit-response-loss.mjs';
 import {focusedAssigneeClearReplay} from './oncall-agent-assignee-clear-replay.mjs';
@@ -1041,6 +1042,7 @@ try{
  await focusedActionSubmitNativeRevision();
  await focusedActionSubmitResponseLoss();
  await focusedActionEvidenceReplay();
+ await agedActionEvidenceRetention();
  await staleActionSubmitExpectedRevision(runtime);
  assert.equal((await runtime.adopt()).status,200);
  await specialist({request:runtime.request,origin:runtime.origin,cookie:runtime.cookie,fixtures:runtime.fixtures,tool});
