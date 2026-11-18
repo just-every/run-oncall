@@ -1,0 +1,15 @@
+{
+  "githubCalls": 4,
+  "lastCall": "2026-11-18T03:01:55.188520+00:00",
+  "head": "993c8a9e3bbcf93b2a4cb4b979deb6fbf1109211",
+  "runs": [
+    {
+      "id": 44225715622,
+      "name": "Verify",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "993c8a9e3bbcf93b2a4cb4b979deb6fbf1109211",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44225715622"
+    }
+  ]
+}

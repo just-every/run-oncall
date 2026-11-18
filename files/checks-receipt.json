@@ -1,0 +1,176 @@
+{
+  "recordedAt": "2026-11-18T02:47:59.789742+00:00",
+  "head": "993c8a9e3bbcf93b2a4cb4b979deb6fbf1109211",
+  "productTree": "18870570d3db4f2e1cbf92c9926b91eb85092727",
+  "localChecks": [
+    {
+      "command": "pnpm exec tsc --noEmit",
+      "exit": 0,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logBytes": 0
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "logSha256": "d63c976fbd7e6147f0ffa26b1110e17c451392ec87b03f78fff12fcfec80cb96",
+      "logBytes": 16959
+    },
+    {
+      "command": "ONCALL_PRODUCT_JOURNEY=events-source node tests/product-browser.mjs",
+      "exit": 0,
+      "logSha256": "4c0d8867720951d46df8a2f1d961d434dc29ee61d614446a40ae73666e316f2f",
+      "logBytes": 1052
+    },
+    {
+      "command": "ONCALL_PRODUCT_JOURNEY=alert-run node tests/product-browser.mjs",
+      "exit": 0,
+      "logSha256": "2f14fef766776b047c79a113787e80409d5d34044b5e36bda726e4750b355cc5",
+      "logBytes": 525
+    },
+    {
+      "command": "ONCALL_PRODUCT_JOURNEY=response-policy node tests/product-browser.mjs",
+      "exit": 0,
+      "logSha256": "40e87b3c8a1baf85e17815a25a23290a1c46d44bef9a37ebd7d32fe924bb5d7c",
+      "logBytes": 190
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=core node tests/runtime.mjs",
+      "exit": 0,
+      "logSha256": "b852b21542f2953fefd906b5715425e3049805d726a2ac9ce1c10f1eac1d3582",
+      "logBytes": 24177
+    },
+    {
+      "command": "ONCALL_TRIAGE_PART=storm node tests/triage.mjs",
+      "exit": 0,
+      "logSha256": "d6e3d4ae20dfcdffe2b4e108ce068bf2680b37bf061777a4ed9864e79fc0bdb9",
+      "logBytes": 3963
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "logSha256": "ca4774e3a6207f7b1b6f6998acfb765e462c49d51a19c257c8471221a4abde91",
+      "logBytes": 283983
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "logSha256": "0a9956fcc0766126660c96b717da218afb96293d623243f1602b910c7fc19903",
+      "logBytes": 283997
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build (committed candidate)",
+      "exit": 0,
+      "head": "993c8a9e3bbcf93b2a4cb4b979deb6fbf1109211",
+      "logSha256": "81e598c182c3c1a37a694484d4a815fcc428049a3744d3e962c26c775c6509ac",
+      "logBytes": 16959
+    },
+    {
+      "command": "ONCALL_PRODUCT_JOURNEY=events-source node tests/product-browser.mjs (committed candidate)",
+      "exit": 0,
+      "head": "993c8a9e3bbcf93b2a4cb4b979deb6fbf1109211",
+      "logSha256": "4c0d8867720951d46df8a2f1d961d434dc29ee61d614446a40ae73666e316f2f",
+      "logBytes": 1052
+    }
+  ],
+  "localProvenance": "Initial local checks ran on the unchanged product sources before the commit; the final browser build and focused events-source/owner-alert proof were repeated on the committed candidate. Exact-SHA CI is separate.",
+  "contractDocs": {
+    "command": "node src/base/contract-docs.mjs check",
+    "exit": 0,
+    "errors": 0,
+    "warnings": 0
+  },
+  "verificationPlanCommandEntries": {
+    "before": 21,
+    "after": 21
+  },
+  "contractTotals": {
+    "before": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34
+    },
+    "after": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34
+    }
+  },
+  "candidateCommits": 1,
+  "candidateMergeCommits": 0,
+  "clausesChanged": [],
+  "productPush": {
+    "branch": "cloud/sd-oncall-design-alerts-3",
+    "head": "993c8a9e3bbcf93b2a4cb4b979deb6fbf1109211",
+    "attempts": 1,
+    "result": "success"
+  },
+  "browserProof": {
+    "head": "993c8a9e3bbcf93b2a4cb4b979deb6fbf1109211",
+    "assertionWidth": 1440,
+    "screenshotWidths": [
+      1440,
+      390
+    ],
+    "receipt": "owner-alerts-receipt.json",
+    "sourceReceipt": "test-event-receipt.json",
+    "seriousCriticalAccessibilityFindings": 0
+  },
+  "productOrigin": "https://github.com/just-every/run-oncall.git",
+  "commitSubject": "Reapply owner alert and incident journeys beside current notification runs",
+  "parent": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+  "changedFiles": [
+    "docs/incidents.md",
+    "sources.lock.json",
+    "src/alerts/AlertList.tsx",
+    "src/alerts/AlertPage.tsx",
+    "src/alerts/commands.ts",
+    "src/api.ts",
+    "src/app/IncidentBulkActions.tsx",
+    "src/app/savedEditSummary.ts",
+    "src/app/shell/nav.ts",
+    "src/audit-request.ts",
+    "src/family/response-operations/domain.ts",
+    "src/family/response-operations/incident-controls.ts",
+    "src/incident/IncidentPage.tsx",
+    "src/incident/MoreMenu.tsx",
+    "src/incident/NextStep.tsx",
+    "src/incident/incident.css",
+    "src/incident/types.ts",
+    "src/integrations/AddIntegration.tsx",
+    "src/integrations/ProviderRequest.tsx",
+    "src/integrations/RequestExample.tsx",
+    "src/integrations/SourcePage.tsx",
+    "src/integrations/SourceTest.tsx",
+    "src/integrations/TestAlert.tsx",
+    "src/integrations/catalog.ts",
+    "src/integrations/integrations.css",
+    "src/integrations/test-alert.ts",
+    "src/on-call/OnCallNow.tsx",
+    "src/on-call/read.ts",
+    "src/reviews/review-controls.ts",
+    "src/sections/alerts.tsx",
+    "tests/owner-alerts-browser.mjs",
+    "tests/product-browser.mjs",
+    "tests/runtime.mjs",
+    "tests/triage.mjs"
+  ],
+  "sourceLockSha256": "34ad57e852acedf5412deed1253910042a4414b4f3917e8cb5c0d28f55b3ece1",
+  "remoteReadback": {
+    "command": "git ls-remote origin refs/heads/cloud/sd-oncall-design-alerts-3",
+    "head": "993c8a9e3bbcf93b2a4cb4b979deb6fbf1109211",
+    "matches": true
+  },
+  "browserAndWorkerProcessesClosed": true,
+  "publicationScan": "Fleet Mac gate; unavailable in this cloud, not claimed",
+  "exactShaVerify": {
+    "id": 44225715622,
+    "name": "Verify",
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "993c8a9e3bbcf93b2a4cb4b979deb6fbf1109211",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44225715622",
+    "githubCalls": 4
+  },
+  "terminalCustody": "READY",
+  "blockers": []
+}

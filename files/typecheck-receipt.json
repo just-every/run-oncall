@@ -1,0 +1,4 @@
+{
+  "command": "pnpm exec tsc --noEmit",
+  "exit": 0
+}

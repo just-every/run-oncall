@@ -1,0 +1,30 @@
+{
+  "head": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+  "assertionWidth": 1440,
+  "screenshotWidths": [
+    1440,
+    390
+  ],
+  "D4": {
+    "testButton": 0,
+    "emailOffered": 1
+  },
+  "D5": {
+    "nextIntent": "recover",
+    "requiresKey": true
+  },
+  "D6": {
+    "onCallNow": 0
+  },
+  "D8": {
+    "closeButton": 0,
+    "stillActive": true
+  },
+  "D7": {
+    "resolveFromAcknowledged": 0,
+    "requiredRecoveryURL": true
+  },
+  "D9": {
+    "reopen": 0
+  }
+}
