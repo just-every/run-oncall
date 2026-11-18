@@ -1,0 +1,102 @@
+Exact candidate local check receipt
+Commands
+npx -y @runeditrun/rer build
+pnpm run typecheck
+pnpm exec rer check --profile first-party
+ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/agent-door-browser.mjs
+ONCALL_RUNTIME_PART=agents node tests/runtime.mjs
+Candidate b068148c87bcfdc84150ea3e73578a355176ebdc on Node v22.20.0 and pnpm 10.12.4
+START build
+END build exit=0 seconds=10
+START typecheck
+END typecheck exit=0 seconds=3
+START first-party
+END first-party exit=0 seconds=1
+START browser
+END browser exit=0 seconds=360
+START agents
+END agents exit=0 seconds=526
+
+Generated and restored contract views
+Wrote 1 contract documents.
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+MECHANICAL lock=node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock and check exit=0; views=node src/base/contract-docs.mjs write and check exit=0; ledger=none exit=0
+Committed source lock check exit=0.
+The committed views check reports the expected stale generated ACCEPTANCE.md because the lander generates the views.
+Contract prose: 0 errors, 0 warnings.
+ACCEPTANCE.md: generated content differs; run contract-docs write.
+
+Published refs verified through Git
+b068148c87bcfdc84150ea3e73578a355176ebdc	refs/heads/cloud/sd-oncall-c-f273
+c7c61ef6e03c39d5863a1d472a99eb2436bf73dd	refs/heads/main
+
+Exact candidate runtime probe observations
+PROBE BASE-AGENT-012 acceptance 4 autonomous optional revision oncall.actions.submit: current required revision with stale expected_revision -> isError revision_conflict, exact parent current_revision 3 in metadata and text, no private result or native effect; fresh corrected call completes one P2 follow-up with agent submission and acceptance attribution autonomously; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 4 autonomous required revision oncall.actions.submit: stale required revision with expected_revision absent -> isError revision_conflict, exact parent current_revision 3 in metadata and text, no private result or native effect; fresh corrected call completes one P2 follow-up with agent submission and acceptance attribution autonomously; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 4 held optional revision oncall.actions.submit: current required revision with stale expected_revision -> isError revision_conflict, exact parent current_revision 3 in metadata and text, no private result or native effect; fresh corrected call completes one P2 follow-up with agent submission and acceptance attribution after exact sponsor approval; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 4 held required revision oncall.actions.submit: stale required revision with expected_revision absent -> isError revision_conflict, exact parent current_revision 3 in metadata and text, no private result or native effect; fresh corrected call completes one P2 follow-up with agent submission and acceptance attribution after exact sponsor approval; zero outbound requests
+PROBE BASE-AGENT-012 acceptances 1 and 3 autonomous oncall.actions.submit: one owned due-dated P2 evidence-policy completion, agent submission and accepted attribution, one complete timeline entry and native revision and actions.submit audit commit; standard plus sensitive; immediate exact replay with new RPC id equals stored outcome; changed evidence with original key and revision -> isError idempotency_conflict in metadata and text without private result; original arguments replay unchanged again with original executed approval and receipt where present; complete native custody unchanged apart from refusal and linked replay audit and capacity bookkeeping; zero outbound requests and no evidence fetch
+PROBE BASE-AGENT-012 acceptances 1 and 3 held oncall.actions.submit: one owned due-dated P2 evidence-policy completion, agent submission and accepted attribution, one complete timeline entry and native revision and actions.submit audit commit; standard plus sensitive; immediate exact replay with new RPC id equals stored outcome; changed evidence with original key and revision -> isError idempotency_conflict in metadata and text without private result; original arguments replay unchanged again with original executed approval and receipt where present; complete native custody unchanged apart from refusal and linked replay audit and capacity bookkeeping; zero outbound requests and no evidence fetch
+PROBE BASE-AGENT-012 acceptance 2 autonomous oncall.actions.submit: completed MCP stream destroyed at headers with unread body; D1 terminal original and one owned due-dated P2 evidence follow-up with done=true with agent submission and acceptance attribution before recovery; new RPC id returns original outcome and executed approval receipt where present; one native audit commit and revision increment; custody unchanged apart from linked replay-attempt audit and capacity bookkeeping; zero outbound requests and no evidence fetch
+PROBE BASE-AGENT-012 acceptance 2 held oncall.actions.submit: completed MCP stream destroyed at headers with unread body; D1 terminal original and one owned due-dated P2 evidence follow-up with done=true with agent submission and acceptance attribution before recovery; new RPC id returns original outcome and executed approval receipt where present; one native audit commit and revision increment; custody unchanged apart from linked replay-attempt audit and capacity bookkeeping; zero outbound requests and no evidence fetch
+Runtime agents completed (525.5s)
+
+Exact candidate signed-in browser observations
+Browser proof follow-up-evidence-optional-revision-pending 1440: fits=true serious-or-critical=0 undersized-controls=0
+Browser proof follow-up-evidence-optional-revision-pending 390: fits=true serious-or-critical=0 undersized-controls=0
+Browser proof follow-up-evidence-optional-revision-held 1440: fits=true serious-or-critical=0 undersized-controls=0
+Browser proof follow-up-evidence-optional-revision-held 390: fits=true serious-or-critical=0 undersized-controls=0
+Browser proof follow-up-evidence-optional-revision-executed 1440: fits=true serious-or-critical=0 undersized-controls=0
+Browser proof follow-up-evidence-optional-revision-executed 390: fits=true serious-or-critical=0 undersized-controls=0
+Browser proof follow-up-evidence-required-revision-pending 1440: fits=true serious-or-critical=0 undersized-controls=0
+Browser proof follow-up-evidence-required-revision-pending 390: fits=true serious-or-critical=0 undersized-controls=0
+Browser proof follow-up-evidence-required-revision-held 1440: fits=true serious-or-critical=0 undersized-controls=0
+Browser proof follow-up-evidence-required-revision-held 390: fits=true serious-or-critical=0 undersized-controls=0
+Browser proof follow-up-evidence-required-revision-executed 1440: fits=true serious-or-critical=0 undersized-controls=0
+Browser proof follow-up-evidence-required-revision-executed 390: fits=true serious-or-critical=0 undersized-controls=0
+PROBE BASE-AGENT-012 evidence completion browser held optional revision correction: protected review material equals MCP result; saved P2 Complete and Completes with evidence plus retained evidence link at 1440 and 390; original sponsor approval executed once; zero evidence requests
+PROBE BASE-AGENT-012 evidence completion browser held required revision correction: protected review material equals MCP result; saved P2 Complete and Completes with evidence plus retained evidence link at 1440 and 390; original sponsor approval executed once; zero evidence requests
+PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements
+
+Scratch predecessor compatibility on the candidate emitted build
+Scratch predecessor browser exit=0
+PROBE BASE-AGENT-012 acceptance 1 autonomous evidence-policy completion at T+86400000ms: original key and arguments with fresh authority -> equal stored result and original receipt where present, unchanged completed action, approval, terminal call and expiry, native revisions, timeline, audit and paging. One linked replay attempt and zero outbound requests.
+PROBE BASE-AGENT-012 acceptance 1 autonomous evidence-policy completion at T+86401000ms: original key and arguments with fresh authority -> equal stored result and original receipt where present, unchanged completed action, approval, terminal call and expiry, native revisions, timeline, audit and paging. One linked replay attempt and zero outbound requests.
+PROBE BASE-AGENT-012 acceptance 1 held evidence-policy completion at T+86400000ms: original key and arguments with fresh authority -> equal stored result and original receipt where present, unchanged completed action, approval, terminal call and expiry, native revisions, timeline, audit and paging. One linked replay attempt and zero outbound requests.
+PROBE BASE-AGENT-012 acceptance 1 held evidence-policy completion at T+86401000ms: original key and arguments with fresh authority -> equal stored result and original receipt where present, unchanged completed action, approval, terminal call and expiry, native revisions, timeline, audit and paging. One linked replay attempt and zero outbound requests.
+PROBE BASE-AGENT-012 aged evidence completion browser autonomous: protected review material equals MCP result; saved P2 Complete and Completes with evidence plus retained evidence link at 1440 and 390; original sponsor approval not needed; zero evidence requests
+PROBE BASE-AGENT-012 aged evidence completion browser held: protected review material equals MCP result; saved P2 Complete and Completes with evidence plus retained evidence link at 1440 and 390; original sponsor approval executed once; zero evidence requests
+PASS predecessor compatibility browser: reassignment readback, P2 completed response loss, P2 revision correction and P2 evidence retention
+
+Independent scratch f264 runtime recheck exit=0 with the same four retention observations.
+
+Final remote refs
+b068148c87bcfdc84150ea3e73578a355176ebdc	refs/heads/cloud/sd-oncall-c-f273
+c7c61ef6e03c39d5863a1d472a99eb2436bf73dd	refs/heads/main
+
+Exact candidate push Verify 44249124430
+{"conclusion":"failure","head_sha":"b068148c87bcfdc84150ea3e73578a355176ebdc","html_url":"https://github.com/just-every/run-oncall/actions/runs/44249124430","status":"completed"}
+Job ID, name and conclusion
+134615199771  plan  success
+134615325212  contract-docs  failure
+134615325331  build  success
+134615327482  light  skipped
+134616109603  shards (triage)  success
+134616109608  shards (agents)  success
+134616109609  shards (hosted)  success
+134616109623  shards (browser)  success
+134616109624  shards (runtime)  success
+134616109658  shards (changes)  success
+134616109698  shards (intake)  success
+134616109765  shards (transfer)  success
+134620984734  full-push-proof  success
+134620986814  nightly-proof  skipped
+134621028028  verify  failure
+
+Failed-job archive receipts
+gh run view 44249124430 --repo just-every/run-oncall --job 134615325212 --log-failed exit=1
+gh run view 44249124430 --repo just-every/run-oncall --job 134621028028 --log-failed exit=0
+Contract-docs archive: failed to get run log: zip: not a valid zip file
+Aggregate archive: CONTRACT_DOCS=failure, BUILD=success, SHARDS=success, PUSH_PROOF=success. The contract-docs result caused exit 1.
+Generated and committed-view local checks are recorded above.
