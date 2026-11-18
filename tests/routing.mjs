@@ -255,6 +255,38 @@ export async function rateJourney(w,cookie,actor) {
  // Management has current-member authority and optimistic publication semantics.
  ok(await w.request('/api/intake/allowances',{id:'intake:rate-main',requests:2,events:2,revision:state.revision}),401);
  ok(await req('/api/intake/allowances',{id:'intake:rate-main',requests:2,events:2,revision:state.revision}),409);
+
+ const nativeAt=Date.now();
+ await w.time(nativeAt);
+ for(const routed of [false,true]) {
+  const id=routed?'native-routed-requests':'native-service-requests';
+  const credential='synthetic-oncall-'+secret();
+  const source=routed?'intake:'+id:id;
+  const policyId=routed?source:'source:'+source;
+  if(routed)ok(await configure(id,credential),201);
+  else ok(await req('/api/sources',{id,key:credential,scopes:['payments']}));
+  state=ok(await req('/api/state'));
+  ok(await req('/api/intake/allowances',{id:policyId,requests:3,events:120,revision:state.revision}));
+  const trigger={...event(id),source,service:'payments',environment:'production',observedAt:new Date(nativeAt).toISOString()};
+  const path='/api/ingress/'+source;
+  const usage=()=>w.sql(`SELECT requests,events FROM oc_key_rate_usage WHERE key_id='${policyId}' ORDER BY at`);
+  const admitted=ok(await send(trigger,credential,path),201);
+  assert.deepEqual(usage(),[{requests:1,events:1}]);
+  const grouped=await protectedState();
+  assert.ok(grouped.alerts.some(alert=>alert.events.includes(admitted.id)));
+  assert.deepEqual(ok(await send(trigger,credential,path)),{...admitted,duplicate:true});
+  assert.deepEqual(usage(),[{requests:2,events:1}]);
+  const observation={...trigger,eventId:trigger.eventId+'-next'};
+  const rejected=ok(await send({...observation,source:'synthetic-oncall-mismatched'},credential,path),403);
+  assert.match(rejected.error,/"source" must match/);
+  assert.deepEqual(usage(),[{requests:3,events:1}]);
+  assert.deepEqual(await protectedState(),grouped);
+  const throttled=await send(observation,credential,path);
+  assert.match(ok(throttled,429).error,/Key requests allowance exceeded/);
+  assert.equal(throttled.headers.get('retry-after'),'60');
+  assert.deepEqual(usage(),[{requests:4,events:1}]);
+  assert.deepEqual(await protectedState(),grouped);
+ }
  await w.time(Date.now());
  console.log('PASS OC-084 per-record rolling allowances: default 121st event, other-key isolation, duplicate request boundary, rotation, exact-window recovery, owner notices, pre-grouping and incomplete refusal, checkpoint policy custody');
 }
