@@ -1,0 +1,222 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f282",
+  "base_main": "518317b385c4535599bfc670dd676da46069b451",
+  "product_head": "cc1111675053e8ade57a09d9f39bfbc09c608f3d",
+  "product_advertised_head_verified": true,
+  "main_baseline_completed_success": {
+    "verify": [
+      44322242486,
+      44312320683
+    ],
+    "run_site": 44322242470
+  },
+  "contract_counts": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "status_table_diff": "byte-identical to base main",
+  "candidate_commits": 1,
+  "candidate_identity_and_trailers": "all author and committer identities passed, no trailers",
+  "local_node": "v24.19.0",
+  "local_pnpm": "10.12.4",
+  "local_checks": [
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node tests/activation.mjs",
+      "exit": 0,
+      "output": [
+        "PASS OC-025 secondary service feed: bounded UTC coverage before and after reviewed override, unrelated rota and member data excluded, immediate 404 after revocation, assignments and paging retained, zero outbound requests",
+        "Activation passed: 40 requirement flow groups",
+        "PASS demoRotaRules: HTTP On call next hand-overs and sample cover endpoints agree with every stated local weekly rule"
+      ]
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "output": [
+        "Wrote 1 contract documents."
+      ]
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "output": [
+        "Contract prose: 0 errors, 0 warnings.",
+        "Contract documents are current."
+      ]
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check after restoring the generated views from main",
+      "exit": 1,
+      "output": [
+        "Contract prose: 0 errors, 0 warnings.",
+        "ACCEPTANCE.md: generated content differs; run contract-docs write."
+      ]
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    }
+  ],
+  "regression_baseline": {
+    "product_head": "443c3613cefdf7359fac0ca728da428cf9e280a0",
+    "journey": "tests/activation.mjs#scheduleCoordination",
+    "exit": 1,
+    "observation": "The original Worker returned no ICS events for the service linked second. The protected coverage returned populated intervals."
+  },
+  "evidence_lines": {
+    "contract_observation": "CONTRACT.md:317",
+    "legacy_service_feed": "tests/activation.mjs:204",
+    "interval_comparison": "tests/activation.mjs:233",
+    "reviewed_override": "tests/activation.mjs:254",
+    "revocation_and_assignment_readback": "tests/activation.mjs:272"
+  },
+  "migration_ledger": "no migration changes",
+  "publication_scan": "guarded fleet lander pending",
+  "candidate_verify_at_discovery": {
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "cc1111675053e8ade57a09d9f39bfbc09c608f3d",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44323516838",
+    "id": 44323516838,
+    "status": "in_progress"
+  },
+  "candidate_verify": {
+    "conclusion": "failure",
+    "head_sha": "cc1111675053e8ade57a09d9f39bfbc09c608f3d",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44323516838",
+    "status": "completed",
+    "id": 44323516838,
+    "event": "push",
+    "jobs": [
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 134868510251,
+        "name": "plan",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 134868765579,
+        "name": "build",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          "Check the generated contract documents"
+        ],
+        "id": 134868765589,
+        "name": "contract-docs",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "id": 134868768411,
+        "name": "light",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 134871392253,
+        "name": "shards (intake)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 134871392295,
+        "name": "shards (changes)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 134871392309,
+        "name": "shards (runtime)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 134871392327,
+        "name": "shards (agents)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 134871392347,
+        "name": "shards (browser)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 134871392350,
+        "name": "shards (hosted)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 134871392351,
+        "name": "shards (transfer)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 134871392372,
+        "name": "shards (triage)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 134880117887,
+        "name": "full-push-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "id": 134880121495,
+        "name": "nightly-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          "Require the selected coverage and its proof"
+        ],
+        "id": 134880181493,
+        "name": "verify",
+        "status": "completed"
+      }
+    ],
+    "candidate_disposition": "ready under the generated-view exception"
+  }
+}
