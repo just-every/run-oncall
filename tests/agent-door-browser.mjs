@@ -4,7 +4,7 @@ import {mkdir} from 'node:fs/promises';
 import {chromium} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {agentRuntime,agentEffectSnapshot,pauseMatrix} from './agent-door-runtime.mjs';
-import {declareFromAlertParity,recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy,deadlineTarget} from './oncall-agent-fixtures.mjs';
+import {declareFromAlertParity,acknowledgeParity,recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy,deadlineTarget} from './oncall-agent-fixtures.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-revisions.mjs';
 import {actionSubmitNativeRevision} from './oncall-agent-action-submit-native-revision.mjs';
@@ -173,6 +173,7 @@ try{
  assert.deepEqual(await agentEffectSnapshot(runtime),savedDeclarations,'Viewing saved incidents preserves native and paging custody');
  assert.deepEqual(await runtime.outboundRequests(),[]);
  console.log('PROBE BASE-AGENT-002 5 browser: Alert details button and MCP in both policies; saved incidents, runbooks and separate attribution read at 1440 and 390; zero outbound requests');
+ await acknowledgmentBrowser(runtime,browser,capture);
  await savedServiceRunbookBrowser(page,runtime.origin,await standardServiceRunbookUpdate(runtime));
  await page.setViewportSize({width:1440,height:1000});
  await changedReassignmentReasonConflict(runtime,{async observe({mode,saved,assignee,responder,reason,agentLabel}){
@@ -895,3 +896,63 @@ try{
 
 // Reuse the same two-role parity journey in push Verify's browser invocation.
 await (await import('./oncall-agent-resource-parity.mjs')).resourceParity({browserProof:true});
+
+async function acknowledgmentBrowser(runtime,browser,capture) {
+ const {member,cookie}=await runtime.memberSession('Synthetic acknowledgment responder','responder');
+ const context=await browser.newContext({baseURL:runtime.origin,viewport:{width:1440,height:1000}});
+ await context.addCookies(cookie.split('; ').map(pair=>{
+  const at=pair.indexOf('=');
+  return {name:pair.slice(0,at),value:pair.slice(at+1),url:runtime.origin,httpOnly:true,sameSite:'Lax'};
+ }));
+ const outbound=[];
+ context.on('request',request=>{
+  const url=new URL(request.url());
+  if(['http:','https:'].includes(url.protocol)&&url.origin!==runtime.origin)outbound.push(url.origin);
+ });
+ const page=await context.newPage();
+ try{
+  const pairs=await acknowledgeParity(runtime,member,async (incident,summary)=>{
+   await page.goto('/incidents/'+incident.id);
+   const [response]=await Promise.all([
+    page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().method()==='POST'),
+    page.getByRole('region',{name:'Next step',exact:true}).getByRole('button',{name:'Acknowledge',exact:true}).click(),
+   ]);
+   assert.equal(response.status(),200);
+   assert.deepEqual(response.request().postDataJSON(),{
+    type:'transition',state:'acknowledged',incident:incident.id,revision:incident.revision,summary,
+   });
+   return response.json();
+  });
+  const saved=await agentEffectSnapshot(runtime);
+  for(const {mode,human,agent,humanLabel,agentLabel} of pairs){
+   for(const [door,incident,label] of [['person',human,humanLabel],['agent',agent,agentLabel]]){
+    await capture('acknowledgment-'+mode+'-'+door,'/incidents/'+incident.id,async()=>{
+     const detail=page.locator('.detail');
+     await detail.getByRole('heading',{name:incident.title,exact:true}).waitFor();
+     const state=await detail.locator('.incident-state').textContent();
+     const lead=await detail.getByRole('button',{name:/^Lead:/}).getAttribute('aria-label');
+     const assignee=await detail.getByRole('button',{name:/^Assignee:/}).getAttribute('aria-label');
+     const entry=detail.getByRole('region',{name:'Timeline',exact:true}).getByRole('listitem')
+      .filter({hasText:incident.timeline.at(-1).text});
+     const named=entry.locator('.named-responder');
+     const attribution=await entry.locator('small').textContent();
+     if(page.viewportSize().width===1440){
+      assert.equal(state.trim(),'Acknowledged');
+      assert.equal(lead,'Lead: '+member.name);
+      assert.equal(assignee,'Assignee: '+member.name);
+      assert.equal(attribution,label);
+      if(door==='agent')assert.equal(await named.textContent(),'Named responder: '+member.name);
+      else assert.equal(await named.count(),0);
+     }
+     console.log('Acknowledgment readback '+mode+' '+door+' '+page.viewportSize().width+': '+[state.trim(),lead,assignee,attribution].join(' | '));
+    },runtime,page);
+   }
+  }
+  assert.deepEqual(await agentEffectSnapshot(runtime),saved,'Reading the saved acknowledgments preserves native and paging custody');
+  assert.deepEqual(await runtime.outboundRequests(),[]);
+  assert.deepEqual(outbound,[]);
+  console.log('PROBE BASE-AGENT-002 5 acknowledgment browser: real Acknowledge button and MCP in both policies; saved state, responsibility and attribution read at 1440 and 390; zero outbound requests');
+ }finally{
+  await context.close();
+ }
+}
