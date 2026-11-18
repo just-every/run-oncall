@@ -116,7 +116,7 @@ export async function agentRuntime({clock}={}){
    const {url,init}=await mcpRequest(method,params,overrides,bearer,transport),response=await request(url,init);
    const body=await response.json();return {status:response.status,headers:response.headers,body,message:body,result:body.result,decision:body.result?._meta?.['com.runeditrun/decision']??body.error?.data?._meta?.['com.runeditrun/decision']};
   }
-  async function completeResource(uri,{bearer,overrides={},personHttp=http}={}){
+  async function completeResource(uri,{bearer,overrides={},personHttp=http,approve}={}){
    const initial=await mcp('resources/read',{uri},overrides,bearer);
    let answer=initial;
    if(initial.body.error?.data?.code==='approval_required'){
@@ -128,9 +128,12 @@ export async function agentRuntime({clock}={}){
     assert.equal(approval.decision_id,initial.decision.id);
     assert.equal(approval.revision,context.revision);
     assert.match(approval.summary_sha256,/^[a-f0-9]{64}$/);
-    const approved=await personHttp('/agents/api/approvals/'+handle.id+'/approve',{revision:approval.revision,summary_sha256:approval.summary_sha256});
-    assert.equal(approved.status,200);
-    assert.equal((await approved.json()).approval.state,'executed');
+    if(approve)await approve({initial,handle,saved:approval});
+    else{
+     const approved=await personHttp('/agents/api/approvals/'+handle.id+'/approve',{revision:approval.revision,summary_sha256:approval.summary_sha256});
+     assert.equal(approved.status,200);
+     assert.equal((await approved.json()).approval.state,'executed');
+    }
     answer=await mcp('resources/read',{uri,requestState:initial.body.error.data.requestState},overrides,bearer);
    }
    assert.equal(answer.status,200,uri);
