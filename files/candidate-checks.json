@@ -1,0 +1,61 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-release-0-5-19",
+  "base": "6ef9bc1294fc981c71e990df9bf12104337c81b3",
+  "candidate": "39a34f308498a72bee4401429f0e1b698b6d66dd",
+  "previous_tag_commit": "8dd2a0acf06b30fbc810c8a2a7e0fe8c01dd85ef",
+  "version": "0.5.19",
+  "rer_pin": "0.2.118",
+  "counts": {
+    "published_v0_5_18": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101,
+      "migration_files": 68,
+      "tracked_test_files": 90
+    },
+    "main_base": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101,
+      "migration_files": 68,
+      "tracked_test_files": 102
+    },
+    "candidate": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101,
+      "migration_files": 68,
+      "tracked_test_files": 102
+    }
+  },
+  "checks": {
+    "pnpm install --frozen-lockfile": "passed",
+    "delivery setup schema and canonical bytes": "passed",
+    "pnpm exec rer check --profile first-party": "passed",
+    "pnpm run typecheck": "passed",
+    "node src/base/contract-docs.mjs write": "passed, zero files regenerated",
+    "node src/base/contract-docs.mjs check": "passed",
+    "pinned edition-authoring lock then check": "passed",
+    "release metadata and changelog consistency": "passed",
+    "declared file hash on advertised SHA": "passed, see setup-hash.txt",
+    "candidate author, committer and full message audit": "passed, one commit and no trailers",
+    "git diff --check": "passed",
+    "full-history publication scan": "Mac lander gate"
+  },
+  "first_product_push": "accepted on first attempt",
+  "migration_changes": [],
+  "clause_status_changes": [],
+  "files": [
+    "CHANGELOG.md",
+    "RELEASE.json",
+    "RELEASE.md",
+    "package.json",
+    "rer-project.json",
+    "seed.json",
+    "sources.lock.json"
+  ]
+}
