@@ -1,0 +1,181 @@
+{
+  "base": "fd67732578ab13b03f883bbbe1dc9bbd70bc114f",
+  "baseRuns": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "fd67732578ab13b03f883bbbe1dc9bbd70bc114f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44260227040",
+      "id": 44260227040,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "fd67732578ab13b03f883bbbe1dc9bbd70bc114f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44260227102",
+      "id": 44260227102,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "fd67732578ab13b03f883bbbe1dc9bbd70bc114f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44257340422",
+      "id": 44257340422,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "branch": "cloud/sd-oncall-c-f277",
+  "browserCaptures": [
+    {
+      "filename": "uncertain-1440.png",
+      "height": 1000,
+      "sha256": "533735d7d030ae85bc9f63cfcfbbb274e7c4a32b01f07ddc0650c6898805d3cb",
+      "width": 1440
+    },
+    {
+      "filename": "uncertain-390.png",
+      "height": 1000,
+      "sha256": "ffe50a305122c897d9b1bca5a63cc37e08749d5df999443f13704e756577e146",
+      "width": 390
+    },
+    {
+      "filename": "cleared-1440.png",
+      "height": 1000,
+      "sha256": "5af348449e43552f4727013308d3f444df7ad98194978ece6201907422bfe0de",
+      "width": 1440
+    },
+    {
+      "filename": "cleared-390.png",
+      "height": 1000,
+      "sha256": "76c39a14e3ec775c65d65ec6727a77a7ea75387455b74472b0eded4f2b622f9d",
+      "width": 390
+    },
+    {
+      "filename": "completed-1440.png",
+      "height": 1000,
+      "sha256": "dc8097437df8d1e4b78b2b221d6541d907280b59e9e5b210e29d268c83a9fcc0",
+      "width": 1440
+    },
+    {
+      "filename": "completed-390.png",
+      "height": 1000,
+      "sha256": "8bd3983de44dbbafcac0a6234aa84550c2f48ab5a0cb547dfaaf532073bbab31",
+      "width": 390
+    }
+  ],
+  "capturedAt": "2026-11-18T08:32:55+00:00",
+  "countsAfter": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41
+  },
+  "countsBefore": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41
+  },
+  "head": "b4c3ab269146796413a9943566b017c6f8df22f2",
+  "observations": {
+    "admissionStatus": 201,
+    "admittedOriginals": 1,
+    "clearedLinkedIncidents": 0,
+    "clearedProcessedSteps": 1,
+    "declarationResumeStatus": 200,
+    "declarations": 1,
+    "expiredClearStatus": 200,
+    "failedResumeStatus": 503,
+    "initialReassignments": 1,
+    "newPagingJobs": 0,
+    "newPagingReceipts": 0,
+    "notificationResumeStatus": 200,
+    "outboundRequests": 0,
+    "paging": "OFF",
+    "prematureClearStatus": 409,
+    "requestsBeforeNotificationResume": 0,
+    "uncertainLinkedIncidents": 0,
+    "unsentNotificationRecords": 1
+  },
+  "publicationScan": {
+    "complete": null,
+    "findings": null,
+    "historyScanned": null,
+    "state": "pending fleet lander"
+  },
+  "remoteMain": "731bacf72abc4538e728628d85bf9d844d3b4da0",
+  "repository": "just-every/run-oncall",
+  "runSiteCandidate": {
+    "state": "awaits main landing"
+  },
+  "selectedPoints": [
+    2,
+    4
+  ],
+  "statusAfter": "partial",
+  "statusBefore": "partial",
+  "tag": "sd-oncall-c-f277",
+  "target": "OC-043",
+  "tests": [
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "sourceHead": "b4c3ab269146796413a9943566b017c6f8df22f2"
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=machines node tests/runtime.mjs",
+      "exit": 0,
+      "headBoundByIdenticalSources": true,
+      "journey": "OC-043 approved rule workflows",
+      "seconds": 205.2
+    },
+    {
+      "command": "ONCALL_PRODUCT_PART=core node tests/product-browser.mjs",
+      "exit": 0,
+      "headBoundByIdenticalSources": true,
+      "journey": "triageBulkBrowser",
+      "width": 1440
+    },
+    {
+      "browser": "system Chromium",
+      "command": "Focused triageBulkBrowser through the built Worker",
+      "exit": 0,
+      "head": "b4c3ab269146796413a9943566b017c6f8df22f2",
+      "node": "22.20.0",
+      "width": 1440
+    },
+    {
+      "command": "node tests/routing.mjs",
+      "exit": 0,
+      "purpose": "retained OC-043 routing predecessor"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write and check",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock and check",
+      "exit": 0
+    }
+  ],
+  "verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "b4c3ab269146796413a9943566b017c6f8df22f2",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44265407081",
+    "id": 44265407081,
+    "name": "Verify",
+    "status": "completed"
+  }
+}
