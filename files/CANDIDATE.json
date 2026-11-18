@@ -1,0 +1,260 @@
+{
+  "tag": "sd-oncall-c-f284",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f284",
+  "base": "443c3613cefdf7359fac0ca728da428cf9e280a0",
+  "head": "2c867758d2f2374c33286d92426402ba3c6de0d0",
+  "remote_product_head": "2c867758d2f2374c33286d92426402ba3c6de0d0",
+  "main_observed_after_push": "518317b385c4535599bfc670dd676da46069b451",
+  "candidate_is_main": false,
+  "base_runs": {
+    "verify": 44310763796,
+    "run_site": 44310763750,
+    "conclusion": "success",
+    "head_sha": "443c3613cefdf7359fac0ca728da428cf9e280a0"
+  },
+  "verify": {
+    "conclusion": "failure",
+    "head_sha": "2c867758d2f2374c33286d92426402ba3c6de0d0",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44322775539",
+    "status": "completed",
+    "id": 44322775539,
+    "name": "Verify",
+    "event": "push",
+    "jobs": [
+      {
+        "conclusion": "success",
+        "head_sha": "2c867758d2f2374c33286d92426402ba3c6de0d0",
+        "id": 134865873710,
+        "name": "plan",
+        "steps": []
+      },
+      {
+        "conclusion": "failure",
+        "head_sha": "2c867758d2f2374c33286d92426402ba3c6de0d0",
+        "id": 134866132303,
+        "name": "contract-docs",
+        "steps": [
+          {
+            "conclusion": "failure",
+            "name": "Check the generated contract documents"
+          }
+        ]
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "2c867758d2f2374c33286d92426402ba3c6de0d0",
+        "id": 134866132659,
+        "name": "build",
+        "steps": []
+      },
+      {
+        "conclusion": "skipped",
+        "head_sha": "2c867758d2f2374c33286d92426402ba3c6de0d0",
+        "id": 134866135085,
+        "name": "light",
+        "steps": []
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "2c867758d2f2374c33286d92426402ba3c6de0d0",
+        "id": 134868276213,
+        "name": "shards (changes)",
+        "steps": []
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "2c867758d2f2374c33286d92426402ba3c6de0d0",
+        "id": 134868276273,
+        "name": "shards (runtime)",
+        "steps": []
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "2c867758d2f2374c33286d92426402ba3c6de0d0",
+        "id": 134868276276,
+        "name": "shards (browser)",
+        "steps": []
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "2c867758d2f2374c33286d92426402ba3c6de0d0",
+        "id": 134868276314,
+        "name": "shards (agents)",
+        "steps": []
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "2c867758d2f2374c33286d92426402ba3c6de0d0",
+        "id": 134868276318,
+        "name": "shards (triage)",
+        "steps": []
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "2c867758d2f2374c33286d92426402ba3c6de0d0",
+        "id": 134868276362,
+        "name": "shards (intake)",
+        "steps": []
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "2c867758d2f2374c33286d92426402ba3c6de0d0",
+        "id": 134868276445,
+        "name": "shards (transfer)",
+        "steps": []
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "2c867758d2f2374c33286d92426402ba3c6de0d0",
+        "id": 134868276515,
+        "name": "shards (hosted)",
+        "steps": []
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "2c867758d2f2374c33286d92426402ba3c6de0d0",
+        "id": 134876351261,
+        "name": "full-push-proof",
+        "steps": []
+      },
+      {
+        "conclusion": "skipped",
+        "head_sha": "2c867758d2f2374c33286d92426402ba3c6de0d0",
+        "id": 134876354791,
+        "name": "nightly-proof",
+        "steps": []
+      },
+      {
+        "conclusion": "failure",
+        "head_sha": "2c867758d2f2374c33286d92426402ba3c6de0d0",
+        "id": 134876419959,
+        "name": "verify",
+        "steps": [
+          {
+            "conclusion": "failure",
+            "name": "Require the selected coverage and its proof"
+          }
+        ]
+      }
+    ],
+    "job_diagnostics": "Job 134866132303 failed the generated contract check on stale ACCEPTANCE.md. The candidate retains main\u2019s generated files.\n  Final job 134876419959 failed its contract-docs dependency guard. The build, all eight shards and full-push-proof succeeded."
+  },
+  "candidate_run_site": "awaits guarded landing",
+  "publication_scan": "awaits Mac lander",
+  "contract": {
+    "clause": "BASE-AGENT-003",
+    "status_before": "missing",
+    "status_after": "missing",
+    "selected_acceptance_case": 4,
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "local_checks": [
+    {
+      "command": "rer setup",
+      "exit": 0
+    },
+    {
+      "command": "rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "node": "22.20.0",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "after": "generator write",
+      "exit": 0
+    },
+    {
+      "command": "git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "at_head": "2c867758d2f2374c33286d92426402ba3c6de0d0",
+      "exit": 1,
+      "output": [
+        "Contract prose: 0 errors, 0 warnings.",
+        "ACCEPTANCE.md: generated content differs; run contract-docs write."
+      ]
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "exit": 0,
+      "node": "24.19.0",
+      "source": "candidate working tree before the equivalent audit tool-name assertion rewrite",
+      "output": [
+        "PROBE BASE-AGENT-003 4 service runbook autonomous: first completed write link -> full protected service and write projection without ETag; autonomous read without review; original write outcome and receipt, copied incident runbook, native records and revisions, mutation audit and paging unchanged; zero outbound requests",
+        "PROBE BASE-AGENT-003 4 service runbook held: first completed write link -> full protected service and write projection without ETag; separate open standard read review, original write review unchanged; original write outcome and receipt, copied incident runbook, native records and revisions, mutation audit and paging unchanged; zero outbound requests",
+        "Runtime agents completed (635.9s)"
+      ]
+    },
+    {
+      "command": "node /tmp/sd-f284-candidate-probe.mjs",
+      "exit": 0,
+      "node": "22.20.0",
+      "at_head": "2c867758d2f2374c33286d92426402ba3c6de0d0",
+      "calls": [
+        "agentRuntime with the maintained clock wrapper",
+        "standardServiceRunbookUpdate"
+      ],
+      "output": [
+        "PROBE BASE-AGENT-003 4 service runbook autonomous: first completed write link -> full protected service and write projection without ETag; autonomous read without review; original write outcome and receipt, copied incident runbook, native records and revisions, mutation audit and paging unchanged; zero outbound requests",
+        "PROBE BASE-AGENT-003 4 service runbook held: first completed write link -> full protected service and write projection without ETag; separate open standard read review, original write review unchanged; original write outcome and receipt, copied incident runbook, native records and revisions, mutation audit and paging unchanged; zero outbound requests"
+      ]
+    },
+    {
+      "command": "node tests/agent-door-browser.mjs",
+      "node": "22.20.0",
+      "exit": 0,
+      "at_head": "2c867758d2f2374c33286d92426402ba3c6de0d0",
+      "assertion_width": 1440,
+      "browser_proof_widths": [
+        1440,
+        390
+      ],
+      "output": [
+        "PROBE BASE-AGENT-003 4 service runbook autonomous: first completed write link -> full protected service and write projection without ETag; autonomous read without review; original write outcome and receipt, copied incident runbook, native records and revisions, mutation audit and paging unchanged; zero outbound requests",
+        "PROBE BASE-AGENT-003 4 service runbook held: first completed write link -> full protected service and write projection without ETag; separate open standard read review, original write review unchanged; original write outcome and receipt, copied incident runbook, native records and revisions, mutation audit and paging unchanged; zero outbound requests",
+        "PASS savedServiceRunbookBrowser: service settings reload displayed the MCP-saved literal steps at 1440, with reload captures at 1440 and 390",
+        "PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements"
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "settings-runbook-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "eab6614165347dbca0ffdb76af14bafbd5fbb2c436c0d680fb9832646d721268"
+    },
+    {
+      "file": "settings-runbook-390.png",
+      "width": 390,
+      "height": 1000,
+      "sha256": "da1864ec0db2ac9ab2fc76d9882ba14d36e5547ea64584c84579a142bbb83708"
+    }
+  ]
+}

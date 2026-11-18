@@ -1,0 +1,34 @@
+{
+  "files": [
+    {
+      "blob": "31de4693ddd6a52cbf66995733097992ee3c6887",
+      "bytes": 9593,
+      "path": "CANDIDATE.json",
+      "sha256": "1f6f9f8a59ab6de7304e571a1db02be7e6ca4c8a06014330cf134f66d7c7d893"
+    },
+    {
+      "blob": "e4e277a1b36e39bc4ed0c2ea360bfb39a875b772",
+      "bytes": 6908,
+      "path": "REPORT.md",
+      "sha256": "f1749e5ea3deebb14c08ba45bea5357da066433e5a8bd66688756dee8428d830"
+    },
+    {
+      "blob": "23f98835965b9de5bc7108965806634d6f5a7905",
+      "bytes": 108522,
+      "path": "settings-runbook-1440.png",
+      "sha256": "eab6614165347dbca0ffdb76af14bafbd5fbb2c436c0d680fb9832646d721268"
+    },
+    {
+      "blob": "2a65e967916bf2811d813ec1c517bb4e1bf501ae",
+      "bytes": 59367,
+      "path": "settings-runbook-390.png",
+      "sha256": "da1864ec0db2ac9ab2fc76d9882ba14d36e5547ea64584c84579a142bbb83708"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f284",
+  "product_head": "2c867758d2f2374c33286d92426402ba3c6de0d0",
+  "ref": "refs/heads/evidence/sd-oncall-c-f284",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f284"
+}
