@@ -1,9 +1,11 @@
 import {focusWorkspace,openIncidentAction,openWorkspaceSection} from './keyboard.mjs'
 import assert from 'node:assert/strict'
+import {randomBytes} from 'node:crypto'
 import {mkdir,readFile} from 'node:fs/promises'
+import {isDeepStrictEqual} from 'node:util'
 import {chromium,expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
-import {localWorker} from './worker.mjs'
+import {durableSnapshot,localWorker} from './worker.mjs'
 import {mailOffJourney} from './mail-off.mjs'
 if (!process.env.ONCALL_MEMBER_JOURNEY || process.env.ONCALL_MEMBER_JOURNEY === 'mail-off') await mailOffJourney()
 if (process.env.ONCALL_MEMBER_JOURNEY === 'mail-off') process.exit(0)
@@ -13,7 +15,7 @@ if (process.env.ONCALL_MEMBER_JOURNEY === 'mail-off') process.exit(0)
 // through the setup token; admin-created members sign in by password at
 // /signin/local, coordinate, reload and read attributed history; signed-out and
 // revoked sessions get no workspace; paging refuses.
-const worker=await localWorker({}, {clock:true})
+const worker=await localWorker({}, {clock:true,outboundLedger:true})
 const focusedTeam=process.env.ONCALL_MEMBER_JOURNEY==='team-settings';
 const focusedClients=process.env.ONCALL_MEMBER_JOURNEY==='api-clients';
 const focusedSaves=process.env.ONCALL_MEMBER_JOURNEY==='incident-saves';
@@ -589,7 +591,12 @@ try {
  // OC-061: the existing shell carries internal status, with a status-only stakeholder session.
  const stakeholder={name:'Sam Stakeholder',password:'synthetic-oncall-61-password'}
  const sam=ok(await call(owner.page,'/api/members',{...stakeholder,role:'stakeholder'}),201)
- ok(await call(owner.page,'/api/command',{type:'service',id:'synthetic-oncall-61',name:'Payment gateway',environment:'production',owner:rosaRecord.id,runbook:['Private gateway recovery instructions'],pager:''}))
+ const gateway={id:'synthetic-oncall-61',name:'Payment gateway',environment:'production'}
+ const incidentTitle='Private gateway timeouts'
+ const alertTitle='Private gateway queue stalled'
+ const timelineNote='Private gateway timeline records a blocked retry'
+ const runbookStep='Private gateway recovery instructions'
+ ok(await call(owner.page,'/api/command',{type:'service',...gateway,owner:rosaRecord.id,runbook:[runbookStep],pager:''}))
  await owner.page.goto(worker.origin+'/status');await owner.page.reload()
  const statusPanel=owner.page.getByRole('region',{name:'Internal business status'})
  await statusPanel.getByRole('heading',{name:'Business services',exact:true}).waitFor()
@@ -664,7 +671,16 @@ try {
  await audience.getByRole('checkbox',{name:sam.name,exact:true}).check();await expect(audience.getByRole('status')).toHaveText('Saved');
  await checkout.getByText('Manage internal status',{exact:true}).click();
  console.log('PASS existing service audience: grant, subscribe, reload, revoke and regrant through the browser');
- const statusIncident=ok(await call(owner.page,'/api/command',{type:'declare',service:'synthetic-oncall-61',severity:'warning',title:'Private gateway timeouts',summary:'Customer payment attempts delayed',alerts:[]}))
+ const source='synthetic-oncall-611',key=randomBytes(32).toString('hex')
+ ok(await call(owner.page,'/api/sources',{id:source,key,scopes:[gateway.id],mode:'bearer'}))
+ const event=ok(await worker.request('/api/ingress/'+source,{
+  source,eventId:source,service:gateway.id,environment:gateway.environment,key:source,generation:source,
+  intent:'trigger',severity:'warning',title:alertTitle,observedAt:new Date().toISOString(),
+ },'',{authorization:'Bearer '+key}),201)
+ const alert=ok(await call(owner.page,'/api/state')).alerts.find(row=>row.events.includes(event.id))
+ assert.ok(alert,'the received event must populate an alert before testing the details')
+ const statusIncident=ok(await call(owner.page,'/api/command',{type:'declare',service:gateway.id,severity:'warning',title:incidentTitle,summary:'Customer payment attempts delayed',alerts:[alert.id]}))
+ ok(await call(owner.page,'/api/command',{type:'note',incident:statusIncident.id,revision:statusIncident.revision,text:timelineNote}))
  await focusWorkspace(owner.page)
  await checkout.getByText('Derived status: degraded',{exact:true}).waitFor()
  const statusCapture=async(page,screen,width)=>{
@@ -706,10 +722,109 @@ try {
   ok(await call(samView.page,'/api/command',{type:'declare',service:'synthetic-oncall-61',title:'Refused page',severity:'warning',summary:'No authority'}),403)
   const workspace=ok(await call(samView.page,'/api/workspace'));assert.equal(workspace.state,null)
   const html=await (await samView.context.request.get(worker.origin+'/')).text()
-  assert.ok(!html.includes('Private gateway timeouts')&&!html.includes('Private gateway recovery instructions'),'stakeholder HTML bootstrap contains no response data')
+  assert.ok(!html.includes(incidentTitle)&&!html.includes(runbookStep),'stakeholder HTML bootstrap contains no response data')
   await statusCapture(samView.page,'stakeholder-status-and-refusals',width)
  }
  console.log('OC-061 browser: existing internal-status panel, derived degraded, attributed override and reason, stakeholder subscription and private-door refusals at 1440')
+
+ // The same populated addresses must serve the owner and isolate the signed-in subscriber.
+ const details=[
+  ['incident','/incidents/'+encodeURIComponent(statusIncident.id),async page=>{
+   const incident=page.getByRole('region',{name:'Incident',exact:true})
+   await expect(incident.getByRole('heading',{name:incidentTitle,exact:true})).toBeVisible()
+   await expect(entry(page,timelineNote)).toBeVisible()
+  }],
+  ['alert','/alerts/'+encodeURIComponent(alert.id),async page=>{
+   const card=page.getByRole('article',{name:'Alert details',exact:true})
+   await expect(card.getByRole('heading',{name:alertTitle,exact:true})).toBeVisible()
+   await expect(card.getByText(runbookStep,{exact:true})).toBeVisible()
+  }],
+  ['service','/settings/services/'+encodeURIComponent(gateway.id),async page=>{
+   await expect(page.getByRole('heading',{name:gateway.name,exact:true})).toBeVisible()
+   await expect(page.getByLabel('Runbook steps (one per line)',{exact:true})).toHaveValue(runbookStep)
+  }],
+ ]
+ const noPrivateData=(body,label)=>{
+  for(const value of [incidentTitle,timelineNote,alertTitle,gateway.name,runbookStep])
+   assert.ok(!body.includes(value),label+' disclosed '+value)
+ }
+ const statusOnly=snapshot=>{
+  assert.equal(snapshot?.member?.id,sam.id)
+  assert.equal(snapshot.member.role,'stakeholder')
+  assert.equal(snapshot.state,null)
+ }
+ const custody=async()=>({
+  native:durableSnapshot(worker),
+  paging:ok(await call(owner.page,'/api/paging/state')),
+  status:ok(await call(owner.page,'/api/status')),
+ })
+ const outbound=[]
+ const observeRequest=request=>{if(!request.url().startsWith(worker.origin+'/'))outbound.push(new URL(request.url()).origin)}
+ for(const context of [owner.context,samView.context])context.on('request',observeRequest)
+ for(const width of [1440,390]){
+  await owner.page.setViewportSize({width,height:1000})
+  for(const [name,path,ownerSees] of details){
+   await owner.page.goto(worker.origin+path)
+   await ownerSees(owner.page)
+   await owner.page.screenshot({path:`${captureDirectory}/oc061-owner-${name}-${width}.png`,fullPage:true})
+  }
+ }
+
+ await owner.page.waitForLoadState('networkidle')
+ const beforeDetails=await custody()
+ assert.equal(beforeDetails.paging.paging,'OFF')
+ const subscription=beforeDetails.status.services.find(row=>row.name==='Checkout').subscriptions.find(row=>row.member===sam.id)
+ assert.equal(subscription?.active,true,'Checkout has an active subscription before the reads')
+ for(const width of [1440,390]){
+  await samView.page.setViewportSize({width,height:1000})
+  for(const [name,path] of details){
+   const replies=[]
+   const observeResponse=response=>{
+    const {pathname}=new URL(response.url())
+    if(/^\/(?:api|auth)(?:\/|$)/.test(pathname)||['fetch','xhr'].includes(response.request().resourceType()))replies.push(response)
+   }
+   samView.page.on('response',observeResponse)
+   try{
+    const shell=await samView.page.goto(worker.origin+path)
+    assert.ok(shell?.ok(),name+' returned a web document')
+    const html=await shell.text()
+    noPrivateData(html,name+' initial HTML and bootstrap')
+    const embedded=/<script[^>]*id="oncall-workspace"[^>]*>([\s\S]*?)<\/script>/.exec(html)
+    assert.ok(embedded,name+' includes the signed-in workspace bootstrap')
+    statusOnly(JSON.parse(embedded[1]))
+    await samView.page.waitForURL(worker.origin+'/status')
+    await expect(samCheckout.getByText('Derived status: degraded',{exact:true})).toBeVisible()
+    await expect(samCheckout.getByRole('heading',{name:'Recorded impact obligations',exact:true})).toBeVisible()
+    await samView.page.waitForLoadState('networkidle')
+    let checkoutStatus
+    for(const reply of replies){
+     const body=await reply.text(),path=new URL(reply.url()).pathname
+     noPrivateData(body,name+' response from '+path)
+     for(const id of [statusIncident.id,alert.id,gateway.id])
+      assert.ok(!body.includes(id),name+' response from '+path+' disclosed a private record ID')
+     if(path==='/api/workspace')statusOnly(ok({status:reply.status(),value:JSON.parse(body)}))
+     if(path==='/api/status')checkoutStatus=ok({status:reply.status(),value:JSON.parse(body)}).services.find(row=>row.name==='Checkout')
+    }
+    assert.equal(checkoutStatus?.derived,'degraded','the browser received the permitted Checkout status')
+    assert.deepEqual(checkoutStatus.subscription,subscription)
+    await expect(samView.page.locator('.timeline, .alert-page, .service-page-head')).toHaveCount(0)
+    noPrivateData(await samView.page.locator('html').evaluate(node=>node.outerHTML),name+' hydrated document')
+    await samView.page.screenshot({path:`${captureDirectory}/oc061-stakeholder-${name}-${width}.png`,fullPage:true})
+   }finally{
+    samView.page.off('response',observeResponse)
+   }
+  }
+ }
+ const afterDetails=await custody()
+ for(const context of [owner.context,samView.context])context.off('request',observeRequest)
+ const tables=new Set([...Object.keys(beforeDetails.native),...Object.keys(afterDetails.native)])
+ assert.deepEqual([...tables].filter(table=>!isDeepStrictEqual(afterDetails.native[table],beforeDetails.native[table])),[],
+  'stakeholder detail reads preserve native records')
+ assert.deepEqual(afterDetails.paging,beforeDetails.paging,'stakeholder detail reads preserve paging custody')
+ assert.deepEqual(afterDetails.status,beforeDetails.status,'stakeholder detail reads preserve subscription custody')
+ assert.deepEqual(outbound,[],'the detail browsers attempted no outbound request')
+ assert.deepEqual(await worker.outboundRequests(),[],'the emitted Worker attempted no outbound request')
+ console.log('PASS OC-061 direct stakeholder details: owner reads populated incident, alert and service; stakeholder lands on Checkout status with no private document, response or hydrated content at 1440 and 390; custody intact and zero outbound requests')
  await samView.context.close()
 
  // OC-061 email lists: configure in Settings, inspect start/end records, unsubscribe and use shared erasure.
