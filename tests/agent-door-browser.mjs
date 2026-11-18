@@ -160,7 +160,14 @@ try{
     const entry=page.getByRole('region',{name:'Timeline',exact:true}).getByRole('listitem').filter({hasText:'Incident declared'});
     await entry.getByText(incident.timeline[0].text,{exact:true}).waitFor();
     await entry.getByText(label,{exact:true}).waitFor();
-    await page.getByRole('region',{name:'Runbook',exact:true}).getByText(incident.runbook[0].text,{exact:true}).waitFor();
+    const runbook=page.getByRole('region',{name:'Runbook',exact:true});
+    await runbook.getByText(incident.runbook[0].text,{exact:true}).waitFor();
+    if(page.viewportSize().width===1440){
+     const steps=await runbook.getByRole('checkbox').evaluateAll(nodes=>nodes.map(node=>({
+      text:node.getAttribute('aria-label'),done:node.checked,
+     })));
+     assert.deepEqual(steps,incident.runbook,'The displayed checklist matches the saved incident');
+    }
     if(mode==='autonomous'&&door==='person'){
      await page.getByRole('button',{name:'Incident actions',exact:true}).focus();
      await page.getByRole('tooltip',{name:'Incident actions',exact:true}).waitFor();
@@ -171,6 +178,7 @@ try{
  assert.deepEqual(await agentEffectSnapshot(runtime),savedDeclarations,'Viewing saved incidents preserves native and paging custody');
  assert.deepEqual(await runtime.outboundRequests(),[]);
  console.log('PROBE BASE-AGENT-002 5 browser: Alert details button and MCP in both policies; saved incidents, runbooks and separate attribution read at 1440 and 390; zero outbound requests');
+ console.log('PROBE BASE-AGENT-003 4 declaration browser: returned incidents under both policies -> saved declaration, copied runbook and agent attribution shown at 1440 and 390; zero outbound requests');
  await savedServiceRunbookBrowser(page,runtime.origin,await standardServiceRunbookUpdate(runtime));
  await page.setViewportSize({width:1440,height:1000});
  await changedReassignmentReasonConflict(runtime,{async observe({mode,saved,assignee,responder,reason,agentLabel}){
