@@ -904,6 +904,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 7. Test a draft rule against saved mail and observe the would-be actions with zero writes.
 8. Import a PagerDuty service with custom email rules and an Opsgenie email integration with filters, and read the mapping report, which names each rule it could not convert.
 
+**Native proof for acceptance 7.** In `tests/product-browser-journey.mjs`, the saved mail draft journey admits a matching failure, its recovery, and unmatched mail with the published subject fallback. The existing administrator preview shows each sample's historical and tested draft action, mode, matched rule, rules version and key. After changing only the draft fallback, the trigger and resolve still match their archived decisions apart from the proposed version. The unmatched sample shows a historical trigger and a proposed quarantine. The preview preserves published rules, durable records, audit, alerts, receipts, quarantine and paging state, with zero outbound requests.
+
 #### OC-071 — Notification bundling per responder and channel
 
 *Tier:* Core · *Rules:* D-4 · *Register:* R-6
