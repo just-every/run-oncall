@@ -590,6 +590,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 1. Trigger a service template, request backup responders and assign/transfer commander/scribe/communications roles through web/chat.
 2. Merge related incidents, split an unrelated alert, miss an update deadline with the browser closed and inspect reminders, aliases and attributed timelines; reject unauthorized role and state mutations.
 
+**Observed (18 November 2026, Run Edit Run fleet).** In the emitted Worker storm journey in `tests/triage.mjs`, a signed-in viewer used the current revision of an acknowledged incident to request a transfer of its Communications role to a different active responder. The native command returned 403 and recorded exactly one `command.assign-role` refusal attributed to the viewer and the incident. The role, timeline, workspace and incident revisions and paging records stayed unchanged, and the Worker made zero outbound requests. The same command succeeded for the signed-in responder.
+
 #### OC-051 — Reviewed Lamp and Statuspage communication
 
 *Tier:* Core · *Rules:* D-1, D-3, D-4 · *Register:* R-12
