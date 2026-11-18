@@ -103,9 +103,10 @@ export async function changedServiceNameReplay(runtime){
  assert.equal((await adopt()).status,200);
 }
 
-/** A literal runbook replacement is one standard native edit under either policy. */
+/** A standard runbook edit reads back through its returned service link under either policy. */
 export async function standardServiceRunbookUpdate(runtime){
- const {db,http,tool,adopt,context}=runtime;
+ const {db,http,tool,adopt,completeResource,context}=runtime;
+ const audit=async()=>(await db.prepare('SELECT * FROM agent_door_audit ORDER BY sequence').all()).results;
  const read=async(path,input)=>{
   const response=await http(path,input);
   assert.equal(response.status,200,path);
@@ -151,25 +152,31 @@ export async function standardServiceRunbookUpdate(runtime){
    {class:'standard',facts:{measure:1}},
   ]);
   assert.equal(result.decision.disposition,disposition);
-  const call=await db.prepare('SELECT state, decision_id FROM agent_door_calls WHERE agent=? AND key=?').bind(context.agentId,key).first();
-  assert.deepEqual(call,{state:'done',decision_id:result.decision.id});
+  const call=await db.prepare('SELECT state, decision_id, outcome FROM agent_door_calls WHERE agent=? AND key=?').bind(context.agentId,key).first();
+  assert.equal(call?.state,'done');
+  assert.equal(call.decision_id,result.decision.id);
 
   const after=await agentEffectSnapshot(runtime);
   savedService=after.application.services.find(row=>row.id===id);
   assert.deepEqual(savedService,{...priorService,runbook:replacement},'Only one runbook step changes in protected state');
   const saved=result.result.structuredContent;
-  assert.match(saved.etag,/^[a-f0-9]{64}$/);
-  assert.notEqual(saved.etag,etag);
-  assert.deepEqual(saved,{...savedService,etag:saved.etag});
+  const {etag:writeETag,...writeService}=saved;
+  assert.match(writeETag,/^[a-f0-9]{64}$/);
+  assert.notEqual(writeETag,etag);
+  assert.deepEqual(writeService,savedService);
   assert.equal(after.application.revision,before.application.revision+1);
   assert.deepEqual(after.application.services,before.application.services.map(row=>row.id===id?savedService:row));
   assert.deepEqual(after.application.teams,before.application.teams);
   assert.deepEqual(after.application.incidents,before.application.incidents,'Declared incidents retain their copied steps and history');
   assert.deepEqual(after.application.incidents.find(row=>row.id===incident.id).runbook,originalRunbook);
-  assert.deepEqual(await read('/api/paging/state'),{...pagingBefore,workspaceRevision:after.application.revision});
+  const pagingAfter=await read('/api/paging/state');
+  assert.deepEqual(pagingAfter,{...pagingBefore,workspaceRevision:after.application.revision});
   await assertServiceCommit(runtime,before,after,id,owner.id);
 
-  const review=result.result._meta['com.runeditrun/review'];
+  const review=result.result._meta['com.runeditrun/review'],stored=JSON.parse(call.outcome);
+  assert.equal(stored.outcome,'done');
+  assert.deepEqual(stored.result,saved);
+  assert.deepEqual(stored.review,review);
   const reviews=after.records.agent_door_reviews.filter(row=>!before.records.agent_door_reviews.some(prior=>prior.id===row.id));
   assert.deepEqual(after.records.agent_door_approvals,before.records.agent_door_approvals);
   if(mode==='held'){
@@ -181,7 +188,61 @@ export async function standardServiceRunbookUpdate(runtime){
    assert.equal(review,undefined);
    assert.deepEqual(reviews,[]);
   }
+  const links=result.result.content.filter(row=>row.type==='resource_link');
+  assert.equal(links.length,1,'The first completed write returns one service link');
+  const [link]=links;
+  const writeAudit=await audit();
+  assert.ok(writeAudit.some(row=>row.id===result.decision.id));
+  const {initial,answer,content,value}=await completeResource(link.uri);
+  assert.equal(initial,answer,'A standard service read completes without a blocking approval');
+  assert.equal(content.uri,link.uri);
+  assert.deepEqual(answer.decision.classes.map(({class:risk,facts})=>({class:risk,facts})),[
+   {class:'standard',facts:{measure:1}},
+  ]);
+  assert.equal(answer.decision.disposition,disposition);
+  assert.notEqual(answer.decision.id,result.decision.id);
+  assert.deepEqual(value,writeService,'The resource matches the full write projection without its separate ETag');
+  const afterRead=await agentEffectSnapshot(runtime);
+  assert.deepEqual(value,afterRead.application.services.find(row=>row.id===id),'The resource matches the full protected service');
+  assert.deepEqual(value.dependencies,serviceDependencies,'The in-grant dependency survives the returned link');
+  assert.deepEqual(afterRead.application,after.application,'The read preserves the copied incident runbook and native revisions');
+  const {agent_door_reviews:readReviews,agent_door_usage:readUsage,...readRecords}=afterRead.records;
+  const {agent_door_reviews:writeReviews,agent_door_usage:writeUsage,...writeRecords}=after.records;
+  assert.deepEqual(readRecords,writeRecords,'The read preserves native records, mutation audit, approvals and the original saved write');
+  assert.deepEqual(readUsage.filter(row=>row.decision_id!==answer.decision.id),writeUsage);
+  const usage=readUsage.filter(row=>row.decision_id===answer.decision.id);
+  assert.equal(usage.length,1);
+  assert.equal(usage[0].agent,context.agentId);
+  assert.deepEqual(await read('/api/paging/state'),pagingAfter);
+  const readReview=answer.result._meta['com.runeditrun/review'];
+  if(mode==='held'){
+   assert.ok(readReview?.id,'Held standard reads return a distinct open review');
+   assert.notEqual(readReview.id,review.id);
+   assert.deepEqual(readReviews.filter(row=>row.id!==readReview.id),writeReviews,'The original write review is unchanged');
+   const added=readReviews.find(row=>row.id===readReview.id);
+   assert.equal(added?.state,'open');
+   assert.equal(JSON.parse(added.saved).decision_id,answer.decision.id);
+   const visible=(await read('/agents/api/reviews')).reviews;
+   assert.equal(visible.find(row=>row.id===review.id).state,'open');
+   assert.equal(visible.find(row=>row.id===readReview.id).state,'open');
+  }else{
+   assert.equal(readReview,undefined);
+   assert.deepEqual(readReviews,writeReviews);
+  }
+  const readAudit=await audit();
+  assert.deepEqual(readAudit.slice(0,-1),writeAudit,'The original write receipt is unchanged');
+  assert.equal(readAudit.length,writeAudit.length+1);
+  const receipt=JSON.parse(readAudit.at(-1).row);
+  assert.equal(receipt.id,answer.decision.id);
+  assert.equal(receipt.outcome,'done');
+  assert.deepEqual(receipt.tool.split('/'),['resources','read']);
+  assert.equal(receipt.resource,link.uri);
+  assert.equal(receipt.agent.id,context.agentId);
+  assert.equal(receipt.sponsor.id,owner.id);
   assert.deepEqual(await runtime.outboundRequests(),[]);
+  console.log('PROBE BASE-AGENT-003 4 service runbook '+mode+': first completed write link -> full protected service and write projection without ETag; '+
+   (mode==='held'?'separate open standard read review, original write review unchanged':'autonomous read without review')+
+   '; original write outcome and receipt, copied incident runbook, native records and revisions, mutation audit and paging unchanged; zero outbound requests');
   console.log('PROBE SURFACE-002 1 '+mode+': current service ETag and one literal step replacement -> standard only, '+disposition+
    ', one workspace revision and one attributed service commit; protected service, original incident copy, paging OFF and zero outbound confirmed');
  }
