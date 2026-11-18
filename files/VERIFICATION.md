@@ -61,3 +61,5 @@ GitHub Verify run 44205374436 completed successfully for product head `588b45da0
 - `gh run download 44205374436 --repo just-every/run-oncall --name oncall-browser-evidence-browser --dir <scratch>` was refused by the artifact blob host with `Forbidden`. The packet uses local browser captures.
 - Focused response-numbers and Events source journeys passed and supplied paired captures. Events source coverage retained the same alert address and request payload, recovery lifecycle, sample copying, and secret exclusion.
 - The saved-email retry passed in isolation, including native activation and its one-time address. This resolved the local loopback transport failure without a product change.
+- The exact-candidate `node tests/oncall-agent-resource-parity.mjs --browser` run passed all 36 protected native-to-agent parity cases, including the reviewed date range and plain timing labels. The paired review material captures show the completed durations and the human-reported recovery wording.
+- The exact-candidate member coordination browser journey passed. Uploading an old backup after erasure still returned HTTP 409 and preserved the current workspace state.

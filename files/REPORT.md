@@ -56,6 +56,7 @@ The captures show synthetic records from the emitted application at both viewpor
 | Archive backup and successful restore | [Desktop](browser/archive-backup-1440.png) | [Phone](browser/archive-backup-390.png) |
 | Integration sample and recorded receipts | [Desktop](browser/integrations-1440.png) | [Phone](browser/integrations-390.png) |
 | Review response numbers and recorded recovery | [Desktop](browser/response-numbers-1440.png) | [Phone](browser/response-numbers-390.png) |
+| Review material timings and human-reported recovery | [Desktop](browser/review-material-1440.png) | [Phone](browser/review-material-390.png) |
 | Readiness details | [Desktop](browser/readiness-details-1440.png) | [Phone](browser/readiness-details-390.png) |
 
 The integration screenshot uses the browser journey's existing private-field mask. Backup files, GitHub archives, and raw browser diagnostics are excluded from this packet.
