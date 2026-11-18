@@ -1,0 +1,335 @@
+{
+  "browser_screens": [
+    {
+      "file": "browser/agent-door-scribe-autonomous-cleared-timeline-1440.png",
+      "height": 2939,
+      "mode": "autonomous",
+      "screen": "timeline",
+      "sha256": "50bdc5222eb9224475906cf570b0dd662e14485e75e4960544eb09d70b31833e",
+      "width": 1440
+    },
+    {
+      "file": "browser/agent-door-scribe-autonomous-cleared-timeline-390.png",
+      "height": 1374,
+      "mode": "autonomous",
+      "screen": "timeline",
+      "sha256": "26de7ae838f21d9c4ee1b80adf7957d52d09f7699732d74a0dbb369da227e40a",
+      "width": 390
+    },
+    {
+      "file": "browser/agent-door-scribe-autonomous-cleared-people-1440.png",
+      "height": 2939,
+      "mode": "autonomous",
+      "screen": "people",
+      "sha256": "3f1b2f44e403b36bb723f4ff2dc45b1d47625b0e01ab144dc16435f9ecdc151d",
+      "width": 1440
+    },
+    {
+      "file": "browser/agent-door-scribe-autonomous-cleared-people-390.png",
+      "height": 1374,
+      "mode": "autonomous",
+      "screen": "people",
+      "sha256": "3b917c9097374dac7bc80e5b160a31ac2909ff9be1a13554cdc09bbcfc693e38",
+      "width": 390
+    },
+    {
+      "file": "browser/agent-door-scribe-cleared-timeline-1440.png",
+      "height": 3075,
+      "mode": "held",
+      "screen": "timeline",
+      "sha256": "6a006ebc75fb54f9eb7014a86fa558500b8541b1809cd804749d60255027a34a",
+      "width": 1440
+    },
+    {
+      "file": "browser/agent-door-scribe-cleared-timeline-390.png",
+      "height": 1374,
+      "mode": "held",
+      "screen": "timeline",
+      "sha256": "d823814da4782af52b00a2e7688db1885d6825b91985f90dc0bf91a9446c89bf",
+      "width": 390
+    },
+    {
+      "file": "browser/agent-door-scribe-cleared-people-1440.png",
+      "height": 3075,
+      "mode": "held",
+      "screen": "people",
+      "sha256": "9d2e8d8ab99d9e009849c73a3e08d6c0348de01332706b5da9330bc6bbe98862",
+      "width": 1440
+    },
+    {
+      "file": "browser/agent-door-scribe-cleared-people-390.png",
+      "height": 1374,
+      "mode": "held",
+      "screen": "people",
+      "sha256": "8dfacaa66a1dbb33c86999d02468d71fe48efd08d5105e02cf05045937982695",
+      "width": 390
+    }
+  ],
+  "contract": {
+    "acceptance_point": 4,
+    "after": "missing",
+    "before": "missing",
+    "claim": "PARTIAL",
+    "clause": "BASE-AGENT-003",
+    "counts_after": {
+      "Agent surface": {
+        "done": 1,
+        "missing": 10,
+        "partial": 6,
+        "total": 17
+      },
+      "Core": {
+        "done": 25,
+        "missing": 24,
+        "partial": 35,
+        "total": 84
+      },
+      "Full target": {
+        "done": 26,
+        "missing": 34,
+        "partial": 41,
+        "total": 101
+      },
+      "Later": {
+        "done": 0,
+        "missing": 0,
+        "partial": 0,
+        "total": 0
+      }
+    },
+    "counts_before": {
+      "Agent surface": {
+        "done": 1,
+        "missing": 10,
+        "partial": 6,
+        "total": 17
+      },
+      "Core": {
+        "done": 25,
+        "missing": 24,
+        "partial": 35,
+        "total": 84
+      },
+      "Full target": {
+        "done": 26,
+        "missing": 34,
+        "partial": 41,
+        "total": 101
+      },
+      "Later": {
+        "done": 0,
+        "missing": 0,
+        "partial": 0,
+        "total": 0
+      }
+    }
+  },
+  "github": {
+    "disposition": "run 44270440851 completed successfully on the candidate SHA",
+    "observations": [
+      {
+        "response": [
+          {
+            "conclusion": null,
+            "event": "push",
+            "head_branch": "cloud/sd-oncall-c-f271-lin-1",
+            "head_sha": "b137b6349f252df6296e31c3abdf2eaf19a29a94",
+            "html_url": "https://github.com/just-every/run-oncall/actions/runs/44270440851",
+            "id": 44270440851,
+            "name": "Verify",
+            "status": "in_progress"
+          }
+        ],
+        "stage": "discover"
+      },
+      {
+        "response": {
+          "conclusion": null,
+          "head_sha": "b137b6349f252df6296e31c3abdf2eaf19a29a94",
+          "html_url": "https://github.com/just-every/run-oncall/actions/runs/44270440851",
+          "status": "in_progress"
+        },
+        "stage": "status"
+      },
+      {
+        "response": {
+          "conclusion": null,
+          "head_sha": "b137b6349f252df6296e31c3abdf2eaf19a29a94",
+          "html_url": "https://github.com/just-every/run-oncall/actions/runs/44270440851",
+          "status": "in_progress"
+        },
+        "stage": "status"
+      },
+      {
+        "response": {
+          "conclusion": null,
+          "head_sha": "b137b6349f252df6296e31c3abdf2eaf19a29a94",
+          "html_url": "https://github.com/just-every/run-oncall/actions/runs/44270440851",
+          "status": "in_progress"
+        },
+        "stage": "status"
+      },
+      {
+        "response": {
+          "conclusion": "success",
+          "head_sha": "b137b6349f252df6296e31c3abdf2eaf19a29a94",
+          "html_url": "https://github.com/just-every/run-oncall/actions/runs/44270440851",
+          "status": "completed"
+        },
+        "stage": "status"
+      }
+    ],
+    "requests": [
+      {
+        "at": "2026-11-18T08:50:56Z",
+        "stage": "discover"
+      },
+      {
+        "at": "2026-11-18T08:56:07Z",
+        "stage": "status"
+      },
+      {
+        "at": "2026-11-18T09:01:08Z",
+        "stage": "status"
+      },
+      {
+        "at": "2026-11-18T09:06:09Z",
+        "stage": "status"
+      },
+      {
+        "at": "2026-11-18T09:11:11Z",
+        "stage": "status"
+      }
+    ]
+  },
+  "local_checks": {
+    "agent-door-browser": {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium cloud_run node tests/agent-door-browser.mjs",
+      "ended_utc": "2026-11-18T08:36:29Z",
+      "exit_code": 0,
+      "node": "22.20.0",
+      "outcome": "pass",
+      "started_utc": "2026-11-18T08:27:31Z"
+    },
+    "build": {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "ended_utc": "2026-11-18T08:27:11Z",
+      "exit_code": 0,
+      "node": "22.20.0",
+      "outcome": "pass",
+      "started_utc": "2026-11-18T08:26:58Z"
+    },
+    "contract-docs": {
+      "command": "node src/base/contract-docs.mjs check",
+      "ended_utc": "2026-11-18T08:27:31Z",
+      "exit_code": 0,
+      "node": "22.20.0",
+      "outcome": "pass",
+      "started_utc": "2026-11-18T08:27:31Z"
+    },
+    "first-party": {
+      "command": "pnpm exec rer check --profile first-party",
+      "ended_utc": "2026-11-18T08:27:31Z",
+      "exit_code": 0,
+      "node": "22.20.0",
+      "outcome": "pass",
+      "started_utc": "2026-11-18T08:27:29Z"
+    },
+    "focused-role-clear": {
+      "command": "cloud_run node -e 'import(\"./tests/oncall-agent-role-clear-replay.mjs\").then(({focusedRoleClearReplay}) => focusedRoleClearReplay())'",
+      "ended_utc": "2026-11-18T08:37:52Z",
+      "exit_code": 0,
+      "node": "22.20.0",
+      "outcome": "pass",
+      "started_utc": "2026-11-18T08:36:29Z"
+    },
+    "oncall-agent-flow": {
+      "command": "cloud_run node tests/oncall-agent-flow.mjs",
+      "ended_utc": "2026-11-18T08:50:13Z",
+      "exit_code": 0,
+      "node": "22.20.0",
+      "outcome": "pass",
+      "started_utc": "2026-11-18T08:37:52Z"
+    },
+    "source-lock": {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "ended_utc": "2026-11-18T08:27:31Z",
+      "exit_code": 0,
+      "node": "22.20.0",
+      "outcome": "pass",
+      "started_utc": "2026-11-18T08:27:31Z"
+    },
+    "typecheck": {
+      "command": "pnpm typecheck",
+      "ended_utc": "2026-11-18T08:27:29Z",
+      "exit_code": 0,
+      "node": "22.20.0",
+      "outcome": "pass",
+      "started_utc": "2026-11-18T08:27:11Z"
+    }
+  },
+  "product": {
+    "branch": "cloud/sd-oncall-c-f271-lin-1",
+    "changed_paths": [
+      "sources.lock.json",
+      "tests/agent-door-browser.mjs",
+      "tests/oncall-agent-role-clear-replay.mjs"
+    ],
+    "feeder_commit": "df7cb7a914aa53f13385f8c32e99bff0c29b0fb6",
+    "feeder_head": "54b973e8d4d712b2913f18e5ed5ccb148e2a5a7f",
+    "first_parent": "731bacf72abc4538e728628d85bf9d844d3b4da0",
+    "head": "b137b6349f252df6296e31c3abdf2eaf19a29a94",
+    "merge_commits": [],
+    "push_diagnostics": [
+      "PUSH attempt=1/5 command=git push --porcelain origin HEAD:refs/heads/cloud/sd-oncall-c-f271-lin-1",
+      "PUSH_OK branch=cloud/sd-oncall-c-f271-lin-1"
+    ],
+    "pushed": true
+  },
+  "proof_lines": {
+    "agent-door-browser": [
+      "PROBE BASE-AGENT-003 4 autonomous: original reassignment link -> full write and protected native state equality, new assignee and attributed timeline, unchanged companion roles; autonomous read without review; native records, revisions, state-changing audit and paging unchanged; zero outbound requests",
+      "PROBE BASE-AGENT-003 4 held: original reassignment link -> full write and protected native state equality, new assignee and attributed timeline, unchanged companion roles; separate open read review and original write review unchanged; native records, revisions, state-changing audit and paging unchanged; zero outbound requests",
+      "PROBE BASE-AGENT-003 4 autonomous Scribe clear: original MCP resource link matches the entire saved incident and protected sponsor state at revision 6, with null Scribe and attributed assign-role history; direct read without review; native records, revisions, state-changing audit and paging unchanged; new outbound requests=0",
+      "Browser proof scribe-autonomous-cleared-timeline 1440: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof scribe-autonomous-cleared-timeline 390: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof scribe-autonomous-cleared-people 1440: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof scribe-autonomous-cleared-people 390: fits=true serious/critical=0 undersized-controls=0",
+      "PROBE BASE-AGENT-003 4 held Scribe clear: original MCP resource link matches the entire saved incident and protected sponsor state at revision 6, with null Scribe and attributed assign-role history; distinct open read review, original write review unchanged; native records, revisions, state-changing audit and paging unchanged; new outbound requests=0",
+      "Browser proof scribe-cleared-timeline 1440: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof scribe-cleared-timeline 390: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof scribe-cleared-people 1440: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof scribe-cleared-people 390: fits=true serious/critical=0 undersized-controls=0",
+      "PROBE BASE-AGENT-012 Scribe clear browser: autonomous and held MCP -> saved Unassigned Scribe, preserved companion responsibilities, attributed native timeline; changed incident shown at 1440 and 390; zero outbound requests",
+      "PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements"
+    ],
+    "focused-role-clear": [
+      "PROBE BASE-AGENT-003 4 autonomous Scribe clear: original MCP resource link matches the entire saved incident and protected sponsor state at revision 6, with null Scribe and attributed assign-role history; direct read without review; native records, revisions, state-changing audit and paging unchanged; new outbound requests=0",
+      "PROBE BASE-AGENT-003 4 held Scribe clear: original MCP resource link matches the entire saved incident and protected sponsor state at revision 6, with null Scribe and attributed assign-role history; distinct open read review, original write review unchanged; native records, revisions, state-changing audit and paging unchanged; new outbound requests=0"
+    ],
+    "oncall-agent-flow": [
+      "PROBE BASE-AGENT-003 4 autonomous: original reassignment link -> full write and protected native state equality, new assignee and attributed timeline, unchanged companion roles; autonomous read without review; native records, revisions, state-changing audit and paging unchanged; zero outbound requests",
+      "PROBE BASE-AGENT-003 4 held: original reassignment link -> full write and protected native state equality, new assignee and attributed timeline, unchanged companion roles; separate open read review and original write review unchanged; native records, revisions, state-changing audit and paging unchanged; zero outbound requests",
+      "PROBE BASE-AGENT-003 4 autonomous Scribe clear: original MCP resource link matches the entire saved incident and protected sponsor state at revision 6, with null Scribe and attributed assign-role history; direct read without review; native records, revisions, state-changing audit and paging unchanged; new outbound requests=0",
+      "PROBE BASE-AGENT-003 4 held Scribe clear: original MCP resource link matches the entire saved incident and protected sponsor state at revision 6, with null Scribe and attributed assign-role history; distinct open read review, original write review unchanged; native records, revisions, state-changing audit and paging unchanged; new outbound requests=0",
+      "PASS Oncall agent native flow: signed owner/team mapping, MCP coordination, open human review, reviewed coverage, signed receiver receipt, client scope/demotion, Pause, native audit and undeclared event refusal; paging OFF"
+    ]
+  },
+  "recorded_utc": "2026-11-18T09:11:38Z",
+  "replay_adjustment": {
+    "correction": "Compare the outbound ledger immediately before and after the resource read. The focused and browser callers retain their broader outbound assertions.",
+    "observed": "The prior browser run contained an outbound trigger from the fixture declaration before the Scribe resource read.",
+    "previous_base": "fd67732578ab13b03f883bbbe1dc9bbd70bc114f",
+    "previous_head": "28fd0c7cf80e9dc44954088ee8d77b49c0e5144b"
+  },
+  "repository": "just-every/run-oncall",
+  "tag": "sd-oncall-c-f271-lin-1",
+  "tests_after": {
+    "lane_entries": 21,
+    "push_shards": 8
+  },
+  "tests_before": {
+    "lane_entries": 21,
+    "push_shards": 8
+  }
+}
