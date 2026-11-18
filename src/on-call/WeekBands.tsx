@@ -48,10 +48,10 @@ export function WeekBands({rotas, from, to, title = 'This week', onShift, select
     }
     return {role, bands};
   })}));
-  const fractions = rows.flatMap(rota => rota.roles.flatMap(({bands}) => bands.map(band => (Date.parse(band.to) - Date.parse(band.from)) / (to - from))));
-  // Allow two initials and padding even on a short shift. Dense timelines become a list
+  const minimumWidths = rows.flatMap(rota => rota.roles.flatMap(({bands}) => bands.map(band => 140 + (band.member ? 52 : 132) / ((Date.parse(band.to) - Date.parse(band.from)) / (to - from)))));
+  // Allow the full gap label and padding even on a short shift. Dense timelines become a list
   // rather than requiring an impractically wide axis for a few minutes of cover.
-  const axisWidth = Math.ceil(Math.max(840, days * 100, ...fractions.map(fraction => 140 + 52 / fraction)));
+  const axisWidth = Math.ceil(Math.max(840, days * 100, ...minimumWidths));
   const stacked = (width > 0 && width < 600) || axisWidth > 2400;
   useEffect(() => {
     const viewport = scroll.current, content = axis.current;
@@ -74,7 +74,7 @@ export function WeekBands({rotas, from, to, title = 'This week', onShift, select
           const start = Date.parse(band.from), end = Date.parse(band.to), name = band.member?.name ?? 'Nobody on call';
           const style = {left: `${(start - from) / (to - from) * 100}%`, width: `${(end - start) / (to - from) * 100}%`};
           const current = start <= Date.now() && end > Date.now();
-          return <div key={index} className={`oc-band ${!band.member ? 'oc-band-gap' : current ? 'oc-band-now' : 'oc-band-next'}`} style={style}>{canSelect(band) ? <button type="button" aria-label={label(band)} onClick={() => onShift!(band)}><BandName name={name}/></button> : <Tooltip label="Shift details"><span tabIndex={0} role="group" aria-label={label(band)}><BandName name={name}/></span></Tooltip>}</div>;
+          return <div key={index} className={`oc-band ${!band.member ? 'oc-band-gap' : current ? 'oc-band-now' : 'oc-band-next'}`} style={style}>{canSelect(band) ? <button type="button" aria-label={label(band)} onClick={() => onShift!(band)}>{band.member ? <BandName name={name}/> : <span className="oc-band-gap-name">Nobody on call</span>}</button> : <Tooltip label="Shift details"><span tabIndex={0} role="group" aria-label={label(band)}>{band.member ? <BandName name={name}/> : <span className="oc-band-gap-name">Nobody on call</span>}</span></Tooltip>}</div>;
         })}</div></div>)}</div>)}
       </div></div>
     </>}

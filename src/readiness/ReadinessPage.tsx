@@ -13,6 +13,7 @@ export function ReadinessSection() {
  return page==='readiness'?<ReadinessPage/>:null;
 }
 function ReadinessPage() {
+ const {w}=useWorkspaceContext();
  const [report,setReport]=useState<Readiness|null>(null),[error,setError]=useState(''),[loading,setLoading]=useState(true),[version,setVersion]=useState(0);
  useEffect(()=>{
   const abort=new AbortController();setLoading(true);setReport(null);setError('');
@@ -26,11 +27,25 @@ function ReadinessPage() {
   })();
   return ()=>abort.abort();
  },[version]);
+ const onCall=w.onCall;
+ const coveredRotas=onCall?.rotas.filter(rota=>rota.now.primary).length??0;
+ const peopleStatus=!onCall?'Unknown':onCall.rotas.length>0&&coveredRotas===onCall.rotas.length&&!onCall.unrostered.length?'Yes':'No';
+ const alertSources=report?.matrix.filter(row=>['events','email','pagerduty','opsgenie','splunk','alertmanager','grafana','datadog'].includes(row.id))??[];
+ const lastAlertAt=alertSources.map(row=>row.observation?.lastAcceptedAt).filter((at):at is string=>!!at).sort().at(-1);
+ const checks=[
+  {name:'Alerts arrive',status:'Unknown',reason:lastAlertAt?'Last alert accepted '+shortTime(lastAlertAt)+'. Live sender health is not checked.':'No live sender check is available.'},
+  {name:'People are on call',status:peopleStatus,reason:onCall?`${coveredRotas} of ${onCall.rotas.length} rotas have a primary responder; ${onCall.unrostered.length} services have no rota. Checked ${shortTime(onCall.at)}.`:'Current rota coverage could not be read.'},
+  {name:'Your pager is connected',status:'Unknown',reason:'Your existing pager is not checked here. Oncall paging is off.'},
+  {name:'Backup done',status:'Unknown',reason:'This report has no record of a completed backup.'},
+  {name:'Online',status:'Unknown',reason:report?'This app answered at '+shortTime(report.observedAt)+'. No external availability check is connected.':'This app’s availability has not been checked.'},
+ ];
  return <div className="readiness">
-  <div className="readiness-intro"><p>Release evidence and current durable observations. Keep your existing pager authoritative.</p><button disabled={loading} onClick={()=>setVersion(v=>v+1)}>Refresh readiness</button></div>
+  <div className="readiness-intro"><p>Check your setup. Keep using your existing pager.</p><button disabled={loading} onClick={()=>setVersion(v=>v+1)}>Refresh readiness</button></div>
+  <section aria-label="Setup checks" className="readiness-checks panel"><dl>{checks.map(check=><div key={check.name}><dt>{check.name}</dt><dd><strong data-check-state={check.status.toLowerCase()}>{check.status}</strong><p>{check.reason}</p></dd></div>)}</dl></section>
   {loading&&<p role="status">Reading readiness…</p>}
   {error&&<p role="alert">{error}</p>}
   {report&&<>
+   <details className="readiness-details"><summary>Details</summary>
    <section className="panel padded readiness-coverage" aria-labelledby="coverage-title" data-coverage={report.pagerCoverage.state}>
     <h2 id="coverage-title">Pager coverage: {report.pagerCoverage.state}</h2><p>{report.pagerCoverage.reason}</p>
    </section>
@@ -64,6 +79,7 @@ function ReadinessPage() {
     </article>)}</div>
    </section>
    <p><a href="/docs/readiness">Readiness and recovery procedures</a></p>
+   </details>
   </>}
  </div>;
 }

@@ -543,7 +543,7 @@ async function retainPreview(page, change, submit) {
   release();await Promise.all(pending);await page.waitForLoadState('networkidle');
   const response=await latest.response();assert.ok(response?.ok(),'the final valid draft preview succeeds');await response.finished();
   const windows=await response.json();
-  await page.waitForFunction(times=>JSON.stringify([...document.querySelectorAll('.oc-preview time')].map(time=>time.dateTime))===JSON.stringify(times),windows.map(window=>new Date(window.at).toISOString()));
+  await page.waitForFunction(times=>JSON.stringify([...document.querySelectorAll('.oc-preview [aria-label="Coverage times"] time')].map(time=>time.dateTime))===JSON.stringify(times),windows.map(window=>new Date(window.at).toISOString()));
  }finally{release();await Promise.all(pending);await page.unroute('**/api/paging/preview',hold);await page.evaluate(()=>window.stopRotaPreviewProbe());}
 }
 
@@ -587,11 +587,10 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  if(width===1440){
   const iso=at=>new Date(at).toISOString(),from=now-86400000,to=now+6*86400000;
   const expected=['primary','backup'].flatMap(role=>[
-   {role,from:iso(from),to:fixtures[0].validFrom},
    {role,from:fixtures[0].validUntil,to:iso(to)},
   ]);
   const first=onCall.rotas.find(rota=>rota.id===fixtures[0].id),second=onCall.rotas.find(rota=>rota.id===fixtures[1].id);
-  assert.deepEqual(first.gaps,expected,'the week summary retains earlier uncovered hours and clips later gaps to the displayed end');
+  assert.deepEqual(first.gaps,expected,'the week summary excludes time before the rota starts and clips later gaps to the displayed end');
   assert.deepEqual(second.gaps,[],'a gap after the displayed week is excluded from its summary');
   for(const rota of [first,second]){
    assert.deepEqual(rota.gaps,rota.week.filter(band=>!band.member).map(({role,from,to})=>({role,from,to})),'summary and timeline describe the same coverage gaps');
@@ -627,18 +626,23 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
   await retainPreview(page,()=>page.getByLabel('Ends (optional)',{exact:true}).fill(ends),page.getByRole('button',{name:'Create rota',exact:true}));
   await key.calendar(page.getByLabel('Ends (optional)',{exact:true}),ends);
   await invalidWindow(page);
+  for(const proofWidth of [1440,390]){
+   await page.setViewportSize({width:proofWidth,height:1000});
+   await page.screenshot({path:`${directory}/rota-check-${proofWidth}.png`,fullPage:true});
+  }
+  await page.setViewportSize({width,height:1000});
  }
  if(width<761){
   const disclosure=page.locator('.oc-preview > summary');await key.activate(disclosure);
-  await page.getByRole('list',{name:'Resolved coverage spans',exact:true}).waitFor();
+  await page.getByRole('list',{name:'Coverage times',exact:true}).waitFor();
   await accessibleState(page,'narrow-preview-open',width,disclosure);
-  await key.activate(disclosure,'Space');assert.equal(await page.getByRole('list',{name:'Resolved coverage spans',exact:true}).isVisible(),false,'the narrow preview closes with Space');
-  await key.activate(disclosure);await page.getByRole('list',{name:'Resolved coverage spans',exact:true}).waitFor();
+  await key.activate(disclosure,'Space');assert.equal(await page.getByRole('list',{name:'Coverage times',exact:true}).isVisible(),false,'the narrow preview closes with Space');
+  await key.activate(disclosure);await page.getByRole('list',{name:'Coverage times',exact:true}).waitFor();
  }
  await key.focusScreenshot(page.getByRole('button',{name:'Create rota',exact:true}),`${directory}/keyboard-rota-create-${width}.png`);
  await accessibleState(page,'rota-preview',width,page.getByRole('button',{name:'Create rota',exact:true}));
  assert.deepEqual(await api('/api/paging/state'),previewBefore,'live draft previews write no schedule, job or scheduling revision');assert.deepEqual(await api('/api/state'),workspaceBefore,'live draft previews preserve workspace records and revision');const auditAfter=await api('/api/audit/export');assert.deepEqual(auditAfter.rows.filter(row=>row.kind!=='audit.export'),auditBefore.rows.filter(row=>row.kind!=='audit.export'),'draft previews append no permanent audit record; the observing exports keep their own audits');
- const visiblePreview=await page.getByRole('list',{name:'Resolved coverage spans',exact:true}).locator(':scope > li').evaluateAll(items=>items.map(item=>({at:item.querySelector('time').dateTime,primary:item.querySelector('strong').textContent,backup:[...item.querySelectorAll('p')].find(p=>p.textContent.startsWith('Backup · ')).textContent.replace(/^Backup · /,'')})));
+ const visiblePreview=await page.getByRole('list',{name:'Coverage times',exact:true}).locator(':scope > li').evaluateAll(items=>items.map(item=>({at:item.querySelector('time').dateTime,primary:item.querySelector('strong').textContent,backup:[...item.querySelectorAll('p')].find(p=>p.textContent.startsWith('Backup · ')).textContent.replace(/^Backup · /,'')})));
  await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]')?.disabled);
  const creating=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/paging/schedules'&&response.request().method()==='POST');
  await key.activate(page.getByRole('button',{name:'Create rota',exact:true}));await page.waitForURL(/\/on-call\/rota-[a-f0-9]{8}$/);
@@ -668,7 +672,7 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  const coverBefore=await api('/api/paging/state'),coverReviewResponse=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/schedules/'+id+'/review'&&r.request().method()==='POST');
  await key.activate(cover.getByRole('button',{name:'Review change',exact:true}));await cover.getByText('New coverage gap',{exact:true}).first().waitFor();
  const coverReviewReply=await coverReviewResponse;assert.equal(coverReviewReply.status(),200);const coverReview=await coverReviewReply.json();
- const reviewedNames=await cover.getByRole('region',{name:'Coverage change intervals',exact:true}).locator('.scheduling-window > p > strong').allTextContents(),reviewName=id=>id===null?'Coverage gap':coverReview.members.find(member=>member.id===id)?.name??'Unavailable member';
+ const reviewedNames=await cover.getByRole('region',{name:'Coverage change intervals',exact:true}).locator('.scheduling-window > p > strong').allTextContents(),reviewName=id=>id===null?'Nobody on call':coverReview.members.find(member=>member.id===id)?.name??'Unavailable member';
  assert.deepEqual(reviewedNames,[...coverReview.intervals].sort((a,b)=>Number(b.after===null)-Number(a.after===null)||a.start-b.start||a.role.localeCompare(b.role)).slice(0,80).map(interval=>interval.role+': '+reviewName(interval.before)+' → '+reviewName(interval.after)),'the cover review renders every protected before and after assignment');
  assert.deepEqual(await api('/api/paging/state'),coverBefore,'cover review writes nothing');assert.equal(await cover.getByRole('button',{name:'Apply reviewed change',exact:true}).isDisabled(),true);
  if(width===1440){
@@ -736,7 +740,7 @@ export async function rotaTimelineScreens(page,width,id,compactName){
   }else{
    await bands.locator('.oc-band-name').first().waitFor();
    await page.waitForFunction(()=>[...document.querySelectorAll('.oc-band [aria-label]')].some(element=>element.getAttribute('aria-label').startsWith('Rosalind Campbell')&&element.querySelector('.oc-band-name > span:last-child')?.textContent==='R'+element.getAttribute('aria-label').match(/Campbell (\d)/)?.[1]));
-   const chips=await bands.locator('.oc-band [aria-label]').evaluateAll(elements=>elements.map(element=>({label:element.getAttribute('aria-label'),text:element.querySelector('.oc-band-name > span:last-child').textContent,clipped:element.querySelector('.oc-band-name > span:last-child').getBoundingClientRect().width>element.querySelector('.oc-band-name').clientWidth+1})));
+   const chips=await bands.locator('.oc-band [aria-label]').evaluateAll(elements=>elements.map(element=>({label:element.getAttribute('aria-label'),text:(element.querySelector('.oc-band-name > span:last-child')??element.querySelector('.oc-band-gap-name')).textContent,clipped:(element.querySelector('.oc-band-name > span:last-child')??element.querySelector('.oc-band-gap-name')).getBoundingClientRect().width>element.clientWidth+1})));
    assert.ok(chips.some(chip=>chip.label.startsWith(compactName)&&chip.text!==compactName),'short cover slices use initials');
    for(const chip of chips){assert.equal(chip.clipped,false,'a timeline name or its initials fits the chip');assert.match(chip.label,/GMT[+-]\d/,'accessible shift label includes the zoned endpoint times');}
    const scroll=await bands.locator('.oc-bands-scroll').evaluate(element=>element.scrollWidth>element.clientWidth);
@@ -780,28 +784,28 @@ export async function coverageRulesBrowser(page,context,width,session,{ownerLink
  await api('/api/paging/schedules',{id,name:'synthetic-oncall-'+(5000+width),service:state.services[0].id,revision:0,timezone:'UTC',validFrom:date+'T00:00:00.000Z',validUntil:null,primary:rotation,backup:{...rotation,members:[]},overrides:[],layers:[layer]});
  await page.goto(origin+'/on-call/'+id);const current=await api('/api/schedules/'+id+'/now-next');{const summary=await page.locator('.scheduling-now-role').first().innerText();assert.ok(summary.includes(current.now.windows[0].decisions.some(d=>d.state==='winner')?layer.name+' covers this time.':'No layer covers this time.'),'the summary says in one sentence whether a layer covers now');assert.ok(!summary.includes(current.now.windows[0].explanation),'the per-layer precedence text stays out of the summary');}
  const inView=async locator=>{await locator.waitFor();await page.waitForFunction(el=>el===document.activeElement,await locator.elementHandle());assert.equal(await locator.evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight&&r.left>=0&&r.right<=innerWidth;}),true);assert.equal(await locator.evaluate(el=>el===document.activeElement),true);};
- const edit=async()=>{await page.getByRole('link',{name:'Edit rota',exact:true}).click();for(let i=0;i<3;i++)await page.getByRole('button',{name:'Continue',exact:true}).click();await page.getByLabel('Coverage review elapsed days',{exact:true}).fill('366');await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);};
+ const edit=async()=>{await page.getByRole('link',{name:'Edit rota',exact:true}).click();for(let i=0;i<3;i++)await page.getByRole('button',{name:'Continue',exact:true}).click();await page.locator('.oc-step-card > details > summary').click();await page.getByLabel('Days to check',{exact:true}).fill('366');await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);};
  const directory=process.env.ONCALL_BROWSER_EVIDENCE;await edit();
- const proposal=page.getByRole('region',{name:'Layers, holidays and PTO',exact:true});
- await proposal.getByLabel('PTO start (UTC)',{exact:true}).fill(new Date(now+7200000).toISOString().slice(0,16));await proposal.getByLabel('PTO end (UTC)',{exact:true}).fill(new Date(now+10800000).toISOString().slice(0,16));
- await proposal.getByRole('button',{name:'Add PTO to proposal',exact:true}).click();await inView(proposal.getByRole('status'));
+ const proposal=page.getByRole('region',{name:'Layers, holidays and time off',exact:true});
+ await proposal.getByLabel('Time off starts',{exact:true}).fill(new Date(now+7200000).toISOString().slice(0,16));await proposal.getByLabel('Time off ends',{exact:true}).fill(new Date(now+10800000).toISOString().slice(0,16));
+ await proposal.getByRole('button',{name:'Add time off',exact:true}).click();await inView(proposal.getByRole('status'));
  await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);await page.getByRole('button',{name:'Review change',exact:true}).click();
  const review=page.getByRole('region',{name:'Review schedule changes',exact:true});await inView(review.locator('h2'));assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
  if(directory)await page.screenshot({path:directory+'/coverage-rules-'+width+'.png',fullPage:true});
  for(const internal of [id,layer.id,session.member.id])assert.equal((await page.locator('body').innerText()).includes(internal),false);
  await review.getByRole('checkbox').check();await review.getByRole('button',{name:'Apply reviewed change',exact:true}).click();await page.waitForURL(url=>url.pathname==='/on-call/'+id);await inView(page.getByRole('status').filter({hasText:/./}).first());
  let saved=(await api('/api/paging/state')).schedules.find(s=>s.id===id);assert.equal(saved.pto.length,1);
- await edit();await proposal.getByLabel('PTO start (UTC)',{exact:true}).fill(new Date(now+14400000).toISOString().slice(0,16));await proposal.getByLabel('PTO end (UTC)',{exact:true}).fill(new Date(now+18000000).toISOString().slice(0,16));await proposal.getByRole('button',{name:'Add PTO to proposal',exact:true}).click();await inView(proposal.getByRole('status'));await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);await page.getByRole('button',{name:'Review change',exact:true}).click();await review.waitFor();await review.getByRole('checkbox').check();await review.getByRole('button',{name:'Apply reviewed change',exact:true}).click();await page.waitForURL(url=>url.pathname==='/on-call/'+id);saved=(await api('/api/paging/state')).schedules.find(s=>s.id===id);assert.equal(saved.pto.length,2);
+ await edit();await proposal.getByLabel('Time off starts',{exact:true}).fill(new Date(now+14400000).toISOString().slice(0,16));await proposal.getByLabel('Time off ends',{exact:true}).fill(new Date(now+18000000).toISOString().slice(0,16));await proposal.getByRole('button',{name:'Add time off',exact:true}).click();await inView(proposal.getByRole('status'));await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);await page.getByRole('button',{name:'Review change',exact:true}).click();await review.waitFor();await review.getByRole('checkbox').check();await review.getByRole('button',{name:'Apply reviewed change',exact:true}).click();await page.waitForURL(url=>url.pathname==='/on-call/'+id);saved=(await api('/api/paging/state')).schedules.find(s=>s.id===id);assert.equal(saved.pto.length,2);
  await edit();
  const refused=page.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/pto-review'));
- await proposal.getByLabel('Review ICS PTO upload',{exact:true}).setInputFiles({name:'synthetic-oncall.ics',mimeType:'text/calendar',buffer:Buffer.from('BEGIN:VCALENDAR\nBEGIN:VEVENT\nDTSTART:bad\nEND:VEVENT\nEND:VCALENDAR')});assert.equal((await refused).status(),400);await inView(proposal.getByRole('status'));
+ await proposal.getByLabel('Upload a calendar file',{exact:true}).setInputFiles({name:'synthetic-oncall.ics',mimeType:'text/calendar',buffer:Buffer.from('BEGIN:VCALENDAR\nBEGIN:VEVENT\nDTSTART:bad\nEND:VEVENT\nEND:VCALENDAR')});assert.equal((await refused).status(),400);await inView(proposal.getByRole('status'));
  const imported=page.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/pto-review'));
- await proposal.getByLabel('Review ICS PTO upload',{exact:true}).setInputFiles('tests/fixtures/pto-calendar.ics');const result=await imported;assert.equal(result.status(),200);const uploadReview=await result.json();assert.ok(uploadReview.import.entries.length>0);assert.ok(uploadReview.import.refused.length>0);await inView(proposal.getByRole('status'));await review.getByRole('checkbox').check();await review.getByRole('button',{name:'Apply reviewed change',exact:true}).click();await page.waitForURL(url=>url.pathname==='/on-call/'+id);saved=(await api('/api/paging/state')).schedules.find(s=>s.id===id);assert.equal(saved.pto.length,2+uploadReview.import.entries.length);
+ await proposal.getByLabel('Upload a calendar file',{exact:true}).setInputFiles('tests/fixtures/pto-calendar.ics');const result=await imported;assert.equal(result.status(),200);const uploadReview=await result.json();assert.ok(uploadReview.import.entries.length>0);assert.ok(uploadReview.import.refused.length>0);await inView(proposal.getByRole('status'));await review.getByRole('checkbox').check();await review.getByRole('button',{name:'Apply reviewed change',exact:true}).click();await page.waitForURL(url=>url.pathname==='/on-call/'+id);saved=(await api('/api/paging/state')).schedules.find(s=>s.id===id);assert.equal(saved.pto.length,2+uploadReview.import.entries.length);
  await edit();await page.getByLabel('Layer name',{exact:true}).fill(layer.name+' changed');await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);await page.getByRole('button',{name:'Review change',exact:true}).click();await review.waitFor();
  await api('/api/schedules/'+id+'/overrides',{revision:saved.revision,override:{id:id+'-cover',role:'primary',member:null,start:new Date(now+21600000).toISOString(),end:new Date(now+25200000).toISOString()}});
  await review.getByRole('checkbox').check();const stale=page.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/apply'));await review.getByRole('button',{name:'Apply reviewed change',exact:true}).click();assert.equal((await stale).status(),409);await inView(page.locator('.oc-rota-steps .failure-line'));assert.equal((await api('/api/paging/state')).schedules.find(s=>s.id===id).layers[0].name,layer.name);
  // The same PTO page works under an ordinary member's own password session.
- const memberName='Synthetic PTO member '+width,password='synthetic-pto-member-password';
+ const memberName='Synthetic Person taking time off '+width,password='synthetic-pto-member-password';
  const created=await context.request.post(origin+'/api/members',{headers:{origin},data:{name:memberName,role:'responder',password}});assert.equal(created.status(),201);const member=await created.json();
  const team=await api('/api/teams',{id:id+'-team',name:'Synthetic PTO team '+width,visibility:'public',active:true,revision:0,members:[member.id],managers:[]});
  const service=await api('/api/command',{type:'service',id:id+'-service',name:'Synthetic PTO service '+width,environment:'test',owner:session.member.id,team:team.id,runbook:[],pager:''});
@@ -812,26 +816,26 @@ export async function coverageRulesBrowser(page,context,width,session,{ownerLink
   if(ownerLink){const key=new URLSearchParams(new URL(ownerLink).hash.slice(1)).get('rer-dev');assert.ok(key);assert.equal((await memberContext.request.post(origin+'/__dev/key',{headers:{origin},data:{key}})).status(),204);}
   const memberPage=await memberContext.newPage();await memberPage.goto(origin+'/signin/local');await memberPage.getByLabel('Name',{exact:true}).fill(memberName);await memberPage.getByLabel('Password',{exact:true}).fill(password);await memberPage.getByRole('button',{name:'Sign in',exact:true}).click();await memberPage.waitForURL(url=>url.pathname==='/on-call');
   const current=await memberContext.request.get(origin+'/api/session');assert.equal((await current.json()).member.id,member.id);
-  const open=async()=>{await memberPage.goto(origin+'/on-call/'+selfRota.id);await memberPage.getByRole('link',{name:'Your PTO',exact:true}).click();await memberPage.getByRole('heading',{name:'Your PTO',exact:true}).waitFor();};
+  const open=async()=>{await memberPage.goto(origin+'/on-call/'+selfRota.id);await memberPage.getByRole('link',{name:'Your time off',exact:true}).click();await memberPage.getByRole('heading',{name:'Your time off',exact:true}).waitFor();};
   await open();
-  const ownProposal=memberPage.getByRole('region',{name:'Layers, holidays and PTO',exact:true}),ownReview=memberPage.getByRole('region',{name:'Review schedule changes',exact:true});
-  assert.deepEqual(await ownProposal.getByLabel('PTO member',{exact:true}).locator('option').evaluateAll(options=>options.map(o=>o.value)),[member.id]);
+  const ownProposal=memberPage.getByRole('region',{name:'Layers, holidays and time off',exact:true}),ownReview=memberPage.getByRole('region',{name:'Review schedule changes',exact:true});
+  assert.deepEqual(await ownProposal.getByLabel('Person taking time off',{exact:true}).locator('option').evaluateAll(options=>options.map(o=>o.value)),[member.id]);
   assert.equal(await memberPage.getByRole('button',{name:'Add layer',exact:true}).count(),0);
-  await ownProposal.getByLabel('PTO start (UTC)',{exact:true}).fill(new Date(now+7200000).toISOString().slice(0,16));await ownProposal.getByLabel('PTO end (UTC)',{exact:true}).fill(new Date(now+10800000).toISOString().slice(0,16));
-  await ownProposal.getByRole('button',{name:'Add PTO to proposal',exact:true}).click();
+  await ownProposal.getByLabel('Time off starts',{exact:true}).fill(new Date(now+7200000).toISOString().slice(0,16));await ownProposal.getByLabel('Time off ends',{exact:true}).fill(new Date(now+10800000).toISOString().slice(0,16));
+  await ownProposal.getByRole('button',{name:'Add time off',exact:true}).click();
   await memberPage.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);
   const reviewed=memberPage.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/pto-review'));await memberPage.getByRole('button',{name:'Review change',exact:true}).click();assert.equal((await reviewed).status(),200);
   await ownReview.getByRole('checkbox').check();const applied=memberPage.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/pto-apply'));await ownReview.getByRole('button',{name:'Apply reviewed change',exact:true}).click();assert.equal((await applied).status(),200);await memberPage.waitForURL(url=>url.pathname==='/on-call/'+selfRota.id);
   let stored=(await api('/api/paging/state')).schedules.find(s=>s.id===selfRota.id);assert.equal(stored.revision,selfRota.revision+1);assert.equal(stored.pto.length,1);assert.equal(stored.pto[0].member,member.id);
   const affected=await api('/api/schedules/'+selfRota.id+'/now-next?at='+encodeURIComponent(stored.pto[0].start));assert.equal(affected.now.primary,null);assert.deepEqual(stored.primary.members,[member.id]);
-  await open();const ownImport=memberPage.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/pto-review'));await ownProposal.getByLabel('Review ICS PTO upload',{exact:true}).setInputFiles('tests/fixtures/pto-calendar.ics');const importResponse=await ownImport;assert.equal(importResponse.status(),200);const imported=await importResponse.json();
+  await open();const ownImport=memberPage.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/pto-review'));await ownProposal.getByLabel('Upload a calendar file',{exact:true}).setInputFiles('tests/fixtures/pto-calendar.ics');const importResponse=await ownImport;assert.equal(importResponse.status(),200);const imported=await importResponse.json();
   await ownReview.getByRole('checkbox').check();
   const Axe=(await import('@axe-core/playwright')).default;assert.deepEqual((await new Axe({page:memberPage}).include('.oc-rota-steps').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations,[]);
   if(directory)for(const size of [1440]){await memberPage.setViewportSize({width:size,height:1000});await memberPage.screenshot({path:directory+'/member-pto-review-'+size+'.png',fullPage:true});}
   await memberPage.setViewportSize({width:1440,height:1000});
   await ownReview.getByRole('button',{name:'Apply reviewed change',exact:true}).click();await memberPage.waitForURL(url=>url.pathname==='/on-call/'+selfRota.id);
   stored=(await api('/api/paging/state')).schedules.find(s=>s.id===selfRota.id);assert.equal(stored.revision,selfRota.revision+2);assert.equal(stored.pto.length,1+imported.import.entries.length);
-  await open();await ownProposal.getByLabel('PTO start (UTC)',{exact:true}).fill(new Date(now+14400000).toISOString().slice(0,16));await ownProposal.getByLabel('PTO end (UTC)',{exact:true}).fill(new Date(now+18000000).toISOString().slice(0,16));await ownProposal.getByRole('button',{name:'Add PTO to proposal',exact:true}).click();await memberPage.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);await memberPage.getByRole('button',{name:'Review change',exact:true}).click();await ownReview.waitFor();
+  await open();await ownProposal.getByLabel('Time off starts',{exact:true}).fill(new Date(now+14400000).toISOString().slice(0,16));await ownProposal.getByLabel('Time off ends',{exact:true}).fill(new Date(now+18000000).toISOString().slice(0,16));await ownProposal.getByRole('button',{name:'Add time off',exact:true}).click();await memberPage.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);await memberPage.getByRole('button',{name:'Review change',exact:true}).click();await ownReview.waitFor();
   await api('/api/schedules/'+selfRota.id+'/overrides',{revision:stored.revision,override:{id:id+'-self-cover',role:'primary',member:null,start:new Date(now+21600000).toISOString(),end:new Date(now+25200000).toISOString()}});
   await ownReview.getByRole('checkbox').check();const staleSelf=memberPage.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/pto-apply'));await ownReview.getByRole('button',{name:'Apply reviewed change',exact:true}).click();assert.equal((await staleSelf).status(),409);await memberPage.locator('.failure-line').waitFor();assert.equal((await api('/api/paging/state')).schedules.find(s=>s.id===selfRota.id).pto.length,stored.pto.length);
   console.log('PASS OC-024 ordinary-member browser 1440: password sign-in, own-only picker, self-PTO and self-ICS review/apply, current consecutive revisions, effective gap, retained slots, visible stale refusal, axe; PTO screen captured at 1440');
@@ -863,7 +867,7 @@ export async function scheduleCoordinationBrowser(page,context,width,session,{ow
  await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);
  if(width===1440){
   assert.doesNotMatch(await page.locator('.oc-rota-steps').innerText(),/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}|tests\//,'new rota presents readable dates without repository paths');
-  const times=await page.locator('.oc-preview time').allTextContents();assert.ok(times.length>1);for(const time of times){assert.ok(time.includes(zone));assert.match(time,/GMT[+-]\d/);}
+  const times=await page.locator('.oc-preview [aria-label="Coverage times"] time').allTextContents();assert.ok(times.length>1);for(const time of times){assert.ok(time.includes(zone));assert.match(time,/GMT[+-]\d/);}
   assert.equal(await page.locator('.oc-preview [data-time-zone]').getAttribute('data-time-zone'),zone);
  }
  await capture('new-rota');
@@ -871,8 +875,9 @@ export async function scheduleCoordinationBrowser(page,context,width,session,{ow
  const schedule=(await api('/api/paging/state')).schedules.find(row=>row.id===new URL(page.url()).pathname.split('/').at(-1));assert.equal(schedule.timezone,zone);
  await page.goto(origin+'/on-call');const row=page.locator('[data-rota="'+schedule.id+'"]');await row.waitFor();
  if(width===1440){
-  const times=await row.locator('time').allTextContents();assert.ok(times.length>=3,'future start exposes a hand-over and coverage gaps');
-  for(const time of times)assert.ok(time.includes(zone),'each overview hand-over and gap names its rota clock');
+  const times=await row.locator('.oc-rota-next time').allTextContents();assert.ok(times.length>0,'future start exposes the first hand-over');
+  for(const time of times)assert.ok(time.includes(zone),'each overview hand-over names its rota clock');
+  const gaps=(await api('/api/on-call')).rotas.find(rota=>rota.id===schedule.id).gaps;assert.ok(gaps.every(gap=>Date.parse(gap.from)>=Date.parse(schedule.validFrom)),'future rotas have no gaps before their start');
   const first=row.locator('time').first(),at=await first.getAttribute('datetime');
   const expected=new Intl.DateTimeFormat('en-US',{timeZone:zone,hour:'2-digit',minute:'2-digit'}).format(Date.parse(at));assert.ok((await first.innerText()).includes(expected),'the labelled clock agrees with the retained instant in the rota zone');
   assert.equal(await page.locator('.oc-bands [data-time-zone]').getAttribute('data-time-zone'),browserZone,'multi-rota band axis identifies its browser clock separately');
@@ -1185,7 +1190,7 @@ export async function triageBulkBrowser(page,context,width){
  await page.getByRole('checkbox',{name:/^Select /}).first().check();await page.getByRole('button',{name:'Select all 2 matching',exact:true}).click();bulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});await bulk.getByLabel('Bulk action',{exact:true}).selectOption('resolve');await bulk.getByRole('button',{name:'Apply to 2 alert-only items',exact:true}).click();await page.getByText('2 changed; 0 refused',{exact:true}).waitFor();
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));const axe=await new AxeBuilder({page}).include('[aria-label="Bulk incident actions"]').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
  await page.getByRole('region',{name:'Incident triage',exact:true}).screenshot({path:`${directory}/OC-079-alert-close-${width}.png`});
- await page.getByRole('region',{name:'Incident triage',exact:true}).getByRole('button').filter({has:page.getByRole('heading',{name:'Alert-only: '+prefix+' alert 0',exact:true})}).click();const card=page.getByRole('article').filter({has:page.getByRole('heading',{name:prefix+' alert 0',exact:true})});await card.getByText('Event context',{exact:true}).click();await card.getByText(/Coordination: closed/).waitFor();await card.getByText('Coordination history',{exact:true}).click();await card.getByText(/stopped by human resolution/).waitFor();await card.screenshot({path:`${directory}/OC-079-alert-history-${width}.png`});
+ await page.getByRole('region',{name:'Incident triage',exact:true}).getByRole('button').filter({has:page.getByRole('heading',{name:'Alert-only: '+prefix+' alert 0',exact:true})}).click();const card=page.getByRole('article').filter({has:page.getByRole('heading',{name:prefix+' alert 0',exact:true})});await card.getByText('Event context',{exact:true}).click();await card.getByText('Details',{exact:true}).click();await card.getByText(/Coordination: closed/).waitFor();await card.getByText('Coordination history',{exact:true}).click();await card.getByText(/stopped by human resolution/).waitFor();await card.screenshot({path:`${directory}/OC-079-alert-history-${width}.png`});
  const after=await call('/api/state');assert.equal(after.incidents.length,state.incidents.length+3,'alert-only close creates no incident');assert.ok(after.incidents.filter(i=>[a.id,b.id].includes(i.id)).every(i=>i.mergedInto.target===target.id));
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.goto(origin+'/incidents');
  // OC-043: author a durable selected-alert workflow, close its client state, then resume from saved custody.
@@ -1340,10 +1345,15 @@ export async function supportStartBrowser(page,context,{setTime,proof}) {
   await page.goto(origin+'/alerts/'+encodeURIComponent(alert.id));await observe();
   const history=card.locator('.alert-urgency > details');await history.locator(':scope > summary').click();
   assert.equal(await history.locator('article').count(),alert.urgencyHistory.length);
-  await history.getByText('Policy version '+rule.version,{exact:false}).waitFor();
+  const policyDetails=history.locator('article details').filter({has:page.getByText('Urgency policy version '+rule.version,{exact:true})});
+  assert.equal(await policyDetails.getByText('Urgency policy version '+rule.version,{exact:true}).isVisible(),false,'policy mechanics start collapsed');
+  await policyDetails.locator(':scope > summary').click();
+  await policyDetails.getByText('Urgency policy version '+rule.version,{exact:true}).waitFor();
   const visibleHistory=await history.innerText();
   await setTime(Date.parse('2026-11-03T08:30:00.000Z'));await page.reload();await observe();
   await history.locator(':scope > summary').click();
+  await policyDetails.locator(':scope > summary').click();
+  await policyDetails.getByText('Urgency policy version '+rule.version,{exact:true}).waitFor();
   assert.equal(await history.innerText(),visibleHistory,'reload preserves the rendered urgency history without an automatic raise');
   const retained=(await call('/api/state')).alerts.find(row=>row.id===alert.id);
   assert.equal(retained.state,'active');assert.equal(retained.urgency,'low');

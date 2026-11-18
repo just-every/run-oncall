@@ -16,10 +16,10 @@ export function EvidenceLink({url, children}: {url: string | null | undefined; c
 }
 export function DurationSource({value,zone=browserZone()}: {value: ResponseDuration;zone?:string}) {
   return <div className="response-source">
-    <strong>{value.status === 'unknown' ? 'Unknown duration' : value.status === 'censored' ? `At least ${duration(value.seconds)} · censored` : `${duration(value.seconds)} · measured`}</strong>
+    <strong>{value.status === 'unknown' ? 'Unknown duration' : value.status === 'censored' ? `At least ${duration(value.seconds)} · still open` : `${duration(value.seconds)} · completed`}</strong>
     <p>{value.reason.replace(/\bgeneratedAt\b/g, 'the report time').replace(/\bseconds is a lower bound\b/g, 'the duration is a lower bound')}</p>
     <p className="review-meta">Source time: {value.sourceAt ? shortTime(value.sourceAt,zone) : 'Unavailable'}<br />
       Record: {value.sourceKind === 'structured' ? 'Recorded timeline entry' : value.sourceKind === 'legacy-derived' ? 'Earlier timeline entry' : value.sourceKind === 'source-event' ? 'Source event' : 'Unavailable'}</p>
-    {value.evidence && <EvidenceLink url={value.evidence}>Recorded attestation</EvidenceLink>}
+    {value.evidence && <EvidenceLink url={value.evidence}>Recorded evidence</EvidenceLink>}
   </div>;
 }

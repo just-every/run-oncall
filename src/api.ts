@@ -606,7 +606,7 @@ api.get("/api/audit/export", async (c) => {
 });
 api.get("/api/archive", async (c) => {
   if (c.get("actor").role !== "admin") fail("Admin required", 403);
-  c.header("Content-Disposition", 'attachment; filename="oncall-archive.json"');
+  c.header("Content-Disposition", `attachment; filename="oncall-backup-${new Date().toISOString().slice(0, 10)}.json"`);
   return c.json(await hydrateNativePrefixes(c.env.DB,await authorizedState(c, true),archiveRestoreLimit));
 });
 api.post("/api/restore", async (c) => {
@@ -718,7 +718,7 @@ api.get("/api/recovery/checkpoint", async (c) => {
   const checkpoint = version === "1"
     ? createRecoveryCheckpoint(snapshot.workspace, snapshot.archive, snapshot.revision, Date.now())
     : await createRecoveryCheckpointV2(snapshot.workspace, snapshot.archive, snapshot.revision, snapshot.handoffs.archive, snapshot.handoffs.revision, Date.now());
-  c.header("Content-Disposition", 'attachment; filename="oncall-recovery-checkpoint.json"');
+  c.header("Content-Disposition", `attachment; filename="oncall-backup-${checkpoint.capturedAt.slice(0, 10)}.json"`);
   return c.json(checkpoint);
 });
 api.post("/api/recovery/restore", async (c) => {

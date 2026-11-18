@@ -54,18 +54,20 @@ export function SourceTest({ source, service, busy, run, events = [] }: { source
       {source.kind === 'events' && <p>The private key is cleared after each accepted test. Enter it again before sending another.</p>}
       <label className="field">Title<input required maxLength={300} value={title} onChange={e => setTitle(e.target.value)} /></label>
       <label className="field">Severity<select aria-label="Severity" value={severity} onChange={e => setSeverity(e.target.value)}><option value="warning">Warning</option><option value="critical">Critical</option><option value="info">Information</option></select></label>
-      <label className="field">Intent<select aria-label="Intent" value={intent} onChange={e => {
+      <label className="field">What to do<select aria-label="What to do" value={intent} onChange={e => {
         const value = e.target.value;
         if (source.kind === 'events' && value === 'trigger' && cycle.lastIntent === 'recover') setCycle({...cycle,generation:newIdentity('check'),lastIntent:'',startedAt:new Date().toISOString()});
         setIntent(value);
-      }}><option value="trigger">Trigger</option><option value="recover">Recover</option></select></label>
-      {(source.kind === 'events' || source.kind === 'pagerduty') && <label className="field">Alert key (dedup key)<input required maxLength={source.kind === 'pagerduty' ? 255 : 200} value={cycle.identity} onChange={e => setCycle({...cycle,identity:e.target.value})} /></label>}
-      {source.kind === 'pagerduty' && <p>Reuse this key to repeat or recover the same test. Recover closes its open alert; a declared incident stays open.</p>}
+      }}><option value="trigger">Open or update alert</option><option value="recover">Mark alert recovered</option></select></label>
+      {['events','pagerduty','grafana'].includes(source.kind) && <details><summary>More options</summary>
+      {(source.kind === 'events' || source.kind === 'pagerduty') && <label className="field">Alert ID (same ID = same alert)<input required maxLength={source.kind === 'pagerduty' ? 255 : 200} value={cycle.identity} onChange={e => setCycle({...cycle,identity:e.target.value})} /></label>}
+      {source.kind === 'pagerduty' && <p>Use the same ID to update or recover this alert. Recovering an alert leaves its incident open.</p>}
       {source.kind === 'events' && <>
-        <label className="field">Lifecycle generation<input required maxLength={100} value={cycle.generation} onChange={e => setCycle({...cycle,generation:e.target.value})} /></label>
-        <p>Recover closes the alert with this key and generation, regardless of severity; a declared incident stays open.</p>
+        <label className="field">Alert cycle<input required maxLength={100} value={cycle.generation} onChange={e => setCycle({...cycle,generation:e.target.value})} /></label>
+        <p>The ID and alert cycle identify the alert to recover. Its incident stays open.</p>
       </>}
       {source.kind === 'grafana' && <label className="field">Signing secret, if enabled<input type="password" autoComplete="off" value={signing} onChange={e => setSigning(e.target.value)} /></label>}
+      </details>}
     </Form></details>
     {source.kind === 'events' ? <RequestExample source={source.id.slice(source.id.indexOf(':') + 1)} service={service} mode={source.native?.authentication || 'bearer'} defaultOpen={!events.length} /> : <ProviderRequest key={source.id} source={source} service={service} />}
   </>;
