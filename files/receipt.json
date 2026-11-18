@@ -1,0 +1,157 @@
+{
+  "task": "sd-oncall-c-f265",
+  "repository": "just-every/run-oncall",
+  "productBranch": "cloud/sd-oncall-c-f265",
+  "productHead": "bcd444494196597c1834818c2c78d3d8c13b6aa9",
+  "startingMain": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+  "remoteMain": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+  "candidateEqualsMain": false,
+  "counts": {
+    "before": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34
+    },
+    "after": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34
+    }
+  },
+  "clause": {
+    "id": "SURFACE-001",
+    "before": "MISSING",
+    "after": "MISSING",
+    "claimedFullAcceptancePoints": []
+  },
+  "files": [
+    "CONTRACT.md",
+    "sources.lock.json"
+  ],
+  "localChecks": {
+    "pnpm install --frozen-lockfile": 0,
+    "npx -y @runeditrun/rer setup (local, noninteractive)": 0,
+    "baseline ONCALL_RUNTIME_PART=agents node --import ../surface-comparison.mjs tests/runtime.mjs": 0,
+    "candidate npx -y @runeditrun/rer build": 0,
+    "pnpm run typecheck": 0,
+    "pnpm exec rer check --profile first-party": 0,
+    "candidate targeted pnpm exec rer verify --non-interactive (ONCALL_VERIFY_LANE=agents)": 0,
+    "candidate node tests/agent-door-browser.mjs": 0,
+    "node src/base/contract-docs.mjs write": 0,
+    "node src/base/contract-docs.mjs check": 0,
+    "pinned edition-authoring lock and check": 0
+  },
+  "generator": {
+    "documentsWritten": 0,
+    "proseErrors": 0,
+    "proseWarnings": 0,
+    "viewsMatchMain": true
+  },
+  "lock": {
+    "pin": "0.2.118",
+    "implementation": {
+      "id": "runeditrun/edition-authoring",
+      "version": "1.1.0",
+      "sha256": "fae294214f81f9890955eeeaf16a061aa45270bd8f5f6733c71d389969f5dece"
+    },
+    "contractSha256": "46e0229a23900aadf269f1b59be1fd7ebe204172b08e8c207cd775939b7fbee4"
+  },
+  "baseConformance": {
+    "passed": 9765,
+    "total": 9765,
+    "coverage": "currently declared subset"
+  },
+  "browser": {
+    "executable": "/usr/bin/chromium",
+    "guide": [
+      {
+        "path": "agent-door-guide-1440.png",
+        "viewportWidth": 1440,
+        "imageHeight": 15747,
+        "visualInspection": true,
+        "documentFits": true,
+        "seriousOrCriticalAccessibilityFindings": 0,
+        "undersizedControls": 0,
+        "sha256": "3bcb3b5289b438e396a8d3ec359fda7037f0e5555c43a82d13b4de761120ab1a"
+      },
+      {
+        "path": "agent-door-guide-390.png",
+        "viewportWidth": 390,
+        "imageHeight": 21421,
+        "visualInspection": true,
+        "documentFits": true,
+        "seriousOrCriticalAccessibilityFindings": 0,
+        "undersizedControls": 0,
+        "sha256": "d17f080df3495ba2f12c50972bf3f2083a062f6a327f5ff81415dc210fc94db9"
+      }
+    ]
+  },
+  "branchVerify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_branch": "cloud/sd-oncall-c-f265",
+    "head_sha": "bcd444494196597c1834818c2c78d3d8c13b6aa9",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44212238215",
+    "id": 44212238215,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "branchVerifyJobs": null,
+  "mainAtCutRuns": [
+    {
+      "conclusion": "success",
+      "event": "dynamic",
+      "head_sha": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44207846311",
+      "id": 44207846311,
+      "name": "Push on main",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44207847848",
+      "id": 44207847848,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "event": "push",
+      "head_sha": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44207847863",
+      "id": 44207847863,
+      "name": "Run demo",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44207847779",
+      "id": 44207847779,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44201936726",
+      "id": 44201936726,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "candidateRunSite": null,
+  "publicationScan": {
+    "commit": "bcd444494196597c1834818c2c78d3d8c13b6aa9",
+    "status": "not run in cloud",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  },
+  "noPersistentTestChanges": true,
+  "paging": "OFF"
+}

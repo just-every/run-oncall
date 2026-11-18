@@ -1,0 +1,104 @@
+{
+  "before": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+  "after": "bcd444494196597c1834818c2c78d3d8c13b6aa9",
+  "predecessors": {
+    "alerts": "4a72738",
+    "triage": "acabbc2",
+    "analytics": "0c0619c",
+    "integration": "8976d00",
+    "clauseCorrections": "183eef356bf1fd5eec173f2e5cbf27f3564ca0f7"
+  },
+  "priorCoreClauseAssociations": {
+    "oncall.automation.replay": [
+      "OC-053"
+    ],
+    "oncall.clients.update": [
+      "OC-053"
+    ],
+    "oncall.endpoints.update": [
+      "OC-053"
+    ],
+    "oncall.incidents.declare": [
+      "OC-004",
+      "OC-050",
+      "OC-056"
+    ],
+    "oncall.incidents.resolve": [
+      "OC-004",
+      "OC-056"
+    ],
+    "oncall.incidents.update": [
+      "OC-004",
+      "OC-027",
+      "OC-050",
+      "OC-058"
+    ],
+    "oncall.privacy.erase": [
+      "OC-040"
+    ],
+    "oncall.schedules.coverage": [
+      "OC-014",
+      "OC-020",
+      "OC-076"
+    ],
+    "oncall.schedules.update": [
+      "OC-011",
+      "OC-024",
+      "OC-077"
+    ],
+    "oncall.services.update": [
+      "OC-023",
+      "OC-061"
+    ]
+  },
+  "comparisons": [
+    {
+      "policy": "autonomous",
+      "emittedToolCount": 42,
+      "beforeMissingToolNames": [
+        "oncall.responders.list"
+      ],
+      "afterMissingToolNames": [],
+      "responder": {
+        "name": "oncall.responders.list",
+        "_meta": {
+          "com.runeditrun/classes": [
+            "standard",
+            "sensitive"
+          ],
+          "com.runeditrun/clauses": [
+            "OC-053"
+          ],
+          "com.runeditrun/scope": "responders:read"
+        }
+      },
+      "unchangedInventoryMetadata": true,
+      "nativeAndPagingUnchanged": true,
+      "outboundRequests": 0
+    },
+    {
+      "policy": "held",
+      "emittedToolCount": 42,
+      "beforeMissingToolNames": [
+        "oncall.responders.list"
+      ],
+      "afterMissingToolNames": [],
+      "responder": {
+        "name": "oncall.responders.list",
+        "_meta": {
+          "com.runeditrun/classes": [
+            "standard",
+            "sensitive"
+          ],
+          "com.runeditrun/clauses": [
+            "OC-053"
+          ],
+          "com.runeditrun/scope": "responders:read"
+        }
+      },
+      "unchangedInventoryMetadata": true,
+      "nativeAndPagingUnchanged": true,
+      "outboundRequests": 0
+    }
+  ]
+}

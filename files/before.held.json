@@ -1,0 +1,621 @@
+{
+  "phase": "before",
+  "policy": "held",
+  "responder": {
+    "name": "oncall.responders.list",
+    "_meta": {
+      "com.runeditrun/classes": [
+        "standard",
+        "sensitive"
+      ],
+      "com.runeditrun/clauses": [
+        "OC-053"
+      ],
+      "com.runeditrun/scope": "responders:read"
+    }
+  },
+  "tools": [
+    {
+      "name": "oncall.access.read",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard",
+          "sensitive"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-003",
+          "OC-023"
+        ],
+        "com.runeditrun/scope": "access:read"
+      }
+    },
+    {
+      "name": "oncall.access.update",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "access"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-003",
+          "OC-041",
+          "OC-053"
+        ],
+        "com.runeditrun/scope": "access:write"
+      }
+    },
+    {
+      "name": "oncall.actions.create",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard",
+          "sensitive"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-005",
+          "OC-053"
+        ],
+        "com.runeditrun/scope": "actions:write"
+      }
+    },
+    {
+      "name": "oncall.actions.list",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard",
+          "sensitive"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-005",
+          "OC-053"
+        ],
+        "com.runeditrun/scope": "actions:read"
+      }
+    },
+    {
+      "name": "oncall.actions.read",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard",
+          "sensitive"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-005",
+          "OC-036"
+        ],
+        "com.runeditrun/scope": "actions:read"
+      }
+    },
+    {
+      "name": "oncall.actions.receipt",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-053"
+        ],
+        "com.runeditrun/scope": "actions:write"
+      }
+    },
+    {
+      "name": "oncall.actions.submit",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard",
+          "sensitive"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-005",
+          "OC-053"
+        ],
+        "com.runeditrun/scope": "actions:write"
+      }
+    },
+    {
+      "name": "oncall.alerts.list",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard",
+          "sensitive"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-001",
+          "OC-002",
+          "OC-059"
+        ],
+        "com.runeditrun/scope": "incidents:read"
+      }
+    },
+    {
+      "name": "oncall.analytics.read",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard",
+          "sensitive"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-037",
+          "OC-044",
+          "OC-054"
+        ],
+        "com.runeditrun/scope": "analytics:read"
+      }
+    },
+    {
+      "name": "oncall.automation.dispatch",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "external"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-006",
+          "OC-053"
+        ],
+        "com.runeditrun/scope": "automation:write"
+      }
+    },
+    {
+      "name": "oncall.automation.read",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-053"
+        ],
+        "com.runeditrun/scope": "integrations:read"
+      }
+    },
+    {
+      "name": "oncall.automation.replay",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "external"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-053"
+        ],
+        "com.runeditrun/scope": "automation:write"
+      }
+    },
+    {
+      "name": "oncall.changes.read",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard",
+          "sensitive"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-065"
+        ],
+        "com.runeditrun/scope": "services:read"
+      }
+    },
+    {
+      "name": "oncall.clients.update",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "access"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-053"
+        ],
+        "com.runeditrun/scope": "clients:write",
+        "com.runeditrun/widens": false,
+        "com.runeditrun/narrowing": {
+          "effect": "revoke",
+          "target": "id"
+        }
+      }
+    },
+    {
+      "name": "oncall.coordination.read",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-003",
+          "OC-004",
+          "OC-036",
+          "OC-053"
+        ],
+        "com.runeditrun/scope": "workspace:read"
+      }
+    },
+    {
+      "name": "oncall.endpoints.update",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "access"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-053"
+        ],
+        "com.runeditrun/scope": "endpoints:write",
+        "com.runeditrun/widens": false,
+        "com.runeditrun/narrowing": {
+          "effect": "revoke",
+          "target": "id"
+        }
+      }
+    },
+    {
+      "name": "oncall.imports.read",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-038",
+          "OC-040"
+        ],
+        "com.runeditrun/scope": "imports:read"
+      }
+    },
+    {
+      "name": "oncall.incidents.acknowledge",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard",
+          "sensitive"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-004",
+          "OC-053"
+        ],
+        "com.runeditrun/scope": "incidents:write"
+      }
+    },
+    {
+      "name": "oncall.incidents.declare",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-004",
+          "OC-050",
+          "OC-056"
+        ],
+        "com.runeditrun/scope": "incidents:write"
+      }
+    },
+    {
+      "name": "oncall.incidents.list",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard",
+          "sensitive"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-003",
+          "OC-053"
+        ],
+        "com.runeditrun/scope": "incidents:read"
+      }
+    },
+    {
+      "name": "oncall.incidents.read",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard",
+          "sensitive"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-003",
+          "OC-004",
+          "OC-053"
+        ],
+        "com.runeditrun/scope": "incidents:read"
+      }
+    },
+    {
+      "name": "oncall.incidents.receipt",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-053"
+        ],
+        "com.runeditrun/scope": "incidents:write"
+      }
+    },
+    {
+      "name": "oncall.incidents.resolve",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "commitment",
+          "sensitive"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-004",
+          "OC-056"
+        ],
+        "com.runeditrun/scope": "incidents:write"
+      }
+    },
+    {
+      "name": "oncall.incidents.update",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard",
+          "sensitive",
+          "live"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-004",
+          "OC-027",
+          "OC-050",
+          "OC-058"
+        ],
+        "com.runeditrun/scope": "incidents:write"
+      }
+    },
+    {
+      "name": "oncall.integrations.read",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-053"
+        ],
+        "com.runeditrun/scope": "integrations:read"
+      }
+    },
+    {
+      "name": "oncall.notes.add",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard",
+          "sensitive"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-004",
+          "OC-008"
+        ],
+        "com.runeditrun/scope": "incidents:write"
+      }
+    },
+    {
+      "name": "oncall.privacy.erase",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "destructive",
+          "access",
+          "security",
+          "live"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-040"
+        ],
+        "com.runeditrun/scope": "privacy:write"
+      }
+    },
+    {
+      "name": "oncall.responders.list",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard",
+          "sensitive"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-053"
+        ],
+        "com.runeditrun/scope": "responders:read"
+      }
+    },
+    {
+      "name": "oncall.reviews.read",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard",
+          "sensitive"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-036",
+          "OC-049"
+        ],
+        "com.runeditrun/scope": "incidents:read"
+      }
+    },
+    {
+      "name": "oncall.schedules.coverage",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard",
+          "sensitive"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-014",
+          "OC-020",
+          "OC-076"
+        ],
+        "com.runeditrun/scope": "schedules:read"
+      }
+    },
+    {
+      "name": "oncall.schedules.create",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard",
+          "sensitive",
+          "live"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-003",
+          "OC-011",
+          "OC-012",
+          "OC-024",
+          "OC-053"
+        ],
+        "com.runeditrun/scope": "schedules:write"
+      }
+    },
+    {
+      "name": "oncall.schedules.override",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard",
+          "sensitive",
+          "live"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-003",
+          "OC-011",
+          "OC-012",
+          "OC-024",
+          "OC-053"
+        ],
+        "com.runeditrun/scope": "schedules:write"
+      }
+    },
+    {
+      "name": "oncall.schedules.read",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard",
+          "sensitive"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-003",
+          "OC-011",
+          "OC-014",
+          "OC-053"
+        ],
+        "com.runeditrun/scope": "schedules:read"
+      }
+    },
+    {
+      "name": "oncall.schedules.receipt",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-053"
+        ],
+        "com.runeditrun/scope": "schedules:write"
+      }
+    },
+    {
+      "name": "oncall.schedules.review",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard",
+          "sensitive"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-003",
+          "OC-011",
+          "OC-014",
+          "OC-024"
+        ],
+        "com.runeditrun/scope": "schedules:write"
+      }
+    },
+    {
+      "name": "oncall.schedules.update",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard",
+          "sensitive",
+          "live"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-011",
+          "OC-024",
+          "OC-077"
+        ],
+        "com.runeditrun/scope": "schedules:write"
+      }
+    },
+    {
+      "name": "oncall.services.list",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-003",
+          "OC-053"
+        ],
+        "com.runeditrun/scope": "services:read"
+      }
+    },
+    {
+      "name": "oncall.services.read",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-003",
+          "OC-005",
+          "OC-053"
+        ],
+        "com.runeditrun/scope": "services:read"
+      }
+    },
+    {
+      "name": "oncall.services.receipt",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-053"
+        ],
+        "com.runeditrun/scope": "services:write"
+      }
+    },
+    {
+      "name": "oncall.services.update",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-023",
+          "OC-061"
+        ],
+        "com.runeditrun/scope": "services:write"
+      }
+    },
+    {
+      "name": "oncall.teams.update",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard",
+          "access"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-023",
+          "OC-041"
+        ],
+        "com.runeditrun/scope": "teams:write"
+      }
+    },
+    {
+      "name": "oncall.triage.list",
+      "_meta": {
+        "com.runeditrun/classes": [
+          "standard",
+          "sensitive"
+        ],
+        "com.runeditrun/clauses": [
+          "OC-060"
+        ],
+        "com.runeditrun/scope": "incidents:read"
+      }
+    }
+  ],
+  "contractHasResponder": false,
+  "missingToolNames": [
+    "oncall.responders.list"
+  ],
+  "nativeAndPagingUnchanged": true,
+  "outboundRequests": 0
+}

@@ -1,0 +1,31 @@
+SURFACE-001 comparison before autonomous: 42 tools, exact responder metadata, native and paging unchanged, zero outbound requests
+SURFACE-001 comparison before held: 42 tools, exact responder metadata, native and paging unchanged, zero outbound requests
+Runtime agents completed (465.3s)
+SURFACE-001 comparison after autonomous: 42 tools, exact responder metadata, native and paging unchanged, zero outbound requests
+SURFACE-001 comparison after held: 42 tools, exact responder metadata, native and paging unchanged, zero outbound requests
+Runtime agents completed (446.8s)
+Oncall verification passed: agents
+PASS BASE-AGENT-013.surface.journey.responders-list
+PASS BASE-AGENT-007.2.initial.responders-list
+PASS BASE-AGENT-007.2.removed.responders-list
+PASS BASE-AGENT-002.2.schema.oncall.responders.list
+PASS BASE-AGENT-002.3.oncall.responders.list
+PASS BASE-AGENT-006.1.oncall.responders.list
+PASS BASE-AGENT-006.2.autonomous.responders-list
+PASS BASE-AGENT-007.1.autonomous.responders-list
+PASS BASE-AGENT-013.4.autonomous.responders-list
+PASS BASE-AGENT-002.2.autonomous.responders-list
+PASS BASE-AGENT-006.2.held.responders-list
+PASS BASE-AGENT-007.1.held.responders-list
+PASS BASE-AGENT-007.5.pending.responders-list
+PASS BASE-AGENT-007.5.no-effect.responders-list
+PASS BASE-AGENT-008.5.approver.responders-list
+PASS BASE-AGENT-006.2.held.approved.responders-list
+PASS BASE-AGENT-007.5.receipt.responders-list
+PASS BASE-AGENT-013.4.held.responders-list
+PASS BASE-AGENT-002.2.held.responders-list
+PASS BASE-AGENT-007.1.blocked.sensitive.responders-list
+PASS BASE-AGENT-007.1.blocked-no-effect.sensitive.responders-list
+PASS BASE-AGENT-011.6.pause.oncall.responders.list
+Agent door conformance: 9765/9765 points passed.
+verify: complete (exit 0)
