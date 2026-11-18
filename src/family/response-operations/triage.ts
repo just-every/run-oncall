@@ -79,7 +79,7 @@ export function matchingItems(state:State,actor:Member,query:TriageQuery):Triage
   const severity=alertSeverity(state,a);
   const lifecycle=held?.state==='closed'||a.state==='recovered'?'resolved':held?.state==='acknowledged'?'acknowledged':'declared';
   const triageStatus=lifecycle==='resolved'?'resolved':held?.state==='acknowledged'?(held.snoozeDue?'snoozed':'acknowledged'):'triggered';
-  return {id:a.id,kind:'alert' as const,triageStatus,revision:a.revision??1,title:first?.title??a.key,summary:a.key,service:a.service??'',severity,state:lifecycle,createdAt:first?.acceptedAt??state.intakeReceipts?.find(r=>r.alert===a.id)?.acceptedAt??'2000-01-01T00:00:00.000Z',assignee:held?.assignee??a.owner,commander:null,urgency:a.urgency??'high',priority:a.priority??null,alerts:[a.id],runbook:[],actions:[],timeline:held?.history??[],recovery:'',review:''} as TriageItem;
+  return {id:a.id,kind:'alert' as const,triageStatus,revision:a.revision??1,title:first?.title??a.key,summary:a.key,service:a.service??'',severity,state:lifecycle,createdAt:first?.acceptedAt??state.intakeReceipts?.find(r=>r.alert===a.id)?.acceptedAt??'2000-01-01T00:00:00.000Z',assignee:held ? held.assignee : a.owner,commander:null,urgency:a.urgency??'high',priority:a.priority??null,alerts:[a.id],runbook:[],actions:[],timeline:held?.history??[],recovery:'',review:''} as TriageItem;
  }).filter(i=>{
   const service=state.services.find(s=>s.id===i.service),terms=query.q?.toLocaleLowerCase().split(/\s+/).filter(Boolean)??[];
   const haystack=[i.title,state.alerts.find(a=>a.id===i.id)?.key,service?.name,service?.environment,...i.timeline.map(e=>e.text)].join(' ').toLocaleLowerCase();

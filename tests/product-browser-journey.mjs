@@ -972,11 +972,18 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
   assert.deepEqual(await triage.locator('[data-triage-id]').evaluateAll(rows=>rows.map(row=>row.dataset.triageId).sort()),ids(api.items));
   return api;
  };
- const capture=async name=>{
+ const capture=async (name,reloadRow)=>{
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'triage fits the desktop viewport');
   const axe=await new AxeBuilder({page}).include('[aria-label="Incident triage"]').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();
   assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
-  for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await triage.screenshot({path:`${directory}/OC-060-${name}-${width}.png`});}
+  for(const width of [1440,390]){
+   await page.setViewportSize({width,height:1000});
+   if(width===390&&reloadRow){
+    await page.reload();
+    await triage.locator(`[data-triage-id="${reloadRow}"]`).waitFor();
+   }
+   await triage.screenshot({path:`${directory}/OC-060-${name}-${width}.png`});
+  }
   await page.setViewportSize({width:1440,height:1000});
  };
  await compare({q:prefix},storm);
@@ -1046,6 +1053,61 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
  assert.deepEqual(pagingRecords(await call('/api/paging/state')),pagingRecords(lowPaging));assert.deepEqual((await outbound()).slice(lowOutbound.length),[]);
  const afterActions=snapshot();await page.reload();await compare({...query,status:'resolved'},[low[1]],{navigate:false});await compare({...query,status:'acknowledged'},[low[0]]);await compare(query,[]);assert.deepEqual(snapshot(),afterActions);
  console.log('PROBE OC-060 acceptance 3 web: two native low alerts -> retained explicit low urgency across reloads, separate attributed acknowledgment and close, retained acknowledged and resolved history despite duplicate intake and source revocation, active source state, unchanged paging and zero outbound requests; changed screens captured once at 1440 and 390');
+ const assignmentSource='synthetic-oncall-6060-assignment',assignmentTitle='Synthetic alert assignment';
+ await call('/api/command',{type:'policy',service:services[1].id,severity:'warning',action:'route',owner:actor.id,reason:'Route to the current responder'});
+ await call('/api/sources',{id:assignmentSource,key,scopes:[services[1].id]});
+ for(let n=0;n<2;n++){
+  const identity=assignmentSource+'-'+n;
+  const input={source:assignmentSource,eventId:identity,service:services[1].id,environment:'test',key:identity,generation:identity,intent:'trigger',severity:'warning',title:assignmentTitle+' '+n,observedAt:new Date().toISOString(),evidence:''};
+  const response=await context.request.post(origin+'/api/ingress/'+assignmentSource,{headers:{authorization:'Bearer '+key},data:input});
+  assert.equal(response.status(),201);
+ }
+ const assignmentQuery={kind:'alerts',q:assignmentTitle};
+ const beforeAssignment=await call('/api/state');
+ const pair=beforeAssignment.alerts.filter(alert=>alert.source===assignmentSource);
+ const clearedAlert=pair.find(alert=>alert.key===assignmentSource+'-0'),keptAlert=pair.find(alert=>alert.key===assignmentSource+'-1');
+ assert.equal(pair.length,2);
+ assert.ok(pair.every(alert=>alert.owner===actor.id&&alert.coordination===undefined));
+ const assignmentPaging=pagingRecords(await call('/api/paging/state')),assignmentOutbound=await outbound();
+ assert.deepEqual(assignmentOutbound,[]);
+ await compare({...assignmentQuery,mine:'true'},pair);
+ await triage.getByLabel('Select '+assignmentTitle+' 0',{exact:true}).check();
+ const bulk=triage.getByRole('region',{name:'Bulk incident actions',exact:true});
+ await bulk.getByLabel('Bulk action',{exact:true}).selectOption('reassign');
+ await bulk.getByLabel('Bulk assignee',{exact:true}).selectOption({label:'Unassigned'});
+ await bulk.getByLabel('Bulk action reason',{exact:true}).fill('Return the alert to the unassigned queue');
+ const committing=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/triage/bulk'&&response.request().method()==='POST');
+ await bulk.getByRole('button',{name:'Apply to 1 alert-only items',exact:true}).click();
+ const response=await committing;assert.equal(response.status(),200);
+ const result=await response.json();
+ assert.deepEqual(result.results,[{id:clearedAlert.id,kind:'alert',ok:true,revision:(clearedAlert.revision??1)+1}]);
+ assert.equal(result.remaining,0);
+ const afterAssignment=await call('/api/state');
+ const committed=afterAssignment.alerts.find(alert=>alert.id===clearedAlert.id);
+ assert.equal(committed.coordination.assignee,null);assert.equal(committed.coordination.history.length,1);
+ const entry=committed.coordination.history[0];
+ assert.deepEqual([entry.kind,entry.actor,entry.operationId],['bulk-reassign',actor.id,result.operationId]);
+ assert.equal(committed.owner,clearedAlert.owner);assert.deepEqual(committed.obligation,clearedAlert.obligation);
+ assert.deepEqual(afterAssignment.alerts.find(alert=>alert.id===keptAlert.id),keptAlert);
+ assert.deepEqual(afterAssignment.events,beforeAssignment.events);
+ assert.deepEqual(afterAssignment.intakeReceipts,beforeAssignment.intakeReceipts);
+ const afterReassignment=snapshot();
+ await page.reload();
+ const mine=await compare({...assignmentQuery,mine:'true'},[keptAlert],{navigate:false});
+ assert.equal(mine.items[0].assignee,actor.id);
+ await capture('assignment-mine',keptAlert.id);
+ await triage.getByText('Filter and sort incidents',{exact:true}).click();
+ await triage.getByLabel('Assigned to me',{exact:true}).uncheck();
+ await triage.getByLabel('Filter assignee',{exact:true}).selectOption({label:'Unassigned'});
+ await page.reload();
+ const unassigned=await compare({...assignmentQuery,assignee:'unassigned'},[clearedAlert],{navigate:false});
+ assert.equal(unassigned.items[0].assignee,null);assert.equal(unassigned.items[0].triageStatus,'triggered');
+ assert.deepEqual(unassigned.items[0].timeline,[entry]);
+ await capture('assignment-unassigned',clearedAlert.id);
+ assert.deepEqual(snapshot(),afterReassignment);
+ assert.deepEqual(pagingRecords(await call('/api/paging/state')),assignmentPaging);
+ assert.deepEqual(await outbound(),assignmentOutbound);
+ console.log('PROBE OC-060 acceptance 1 web: bulk Reassign to Unassigned cleared one of two owned alert-only items. Reloaded Assigned to me and Unassigned rows and counts agree with protected HTTP and retain the attributed clear. Paging custody unchanged, zero outbound requests, reloaded screens captured at 1440 and 390.');
  await page.goto(origin+'/incidents');
 }
 
