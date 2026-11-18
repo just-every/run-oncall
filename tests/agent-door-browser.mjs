@@ -13,7 +13,8 @@ import {agedActionEvidenceRetention} from './oncall-agent-action-evidence-retent
 import {agedActionSubmitRetention} from './oncall-agent-action-submit-retention.mjs';
 import {actionSubmitResponseLoss} from './oncall-agent-action-submit-response-loss.mjs';
 import {changedReassignmentReasonConflict} from './oncall-agent-incident-replay.mjs';
-import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
+import {scribeClearReadback} from './oncall-agent-role-clear-replay.mjs';
+import {accessToken,autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {openIncidentAction} from './keyboard.mjs';
 
 const weekStart=Date.parse('2026-11-02T00:00:00.000Z'),weekNow=Date.parse('2026-11-04T12:00:00.000Z');
@@ -391,11 +392,14 @@ try{
    if(['commander','assignee'].includes(role))assert.notEqual(target.assignee,target.commander);
    const reason='Synthetic saved '+label+' clear '+mode,edge=await runtime.outboundRequests();
    const change=role==='assignee'?'reassign':'assign-role';
+   const {context:agent}=runtime;
+   const bearer=role==='scribe'?await accessToken(agent,{act:{sub:agent.agentId,name:'Responder assistant',specialist:'oncall-responder'}}):undefined;
    const answer=await tool('oncall.incidents.update',{change,...(role==='assignee'?{}:{role}),member:null,
-    incident:target.id,revision:target.revision,reason,idempotency_key:randomUUID()});
+    incident:target.id,revision:target.revision,reason,idempotency_key:randomUUID()},{},bearer);
    assert.equal(answer.result.isError,false);assert.deepEqual(answer.decision.classes.map(row=>row.class),['standard']);
    const saved=answer.result.structuredContent;
    assert.deepEqual(saved,{...target,[role]:null,revision:target.revision+1,timeline:saved.timeline});
+   if(role==='scribe')await scribeClearReadback(runtime,answer,bearer,mode);
    const readingBefore=await agentEffectSnapshot(runtime);
    const lead='Lead: '+(role==='commander'?'Unassigned':owner.name),assigned='Assignee: '+(role==='assignee'?'Unassigned':assignee.name);
    await page.goto(runtime.origin+'/incidents/'+saved.id);
@@ -416,15 +420,16 @@ try{
    const entry=timeline.getByRole('listitem').filter({hasText:readable});
    await entry.getByText(readable,{exact:true}).waitFor();
    await entry.getByText('Responder assistant for Alex Chen',{exact:true}).waitFor();
-   if(mode==='held'){
-    await capture(role+'-cleared-timeline','/incidents/'+saved.id,async()=>{
+   if(mode==='held'||role==='scribe'){
+    const proof=role+(mode==='autonomous'?'-autonomous':'')+'-cleared';
+    await capture(proof+'-timeline','/incidents/'+saved.id,async()=>{
      await page.getByRole('button',{name:lead,exact:true}).waitFor();
      await page.getByRole('button',{name:assigned,exact:true}).waitFor();
      const entry=page.getByRole('region',{name:'Timeline',exact:true}).getByRole('listitem').filter({hasText:readable});
      await entry.getByText(readable,{exact:true}).waitFor();
      await entry.getByText('Responder assistant for Alex Chen',{exact:true}).waitFor();
     });
-    await capture(role+'-cleared-people','/incidents/'+saved.id,async()=>{
+    await capture(proof+'-people','/incidents/'+saved.id,async()=>{
      const people=await openIncidentAction(page,'People and priority');
      await people.getByRole('combobox',{name:'Scribe',exact:true}).waitFor();
      await people.getByRole('button',{name:'Close',exact:true}).focus();
