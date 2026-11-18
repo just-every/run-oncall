@@ -1651,6 +1651,155 @@ export async function declareIncidentFromAlert(page,title) {
 
 // alert-severity-browser: part of this public journey.
 // One core flow: admitted monitoring events -> visible severity -> declared incident -> stored severity.
+export async function unmatchedAlertQueue(page, context, proof, width = 1440) {
+ const origin = new URL(page.url()).origin;
+ const call = async (path, data, status = 200, headers = {}) => {
+  const response = data === undefined
+   ? await context.request.get(path)
+   : await context.request.post(path, {headers: {origin, ...headers}, data});
+  assert.equal(response.status(), status, path);
+  return response.json();
+ };
+ const {member} = await call('/api/session');
+ const responder = await call('/api/members', {name: 'Synthetic queue responder', role: 'responder', password: 'synthetic-oncall-43-password'}, 201);
+ const command = data => call('/api/command', data);
+ const services = {};
+ for (const [kind, name] of Object.entries({missing: 'Warehouse', unavailable: 'Fulfillment', routed: 'Dispatch', suppressed: 'Inventory'})) {
+  const runbook = kind === 'missing' ? ['Check the inventory feed', 'Compare the last successful import', 'Record the missing updates'] : [];
+  services[kind] = await command({type: 'service', id: 'synthetic-oncall-43-'+kind, name, environment: 'test', owner: member.id, runbook, pager: ''});
+ }
+ const policy = (kind, severity, action, owner, extra = {}) => command({
+  type: 'policy', service: services[kind].id, severity, action, owner, reason: 'Synthetic service policy', ...extra,
+ });
+ await policy('unavailable', '*', 'route', responder.id);
+ await command({type: 'member', id: responder.id, role: 'responder', active: false});
+ await policy('routed', 'critical', 'route', member.id);
+ await policy('suppressed', '*', 'suppress', null);
+
+ const source = 'synthetic-oncall-43-queue', key = randomBytes(32).toString('hex');
+ await call('/api/routing/keys', {
+  id: source, name: 'Queue check: Regional intake', provider: 'native', authentication: 'bearer',
+  scope: Object.values(services).map(service => service.id), owner: member.id, key, revision: 0,
+  rules: [{id: 'pick-service', match: 'all', conditions: [{field: 'details.destination', op: 'exists'}], target: {field: 'details.destination'}}],
+  catchAll: null,
+ }, 201);
+ const ingress = '/api/ingress/intake:' + source;
+ const admit = (id, title, destination, extra = {}) => call(ingress, {
+  source: 'intake:' + source, service: 'sender-hint', environment: 'sender-hint', eventId: id,
+  key: id, generation: id, intent: 'trigger', severity: 'warning', title: 'Queue check: ' + title,
+  observedAt: '2026-10-22T05:00:00.000Z', details: {destination}, ...extra,
+ }, 201, {authorization: 'Bearer ' + key});
+ const missing = await admit('missing', 'Warehouse stock feed delayed', services.missing.id);
+ const unavailable = await admit('unavailable', 'Fulfillment processor stalled', services.unavailable.id);
+ const routed = await admit('routed', 'Dispatch latency', services.routed.id, {severity: 'critical'});
+ const suppressed = await admit('suppressed', 'Inventory maintenance', services.suppressed.id);
+ const unrouted = await call(ingress, '{"source":', 202, {authorization: 'Bearer ' + key, 'content-type': 'application/json'});
+ const recovered = await admit('recovered', 'Recovered warehouse alert', services.missing.id);
+ await admit('recovery', 'Recovered warehouse alert', services.missing.id, {intent: 'recover', key: 'recovered', generation: 'recovered'});
+ const nowOwned = await admit('now-owned', 'Dispatch responder assigned', services.routed.id);
+ await policy('routed', 'warning', 'route', member.id, {
+  baseVersion: 0, correlation: {field: 'key', windowSeconds: 60, includeDependencies: false, flappingCount: 0},
+ });
+ await admit('owned-update', 'Dispatch responder assigned', services.routed.id, {key: 'now-owned', generation: 'now-owned'});
+ // A policy published after admission must neither hide the original alert nor replace its reason.
+ await policy('missing', '*', 'route', member.id);
+ const laterTrigger = await admit('missing-update', 'Warehouse stock feed delayed', services.missing.id, {key: 'missing', generation: 'missing'});
+
+ const native = await call('/api/state');
+ const forEvent = receipt => ({
+  alert: native.alerts.find(alert => alert.events.includes(receipt.id)),
+  event: native.events.find(event => event.id === receipt.id),
+ });
+ const unmatched = [forEvent(missing), forEvent(unavailable)];
+ for (const {alert, event} of unmatched) {
+  assert.ok(alert.service);
+  assert.equal(alert.state, 'active');
+  assert.equal(alert.owner, null);
+  assert.equal(event.decision.action, 'unmatched');
+ }
+ assert.equal(unmatched[0].event.decision.policy, null);
+ assert.ok(unmatched[1].event.decision.policy);
+ assert.notEqual(unmatched[0].event.decision.reason, unmatched[1].event.decision.reason);
+ assert.equal(forEvent(laterTrigger).alert.id, unmatched[0].alert.id);
+ assert.equal(forEvent(laterTrigger).event.decision.action, 'route');
+ assert.equal(forEvent(routed).event.decision.action, 'route');
+ assert.equal(forEvent(suppressed).alert.suppressed, true);
+ assert.equal(forEvent(suppressed).alert.owner, null);
+ assert.equal(forEvent(recovered).alert.state, 'recovered');
+ assert.equal(forEvent(nowOwned).event.decision.action, 'unmatched');
+ assert.equal(forEvent(nowOwned).alert.owner, member.id);
+ const parked = native.intakeReceipts.find(receipt => receipt.id === unrouted.id);
+ assert.equal(parked.outcome, 'unrouted');
+ const parkedAlert = native.alerts.find(alert => alert.id === parked.alert);
+ assert.equal(parkedAlert.service, null);
+
+ const before = proof.snapshot();
+ const paging = await call('/api/paging/state');
+ const outbound = await proof.outbound();
+ const directory = process.env.ONCALL_BROWSER_EVIDENCE ?? 'evidence/browser';
+ await mkdir(directory, {recursive: true});
+ const capture = async name => {
+  for (const proofWidth of [1440, 390]) {
+   await page.setViewportSize({width: proofWidth, height: 1000});
+   await page.screenshot({path: directory + '/oc043-unmatched-' + name + '-' + proofWidth + '.png', fullPage: true});
+  }
+  await page.setViewportSize({width, height: 1000});
+ };
+ const list = page.getByRole('region', {name: 'Alerts list', exact: true});
+ const rows = list.locator('.alert-row');
+ const urlFor = alert => '/alerts/' + encodeURIComponent(alert.id);
+ const compare = async alerts => {
+  await expect(rows).toHaveCount(alerts.length);
+  assert.deepEqual((await rows.evaluateAll(links => links.map(link => link.getAttribute('href')))).sort(), alerts.map(urlFor).sort());
+ };
+ const filter = list.getByText('Filter', {exact: true});
+ const clear = list.getByRole('button', {name: 'Clear unmatched service alerts filter', exact: true});
+ await page.setViewportSize({width, height: 1000});
+ await page.goto(origin + '/alerts');
+ await focusWorkspace(page);
+ await compare(native.alerts);
+ const search = list.getByRole('searchbox', {name: 'Search alerts', exact: true});
+ await search.fill('Queue check:');
+ const normalCohort = [missing, unavailable, routed, suppressed, recovered, nowOwned].map(receipt => forEvent(receipt).alert);
+ normalCohort.push(parkedAlert);
+ await compare(normalCohort);
+ await filter.click();
+ await list.getByLabel('Filter queue', {exact: true}).selectOption({label: 'Unmatched service alerts'});
+ await capture('filter');
+ if (width === 390) await list.getByRole('button', {name: 'Done', exact: true}).click();
+ else await filter.click();
+ const cohort = unmatched.map(({alert}) => alert);
+ await compare(cohort);
+ await capture('queue');
+ for (const {alert, event} of unmatched) {
+  await rows.filter({has: page.getByText(event.title, {exact: true})}).click();
+  await page.waitForURL(url => url.pathname === urlFor(alert));
+  const detail = page.getByRole('article', {name: 'Alert details', exact: true});
+  if (alert.service === services.missing.id) {
+   const service = native.services.find(service => service.id === alert.service);
+   assert.ok(!native.incidents.some(incident => incident.alerts.includes(alert.id)));
+   await expect(detail.locator('.alert-runbook').getByRole('listitem')).toHaveText(service.runbook);
+   await expect(detail.getByRole('button', {name: 'Declare incident from alert', exact: true})).toBeEnabled();
+  }
+  await detail.getByText('Event context', {exact: true}).click();
+  await expect(detail.getByText(event.decision.reason, {exact: true})).toBeVisible();
+  await capture(event.eventId);
+  await detail.getByRole('link', {name: '‹ Alerts', exact: true}).click();
+  await expect(clear).toBeVisible();
+  await compare(cohort);
+ }
+ await clear.click();
+ await compare(normalCohort);
+ await search.clear();
+ await compare(native.alerts);
+ assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+ assert.deepEqual(await call('/api/state'), native, 'protected records and revision are unchanged by the reads');
+ assert.deepEqual(await call('/api/paging/state'), paging);
+ assert.deepEqual(await proof.outbound(), outbound);
+ assert.deepEqual(proof.snapshot(), before, 'the browser reads change no durable rows or permanent audit');
+ console.log(`PROBE OC-043 2 Alerts at ${width}: two native unmatched admissions and five controls -> exact protected cohort and reasons, cleared filter restores all alerts, durable records, revision, audit, paging and outbound state unchanged. Screens captured at 1440 and 390.`);
+}
+
 export async function alertSeverity(page,context,width) {
  const origin=new URL(page.url()).origin
  const state=await (await context.request.get('/api/state')).json()
@@ -2016,6 +2165,8 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession,
  await keyboardCoordination(page,context,390,ownerLink,openSession)
  await productSchedule(page,context,390,session,{ownerLink,openSession,selectedOnly:true,setTime,worker})
  await page.setViewportSize({width:1440,height:1000})
+ await setTime(null)
+ await unmatchedAlertQueue(page,context,triageProof)
 }
 
 export async function sharedIncidentLinks(page,context) {
