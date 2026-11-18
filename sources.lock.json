@@ -144,7 +144,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "1bd163cb18e38539f3a0be8b46dc31d22f95602d04e2b8d981eb0438a2540d53",
+      "sha256": "47e0b28bb9638dd13fd27687be46dac0ce228c2fd16614f7c7c10f249b964d78",
       "executable": false
     },
     "agent-surface.json": {
@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d73fb45bb4cab9b72c16d9eaa83dadd7707da6f58fb7c01db28f333cada625ec",
+      "sha256": "a9dd15e687cc3ba2b8ac2ff88b83a5b935c31ba1cbfbce5d48ee40550988ec07",
       "executable": false
     },
     "DEMO.md": {
@@ -6840,7 +6840,7 @@
       "executable": false
     },
     "tests/oncall-agent-service-replay.mjs": {
-      "sha256": "b00d6ec031daa37549fa9617469d7408beeb333f350d3680402b9557b9d19aba",
+      "sha256": "ebbad0aa32d9373c5858f3aeb28ac41e975c66800ff76910dc3ad0d5c0eae139",
       "executable": false
     },
     "tests/oncall-agent-team-replay.mjs": {
