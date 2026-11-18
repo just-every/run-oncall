@@ -258,34 +258,79 @@ export async function rateJourney(w,cookie,actor) {
 
  const nativeAt=Date.now();
  await w.time(nativeAt);
- for(const routed of [false,true]) {
-  const id=routed?'native-routed-requests':'native-service-requests';
+ const prepareNativeKey=async(id,routed)=>{
   const credential='synthetic-oncall-'+secret();
   const source=routed?'intake:'+id:id;
   const policyId=routed?source:'source:'+source;
   if(routed)ok(await configure(id,credential),201);
   else ok(await req('/api/sources',{id,key:credential,scopes:['payments']}));
-  state=ok(await req('/api/state'));
-  ok(await req('/api/intake/allowances',{id:policyId,requests:3,events:120,revision:state.revision}));
+  const {revision}=ok(await req('/api/state'));
+  ok(await req('/api/intake/allowances',{id:policyId,requests:3,events:120,revision}));
   const trigger={...event(id),source,service:'payments',environment:'production',observedAt:new Date(nativeAt).toISOString()};
-  const path='/api/ingress/'+source;
-  const usage=()=>w.sql(`SELECT requests,events FROM oc_key_rate_usage WHERE key_id='${policyId}' ORDER BY at`);
-  const admitted=ok(await send(trigger,credential,path),201);
-  assert.deepEqual(usage(),[{requests:1,events:1}]);
-  const grouped=await protectedState();
-  assert.ok(grouped.alerts.some(alert=>alert.events.includes(admitted.id)));
-  assert.deepEqual(ok(await send(trigger,credential,path)),{...admitted,duplicate:true});
-  assert.deepEqual(usage(),[{requests:2,events:1}]);
-  const observation={...trigger,eventId:trigger.eventId+'-next'};
-  const rejected=ok(await send({...observation,source:'synthetic-oncall-mismatched'},credential,path),403);
-  assert.match(rejected.error,/"source" must match/);
-  assert.deepEqual(usage(),[{requests:3,events:1}]);
-  assert.deepEqual(await protectedState(),grouped);
-  const throttled=await send(observation,credential,path);
+  return {
+   trigger,
+   post:(input=trigger)=>send(input,credential,'/api/ingress/'+source),
+   usage:()=>w.sql(`SELECT at,requests,events FROM oc_key_rate_usage WHERE key_id='${policyId}' ORDER BY at`),
+   notices:async()=>ok(await req('/api/state')).audit.filter(entry=>entry.kind==='intake-throttled'&&entry.actor==='source:'+policyId),
+  };
+ };
+ const custody=async()=>{
+  const {workspaceRevision,...paging}=ok(await req('/api/paging/state'));
+  return {grouped:await protectedState(),paging,outbound:await w.outboundRequests()};
+ };
+ for(const [id,routed] of [['native-service-requests',false],['native-routed-requests',true]]) {
+  const native=await prepareNativeKey(id,routed);
+  const other=await prepareNativeKey(id+'-isolation',routed);
+  const usage=requests=>[{at:nativeAt,requests,events:1}];
+  assert.deepEqual(native.usage(),[]);
+  const accepted=await native.post(),admitted=ok(accepted,201);
+  assert.equal(admitted.duplicate,false);
+  assert.deepEqual(native.usage(),usage(1));
+  const held=await custody();
+  assert.ok(held.grouped.alerts.some(alert=>alert.events.includes(admitted.id)));
+  if(routed)assert.ok(held.grouped.intakeReceipts.some(receipt=>receipt.id===admitted.id&&receipt.event===admitted.id));
+  assert.equal(held.paging.paging,'OFF');
+  assert.deepEqual(held.outbound,[]);
+  const retry=await native.post();
+  assert.deepEqual(ok(retry),{...admitted,duplicate:true});
+  assert.deepEqual(native.usage(),usage(2));
+  assert.deepEqual(await custody(),held);
+
+  const observation={...native.trigger,eventId:native.trigger.eventId+'-next'};
+  const rejected=await native.post({...observation,source:'synthetic-oncall-mismatched'});
+  assert.match(ok(rejected,403).error,/"source" must match/);
+  const afterRejection=native.usage();
+  assert.deepEqual(afterRejection,usage(3));
+  assert.deepEqual(await native.notices(),[]);
+  assert.deepEqual(await custody(),held);
+
+  const throttled=await native.post(observation),retryAfter=throttled.headers.get('retry-after');
   assert.match(ok(throttled,429).error,/Key requests allowance exceeded/);
-  assert.equal(throttled.headers.get('retry-after'),'60');
-  assert.deepEqual(usage(),[{requests:4,events:1}]);
-  assert.deepEqual(await protectedState(),grouped);
+  assert.equal(retryAfter,'60');
+  assert.deepEqual(native.usage(),usage(4));
+  const notices=await native.notices();
+  assert.equal(notices.length,1);
+  assert.equal(notices[0].at,new Date(nativeAt).toISOString());
+  const keyName=routed?'Rate boundary '+id:id;
+  assert.ok(notices[0].text.includes(`Integration owner ${actor.id}: key ${keyName} throttled at 4 requests`));
+  assert.deepEqual(await custody(),held);
+  const repeatedThrottle=await native.post(observation);
+  ok(repeatedThrottle,429);
+  assert.equal(repeatedThrottle.headers.get('retry-after'),retryAfter);
+  assert.deepEqual(await native.notices(),notices);
+  assert.deepEqual(native.usage(),usage(5));
+  assert.deepEqual(await custody(),held);
+
+  const isolated=await other.post();
+  const isolatedReceipt=ok(isolated,201);
+  assert.deepEqual(other.usage(),usage(1));
+  assert.ok((await protectedState()).alerts.some(alert=>alert.events.includes(isolatedReceipt.id)));
+  assert.deepEqual(native.usage(),usage(5));
+  assert.deepEqual(await w.outboundRequests(),held.outbound);
+  console.log(`PROBE OC-084 2 ${id}: ${accepted.status}, ${retry.status}, ${rejected.status}; `+
+   `${JSON.stringify(afterRejection[0])}; ${throttled.status} Retry-After=${retryAfter}; `+
+   `${notices.length} notice at 4 requests; repeated ${repeatedThrottle.status}; `+
+   `unchanged grouped records, receipts and paging; zero outbound; other key ${isolated.status}`);
  }
  await w.time(Date.now());
  console.log('PASS OC-084 per-record rolling allowances: default 121st event, other-key isolation, duplicate request boundary, rotation, exact-window recovery, owner notices, pre-grouping and incomplete refusal, checkpoint policy custody');
@@ -342,7 +387,7 @@ const platformFetch=globalThis.fetch;
 globalThis.fetch=(input,init={})=>{const headers=new Headers(init.headers??(input instanceof Request?input.headers:undefined));headers.set('connection','close');return platformFetch(input,{...init,headers});};
 
 // One public Worker journey: real admission, replay, authority and archive doors.
-const w=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'},{clock:true}),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
+const w=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'},{clock:true,outboundLedger:true}),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
 const secret=()=>randomBytes(32).toString('hex'),keys={pd:secret(),og:secret(),sp:secret()};
 let cookie;
 const req=(path,data)=>w.request(path,data,cookie);
