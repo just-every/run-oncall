@@ -1,0 +1,10 @@
+Candidate 768bf1416297a9610f344bf8c39105a600a170fa
+2026-11-18T21:04:24Z edition-lock exit=0 finished=2026-11-18T21:04:26Z
+2026-11-18T21:04:26Z first-party exit=0 finished=2026-11-18T21:04:28Z
+2026-11-18T21:04:28Z build exit=0 finished=2026-11-18T21:04:44Z
+2026-11-18T21:04:44Z typecheck exit=0 finished=2026-11-18T21:05:06Z
+2026-11-18T21:05:06Z activation exit=0 finished=2026-11-18T21:12:17Z
+PASS OC-025 secondary service feed: bounded UTC coverage before and after reviewed override, unrelated rota and member data excluded, immediate 404 after revocation, assignments and paging retained, zero outbound requests
+2026-11-18T21:12:27Z service-feed-browser exit=0 finished=2026-11-18T21:13:11Z
+PASS OC-025 Chromium public door at 1440: service feed includes shared and owning rotas, excludes unrelated rota and member identity, bearer is hidden before screenshots, revoke returns 404. Controls captured at 1440 and 390.
+Activation passed: 40 requirement flow groups

@@ -1,0 +1,8 @@
+2026-11-18T21:14:09Z
+{"conclusion":null,"event":"push","head_branch":"cloud/sd-oncall-c-f282-lin-1","head_sha":"768bf1416297a9610f344bf8c39105a600a170fa","html_url":"https://github.com/just-every/run-oncall/actions/runs/44399270275","id":44399270275,"name":"Verify","status":"in_progress"}
+2026-11-18T21:19:16Z
+{"conclusion":null,"head_sha":"768bf1416297a9610f344bf8c39105a600a170fa","html_url":"https://github.com/just-every/run-oncall/actions/runs/44399270275","status":"in_progress"}
+2026-11-18T21:24:23Z
+{"conclusion":null,"head_sha":"768bf1416297a9610f344bf8c39105a600a170fa","html_url":"https://github.com/just-every/run-oncall/actions/runs/44399270275","status":"in_progress"}
+2026-11-18T21:29:29Z
+{"conclusion":"failure","head_sha":"768bf1416297a9610f344bf8c39105a600a170fa","html_url":"https://github.com/just-every/run-oncall/actions/runs/44399270275","status":"completed"}

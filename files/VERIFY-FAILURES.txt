@@ -1,0 +1,15 @@
+Verify run 44399270275 on 768bf1416297a9610f344bf8c39105a600a170fa
+contract-docs	Check the generated contract documents	2026-11-18T21:14:27.6916312Z Contract prose: 0 errors, 0 warnings.
+contract-docs	Check the generated contract documents	2026-11-18T21:14:27.7375017Z ACCEPTANCE.md: generated content differs; run contract-docs write.
+contract-docs	Check the generated contract documents	2026-11-18T21:14:27.7466115Z ##[error]Process completed with exit code 1.
+verify	Require the selected coverage and its proof	2026-11-18T21:29:01.0460519Z   PLAN: success
+verify	Require the selected coverage and its proof	2026-11-18T21:29:01.0461138Z   CONTRACT_DOCS: failure
+verify	Require the selected coverage and its proof	2026-11-18T21:29:01.0461737Z   BUILD: success
+verify	Require the selected coverage and its proof	2026-11-18T21:29:01.0462443Z   SHARDS: success
+verify	Require the selected coverage and its proof	2026-11-18T21:29:01.0463002Z   LIGHT: skipped
+verify	Require the selected coverage and its proof	2026-11-18T21:29:01.0463606Z   PUSH_PROOF: success
+verify	Require the selected coverage and its proof	2026-11-18T21:29:01.0464207Z   NIGHTLY_PROOF: skipped
+verify	Require the selected coverage and its proof	2026-11-18T21:29:01.0464855Z   COVERAGE: full
+verify	Require the selected coverage and its proof	2026-11-18T21:29:01.0465473Z   HAS_SHARDS: true
+verify	Require the selected coverage and its proof	2026-11-18T21:29:01.0466029Z   SKIP: false
+verify	Require the selected coverage and its proof	2026-11-18T21:29:01.0668465Z ##[error]Process completed with exit code 1.

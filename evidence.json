@@ -1,0 +1,64 @@
+{
+  "files": [
+    {
+      "blob": "1b2f174f8fa29e8f487492483d8c43f935f6e650",
+      "bytes": 331,
+      "path": "CONTRACT-CHECKS.txt",
+      "sha256": "096f708f019ce3683b059539ec85fbe20a33888a7744b0aec076657b95f353eb"
+    },
+    {
+      "blob": "f88181955beb4ba6a657ad037177e205403d6b86",
+      "bytes": 966,
+      "path": "LOCAL-CHECKS.txt",
+      "sha256": "1d5dd5a2a35bb3e447bb60a34521647b7e38c2acf54fa53c469b6dcf4c0ae6c6"
+    },
+    {
+      "blob": "b58814847c8debd30371c86ac427bce6d0f30e15",
+      "bytes": 210,
+      "path": "PRODUCT-PUSH.txt",
+      "sha256": "4b31645b73c100431cb0089f895f489dca209928f980486b6fe8d8b2d6f124b6"
+    },
+    {
+      "blob": "dffddaf4900f373fc8068b6cf661ddfdf1d88396",
+      "bytes": 4382,
+      "path": "REPORT.md",
+      "sha256": "73444feba1b8c98e7360296a55ce0627a21c0cb267794fb203494a0226643b8f"
+    },
+    {
+      "blob": "8369c9d357889b68d9fde03ccf0903777b287d98",
+      "bytes": 1578,
+      "path": "VERIFY-FAILURES.txt",
+      "sha256": "08e55ee206681e959ee2db34005dcb8af19ca88c1f4240cac6e6fec5b72e7a2a"
+    },
+    {
+      "blob": "33d1dc0c0fe49c68d55821ed390eea8cdf4909c1",
+      "bytes": 18449,
+      "path": "VERIFY-JOBS.json",
+      "sha256": "f09f5daa8a05d00d769f504d25b9067a23195f1238e2e9dc582b2d0191a95810"
+    },
+    {
+      "blob": "782a546cc09d14550b84652d940f8373b89d764a",
+      "bytes": 884,
+      "path": "VERIFY.txt",
+      "sha256": "d782c6c51104e15d69aa860171f5650e4c62b3d42b26e7afecd104b5ff96bb3f"
+    },
+    {
+      "blob": "b5d0aaf1bf3be62d5ef2abbc5fdf84322215f1fc",
+      "bytes": 127489,
+      "path": "calendar-feed-1440.png",
+      "sha256": "1c6eb4f524a0d29806184388da20d7f1c670c7783056011a460d77003cec8203"
+    },
+    {
+      "blob": "8c0e6c12d644ccc8a5d8cda18440e5236c8ec477",
+      "bytes": 54898,
+      "path": "calendar-feed-390.png",
+      "sha256": "a1a4bb82f871d1be2f9684ef24604ff402dce9bb3a1827a3a00bc8e03ec01dab"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f282-lin-1",
+  "product_head": "768bf1416297a9610f344bf8c39105a600a170fa",
+  "ref": "refs/heads/evidence/sd-oncall-c-f282-lin-1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f282-lin-1"
+}

@@ -1,0 +1,8 @@
+Generated-view round trip for 768bf1416297a9610f344bf8c39105a600a170fa
+2026-11-18T21:13:29Z
+Wrote 1 contract documents.
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+Contract prose: 0 errors, 0 warnings.
+ACCEPTANCE.md: generated content differs; run contract-docs write.
+Committed view drift expected above
