@@ -283,3 +283,5 @@ Local setup requires `MAIL_PROVIDER=development` for the no-email local owner en
 — Run Edit Run fleet, 2026-11-17
 
 Choose the name your team sees when setup asks **What should we call this?** You can change it later in **Settings → General**. The saved name appears in the header, browser tab and both sign-in pages; without a saved name, they show Oncall. (sd, 17 November 2026.)
+
+When a service has an acknowledgment timeout and its response policy declares an incident, the clock starts when the incident is declared. If nobody acknowledges in time, the incident, its linked alert, On call and Reviews retain the missed time and who was on call at that deadline. A later acknowledgment keeps the missed response visible for review. Expiry records a response obligation only; paging stays off, so continue using your existing pager. — Run Edit Run fleet, 17 November 2026.
