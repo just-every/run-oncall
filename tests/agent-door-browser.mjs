@@ -262,10 +262,15 @@ try{
   await evidenceContext.addCookies(evidenceRuntime.cookie.split('; ').map(pair=>{const at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:evidenceRuntime.origin,httpOnly:true,sameSite:'Lax'}}));
   const evidencePage=await evidenceContext.newPage(),evidenceRequests=[],approvalPosts=[];
   await evidenceContext.route('https://evidence.example.invalid/**',route=>{evidenceRequests.push(route.request().url());return route.abort()});
-  evidencePage.on('request',request=>{if(request.method()==='POST'&&new URL(request.url()).pathname.endsWith('/approve'))approvalPosts.push(request.postDataJSON())});
+  evidencePage.on('request',request=>{
+   const path=new URL(request.url()).pathname;
+   if(request.method()==='POST'&&path.endsWith('/approve'))approvalPosts.push({path,body:request.postDataJSON()});
+  });
   return {
-   async approve({handle,saved,owner}){
-    if(!retained)await capture('follow-up-evidence-pending',new URL(handle.url).pathname,async()=>{
+   async approve({handle,saved,owner,kind='write'}){
+    const before=approvalPosts.length;
+    const approvalPath=new URL(handle.url).pathname;
+    if(!retained)await capture(kind==='read'?'follow-up-evidence-read-pending':'follow-up-evidence-pending',approvalPath,async()=>{
      await evidencePage.locator('[data-approval-state="pending"]').waitFor();
      await evidencePage.getByText(owner.name,{exact:false}).first().waitFor();
     },evidenceRuntime,evidencePage);
@@ -274,10 +279,11 @@ try{
     await evidencePage.getByText(owner.name,{exact:false}).first().waitFor();
     await evidencePage.getByRole('button',{name:'Approve',exact:true}).click();
     await evidencePage.locator('[data-approval-state="executed"]').waitFor();
-    assert.deepEqual(approvalPosts,[{revision:saved.revision,summary_sha256:saved.summary_sha256}],
-     'The named sponsor approves the exact saved revision and summary once');
+    assert.deepEqual(approvalPosts.slice(before),[{path:'/agents/api/approvals/'+handle.id+'/approve',
+     body:{revision:saved.revision,summary_sha256:saved.summary_sha256}}],
+     'The named sponsor approves this exact saved decision once');
    },
-   async observe({mode,incident,action,handle,approved}){
+   async observe({mode,incident,action,handle,approved,linkedIncident}){
     const response=await evidenceRuntime.http('/api/reviews/'+incident.id+'/material');assert.equal(response.status,200);
     const material=await response.json();
     assert.deepEqual(material.followups,incident.actions,'Protected review material agrees with the stored MCP result');
@@ -286,6 +292,10 @@ try{
     const completion=material.assertions.find(row=>row.kind==='complete');
     assert.equal(completion.classification,'agent coordination record');
     assert.equal(completion.actor,evidenceRuntime.context.agentId);
+    if(linkedIncident){
+     assert.deepEqual(material.followups,linkedIncident.actions);
+     assert.equal(material.incidentRevision,linkedIncident.revision);
+    }
     const state=await (await evidenceRuntime.http('/api/state')).json();
     const actionOwner=state.members.find(row=>row.id===action.owner);assert.ok(actionOwner);
     const label=retained?'follow-up-evidence-retained':'follow-up-evidence';
@@ -301,6 +311,12 @@ try{
       assert.match(text,/P2/);assert.match(text,/Complete · Completes with evidence/);
       assert.ok(!text.includes('Awaiting acceptance'));
       assert.equal(await evidence.getAttribute('href'),action.evidence);
+      if(linkedIncident){
+       const companion=linkedIncident.actions.find(row=>row.id!==action.id);
+       const companionItem=followups.getByRole('listitem').filter({hasText:companion.title});
+       assert.match(await companionItem.innerText(),/P3.*Open.*Human review/);
+       assert.equal(await companionItem.getByRole('link',{name:/^Evidence/}).count(),0);
+      }
      }
      await evidence.scrollIntoViewIfNeeded();
     },evidenceRuntime,evidencePage);
@@ -314,7 +330,8 @@ try{
       }
      }
     },evidenceRuntime,evidencePage);
-    assert.equal(approvalPosts.length,mode==='held'?1:0,'Completed result retrieval never repeats approval');
+    assert.equal(approvalPosts.length,mode==='held'?(linkedIncident?2:1):0,
+     'The held write and linked read each use their own approval without repeats');
     assert.deepEqual(evidenceRequests,[],'Saved material and approval never fetch the evidence URL');
     console.log('PROBE BASE-AGENT-012 '+(retained?'aged ':'')+'evidence completion browser '+mode+': protected review material equals MCP result; saved P2 Complete and Completes with evidence plus retained evidence link at 1440 and 390; original sponsor approval '+(handle?'executed once':'not needed')+'; zero evidence requests');
    },
