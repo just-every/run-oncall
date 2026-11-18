@@ -716,6 +716,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 2. Confirm that a foreign team's incidents are neither listed nor selectable.
 3. Leave a low-urgency alert open and observe it listed until it is acknowledged or resolved.
 
+**Observed (18 November 2026, Run Edit Run fleet).** A signed-in responder started with two alert-only records routed to them and cleared one using bulk reassignment. Protected triage filters returned the untouched alert for Mine and the explicit responder filter. Unassigned returned the cleared alert with a null assignee, a triggered status and the attributed operation history. The existing Reassign control also cleared an owned alert in the browser. Reloaded Assigned to me and Unassigned views matched the protected results, with captures at 1440 and 390 pixels. The original owner and admission evidence were retained. Paging custody was unchanged and the outbound ledger was empty.
+
 #### OC-079 — Bulk triage actions with per-item results
 
 *Tier:* Core · *From:* OC-060
