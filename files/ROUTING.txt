@@ -1,0 +1,11 @@
+Repository: just-every/run-oncall
+Candidate: 63fa9aafac0f0cf0f7a6df0560ac32b56668f72c
+Command: cloud_run timeout 1200 node tests/routing.mjs
+Node: 22.20.0
+Exit: 0
+
+Native routed public journey: bearer/HMAC, immutable retries, scope, per-service recovery, unrouted/readmission, zero-write replay, stale publication, audit rollback, rotation/revocation and secret-free checkpoint passed
+PROBE OC-084 2 native-service-requests: 201, 200, 403; {"at":1794968267915,"requests":3,"events":1}; 429 Retry-After=60; 1 notice at 4 requests; repeated 429; unchanged grouped records, receipts and paging; zero outbound; other key 201
+PROBE OC-084 2 native-routed-requests: 201, 200, 403; {"at":1794968267915,"requests":3,"events":1}; 429 Retry-After=60; 1 notice at 4 requests; repeated 429; unchanged grouped records, receipts and paging; zero outbound; other key 201
+PASS OC-084 per-record rolling allowances: default 121st event, other-key isolation, duplicate request boundary, rotation, exact-window recovery, owner notices, pre-grouping and incomplete refusal, checkpoint policy custody
+PASS native custody partition: restore carries exact prefixes, 70 KB custody beyond the authored profile, other keys and humans unaffected, 10,000 boundary and separate rate refusal

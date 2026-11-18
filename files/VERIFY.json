@@ -1,0 +1,157 @@
+{
+  "aggregate_archive": {
+    "command": "gh run view 44221961558 --repo just-every/run-oncall --job 134531831951 --log-failed",
+    "exit": 0
+  },
+  "aggregate_inputs": {
+    "BUILD": "success",
+    "CONTRACT_DOCS": "failure",
+    "SHARDS": "success"
+  },
+  "classification": "expected generated-view freshness failure and dependent aggregate guard",
+  "conclusion": "failure",
+  "contract_archive": {
+    "command": "gh run view 44221961558 --repo just-every/run-oncall --job 134525956312 --log-failed",
+    "error": "failed to get run log: zip: not a valid zip file",
+    "exit": 1
+  },
+  "event": "push",
+  "exact_head_local_diagnostic": "ACCEPTANCE.md: generated content differs; run contract-docs write.",
+  "head_sha": "63fa9aafac0f0cf0f7a6df0560ac32b56668f72c",
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/44221961558",
+  "id": 44221961558,
+  "jobs": [
+    {
+      "conclusion": "success",
+      "head_sha": "63fa9aafac0f0cf0f7a6df0560ac32b56668f72c",
+      "id": 134525750466,
+      "name": "plan",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "63fa9aafac0f0cf0f7a6df0560ac32b56668f72c",
+      "id": 134525956140,
+      "name": "build",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "failure",
+      "head_sha": "63fa9aafac0f0cf0f7a6df0560ac32b56668f72c",
+      "id": 134525956312,
+      "name": "contract-docs",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "failure",
+          "name": "Check the generated contract documents"
+        }
+      ]
+    },
+    {
+      "conclusion": "skipped",
+      "head_sha": "63fa9aafac0f0cf0f7a6df0560ac32b56668f72c",
+      "id": 134525958686,
+      "name": "light",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "63fa9aafac0f0cf0f7a6df0560ac32b56668f72c",
+      "id": 134526723421,
+      "name": "shards (triage)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "63fa9aafac0f0cf0f7a6df0560ac32b56668f72c",
+      "id": 134526723465,
+      "name": "shards (browser)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "63fa9aafac0f0cf0f7a6df0560ac32b56668f72c",
+      "id": 134526723471,
+      "name": "shards (runtime)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "63fa9aafac0f0cf0f7a6df0560ac32b56668f72c",
+      "id": 134526723480,
+      "name": "shards (intake)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "63fa9aafac0f0cf0f7a6df0560ac32b56668f72c",
+      "id": 134526723538,
+      "name": "shards (agents)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "63fa9aafac0f0cf0f7a6df0560ac32b56668f72c",
+      "id": 134526723563,
+      "name": "shards (changes)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "63fa9aafac0f0cf0f7a6df0560ac32b56668f72c",
+      "id": 134526723582,
+      "name": "shards (transfer)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "63fa9aafac0f0cf0f7a6df0560ac32b56668f72c",
+      "id": 134526723583,
+      "name": "shards (hosted)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "63fa9aafac0f0cf0f7a6df0560ac32b56668f72c",
+      "id": 134531790971,
+      "name": "full-push-proof",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "skipped",
+      "head_sha": "63fa9aafac0f0cf0f7a6df0560ac32b56668f72c",
+      "id": 134531793447,
+      "name": "nightly-proof",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "failure",
+      "head_sha": "63fa9aafac0f0cf0f7a6df0560ac32b56668f72c",
+      "id": 134531831951,
+      "name": "verify",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "failure",
+          "name": "Require the selected coverage and its proof"
+        }
+      ]
+    }
+  ],
+  "name": "Verify",
+  "status": "completed"
+}

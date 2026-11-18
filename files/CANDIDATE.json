@@ -1,0 +1,88 @@
+{
+  "branch": "cloud/sd-oncall-c-f267",
+  "candidate_ci": {
+    "classification": "expected generated-view freshness failure and dependent aggregate guard",
+    "conclusion": "failure",
+    "event": "push",
+    "head_sha": "63fa9aafac0f0cf0f7a6df0560ac32b56668f72c",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44221961558",
+    "id": 44221961558,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "changed_files": [
+    "CONTRACT.md",
+    "sources.lock.json",
+    "tests/routing.mjs"
+  ],
+  "claim": {
+    "clause": "OC-084",
+    "selected_points": [
+      2
+    ],
+    "status": "PARTIAL"
+  },
+  "counts": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "head": "63fa9aafac0f0cf0f7a6df0560ac32b56668f72c",
+  "local": [
+    {
+      "command": "cloud_run timeout 900 npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run timeout 1200 node tests/routing.mjs",
+      "exit": 0,
+      "receipt": "ROUTING.txt"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "updated": [
+        "ACCEPTANCE.md"
+      ]
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "state": "regenerated views"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 1,
+      "finding": "ACCEPTANCE.md: generated content differs; run contract-docs write.",
+      "state": "main views restored"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    }
+  ],
+  "main": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+  "main_ci": {
+    "run_site": 44207847848,
+    "verify": 44207847779
+  },
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "publication_scan": "pending guarded lander",
+  "readiness": "READY under the generated-view exception",
+  "repository": "just-every/run-oncall",
+  "save": "8b0b44278cd9ccc270ebe2c1a2275c08caac7e49"
+}
