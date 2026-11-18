@@ -138,7 +138,7 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
           context=responseContext(snapshot,ctx.now())
         }
         const result = command(current.state, actor, nativeInput, new Date(ctx.now()).toISOString(),context) as Incident
-        nativeAudit(env, ctx, operation.name, result.id)
+        nativeAudit(env, ctx, operation.name === 'incidents.declare' ? 'command.declare' : operation.name, result.id)
         if(operation.name==='incidents.acknowledge')auditIdentity(env.DB,{namedMember:{kind:'member',id:String(args.member)}})
         await persistNative(env, current)
         const uri = `oncall://incidents/${result.id}`
