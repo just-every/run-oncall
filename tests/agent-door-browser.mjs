@@ -14,6 +14,7 @@ import {agedActionSubmitRetention} from './oncall-agent-action-submit-retention.
 import {actionSubmitResponseLoss} from './oncall-agent-action-submit-response-loss.mjs';
 import {changedReassignmentReasonConflict} from './oncall-agent-incident-replay.mjs';
 import {scribeClearReadback} from './oncall-agent-role-clear-replay.mjs';
+import {readClearedAssignee} from './oncall-agent-assignee-clear-replay.mjs';
 import {accessToken,autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {openIncidentAction} from './keyboard.mjs';
 import {standardServiceRunbookUpdate} from './oncall-agent-service-replay.mjs';
@@ -451,7 +452,7 @@ try{
    const answer=await tool('oncall.incidents.update',{change,...(role==='assignee'?{}:{role}),member:null,
     incident:target.id,revision:target.revision,reason,idempotency_key:randomUUID()},{},bearer);
    assert.equal(answer.result.isError,false);assert.deepEqual(answer.decision.classes.map(row=>row.class),['standard']);
-   const saved=answer.result.structuredContent;
+   const saved=role==='assignee'?await readClearedAssignee(runtime,{mode,first:answer}):answer.result.structuredContent;
    assert.deepEqual(saved,{...target,[role]:null,revision:target.revision+1,timeline:saved.timeline});
    if(role==='scribe')await scribeClearReadback(runtime,answer,bearer,mode);
    const readingBefore=await agentEffectSnapshot(runtime);
@@ -474,7 +475,7 @@ try{
    const entry=timeline.getByRole('listitem').filter({hasText:readable});
    await entry.getByText(readable,{exact:true}).waitFor();
    await entry.getByText('Responder assistant for Alex Chen',{exact:true}).waitFor();
-   if(mode==='held'||role==='scribe'){
+   if(mode==='held'||role==='scribe'||role==='assignee'){
     const proof=role+(mode==='autonomous'?'-autonomous':'')+'-cleared';
     await capture(proof+'-timeline','/incidents/'+saved.id,async()=>{
      await page.getByRole('button',{name:lead,exact:true}).waitFor();
