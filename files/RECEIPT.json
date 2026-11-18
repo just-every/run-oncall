@@ -1,0 +1,241 @@
+{
+  "base_runs": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "f585355904fed9ce76c09b128f16e45c9051b497",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44405167937",
+      "id": 44405167937,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "f585355904fed9ce76c09b128f16e45c9051b497",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44405167651",
+      "id": 44405167651,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "f585355904fed9ce76c09b128f16e45c9051b497",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44402065694",
+      "id": 44402065694,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "branch": "cloud/sd-oncall-c-f287",
+  "branch_verify_discovery": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "d13b0bebb2f2f4ab8d4146f3f9c066c5005164f3",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44406203025",
+      "id": 44406203025,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ],
+  "branch_verify_disposition": "Generated-view exception. Build and all eight shards passed. The generated contract check and its dependent coverage guard failed.",
+  "branch_verify_jobs": [
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "d13b0bebb2f2f4ab8d4146f3f9c066c5005164f3",
+      "id": 135161973585,
+      "name": "plan",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Check the generated contract documents"
+      ],
+      "head_sha": "d13b0bebb2f2f4ab8d4146f3f9c066c5005164f3",
+      "id": 135162172896,
+      "name": "contract-docs",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "d13b0bebb2f2f4ab8d4146f3f9c066c5005164f3",
+      "id": 135162172899,
+      "name": "build",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "head_sha": "d13b0bebb2f2f4ab8d4146f3f9c066c5005164f3",
+      "id": 135162176768,
+      "name": "light",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "d13b0bebb2f2f4ab8d4146f3f9c066c5005164f3",
+      "id": 135163346476,
+      "name": "shards (agents)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "d13b0bebb2f2f4ab8d4146f3f9c066c5005164f3",
+      "id": 135163346535,
+      "name": "shards (triage)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "d13b0bebb2f2f4ab8d4146f3f9c066c5005164f3",
+      "id": 135163346590,
+      "name": "shards (hosted)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "d13b0bebb2f2f4ab8d4146f3f9c066c5005164f3",
+      "id": 135163346603,
+      "name": "shards (runtime)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "d13b0bebb2f2f4ab8d4146f3f9c066c5005164f3",
+      "id": 135163346613,
+      "name": "shards (browser)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "d13b0bebb2f2f4ab8d4146f3f9c066c5005164f3",
+      "id": 135163346617,
+      "name": "shards (changes)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "d13b0bebb2f2f4ab8d4146f3f9c066c5005164f3",
+      "id": 135163346642,
+      "name": "shards (intake)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "d13b0bebb2f2f4ab8d4146f3f9c066c5005164f3",
+      "id": 135163346730,
+      "name": "shards (transfer)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "d13b0bebb2f2f4ab8d4146f3f9c066c5005164f3",
+      "id": 135170955480,
+      "name": "full-push-proof",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "head_sha": "d13b0bebb2f2f4ab8d4146f3f9c066c5005164f3",
+      "id": 135170958399,
+      "name": "nightly-proof",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Require the selected coverage and its proof"
+      ],
+      "head_sha": "d13b0bebb2f2f4ab8d4146f3f9c066c5005164f3",
+      "id": 135171004815,
+      "name": "verify",
+      "status": "completed"
+    }
+  ],
+  "branch_verify_latest": {
+    "conclusion": "failure",
+    "head_sha": "d13b0bebb2f2f4ab8d4146f3f9c066c5005164f3",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44406203025",
+    "status": "completed"
+  },
+  "candidate_run_site": "pending guarded landing",
+  "checks": [
+    {
+      "command": "node scripts/verify-oncall-build.mjs",
+      "exit": 0,
+      "includes": [
+        "rer check --profile first-party",
+        "rer build",
+        "tsc --noEmit"
+      ],
+      "node": "22.20.0"
+    },
+    {
+      "command": "ONCALL_TRIAGE_PART=storm node tests/triage.mjs",
+      "exit": 0,
+      "node": "22.20.0"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "view_files_written": 1
+    },
+    {
+      "as_pushed_difference": "ACCEPTANCE.md: generated content differs; run contract-docs write.",
+      "command": "node src/base/contract-docs.mjs check",
+      "exit_after_write": 0,
+      "exit_on_pushed_tree": 1
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    }
+  ],
+  "counts_after": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "counts_before": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "head": "d13b0bebb2f2f4ab8d4146f3f9c066c5005164f3",
+  "landed_browser_follow_up": "bb04c4bb7bb5ed8f0962325daf8a5d79d440452c",
+  "landed_browser_proof": "6ad2161d98d31cfd22d956b7d07618ec213b2744",
+  "main_at_push": "f585355904fed9ce76c09b128f16e45c9051b497",
+  "probe": "PROBE OC-050 acceptance 2: viewer Communications transfer -> 403, one refusal attributed to the viewer and incident, unchanged role, timeline, revisions and paging, zero outbound requests. The same command succeeded for the responder.",
+  "product_remote_advertisement_verified": true,
+  "publication_scan": {
+    "status": "pending fleet lander"
+  },
+  "pull_request": null,
+  "repository": "just-every/run-oncall",
+  "save": "814539d7129b072d42175f8a41043b26a3bdbe5f",
+  "touched_tests": [
+    "tests/triage.mjs"
+  ],
+  "witness": "tests/triage.mjs:579"
+}
