@@ -1,0 +1,399 @@
+{
+  "branch": "cloud/sd-oncall-c-f281",
+  "browser_files": [
+    {
+      "bytes": 173135,
+      "path": "browser/declaration-autonomous-agent-1440.png",
+      "sha256": "1b761600c5f013e07e429f63004a6d2bf63efc8b1ae36dfef93c5137f2b5f421"
+    },
+    {
+      "bytes": 72024,
+      "path": "browser/declaration-autonomous-agent-390.png",
+      "sha256": "a5178f011a057172aac5ba5244c2c44f715e89195f676d067c5db592b277f4cf"
+    },
+    {
+      "bytes": 174542,
+      "path": "browser/declaration-autonomous-person-1440.png",
+      "sha256": "ad6806d55ac8f78d41534bfddcabba61633aa10f3f691afd24c5f3ee58e9536e"
+    },
+    {
+      "bytes": 73525,
+      "path": "browser/declaration-autonomous-person-390.png",
+      "sha256": "2c4edb3b0baf9961ef32cd0a6823957bd4071e0a30467f8d81947e0c32d825ff"
+    },
+    {
+      "bytes": 172045,
+      "path": "browser/declaration-held-agent-1440.png",
+      "sha256": "a97f88fbdb6d0015ca271044a50b24b7dc21eef46bc01495cd6c6e8868da5fdb"
+    },
+    {
+      "bytes": 70651,
+      "path": "browser/declaration-held-agent-390.png",
+      "sha256": "c71062bc5fbfa6203de6367c972e79d753377bd4c449cfd9873fc1692e4410db"
+    },
+    {
+      "bytes": 169956,
+      "path": "browser/declaration-held-person-1440.png",
+      "sha256": "16bef28891ece69acaa02ad77542f8dd7a8af7578647a8bd19bafee9a423c7e8"
+    },
+    {
+      "bytes": 68953,
+      "path": "browser/declaration-held-person-390.png",
+      "sha256": "336ebbbfd291be3a03ec743c2af33995049c55658c4a753641a88e035d18d25f"
+    }
+  ],
+  "ci": {
+    "candidate_jobs": [
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "be62350eb97fa450c6d2a9578570fd90ae58388a",
+        "id": 134748098636,
+        "name": "plan",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          "Check the generated contract documents"
+        ],
+        "head_sha": "be62350eb97fa450c6d2a9578570fd90ae58388a",
+        "id": 134748284415,
+        "name": "contract-docs",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "be62350eb97fa450c6d2a9578570fd90ae58388a",
+        "id": 134748284630,
+        "name": "build",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "head_sha": "be62350eb97fa450c6d2a9578570fd90ae58388a",
+        "id": 134748288364,
+        "name": "light",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "be62350eb97fa450c6d2a9578570fd90ae58388a",
+        "id": 134749743203,
+        "name": "shards (browser)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "be62350eb97fa450c6d2a9578570fd90ae58388a",
+        "id": 134749743242,
+        "name": "shards (runtime)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "be62350eb97fa450c6d2a9578570fd90ae58388a",
+        "id": 134749743252,
+        "name": "shards (transfer)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "be62350eb97fa450c6d2a9578570fd90ae58388a",
+        "id": 134749743330,
+        "name": "shards (triage)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "be62350eb97fa450c6d2a9578570fd90ae58388a",
+        "id": 134749743347,
+        "name": "shards (agents)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "be62350eb97fa450c6d2a9578570fd90ae58388a",
+        "id": 134749743354,
+        "name": "shards (hosted)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "be62350eb97fa450c6d2a9578570fd90ae58388a",
+        "id": 134749743406,
+        "name": "shards (intake)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "be62350eb97fa450c6d2a9578570fd90ae58388a",
+        "id": 134749743456,
+        "name": "shards (changes)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "be62350eb97fa450c6d2a9578570fd90ae58388a",
+        "id": 134757015916,
+        "name": "full-push-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "head_sha": "be62350eb97fa450c6d2a9578570fd90ae58388a",
+        "id": 134757018133,
+        "name": "nightly-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          "Require the selected coverage and its proof"
+        ],
+        "head_sha": "be62350eb97fa450c6d2a9578570fd90ae58388a",
+        "id": 134757055954,
+        "name": "verify",
+        "status": "completed"
+      }
+    ],
+    "candidate_verify": {
+      "conclusion": "failure",
+      "event": "push",
+      "head_sha": "be62350eb97fa450c6d2a9578570fd90ae58388a",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44288739541",
+      "id": 44288739541,
+      "name": "Verify",
+      "status": "completed"
+    },
+    "held_f184": {
+      "head": "fda46b0e8f0bb8442a96dd7ec8f3041b19017998",
+      "jobs": [
+        {
+          "conclusion": "success",
+          "failed_steps": [],
+          "id": 125917412442,
+          "name": "plan"
+        },
+        {
+          "conclusion": "failure",
+          "failed_steps": [
+            "Check the generated contract documents"
+          ],
+          "id": 125917500445,
+          "name": "build"
+        },
+        {
+          "conclusion": "skipped",
+          "failed_steps": [],
+          "id": 125917502950,
+          "name": "light"
+        },
+        {
+          "conclusion": "failure",
+          "failed_steps": [
+            "Require the selected coverage and its proof"
+          ],
+          "id": 125918423782,
+          "name": "verify"
+        },
+        {
+          "conclusion": "skipped",
+          "failed_steps": [],
+          "id": 125918424697,
+          "name": "shards (${{ matrix.name }})"
+        },
+        {
+          "conclusion": "skipped",
+          "failed_steps": [],
+          "id": 125918425193,
+          "name": "full-push-proof"
+        },
+        {
+          "conclusion": "skipped",
+          "failed_steps": [],
+          "id": 125918425331,
+          "name": "nightly-proof"
+        }
+      ],
+      "verify": 41636049404
+    },
+    "initial_main": {
+      "conclusions": "success",
+      "head": "93b25a01d22f5b16bf679c6f4008f0e444980196",
+      "run_site": 44283231793,
+      "verify": 44283231598
+    }
+  },
+  "counts": {
+    "after": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41
+    },
+    "before": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41
+    }
+  },
+  "generated_at": "2026-11-18T11:13:45.595224+00:00",
+  "head": "be62350eb97fa450c6d2a9578570fd90ae58388a",
+  "local_checks": [
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "node": "24.19.0",
+      "note": "Emitted Worker. The final candidate carries identical production files to those used in this build."
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "head": "be62350eb97fa450c6d2a9578570fd90ae58388a",
+      "node": "22.20.0",
+      "proof": [
+        "build: complete (exit 0)"
+      ]
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "exit": 0,
+      "node": "24.19.0",
+      "proof": [
+        "PROBE BASE-AGENT-002 5 declaration autonomous: equivalent unlinked alerts -> matching saved declarations and one command.declare per door, separate attribution, workspace +1 per action, 0 open reviews, paging OFF and zero outbound requests",
+        "PROBE BASE-AGENT-002 5 declaration held: equivalent unlinked alerts -> matching saved declarations and one command.declare per door, separate attribution, workspace +1 per action, 1 open reviews, paging OFF and zero outbound requests",
+        "Runtime agents completed (521.1s)"
+      ]
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=machines node tests/runtime.mjs",
+      "exit": 0,
+      "node": "24.19.0",
+      "proof": [
+        "PASS OC-053 scoped API, atomic signed outbox, receipt uncertainty, replay, revocation and inactive native restore",
+        "Runtime machines completed (237.2s)"
+      ]
+    },
+    {
+      "command": "node tests/agent-door-browser.mjs",
+      "exit": 0,
+      "node": "22.20.0",
+      "proof": [
+        "Browser proof alert-declaration-autonomous-person 1440: fits=true serious/critical=0 undersized-controls=0",
+        "Browser proof alert-declaration-autonomous-person 390: fits=true serious/critical=0 undersized-controls=0",
+        "Browser proof alert-declaration-autonomous-agent 1440: fits=true serious/critical=0 undersized-controls=0",
+        "Browser proof alert-declaration-autonomous-agent 390: fits=true serious/critical=0 undersized-controls=0",
+        "Browser proof alert-declaration-held-person 1440: fits=true serious/critical=0 undersized-controls=0",
+        "Browser proof alert-declaration-held-person 390: fits=true serious/critical=0 undersized-controls=0",
+        "Browser proof alert-declaration-held-agent 1440: fits=true serious/critical=0 undersized-controls=0",
+        "Browser proof alert-declaration-held-agent 390: fits=true serious/critical=0 undersized-controls=0",
+        "PROBE BASE-AGENT-002 5 browser: Alert details button and MCP in both policies; saved incidents, runbooks and separate attribution read at 1440 and 390; zero outbound requests"
+      ],
+      "run_on_committed_candidate": true
+    },
+    {
+      "command": "ONCALL_PRODUCT_PART=core node tests/product-browser.mjs",
+      "exit": 1,
+      "failure": "Unchanged rota-preview hold at tests/product-browser-journey.mjs:525. route.fetch POST /api/paging/preview ended with socket hang up (ECONNRESET).",
+      "node": "24.19.0"
+    },
+    {
+      "command": "ONCALL_PRODUCT_PART=core node tests/product-browser.mjs",
+      "exit": 0,
+      "node": "22.20.0",
+      "proof": [
+        "Product browser part completed: core"
+      ]
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "node": "24.19.0"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "node": "24.19.0"
+    },
+    {
+      "command": "Focused emitted Worker and Chromium declaration tooltip readback",
+      "exit": 0,
+      "proof": [
+        "Declaration tooltip focus proof 1440: visible, focus transition delay 0s, timeline attribution text 13px",
+        "Declaration tooltip focus proof 390: visible, focus transition delay 0s, timeline attribution text 13px"
+      ]
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "head": "be62350eb97fa450c6d2a9578570fd90ae58388a",
+      "node": "22.20.0"
+    }
+  ],
+  "main": "6ef9bc1294fc981c71e990df9bf12104337c81b3",
+  "main_equals_candidate": false,
+  "mechanical": {
+    "identity_and_trailers": "all candidate commits checked",
+    "ledger": "no migrations",
+    "lock": {
+      "commands": [
+        "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+        "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check"
+      ],
+      "exits": [
+        0,
+        0
+      ],
+      "sha256": "b03cc331f27af4ab1ad1622e59a2e62b4823d1fdf27eb528bb42bc61610ec79d"
+    },
+    "status_table": "byte-identical to merged main",
+    "views": {
+      "candidate_view_differs": [
+        "ACCEPTANCE.md"
+      ],
+      "commands": [
+        "node src/base/contract-docs.mjs write",
+        "node src/base/contract-docs.mjs check"
+      ],
+      "exits": [
+        0,
+        0
+      ],
+      "restored": [
+        "ACCEPTANCE.md",
+        "docs/CLAIMS.md"
+      ]
+    }
+  },
+  "merged_main_base": "93b25a01d22f5b16bf679c6f4008f0e444980196",
+  "repository": "just-every/run-oncall",
+  "scan": {
+    "complete": null,
+    "custody": "Mac lander",
+    "findings": null,
+    "head": "be62350eb97fa450c6d2a9578570fd90ae58388a",
+    "historyScanned": null,
+    "ran_in_cloud": false
+  },
+  "scope": {
+    "acceptance": 5,
+    "after": "missing",
+    "before": "missing",
+    "claim": "partial",
+    "clause": "BASE-AGENT-002",
+    "proved_slice": "human and MCP declaration from an existing alert"
+  },
+  "tag": "sd-oncall-c-f281"
+}

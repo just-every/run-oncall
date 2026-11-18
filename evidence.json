@@ -1,0 +1,70 @@
+{
+  "files": [
+    {
+      "blob": "a6d49037136e2db0fea249956f0d621f3f594e34",
+      "bytes": 10764,
+      "path": "REPORT.md",
+      "sha256": "33814221a0177a4ca64e56f75b54d7a02227b530b3df9614f6e455005e28dbbe"
+    },
+    {
+      "blob": "38c5aba1731d0b7da0345d5fea6fa5ca23e1e0e2",
+      "bytes": 173135,
+      "path": "browser/declaration-autonomous-agent-1440.png",
+      "sha256": "1b761600c5f013e07e429f63004a6d2bf63efc8b1ae36dfef93c5137f2b5f421"
+    },
+    {
+      "blob": "d6769e5ca7db8284fc54e11e4aeca003dfd4b21e",
+      "bytes": 72024,
+      "path": "browser/declaration-autonomous-agent-390.png",
+      "sha256": "a5178f011a057172aac5ba5244c2c44f715e89195f676d067c5db592b277f4cf"
+    },
+    {
+      "blob": "6f319a147722bee47d5b30c36507435d4f37d332",
+      "bytes": 174542,
+      "path": "browser/declaration-autonomous-person-1440.png",
+      "sha256": "ad6806d55ac8f78d41534bfddcabba61633aa10f3f691afd24c5f3ee58e9536e"
+    },
+    {
+      "blob": "88ac74d23839ec587b84d42c8876c26f2cfb3045",
+      "bytes": 73525,
+      "path": "browser/declaration-autonomous-person-390.png",
+      "sha256": "2c4edb3b0baf9961ef32cd0a6823957bd4071e0a30467f8d81947e0c32d825ff"
+    },
+    {
+      "blob": "a884eee2cfa8a39dbc263312121d057dabc338ad",
+      "bytes": 172045,
+      "path": "browser/declaration-held-agent-1440.png",
+      "sha256": "a97f88fbdb6d0015ca271044a50b24b7dc21eef46bc01495cd6c6e8868da5fdb"
+    },
+    {
+      "blob": "b60cd23e7f890cd54f8b9359c496076a515046c3",
+      "bytes": 70651,
+      "path": "browser/declaration-held-agent-390.png",
+      "sha256": "c71062bc5fbfa6203de6367c972e79d753377bd4c449cfd9873fc1692e4410db"
+    },
+    {
+      "blob": "eae2a08dedd2b831347fd289ee5524265662cf3c",
+      "bytes": 169956,
+      "path": "browser/declaration-held-person-1440.png",
+      "sha256": "16bef28891ece69acaa02ad77542f8dd7a8af7578647a8bd19bafee9a423c7e8"
+    },
+    {
+      "blob": "697dc7dbbc777be83cc04c8a66d0e5a09a766b42",
+      "bytes": 68953,
+      "path": "browser/declaration-held-person-390.png",
+      "sha256": "336ebbbfd291be3a03ec743c2af33995049c55658c4a753641a88e035d18d25f"
+    },
+    {
+      "blob": "683e48134c55618f939c679d8c0c7723d7d59de1",
+      "bytes": 12712,
+      "path": "receipt.json",
+      "sha256": "0d095872b350b0e85d5ff26ab1c604ab60e86262ebd163ae341caefa0625c000"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f281",
+  "product_head": "be62350eb97fa450c6d2a9578570fd90ae58388a",
+  "ref": "refs/heads/evidence/sd-oncall-c-f281",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f281"
+}
