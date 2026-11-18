@@ -57,6 +57,12 @@ export default {...app,async fetch(request,env,ctx){if(new URL(request.url).path
 }
 
 
+// Fail only the audit insert that would commit a rule workflow declaration.
+export const ruleDeclarationAuditFault = {
+ install: "CREATE TRIGGER synthetic_oncall_450_step BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='triage.workflow-declare' AND NEW.workspace_after>NEW.workspace_before BEGIN SELECT RAISE(ABORT,'synthetic-oncall-450'); END",
+ remove: 'DROP TRIGGER synthetic_oncall_450_step',
+};
+
 // runtime-held-workspace: part of this public journey.
 // Hand-authored held installation data, deliberately ordered differently from
 // entity IDs. The migration must preserve every array, nested snapshot and entry.
