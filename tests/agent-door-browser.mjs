@@ -19,6 +19,7 @@ import {accessToken,autonomousPolicy,heldPolicy} from '../src/modules/agent-door
 import {openIncidentAction} from './keyboard.mjs';
 import {standardServiceRunbookUpdate} from './oncall-agent-service-replay.mjs';
 import {declareIncidentFromAlert,savedServiceRunbookBrowser} from './product-browser-journey.mjs';
+import {staleOverrideRevision} from './oncall-agent-schedule-replay.mjs';
 
 const weekStart=Date.parse('2026-11-02T00:00:00.000Z'),weekNow=Date.parse('2026-11-04T12:00:00.000Z');
 const runtime=await agentRuntime({clock:null}),directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';
@@ -186,6 +187,26 @@ try{
   assert.deepEqual(await agentEffectSnapshot(runtime),before,'Viewing the saved reassignment changes no durable records');
   assert.deepEqual(await runtime.outboundRequests(),[]);
  }});
+ const retainedRotas=await staleOverrideRevision(runtime,{optionalExpectedRevision:true});
+ const beforeRotaReads=await agentEffectSnapshot(runtime),rotaOutbound=[];
+ const recordRotaOutbound=request=>{if(new URL(request.url()).origin!==runtime.origin)rotaOutbound.push(request.url())};
+ page.on('request',recordRotaOutbound);
+ for(const {mode,schedule,holder} of retainedRotas){
+  await capture('override-revision-retained-'+mode,'/on-call/'+schedule.id,async()=>{
+   await page.getByRole('heading',{name:schedule.name,exact:true}).waitFor();
+   const cover=page.locator('.oc-cover-list').getByRole('listitem');
+   await cover.getByText(holder,{exact:true}).waitFor();
+   if(page.viewportSize().width===1440){
+    assert.equal(await cover.count(),1);
+    assert.equal(await cover.getByText(/^primary · /).count(),1);
+   }
+   await cover.scrollIntoViewIfNeeded();
+  });
+ }
+ page.off('request',recordRotaOutbound);
+ assert.deepEqual(await agentEffectSnapshot(runtime),beforeRotaReads,'Viewing saved rota cover changes no durable records');
+ assert.deepEqual(rotaOutbound,[]);
+ assert.deepEqual(await runtime.outboundRequests(),[]);
  assert.equal((await runtime.adopt()).status,200);
  const submitEvidenceRequests=[];
  const stopEvidence=route=>{submitEvidenceRequests.push(route.request().url());return route.abort()};
