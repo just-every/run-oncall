@@ -1,0 +1,175 @@
+{
+  "product_head": "19d32524cc798ad2506d46315851420d1cb7765c",
+  "node": "v22.20.0",
+  "pnpm": "10.12.4",
+  "checks": [
+    {
+      "name": "first-party",
+      "command": "pnpm exec rer check --profile first-party",
+      "started": "2026-11-18T08:30:32Z",
+      "finished": "2026-11-18T08:30:33Z",
+      "exit": 0
+    },
+    {
+      "name": "build",
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "started": "2026-11-18T08:30:33Z",
+      "finished": "2026-11-18T08:30:44Z",
+      "exit": 0
+    },
+    {
+      "name": "typecheck",
+      "command": "pnpm run typecheck",
+      "started": "2026-11-18T08:30:44Z",
+      "finished": "2026-11-18T08:31:00Z",
+      "exit": 0
+    },
+    {
+      "name": "focused",
+      "command": "cloud_run node /tmp/sd-oncall-focused.mjs (imports and runs focusedActionEvidenceReplay)",
+      "started": "2026-11-18T08:31:00Z",
+      "finished": "2026-11-18T08:31:16Z",
+      "exit": 0,
+      "p2_revision_observations": [
+        "PROBE BASE-AGENT-012 acceptance 4 autonomous optional revision oncall.actions.submit: current required revision with stale expected_revision -> isError revision_conflict, exact parent current_revision 3 in metadata and text, no private result or native effect; fresh corrected call completes one P2 follow-up with agent submission and acceptance attribution autonomously; zero outbound requests",
+        "PROBE BASE-AGENT-012 acceptance 4 autonomous required revision oncall.actions.submit: stale required revision with expected_revision absent -> isError revision_conflict, exact parent current_revision 3 in metadata and text, no private result or native effect; fresh corrected call completes one P2 follow-up with agent submission and acceptance attribution autonomously; zero outbound requests",
+        "PROBE BASE-AGENT-012 acceptance 4 held optional revision oncall.actions.submit: current required revision with stale expected_revision -> isError revision_conflict, exact parent current_revision 3 in metadata and text, no private result or native effect; fresh corrected call completes one P2 follow-up with agent submission and acceptance attribution after exact sponsor approval; zero outbound requests",
+        "PROBE BASE-AGENT-012 acceptance 4 held required revision oncall.actions.submit: stale required revision with expected_revision absent -> isError revision_conflict, exact parent current_revision 3 in metadata and text, no private result or native effect; fresh corrected call completes one P2 follow-up with agent submission and acceptance attribution after exact sponsor approval; zero outbound requests"
+      ]
+    },
+    {
+      "name": "agent-flow",
+      "command": "cloud_run env ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "started": "2026-11-18T08:31:16Z",
+      "finished": "2026-11-18T08:42:17Z",
+      "exit": 0,
+      "p2_revision_observations": [
+        "PROBE BASE-AGENT-012 acceptance 4 autonomous optional revision oncall.actions.submit: current required revision with stale expected_revision -> isError revision_conflict, exact parent current_revision 3 in metadata and text, no private result or native effect; fresh corrected call completes one P2 follow-up with agent submission and acceptance attribution autonomously; zero outbound requests",
+        "PROBE BASE-AGENT-012 acceptance 4 autonomous required revision oncall.actions.submit: stale required revision with expected_revision absent -> isError revision_conflict, exact parent current_revision 3 in metadata and text, no private result or native effect; fresh corrected call completes one P2 follow-up with agent submission and acceptance attribution autonomously; zero outbound requests",
+        "PROBE BASE-AGENT-012 acceptance 4 held optional revision oncall.actions.submit: current required revision with stale expected_revision -> isError revision_conflict, exact parent current_revision 3 in metadata and text, no private result or native effect; fresh corrected call completes one P2 follow-up with agent submission and acceptance attribution after exact sponsor approval; zero outbound requests",
+        "PROBE BASE-AGENT-012 acceptance 4 held required revision oncall.actions.submit: stale required revision with expected_revision absent -> isError revision_conflict, exact parent current_revision 3 in metadata and text, no private result or native effect; fresh corrected call completes one P2 follow-up with agent submission and acceptance attribution after exact sponsor approval; zero outbound requests"
+      ]
+    },
+    {
+      "name": "agent-browser",
+      "command": "cloud_run node tests/agent-door-browser.mjs",
+      "started": "2026-11-18T08:42:17Z",
+      "finished": "2026-11-18T08:50:17Z",
+      "exit": 0,
+      "p2_browser_observations": [
+        "PROBE BASE-AGENT-012 evidence completion browser autonomous: protected review material equals MCP result; saved P2 Complete and Completes with evidence plus retained evidence link at 1440 and 390; original sponsor approval not needed; zero evidence requests",
+        "PROBE BASE-AGENT-012 evidence completion browser held: protected review material equals MCP result; saved P2 Complete and Completes with evidence plus retained evidence link at 1440 and 390; original sponsor approval executed once; zero evidence requests",
+        "PROBE BASE-AGENT-012 evidence completion browser held optional revision correction: protected review material equals MCP result; saved P2 Complete and Completes with evidence plus retained evidence link at 1440 and 390; original sponsor approval executed once; zero evidence requests",
+        "PROBE BASE-AGENT-012 evidence completion browser held required revision correction: protected review material equals MCP result; saved P2 Complete and Completes with evidence plus retained evidence link at 1440 and 390; original sponsor approval executed once; zero evidence requests",
+        "PROBE BASE-AGENT-012 aged evidence completion browser autonomous: protected review material equals MCP result; saved P2 Complete and Completes with evidence plus retained evidence link at 1440 and 390; original sponsor approval not needed; zero evidence requests",
+        "PROBE BASE-AGENT-012 aged evidence completion browser held: protected review material equals MCP result; saved P2 Complete and Completes with evidence plus retained evidence link at 1440 and 390; original sponsor approval executed once; zero evidence requests"
+      ]
+    },
+    {
+      "name": "contract",
+      "command": "node src/base/contract-docs.mjs check",
+      "started": "2026-11-18T08:50:17Z",
+      "finished": "2026-11-18T08:50:17Z",
+      "exit": 0
+    },
+    {
+      "name": "lock",
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "started": "2026-11-18T08:50:17Z",
+      "finished": "2026-11-18T08:50:18Z",
+      "exit": 0
+    }
+  ],
+  "browser": {
+    "executable": "/usr/bin/chromium",
+    "assertion_width": 1440,
+    "captures": [
+      {
+        "file": "browser/agent-door-follow-up-evidence-optional-revision-pending-1440.png",
+        "width": 1440,
+        "height": 1000,
+        "sha256": "20029822e09650536566bff328cc40e96c1a350326c10daf226feb26d042d1c4"
+      },
+      {
+        "file": "browser/agent-door-follow-up-evidence-optional-revision-pending-390.png",
+        "width": 390,
+        "height": 1000,
+        "sha256": "37ac0d8d19c4101aef664494edce536ef0601569cf6f836b7e9d6cd617e0f707"
+      },
+      {
+        "file": "browser/agent-door-follow-up-evidence-optional-revision-held-1440.png",
+        "width": 1440,
+        "height": 1260,
+        "sha256": "c95dc8b23a16ceadbf44575878e763bf5b23f068ac77fb5dfaddc3868f82228c"
+      },
+      {
+        "file": "browser/agent-door-follow-up-evidence-optional-revision-held-390.png",
+        "width": 390,
+        "height": 1286,
+        "sha256": "23bb2daa80fa9743ce6751cd10236a0d6ff688def46438fc3244d99f7716a233"
+      },
+      {
+        "file": "browser/agent-door-follow-up-evidence-optional-revision-executed-1440.png",
+        "width": 1440,
+        "height": 1000,
+        "sha256": "ae00a3b4b63fec3453595ea17af296cb8cdf0d2975ef1810d86dd8be0b70b19a"
+      },
+      {
+        "file": "browser/agent-door-follow-up-evidence-optional-revision-executed-390.png",
+        "width": 390,
+        "height": 1000,
+        "sha256": "000feabae14b153bee16caeeb1e430f273d46dbbaa02e52a7643dae96d25e900"
+      },
+      {
+        "file": "browser/agent-door-follow-up-evidence-required-revision-pending-1440.png",
+        "width": 1440,
+        "height": 1000,
+        "sha256": "e7631bc312b7a1f653fe15d6ab72db809db14f669fa9e36db0485919cdde7c5b"
+      },
+      {
+        "file": "browser/agent-door-follow-up-evidence-required-revision-pending-390.png",
+        "width": 390,
+        "height": 1000,
+        "sha256": "1626e285d35b902474459e50c21b7428d4fa107330a2cf939c25290c90294824"
+      },
+      {
+        "file": "browser/agent-door-follow-up-evidence-required-revision-held-1440.png",
+        "width": 1440,
+        "height": 1385,
+        "sha256": "f6d0e8c3a27aec88642ebd008e3244313e0ec894ba5668bb377778f3d514fa1f"
+      },
+      {
+        "file": "browser/agent-door-follow-up-evidence-required-revision-held-390.png",
+        "width": 390,
+        "height": 1411,
+        "sha256": "e24f578e6a84b15006a242e0065d25c877434cbbf14dda16859548d65848330c"
+      },
+      {
+        "file": "browser/agent-door-follow-up-evidence-required-revision-executed-1440.png",
+        "width": 1440,
+        "height": 1000,
+        "sha256": "8c1e084db7a43f5fa51f5ce500befcec99f912ab42c27eb9bff7765f70283b2a"
+      },
+      {
+        "file": "browser/agent-door-follow-up-evidence-required-revision-executed-390.png",
+        "width": 390,
+        "height": 1000,
+        "sha256": "0dbb6e10e33d057f5e6642af0e946eb63235a00801ae274136519d67a47a90ec"
+      }
+    ],
+    "metrics": [
+      "Browser proof follow-up-evidence-optional-revision-pending 1440: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof follow-up-evidence-optional-revision-pending 390: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof follow-up-evidence-optional-revision-held 1440: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof follow-up-evidence-optional-revision-held 390: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof follow-up-evidence-optional-revision-executed 1440: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof follow-up-evidence-optional-revision-executed 390: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof follow-up-evidence-required-revision-pending 1440: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof follow-up-evidence-required-revision-pending 390: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof follow-up-evidence-required-revision-held 1440: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof follow-up-evidence-required-revision-held 390: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof follow-up-evidence-required-revision-executed 1440: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof follow-up-evidence-required-revision-executed 390: fits=true serious/critical=0 undersized-controls=0"
+    ]
+  }
+}

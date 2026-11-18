@@ -1,0 +1,100 @@
+{
+  "files": [
+    {
+      "blob": "b65ccca45c61af47d3b41760521f794476035399",
+      "bytes": 1065,
+      "path": "CI-RECEIPT.json",
+      "sha256": "1b60db2af40d8487ce7efa671dfeba42db62dfd71846694c70306e70116bfd4d"
+    },
+    {
+      "blob": "385f14d0d06d5eae5085bf7953d033fad12fcf82",
+      "bytes": 11371,
+      "path": "LOCAL-CHECKS.json",
+      "sha256": "6ecc8018c85af5b45465114ffd4afbeca2eb2bc43dd5b45eea0bcf422b3e8004"
+    },
+    {
+      "blob": "22efc2a852215c43597584deedf52a20a54f8e57",
+      "bytes": 5003,
+      "path": "REPORT.md",
+      "sha256": "8a601cd35b850e57afbb0d8122496feb6257deebc2dbcd8649de8926f8106715"
+    },
+    {
+      "blob": "0fffab18df0f61645be5c72e60f95aa409ecca78",
+      "bytes": 50194,
+      "path": "browser/agent-door-follow-up-evidence-optional-revision-executed-1440.png",
+      "sha256": "ae00a3b4b63fec3453595ea17af296cb8cdf0d2975ef1810d86dd8be0b70b19a"
+    },
+    {
+      "blob": "485194756ec7daa6e5ffe120c14a147eaf404309",
+      "bytes": 44929,
+      "path": "browser/agent-door-follow-up-evidence-optional-revision-executed-390.png",
+      "sha256": "000feabae14b153bee16caeeb1e430f273d46dbbaa02e52a7643dae96d25e900"
+    },
+    {
+      "blob": "3202a90ec21163362a071820ae3a77b608c55a62",
+      "bytes": 128390,
+      "path": "browser/agent-door-follow-up-evidence-optional-revision-held-1440.png",
+      "sha256": "c95dc8b23a16ceadbf44575878e763bf5b23f068ac77fb5dfaddc3868f82228c"
+    },
+    {
+      "blob": "80d38205a187ef2fffbe547e4c39e5486cc34971",
+      "bytes": 54249,
+      "path": "browser/agent-door-follow-up-evidence-optional-revision-held-390.png",
+      "sha256": "23bb2daa80fa9743ce6751cd10236a0d6ff688def46438fc3244d99f7716a233"
+    },
+    {
+      "blob": "6842428776fcc1f3b63147d6cb6185f327725dc1",
+      "bytes": 52399,
+      "path": "browser/agent-door-follow-up-evidence-optional-revision-pending-1440.png",
+      "sha256": "20029822e09650536566bff328cc40e96c1a350326c10daf226feb26d042d1c4"
+    },
+    {
+      "blob": "4e9fe1b94cdad42545b6a9bd5f1a202ecd8adf29",
+      "bytes": 47045,
+      "path": "browser/agent-door-follow-up-evidence-optional-revision-pending-390.png",
+      "sha256": "37ac0d8d19c4101aef664494edce536ef0601569cf6f836b7e9d6cd617e0f707"
+    },
+    {
+      "blob": "5d2a7bd8ee7298c2a60a3797303b99fc10c7d244",
+      "bytes": 49711,
+      "path": "browser/agent-door-follow-up-evidence-required-revision-executed-1440.png",
+      "sha256": "8c1e084db7a43f5fa51f5ce500befcec99f912ab42c27eb9bff7765f70283b2a"
+    },
+    {
+      "blob": "dbfc52de451a17e202e3f41dc24addcffde26893",
+      "bytes": 44930,
+      "path": "browser/agent-door-follow-up-evidence-required-revision-executed-390.png",
+      "sha256": "0dbb6e10e33d057f5e6642af0e946eb63235a00801ae274136519d67a47a90ec"
+    },
+    {
+      "blob": "38abcf9d1b0039c63fc29e496d11a8a973be2862",
+      "bytes": 136127,
+      "path": "browser/agent-door-follow-up-evidence-required-revision-held-1440.png",
+      "sha256": "f6d0e8c3a27aec88642ebd008e3244313e0ec894ba5668bb377778f3d514fa1f"
+    },
+    {
+      "blob": "7990d7b81bf29e5101a091920dab6e318696607a",
+      "bytes": 61227,
+      "path": "browser/agent-door-follow-up-evidence-required-revision-held-390.png",
+      "sha256": "e24f578e6a84b15006a242e0065d25c877434cbbf14dda16859548d65848330c"
+    },
+    {
+      "blob": "a9335b7c9e3600c2cd45ba93c6f93a0b9a3630a3",
+      "bytes": 51814,
+      "path": "browser/agent-door-follow-up-evidence-required-revision-pending-1440.png",
+      "sha256": "e7631bc312b7a1f653fe15d6ab72db809db14f669fa9e36db0485919cdde7c5b"
+    },
+    {
+      "blob": "ba2bfc3d49169aae4576024fb4cca1e25bf44c45",
+      "bytes": 47043,
+      "path": "browser/agent-door-follow-up-evidence-required-revision-pending-390.png",
+      "sha256": "1626e285d35b902474459e50c21b7428d4fa107330a2cf939c25290c90294824"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f273-lin-1",
+  "product_head": "19d32524cc798ad2506d46315851420d1cb7765c",
+  "ref": "refs/heads/evidence/sd-oncall-c-f273-lin-1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f273-lin-1"
+}
