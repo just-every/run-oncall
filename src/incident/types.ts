@@ -35,7 +35,7 @@ export const memberName = (state: State, id: string | null | undefined) => {
 };
 
 export const timelineHeading = (kind: string) => ({
-  declared: 'Incident declared', transition: 'Status changed', note: 'Note added',
+  reopen: 'Incident reopened', 'recovery-at-resolution': 'Service recovered', declared: 'Incident declared', transition: 'Status changed', note: 'Note added',
   action: 'Follow-up created', complete: 'Follow-up evidence submitted',
   'accept-action': 'Follow-up accepted', review: 'Review accepted', runbook: 'Runbook updated',
   'on-call-assigned': 'On-call assignment', reassign: 'People updated', 'assign-role': 'People updated',
@@ -54,7 +54,7 @@ export function timelineText(entry: Entry, state: State) {
     if(run)return run.assignee ? `Assigned to ${memberName(state,run.assignee)}. Notifications are recorded only; no sender, paging OFF.` : 'No one is on call. Assign a responder; paging remains OFF.';
   }
   if (entry.kind === 'source-recovery') {
-    return 'All alerts recovered — awaiting resolution. Source recovery stopped the alert obligations. The incident still needs human recovery evidence and a summary. A reminder was recorded for the incident lead; automatic reminders and recovery notices are not available yet.';
+    return 'All alerts recovered — awaiting resolution. Source recovery stopped the alert obligations. The incident still needs a resolution note. A reminder was recorded for the incident lead; automatic reminders and recovery notices are not available yet.';
   }
   if (entry.kind === 'declared' && entry.metadata?.event && entry.metadata.policyVersion !== undefined) {
     const event = state.events.find(event => event.id === entry.metadata!.event);

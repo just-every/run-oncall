@@ -1101,10 +1101,10 @@ try {
   const beforeUnevidencedRecovery = ok(await request('/api/state', undefined, cookie));
   ok(await request('/api/command', {
     type: 'transition', incident: incident.id, revision: incident.revision,
-    state: 'recovered', summary: 'Synthetic recovery without evidence',
+    state: 'recovered', summary: 'Synthetic recovery with malformed evidence', evidence: 'not-a-link',
   }, cookie), 400);
   assert.deepEqual(ok(await request('/api/state', undefined, cookie)), beforeUnevidencedRecovery,
-    'recovery without evidence preserves incident state, revision and timeline');
+    'malformed optional recovery link preserves incident state, revision and timeline');
   await mutate({
     type: "transition",
     state: "recovered",

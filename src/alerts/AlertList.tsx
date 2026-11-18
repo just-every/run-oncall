@@ -15,11 +15,11 @@ export function AlertList({state, selected, onOpen}: {state: State; selected: st
         <button className="alert-filters-done" type="button" onClick={closeFilters}>Done</button>
       </div></details></div>
     {(service || urgency) && <div className="alert-filter-chips">{service && <button onClick={() => setService('')}>{state.services.find(s => s.id === service)?.name} ×</button>}{urgency && <button onClick={() => setUrgency('')}>{urgency} urgency ×</button>}</div>}
-    {(['active', 'recovered'] as const).map(group => <div key={group} className="alert-group"><h3>{group === 'active' ? 'Active' : 'Recovered'}</h3>
-      {rows.filter(row => row.alert.state === group).map(({alert, title, service, severity, incidents}) => <a className={'alert-row' + (selected === alert.id ? ' current' : '')} href={'/alerts/' + encodeURIComponent(alert.id)} key={alert.id} onClick={onOpen} aria-current={selected === alert.id ? 'page' : undefined}>
+    {(['active', 'recovered'] as const).map(group => <div key={group} className="alert-group"><h3>{group === 'active' ? 'Active' : 'Closed'}</h3>
+      {rows.filter(row => (row.alert.state === 'recovered' || row.alert.coordination?.state === 'closed' ? 'recovered' : 'active') === group).map(({alert, title, service, severity, incidents}) => <a className={'alert-row' + (selected === alert.id ? ' current' : '')} href={'/alerts/' + encodeURIComponent(alert.id)} key={alert.id} onClick={onOpen} aria-current={selected === alert.id ? 'page' : undefined}>
         <strong>{title}</strong><span>{service?.name ?? 'Integration unrouted queue'} · {severity}{incidents.length ? ' · in an incident' : ''}{alert.suppressed ? ' · suppressed' : ''}</span>
       </a>)}
-      {!rows.some(row => row.alert.state === group) && <p className="muted">No {group} alerts{search || service || urgency ? ' match these filters' : ''}.</p>}
+      {!rows.some(row => (row.alert.state === 'recovered' || row.alert.coordination?.state === 'closed' ? 'recovered' : 'active') === group) && <p className="muted">No {group === 'recovered' ? 'closed' : group} alerts{search || service || urgency ? ' match these filters' : ''}.</p>}
     </div>)}
   </section>;
 }

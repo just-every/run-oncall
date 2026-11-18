@@ -1,3 +1,5 @@
+import {OnCallNow} from '../on-call/OnCallNow';
+import {useWorkspaceContext} from '../app/shell/WorkspaceContext';
 import {useState} from 'react';
 import type {Alert, State} from '../family/response-operations/domain';
 import type {IntakeRun} from '../intake/CompatibleTest';
@@ -10,6 +12,9 @@ import {alertDisplay} from './alert-display';
 import {AlertNotificationRun} from './AlertNotificationRun';
 import type {OnCall} from '../on-call/read';
 export function AlertPage({alert, state, canEdit, busy, run, name, onDeclare, onOpenIncident,onSaved,draftScope,onCall}: {alert: Alert; state: State; canEdit: boolean; busy: boolean; run: IntakeRun; name: (id: string | null) => string; onDeclare: (data: unknown) => Promise<void>; onOpenIncident: (id: string) => void;onSaved:(alert:Alert)=>void;draftScope:string;onCall:OnCall|null}) {
+  const {actor} = useWorkspaceContext();
+  const closed = alert.state === 'recovered' || alert.coordination?.state === 'closed';
+  const act = (type: string) => run('/api/command', {type, alert: alert.id, revision: alert.revision ?? 1});
   const {events, triggers, severity, title, service, incidents} = alertDisplay(alert, state);
   const [chosenService, setChosenService] = useState('');
   const source = state.intakeSources?.find(source => alert.source === 'intake:' + source.id);
@@ -18,8 +23,10 @@ export function AlertPage({alert, state, canEdit, busy, run, name, onDeclare, on
   const held=state.alerts.filter(a=>a.state==='active'&&a.source===alert.source&&a.service===alert.service&&a.environment===alert.environment&&a.key===alert.key&&[...a.events].reverse().map(id=>state.events.find(e=>e.id===id)).find(e=>e?.intent==='trigger')?.decision.correlation?.held);
   return <article className="panel padded alert-page" aria-label="Alert details">
     <a className="alert-back" href="/alerts">‹ Alerts</a>
-    <h2>{title}</h2><p className="alert-meta"><span className={'priority sev-' + severity}>{severity}</span> · {service?.name ?? 'Integration unrouted queue'} · {alert.environment} · {alert.state}</p>
+    <h2>{title}</h2><p className="alert-meta"><span className={'priority sev-' + severity}>{severity}</span> · {service?.name ?? 'Integration unrouted queue'} · {alert.environment} · {closed ? 'Closed' : 'Active'}</p>
     {incidents.map(incident => <p key={incident.id}><a href={'/incidents/' + encodeURIComponent(incident.id)} onClick={event => {event.preventDefault(); onOpenIncident(incident.id);}}>In incident {incident.title}</a></p>)}
+    <OnCallNow service={alert.service} busy={busy} taken={alert.owner === actor.id} onTake={canEdit && !closed ? () => {void act('take-alert');} : undefined} />
+    {canEdit && !closed && <button disabled={busy} onClick={() => act('close-alert')}>Close alert</button>}
     <AlertNotificationRun alert={alert} state={state} onCall={onCall} />
     <AlertUrgency storageKey={'alert-urgency:'+draftScope+':'+alert.id} onSaved={onSaved} alert={alert} state={state} canEdit={canEdit && alert.service !== null} busy={busy} run={run} />
     <section className="alert-runbook"><h3>Runbook</h3>{service?.runbook.length ? <ol>{service.runbook.map((step, index) => <li key={index}>{step}</li>)}</ol> : <p>No service runbook is configured.</p>}</section>

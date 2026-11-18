@@ -7,7 +7,7 @@ const roles = ['primary', 'backup'] as const;
 export type OnCallMember = {id: string; name: string};
 export type OnCallBand = {role: 'primary' | 'backup'; member: OnCallMember | null; from: string; to: string};
 export type OnCallRota = {
-  id: string; name: string; service: {id: string; name: string}; zone: string;
+  id: string; name: string; services: {id: string; name: string}[]; service: {id: string; name: string}; zone: string;
   rhythm: {every: number; weekday: string; time: string};
   now: {primary: OnCallMember | null; backup: OnCallMember | null; until: string | null};
   next: {at: string; primary: OnCallMember | null; backup: OnCallMember | null} | null;
@@ -44,7 +44,7 @@ export function onCall(workspace: State, archive: Pick<PagingArchive, 'schedules
     }
     const gaps = week.filter(band => !band.member).map(({role, from, to}) => ({role, from, to}));
     const anchor = schedule.primary.anchorLocal;
-    return [{id: schedule.id, name: schedule.name, service: {id: service.id, name: services.map(s=>s!.name).join(' · ')}, zone: schedule.timezone,
+    return [{id: schedule.id, name: schedule.name, services: services.map(s => ({id: s!.id, name: s!.name})), service: {id: service.id, name: services.map(s=>s!.name).join(' · ')}, zone: schedule.timezone,
       rhythm: {every: schedule.primary.periodDays, weekday: new Intl.DateTimeFormat('en-GB', {weekday: 'long', timeZone: 'UTC'}).format(new Date(anchor + 'Z')), time: anchor.slice(11, 16)},
       now: {primary: member(now.primary), backup: member(now.backup), until: nextAt === null ? null : new Date(nextAt).toISOString()},
       next: next && nextAt !== null ? {at: new Date(nextAt).toISOString(), primary: member(next.primary), backup: member(next.backup)} : null, gaps, week}];

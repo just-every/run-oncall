@@ -19,7 +19,8 @@ export const addPath = (kind: string) => '/settings/integrations/new/' + kind;
 export const shortTime = (value: string) => new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(value));
 export function sourcesFrom(state: State, native: NativeDefinition[], canReadNative = true): SourceRecord[] {
   const configured=new Set(native.map(s=>s.id));
-  const history=[...new Map(state.events.filter(e=>!e.source.startsWith('intake:')&&!e.source.startsWith('email:')&&!configured.has(e.source)).map(e=>[e.source,e])).values()];
+  // Workspace samples are session actions, not configured external integrations.
+  const history=[...new Map(state.events.filter(e=>e.source!=='oncall-test'&&!e.source.startsWith('intake:')&&!e.source.startsWith('email:')&&!configured.has(e.source)).map(e=>[e.source,e])).values()];
   return [
     ...(state.emailAddresses ?? []).map(s => ({ id: 'email:' + s.id, name: s.name, kind: 'email' as const, service: s.service, active: s.active })),
     ...(state.intakeSources ?? []).filter(s => !s.routing && !s.id.startsWith('native:')).map(s => ({ id: 'intake:' + s.id, name: s.name, kind: s.provider as IntegrationKind, service: s.service, active: s.active })),

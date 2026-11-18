@@ -1,4 +1,5 @@
 import { checkedInstallationName, savedInstallationName } from './brand/installation';
+import {installTestAlerts} from './integrations/test-alert';
 import { nativeName } from './integrations/native-name';
 import {installReadiness} from './readiness/api';
 import {installTeams} from './teams/api';
@@ -445,6 +446,7 @@ api.use("/api/*", async (c, next) => {
 installBusinessStatus(api, {...changeDeps, state: (c: any) => authorizedState(c, false, true)});
 installAutomationManagement(api, changeDeps);
 installKeyReveal(api,changeDeps);
+installTestAlerts(api,changeDeps);
 installChangeManagement(api, changeDeps);
 installSubjectErasure(api, changeDeps);
 installMonitoringSigning(api, changeDeps);

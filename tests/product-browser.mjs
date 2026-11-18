@@ -1,3 +1,4 @@
+import {ownerAlertsBrowser} from './owner-alerts-browser.mjs';
 import {alertNotificationRunBrowser} from './alert-notification-run-browser.mjs';
 // Owner fault regression: synthetic data through the emitted Worker and browser doors.
 async function ownerFaultsBrowser(page,context) {
@@ -138,10 +139,10 @@ async function incompleteIntakeBrowser(page,context) {
   await focusWorkspace(page)
   await page.locator('.alert-row').filter({hasText:title}).click();
   const routedCard=page.getByRole('article',{name:'Alert details',exact:true});
-  await routedCard.getByText(/Payments · production · active/).waitFor();
+  await routedCard.getByText(/Payments · production · Active/).waitFor();
   await page.goto(origin+'/alerts');await page.locator('.alert-row').filter({hasText:incompleteTitle}).click();
   const ownerCard=page.getByRole('article',{name:'Alert details',exact:true});
-  await ownerCard.getByText(/Integration unrouted queue.*active$/).waitFor();await ownerCard.getByText('Event context',{exact:true}).click()
+  await ownerCard.getByText(/Integration unrouted queue.*Active$/).waitFor();await ownerCard.getByText('Event context',{exact:true}).click()
   await ownerCard.getByText('Details',{exact:true}).click()
   await ownerCard.getByText(`Paging obligation: recorded · Integration owner: ${member.name} · high urgency · paging OFF; non-automatic.`,{exact:true}).waitFor()
   assert.ok(await ownerCard.isVisible())
@@ -336,23 +337,24 @@ async function responsePolicyBrowser(page,context) {
   await reminderView.getByRole('button',{name:critical.title,exact:true}).click()
   await detail.getByRole('button',{name:'Other steps ▾',exact:true}).click()
   await detail.getByRole('button',{name:'Mark recovered',exact:true}).click()
-  await detail.getByLabel('Recovery evidence URL',{exact:true}).fill('https://monitoring.example.test/checkout/recovery')
-  await detail.getByRole('button',{name:'Mark recovered',exact:true}).last().click()
+  await page.getByRole('dialog').getByLabel('Recovery evidence URL',{exact:true}).fill('https://monitoring.example.test/checkout/recovery')
+  await page.getByRole('dialog').getByRole('button',{name:'Mark recovered',exact:true}).click()
   await detail.locator('.incident-state.state-recovered').waitFor()
   await detail.getByRole('button',{name:'Resolve',exact:true}).last().click()
-  const summary=detail.getByLabel('Resolution summary',{exact:true})
+  const summary=page.getByRole('dialog').getByLabel('What fixed it?',{exact:true})
   await summary.fill('')
-  await detail.getByRole('button',{name:'Resolve',exact:true}).last().click()
+  await page.getByRole('dialog').getByRole('button',{name:'Resolve',exact:true}).click()
   assert.equal(await summary.evaluate(input=>input.validity.valueMissing),true,'browser resolution requires a summary')
   // Submit the same real form without client validation to prove the server refusal is announced.
   await summary.evaluate(input=>input.required=false)
   const refused=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().method()==='POST')
-  await detail.getByRole('button',{name:'Resolve',exact:true}).last().click()
+  await page.getByRole('dialog').getByRole('button',{name:'Resolve',exact:true}).click()
   assert.equal((await refused).status(),400,'server refuses resolution without a summary')
   await page.locator('.failure-line[role="alert"]').waitFor()
   assert.match(await page.locator('.failure-line[role="alert"]').innerText(),/summary/i)
   assert.equal((await request('/api/state')).incidents.find(item=>item.id===incident.id).state,'recovered','refused resolution leaves the incident open')
   await checkScreen('resolution-refused',width,page.locator('.failure-line[role="alert"]'))
+  await page.getByRole('dialog').getByRole('button',{name:'Close',exact:true}).click()
  }
 }
 
@@ -678,13 +680,13 @@ async function senderSetupBrowser(page,context,origin,request,token){
  const changeKey=token(),changeId='synthetic-oncall-recipe';
  await request('/api/changes/sources',{id:changeId,name:'Synthetic recipe source',provider:'native',service:'synthetic-oncall-1',repository:'',mode:'signed',revision:0,key:changeKey});
  await page.goto(origin+'/settings/integrations/'+encodeURIComponent('change:'+changeId));
- await page.getByText('Sample request',{exact:true}).click();
+ await page.locator('summary').filter({hasText:/^Sample request$/}).click();
  const sample=await page.getByLabel('Sample request',{exact:true}).inputValue();assert.ok(!sample.includes(changeKey),'sample never embeds the secret');
  await page.getByRole('button',{name:'Copy sample request',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),sample);
  await page.getByRole('button',{name:'Copy run commands',exact:true}).click();const commands=await page.evaluate(()=>navigator.clipboard.readText());
  const receipt=JSON.parse(await runSenderRecipe(sample,changeKey,commands));assert.ok(receipt.id,'the copied recipe sends one change with no Node on PATH');assert.equal(receipt.duplicate,false);assert.equal(receipt.service,'synthetic-oncall-1');
  assert.ok((await request('/api/state')).changes.some(change=>change.id===receipt.id),'the accepted change is retained');
- await page.reload();await page.getByText('Sample request',{exact:true}).click();await proof('sender-change-recipe');
+ await page.reload();await page.locator('summary').filter({hasText:/^Sample request$/}).click();await proof('sender-change-recipe');
  // Alertmanager: a 200-alert group exceeds the default event allowance, is counted, and is fixed from its own page.
  const key=token(),id='synthetic-oncall-batch',now=new Date().toISOString();
  await request('/api/intake/sources',{id,name:'Synthetic batch Alertmanager',provider:'alertmanager',service:'synthetic-oncall-1',key,revision:0});
@@ -876,6 +878,7 @@ async function eventsSourceBrowser(page,context) {
   await page.getByLabel('Authentication',{exact:true}).selectOption(mode);
   await page.getByRole('button',{name:'Create source',exact:true}).click();
   const key=await page.getByLabel('Private key',{exact:true}).inputValue();assert.ok(key);
+  await page.getByText('Details',{exact:true}).click();await page.locator('summary').filter({hasText:/^Sample request$/}).click();
   await expect(page.getByRole('button',{name:'Copy ingress URL',exact:true})).toBeEnabled();
   const url=await page.getByLabel('Ingress URL',{exact:true}).inputValue();
   assert.equal(new URL(url).origin,origin);assert.ok(new URL(url).pathname.startsWith('/api/ingress/'));
@@ -884,19 +887,19 @@ async function eventsSourceBrowser(page,context) {
   assert.ok(!(await page.locator('.integrations').innerText()).includes(service),'source-created recipe names its service without exposing its internal identity');
   assert.equal(await page.getByLabel('Sample request',{exact:true}).isVisible(),false,'raw request code opens deliberately');
   assert.equal(JSON.parse(example.match(/'({\n[\s\S]*\n})'/)[1].replaceAll("'\\''","'")).service,service,'copied request already supplies the service');
-  await page.getByRole('button',{name:'Copy sample request',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),example);
+  await page.getByRole('button',{name:'Copy sample request',exact:true}).click();await expect(page.locator('.ingress-example [role=status]')).toHaveText('Copied');const copied=await page.evaluate(()=>navigator.clipboard.readText());assert.ok(copied.includes('ONCALL_SOURCE_KEY='),'copied sender supplies its key without terminal setup');
   if(mode==='bearer')await proof('created');
   const path=new URL(await page.getByRole('link',{name:'Open source',exact:true}).getAttribute('href'),origin).pathname;
   return {key,url,example,path,name:await page.getByRole('heading',{level:2}).innerText(),source:decodeURIComponent(new URL(url).pathname.split('/').at(-1))};
  };
  // Compatible samples execute through the public receiver without Node on PATH.
  const compatibleSample=async(key,kind)=>{
-  await page.getByText('Sample request',{exact:true}).click();
+  await page.getByText('Details',{exact:true}).click();await page.locator('summary').filter({hasText:/^Sample request$/}).click();
   const sample=await page.getByLabel('Sample request',{exact:true}).inputValue();
   assert.ok(!sample.includes(key),'compatible sample never embeds the private key');
-  await page.getByRole('button',{name:'Copy sample request',exact:true}).click();
-  assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),sample);
-  const response=JSON.parse(await runSenderRecipe(sample,key));
+  await page.getByRole('button',{name:'Copy sample request',exact:true}).click();await expect(page.locator('.ingress-example [role=status]')).toHaveText('Copied');
+  const copied=await page.evaluate(()=>navigator.clipboard.readText());assert.ok(copied.includes('ONCALL_SOURCE_KEY='));
+  const response=JSON.parse(await runSenderRecipe(copied,''));
   assert.ok(kind==='opsgenie'?response.requestId:kind==='splunk'?response.result==='success':response.status==='success','copied sample receives an incumbent-shaped success');
   const state=await request('/api/state'),source=decodeURIComponent(new URL(page.url()).pathname.split('/').at(-1)).replace(/^intake:/,'');
   assert.ok(state.events.some(event=>(event.source===source||event.source==='intake:'+source)&&event.service===service&&event.title==='Service latency is above normal'),'sample creates the event on its bound source and service');
@@ -911,73 +914,42 @@ async function eventsSourceBrowser(page,context) {
   await page.getByRole('link',{name:'Open source',exact:true}).click();
   await compatibleSample(key,kind);
  }
- // Extend this existing source lifecycle journey through the compatible form.
- await page.goto(origin+'/settings/integrations/new/pagerduty');
- await page.getByLabel('Name',{exact:true}).fill('Harbour Checkout compatible');
- const compatibleService=page.getByLabel('Service',{exact:true});if(await compatibleService.count())await compatibleService.selectOption(service);
- await page.getByRole('button',{name:'Create source',exact:true}).click();
- const compatibleKey=await page.getByLabel('Private key',{exact:true}).inputValue();
- const compatiblePath=await page.getByRole('link',{name:'Open source',exact:true}).getAttribute('href');
- const compatibleId=decodeURIComponent(compatiblePath.split('/').at(-1));
- await page.getByRole('link',{name:'Open source',exact:true}).click();await page.getByText('Send a test event',{exact:true}).click();
- await page.getByLabel('Private key',{exact:true}).fill(compatibleKey);await page.getByLabel('Title',{exact:true}).fill('Checkout gateway connection saturation');
- const sendCompatible=async(status=202)=>{
-  const pending=page.waitForResponse(r=>new URL(r.url()).pathname==='/v2/enqueue'&&r.request().method()==='POST');
-  await page.getByRole('button',{name:'Send test event',exact:true}).click();const response=await pending;
-  assert.equal(response.status(),status);if(response.ok())await expect.poll(()=>page.locator('.notice').innerText()).toBe('Test event accepted');else await page.locator('.failure-line').waitFor();await expect(page.getByRole('button',{name:'Send test event',exact:true})).toBeEnabled();return response.json();
+ // Compatible and native browser sends use held credentials and fresh identities.
+ const compatiblePath='/settings/integrations/intake%3Asynthetic-compatible-tests',compatibleId='intake:synthetic-compatible-tests';
+ const compatibleKey=randomBytes(32).toString('hex');
+ await request('/api/intake/sources',{id:'synthetic-compatible-tests',name:'Synthetic compatible tests',provider:'pagerduty',service,key:compatibleKey,revision:0},201);
+ await page.goto(origin+compatiblePath);
+ const sendTest=async(action='new',status=200)=>{
+  const advanced=page.locator('.test-alert');
+  if(action!=='new'){await advanced.getByText('More options',{exact:true}).click();await advanced.getByLabel('Test action',{exact:true}).selectOption(action);}
+  const pending=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/test-alert'&&r.request().method()==='POST');
+  await advanced.getByRole('button',{name:action==='close'?'Send test event':'Send a test alert',exact:true}).click();const response=await pending;
+  assert.equal(response.status(),status);await expect(advanced.getByRole('button',{name:status===200?'Send a test alert':action==='close'?'Send test event':'Send a test alert',exact:true})).toBeEnabled();return response.json();
  };
- const compatibleTrigger=await sendCompatible();
- assert.equal(await page.getByLabel('Private key',{exact:true}).inputValue(),compatibleKey,'test sends retain the private key in the mounted form');
- assert.equal(await page.getByLabel('Alert key (dedup key)',{exact:true}).inputValue(),compatibleTrigger.dedup_key,'the form exposes the actual compatible outage key');
- await page.getByLabel('Intent',{exact:true}).selectOption('recover');await sendCompatible();
- let compatibleState=await request('/api/state'),compatibleAlerts=compatibleState.alerts.filter(a=>a.source===compatibleId);
- assert.equal(compatibleAlerts.length,1);assert.equal(compatibleAlerts[0].state,'recovered');
- assert.equal(compatibleState.intakeReceipts.at(-1).outcome,'recovered','the test recovery has an effect on its trigger');
- // Reopen the same explicit outage key, visit Alerts, then return to recover it.
- await page.getByLabel('Intent',{exact:true}).selectOption('trigger');const reopened=await sendCompatible();assert.equal(reopened.dedup_key,compatibleTrigger.dedup_key);
- await page.goto(origin+'/alerts');await page.locator('.alert-row').filter({hasText:'Checkout gateway connection saturation'}).first().waitFor();
- await page.goto(origin+compatiblePath);await page.getByText('Send a test event',{exact:true}).click();
- assert.equal(await page.getByLabel('Alert key (dedup key)',{exact:true}).inputValue(),reopened.dedup_key,'returning to the compatible source restores the trigger key');
- assert.equal(await page.getByLabel('Private key',{exact:true}).inputValue(),'','navigation does not persist the private key');
- await page.getByLabel('Private key',{exact:true}).fill(compatibleKey);await page.getByLabel('Intent',{exact:true}).selectOption('recover');
- await proof('compatible-recover-form');await sendCompatible();compatibleState=await request('/api/state');
- compatibleAlerts=compatibleState.alerts.filter(a=>a.source===compatibleId);assert.equal(compatibleAlerts.length,2);
- assert.ok(compatibleAlerts.every(a=>a.state==='recovered'),'no compatible test alert remains active');
- await page.goto(origin+'/alerts');const recoveredRows=page.locator('.alert-row').filter({hasText:'Checkout gateway connection saturation'});assert.equal(await recoveredRows.count(),2);
- for(const row of await recoveredRows.all())assert.equal(await row.locator('xpath=..').getByRole('heading',{name:'Recovered',exact:true}).count(),1);
- await proof('compatible-recovered-list');
- // A wrong compatible credential uses its provider error envelope (HTTP 400).
- await page.goto(origin+compatiblePath);await page.getByText('Send a test event',{exact:true}).click();
- await page.getByLabel('Private key',{exact:true}).fill(randomBytes(32).toString('hex'));await sendCompatible(400);
- await page.locator('.failure-line').waitFor();const keyFailure=await page.locator('.failure-line').innerText();
- assert.match(keyFailure,/key|credential/i);assert.doesNotMatch(keyFailure,/allowance/i);await proof('compatible-key-refused');
+ await page.getByLabel('Title',{exact:true}).fill('Synthetic gateway saturation');
+ const compatibleTrigger=await sendTest();await page.reload();await page.getByLabel('Title',{exact:true}).fill('Synthetic second gateway event');
+ const second=await sendTest();assert.notEqual(second.alert,compatibleTrigger.alert,'reloading never makes the next test recover or merge the first');
+ await sendTest('add');let compatibleState=await request('/api/state'),compatibleAlerts=compatibleState.alerts.filter(a=>a.source===compatibleId);assert.equal(compatibleAlerts.length,2);assert.equal(compatibleAlerts.reduce((n,a)=>n+a.events.length,0),3);
+ await page.reload();await proof('compatible-recover-form');await sendTest('close');
+ compatibleState=await request('/api/state');compatibleAlerts=compatibleState.alerts.filter(a=>a.source===compatibleId);assert.equal(compatibleAlerts.filter(a=>a.state==='recovered').length,1);
+ const badCompatible=await context.request.post('/v2/enqueue',{data:{routing_key:randomBytes(32).toString('hex'),event_action:'trigger',dedup_key:'synthetic-refused',payload:{summary:'Synthetic refused',source:'Synthetic sender',severity:'warning'}}});assert.equal(badCompatible.status(),400,'wrong compatible keys still use the provider refusal envelope');
  const source=await create('bearer');await page.getByRole('link',{name:'Open source',exact:true}).click();
- await page.getByLabel('Ingress URL',{exact:true}).waitFor();assert.equal(await page.locator('.ingress-example').getAttribute('open'),'','empty source opens its sample');
- await proof('empty-source');await page.getByText('Send a test event',{exact:true}).click();
- await page.getByLabel('Private key',{exact:true}).fill(source.key);await page.getByLabel('Title',{exact:true}).fill('Checkout API latency above 2 seconds');
- await page.getByLabel('Severity',{exact:true}).selectOption('critical');
- const key=await page.getByLabel('Alert key (dedup key)',{exact:true}).inputValue(),generation=await page.getByLabel('Lifecycle generation',{exact:true}).inputValue();
- const send=async()=>{const pending=page.waitForResponse(r=>r.url()===source.url&&r.request().method()==='POST');await page.getByRole('button',{name:'Send test event',exact:true}).click();assert.equal((await pending).status(),201);await page.getByRole('button',{name:'Send test event',exact:true}).waitFor();};
- await send();await page.goto(origin+'/alerts');
- let state=await request('/api/state'),alerts=state.alerts.filter(a=>a.source===source.source);assert.equal(alerts.length,1);assert.equal(alerts[0].state,'active');
- const alert=alerts[0],nav=()=>page.locator('a[href="/alerts"] .nav-count').first();assert.equal(await nav().innerText(),String(state.alerts.filter(a=>a.state==='active').length));
- const row=page.locator('.alert-row').filter({hasText:'Checkout API latency above 2 seconds'});assert.equal(await row.count(),1);assert.match(await row.innerText(),/critical/);
- await row.click();await page.getByRole('button',{name:'Declare incident from alert',exact:true}).click();
- await page.locator('.incident-page h1').waitFor();
+ await page.getByLabel('Title',{exact:true}).fill('Synthetic API latency');await page.getByLabel('Severity',{exact:true}).selectOption('critical');
+ assert.equal(await page.getByLabel('Private key',{exact:true}).count(),0,'browser sends need no private-key input');
+ await proof('empty-source');await sendTest();
+ let state=await request('/api/state'),alerts=state.alerts.filter(a=>a.source===source.source);assert.equal(alerts.length,1);const alert=alerts[0],key=alert.key,generation=alert.generation;
+ const nav=()=>page.locator('a[href="/alerts"] .nav-count').first();
+ await page.goto(origin+'/alerts');const row=page.locator('.alert-row[href="/alerts/'+alert.id+'"]');await row.click();
+ await page.getByRole('button',{name:'Declare incident from alert',exact:true}).click();await page.locator('.incident-page h1').waitFor();
  const incident=(await request('/api/state')).incidents.find(item=>item.alerts.includes(alert.id));assert.ok(incident);
- await page.locator('.incident-page').getByRole('button',{name:'Acknowledge',exact:true}).click();
- await page.locator('.incident-state.state-acknowledged').waitFor();
- await page.goto(origin+source.path);await page.getByText('Send a test event',{exact:true}).click();
- assert.equal(await page.getByLabel('Alert key (dedup key)',{exact:true}).inputValue(),key);assert.equal(await page.getByLabel('Lifecycle generation',{exact:true}).inputValue(),generation);
- assert.equal(await page.getByLabel('Title',{exact:true}).inputValue(),'Checkout API latency above 2 seconds');
- await page.getByLabel('Intent',{exact:true}).selectOption('recover');assert.equal(await page.getByLabel('Severity',{exact:true}).inputValue(),'warning');
- await proof('recover-form');await page.getByLabel('Private key',{exact:true}).fill(source.key);await send();
+ await page.locator('.incident-page').getByRole('button',{name:'Acknowledge',exact:true}).click();await page.locator('.incident-state.state-acknowledged').waitFor();
+ await page.goto(origin+source.path);await proof('recover-form');await sendTest('close');
  state=await request('/api/state');alerts=state.alerts.filter(a=>a.source===source.source);assert.equal(alerts.length,1);assert.equal(alerts[0].id,alert.id);assert.equal(alerts[0].state,'recovered');assert.equal(alerts[0].events.length,2);
  assert.equal(state.incidents.find(i=>i.id===incident.id).state,'acknowledged','source recovery keeps the acknowledged incident open');
  const events=state.events.filter(e=>e.source===source.source);assert.deepEqual(events.map(e=>[e.intent,e.key,e.generation,e.severity]),[['trigger',key,generation,'critical'],['recover',key,generation,'warning']]);
- await page.goto(origin+'/alerts');assert.equal(await row.count(),1);assert.equal(await row.locator('xpath=..').getByRole('heading',{name:'Recovered',exact:true}).count(),1);
- assert.equal(await nav().innerText(),String(state.alerts.filter(a=>a.state==='active').length));await proof('recovered-list');
- await row.click();await page.getByRole('article',{name:'Alert details',exact:true}).waitFor();assert.match(await page.locator('.alert-meta').innerText(),/critical.*recovered/);await proof('recovered-alert');
+ await page.goto(origin+'/alerts');await row.waitFor();assert.equal(await row.count(),1);assert.equal(await row.locator('xpath=..').getByRole('heading',{name:'Closed',exact:true}).count(),1);
+ assert.equal(await nav().innerText(),String(state.alerts.filter(a=>a.state==='active'&&a.coordination?.state!=='closed').length));await proof('recovered-list');
+ await row.click();await page.getByRole('article',{name:'Alert details',exact:true}).waitFor();assert.match(await page.locator('.alert-meta').innerText(),/critical.*Closed/);await proof('recovered-alert');
  // Extend this source-recovery journey: readable history at desktop width and
  // the long-zone timestamp boundary at phone width, without rewriting records.
  await page.goto(origin+'/incidents/'+incident.id);
@@ -1012,6 +984,7 @@ async function eventsSourceBrowser(page,context) {
  for(const sample of [source,await create('signed')]){
   await page.goto(origin+sample.path);
   assert.equal(await page.getByRole('region',{name:'Integration source',exact:true}).getByRole('heading',{level:2}).innerText(),sample.name,'the existing source link names its source plainly');
+  await page.getByText('Details',{exact:true}).click();
   const details=page.locator('.ingress-example');if(await details.getAttribute('open')===null)await details.locator(':scope > summary').click();
   assert.equal(await page.getByLabel('Ingress URL',{exact:true}).inputValue(),sample.url,'existing ingress address is unchanged');
   const example=await page.getByLabel('Sample request',{exact:true}).inputValue();
@@ -1029,9 +1002,9 @@ async function eventsSourceBrowser(page,context) {
   assert.ok(setupText.includes(serviceName),'the ready-to-copy sample names its service');
   assert.ok(!setupText.includes(service)&&!setupText.includes(sample.source),'default explanation omits internal identities');
   assert.ok(!setupText.includes('internal ID'),'setup does not ask the person to look up an internal ID');
-  await page.getByRole('button',{name:'Copy sample request',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),example);
+  await page.getByRole('button',{name:'Copy sample request',exact:true}).click();await expect(page.locator('.ingress-example [role=status]')).toHaveText('Copied');const copied=await page.evaluate(()=>navigator.clipboard.readText());assert.ok(copied.includes('ONCALL_SOURCE_KEY='),'copied sender supplies its key without terminal setup');
   await proof(sample===source?'readable-bearer-source':'readable-signed-source');
-  const output=await runSenderRecipe(example,sample.key);
+  const output=await runSenderRecipe(copied,'');
   const receipt=JSON.parse(output);assert.equal(receipt.service,service);assert.ok(receipt.id);
   if(sample!==source){
    await request('/api/sources',{id:'monitoring',key:sample.key,mode:'signed',scopes:[service]});
@@ -1060,29 +1033,20 @@ async function eventsSourceBrowser(page,context) {
   await page.goto(origin+sample.path);assert.equal(await page.getByRole('region',{name:'Integration source',exact:true}).getByRole('heading',{level:2}).innerText(),sample.name,'the original page URL still works after sending');
  }
 
- // The same form diagnoses a valid key's event allowance, including rotation.
- await page.goto(origin+source.path);await page.getByText('Send a test event',{exact:true}).click();
+ // The same no-key form keeps the receiver's rate explanation after rotation.
+ await page.goto(origin+source.path);
  let limited=await request('/api/state');await request('/api/intake/allowances',{id:'source:'+source.source,requests:600,events:1,revision:limited.revision});
+ const warm=await context.request.post('/api/test-alert',{headers:{origin},data:{source:'native:'+source.source,service}});assert.ok([200,429].includes(warm.status()));
  const refusalBefore=await request('/api/state');
- await page.getByLabel('Private key',{exact:true}).fill(source.key);await page.getByLabel('Intent',{exact:true}).selectOption('recover');
- const refuse=async()=>{const pending=page.waitForResponse(r=>r.url()===source.url&&r.request().method()==='POST');await page.getByRole('button',{name:'Send test event',exact:true}).click();const response=await pending;assert.equal(response.status(),429);assert.ok(Number(response.headers()['retry-after'])>0);await page.locator('.failure-line').waitFor();await page.getByRole('button',{name:'Send test event',exact:true}).waitFor();return page.locator('.failure-line').innerText();};
- const allowanceFailure=await refuse();
- assert.match(allowanceFailure,/event.*allowance/i);assert.match(allowanceFailure,/retry|wait/i);assert.match(allowanceFailure,/New events per minute/);
- assert.doesNotMatch(allowanceFailure,/private key|credential|sender settings/i,'an allowance refusal must not blame a valid key');
+ const refuse=async()=>{await sendTest('new',429);await page.locator('.failure-line').waitFor();return page.locator('.failure-line').innerText();};
+ const allowanceFailure=await refuse();assert.match(allowanceFailure,/event.*allowance/i);assert.match(allowanceFailure,/retry|wait/i);assert.match(allowanceFailure,/New events per minute/);assert.doesNotMatch(allowanceFailure,/private key|credential|sender settings/i);
  await page.locator('summary').filter({hasText:/^Rejected requests /}).click();
- const retainedNotice=await page.getByRole('list',{name:'Allowance refusals',exact:true}).innerText();
- assert.ok(retainedNotice.includes(allowanceFailure.split(' Retry')[0]),'the immediate result uses the retained refusal explanation');
- assert.equal(await page.getByLabel('Private key',{exact:true}).inputValue(),source.key);await proof('allowance-refused');
+ const retainedNotice=await page.getByRole('list',{name:'Allowance refusals',exact:true}).innerText();assert.ok(retainedNotice.includes(allowanceFailure.split(' Retry')[0]));await proof('allowance-refused');
  const rotatedKey=randomBytes(32).toString('hex');await request('/api/sources',{id:source.source,key:rotatedKey,mode:'bearer',scopes:[service]});
- await page.getByLabel('Private key',{exact:true}).fill(rotatedKey);const rotatedFailure=await refuse();
- assert.match(rotatedFailure,/event.*allowance/i);assert.doesNotMatch(rotatedFailure,/private key|credential/i);
+ const rotatedFailure=await refuse();assert.match(rotatedFailure,/event.*allowance/i);assert.doesNotMatch(rotatedFailure,/private key|credential/i);
  const refusalAfter=await request('/api/state');assert.deepEqual(refusalAfter.events,refusalBefore.events);assert.deepEqual(refusalAfter.alerts,refusalBefore.alerts,'allowance refusals preserve the alert lifecycle');
- await page.getByLabel('Private key',{exact:true}).fill(source.key);
- const badKey=page.waitForResponse(r=>r.url()===source.url&&r.request().method()==='POST');await page.getByRole('button',{name:'Send test event',exact:true}).click();assert.equal((await badKey).status(),401);
- await expect.poll(()=>page.locator('.failure-line').innerText()).toMatch(/private key/i);
- assert.doesNotMatch(await page.locator('.failure-line').innerText(),/allowance/i);
- await writeFile(`${directory}/test-event-receipt.json`,JSON.stringify({journey:'eventsSourceBrowser',width:1440,compatible:{sameMountedFormRecovered:true,returnedFormRecovered:true,activeAlerts:compatibleAlerts.filter(a=>a.state==='active').length,generations:compatibleAlerts.length,keyVisible:true,keyRetainedBetweenSends:true,keyNotPersistedAcrossNavigation:true},allowance:{status:429,reason:allowanceFailure,rotatedReason:rotatedFailure,unchangedAlertsAndEvents:true},authentication:{compatibleStatus:400,nativeStatus:401,reason:keyFailure},screenshots:[1440,390]},null,2)+'\n');
- console.log('PASS test-event results: compatible same-form and returned-form recoveries leave zero active alerts, explicit outage key and in-memory private key retained; native allowance and rotated key refusals explain retry or allowance settings, wrong keys explain authentication, refused requests preserve events and alerts; changed screens captured at 1440/390.');
+ const badKey=await context.request.post(source.url,{headers:{authorization:'Bearer '+source.key},data:{source:source.source,eventId:'synthetic-revoked',service,environment:'production',key:'synthetic-revoked',generation:'synthetic-revoked',intent:'trigger',severity:'warning',title:'Synthetic refused',observedAt:new Date().toISOString(),evidence:''}});assert.equal(badKey.status(),401,'rotation still invalidates the old sender key');
+ await writeFile(`${directory}/test-event-receipt.json`,JSON.stringify({journey:'eventsSourceBrowser',width:1440,compatible:{freshAfterReload:true,sameKeyAdds:true,explicitRecovery:true,keysStayInWorker:true},allowance:{status:429,reason:allowanceFailure,rotatedReason:rotatedFailure,unchangedAlertsAndEvents:true},authentication:{compatibleStatus:400,nativeStatus:401},screenshots:[1440,390]},null,2)+'\n');
  await readableNamesBrowser(page,context,{source:{...source,key:rotatedKey},service,serviceName});
  console.log('PASS OC-001 Events source recovery: Critical Trigger -> navigate Alerts -> Warning Recover with retained key/generation; one recovered alert, active 1 to 0, nav/list/detail agree, declared incident stays open. Detail-page readable source samples copied and executed for bearer and signed, alerts visible, legacy ID retries deduplicated and mismatched identities refused; changed screens captured once at 1440/390.');
  assert.deepEqual(sourceErrors,[],'source recovery has no browser application errors');
@@ -1131,7 +1095,7 @@ try {
   } finally { await worker.time(selectedTime) }
  }
  const focused=process.env.ONCALL_PRODUCT_JOURNEY;
- if(focused&&!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','workspace-links','alert-run'].includes(focused))throw Error('Unknown focused product journey');
+ if(focused&&!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','owner-alerts','move-in','workspace-links','alert-run'].includes(focused))throw Error('Unknown focused product journey');
  const triageProof={snapshot:()=>durableSnapshot(worker),outbound:()=>worker.outboundRequests()};
  const setTime=async at=>{selectedTime=at;await worker.time(at);if(at===null)await page.clock.setSystemTime(new Date());else await page.clock.setFixedTime(new Date(at));};
  if(focused==='workspace-links'){
@@ -1150,6 +1114,7 @@ try {
   const {productImport}=await import('./product-browser-journey.mjs');await productImport(page,context,1440,session,triageProof);
  }
  if(focused==='alert-run')await alertNotificationRunBrowser(page,context,{worker,setTime});
+ if(focused==='owner-alerts')await ownerAlertsBrowser(page,context);
  if(focused==='owner-faults')await ownerFaultsBrowser(page,context);
  if(focused==='rota-timeline'){
   const session=await (await context.request.get('/api/session')).json();
@@ -1166,7 +1131,7 @@ try {
   await readinessBrowser(page,context);
  }
  if(focused==='imported-email')await importedEmailBrowser(page,context);
- if(focused==='events-source')await eventsSourceBrowser(page,context);
+ if(focused==='events-source'){await eventsSourceBrowser(page,context);await ownerAlertsBrowser(page,context,worker);}
  if(focused==='sender-setup'){
   const request=async(path,data)=>{const r=await worker.request(path,data,owner.cookie);assert.ok(r.status>=200&&r.status<300,JSON.stringify(r.value));return r.value;};
   const actor=(await request('/api/session')).member;
@@ -1183,7 +1148,7 @@ try {
  if(focused==='move-in-guide')await providerExport(page,context,1440,triageProof);
  if(['limitations','readiness'].includes(focused))await limitationsBrowser(page,context);
  if(focused==='triage')await triageFiltersBrowser(page,context,{setTime,proof:triageProof});
- if(!['sender-setup','response-policy','imported-email','events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','workspace-links','alert-run'].includes(focused)){
+ if(!['sender-setup','response-policy','imported-email','events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','owner-alerts','move-in','workspace-links','alert-run'].includes(focused)){
  await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime,triageProof})
  if(focused!=='accessibility'){
  await incompleteIntakeBrowser(page,context)
@@ -1194,13 +1159,13 @@ try {
  console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440; overflow, axe and hydration checked')
  }
  }
- if(!['sender-setup','response-policy','imported-email','events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','workspace-links','alert-run'].includes(focused))await readinessBrowser(page,context)
+ if(!['sender-setup','response-policy','imported-email','events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','owner-alerts','move-in','workspace-links','alert-run'].includes(focused))await readinessBrowser(page,context)
  if(!focused)await importedEmailBrowser(page,context)
  if(!focused)await responseReportBrowser(browser)
- if(!focused)await eventsSourceBrowser(page,context)
+ if(!focused){await eventsSourceBrowser(page,context);await ownerAlertsBrowser(page,context,worker);}
  assert.deepEqual(errors,[],'no browser application errors')
  if(!focused){await setTime(null);await ownerFaultsBrowser(page,context);assert.deepEqual(errors,[],'owner fault journey has no browser application errors');await alertNotificationRunBrowser(page,context,{worker,setTime});assert.deepEqual(errors,[],'alert notification run has no browser application errors');}
- console.log(focused==='alert-run'?'Emitted Worker alert notification run passed: assertions at 1440, changed screens at 1440/390; paging OFF and zero outbound':focused==='workspace-links'?'Emitted Worker workspace-links journey passed: 19 canonical entries and five hostile legacy fragments; no external document navigation, encoded unknown-workspace HTTP 404s; assertions at 1440, captures at 1440 and 390':focused==='owner-faults'?'Emitted Worker owner faults passed: admin key readback, person contacts/rules, shared PagerDuty mapping/adoption, bounded past coverage; paging OFF, zero outbound, proof at 1440/390':focused==='sender-setup'?'Emitted Worker sender setup journey passed at 1440; screens captured at 1440 and 390':focused==='response-policy'?'Emitted Worker response-policy journey passed at 1440':focused==='imported-email'?'Emitted Worker saved email import journey passed at 1440; changed states captured at 1440 and 390':focused==='rota-timeline'?'Emitted Worker rota timeline passed: readable phone lists and compact accessible desktop slices on overview and rota pages':focused==='readable-times'?'Emitted Worker readable-times journey passed at 1440 in Australia/Brisbane with an America/New_York rota; changed rota and readiness screens captured at 1440 and 390':focused==='events-source'?'Emitted Worker Events source journey passed at 1440; screens captured at 1440 and 390':focused==='support-start'?'Emitted Worker support-start browser journey passed at 1440; screens captured at 1440 and 390':focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
+ console.log(focused==='owner-alerts'?'Emitted Worker owner alert journey passed: no-terminal tests, current rota, optional-link resolution, linked and direct closure, attributed reopen; desktop assertions and desktop/phone proof':focused==='alert-run'?'Emitted Worker alert notification run passed: assertions at 1440, changed screens at 1440/390; paging OFF and zero outbound':focused==='workspace-links'?'Emitted Worker workspace-links journey passed: 19 canonical entries and five hostile legacy fragments; no external document navigation, encoded unknown-workspace HTTP 404s; assertions at 1440, captures at 1440 and 390':focused==='owner-faults'?'Emitted Worker owner faults passed: admin key readback, person contacts/rules, shared PagerDuty mapping/adoption, bounded past coverage; paging OFF, zero outbound, proof at 1440/390':focused==='sender-setup'?'Emitted Worker sender setup journey passed at 1440; screens captured at 1440 and 390':focused==='response-policy'?'Emitted Worker response-policy journey passed at 1440':focused==='imported-email'?'Emitted Worker saved email import journey passed at 1440; changed states captured at 1440 and 390':focused==='rota-timeline'?'Emitted Worker rota timeline passed: readable phone lists and compact accessible desktop slices on overview and rota pages':focused==='readable-times'?'Emitted Worker readable-times journey passed at 1440 in Australia/Brisbane with an America/New_York rota; changed rota and readiness screens captured at 1440 and 390':focused==='events-source'?'Emitted Worker Events source journey passed at 1440; screens captured at 1440 and 390':focused==='support-start'?'Emitted Worker support-start browser journey passed at 1440; screens captured at 1440 and 390':focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
  }
  if(productPart)console.log('Product browser part completed: '+productPart);
 } catch(error) {
@@ -1213,4 +1178,4 @@ try {
 } finally {
  try {await browser?.close()} finally {await worker.close()}
 }
-if(!productPart&&!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','workspace-links','alert-run'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');
+if(!productPart&&!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','owner-alerts','move-in','workspace-links','alert-run'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');

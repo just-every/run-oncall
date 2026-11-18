@@ -70,7 +70,7 @@ export function IncidentBulkActions({items, allMatching, count, total, refreshin
         await run(async()=>{const value=await request('/api/triage/workflows/preview',{...input,items,confirmedCount:count});setPreview(value);return value;},undefined,'Workflow comparison ready; no effects were written');
       }}>Compare workflow steps</button></>}
       <Field name="reason" label={action === 'resolve' ? 'Resolution summary for declared incidents' : 'Bulk action reason'} type="textarea" required={action!=='resolve'||items.some(i=>i.kind!=='alert')} />
-      {action === 'resolve' && items.some(i=>i.kind!=='alert') && <Field name="evidence" label="Recovery evidence for every incident" type="url" />}
+      {action === 'resolve' && items.some(i=>i.kind!=='alert') && <Field name="evidence" label="Recovery evidence for every incident" type="url" required={false} />}
     </Form>
     {action==='orchestrate'&&preview&&<div role="status"><p>Ordered comparison · no effects</p><ol>{preview.comparison.map(step=><li key={step.position}>{step.step==='declare'?'Declare incident':'Record responder obligation'} · {items.find(item=>item.id===step.alert)?.title??'Selected alert'} · {step.ok?'would record':step.error}{step.ok&&step.step==='declare'&&(step.templateVersion===null?' · no service template':` · template v${step.templateVersion}`)}{step.ok&&step.step==='notify'&&` · ${members.find(member=>member.id===step.member)?.name??'Responder unavailable'} · no sender`}</li>)}</ol></div>}
     {result && <BulkResults key={result.operationId} result={result} />}

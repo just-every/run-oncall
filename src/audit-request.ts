@@ -11,12 +11,12 @@ import type { Bindings } from './auth.server'
 const commandNoops = new WeakSet<D1Database>()
 export function markCommandNoop(db: D1Database) { commandNoops.add(db) }
 
-const commands = new Set(['manual-page','user-assignment','request-responders','respond-request','cancel-request','merge-incidents','split-incident','service-template','template-check','service','service-dependencies','policy','member','declare','assign-role','reassign','set-priority','set-urgency','set-severity','bulk-acknowledge','bulk-resolve','review','action','complete','accept-action','reopen-action','note','transition','runbook','priority','close-action','request-response'])
+const commands = new Set(['close-alert','take-alert','reopen','manual-page','user-assignment','request-responders','respond-request','cancel-request','merge-incidents','split-incident','service-template','template-check','service','service-dependencies','policy','member','declare','assign-role','reassign','set-priority','set-urgency','set-severity','bulk-acknowledge','bulk-resolve','review','action','complete','accept-action','reopen-action','note','transition','runbook','priority','close-action','request-response'])
 export function auditInput(db: D1Database, input: any, path: string) {
   if (!input || typeof input !== 'object') return
   if (path === '/api/command' && commands.has(input.type)) auditKind(db, `command.${input.type}`)
   // Values become revocable identity associations only; they never enter history.
-  const subject = path === '/api/password' ? input.member : path === '/api/command' ? input.incident ?? input.id ?? input.member : input.id ?? input.service
+  const subject = path === '/api/password' ? input.member : path === '/api/command' ? input.incident ?? input.alert ?? input.id ?? input.member : input.id ?? input.service
   if (typeof subject === 'string' && subject.length <= 200) setAuditSubject(db, path === '/api/password' || path === '/api/command' && input.type === 'member' ? 'member' : 'entity', subject)
 }
 function importKind(path: string) {
