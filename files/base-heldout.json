@@ -1,0 +1,64 @@
+{
+  "mode": "base",
+  "phase": "base",
+  "upgrade": {
+    "sameBytesStatus": 200
+  },
+  "reordered": {
+    "status": 200,
+    "summary": {
+      "sourceRecords": 40,
+      "created": 0,
+      "updated": 0,
+      "unchanged": 40,
+      "gone": 0
+    }
+  },
+  "emptySubscribers": {
+    "status": 200,
+    "sourceRecords": 3,
+    "decisions": [
+      {
+        "kind": "users",
+        "id": "gate-a",
+        "rejected": false
+      },
+      {
+        "kind": "business_services",
+        "id": "gate-business-1",
+        "rejected": true
+      },
+      {
+        "kind": "business_services",
+        "id": "gate-business-2",
+        "rejected": true
+      }
+    ],
+    "accountedEmptyLists": []
+  },
+  "layers": {
+    "paused": true,
+    "primary": {
+      "ambiguity": "reject",
+      "anchorLocal": "2026-03-02T09:00",
+      "members": [
+        "alice@example.test",
+        "bob@example.test"
+      ],
+      "periodDays": 1
+    },
+    "history": [
+      {
+        "end": "2026-02-02T09:00:00.000Z",
+        "name": "Old week one",
+        "start": "2026-01-05T09:00:00.000Z"
+      },
+      {
+        "end": "2026-03-01T09:00:00.000Z",
+        "name": "Old week two",
+        "start": "2026-02-02T09:00:00.000Z"
+      }
+    ],
+    "fields": []
+  }
+}

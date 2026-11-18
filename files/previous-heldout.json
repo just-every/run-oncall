@@ -1,0 +1,79 @@
+{
+  "mode": "head",
+  "phase": "previous",
+  "upgrade": {
+    "sameBytesStatus": 409,
+    "error": "snapshot_mapping_changed_use_new_namespace",
+    "nativeRecordsUnchanged": true
+  },
+  "reordered": {
+    "status": 409,
+    "error": "catchup_requires_proposal:change_must_be_under_five_percent"
+  },
+  "emptySubscribers": {
+    "status": 400,
+    "error": "Incomplete PagerDuty subscribers pagination; missing, repeated or out-of-order pages. Nothing was imported."
+  },
+  "layers": {
+    "paused": true,
+    "primary": {
+      "ambiguity": "reject",
+      "anchorLocal": "2026-03-02T09:00",
+      "members": [
+        "alice@example.test",
+        "bob@example.test"
+      ],
+      "periodDays": 1
+    },
+    "history": [
+      {
+        "end": "2026-02-02T09:00:00.000Z",
+        "name": "Old week one",
+        "start": "2026-01-05T09:00:00.000Z"
+      },
+      {
+        "end": "2026-03-01T09:00:00.000Z",
+        "name": "Old week two",
+        "start": "2026-02-02T09:00:00.000Z"
+      }
+    ],
+    "fields": [
+      {
+        "disposition": "mapped",
+        "field": "/schedules/0/schedule/schedule_layers/0/start",
+        "kind": "schedules",
+        "original": "2026-01-05T09:00:00Z",
+        "reason": "mapped: The complete accepted layer is converted; no partial rotation or backup coverage is inferred. Receiving place: Paused schedule.primary / validity.",
+        "receiving": "Paused schedule.primary / validity",
+        "sourceId": "pd-history"
+      },
+      {
+        "disposition": "mapped",
+        "field": "/schedules/0/schedule/schedule_layers/0/users/0/user/id",
+        "kind": "schedules",
+        "original": "pd-alice",
+        "reason": "mapped: The complete accepted layer is converted; no partial rotation or backup coverage is inferred. Receiving place: Paused schedule.primary / validity.",
+        "receiving": "Paused schedule.primary / validity",
+        "sourceId": "pd-history"
+      },
+      {
+        "disposition": "retained-only",
+        "field": "/schedules/0/schedule/schedule_layers/2/start",
+        "kind": "schedules",
+        "original": "2026-03-02T09:00:00Z",
+        "reason": "retained-only: No native mapping. Receiving place: Import journal.",
+        "receiving": "Import journal",
+        "sourceId": "pd-history"
+      },
+      {
+        "disposition": "retained-only",
+        "field": "/schedules/0/schedule/schedule_layers/2/users/0/user/id",
+        "kind": "schedules",
+        "original": "pd-alice",
+        "reason": "retained-only: No native mapping. Receiving place: Import journal.",
+        "receiving": "Import journal",
+        "sourceId": "pd-history"
+      }
+    ]
+  }
+}
