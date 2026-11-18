@@ -1,0 +1,40 @@
+{
+  "files": [
+    {
+      "blob": "875f4ba5c4477f6d5c3caa743cb9093b4ebc82b0",
+      "bytes": 2881,
+      "path": "REPORT.md",
+      "sha256": "0a50034707fbf7834eabc8955fc5501051161beeee39cf5ef5aa43c21044bb27"
+    },
+    {
+      "blob": "5e05d5c27c434f81152cfaf26f66773ce1b4e937",
+      "bytes": 2200,
+      "path": "checks.json",
+      "sha256": "a47fa2840d7b93f96707ccd17ec2a058a636b291736f60f66e5bec3dd76ac9f1"
+    },
+    {
+      "blob": "6d4772dd11a3162b45393ab374f21c5326af42d1",
+      "bytes": 707,
+      "path": "publication.json",
+      "sha256": "d5fa0b76444bec1774af7b6e7f6cac1dddf886cb9cde774914331e8ecec8a0b1"
+    },
+    {
+      "blob": "f3ef1fba775431426a097eeed0cc1fc9e37a344a",
+      "bytes": 571,
+      "path": "result.json",
+      "sha256": "51ffa1da74b43c9f906de1deb738f2729891e4851dacaac838de508493251fe0"
+    },
+    {
+      "blob": "dce90f1907931ec2bfce7909e31a7d5c42f28361",
+      "bytes": 1505,
+      "path": "verify.json",
+      "sha256": "fa8987ad0f551d2114b632e7c27fdaa34732121428b61f14643c82231d067fbf"
+    }
+  ],
+  "product_branch": "cloud/gr-mt-oncall-dep-8",
+  "product_head": "96bcc22b78c4c0488d7bd4a7b63c68fc291c0995",
+  "ref": "refs/heads/evidence/gr-mt-oncall-dep-8",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "gr-mt-oncall-dep-8"
+}

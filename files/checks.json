@@ -1,0 +1,93 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/gr-mt-oncall-dep-8",
+  "head": "96bcc22b78c4c0488d7bd4a7b63c68fc291c0995",
+  "base": "82a4b02d2be3a0031afbeb08bca7ccdd25cc5a72",
+  "tree": "b8639f80616f33cb46145a1c73d1caa706e1c40a",
+  "push": {
+    "ref": "refs/heads/cloud/gr-mt-oncall-dep-8",
+    "advertised_head": "96bcc22b78c4c0488d7bd4a7b63c68fc291c0995",
+    "observed_at": "2026-11-18T21:49:02Z"
+  },
+  "toolchain": {
+    "node": "v22.20.0",
+    "pnpm": "10.12.4"
+  },
+  "files": [
+    "package.json",
+    "pnpm-lock.yaml",
+    "sources.lock.json"
+  ],
+  "dependency": {
+    "name": "hono",
+    "before": "4.13.7",
+    "after": "4.13.16",
+    "resolved_versions": [
+      "4.13.16"
+    ],
+    "listed_advisories_affected_before": 5,
+    "listed_advisories_affected_after": 0
+  },
+  "contract": {
+    "clause_changes": 0,
+    "done_before": 26,
+    "done_after": 26,
+    "partial_before": 41,
+    "partial_after": 41,
+    "missing_before": 34,
+    "missing_after": 34
+  },
+  "checks": [
+    {
+      "command": "pnpm add hono@4.13.16 --save-exact --lockfile-only",
+      "exit": 0
+    },
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email [redacted] --non-interactive",
+      "exit": 0,
+      "migrations": 68
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "generated_changes": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=core node tests/runtime.mjs",
+      "exit": 0,
+      "duration_seconds": 166.0
+    },
+    {
+      "command": "node tests/intake.mjs",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check origin/main..HEAD",
+      "exit": 0
+    }
+  ]
+}

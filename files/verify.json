@@ -1,0 +1,46 @@
+{
+  "workflow": "Verify",
+  "event": "push",
+  "observations": [
+    {
+      "id": 44405347928,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "96bcc22b78c4c0488d7bd4a7b63c68fc291c0995",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44405347928",
+      "checked_at": "2026-11-18T21:49:52Z"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "96bcc22b78c4c0488d7bd4a7b63c68fc291c0995",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44405347928",
+      "status": "in_progress",
+      "id": 44405347928,
+      "checked_at": "2026-11-18T21:54:54Z"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "96bcc22b78c4c0488d7bd4a7b63c68fc291c0995",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44405347928",
+      "status": "in_progress",
+      "id": 44405347928,
+      "checked_at": "2026-11-18T21:59:55Z"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "96bcc22b78c4c0488d7bd4a7b63c68fc291c0995",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44405347928",
+      "status": "completed",
+      "id": 44405347928,
+      "checked_at": "2026-11-18T22:04:56Z"
+    }
+  ],
+  "result": {
+    "conclusion": "success",
+    "head_sha": "96bcc22b78c4c0488d7bd4a7b63c68fc291c0995",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44405347928",
+    "status": "completed",
+    "id": 44405347928,
+    "checked_at": "2026-11-18T22:04:56Z"
+  }
+}

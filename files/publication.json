@@ -1,0 +1,30 @@
+{
+  "schema": "rer.publish-check/v3",
+  "status": "PASS",
+  "complete": true,
+  "commit": "96bcc22b78c4c0488d7bd4a7b63c68fc291c0995",
+  "report_sha256": null,
+  "public_base": "82a4b02d2be3a0031afbeb08bca7ccdd25cc5a72",
+  "findings": 0,
+  "pre_existing": 4,
+  "scanner": {
+    "name": "gitleaks",
+    "version": "8.30.1"
+  },
+  "implementation": {
+    "version": "0.2.118",
+    "sha256": "c5f2d788f2f08764cd018e049b507c26f5ac01f651e2e8696398d89a5a886ffb",
+    "python": "3.12.14"
+  },
+  "history": {
+    "scope": "selected-and-public-base",
+    "commits": 1269,
+    "trees": 1223,
+    "blobs": 7553,
+    "commitMessages": 1269,
+    "tagMessages": 26
+  },
+  "guarantees": {
+    "history_scanned": true
+  }
+}
