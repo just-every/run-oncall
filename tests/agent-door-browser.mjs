@@ -4,7 +4,7 @@ import {mkdir} from 'node:fs/promises';
 import {chromium} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {agentRuntime,agentEffectSnapshot,pauseMatrix} from './agent-door-runtime.mjs';
-import {recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy,deadlineTarget} from './oncall-agent-fixtures.mjs';
+import {declareFromAlertParity,recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy,deadlineTarget} from './oncall-agent-fixtures.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-revisions.mjs';
 import {actionSubmitNativeRevision} from './oncall-agent-action-submit-native-revision.mjs';
@@ -17,7 +17,7 @@ import {scribeClearReadback} from './oncall-agent-role-clear-replay.mjs';
 import {accessToken,autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {openIncidentAction} from './keyboard.mjs';
 import {standardServiceRunbookUpdate} from './oncall-agent-service-replay.mjs';
-import {savedServiceRunbookBrowser} from './product-browser-journey.mjs';
+import {declareIncidentFromAlert,savedServiceRunbookBrowser} from './product-browser-journey.mjs';
 
 const weekStart=Date.parse('2026-11-02T00:00:00.000Z'),weekNow=Date.parse('2026-11-04T12:00:00.000Z');
 const runtime=await agentRuntime({clock:null}),directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';
@@ -143,6 +143,34 @@ try{
  console.log('PROBE BASE-AGENT-009 acceptance 3: native MCP at UTC week boundaries, complete paginated audit and Agents at 1440 and 390 -> 210 retained calls, 207 in period, exactly 8 cohorts, multi-class contributions once each, stable records and zero outbound requests');
  await runtime.time(null);
  // The empty outbound ledger above isolates this edit from the later provider fixtures.
+ const declarations=await declareFromAlertParity(runtime,async ({title,alerts:[id]})=>{
+  await page.goto(runtime.origin+'/alerts/'+id);
+  const [response]=await Promise.all([
+   page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().method()==='POST'),
+   declareIncidentFromAlert(page,title),
+  ]);
+  assert.equal(response.status(),200);
+  return response.json();
+ });
+ const savedDeclarations=await agentEffectSnapshot(runtime);
+ for(const {mode,human,agent,humanLabel,agentLabel} of declarations){
+  for(const [door,incident,label] of [['person',human,humanLabel],['agent',agent,agentLabel]]){
+   await capture('alert-declaration-'+mode+'-'+door,'/incidents/'+incident.id,async()=>{
+    await page.locator('.detail').getByRole('heading',{name:incident.title,exact:true}).waitFor();
+    const entry=page.getByRole('region',{name:'Timeline',exact:true}).getByRole('listitem').filter({hasText:'Incident declared'});
+    await entry.getByText(incident.timeline[0].text,{exact:true}).waitFor();
+    await entry.getByText(label,{exact:true}).waitFor();
+    await page.getByRole('region',{name:'Runbook',exact:true}).getByText(incident.runbook[0].text,{exact:true}).waitFor();
+    if(mode==='autonomous'&&door==='person'){
+     await page.getByRole('button',{name:'Incident actions',exact:true}).focus();
+     await page.getByRole('tooltip',{name:'Incident actions',exact:true}).waitFor();
+    }
+   });
+  }
+ }
+ assert.deepEqual(await agentEffectSnapshot(runtime),savedDeclarations,'Viewing saved incidents preserves native and paging custody');
+ assert.deepEqual(await runtime.outboundRequests(),[]);
+ console.log('PROBE BASE-AGENT-002 5 browser: Alert details button and MCP in both policies; saved incidents, runbooks and separate attribution read at 1440 and 390; zero outbound requests');
  await savedServiceRunbookBrowser(page,runtime.origin,await standardServiceRunbookUpdate(runtime));
  await page.setViewportSize({width:1440,height:1000});
  await changedReassignmentReasonConflict(runtime,{async observe({mode,saved,assignee,responder,reason,agentLabel}){
