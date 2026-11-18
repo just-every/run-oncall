@@ -1,0 +1,10 @@
+2026-11-18T03:35:53Z
+Checked source refs/heads/cloud/sd-oncall-import-pagerduty-1-fix-1 at 99d5821836301d0cf2c7788625f92df2c335427d
+Audited 4 candidate commits from origin/main at ec20de7b42e527cd205b7c42c2dde493948eca7f, including all reachable side parents. All use the fleet identity and lack trailers.
+99d5821836301d0cf2c7788625f92df2c335427d
+7de76f30cf89eead92b76c4809cbdd22f85e7883
+eee82a8c0017e95e3e2ecfcf560e2b55657065b9
+cda1b120a26879e65369dafe1e77d6761bc7dcfa
+2026-11-18T03:35:55Z
+Confirmed remote 99d5821836301d0cf2c7788625f92df2c335427d	refs/heads/cloud/sd-oncall-import-pagerduty-1-fix-1-c1
+Confirmed original evidence ref cbcddbe5439e3d11c3f27889f8332d5e555622a1	refs/heads/evidence/sd-oncall-import-pagerduty-1-fix-1

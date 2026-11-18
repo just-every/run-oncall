@@ -1,0 +1,24 @@
+2026-11-18T03:39:03Z
+
+CONTRACT.md at 76e7ed5eb83d6cf3dba8b591a10cf63028eb4f4a
+| Published | 19 | 3 | 0 | 22 |
+| Target and push further | 7 | 38 | 34 | 79 |
+| All | 26 | 41 | 34 | 101 |
+ `OC-021` | Move-in preview | published | done |
+ `OC-022` | Resume and undo | published | done |
+ `OC-038` | Complete incumbent migration and controlled cutover | target | partial |
+ `OC-040` | Retention, erasure and custody | target | partial |
+ `OC-042` | Credential custody and declared external flows | target | partial |
+
+CONTRACT.md at 99d5821836301d0cf2c7788625f92df2c335427d
+| Published | 19 | 3 | 0 | 22 |
+| Target and push further | 7 | 38 | 34 | 79 |
+| All | 26 | 41 | 34 | 101 |
+ `OC-021` | Move-in preview | published | done |
+ `OC-022` | Resume and undo | published | done |
+ `OC-038` | Complete incumbent migration and controlled cutover | target | partial |
+ `OC-040` | Retention, erasure and custody | target | partial |
+ `OC-042` | Credential custody and declared external flows | target | partial |
+
+Handoff ref-only change
+Source and target have the same commit and tree.
