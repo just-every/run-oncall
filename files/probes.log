@@ -1,0 +1,9 @@
+PROBE BASE-AGENT-003 4 declaration autonomous: first completed MCP write link -> full incident equals the write and protected native state; direct autonomous read; zero approvals, unchanged write outcome and native custody, paging OFF, zero outbound requests
+PROBE BASE-AGENT-003 4 declaration held: first completed MCP write link -> full incident equals the write and protected native state; separate open standard read review; zero approvals, unchanged write outcome and native custody, paging OFF, zero outbound requests
+Runtime agents completed (638.6s)
+Browser proof alert-declaration-autonomous-agent 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof alert-declaration-autonomous-agent 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof alert-declaration-held-agent 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof alert-declaration-held-agent 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-003 4 declaration browser: returned incidents under both policies -> saved declaration, copied runbook and agent attribution shown at 1440 and 390; zero outbound requests
+PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements

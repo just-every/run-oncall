@@ -1,0 +1,127 @@
+{
+  "branch": "cloud/sd-oncall-c-f289",
+  "checks": [
+    {
+      "command": "node scripts/verify-oncall-build.mjs",
+      "exit": 0,
+      "head": "278752e5c9b0060e2a589dc2c2b1f0dc58412f0c"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "head": "278752e5c9b0060e2a589dc2c2b1f0dc58412f0c"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "head": "278752e5c9b0060e2a589dc2c2b1f0dc58412f0c"
+    },
+    {
+      "command": "node scripts/verify-ci.mjs --check-workflows",
+      "exit": 0,
+      "head": "278752e5c9b0060e2a589dc2c2b1f0dc58412f0c"
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "exit": 0,
+      "head": "278752e5c9b0060e2a589dc2c2b1f0dc58412f0c"
+    },
+    {
+      "chromium": "/usr/bin/chromium",
+      "command": "node tests/agent-door-browser.mjs",
+      "exit": 0,
+      "head": "278752e5c9b0060e2a589dc2c2b1f0dc58412f0c"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "view_state": "freshly generated"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "diagnostic": "ACCEPTANCE.md: generated content differs; run contract-docs write.",
+      "exit": 1,
+      "view_state": "restored from origin/main"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    }
+  ],
+  "head": "278752e5c9b0060e2a589dc2c2b1f0dc58412f0c",
+  "main_at_latest_fetch": "e4a617f9217e652b05f655b258bdfd102b16b44c",
+  "main_ci_reference": {
+    "Run site": {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "e4a617f9217e652b05f655b258bdfd102b16b44c",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44412152515",
+      "id": 44412152515,
+      "name": "Run site",
+      "status": "completed"
+    },
+    "Verify": {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "e4a617f9217e652b05f655b258bdfd102b16b44c",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44412152106",
+      "id": 44412152106,
+      "name": "Verify",
+      "status": "completed"
+    }
+  },
+  "main_equals_candidate": false,
+  "publication_scan": {
+    "commit": "278752e5c9b0060e2a589dc2c2b1f0dc58412f0c",
+    "complete": null,
+    "findings": null,
+    "historyScanned": null,
+    "status": "deferred to guarded landing"
+  },
+  "run_site": {
+    "status": "deferred to guarded landing"
+  },
+  "save_head": "643714fe17bad5ec6108f2e2eb6f1c5188f590c1",
+  "screenshots": {
+    "alert-declaration-autonomous-agent-1440.png": "f1b447a7a5bf183c397ace125e80577a70dc298f83eb1fc58bc602866c2c8ef8",
+    "alert-declaration-autonomous-agent-390.png": "6c40b4b870458c673072c7b47a76648acd031ea8f8e5784437fe7a96f15e584a",
+    "alert-declaration-held-agent-1440.png": "09c057a10d2f3fdf1f9e4a0716cb0fc226680620f56b77299dba724543a01898",
+    "alert-declaration-held-agent-390.png": "8594095fae53461e6b049c8af1939220f514a24ed2a4ee39f89995609d198af7"
+  },
+  "source_lock_sha256": "7cb7bc01892128214767f3b96c6b3cf9b972f9843e79b04b4649c62ee550e44c",
+  "status_counts_before_and_after": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "superseded_candidate_verify": {
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "04347bf1a87f6d6617ca43dbbf04d9c227703bca",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44410433236",
+    "id": 44410433236,
+    "status": "in_progress"
+  },
+  "tag": "sd-oncall-c-f289",
+  "test_registrations_added": 0,
+  "verify": {
+    "conclusion": null,
+    "detail": "The final REST poll returned queued. The earlier poll returned in progress. Candidate Verify has no terminal conclusion.",
+    "event": "push",
+    "head_branch": "cloud/sd-oncall-c-f289",
+    "head_sha": "278752e5c9b0060e2a589dc2c2b1f0dc58412f0c",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44417255890",
+    "id": 44417255890,
+    "name": "Verify",
+    "status": "queued"
+  }
+}
