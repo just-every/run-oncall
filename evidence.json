@@ -1,0 +1,70 @@
+{
+  "files": [
+    {
+      "blob": "3ce0fd2d0eb62fec0c2b7b5111d6087165f6972c",
+      "bytes": 11309,
+      "path": "REPORT.md",
+      "sha256": "5a7ae8b1baff8673f6634c32f8702401fe71eb0aaf7266f0eadb748a251b5ee0"
+    },
+    {
+      "blob": "b4233fba041224efe8c7e3c8393a53f6e062d9a9",
+      "bytes": 15544,
+      "path": "VERIFICATION.json",
+      "sha256": "ed2ed486199edabbdfd80d1c0a0b37632111760f8de18d77d2b77c9fdbf99b77"
+    },
+    {
+      "blob": "bcdeee29a7a758d0a6c10a797598440529d2b1cb",
+      "bytes": 368130,
+      "path": "screens/agent-door-scribe-autonomous-cleared-people-1440.png",
+      "sha256": "4071290372e1891d25891ff4c5b0c9396455c8f608186c5111d33b749007ed5f"
+    },
+    {
+      "blob": "5d3b45b554bf11dc5c0be3cd6e0d1bf574c16db1",
+      "bytes": 68767,
+      "path": "screens/agent-door-scribe-autonomous-cleared-people-390.png",
+      "sha256": "3b917c9097374dac7bc80e5b160a31ac2909ff9be1a13554cdc09bbcfc693e38"
+    },
+    {
+      "blob": "e61772808f6b846c6ccdde25073eb58f426c2c1f",
+      "bytes": 382541,
+      "path": "screens/agent-door-scribe-autonomous-cleared-timeline-1440.png",
+      "sha256": "687603abba76d7b86a335a72c9cadfa61a7a4d69300b4dfd26373903c00220e0"
+    },
+    {
+      "blob": "23fdaaca03ec6b1ba0ab4ddc2121fd054a59b3f1",
+      "bytes": 107213,
+      "path": "screens/agent-door-scribe-autonomous-cleared-timeline-390.png",
+      "sha256": "2e1c372a6fd580b85fbb31e2dad4a190764b6500bd0807ac372f44b3c8c8526e"
+    },
+    {
+      "blob": "5a35da269399f22bf1efa4252efbc57bac5fedd3",
+      "bytes": 384282,
+      "path": "screens/agent-door-scribe-cleared-people-1440.png",
+      "sha256": "7ee572203183a38cb7dcd04871dc7c3e44b4cffaa02060d568ad2ef02e1d92dc"
+    },
+    {
+      "blob": "db9413bc990ade43c9f7549af9e7133f9bb53752",
+      "bytes": 68061,
+      "path": "screens/agent-door-scribe-cleared-people-390.png",
+      "sha256": "8dfacaa66a1dbb33c86999d02468d71fe48efd08d5105e02cf05045937982695"
+    },
+    {
+      "blob": "ef220804f34d42b3254ab907329bd344cf3a3fad",
+      "bytes": 397127,
+      "path": "screens/agent-door-scribe-cleared-timeline-1440.png",
+      "sha256": "14e859aece4c25c89497c54bfe17ac57c574e5de0e002535ccac40822f4c7e6d"
+    },
+    {
+      "blob": "b3146ab7a308de484d3f71d915d152b2e13d42bc",
+      "bytes": 105473,
+      "path": "screens/agent-door-scribe-cleared-timeline-390.png",
+      "sha256": "ee8243876cb71c92a6a4bbacccd6533292a9d6ff794835be559f970a440c64c2"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f271",
+  "product_head": "54b973e8d4d712b2913f18e5ed5ccb148e2a5a7f",
+  "ref": "refs/heads/evidence/sd-oncall-c-f271",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f271"
+}
