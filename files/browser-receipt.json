@@ -1,0 +1,23 @@
+{
+  "observedAt": "2026-11-18T01:25:39.258Z",
+  "revision": "169944d31dca8a2987da32603b1ab56003d22153",
+  "assertionWidth": 1440,
+  "screenshotWidths": [
+    1440,
+    390
+  ],
+  "timeoutMinutes": 1,
+  "intakeStatus": 202,
+  "scheduledStatus": 200,
+  "missedAt": "2026-11-18T01:26:35.479Z",
+  "responder": "Example On-call Responder",
+  "timelineEntries": 1,
+  "paging": "off",
+  "screens": {
+    "incident": "Not acknowledged in time · missed at Nov 18, 2026, 01:26 AM UTC (GMT+0). Example On-call Responder was on call. Paging is off.",
+    "alert": "Not acknowledged in time · missed at Nov 18, 2026, 01:26 AM UTC (GMT+0). Example On-call Responder was on call. Paging is off.",
+    "on-call": "Not acknowledged in time · missed at Nov 18, 2026, 01:26 AM UTC (GMT+0). Example On-call Responder was on call. Paging is off.",
+    "reviews": "Not acknowledged in time · missed at Nov 18, 2026, 01:26 AM UTC (GMT+0). Example On-call Responder was on call. Paging is off."
+  },
+  "browserErrors": []
+}

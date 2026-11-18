@@ -1,0 +1,167 @@
+{
+  "runId": 44215774903,
+  "name": "Verify",
+  "event": "push",
+  "observedAt": "2026-11-18T01:41:57Z",
+  "final": {
+    "conclusion": "success",
+    "head_sha": "169944d31dca8a2987da32603b1ab56003d22153",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44215774903",
+    "status": "completed"
+  },
+  "discovery": {
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "169944d31dca8a2987da32603b1ab56003d22153",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44215774903",
+    "id": 44215774903,
+    "name": "Verify",
+    "status": "in_progress"
+  },
+  "polls": [
+    {
+      "conclusion": null,
+      "head_sha": "169944d31dca8a2987da32603b1ab56003d22153",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44215774903",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "169944d31dca8a2987da32603b1ab56003d22153",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44215774903",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "169944d31dca8a2987da32603b1ab56003d22153",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44215774903",
+      "status": "completed"
+    }
+  ],
+  "pullRequest": null,
+  "priorIntakeFailureRunId": 44201744450,
+  "rerunsRequested": 0,
+  "jobsObservedAt": "2026-11-18T01:51:42Z",
+  "jobs": [
+    {
+      "conclusion": "success",
+      "head_sha": "169944d31dca8a2987da32603b1ab56003d22153",
+      "id": 134505100321,
+      "name": "plan",
+      "run_attempt": 1,
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "169944d31dca8a2987da32603b1ab56003d22153",
+      "id": 134505247812,
+      "name": "contract-docs",
+      "run_attempt": 1,
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "169944d31dca8a2987da32603b1ab56003d22153",
+      "id": 134505247881,
+      "name": "build",
+      "run_attempt": 1,
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "head_sha": "169944d31dca8a2987da32603b1ab56003d22153",
+      "id": 134505249531,
+      "name": "light",
+      "run_attempt": 1,
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "169944d31dca8a2987da32603b1ab56003d22153",
+      "id": 134506460119,
+      "name": "shards (transfer)",
+      "run_attempt": 1,
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "169944d31dca8a2987da32603b1ab56003d22153",
+      "id": 134506460139,
+      "name": "shards (runtime)",
+      "run_attempt": 1,
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "169944d31dca8a2987da32603b1ab56003d22153",
+      "id": 134506460140,
+      "name": "shards (intake)",
+      "run_attempt": 1,
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "169944d31dca8a2987da32603b1ab56003d22153",
+      "id": 134506460187,
+      "name": "shards (hosted)",
+      "run_attempt": 1,
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "169944d31dca8a2987da32603b1ab56003d22153",
+      "id": 134506460196,
+      "name": "shards (triage)",
+      "run_attempt": 1,
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "169944d31dca8a2987da32603b1ab56003d22153",
+      "id": 134506460256,
+      "name": "shards (agents)",
+      "run_attempt": 1,
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "169944d31dca8a2987da32603b1ab56003d22153",
+      "id": 134506460319,
+      "name": "shards (changes)",
+      "run_attempt": 1,
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "169944d31dca8a2987da32603b1ab56003d22153",
+      "id": 134506460341,
+      "name": "shards (browser)",
+      "run_attempt": 1,
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "169944d31dca8a2987da32603b1ab56003d22153",
+      "id": 134511717622,
+      "name": "full-push-proof",
+      "run_attempt": 1,
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "head_sha": "169944d31dca8a2987da32603b1ab56003d22153",
+      "id": 134511719652,
+      "name": "nightly-proof",
+      "run_attempt": 1,
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "169944d31dca8a2987da32603b1ab56003d22153",
+      "id": 134511758498,
+      "name": "verify",
+      "run_attempt": 1,
+      "status": "completed"
+    }
+  ]
+}

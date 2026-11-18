@@ -1,0 +1,84 @@
+{
+  "observedAt": "2026-11-18T01:27:26+00:00",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-missed-ack-4",
+  "head": "169944d31dca8a2987da32603b1ab56003d22153",
+  "parent": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+  "candidateCommits": 1,
+  "mergeCommits": 0,
+  "priorHeads": {
+    "1": "2f02a12bc54cd0d48c46132b331239ae6562d876",
+    "2": "e45028ce37460855f9ff1e87924236b969e0dda7",
+    "3": "22dfa7c115773cd59de20d1662183119b15638bb"
+  },
+  "changedPaths": [
+    "docs/getting-started.md",
+    "sources.lock.json",
+    "src/alerts/AlertPage.tsx",
+    "src/incident-deadlines/Controls.tsx",
+    "src/incident-deadlines/Status.tsx",
+    "src/incident-deadlines/archive.ts",
+    "src/incident-deadlines/model.ts",
+    "src/incident-deadlines/types.ts",
+    "src/incident/IncidentPage.tsx",
+    "src/incident/types.ts",
+    "src/manual-pages/context.ts",
+    "src/manual-pages/model.ts",
+    "src/on-call/OnCallHome.tsx",
+    "src/response-policy/model.ts",
+    "src/reviews/ReviewsHome.tsx",
+    "tests/missed-ack-flow.mjs",
+    "tests/runtime.mjs"
+  ],
+  "scopeMatchesRound": true,
+  "sourceLockSha256": "b054ceb51482f71e899c7e4132fcfd868772870a8f5dbc00a34c4ea5f7e83084",
+  "checks": {
+    "contract generator and check": "pass; wrote zero documents",
+    "source lock regeneration and check": "pass",
+    "git diff --check and fleet identity": "pass",
+    "pnpm exec rer check --profile first-party": "pass",
+    "npx -y @runeditrun/rer build": "pass",
+    "pnpm run typecheck": "pass",
+    "pinned release metadata validators": "pass",
+    "focused emitted-Worker OC-058 and missed acknowledgment": "pass",
+    "four-screen Chromium journey": "pass; 1440 assertions and 1440/390 captures",
+    "local intake shard journeys": "pass (machine runtime, compatible intake and routing)",
+    "local aggregate rer verify": {
+      "exitCode": 1,
+      "stop": "loopback ECONNRESET on GET /api/email during the existing OC-070 browser journey",
+      "standaloneJourneyRetry": "pass",
+      "sameShaGitHubBrowserShard": "success"
+    },
+    "existing alert notification run browser replay": "pass"
+  },
+  "focusedJourney": [
+    "OC-058 scheduled snooze: absolute replacement, never-early boundary, restart and concurrent/double sweep produce one deterministic re-trigger obligation with paging OFF",
+    "OC-058 timeout: each new acknowledgment starts a new versioned deadline and current level-one coverage is resolved only when it fires",
+    "OC-058 snooze handoff: departed assignee is replaced by current on-call at the captured level, with no invented level or delivery",
+    "OC-058 checkpoint receiving duty: pending snooze restored held and scheduled work never resumes it",
+    "OC-058 OC-053 API incident door: scoped snooze and repeated idempotency key retain one pending absolute deadline",
+    "OC-058 cancellation and gaps: resolution and explicit cancellation stop deadlines; missing current on-call is a retained operator-visible failure, never silence",
+    "OC-058 scheduled source recovery: a source recovered mid-snooze remains acknowledged after the deadline with no re-trigger obligation",
+    "OC-058 atomic deadline custody: failed permanent audit rolls back snooze and scheduled expiry together; the durable pending item remains visible and a later sweep commits exactly once",
+    "PASS missedAcknowledgmentFlow: initial expiry survives restart and audit rollback, repeated/concurrent cron records once, deadline coverage survives delayed processing, late acknowledgment retains the miss, on-time acknowledgment/recovery/off stop it, uncovered target is explicit, archive accepted, paging OFF"
+  ],
+  "contractCounts": {
+    "before": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "after": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "clauseStatusChanges": [],
+  "productPush": {
+    "attempts": 1,
+    "verifiedRemoteHead": "169944d31dca8a2987da32603b1ab56003d22153"
+  }
+}

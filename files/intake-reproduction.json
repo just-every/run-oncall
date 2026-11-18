@@ -1,0 +1,18 @@
+{
+  "intakeStatus": 202,
+  "stateStatus": 200,
+  "eventAcceptedAt": "2026-11-17T23:59:30.000Z",
+  "policyPublishedAt": "2026-11-18T01:26:24.800Z",
+  "retainedMode": "alert-only",
+  "incidentFound": false,
+  "previousHead": "22dfa7c115773cd59de20d1662183119b15638bb",
+  "journey": "OC-058 and missedAcknowledgmentFlow through emitted Worker",
+  "failure": "First incident lookup immediately after intake returned no incident",
+  "previousVerify": {
+    "runId": 44201744450,
+    "attempt": 2,
+    "conclusion": "failure",
+    "job": "shards (intake)"
+  },
+  "capturedAt": "2026-11-18T01:24:49+00:00"
+}
