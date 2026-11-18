@@ -1287,6 +1287,8 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 
 **Requirement.** Each tool carries the classes computed by Oncall's class rules in this area.
 
+**Local proof (Run Edit Run fleet, 18 November 2026).** In `standardServiceRunbookUpdate` in `tests/oncall-agent-service-replay.mjs`, the emitted Worker accepted a runbook-only `oncall.services.update` from an admin-sponsored agent using the current projected ETag. Both policies returned exactly the standard class and committed the edit once. The autonomous call completed without a review, and the held call completed with one open review. The protected state read retained the service name, environment, owner, dependencies, pager and team, and the previously declared incident retained its original copied steps. Each edit advanced the workspace by one revision and wrote one agent-attributed native service audit commit naming its sponsor. Paging stayed OFF with unchanged custody and zero outbound requests. `savedServiceRunbookBrowser` in `tests/product-browser-journey.mjs` read the same saved literal steps after reloading the service Settings page, with captures at 1440 and 390 pixels.
+
 **Acceptance.** Through MCP on Oncall's fixtures:
 1. `oncall.services.update` is standard for a runbook edit and adds access when it changes a team's members or a private team's scope. `oncall.actions.update` is standard for a library definition edit and adds access when it changes the action's allowed teams or roles.
 2. `oncall.contacts.update` is standard for a destination-label edit, adds live when a notification-channel or delay change affects who is paged or when, and adds gated when it verifies a destination.

@@ -15,6 +15,8 @@ import {actionSubmitResponseLoss} from './oncall-agent-action-submit-response-lo
 import {changedReassignmentReasonConflict} from './oncall-agent-incident-replay.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {openIncidentAction} from './keyboard.mjs';
+import {standardServiceRunbookUpdate} from './oncall-agent-service-replay.mjs';
+import {savedServiceRunbookBrowser} from './product-browser-journey.mjs';
 
 const weekStart=Date.parse('2026-11-02T00:00:00.000Z'),weekNow=Date.parse('2026-11-04T12:00:00.000Z');
 const runtime=await agentRuntime({clock:null}),directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';
@@ -139,6 +141,8 @@ try{
  assert.deepEqual(await runtime.outboundRequests(),[],'Audit and Agents reads attempt zero outbound requests');
  console.log('PROBE BASE-AGENT-009 acceptance 3: native MCP at UTC week boundaries, complete paginated audit and Agents at 1440 and 390 -> 210 retained calls, 207 in period, exactly 8 cohorts, multi-class contributions once each, stable records and zero outbound requests');
  await runtime.time(null);
+ // The empty outbound ledger above isolates this edit from the later provider fixtures.
+ await savedServiceRunbookBrowser(page,runtime.origin,await standardServiceRunbookUpdate(runtime));
  await page.setViewportSize({width:1440,height:1000});
  await changedReassignmentReasonConflict(runtime,{async observe({mode,saved,assignee,responder,reason,agentLabel}){
   const before=await agentEffectSnapshot(runtime);
