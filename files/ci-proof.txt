@@ -1,0 +1,28 @@
+Exact candidate 1537ad2034cf6abec66909a226fdd6afabc1df80
+Push Verify 44224157138 completed with the generated-view freshness exception.
+134533088090	plan	completed	success	
+134533229043	contract-docs	completed	failure	Check the generated contract documents
+134533229142	build	completed	success	
+134533231683	light	completed	skipped	
+134534425494	shards (runtime)	completed	success	
+134534425533	shards (triage)	completed	success	
+134534425537	shards (intake)	completed	success	
+134534425567	shards (browser)	completed	success	
+134534425613	shards (hosted)	completed	success	
+134534425615	shards (changes)	completed	success	
+134534425628	shards (agents)	completed	success	
+134534425651	shards (transfer)	completed	success	
+134539333398	full-push-proof	completed	success	
+134539335968	nightly-proof	completed	skipped	
+134539362912	verify	completed	failure	Require the selected coverage and its proof
+
+Archive excerpt from job 134533229043
+contract-docs	Check the generated contract documents	2026-11-18T02:34:18.6814975Z ACCEPTANCE.md: generated content differs; run contract-docs write.
+contract-docs	Check the generated contract documents	2026-11-18T02:34:18.6918811Z ##[error]Process completed with exit code 1.
+
+Archive excerpt from job 134539362912
+verify	Require the selected coverage and its proof	2026-11-18T02:49:35.8952975Z   CONTRACT_DOCS: failure
+verify	Require the selected coverage and its proof	2026-11-18T02:49:35.9091917Z ##[error]Process completed with exit code 1.
+
+Locally regenerated contract documents passed their check. After restoring the generated views from main, the check identified ACCEPTANCE.md only.
+MECHANICAL lock=node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock and check exit=0; views=node src/base/contract-docs.mjs write and check exit=0; ledger=none exit=0

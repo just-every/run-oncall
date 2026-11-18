@@ -1,0 +1,58 @@
+{
+  "files": [
+    {
+      "blob": "c8d8103c0bec7e2fdd4a08512191b49d8a1596c2",
+      "bytes": 9709,
+      "path": "REPORT.md",
+      "sha256": "d06d8d77b5c41759953e9990986d15f6b8bf50b762a062fe672a0ff22b010506"
+    },
+    {
+      "blob": "07281645ed349e0c1ade22f82d62bbb348d0102f",
+      "bytes": 1810,
+      "path": "ci-proof.txt",
+      "sha256": "8502183ecf5bc635239bdca03117a0e0fc6a0086102bc8c49b1ffbd7f2b52190"
+    },
+    {
+      "blob": "767ee4ebab8e44c01645eb57a57f25c57a482c41",
+      "bytes": 1569,
+      "path": "probe-results.txt",
+      "sha256": "8009d6e5f51f31528f067bebd3d6a541a4bd93fbfb0167960cef77ed23e94a47"
+    },
+    {
+      "blob": "54b08ef2a188ff8dcc5ad436b9d14889c4286f73",
+      "bytes": 172774,
+      "path": "reassignment-autonomous-1440.png",
+      "sha256": "75cc8346b66d0f0474b510a961162dd420326c31265f01483c38097d5b64d0a3"
+    },
+    {
+      "blob": "bcf704cb1e4d7acb7e310c967155727fdc002bab",
+      "bytes": 108876,
+      "path": "reassignment-autonomous-390.png",
+      "sha256": "06ea3ae76a117e83e499e77c101d771383df2ff37c9988857da0b551fdc50746"
+    },
+    {
+      "blob": "c4e07e3eb46a54dfa37b9cc0c5ce18ad7e1ea290",
+      "bytes": 188407,
+      "path": "reassignment-held-1440.png",
+      "sha256": "3726604bf94096088db4802a3800f04f800867a56c04ae3681a9d73a95b30405"
+    },
+    {
+      "blob": "4312a27c2f78f51a92a75a150473445096326c5d",
+      "bytes": 107105,
+      "path": "reassignment-held-390.png",
+      "sha256": "9be794b9f4e8c8a4680fe57541a55311405d725b6cd1a023b0a137f90a979cba"
+    },
+    {
+      "blob": "b8891766f87550ca1cde9a619292e96e19376ea5",
+      "bytes": 12291,
+      "path": "receipt.json",
+      "sha256": "16dbe124255f538124f983f6ef95e3736abb8a8d394e4504219b51c459ec35f7"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f269",
+  "product_head": "1537ad2034cf6abec66909a226fdd6afabc1df80",
+  "ref": "refs/heads/evidence/sd-oncall-c-f269",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f269"
+}

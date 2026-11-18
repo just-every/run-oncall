@@ -1,0 +1,12 @@
+Emitted Worker and D1 runtime journey
+PROBE BASE-AGENT-003 authority: revoked scoped bearer -> 401; erased incident and handoff links -> Resource unavailable; captured note -> not_found; native and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-003 4 autonomous: original reassignment link -> full write and protected native state equality, new assignee and attributed timeline, unchanged companion roles; autonomous read without review; native records, revisions, state-changing audit and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-003 4 held: original reassignment link -> full write and protected native state equality, new assignee and attributed timeline, unchanged companion roles; separate open read review and original write review unchanged; native records, revisions, state-changing audit and paging unchanged; zero outbound requests
+Runtime agents completed (495.6s)
+
+Chromium browser journey
+Browser proof reassignment-readback-autonomous 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof reassignment-readback-autonomous 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof reassignment-readback-held 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof reassignment-readback-held 390: fits=true serious/critical=0 undersized-controls=0
+PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements

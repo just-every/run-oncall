@@ -1,0 +1,410 @@
+{
+  "after_counts": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "base": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+  "before_counts": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "branch": "cloud/sd-oncall-c-f269",
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email <fleet> --non-interactive",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "head": "1537ad2034cf6abec66909a226fdd6afabc1df80"
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "coverage": "both company policies",
+      "exit": 0,
+      "proof": "emitted Worker and D1"
+    },
+    {
+      "command": "node tests/agent-door-browser.mjs",
+      "executable": "/usr/bin/chromium",
+      "exit": 0,
+      "proof": "selected 1440 and 390 screenshots"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "head": "1537ad2034cf6abec66909a226fdd6afabc1df80"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "head": "1537ad2034cf6abec66909a226fdd6afabc1df80"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check after write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check after restoring main views",
+      "exit": 1,
+      "expected": true,
+      "files": [
+        "ACCEPTANCE.md"
+      ]
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "head": "1537ad2034cf6abec66909a226fdd6afabc1df80"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "clause": {
+    "acceptance_points_changed": false,
+    "contract_status": "missing",
+    "id": "BASE-AGENT-003",
+    "observed_point": 4,
+    "status_table_changed": false
+  },
+  "head": "1537ad2034cf6abec66909a226fdd6afabc1df80",
+  "initial_main_checks": [
+    {
+      "conclusion": "success",
+      "event": "dynamic",
+      "head_sha": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44207846311",
+      "id": 44207846311,
+      "name": "Push on main",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44207847848",
+      "id": 44207847848,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "event": "push",
+      "head_sha": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44207847863",
+      "id": 44207847863,
+      "name": "Run demo",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44207847779",
+      "id": 44207847779,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44201936726",
+      "id": 44201936726,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "local_evidence": {
+    "browser_exit": 0,
+    "generated_views_restored": true,
+    "probe_result_file": "probe-results.txt",
+    "runtime_seconds": 495.6
+  },
+  "node": "22.20.0",
+  "observed_utc": "2026-11-18T03:05:01+00:00",
+  "pnpm": "10.12.4",
+  "post_push_main": {
+    "head": "8215674a456bc19361dd21d224c6dd77e60f3262",
+    "merge_preview_conflicts": [
+      "sources.lock.json"
+    ],
+    "subject": "Reapply action evidence completion replay on current main"
+  },
+  "predecessors": {
+    "refs/heads/cloud/sd-oncall-c-f228": "0aa680bcde80637ca688881af05ba23b87f7b2cc",
+    "refs/heads/cloud/sd-oncall-c-f229": "c4d1659997f1f5a785e39e4de3549b9e3990be38",
+    "refs/heads/cloud/sd-oncall-c-f265": "bcd444494196597c1834818c2c78d3d8c13b6aa9",
+    "refs/heads/cloud/sd-oncall-c-f266": "de9ca112a947692bd3cc847508fbae57cb5cc0e7",
+    "refs/heads/cloud/sd-oncall-c-f269": "128777ec582de744c7529540df1cec4d6b784c12",
+    "refs/heads/main": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4"
+  },
+  "publication_scan": {
+    "commit": "1537ad2034cf6abec66909a226fdd6afabc1df80",
+    "complete": null,
+    "findings": null,
+    "historyScanned": null,
+    "status": "pending guarded lander"
+  },
+  "push": {
+    "candidate": "success",
+    "identity_and_trailers_checked": 2,
+    "save": "success"
+  },
+  "repository": "just-every/run-oncall",
+  "rer": "0.2.118",
+  "run_site": {
+    "current_candidate": "pending guarded landing",
+    "main_build": 44207847848
+  },
+  "save": "128777ec582de744c7529540df1cec4d6b784c12",
+  "screens": [
+    {
+      "file": "reassignment-autonomous-1440.png",
+      "fits": true,
+      "height": 1060,
+      "mode": "autonomous",
+      "serious_or_critical_findings": 0,
+      "sha256": "75cc8346b66d0f0474b510a961162dd420326c31265f01483c38097d5b64d0a3",
+      "undersized_controls": 0,
+      "width": 1440
+    },
+    {
+      "file": "reassignment-autonomous-390.png",
+      "fits": true,
+      "height": 1400,
+      "mode": "autonomous",
+      "serious_or_critical_findings": 0,
+      "sha256": "06ea3ae76a117e83e499e77c101d771383df2ff37c9988857da0b551fdc50746",
+      "undersized_controls": 0,
+      "width": 390
+    },
+    {
+      "file": "reassignment-held-1440.png",
+      "fits": true,
+      "height": 1060,
+      "mode": "held",
+      "serious_or_critical_findings": 0,
+      "sha256": "3726604bf94096088db4802a3800f04f800867a56c04ae3681a9d73a95b30405",
+      "undersized_controls": 0,
+      "width": 1440
+    },
+    {
+      "file": "reassignment-held-390.png",
+      "fits": true,
+      "height": 1374,
+      "mode": "held",
+      "serious_or_critical_findings": 0,
+      "sha256": "9be794b9f4e8c8a4680fe57541a55311405d725b6cd1a023b0a137f90a979cba",
+      "undersized_controls": 0,
+      "width": 390
+    }
+  ],
+  "source_lock_sha256": "82b22462365d446f7478e9081955ce5f96f166a0b7a8de93d9ae854d186079c8",
+  "source_receipts": {
+    "CONTRACT.md": {
+      "git_blob": "ef827bc1c0e87efd59c2cc1549f6ffd6ee3312ad",
+      "line": 1018,
+      "sha256": "8740eb83675a0074d55ea10b6a651972a6c2a6e2cf77494051744b300fba468b"
+    },
+    "tests/agent-door-browser.mjs": {
+      "git_blob": "e253e873ab9ad1c1239f0cd626f0b0cb15b1e26d",
+      "line": 143,
+      "sha256": "2813557b7b1424342bfead5c5e6dc05b5ed1ef742a135bc30a48eec8369a2c3a"
+    },
+    "tests/agent-door-runtime.mjs": {
+      "git_blob": "727aa46c853a52b0f70eef8275c8a419e15a554b",
+      "line": 119,
+      "sha256": "a829a182bb444cc39b353378aea16d8255832b167bb3cfec1452d54c7563d898"
+    },
+    "tests/oncall-agent-flow.mjs": {
+      "git_blob": "252c05a42fe6d887b33077f38ade219a96f4adbc",
+      "line": 658,
+      "sha256": "784b1f19abcdbdd2d9ec7c329be12d21853562705cbe33249731a0d34bd9c027"
+    },
+    "tests/oncall-agent-incident-replay.mjs": {
+      "git_blob": "3271025c08dd30c80d278f7c60e5336544328c8a",
+      "line": 119,
+      "sha256": "47cad9bff029eb60f5ee5c47a94103386cc766c0195d7139eaf5b5155b90253f"
+    },
+    "tests/oncall-agent-resource-parity.mjs": {
+      "git_blob": "36156aefa2ae871786448d5c69f5c19dc10ac17f",
+      "line": 23,
+      "sha256": "b155e184a03519dc7359b9c6c7abcfb2ae93d348e8bbdacbb5c88d155a776bfa"
+    },
+    "tests/oncall-agent-resources.mjs": {
+      "git_blob": "ef04779c075e9ff345155a8648c49bbb5bf004d7",
+      "line": 8,
+      "sha256": "8cf8c9bafd355a973fc0f23f5ea7a72df0dbacbd7d891def04da8d8984a823cb"
+    },
+    "tests/runtime.mjs": {
+      "git_blob": "6aa0650f9fafdea3e77aa512ceec6f7f9097ee55",
+      "line": 141,
+      "sha256": "80cdd47e231c47e895f8ce308206256a896762fdc0083ec4eb8b7eb4ea41eec3"
+    }
+  },
+  "tag": "sd-oncall-c-f269",
+  "terminal_refs": {
+    "refs/heads/cloud/sd-oncall-c-f269": "1537ad2034cf6abec66909a226fdd6afabc1df80",
+    "refs/heads/main": "8215674a456bc19361dd21d224c6dd77e60f3262"
+  },
+  "verify": {
+    "conclusion": "failure",
+    "event": "push",
+    "head_branch": "cloud/sd-oncall-c-f269",
+    "head_sha": "1537ad2034cf6abec66909a226fdd6afabc1df80",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44224157138",
+    "id": 44224157138,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "verify_jobs": [
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "1537ad2034cf6abec66909a226fdd6afabc1df80",
+      "id": 134533088090,
+      "name": "plan",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        {
+          "conclusion": "failure",
+          "name": "Check the generated contract documents",
+          "number": 4
+        }
+      ],
+      "head_sha": "1537ad2034cf6abec66909a226fdd6afabc1df80",
+      "id": 134533229043,
+      "name": "contract-docs",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "1537ad2034cf6abec66909a226fdd6afabc1df80",
+      "id": 134533229142,
+      "name": "build",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "head_sha": "1537ad2034cf6abec66909a226fdd6afabc1df80",
+      "id": 134533231683,
+      "name": "light",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "1537ad2034cf6abec66909a226fdd6afabc1df80",
+      "id": 134534425494,
+      "name": "shards (runtime)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "1537ad2034cf6abec66909a226fdd6afabc1df80",
+      "id": 134534425533,
+      "name": "shards (triage)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "1537ad2034cf6abec66909a226fdd6afabc1df80",
+      "id": 134534425537,
+      "name": "shards (intake)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "1537ad2034cf6abec66909a226fdd6afabc1df80",
+      "id": 134534425567,
+      "name": "shards (browser)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "1537ad2034cf6abec66909a226fdd6afabc1df80",
+      "id": 134534425613,
+      "name": "shards (hosted)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "1537ad2034cf6abec66909a226fdd6afabc1df80",
+      "id": 134534425615,
+      "name": "shards (changes)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "1537ad2034cf6abec66909a226fdd6afabc1df80",
+      "id": 134534425628,
+      "name": "shards (agents)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "1537ad2034cf6abec66909a226fdd6afabc1df80",
+      "id": 134534425651,
+      "name": "shards (transfer)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "1537ad2034cf6abec66909a226fdd6afabc1df80",
+      "id": 134539333398,
+      "name": "full-push-proof",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "head_sha": "1537ad2034cf6abec66909a226fdd6afabc1df80",
+      "id": 134539335968,
+      "name": "nightly-proof",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        {
+          "conclusion": "failure",
+          "name": "Require the selected coverage and its proof",
+          "number": 2
+        }
+      ],
+      "head_sha": "1537ad2034cf6abec66909a226fdd6afabc1df80",
+      "id": 134539362912,
+      "name": "verify",
+      "status": "completed"
+    }
+  ]
+}
