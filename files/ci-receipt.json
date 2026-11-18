@@ -1,0 +1,43 @@
+{
+  "compiled_at_utc": "2026-11-18T00:11:55+00:00",
+  "repository": "just-every/run-oncall",
+  "product_branch": "cloud/sd-oncall-c-f263-lin-1",
+  "product_head": "ee04767ba115fc758347cef364eb033c8f300a51",
+  "product_push_attempts": 1,
+  "product_push_readback_utc": "2026-11-17T23:56:05Z",
+  "product_ref_verified": true,
+  "verify_run_id": 44203618419,
+  "verify_run_url": "https://github.com/just-every/run-oncall/actions/runs/44203618419",
+  "verify_event": "push",
+  "verify_checks": [
+    {
+      "observed_at_utc": "2026-11-17T23:56:45Z",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "ee04767ba115fc758347cef364eb033c8f300a51"
+    },
+    {
+      "observed_at_utc": "2026-11-18T00:01:46Z",
+      "conclusion": null,
+      "head_sha": "ee04767ba115fc758347cef364eb033c8f300a51",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44203618419",
+      "status": "in_progress"
+    },
+    {
+      "observed_at_utc": "2026-11-18T00:06:47Z",
+      "conclusion": null,
+      "head_sha": "ee04767ba115fc758347cef364eb033c8f300a51",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44203618419",
+      "status": "in_progress"
+    },
+    {
+      "observed_at_utc": "2026-11-18T00:11:48Z",
+      "conclusion": "success",
+      "head_sha": "ee04767ba115fc758347cef364eb033c8f300a51",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44203618419",
+      "status": "completed"
+    }
+  ],
+  "pull_requests": [],
+  "pull_requests_checked_at_utc": "2026-11-17T23:56:28Z"
+}

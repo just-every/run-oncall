@@ -1,0 +1,32 @@
+{
+  "checked_at_utc": "2026-11-17T23:45:38+00:00",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f263-lin-1",
+  "candidate": "ee04767ba115fc758347cef364eb033c8f300a51",
+  "direct_parent": "76e7ed5eb83d6cf3dba8b591a10cf63028eb4f4a",
+  "candidate_commits": 1,
+  "candidate_merges": 0,
+  "feeder": "e70051e60c403f6bd99c992871751ee42d7963a0",
+  "feeder_merge_base": "53b2694d100a30707210aafa41207ff4ee451c34",
+  "feeder_only_commits": [
+    "7d77358cfd4c7979d77553cf3c6b574bf2456957 Prove evidence-policy completion replay and conflict [skip ci]",
+    "e70051e60c403f6bd99c992871751ee42d7963a0 Verify completed evidence material and retained replay custody"
+  ],
+  "test_insertions_over_main": {
+    "tests/agent-door-browser.mjs": 58,
+    "tests/oncall-agent-flow.mjs": 2
+  },
+  "main_test_insertions_over_feeder": {
+    "tests/agent-door-browser.mjs": 32,
+    "tests/oncall-agent-flow.mjs": 2
+  },
+  "helper_blob_matches_feeder": true,
+  "contract_and_views_match_main": true,
+  "updated_source_lock_entries": [
+    "tests/agent-door-browser.mjs",
+    "tests/oncall-agent-action-evidence-replay.mjs",
+    "tests/oncall-agent-flow.mjs"
+  ],
+  "verify_plan_command_entries_before": 21,
+  "verify_plan_command_entries_after": 21
+}

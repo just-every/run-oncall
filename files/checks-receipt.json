@@ -1,0 +1,152 @@
+{
+  "compiled_at_utc": "2026-11-17T23:56:00+00:00",
+  "head_sha": "ee04767ba115fc758347cef364eb033c8f300a51",
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "chromium": "Chromium 154.0.8037.57 built on Debian GNU/Linux 13 (trixie)",
+  "commands": {
+    "contract": {
+      "command": "node src/base/contract-docs.mjs check",
+      "started_utc": "2026-11-17T23:42:37Z",
+      "finished_utc": "2026-11-17T23:42:38Z",
+      "exit": 0
+    },
+    "lock": {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "started_utc": "2026-11-17T23:42:38Z",
+      "finished_utc": "2026-11-17T23:42:38Z",
+      "exit": 0
+    },
+    "first-party": {
+      "command": "pnpm exec rer check --profile first-party",
+      "started_utc": "2026-11-17T23:42:38Z",
+      "finished_utc": "2026-11-17T23:42:39Z",
+      "exit": 0
+    },
+    "build": {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "started_utc": "2026-11-17T23:42:39Z",
+      "finished_utc": "2026-11-17T23:42:47Z",
+      "exit": 0
+    },
+    "typecheck": {
+      "command": "pnpm run typecheck",
+      "started_utc": "2026-11-17T23:42:47Z",
+      "finished_utc": "2026-11-17T23:42:51Z",
+      "exit": 0
+    },
+    "focused": {
+      "command": "cloud_run node -e \"import('./tests/oncall-agent-action-evidence-replay.mjs').then(({ focusedActionEvidenceReplay }) => focusedActionEvidenceReplay());\"",
+      "started_utc": "2026-11-17T23:44:07Z",
+      "finished_utc": "2026-11-17T23:44:14Z",
+      "exit": 0
+    },
+    "agent-flow": {
+      "command": "cloud_run node tests/runtime.mjs",
+      "started_utc": "2026-11-17T23:44:14Z",
+      "finished_utc": "2026-11-17T23:51:06Z",
+      "exit": 0,
+      "selected_part": "agents"
+    },
+    "browser": {
+      "command": "cloud_run node tests/agent-door-browser.mjs",
+      "started_utc": "2026-11-17T23:51:06Z",
+      "finished_utc": "2026-11-17T23:55:49Z",
+      "exit": 0
+    }
+  },
+  "focused_preliminary_attempts": [
+    {
+      "started_utc": "2026-11-17T23:42:51Z",
+      "finished_utc": "2026-11-17T23:43:46Z",
+      "exit": 247,
+      "note": "Stopped after Miniflare startup stalled under node --input-type=module -e."
+    },
+    {
+      "started_utc": "2026-11-17T23:43:47Z",
+      "finished_utc": "2026-11-17T23:44:05Z",
+      "exit": 247,
+      "note": "Stopped after Miniflare startup stalled under node --input-type=module -e."
+    }
+  ],
+  "proofs": {
+    "focused": [
+      "PROBE BASE-AGENT-012 acceptances 1 and 3 autonomous oncall.actions.submit: one owned due-dated P2 evidence-policy completion, agent submission and accepted attribution, one complete timeline entry and native revision and actions.submit audit commit; standard plus sensitive; immediate exact replay with new RPC id equals stored outcome; changed evidence with original key and revision -> isError idempotency_conflict in metadata and text without private result; original arguments replay unchanged again with original executed approval and receipt where present; complete native custody unchanged apart from refusal and linked replay audit and capacity bookkeeping; zero outbound requests and no evidence fetch",
+      "PROBE BASE-AGENT-012 acceptances 1 and 3 held oncall.actions.submit: one owned due-dated P2 evidence-policy completion, agent submission and accepted attribution, one complete timeline entry and native revision and actions.submit audit commit; standard plus sensitive; immediate exact replay with new RPC id equals stored outcome; changed evidence with original key and revision -> isError idempotency_conflict in metadata and text without private result; original arguments replay unchanged again with original executed approval and receipt where present; complete native custody unchanged apart from refusal and linked replay audit and capacity bookkeeping; zero outbound requests and no evidence fetch"
+    ],
+    "agent-flow": [
+      "PROBE BASE-AGENT-012 acceptances 1 and 3 autonomous oncall.actions.submit: one owned due-dated P2 evidence-policy completion, agent submission and accepted attribution, one complete timeline entry and native revision and actions.submit audit commit; standard plus sensitive; immediate exact replay with new RPC id equals stored outcome; changed evidence with original key and revision -> isError idempotency_conflict in metadata and text without private result; original arguments replay unchanged again with original executed approval and receipt where present; complete native custody unchanged apart from refusal and linked replay audit and capacity bookkeeping; zero outbound requests and no evidence fetch",
+      "PROBE BASE-AGENT-012 acceptances 1 and 3 held oncall.actions.submit: one owned due-dated P2 evidence-policy completion, agent submission and accepted attribution, one complete timeline entry and native revision and actions.submit audit commit; standard plus sensitive; immediate exact replay with new RPC id equals stored outcome; changed evidence with original key and revision -> isError idempotency_conflict in metadata and text without private result; original arguments replay unchanged again with original executed approval and receipt where present; complete native custody unchanged apart from refusal and linked replay audit and capacity bookkeeping; zero outbound requests and no evidence fetch"
+    ],
+    "browser": [
+      "PROBE BASE-AGENT-012 evidence completion browser autonomous: protected review material equals MCP result; saved P2 Complete and Completes with evidence plus retained evidence link at 1440 and 390; original sponsor approval not needed; zero evidence requests",
+      "PROBE BASE-AGENT-012 evidence completion browser held: protected review material equals MCP result; saved P2 Complete and Completes with evidence plus retained evidence link at 1440 and 390; original sponsor approval executed once; zero evidence requests"
+    ]
+  },
+  "browser_screens": [
+    {
+      "path": "browser/agent-door-follow-up-evidence-autonomous-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 96249,
+      "sha256": "cfa1a9545ee997d275e2a67fdf417d52a1968876d4d29cddd5335a65a1fd026e",
+      "measurements": "Browser proof follow-up-evidence-autonomous 1440: fits=true serious/critical=0 undersized-controls=0"
+    },
+    {
+      "path": "browser/agent-door-follow-up-evidence-autonomous-390.png",
+      "width": 390,
+      "height": 1000,
+      "bytes": 42298,
+      "sha256": "2b2a18e68553284127839c928c3c54e8864904da079eddd0edfa87b0eaf043a5",
+      "measurements": "Browser proof follow-up-evidence-autonomous 390: fits=true serious/critical=0 undersized-controls=0"
+    },
+    {
+      "path": "browser/agent-door-follow-up-evidence-pending-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 51079,
+      "sha256": "39fae35a3f929699cf6176ca5d4a5c0f833e57df51fc3d0ed90058d89d2bb3f6",
+      "measurements": "Browser proof follow-up-evidence-pending 1440: fits=true serious/critical=0 undersized-controls=0"
+    },
+    {
+      "path": "browser/agent-door-follow-up-evidence-pending-390.png",
+      "width": 390,
+      "height": 1000,
+      "bytes": 45913,
+      "sha256": "1e1fbc38df917eab0e1decef21201f544c236f1def074e6e30ef318c1313ec85",
+      "measurements": "Browser proof follow-up-evidence-pending 390: fits=true serious/critical=0 undersized-controls=0"
+    },
+    {
+      "path": "browser/agent-door-follow-up-evidence-held-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 103296,
+      "sha256": "e02755e21ab1a515abbb18c47c5fb0a1b5112e48b35a7882109f496dd388ac91",
+      "measurements": "Browser proof follow-up-evidence-held 1440: fits=true serious/critical=0 undersized-controls=0"
+    },
+    {
+      "path": "browser/agent-door-follow-up-evidence-held-390.png",
+      "width": 390,
+      "height": 1000,
+      "bytes": 42298,
+      "sha256": "2b2a18e68553284127839c928c3c54e8864904da079eddd0edfa87b0eaf043a5",
+      "measurements": "Browser proof follow-up-evidence-held 390: fits=true serious/critical=0 undersized-controls=0"
+    },
+    {
+      "path": "browser/agent-door-follow-up-evidence-executed-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 48948,
+      "sha256": "45a424dbd6d511cc8cbff25947eab7a60b3f0059fff9516d861910a208fabe7d",
+      "measurements": "Browser proof follow-up-evidence-executed 1440: fits=true serious/critical=0 undersized-controls=0"
+    },
+    {
+      "path": "browser/agent-door-follow-up-evidence-executed-390.png",
+      "width": 390,
+      "height": 1000,
+      "bytes": 43726,
+      "sha256": "6528bb7e463ea92dd890869d77594a839f39bc1cad5376d4fda4410b41ae95ba",
+      "measurements": "Browser proof follow-up-evidence-executed 390: fits=true serious/critical=0 undersized-controls=0"
+    }
+  ]
+}
