@@ -1,0 +1,244 @@
+{
+  "task": "sd-oncall-c-f268",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f268",
+  "productHead": "73b6d143e562333e09b03077a75cac38555c2784",
+  "pushed": true,
+  "remoteHeadMatched": true,
+  "baseHead": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+  "baseline": {
+    "verify": 44207847779,
+    "runSite": 44207847848,
+    "conclusion": "success"
+  },
+  "changedPaths": [
+    "CONTRACT.md",
+    "sources.lock.json"
+  ],
+  "counts": {
+    "before": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34
+    },
+    "after": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34
+    }
+  },
+  "clause": {
+    "id": "OC-058",
+    "statusBefore": "partial",
+    "statusAfter": "partial",
+    "provenPoints": [
+      1
+    ]
+  },
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email [fleet] --non-interactive",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "exactCandidate": true
+    },
+    {
+      "command": "node tests/.oc058-one-off.mjs",
+      "exit": 0,
+      "exactCandidate": true,
+      "receipt": "oc058-browser-receipt.json"
+    },
+    {
+      "command": "ONCALL_VERIFY_LANE=member-browser pnpm exec rer verify --non-interactive",
+      "exit": 0,
+      "exactCandidate": true,
+      "included": [
+        "rer check --profile first-party",
+        "pnpm run typecheck",
+        "node tests/member-coordination-browser.mjs",
+        "hosted-mode local verification"
+      ]
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "exactCandidate": true
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "exactCandidate": true,
+      "state": "after generation"
+    },
+    {
+      "command": "git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "exactCandidate": true
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "exactCandidate": true
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 1,
+      "exactCandidate": true,
+      "state": "committed views",
+      "diagnostic": "ACCEPTANCE.md: generated content differs; run contract-docs write."
+    }
+  ],
+  "scope": {
+    "statusTableEqualToMain": true,
+    "acceptancePointsEqualToMain": true,
+    "unrelatedAssertionsChanged": false,
+    "generatedViewsCommitted": false,
+    "migrationLedger": "not applicable"
+  },
+  "verify": {
+    "id": 44222707968,
+    "event": "push",
+    "conclusion": "failure",
+    "head_sha": "73b6d143e562333e09b03077a75cac38555c2784",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44222707968",
+    "status": "completed",
+    "jobs": [
+      {
+        "conclusion": "success",
+        "failingSteps": [],
+        "id": 134528252374,
+        "name": "plan",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failingSteps": [
+          "Check the generated contract documents"
+        ],
+        "id": 134528384006,
+        "name": "contract-docs",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failingSteps": [],
+        "id": 134528384067,
+        "name": "build",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failingSteps": [],
+        "id": 134528386497,
+        "name": "light",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failingSteps": [],
+        "id": 134529243175,
+        "name": "shards (intake)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failingSteps": [],
+        "id": 134529243187,
+        "name": "shards (runtime)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failingSteps": [],
+        "id": 134529243229,
+        "name": "shards (agents)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failingSteps": [],
+        "id": 134529243269,
+        "name": "shards (hosted)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failingSteps": [],
+        "id": 134529243296,
+        "name": "shards (transfer)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failingSteps": [],
+        "id": 134529243306,
+        "name": "shards (changes)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failingSteps": [],
+        "id": 134529243373,
+        "name": "shards (triage)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failingSteps": [],
+        "id": 134529243459,
+        "name": "shards (browser)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failingSteps": [],
+        "id": 134533697497,
+        "name": "full-push-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failingSteps": [],
+        "id": 134533699527,
+        "name": "nightly-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failingSteps": [
+          "Require the selected coverage and its proof"
+        ],
+        "id": 134533727395,
+        "name": "verify",
+        "status": "completed"
+      }
+    ],
+    "failedJobArchiveEvidence": [
+      {
+        "id": 134528384006,
+        "archiveCommandExit": 0,
+        "diagnostic": "ACCEPTANCE.md: generated content differs; run contract-docs write."
+      },
+      {
+        "id": 134533727395,
+        "archiveCommandExit": 0,
+        "diagnostics": [
+          "PLAN: success",
+          "CONTRACT_DOCS: failure",
+          "BUILD: success",
+          "SHARDS: success"
+        ]
+      }
+    ],
+    "failingCheckClass": "expected generated acceptance view drift and its dependent aggregate gate"
+  },
+  "publicationScan": "fleet lander",
+  "recordedAt": "2026-11-18T02:38:42.814618+00:00"
+}

@@ -1,0 +1,92 @@
+{
+  "clause": "OC-058",
+  "point": 1,
+  "outcome": "pass",
+  "productHead": "73b6d143e562333e09b03077a75cac38555c2784",
+  "chromium": "154.0.8037.57",
+  "node": "22.20.0",
+  "workerClock": {
+    "acknowledgedAt": "2026-11-18T02:22:30.000Z",
+    "snoozedAt": "2026-11-18T02:23:00.000Z",
+    "readAndReopenedAt": "2026-11-18T02:28:00.000Z",
+    "dueAt": "2026-11-18T02:38:00.000Z"
+  },
+  "incident": {
+    "id": "3701faa7-5bf4-44eb-bbeb-e171eb7fd4b9",
+    "title": "Snoozed checkout investigation",
+    "state": "acknowledged",
+    "assignee": "d5be58ca-ca53-4ecc-a006-d342e2574827"
+  },
+  "actor": {
+    "id": "d5be58ca-ca53-4ecc-a006-d342e2574827",
+    "name": "Rosa Responder",
+    "role": "responder"
+  },
+  "closedBrowserRead": {
+    "contextCount": 0,
+    "browserConnected": false,
+    "protectedStatus": 200,
+    "anonymousStatus": 401
+  },
+  "pendingDeadline": {
+    "id": "22145e12-7958-4919-983c-8906ce319af4",
+    "kind": "snooze",
+    "state": "pending",
+    "actor": "d5be58ca-ca53-4ecc-a006-d342e2574827",
+    "createdAt": "2026-11-18T02:23:00.000Z",
+    "dueAt": "2026-11-18T02:38:00.000Z",
+    "minutes": 15,
+    "level": null,
+    "policyVersion": 1,
+    "endedAt": null,
+    "outcome": "Awaiting durable deadline; paging OFF",
+    "obligation": null
+  },
+  "acknowledgment": {
+    "kind": "transition",
+    "actor": "d5be58ca-ca53-4ecc-a006-d342e2574827",
+    "at": "2026-11-18T02:22:30.000Z",
+    "lifecycle": {
+      "from": "declared",
+      "to": "acknowledged"
+    }
+  },
+  "attributedSnooze": {
+    "id": "deadline:22145e12-7958-4919-983c-8906ce319af4",
+    "at": "2026-11-18T02:23:00.000Z",
+    "actor": "d5be58ca-ca53-4ecc-a006-d342e2574827",
+    "kind": "incident-deadline",
+    "text": "snooze: 15 minutes, due 2026-11-18T02:38:00.000Z; recorded deadline, paging OFF"
+  },
+  "pagingBefore": {
+    "paging": "OFF",
+    "jobs": [],
+    "receipts": [],
+    "callbacks": [],
+    "outbox": [],
+    "notices": []
+  },
+  "pagingAfter": {
+    "paging": "OFF",
+    "jobs": [],
+    "receipts": [],
+    "callbacks": [],
+    "outbox": [],
+    "notices": []
+  },
+  "notificationRunsBefore": 0,
+  "notificationRunsAfter": 0,
+  "outboundRequests": 0,
+  "screens": [
+    {
+      "width": 1440,
+      "status": "Snoozed / acknowledgment held until Nov 18, 2026, 02:38 AM UTC (GMT+0) · Snooze · 15 minutes. Paging OFF.",
+      "file": "oc058-saved-deadline-1440.png"
+    },
+    {
+      "width": 390,
+      "status": "Snoozed / acknowledgment held until Nov 18, 2026, 02:38 AM UTC (GMT+0) · Snooze · 15 minutes. Paging OFF.",
+      "file": "oc058-saved-deadline-390.png"
+    }
+  ]
+}
