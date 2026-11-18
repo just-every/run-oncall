@@ -1524,6 +1524,12 @@ export async function supportStartBrowser(page,context,{setTime,proof}) {
  } finally {page.off('request',trackSample);page.off('requestfinished',settleSample);page.off('requestfailed',settleSample);await setTime(null);await page.setViewportSize({width:1440,height:1000});}
 }
 
+export async function declareIncidentFromAlert(page,title) {
+ const card=page.getByRole('article',{name:'Alert details',exact:true})
+ await card.getByRole('button',{name:'Declare incident from alert',exact:true}).click()
+ await page.locator('.detail').getByRole('heading',{name:title,exact:true}).waitFor()
+}
+
 // alert-severity-browser: part of this public journey.
 // One core flow: admitted monitoring events -> visible severity -> declared incident -> stored severity.
 export async function alertSeverity(page,context,width) {
@@ -1552,9 +1558,7 @@ export async function alertSeverity(page,context,width) {
  for(const severity of ['critical','warning','info']) {
   const title=`Checkout ${severity} ${width}`
   await page.locator('.alert-row').filter({hasText:title}).click()
-  const card=page.getByRole('article',{name:'Alert details',exact:true})
-  await card.getByRole('button',{name:'Declare incident from alert',exact:true}).click()
-  await page.locator('.detail').getByRole('heading',{name:title,exact:true}).waitFor()
+  await declareIncidentFromAlert(page,title)
   const stored=await (await context.request.get('/api/state')).json()
   const incident=stored.incidents.find(incident=>incident.title===title)
   assert.equal(incident.severity,severity,'declaring from alert preserves its severity')
