@@ -1,0 +1,58 @@
+{
+  "files": [
+    {
+      "blob": "20f4e7662fe714f34d41decd0bbb2a52afdf7464",
+      "bytes": 11554,
+      "path": "REPORT.md",
+      "sha256": "fae6f55acaf25bed9b7ae424b25538a7a9b8a9a14ffb2c607fec037c25c9db8c"
+    },
+    {
+      "blob": "b0d14317c372813f5051cb0364297b740f49b4ab",
+      "bytes": 96740,
+      "path": "agent-door-follow-up-evidence-autonomous-1440.png",
+      "sha256": "45af90f912824a8b15be382f27afaf67df05dfe9add788939f1c54fbf32fd8e2"
+    },
+    {
+      "blob": "21141624d74510c17f5778a965304a7c5867e04c",
+      "bytes": 42723,
+      "path": "agent-door-follow-up-evidence-autonomous-390.png",
+      "sha256": "adc6a12f382c1cab15c24650507e6879b225d00d70fa1db9388b12ce4995d12e"
+    },
+    {
+      "blob": "2501623541625caa9ef2a452a089ac4207a593cb",
+      "bytes": 103650,
+      "path": "agent-door-follow-up-evidence-held-1440.png",
+      "sha256": "32219769e739e2798925edeae527e9418b0c04a3fbeda7638ba0166ee360842c"
+    },
+    {
+      "blob": "0594e82bd97b81cb770b11869ce596ddf4d6724e",
+      "bytes": 42619,
+      "path": "agent-door-follow-up-evidence-held-390.png",
+      "sha256": "6aeed79b1a4c6c1680b78396cafa5745382a537cfdc78a9f09b4f92a6adfb2ae"
+    },
+    {
+      "blob": "f3b2be6f9045dee1a3428b2ede267cfd63281084",
+      "bytes": 33438,
+      "path": "agent-door-follow-up-evidence-read-pending-1440.png",
+      "sha256": "e8043fb3c70c1b99f72c69634fec99a615982c5433406723b1d15b93f3cc86f4"
+    },
+    {
+      "blob": "bef2e9b17e7bbfa91495c0a78ef631ee39bd46d4",
+      "bytes": 28516,
+      "path": "agent-door-follow-up-evidence-read-pending-390.png",
+      "sha256": "1a3caf991807dd31162e7716e66635016336073e193e7796a0f8f7ea1420205c"
+    },
+    {
+      "blob": "6f13feed50f12603c9f618562b753e02a40c2d46",
+      "bytes": 37177,
+      "path": "candidate-receipt.json",
+      "sha256": "115f9700b46812aba9cc106d85d168ecfdc37649e053f0f9ced826d737114db4"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f276",
+  "product_head": "2bfdce0c3d35d10a95d43a059f5c8c55bad4d794",
+  "ref": "refs/heads/evidence/sd-oncall-c-f276",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f276"
+}
