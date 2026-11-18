@@ -1,0 +1,197 @@
+diff --git a/tests/agent-door-browser.mjs b/tests/agent-door-browser.mjs
+index cdf39a6..51b62e0 100644
+--- a/tests/agent-door-browser.mjs
++++ b/tests/agent-door-browser.mjs
+@@ -12,6 +12,7 @@ import {agedActionSubmitRetention} from './oncall-agent-action-submit-retention.
+ import {actionSubmitResponseLoss} from './oncall-agent-action-submit-response-loss.mjs';
+ import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
+ import {openIncidentAction} from './keyboard.mjs';
++import {evidenceFreeMitigationTarget,mitigationArguments} from './oncall-agent-transition-replay.mjs';
+ 
+ const weekStart=Date.parse('2026-11-02T00:00:00.000Z'),weekNow=Date.parse('2026-11-04T12:00:00.000Z');
+ const runtime=await agentRuntime({clock:null}),directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';
+@@ -40,6 +41,49 @@ try{
+   }
+   await proofPage.setViewportSize({width:1440,height:1000});
+  }
++ // Inspect the saved resource-link mitigation fixture through the existing browser door.
++ if(process.env.ONCALL_F266_BROWSER==='1'){
++  const command=async input=>{const response=await http('/api/command',input);assert.equal(response.status,200);return response.json()};
++  const workspace=await http('/api/workspace');assert.equal(workspace.status,200);
++  const {member:owner}=await workspace.json();
++  const {member:responder}=await runtime.memberSession('Synthetic mitigation scribe','responder');
++  for(const [mode,policy] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
++   assert.equal((await runtime.adopt(policy)).status,200);
++   const target=await evidenceFreeMitigationTarget(command,owner,responder,'link readback '+mode);
++   const args=mitigationArguments(target);
++   const written=await tool('oncall.incidents.update',args);
++   assert.equal(written.result.isError,false);
++   const link=written.result.content.find(row=>row.type==='resource_link');
++   assert.ok(link);
++   const {value,content}=await runtime.completeResource(link.uri);
++   assert.equal(content.uri,link.uri);
++   assert.deepEqual(value,written.result.structuredContent);
++   const baseline=await agentEffectSnapshot(runtime);
++   const incidentPath='/incidents/'+value.id;
++   await capture('mitigating-'+mode,incidentPath,async()=>{
++    const incidentPanel=page.getByRole('region',{name:'Incident',exact:true});
++    await incidentPanel.getByRole('heading',{name:target.title,exact:true,level:1}).waitFor();
++    const timeline=incidentPanel.getByRole('region',{name:'Timeline',exact:true});
++    const entry=timeline.getByRole('listitem').filter({hasText:args.summary});
++    await entry.getByText('Responder assistant for Alex Chen',{exact:true}).waitFor();
++    if(page.viewportSize().width===1440){
++     await incidentPanel.locator('.incident-head').getByText('Mitigating',{exact:true}).waitFor();
++     await incidentPanel.getByRole('button',{name:'Lead: '+owner.name,exact:true}).waitFor();
++     await incidentPanel.getByRole('button',{name:'Assignee: '+owner.name,exact:true}).waitFor();
++     const people=await openIncidentAction(page,'People and priority');
++     assert.equal(await people.getByRole('combobox',{name:'Scribe',exact:true}).inputValue(),responder.id);
++     assert.equal(await people.getByRole('combobox',{name:'Communications',exact:true}).inputValue(),owner.id);
++     await people.getByRole('button',{name:'Close',exact:true}).focus();
++     await page.getByRole('tooltip',{name:'Close dialog',exact:true}).waitFor();
++     await people.getByRole('button',{name:'Close',exact:true}).click();
++    }
++   });
++   assert.deepEqual(await agentEffectSnapshot(runtime),baseline);
++   assert.deepEqual(await runtime.outboundRequests(),[]);
++   console.log('F266_BROWSER '+JSON.stringify({policy:mode,viewportWidths:[1440,390],state:'mitigating',
++    attributedTimeline:true,companionRolesAt1440:true,nativeRecordsAndRevisionsUnchanged:true,outboundRequests:0}));
++  }
++ }else{
+  // A known native week spans multiple audit cursor pages. Expected cohorts
+  // are fixed by the calls below, independently of the page's SQL aggregation.
+  // Issue native sessions at real time: SQLite also checks their expiry against
+@@ -709,6 +753,7 @@ try{
+  await capture('guide','/docs/agents',async()=>{await page.locator('.docs-article').waitFor()});
+  await capture('erasure-data','/docs/data',async()=>{await page.locator('.docs-article').waitFor()});
+  console.log('PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements');
++ }
+ }catch(error){
+  if(page){await page.screenshot({path:`${directory}/agent-door-failure.png`,fullPage:true});console.error('Agent browser failed at',new URL(page.url()).pathname)}
+  throw error;
+diff --git a/tests/oncall-agent-transition-replay.mjs b/tests/oncall-agent-transition-replay.mjs
+index 27648a2..9e2b173 100644
+--- a/tests/oncall-agent-transition-replay.mjs
++++ b/tests/oncall-agent-transition-replay.mjs
+@@ -1,8 +1,22 @@
+ import assert from 'node:assert/strict';
+ import {randomUUID} from 'node:crypto';
+-import {agentEffectSnapshot} from './agent-door-runtime.mjs';
++import {agentEffectSnapshot,agentReadSnapshot,assertAgentReadUnchanged} from './agent-door-runtime.mjs';
+ import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
+ 
++export async function evidenceFreeMitigationTarget(command,owner,responder,label,service='agent-service'){
++  let incident=await command({type:'declare',service,title:'Synthetic mitigation '+label,
++   summary:'Ordinary coordination without protected evidence',severity:'warning',alerts:[]});
++  incident=await command({type:'transition',incident:incident.id,revision:incident.revision,state:'acknowledged',summary:'Synthetic human acknowledgment'});
++  for(const [role,member] of [['scribe',responder.id],['communications',owner.id]])
++   incident=await command({type:'assign-role',incident:incident.id,revision:incident.revision,role,member,reason:'Synthetic companion responsibility'});
++  assert.equal(incident.state,'acknowledged');assert.equal(incident.recovery,'');
++  assert.deepEqual(incident.alerts,[]);assert.deepEqual(incident.actions,[]);
++  assert.equal(incident.commander,owner.id);assert.equal(incident.assignee,owner.id);
++  return incident;
++ }
++export const mitigationArguments=incident=>({change:'transition',state:'mitigating',incident:incident.id,revision:incident.revision,
++  summary:'Synthetic literal mitigation <retain this text> & coordination',idempotency_key:randomUUID()});
++
+ /** Evidence-free mitigation keeps its original outcome across conflicts and response loss. */
+ export async function transitionReplay(runtime){
+  const {db,http,tool,adopt,context}=runtime,name='oncall.incidents.update';
+@@ -20,19 +34,8 @@ export async function transitionReplay(runtime){
+   services:['agent-service'],permissions:['services:read','incidents:read','incidents:write']});
+  assert.equal(client.status,201);await client.json();
+  const observed=[];
+- async function target(label,service='agent-service'){
+-  let incident=await command({type:'declare',service,title:'Synthetic mitigation '+label,
+-   summary:'Ordinary coordination without protected evidence',severity:'warning',alerts:[]});
+-  incident=await command({type:'transition',incident:incident.id,revision:incident.revision,state:'acknowledged',summary:'Synthetic human acknowledgment'});
+-  for(const [role,member] of [['scribe',responder.id],['communications',owner.id]])
+-   incident=await command({type:'assign-role',incident:incident.id,revision:incident.revision,role,member,reason:'Synthetic companion responsibility'});
+-  assert.equal(incident.state,'acknowledged');assert.equal(incident.recovery,'');
+-  assert.deepEqual(incident.alerts,[]);assert.deepEqual(incident.actions,[]);
+-  assert.equal(incident.commander,owner.id);assert.equal(incident.assignee,owner.id);
+-  return incident;
+- }
+- const argumentsFor=incident=>({change:'transition',state:'mitigating',incident:incident.id,revision:incident.revision,
+-  summary:'Synthetic literal mitigation <retain this text> & coordination',idempotency_key:randomUUID()});
++ const target=(label,service)=>evidenceFreeMitigationTarget(command,owner,responder,label,service);
++ const argumentsFor=mitigationArguments;
+  async function bookkeeping(before){
+   const after=await permanent();assert.deepEqual(after.slice(0,before.length),before);
+   for(const row of after.slice(before.length)){
+@@ -143,6 +146,76 @@ export async function transitionReplay(runtime){
+   const completion=await committed(incident,args,before,prior,mode,disposition);
+   assert.deepEqual(first.result.structuredContent,completion.saved.result);
+   assert.deepEqual(first.result._meta['com.runeditrun/review'],completion.saved.review);
++  const links=first.result.content.filter(row=>row.type==='resource_link');
++  assert.equal(links.length,1);
++  const [link]=links;
++  assert.equal(link.uri,'oncall://incidents/'+incident.id);
++  assert.equal(link.name,incident.title);
++
++  const nativeBefore=await agentReadSnapshot(runtime);
++  const auditBeforeRead=await audits();
++  const reviewsBefore=await rows('SELECT * FROM agent_door_reviews ORDER BY id');
++  const approvalsBefore=await rows('SELECT * FROM agent_door_approvals ORDER BY id');
++  const readback=await runtime.completeResource(link.uri);
++  const {initial,answer,content,value}=readback;
++  assert.equal(initial.status,200);
++  assert.equal(initial.body.error,undefined,'This evidence-free resource follows standard read custody');
++  assert.equal(answer,initial);
++  assert.equal(content.uri,link.uri);
++  assert.equal(content.mimeType,'application/json');
++  assert.equal(content._meta['com.runeditrun/untrusted'],true);
++  assert.deepEqual(value,first.result.structuredContent);
++  const nativeAfter=await agentReadSnapshot(runtime);
++  assert.deepEqual(value,nativeAfter.application.incidents.find(row=>row.id===incident.id));
++  assertAgentReadUnchanged(nativeBefore,nativeAfter);
++  assert.deepEqual(value,{...incident,state:'mitigating',revision:incident.revision+1,timeline:value.timeline});
++  const transition=value.timeline.at(-1);
++  assert.deepEqual(transition.lifecycle,{from:'acknowledged',to:'mitigating'});
++  assert.equal(transition.actor,context.agentId);
++  assert.equal(transition.metadata.agent.agent.id,context.agentId);
++  assert.equal(transition.metadata.agent.for.id,owner.id);
++  assert.equal(transition.text,'acknowledged → mitigating: '+args.summary);
++  assert.equal(value.scribe,responder.id);
++  assert.equal(value.communications,owner.id);
++
++  const readDecision=initial.decision;
++  assert.equal(readDecision.disposition,disposition);
++  assert.equal(readDecision.revision,context.revision);
++  assert.deepEqual(readDecision.classes.map(row=>[row.class,row.do]),[['standard',disposition]]);
++  const auditAfterRead=await audits();
++  assert.deepEqual(auditAfterRead.slice(0,-1),auditBeforeRead);
++  assert.equal(auditAfterRead.length,auditBeforeRead.length+1);
++  const readAudit=JSON.parse(auditAfterRead.at(-1).row);
++  assert.equal(readAudit.id,readDecision.id);
++  assert.equal(readAudit.tool,'resources/read');
++  assert.equal(readAudit.outcome,'done');
++  assert.equal(readAudit.agent.id,context.agentId);
++  assert.equal(readAudit.sponsor.id,owner.id);
++  const readReview=answer.result._meta['com.runeditrun/review'];
++  const reviewsAfter=await rows('SELECT * FROM agent_door_reviews ORDER BY id');
++  assert.deepEqual(await rows('SELECT * FROM agent_door_approvals ORDER BY id'),approvalsBefore);
++  if(mode==='held'){
++   assert.ok(readReview?.id);
++   assert.notEqual(readReview.id,completion.saved.review.id);
++   const row=reviewsAfter.find(review=>review.id===readReview.id);
++   assert.ok(row);assert.equal(row.state,'open');
++   assert.equal(JSON.parse(row.saved).decision_id,readDecision.id);
++   assert.deepEqual(reviewsAfter.filter(review=>review.id!==row.id),reviewsBefore,'The original write review is unchanged');
++   const protectedReviews=(await read('/agents/api/reviews')).reviews;
++   for(const id of [row.id,completion.saved.review.id])
++    assert.equal(protectedReviews.find(review=>review.id===id).state,'open');
++  }else{
++   assert.equal(readReview,undefined);
++   assert.deepEqual(reviewsAfter,reviewsBefore);
++  }
++  assert.deepEqual(await calls(args.idempotency_key),completion.retained);
++  assert.deepEqual(await runtime.outboundRequests(),[]);
++  console.log('F266_RUNTIME '+JSON.stringify({policy:mode,readDisposition:disposition,readReview:!!readReview,
++   originalWriteReview:!!completion.saved.review,state:value.state,revisionBefore:incident.revision,
++   revisionAfter:value.revision,fullWriteAndNativeParity:true,attributedTransition:true,companionRoles:true,
++   originalCallAndReviewUnchanged:true,nativeRecordsAndRevisionsUnchanged:true,stateChangingAuditAndPagingUnchanged:true,
++   approvalDelta:0,outboundRequests:0}));
++  completion.after=await snapshot();
+   const immediate=await replay(completion,first.body.id);
+   const changed={...args,summary:'Another schema-valid mitigation summary'};
+   assert.deepEqual({...changed,summary:args.summary},args,'Only the schema-valid summary changes, keeping the original key and completed revision');

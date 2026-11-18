@@ -1,0 +1,361 @@
+{
+  "baselineCI": {
+    "head": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+    "runSite": {
+      "conclusion": "success",
+      "event": "push",
+      "id": 44207847848
+    },
+    "verify": {
+      "conclusion": "success",
+      "event": "push",
+      "id": 44207847779
+    }
+  },
+  "beforeMain": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4",
+  "branch": "cloud/sd-oncall-c-f266",
+  "candidateVerify": {
+    "conclusion": "failure",
+    "event": "push",
+    "exception": "only ACCEPTANCE.md generated-view freshness and the dependent coverage guard",
+    "head_sha": "de9ca112a947692bd3cc847508fbae57cb5cc0e7",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44211042006",
+    "id": 44211042006,
+    "status": "completed"
+  },
+  "candidateVerifyDiscovery": {
+    "conclusion": null,
+    "event": "push",
+    "head_branch": "cloud/sd-oncall-c-f266",
+    "head_sha": "de9ca112a947692bd3cc847508fbae57cb5cc0e7",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44211042006",
+    "id": 44211042006,
+    "name": "Verify",
+    "status": "in_progress"
+  },
+  "candidateVerifyFailureLogs": [
+    {
+      "command": "gh run view 44211042006 --repo just-every/run-oncall --job 134489296096 --log-failed",
+      "excerpt": [
+        "Contract prose: 0 errors, 0 warnings.",
+        "ACCEPTANCE.md: generated content differs; run contract-docs write."
+      ],
+      "exit": 0,
+      "job": 134489296096
+    },
+    {
+      "command": "gh run view 44211042006 --repo just-every/run-oncall --job 134496423567 --log-failed",
+      "excerpt": [
+        "  PLAN: success",
+        "  CONTRACT_DOCS: failure",
+        "  BUILD: success",
+        "  SHARDS: success",
+        "  LIGHT: skipped",
+        "  PUSH_PROOF: success",
+        "  NIGHTLY_PROOF: skipped",
+        "##[error]Process completed with exit code 1."
+      ],
+      "exit": 0,
+      "job": 134496423567
+    }
+  ],
+  "candidateVerifyJobs": [
+    {
+      "conclusion": "success",
+      "failedSteps": [],
+      "id": 134489157058,
+      "name": "plan"
+    },
+    {
+      "conclusion": "failure",
+      "failedSteps": [
+        "Check the generated contract documents"
+      ],
+      "id": 134489296096,
+      "name": "contract-docs"
+    },
+    {
+      "conclusion": "success",
+      "failedSteps": [],
+      "id": 134489296109,
+      "name": "build"
+    },
+    {
+      "conclusion": "skipped",
+      "failedSteps": [],
+      "id": 134489298779,
+      "name": "light"
+    },
+    {
+      "conclusion": "success",
+      "failedSteps": [],
+      "id": 134490442335,
+      "name": "shards (agents)"
+    },
+    {
+      "conclusion": "success",
+      "failedSteps": [],
+      "id": 134490442352,
+      "name": "shards (transfer)"
+    },
+    {
+      "conclusion": "success",
+      "failedSteps": [],
+      "id": 134490442383,
+      "name": "shards (runtime)"
+    },
+    {
+      "conclusion": "success",
+      "failedSteps": [],
+      "id": 134490442390,
+      "name": "shards (browser)"
+    },
+    {
+      "conclusion": "success",
+      "failedSteps": [],
+      "id": 134490442402,
+      "name": "shards (hosted)"
+    },
+    {
+      "conclusion": "success",
+      "failedSteps": [],
+      "id": 134490442418,
+      "name": "shards (changes)"
+    },
+    {
+      "conclusion": "success",
+      "failedSteps": [],
+      "id": 134490442450,
+      "name": "shards (intake)"
+    },
+    {
+      "conclusion": "success",
+      "failedSteps": [],
+      "id": 134490442452,
+      "name": "shards (triage)"
+    },
+    {
+      "conclusion": "success",
+      "failedSteps": [],
+      "id": 134496389950,
+      "name": "full-push-proof"
+    },
+    {
+      "conclusion": "skipped",
+      "failedSteps": [],
+      "id": 134496392717,
+      "name": "nightly-proof"
+    },
+    {
+      "conclusion": "failure",
+      "failedSteps": [
+        "Require the selected coverage and its proof"
+      ],
+      "id": 134496423567,
+      "name": "verify"
+    }
+  ],
+  "changedProductFiles": [
+    "CONTRACT.md",
+    "sources.lock.json"
+  ],
+  "countsAfter": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "countsBefore": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "focusedBrowser": {
+    "childExit": 0,
+    "command": "env ONCALL_F266_BROWSER=1 ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/agent-door-browser.mjs",
+    "measurements": [
+      "Browser proof mitigating-autonomous 1440: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof mitigating-autonomous 390: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof mitigating-held 1440: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof mitigating-held 390: fits=true serious/critical=0 undersized-controls=0"
+    ],
+    "results": [
+      {
+        "attributedTimeline": true,
+        "companionRolesAt1440": true,
+        "nativeRecordsAndRevisionsUnchanged": true,
+        "outboundRequests": 0,
+        "policy": "autonomous",
+        "state": "mitigating",
+        "viewportWidths": [
+          1440,
+          390
+        ]
+      },
+      {
+        "attributedTimeline": true,
+        "companionRolesAt1440": true,
+        "nativeRecordsAndRevisionsUnchanged": true,
+        "outboundRequests": 0,
+        "policy": "held",
+        "state": "mitigating",
+        "viewportWidths": [
+          1440,
+          390
+        ]
+      }
+    ],
+    "screenshots": [
+      {
+        "bytes": 168756,
+        "file": "agent-door-mitigating-autonomous-1440.png",
+        "height": 1060,
+        "sha256": "9a18317543a0171288fa7fc54c68d67672f147e3fb5b1255530c54a50e0b2147",
+        "width": 1440
+      },
+      {
+        "bytes": 105582,
+        "file": "agent-door-mitigating-autonomous-390.png",
+        "height": 1430,
+        "sha256": "14c02164dc0bc6cf8e454e3222c66b182967d5fadc02f0453cd89eed1e5466af",
+        "width": 390
+      },
+      {
+        "bytes": 182675,
+        "file": "agent-door-mitigating-held-1440.png",
+        "height": 1060,
+        "sha256": "eb4bc3868c55e983cb5d5ef6e957549b31cf0063dac73b083278a02a7a64e2e4",
+        "width": 1440
+      },
+      {
+        "bytes": 104375,
+        "file": "agent-door-mitigating-held-390.png",
+        "height": 1430,
+        "sha256": "e710bd25e8056ff7d84751a8c4014c48150412af30b9121b81ff279fe21024a9",
+        "width": 390
+      }
+    ]
+  },
+  "landing": {
+    "candidateRunSite": "pending main landing",
+    "mainEqualAtCandidatePush": false,
+    "publicationScan": "pending fleet gate"
+  },
+  "maintainedBrowserVerify": {
+    "command": "env ONCALL_VERIFY_LANE=agent-browser ONCALL_CHROMIUM_PATH=/usr/bin/chromium pnpm exec rer verify --non-interactive",
+    "exit": 0,
+    "journeyDuration": "307.6s"
+  },
+  "mechanical": {
+    "build": {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    "candidateLightReader": {
+      "command": "node scripts/verify-oncall.mjs --light",
+      "exit": 1,
+      "failedReader": "node src/base/contract-docs.mjs check",
+      "stale": [
+        "ACCEPTANCE.md"
+      ]
+    },
+    "committedViewCheck": {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 1,
+      "stale": [
+        "ACCEPTANCE.md"
+      ]
+    },
+    "firstParty": {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    "generate": {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    "generatedCheck": {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    "migrationLedger": {
+      "reason": "no changes to migrations",
+      "status": "not applicable"
+    },
+    "sourceLock": {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    "sourceLockCheck": {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    "typecheck": {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    }
+  },
+  "observationBases": {
+    "browser": "12ecf69d5f5a1f6f8b169c65880fd46e87bd1ac0",
+    "runtime": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4"
+  },
+  "observationPatch": {
+    "bytes": 13359,
+    "file": "observation.patch",
+    "sha256": "b55ea380e35d544923ba8613122f5c6e4ed842bbf56048118813874923f5127d"
+  },
+  "observationWorkerEntrySha256": "9ee82d559e58179d87a76eb574827421fb2ec2f2aec7ea9c7b04e053b638de7e",
+  "plannerLeaseMain": "0f19e1a9",
+  "productHead": "de9ca112a947692bd3cc847508fbae57cb5cc0e7",
+  "remoteReadback": {
+    "candidateHead": "de9ca112a947692bd3cc847508fbae57cb5cc0e7",
+    "mainHead": "d88d44c4e8dedd1bf69682d3d2abcf4116dad3c4"
+  },
+  "repository": "just-every/run-oncall",
+  "runtime": {
+    "command": "env ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+    "duration": "462.5s",
+    "exit": 0,
+    "results": [
+      {
+        "approvalDelta": 0,
+        "attributedTransition": true,
+        "companionRoles": true,
+        "fullWriteAndNativeParity": true,
+        "nativeRecordsAndRevisionsUnchanged": true,
+        "originalCallAndReviewUnchanged": true,
+        "originalWriteReview": false,
+        "outboundRequests": 0,
+        "policy": "autonomous",
+        "readDisposition": "autonomous",
+        "readReview": false,
+        "revisionAfter": 5,
+        "revisionBefore": 4,
+        "state": "mitigating",
+        "stateChangingAuditAndPagingUnchanged": true
+      },
+      {
+        "approvalDelta": 0,
+        "attributedTransition": true,
+        "companionRoles": true,
+        "fullWriteAndNativeParity": true,
+        "nativeRecordsAndRevisionsUnchanged": true,
+        "originalCallAndReviewUnchanged": true,
+        "originalWriteReview": true,
+        "outboundRequests": 0,
+        "policy": "held",
+        "readDisposition": "review",
+        "readReview": true,
+        "revisionAfter": 5,
+        "revisionBefore": 4,
+        "state": "mitigating",
+        "stateChangingAuditAndPagingUnchanged": true
+      }
+    ]
+  },
+  "saveHead": "12ecf69d5f5a1f6f8b169c65880fd46e87bd1ac0",
+  "statusAfter": "MISSING",
+  "statusBefore": "MISSING",
+  "task": "sd-oncall-c-f266"
+}

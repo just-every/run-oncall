@@ -1,0 +1,52 @@
+{
+  "files": [
+    {
+      "blob": "a6ae9f55638cffac0d1d3857e7071fa4d6c34531",
+      "bytes": 12549,
+      "path": "REPORT.md",
+      "sha256": "55e4610e727bec10724f72d183f6712003f4e94d424825a07b50b657662e3364"
+    },
+    {
+      "blob": "2c048cacc92600930418a3f4cd6eb49b7d6a840d",
+      "bytes": 168756,
+      "path": "agent-door-mitigating-autonomous-1440.png",
+      "sha256": "9a18317543a0171288fa7fc54c68d67672f147e3fb5b1255530c54a50e0b2147"
+    },
+    {
+      "blob": "f02247b0b26a8af12b7d5d7bd886cfbccb21ee9c",
+      "bytes": 105582,
+      "path": "agent-door-mitigating-autonomous-390.png",
+      "sha256": "14c02164dc0bc6cf8e454e3222c66b182967d5fadc02f0453cd89eed1e5466af"
+    },
+    {
+      "blob": "e14bafde0c60137f9a1e424116e0afa3dc16ace9",
+      "bytes": 182675,
+      "path": "agent-door-mitigating-held-1440.png",
+      "sha256": "eb4bc3868c55e983cb5d5ef6e957549b31cf0063dac73b083278a02a7a64e2e4"
+    },
+    {
+      "blob": "57b8bcda0abbb466d616f7e083fd459cb9c3f4b9",
+      "bytes": 104375,
+      "path": "agent-door-mitigating-held-390.png",
+      "sha256": "e710bd25e8056ff7d84751a8c4014c48150412af30b9121b81ff279fe21024a9"
+    },
+    {
+      "blob": "bed10eac70917d7df4e2486c3b9ce787d1bfcb58",
+      "bytes": 10098,
+      "path": "candidate.json",
+      "sha256": "dcb74e62af9bf02308a3fac3a2072dec75609c77609856b9b57c364c7b10a174"
+    },
+    {
+      "blob": "a1b07c3d5ed6c628a91c8bb7b00133d72070e333",
+      "bytes": 13359,
+      "path": "observation.patch",
+      "sha256": "b55ea380e35d544923ba8613122f5c6e4ed842bbf56048118813874923f5127d"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f266",
+  "product_head": "de9ca112a947692bd3cc847508fbae57cb5cc0e7",
+  "ref": "refs/heads/evidence/sd-oncall-c-f266",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f266"
+}
