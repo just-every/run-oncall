@@ -13,6 +13,7 @@ export async function readClearedAssignee(runtime,{mode,first}){
   const response=await http('/api/paging/state');assert.equal(response.status,200);return response.json();
  };
  const before=await agentEffectSnapshot(runtime),pagingBefore=await paging();
+ const outboundBefore=await runtime.outboundRequests();
  const {initial,answer,content,value}=await completeResource(link.uri);
  assert.equal(initial,answer,'This standard read completes under the current policy without a separate approval');
  assert.equal(content.uri,link.uri);
@@ -42,7 +43,7 @@ export async function readClearedAssignee(runtime,{mode,first}){
   assert.equal(review,undefined);assert.deepEqual(afterReviews,beforeReviews);
  }
  assert.deepEqual(await paging(),pagingBefore);
- assert.deepEqual(await runtime.outboundRequests(),[]);
+ assert.deepEqual(await runtime.outboundRequests(),outboundBefore,'The link read makes zero outbound requests');
  console.log('PROBE BASE-AGENT-003 4 '+mode+' assignee clear: first returned resource link matched full native incident, explicit null assignee, new revision, companion roles and attributed reassign history; '+(review?'separate open read review':'autonomous read')+'; original write outcome, native records, revisions, state-changing audit and paging unchanged; zero outbound requests');
  return value;
 }

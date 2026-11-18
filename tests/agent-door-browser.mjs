@@ -13,6 +13,7 @@ import {agedActionEvidenceRetention} from './oncall-agent-action-evidence-retent
 import {agedActionSubmitRetention} from './oncall-agent-action-submit-retention.mjs';
 import {actionSubmitResponseLoss} from './oncall-agent-action-submit-response-loss.mjs';
 import {changedReassignmentReasonConflict} from './oncall-agent-incident-replay.mjs';
+import {readClearedAssignee} from './oncall-agent-assignee-clear-replay.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {openIncidentAction} from './keyboard.mjs';
 import {standardServiceRunbookUpdate} from './oncall-agent-service-replay.mjs';
@@ -398,7 +399,7 @@ try{
    const answer=await tool('oncall.incidents.update',{change,...(role==='assignee'?{}:{role}),member:null,
     incident:target.id,revision:target.revision,reason,idempotency_key:randomUUID()});
    assert.equal(answer.result.isError,false);assert.deepEqual(answer.decision.classes.map(row=>row.class),['standard']);
-   const saved=answer.result.structuredContent;
+   const saved=role==='assignee'?await readClearedAssignee(runtime,{mode,first:answer}):answer.result.structuredContent;
    assert.deepEqual(saved,{...target,[role]:null,revision:target.revision+1,timeline:saved.timeline});
    const readingBefore=await agentEffectSnapshot(runtime);
    const lead='Lead: '+(role==='commander'?'Unassigned':owner.name),assigned='Assignee: '+(role==='assignee'?'Unassigned':assignee.name);
@@ -420,15 +421,16 @@ try{
    const entry=timeline.getByRole('listitem').filter({hasText:readable});
    await entry.getByText(readable,{exact:true}).waitFor();
    await entry.getByText('Responder assistant for Alex Chen',{exact:true}).waitFor();
-   if(mode==='held'){
-    await capture(role+'-cleared-timeline','/incidents/'+saved.id,async()=>{
+   if(mode==='held'||role==='assignee'){
+    const proofLabel=role+'-cleared'+(mode==='autonomous'?'-autonomous':'');
+    await capture(proofLabel+'-timeline','/incidents/'+saved.id,async()=>{
      await page.getByRole('button',{name:lead,exact:true}).waitFor();
      await page.getByRole('button',{name:assigned,exact:true}).waitFor();
      const entry=page.getByRole('region',{name:'Timeline',exact:true}).getByRole('listitem').filter({hasText:readable});
      await entry.getByText(readable,{exact:true}).waitFor();
      await entry.getByText('Responder assistant for Alex Chen',{exact:true}).waitFor();
     });
-    await capture(role+'-cleared-people','/incidents/'+saved.id,async()=>{
+    await capture(proofLabel+'-people','/incidents/'+saved.id,async()=>{
      const people=await openIncidentAction(page,'People and priority');
      await people.getByRole('combobox',{name:'Scribe',exact:true}).waitFor();
      await people.getByRole('button',{name:'Close',exact:true}).focus();
