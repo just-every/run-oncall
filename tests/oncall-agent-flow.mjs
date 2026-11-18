@@ -10,7 +10,7 @@ import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
 import {manualPageClassification,deadlineClassification} from './oncall-agent-live.mjs';
 import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
-import {scheduleReplay} from './oncall-agent-schedule-replay.mjs';
+import {scheduleReplay, staleOverrideRevision} from './oncall-agent-schedule-replay.mjs';
 import {teamReplay} from './oncall-agent-team-replay.mjs';
 import {staleReassignmentNativeRevision} from './oncall-agent-incident-revisions.mjs';
 import {staleScribeExpectedRevision} from './oncall-agent-role-revisions.mjs';
@@ -1030,6 +1030,7 @@ try{
  await nativeTransport(runtime);
  await teamReplay(runtime);
  await scheduleReplay(runtime);
+ await staleOverrideRevision(runtime);
  await eraseReplay(runtime);
  await eraseClasses(runtime);
  await staleReassignmentNativeRevision(runtime);
