@@ -6,7 +6,7 @@ import {lexer} from 'marked';
 import {agentRuntime,agentEffectSnapshot,pauseMatrix,policyAdoption,consentRevocationMatrix} from './agent-door-runtime.mjs';
 import {resourceJourney} from './oncall-agent-resources.mjs';
 import {resourceParity} from './oncall-agent-resource-parity.mjs';
-import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
+import {declareFromAlertParity,recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
 import {manualPageClassification,deadlineClassification} from './oncall-agent-live.mjs';
 import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
@@ -652,6 +652,11 @@ try{
  assert.equal((await adopt()).status,200);
  await policyAdoption(runtime);
  await pauseMatrix(runtime);
+ await declareFromAlertParity(runtime,async input=>{
+  const response=await http('/api/command',{type:'declare',...input});
+  assert.equal(response.status,200);
+  return response.json();
+ });
  await droppedDeclarationReplay(runtime);
  await droppedCoordinationReplay(runtime);
  await droppedNoteReplay(runtime);

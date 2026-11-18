@@ -363,3 +363,168 @@ export async function analyticsFixture(runtime) {
  return {local,foreign,owner,backup,foreignMember,foreignBackup,incidents,alerts,pending,unrouted,from,
   at:new Date(runtime.context.now()).toISOString(),to:new Date(runtime.context.now()+1000).toISOString(),secrets:[key,routedKey,'synthetic-oncall-analytics-private-prefix']};
 }
+
+/** Compare ordinary declaration doors against equivalent, still-unlinked alerts. */
+export async function declareFromAlertParity(runtime, declareAsPerson) {
+  const { db, http, origin, request, tool, adopt, context } = runtime;
+  const { autonomousPolicy, heldPolicy } = await import('../src/modules/agent-door/conformance/crypto.mjs');
+  const rows = async (sql, ...args) => (await db.prepare(sql).bind(...args).all()).results;
+  const json = async (path, input) => {
+    const response = await http(path, input);
+    assert.equal(response.status, 200, path);
+    return response.json();
+  };
+  const state = () => json('/api/state');
+  const paging = async () => {
+    const { workspaceRevision, ...custody } = await json('/api/paging/state');
+    return custody;
+  };
+  const audit = () => rows(
+    "SELECT * FROM oc_admin_audit WHERE workspace_before<>workspace_after OR kind IN ('command.declare','incidents.declare') ORDER BY ordinal",
+  );
+  const reviews = () => rows('SELECT * FROM agent_door_reviews ORDER BY id');
+  const label = async (kind, id) => {
+    const [identity] = await rows('SELECT label FROM oc_audit_identities WHERE kind=? AND entity_id=?', kind, id);
+    assert.ok(identity, 'Permanent audit retains the ' + kind + ' attribution');
+    return identity.label;
+  };
+  function oneDeclaration(before, after, previousRevision) {
+    assert.deepEqual(after.slice(0, before.length), before, 'Prior permanent audit is immutable');
+    assert.equal(after.length, before.length + 1, 'One declaration appends one permanent native event');
+    const added = after.at(-1);
+    assert.equal(added.kind, 'command.declare');
+    assert.equal(added.outcome, 'accepted');
+    assert.equal(added.workspace_before, previousRevision);
+    assert.equal(added.workspace_after, previousRevision + 1);
+    return added;
+  }
+  // Generated IDs, timestamps and attribution are checked separately from native field parity.
+  function nativeFields({ id, createdAt, alerts, timeline, ...fields }) {
+    return fields;
+  }
+
+  const actor = (await json('/api/workspace')).member;
+  const service = (await state()).services.find(row => row.id === 'agent-service');
+  assert.ok(service?.runbook.length, 'An existing runbook makes the copy observable');
+  const source = 'synthetic-oncall-declaration-parity', key = 'synthetic-oncall-declaration-parity-credential';
+  await json('/api/sources', { id: source, key, scopes: [service.id] });
+
+  const pairs = [];
+  for (const [mode, policy, disposition] of [
+    ['autonomous', autonomousPolicy(), 'autonomous'],
+    ['held', heldPolicy(), 'review'],
+  ]) {
+    assert.equal((await adopt(policy)).status, 200);
+    const title = 'Synthetic alert declaration under ' + mode + ' policy';
+    const summary = 'Declared from alert; impact requires responder review';
+    const severity = 'warning';
+    const observedAt = new Date().toISOString();
+    const alertIds = [];
+    for (const door of ['person', 'agent']) {
+      const eventId = source + '-' + mode + '-' + door;
+      const response = await request(origin + '/api/ingress/' + source, {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          source, eventId, key: eventId, generation: eventId, service: service.id,
+          environment: service.environment, intent: 'trigger', title, severity, observedAt, evidence: '',
+        }),
+      });
+      assert.equal(response.status, 201);
+      const event = await response.json();
+      const alert = (await state()).alerts.find(row => row.events.includes(event.id));
+      assert.equal(alert.service, service.id);
+      assert.equal(alert.state, 'active');
+      alertIds.push(alert.id);
+    }
+    const [humanAlert, agentAlert] = alertIds;
+    assert.notEqual(humanAlert, agentAlert);
+    const before = await state(), auditBefore = await audit(), pagingBefore = await paging(), reviewsBefore = await reviews();
+    assert.equal(pagingBefore.paging, 'OFF');
+    assert.ok(before.incidents.every(row => row.alerts.every(id => !alertIds.includes(id))), 'Both admitted alerts start unlinked');
+
+    const input = { service: service.id, title, summary, severity };
+    const human = await declareAsPerson({ ...input, alerts: [humanAlert] });
+    const humanState = await state(), humanAudit = await audit();
+    assert.equal(humanState.revision, before.revision + 1);
+    assert.equal(humanState.incidents.length, before.incidents.length + 1);
+    assert.deepEqual(humanState.incidents.find(row => row.id === human.id), human);
+    const humanEvent = oneDeclaration(auditBefore, humanAudit, before.revision);
+    assert.equal(humanEvent.actor, await label('member', actor.id));
+    assert.deepEqual(await reviews(), reviewsBefore, 'Human coordination opens no agent review');
+    assert.deepEqual(await paging(), pagingBefore, 'Human declaration preserves paging custody');
+
+    const name = 'oncall.incidents.declare';
+    const reply = await tool(name, {
+      ...input, alerts: [agentAlert], revision: humanState.revision, idempotency_key: randomUUID(),
+    }, { scope: 'incidents:write' });
+    assert.equal(reply.status, 200);
+    assert.equal(reply.result?.isError, false, JSON.stringify(reply.body));
+    assert.equal(reply.decision.disposition, disposition);
+    const agent = reply.result.structuredContent;
+    const after = await state();
+    assert.equal(after.revision, humanState.revision + 1);
+    assert.equal(after.incidents.length, humanState.incidents.length + 1);
+    assert.notEqual(agent.id, human.id);
+    assert.deepEqual(after.incidents.find(row => row.id === agent.id), agent);
+    assert.deepEqual(after.incidents.find(row => row.id === human.id), human, 'The agent action leaves the human declaration intact');
+    assert.deepEqual(nativeFields(agent), nativeFields(human));
+    for (const [incident, alertId] of [[human, humanAlert], [agent, agentAlert]]) {
+      assert.equal(incident.title, title);
+      assert.equal(incident.service, service.id);
+      assert.equal(incident.severity, severity);
+      assert.equal(incident.state, 'declared');
+      assert.equal(incident.revision, 1);
+      assert.deepEqual(incident.alerts, [alertId]);
+      assert.deepEqual(after.incidents.filter(row => row.alerts.includes(alertId)).map(row => row.id), [incident.id]);
+      assert.deepEqual(incident.runbook, service.runbook.map(text => ({ text, done: false })));
+      assert.equal(incident.timeline.length, 1);
+      const [entry] = incident.timeline;
+      assert.equal(entry.kind, 'declared');
+      assert.equal(entry.text, summary);
+      assert.deepEqual(entry.lifecycle, { from: null, to: 'declared' });
+      assert.equal(entry.at, incident.createdAt);
+    }
+    assert.equal(human.timeline[0].actor, actor.id);
+    assert.equal(human.timeline[0].metadata?.agent, undefined);
+    const attribution = agent.timeline[0].metadata.agent;
+    assert.equal(agent.timeline[0].actor, context.agentId);
+    assert.equal(attribution.agent.id, context.agentId);
+    assert.deepEqual(attribution.for, { id: actor.id, name: actor.name });
+    assert.equal(attribution.label, 'Responder assistant for ' + actor.name);
+
+    const agentEvent = oneDeclaration(humanAudit, await audit(), humanState.revision);
+    assert.equal(agentEvent.actor, await label('agent', context.agentId));
+    assert.notEqual(agentEvent.actor, humanEvent.actor);
+    assert.equal(agentEvent.source, humanEvent.actor, 'The permanent agent event retains the sponsor');
+    assert.equal(agentEvent.subject, await label('entity', agent.id));
+    const [attempt] = await rows('SELECT row FROM agent_door_audit WHERE id=?', reply.decision.id);
+    const decision = JSON.parse(attempt.row);
+    assert.equal(decision.tool, name);
+    assert.equal(decision.outcome, 'done');
+    assert.deepEqual(decision.resource, { kind: 'service', id: service.id });
+    assert.equal(decision.agent.id, context.agentId);
+    assert.equal(decision.sponsor.id, actor.id);
+
+    const review = reply.result._meta['com.runeditrun/review'];
+    const afterReviews = await reviews();
+    const known = new Set(reviewsBefore.map(row => row.id));
+    assert.deepEqual(afterReviews.filter(row => known.has(row.id)), reviewsBefore);
+    const added = afterReviews.filter(row => !known.has(row.id));
+    if (mode === 'held') {
+      assert.equal(added.length, 1);
+      assert.equal(added[0].id, review.id);
+      assert.equal(added[0].state, 'open');
+      assert.equal(JSON.parse(added[0].saved).decision_id, reply.decision.id);
+    } else {
+      assert.deepEqual(added, []);
+      assert.equal(review, undefined);
+    }
+    assert.deepEqual(await paging(), pagingBefore, 'Agent declaration preserves paging custody');
+    assert.deepEqual(await runtime.outboundRequests(), []);
+    pairs.push({ mode, human, agent, humanLabel: actor.name, agentLabel: attribution.label });
+    console.log('PROBE BASE-AGENT-002 5 declaration ' + mode + ': equivalent unlinked alerts -> matching saved declarations and one command.declare per door, separate attribution, workspace +1 per action, ' + added.length + ' open reviews, paging OFF and zero outbound requests');
+  }
+  assert.equal((await adopt()).status, 200);
+  return pairs;
+}
