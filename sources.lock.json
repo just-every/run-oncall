@@ -6696,7 +6696,7 @@
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
-      "sha256": "287efd9dd54bc174df654dd02cf31775038b5a0e3116fd6a172bf20cde907dbf",
+      "sha256": "56bf2cb28695da0525d1c307cfadb255c307f2a0f3e6eef833932aedc8ac9716",
       "executable": false
     },
     "tests/native-export.mjs": {
