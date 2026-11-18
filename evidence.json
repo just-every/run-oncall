@@ -1,0 +1,106 @@
+{
+  "files": [
+    {
+      "blob": "03c5feaa887b8f41c4d951add37bab091435db3b",
+      "bytes": 1613,
+      "path": "CI-FAILURE.md",
+      "sha256": "70b5064193f86e0e83a42dfda02864826264dfe31e1e4957d0f54762c94377da"
+    },
+    {
+      "blob": "d744ca73bbeb988a454294f3a69700fa81833319",
+      "bytes": 5154,
+      "path": "CI-RECEIPT.json",
+      "sha256": "48c3859996cded51d2ef4d793bbd26d726e2d45b76e19f2fe4d31cec9ee1a181"
+    },
+    {
+      "blob": "4eff85e5f9bdbf4d82a8a3596428e0398d21e2d3",
+      "bytes": 7767,
+      "path": "LOCAL-RECEIPT.md",
+      "sha256": "5c283afbd8d3c07d9e6406c232f57b1f3248e310d0b43f3afc5d5c282aa22a5c"
+    },
+    {
+      "blob": "ba124298c1cbcaabf203ca1b104e1cf62c75208d",
+      "bytes": 6230,
+      "path": "REPORT.md",
+      "sha256": "d2f66a348b671d164fbb9158512250a084adce5bc42d82d2a6e24ac61ca30223"
+    },
+    {
+      "blob": "a4bd4c290ca19a37cd679273724cd1e5e8161461",
+      "bytes": 50590,
+      "path": "browser/agent-door-follow-up-evidence-optional-revision-executed-1440.png",
+      "sha256": "8a06d3051fe5785eae855843284711228b2f2c130d88280921c4f563112f500d"
+    },
+    {
+      "blob": "b48ad7aca9ac632f02006066268630019685f1e5",
+      "bytes": 45360,
+      "path": "browser/agent-door-follow-up-evidence-optional-revision-executed-390.png",
+      "sha256": "50711c31613f5a216fc8f975a9ac74c56ab44a86ad8cbd985850aeba1be1fc8b"
+    },
+    {
+      "blob": "1996c74dd6399de3f9ca971afeb17eea50879731",
+      "bytes": 128173,
+      "path": "browser/agent-door-follow-up-evidence-optional-revision-held-1440.png",
+      "sha256": "ba0930487dbfc3e5fc5218c68880a8de079c481c9502a4d6fbfe90380212b969"
+    },
+    {
+      "blob": "1925870e73f9445d5ffdd3c6463e03b8de3cfbeb",
+      "bytes": 54040,
+      "path": "browser/agent-door-follow-up-evidence-optional-revision-held-390.png",
+      "sha256": "f03b56ff74df1bc19680086c2287ff3391b65b7dc85d821ff928a0d79c65313a"
+    },
+    {
+      "blob": "ca7975eff22e10f51d58c2fb9f466200ceb0d062",
+      "bytes": 52613,
+      "path": "browser/agent-door-follow-up-evidence-optional-revision-pending-1440.png",
+      "sha256": "1ba469012053006fb34d9f6b5420197db4cb1f9ec6794e40582e74fa38cf46a9"
+    },
+    {
+      "blob": "0a9a22a1e4f4f82fdc30c4a4da4e6ae6c8380c5e",
+      "bytes": 47214,
+      "path": "browser/agent-door-follow-up-evidence-optional-revision-pending-390.png",
+      "sha256": "9a0d3e0e463541b473a53f84dea8afdf5e9516e3ed0f0d3b5587cca1c5e222fc"
+    },
+    {
+      "blob": "107a109539b7485824d157d9ed61e1181482103f",
+      "bytes": 50108,
+      "path": "browser/agent-door-follow-up-evidence-required-revision-executed-1440.png",
+      "sha256": "aa3061fe5f1e5a32b75f3e1950cc6cf34938fde1ea76aadfd5304415187ba15a"
+    },
+    {
+      "blob": "4e9e519818ba5fa64fc8b3e1eb42ac9f67544a15",
+      "bytes": 45361,
+      "path": "browser/agent-door-follow-up-evidence-required-revision-executed-390.png",
+      "sha256": "e0f3df0dc71cefa828285062c621df1126bd450102b8e7c326b9b718be08c781"
+    },
+    {
+      "blob": "87f5981865c56495e7c3572a4cd1f7a753e81b4d",
+      "bytes": 135923,
+      "path": "browser/agent-door-follow-up-evidence-required-revision-held-1440.png",
+      "sha256": "0ef7026d6f6b5d9daf3f9276bb94b732ad8070b6b72f88f67ba0810caf3a47fa"
+    },
+    {
+      "blob": "65db36d529542edef9deab903925521aa389896c",
+      "bytes": 61010,
+      "path": "browser/agent-door-follow-up-evidence-required-revision-held-390.png",
+      "sha256": "2ee1d7f56efdacb617612acd78ac65e94132b82905fc360e41c0d6d63387879e"
+    },
+    {
+      "blob": "7691d55d1baeb64793abb927405605270c0f6549",
+      "bytes": 52047,
+      "path": "browser/agent-door-follow-up-evidence-required-revision-pending-1440.png",
+      "sha256": "ed68ab3994938598f6b69ceb8b8d0a8d06bb01abd2630a3b3c08e0c682f59e11"
+    },
+    {
+      "blob": "5148f355f56ac5b84bd862c492a182065e31614c",
+      "bytes": 47213,
+      "path": "browser/agent-door-follow-up-evidence-required-revision-pending-390.png",
+      "sha256": "97dbfd52172b53ad31cb4427fedfc71ae2a07cb4db344a90461f255fcae7ff31"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f273-lin-2",
+  "product_head": "d043b91abfe1b99baf3bad37a178811e91dfe71e",
+  "ref": "refs/heads/evidence/sd-oncall-c-f273-lin-2",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f273-lin-2"
+}

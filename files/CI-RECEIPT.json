@@ -1,0 +1,175 @@
+{
+  "conclusion": "failure",
+  "head_sha": "d043b91abfe1b99baf3bad37a178811e91dfe71e",
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/44296143431",
+  "status": "completed",
+  "workflow": "Verify",
+  "run_id": 44296143431,
+  "event": "push",
+  "branch": "cloud/sd-oncall-c-f273-lin-2",
+  "jobs_observed_at_utc": "2026-11-18T12:02:23Z",
+  "jobs": [
+    {
+      "completed_at": "2026-11-18T11:36:16Z",
+      "conclusion": "success",
+      "head_sha": "d043b91abfe1b99baf3bad37a178811e91dfe71e",
+      "id": 134773550968,
+      "name": "plan",
+      "started_at": "2026-11-18T11:35:56Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-18T11:36:42Z",
+      "conclusion": "success",
+      "head_sha": "d043b91abfe1b99baf3bad37a178811e91dfe71e",
+      "id": 134773743747,
+      "name": "contract-docs",
+      "started_at": "2026-11-18T11:36:19Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-18T11:39:52Z",
+      "conclusion": "success",
+      "head_sha": "d043b91abfe1b99baf3bad37a178811e91dfe71e",
+      "id": 134773744033,
+      "name": "build",
+      "started_at": "2026-11-18T11:36:18Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-18T11:36:17Z",
+      "conclusion": "skipped",
+      "head_sha": "d043b91abfe1b99baf3bad37a178811e91dfe71e",
+      "id": 134773746988,
+      "name": "light",
+      "started_at": "2026-11-18T11:36:17Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-18T11:48:52Z",
+      "conclusion": "success",
+      "head_sha": "d043b91abfe1b99baf3bad37a178811e91dfe71e",
+      "id": 134775589577,
+      "name": "shards (triage)",
+      "started_at": "2026-11-18T11:39:54Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-18T11:50:16Z",
+      "conclusion": "success",
+      "head_sha": "d043b91abfe1b99baf3bad37a178811e91dfe71e",
+      "id": 134775589668,
+      "name": "shards (agents)",
+      "started_at": "2026-11-18T11:39:54Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-18T11:48:45Z",
+      "conclusion": "success",
+      "head_sha": "d043b91abfe1b99baf3bad37a178811e91dfe71e",
+      "id": 134775589689,
+      "name": "shards (runtime)",
+      "started_at": "2026-11-18T11:39:54Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-18T11:44:01Z",
+      "conclusion": "failure",
+      "head_sha": "d043b91abfe1b99baf3bad37a178811e91dfe71e",
+      "id": 134775589692,
+      "name": "shards (browser)",
+      "started_at": "2026-11-18T11:39:54Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "failure",
+          "name": "Run this shard",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-18T11:52:32Z",
+      "conclusion": "success",
+      "head_sha": "d043b91abfe1b99baf3bad37a178811e91dfe71e",
+      "id": 134775589712,
+      "name": "shards (hosted)",
+      "started_at": "2026-11-18T11:39:54Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-18T11:49:19Z",
+      "conclusion": "success",
+      "head_sha": "d043b91abfe1b99baf3bad37a178811e91dfe71e",
+      "id": 134775589758,
+      "name": "shards (intake)",
+      "started_at": "2026-11-18T11:39:54Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-18T11:50:31Z",
+      "conclusion": "success",
+      "head_sha": "d043b91abfe1b99baf3bad37a178811e91dfe71e",
+      "id": 134775589813,
+      "name": "shards (changes)",
+      "started_at": "2026-11-18T11:39:54Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-18T11:48:50Z",
+      "conclusion": "success",
+      "head_sha": "d043b91abfe1b99baf3bad37a178811e91dfe71e",
+      "id": 134775589824,
+      "name": "shards (transfer)",
+      "started_at": "2026-11-18T11:39:54Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-18T11:52:38Z",
+      "conclusion": "failure",
+      "head_sha": "d043b91abfe1b99baf3bad37a178811e91dfe71e",
+      "id": 134782134029,
+      "name": "verify",
+      "started_at": "2026-11-18T11:52:34Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "failure",
+          "name": "Require the selected coverage and its proof",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-18T11:52:32Z",
+      "conclusion": "skipped",
+      "head_sha": "d043b91abfe1b99baf3bad37a178811e91dfe71e",
+      "id": 134782135858,
+      "name": "nightly-proof",
+      "started_at": "2026-11-18T11:52:32Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-18T11:52:32Z",
+      "conclusion": "skipped",
+      "head_sha": "d043b91abfe1b99baf3bad37a178811e91dfe71e",
+      "id": 134782135874,
+      "name": "full-push-proof",
+      "started_at": "2026-11-18T11:52:32Z",
+      "status": "completed",
+      "steps": []
+    }
+  ]
+}
