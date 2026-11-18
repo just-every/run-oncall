@@ -4,7 +4,7 @@ import {mkdir} from 'node:fs/promises';
 import {chromium} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {agentRuntime,agentEffectSnapshot,pauseMatrix} from './agent-door-runtime.mjs';
-import {declareFromAlertParity,acknowledgeParity,recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy,deadlineTarget} from './oncall-agent-fixtures.mjs';
+import {declareFromAlertParity,acknowledgeParity,recoveredResolutionTarget,advanceResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy,deadlineTarget} from './oncall-agent-fixtures.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-revisions.mjs';
 import {actionSubmitNativeRevision} from './oncall-agent-action-submit-native-revision.mjs';
@@ -675,11 +675,17 @@ try{
   await page.getByText(/Created by Responder assistant for Alex Chen/).waitFor();
  });
  // The actual signed-in browser approves the exact saved native resolution.
- const resolutionTarget=await recoveredResolutionTarget(runtime,'Resolution held for the sponsoring human');
+ const recovered=await recoveredResolutionTarget(runtime,'Resolution held for the sponsoring human');
+ const resolutionTarget=await advanceResolutionTarget(runtime,recovered);
  const resolvePolicy=autonomousPolicy();resolvePolicy.rules.unshift({id:'resolve-commitment',class:'commitment',do:'approval',approver:['sponsor'],wait:'PT1H'});
  assert.equal((await runtime.adopt(resolvePolicy)).status,200);
- const resolveArgs={incident:resolutionTarget.id,revision:resolutionTarget.revision,summary:'Human approves the retained incident resolution',idempotency_key:randomUUID()};
+ const resolveArgs={incident:resolutionTarget.id,revision:resolutionTarget.revision,expected_revision:resolutionTarget.revision,summary:'Human approves the retained incident resolution',idempotency_key:randomUUID()};
  const resolutionBefore=await native(),resolutionEdge=await runtime.outboundRequests();
+ const beforeStaleResolution=await agentEffectSnapshot(runtime);
+ const staleResolution=await tool('oncall.incidents.resolve',{...resolveArgs,expected_revision:recovered.revision,idempotency_key:randomUUID()});
+ assert.equal(staleResolution.result.isError,true);
+ assert.deepEqual(staleResolution.result._meta['com.runeditrun/error'],{code:'revision_conflict',current_revision:resolutionTarget.revision});
+ assert.deepEqual(await agentEffectSnapshot(runtime),beforeStaleResolution,'Stale preparation leaves no approval and preserves the recovered incident');
  const heldResolution=await tool('oncall.incidents.resolve',resolveArgs);
  assert.equal(heldResolution.result?.resultType,'input_required');
  assert.equal(heldResolution.decision.disposition,'approval');
@@ -747,6 +753,7 @@ try{
  const resolveRetry=await tool('oncall.incidents.resolve',resolveArgs);
  assert.equal(resolveRetry.result?.isError,false,JSON.stringify(resolveRetry.body));
  assert.equal(resolveRetry.result.structuredContent.state,'resolved');
+ assert.deepEqual(resolveRetry.result.structuredContent,resolvedIncident);
  assert.deepEqual(await native(),resolutionAfter,'Approved resolution retry creates no second effect');
  assert.deepEqual(await runtime.outboundRequests(),resolutionEdge);
  const resolutionRows=(await completeAudit()).filter(row=>row.agent.id===runtime.context.agentId);
@@ -757,7 +764,11 @@ try{
  await capture('resolution-timeline','/incidents/'+resolutionTarget.id,async()=>{
   await page.getByRole('region',{name:'Timeline',exact:true}).waitFor();
   if(await page.getByRole('button',{name:/^Earlier entries/}).count())await page.getByRole('button',{name:/^Earlier entries/}).click();
-  if((await page.viewportSize()).width===1440){const headings=await page.locator('.event-line strong').allTextContents();for(const raw of ['transition','complete','incident deadline'])assert.ok(!headings.includes(raw),'timeline headings describe activity');}
+  if((await page.viewportSize()).width===1440){
+   const headings=await page.locator('.event-line strong').allTextContents();
+   for(const raw of ['transition','complete','incident deadline'])assert.ok(!headings.includes(raw),'timeline headings describe activity');
+   await page.getByText(resolveArgs.summary,{exact:false}).first().waitFor();
+  }
   await page.getByText('Responder assistant for Alex Chen',{exact:true}).first().waitFor();
  });
  assert.equal((await runtime.adopt()).status,200);

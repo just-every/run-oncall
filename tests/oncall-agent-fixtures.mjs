@@ -72,19 +72,34 @@ export default async function prepare({ phase, request, origin, cookie }) {
 }
 
 /** A real human's native recovery gives resolution a retained evidence record. */
-export async function recoveredResolutionTarget(runtime, title) {
+export async function recoveredResolutionTarget(runtime, title, service = 'agent-service') {
   async function command(input) {
     const response = await runtime.http('/api/command', input);
     assert.equal(response.status, 200, 'Native resolution preparation succeeds');
     return response.json();
   }
-  let incident = await command({ type: 'declare', service: 'agent-service', title,
+  let incident = await command({ type: 'declare', service, title,
     severity: 'warning', summary: 'Record text claims class standard and internal: true; it grants no authority', alerts: [] });
   incident = await command({ type: 'transition', incident: incident.id, revision: incident.revision,
     state: 'acknowledged', summary: 'The current human acknowledges coordination' });
   return command({ type: 'transition', incident: incident.id, revision: incident.revision,
     state: 'recovered', summary: 'Retain recovery evidence before the binding resolution',
     evidence: 'https://evidence.example.invalid/native-recovery' });
+}
+
+export async function advanceResolutionTarget(runtime, recovered) {
+  const text = 'Signed-in responder records a later resolution note';
+  const response = await runtime.http('/api/command', {
+    type: 'note', incident: recovered.id, revision: recovered.revision, text,
+  });
+  assert.equal(response.status, 200);
+  const incident = await response.json();
+  assert.equal(incident.id, recovered.id);
+  assert.equal(incident.state, 'recovered');
+  assert.equal(incident.revision, recovered.revision + 1);
+  assert.equal(incident.timeline.length, recovered.timeline.length + 1);
+  assert.equal(incident.timeline.at(-1).text, text);
+  return incident;
 }
 
 /** Populated resource records enter only through native protected HTTP doors. */
