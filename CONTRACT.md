@@ -295,6 +295,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 2. A foreign team's incidents are neither listed nor selectable.
 3. Team-scoped audit export proves door rule D-1: atomic rollback, subject-erasure-safe export and interruption at the execution boundary.
 
+**Local proof (Run Edit Run fleet, 18 November 2026).** Through the signed-in Alert details door, a one-off observation in the `alertSeverity` journey in `tests/product-browser-journey.mjs` compared an active, unlinked alert’s three displayed runbook steps in exact order with the associated public service’s protected state. “Declare incident from alert” was available at 1440 and 390 and was left unused.
+
 #### OC-024 — Follow-the-sun, PTO and holiday coverage
 
 *Tier:* Core · *Register:* R-14
