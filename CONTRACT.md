@@ -1154,6 +1154,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 **Requirement.** Every mutating tool requires an idempotency key and takes an optional expected revision. The same key with the same arguments returns the first outcome for at least 24 hours; the same key with different arguments returns `idempotency_conflict`; a stale revision returns `revision_conflict` with the current revision. Long work returns a job handle and a status tool, with no dependence on the Tasks extension.
 
+**Oncall schedule overrides.** When the required native revision is stale, the authorized override refusal returns the current rota revision in MCP error metadata and text even when the request omits the optional expected revision. An out-of-scope rota and an absent rota return the same not-found error with no revision. The schedule replay journey in `tests/oncall-agent-schedule-replay.mjs` exercises the refusal and a fresh-key override under both company policies.
+
 **Acceptance.**
 1. Two calls with one key give one effect and equal results.
 2. A retry with a new JSON-RPC id and the same key, after a dropped stream, returns the recorded outcome.
