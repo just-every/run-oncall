@@ -568,7 +568,7 @@ async function accessibleState(page,name,width,focus) {
 }
 
 const keyboardInstant=Date.parse('2026-10-30T12:00:00.000Z')
-export async function productSchedule(page,context,width,session,{ownerLink,selectedOnly=false,setTime=async()=>{}}={}) {
+export async function productSchedule(page,context,width,session,{ownerLink,openSession,selectedOnly=false,observePhoneStaleCover=false,setTime,worker}) {
  await setTime(keyboardInstant);
  const now=keyboardInstant;
  const key=keyboardUser(page),origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
@@ -680,12 +680,69 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  }
  await key.dialog(cover);await accessibleState(page,'cover-review',width,cover.getByRole('checkbox',{name:'I reviewed these assignments and gaps'}));
  await key.dismiss(cover,coverOpener);assert.deepEqual(await api('/api/paging/state'),coverBefore,'Escape from the review writes nothing');
- await key.activate(coverOpener);await key.activate(cover.getByRole('button',{name:'Review change',exact:true}));await cover.getByText('New coverage gap',{exact:true}).first().waitFor();
+ const schedulePath='/api/schedules/'+id;
+ const reviewCover=async()=>{
+  await key.activate(coverOpener);
+  const response=page.waitForResponse(r=>new URL(r.url()).pathname===schedulePath+'/review'&&r.request().method()==='POST');
+  await key.activate(cover.getByRole('button',{name:'Review change',exact:true}));
+  await cover.getByText('New coverage gap',{exact:true}).first().waitFor();
+  const reply=await response;assert.equal(reply.status(),200);
+  return reply.json();
+ };
+ let coverBaseRevision=created.revision;
+ if(width===1440||observePhoneStaleCover){
+  const outboundBefore=await worker.outboundRequests(),staleReview=await reviewCover();
+  // Keep the winner outside the reviewed window so the later successful
+  // retry can still compare every assignment from the original review.
+  const winnerStart=staleReview.to+3600000;
+  const winner={id:'synthetic-oncall-7303',role:'primary',member:relief.id,start:new Date(winnerStart).toISOString(),end:new Date(winnerStart+3600000).toISOString()};
+  assert.ok(winnerStart>=Date.parse(future.overrideEnd+'Z'),'the winning cover starts after the losing cover ends');
+  const secondContext=await context.browser().newContext({baseURL:origin,extraHTTPHeaders:{connection:'close'}});
+  try {
+   await openSession(secondContext);
+   const secondSession=await secondContext.request.get('/api/session');assert.equal(secondSession.status(),200);
+   assert.equal((await secondSession.json()).member.role,'admin');
+   assert.notDeepEqual(await secondContext.cookies(),await context.cookies(),'the competing request has its own authenticated session');
+   const winningReply=await secondContext.request.post(origin+schedulePath+'/overrides',{headers:{origin},data:{revision:created.revision,override:winner}});
+   assert.equal(winningReply.status(),200,'the separate session commits the non-overlapping cover');
+   const winningSchedule=await winningReply.json();
+   assert.equal(winningSchedule.revision,created.revision+1);
+   assert.deepEqual(winningSchedule.overrides,[winner]);
+  } finally {await secondContext.close();}
+  const afterWinner=await api('/api/paging/state');
+  coverBaseRevision=created.revision+1;
+  const rejected=page.waitForResponse(r=>new URL(r.url()).pathname===schedulePath+'/apply'&&r.request().method()==='POST');
+  await key.activate(cover.getByRole('checkbox',{name:'I reviewed these assignments and gaps'}),'Space');
+  await key.activate(cover.getByRole('button',{name:'Apply reviewed change',exact:true}));
+  const staleReply=await rejected;assert.equal(staleReply.status(),409,'the real schedule door refuses the stale keyboard apply');
+  const attempted=staleReply.request().postDataJSON();
+  assert.equal(attempted.digest,staleReview.digest);assert.equal(attempted.confirmed,true);
+  assert.equal(attempted.schedule.revision,created.revision);
+  assert.deepEqual(attempted.schedule.overrides,staleReview.schedule.overrides);
+  const staleAlert=cover.getByRole('alert');
+  await expect(staleAlert).toHaveText(/schedule changed.*review again/i);
+  await expect(staleAlert).toBeInViewport();
+  await expect(page.getByRole('status').filter({hasText:/\bsaved\b/i})).toHaveCount(0);
+  await key.dialog(cover);
+  for(const [label,value] of [['Who',''],['Role','primary'],['From',future.overrideStart],['To',future.overrideEnd]]){
+   const field=cover.getByLabel(label,{exact:true});
+   await expect(field).toBeEditable();
+   await expect(field).toHaveValue(value);
+  }
+  await accessibleState(page,'cover-stale',width,cover.getByRole('button',{name:'Review change',exact:true}));
+  await key.dismiss(cover,coverOpener);
+  const afterEscape=await api('/api/paging/state');
+  assert.deepEqual(afterEscape.schedules.find(schedule=>schedule.id===id).overrides,[winner],'protected readback contains only the winning override');
+  assert.deepEqual(afterEscape,afterWinner,'the rejected apply and Escape leave all paging records and revisions unchanged');
+  assert.deepEqual(await worker.outboundRequests(),outboundBefore,'the review, competing commit and stale refusal make no outbound request');
+  console.log(`PROBE OC-009 2 at ${width}: independently authenticated cover wins, keyboard apply returns 409, visible alert, no saved claim, retained editable fields, contained focus and Escape return; protected readback has only the winner and no additional scheduling write or outbound request`);
+ }
+ await reviewCover();
  await key.activate(cover.getByRole('checkbox',{name:'I reviewed these assignments and gaps'}),'Space');await key.activate(cover.getByRole('button',{name:'Apply reviewed change',exact:true}));await cover.waitFor({state:'detached'});
  await key.visibleFocus(coverOpener);
  const covered=(await api('/api/paging/state')).schedules.find(schedule=>schedule.id===id),override=covered.overrides.at(-1);
  assert.deepEqual({member:override.member,role:override.role,start:override.start,end:override.end},{member:null,role:'primary',start:future.overrideStart+':00.000Z',end:future.overrideEnd+':00.000Z'},'protected readback retains the exact keyboard cover interval and assignment');
- assert.equal(covered.revision,created.revision+1,'only confirmation saves the cover');
+ assert.equal(covered.revision,coverBaseRevision+1,'only confirmation saves the cover');
  const reviewedCoverage=await api('/api/paging/preview',{scheduleId:id,from:coverReview.from,to:coverReview.to});
  for(const interval of coverReview.intervals){const actual=reviewedCoverage.findLast(window=>window.at<=interval.start);assert.ok(actual);assert.equal(actual[interval.role],interval.after,'saved coverage matches each reviewed role assignment');}
  await accessibleState(page,'cover-saved',width,coverOpener);
@@ -1926,7 +1983,7 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession,
   for(const width of [1440,390]){
    await page.setViewportSize({width,height:1000});await setTime(keyboardInstant);
    await keyboardCoordination(page,context,width,ownerLink,openSession);
-   await productSchedule(page,context,width,session,{ownerLink,selectedOnly:true,setTime});
+   await productSchedule(page,context,width,session,{ownerLink,openSession,selectedOnly:true,observePhoneStaleCover:true,setTime,worker});
   }
   return;
  }
@@ -1938,7 +1995,7 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession,
   if(width===1440)await sharedIncidentLinks(page,context)
   await alertSeverity(page,context,width)
   await supportStartBrowser(page,context,{setTime,proof:triageProof})
-  if(width===1440)await productSchedule(page,context,width,session,{ownerLink,setTime})
+  if(width===1440)await productSchedule(page,context,width,session,{ownerLink,openSession,setTime,worker})
   await triageFiltersBrowser(page,context,{setTime,proof:triageProof})
   await triageBulkBrowser(page,context,width,worker)
   await productImport(page,context,width,session,triageProof)
@@ -1957,7 +2014,7 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession,
  await page.setViewportSize({width:390,height:1000})
  await setTime(keyboardInstant)
  await keyboardCoordination(page,context,390,ownerLink,openSession)
- await productSchedule(page,context,390,session,{ownerLink,selectedOnly:true,setTime})
+ await productSchedule(page,context,390,session,{ownerLink,openSession,selectedOnly:true,setTime,worker})
  await page.setViewportSize({width:1440,height:1000})
 }
 
