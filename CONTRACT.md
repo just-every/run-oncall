@@ -1157,6 +1157,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 4. A stale revision returns a conflict naming the current revision.
 5. A job handle used by another person's token reads as not found.
 
+**Observed (18 November 2026, Run Edit Run fleet).** Under autonomous and held policies, fresh `oncall.actions.submit` calls for an owned, due-dated P2 follow-up with the evidence completion policy refused both a stale optional `expected_revision` paired with the current native revision and a stale required native revision with `expected_revision` absent. Each returned `isError` and `revision_conflict` with the exact authorized parent incident `current_revision` in metadata and text. The refusal disclosed no private result and preserved native records, revisions, timeline, state-changing audit, original calls and outcomes, approvals, reviews and paging. Each fresh corrected call completed one follow-up with agent submission and acceptance attribution. In held mode the named sponsor approved the exact saved revision and summary hash once through the signed-in page. The held approval and saved P2 completion were observed at 1440 and 390 pixels. The journeys recorded zero outbound requests and no evidence link fetch.
+
 #### BASE-AGENT-013 — Manifest, docs and the conformance journey
 
 *Tier:* Agent surface
