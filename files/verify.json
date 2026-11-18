@@ -1,0 +1,62 @@
+[
+  {
+    "checked_at": "2026-11-18T14:24:02.703555+00:00",
+    "head": "f83add93734cf3ba77817104f08aa10572772d77",
+    "run": {
+      "conclusion": null,
+      "head_branch": "cloud/sd-oncall-c-f285",
+      "head_sha": "f83add93734cf3ba77817104f08aa10572772d77",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44323788508",
+      "id": 44323788508,
+      "status": "in_progress"
+    }
+  },
+  {
+    "checked_at": "2026-11-18T14:29:03.737826+00:00",
+    "head": "f83add93734cf3ba77817104f08aa10572772d77",
+    "run": {
+      "conclusion": null,
+      "head_branch": "cloud/sd-oncall-c-f285",
+      "head_sha": "f83add93734cf3ba77817104f08aa10572772d77",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44323788508",
+      "id": 44323788508,
+      "status": "in_progress"
+    }
+  },
+  {
+    "checked_at": "2026-11-18T14:34:04.709562+00:00",
+    "head": "f83add93734cf3ba77817104f08aa10572772d77",
+    "run": {
+      "conclusion": null,
+      "head_branch": "cloud/sd-oncall-c-f285",
+      "head_sha": "f83add93734cf3ba77817104f08aa10572772d77",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44323788508",
+      "id": 44323788508,
+      "status": "in_progress"
+    }
+  },
+  {
+    "checked_at": "2026-11-18T14:39:05.739873+00:00",
+    "head": "f83add93734cf3ba77817104f08aa10572772d77",
+    "run": {
+      "conclusion": null,
+      "head_branch": "cloud/sd-oncall-c-f285",
+      "head_sha": "f83add93734cf3ba77817104f08aa10572772d77",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44323788508",
+      "id": 44323788508,
+      "status": "in_progress"
+    }
+  },
+  {
+    "checked_at": "2026-11-18T14:44:06.776742+00:00",
+    "head": "f83add93734cf3ba77817104f08aa10572772d77",
+    "run": {
+      "conclusion": "success",
+      "head_branch": "cloud/sd-oncall-c-f285",
+      "head_sha": "f83add93734cf3ba77817104f08aa10572772d77",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44323788508",
+      "id": 44323788508,
+      "status": "completed"
+    }
+  }
+]

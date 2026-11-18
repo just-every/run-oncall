@@ -1,0 +1,40 @@
+{
+  "files": [
+    {
+      "blob": "3f1cab8f9431400df2942330f1d0742ab89d17bf",
+      "bytes": 6896,
+      "path": "REPORT.md",
+      "sha256": "3a2796f709686a770e0c4b593ea959242c8df6cf079f2d90c9e1992369a0f11c"
+    },
+    {
+      "blob": "7b312634a7cde928b96a48e88a8249ba67c97693",
+      "bytes": 3230,
+      "path": "local-receipt.txt",
+      "sha256": "e2629bb40f866c56f550bca700fd19acf8b0c7b2a7b8b389339729e3195bca2e"
+    },
+    {
+      "blob": "31276e9ce7b8edc20d86daf17479127104e994f1",
+      "bytes": 152839,
+      "path": "oc009-cover-stale-1440.png",
+      "sha256": "aa8144c19eaacc3a0489c9e08231fee7791b6239bfb463e82a12d7e649f00c59"
+    },
+    {
+      "blob": "213b68603a6d9bbcd1856c240394cf7adb6e26fb",
+      "bytes": 187178,
+      "path": "oc009-cover-stale-390.png",
+      "sha256": "f17a634eea2f868ee8ad375bcc5eae8322b38ea60d118b4cb09a51494d8a0d4f"
+    },
+    {
+      "blob": "eeed4e1f8b6cbc7be7cf435c321ce005ede3a946",
+      "bytes": 2081,
+      "path": "verify.json",
+      "sha256": "1ae66d9341c3551145f534c795f4eea537fab141b7e42edadaba4b4088a9d756"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f285",
+  "product_head": "f83add93734cf3ba77817104f08aa10572772d77",
+  "ref": "refs/heads/evidence/sd-oncall-c-f285",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f285"
+}

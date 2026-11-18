@@ -1,0 +1,44 @@
+Product branch cloud/sd-oncall-c-f285
+Product head f83add93734cf3ba77817104f08aa10572772d77
+Tested base 518317b385c4535599bfc670dd676da46069b451
+Tested source and lock diff matched the committed diff byte for byte.
+Node v22.20.0, pnpm 10.12.4
+Chromium 154.0.8037.57 built on Debian GNU/Linux 13 (trixie)
+
+Local production build
+build: complete (exit 0)
+
+Typecheck and first-party check, exit 0
+pnpm run typecheck
+pnpm exec rer check --profile first-party
+
+Contract document write and check, exit 0
+Wrote 0 contract documents.
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+
+Source lock regeneration and check, exit 0
+The installed edition-authoring tool reports ok=true.
+
+Baseline reproduction with the previous sheet, exit 1
+AssertionError [ERR_ASSERTION]: opening the dialog moves focus inside
+
+Focused emitted Worker browser journey, exit 0
+ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_PRODUCT_JOURNEY=accessibility node tests/product-browser.mjs
+PROBE OC-009 declaration, acknowledgment and notes 1440: native keyboard incident and action dialog -> protected incident, commander and literal attributed note retained; focus, Tab containment, Escape return, labels, overflow and axe passed
+PROBE OC-009 stale write 1440: second authenticated HTTP session wins -> real 409, alert announcement, editable losing draft and no saved claim; winning data unchanged
+PROBE OC-009 2 at 1440: independently authenticated cover wins, keyboard apply returns 409, visible alert, no saved claim, retained editable fields, contained focus and Escape return; protected readback has only the winner and no additional scheduling write or outbound request
+PROBE OC-009 schedules, overrides and preview 1440: native keyboard create, narrow disclosure, cover preparation, review, Escape and confirmation -> protected saved assignments and preview agree; focus, dialog containment, labels, overflow and axe passed
+PROBE OC-009 declaration, acknowledgment and notes 390: native keyboard incident and action dialog -> protected incident, commander and literal attributed note retained; focus, Tab containment, Escape return, labels, overflow and axe passed
+PROBE OC-009 2 at 390: independently authenticated cover wins, keyboard apply returns 409, visible alert, no saved claim, retained editable fields, contained focus and Escape return; protected readback has only the winner and no additional scheduling write or outbound request
+PROBE OC-009 schedules, overrides and preview 390: native keyboard create, narrow disclosure, cover preparation, review, Escape and confirmation -> protected saved assignments and preview agree; focus, dialog containment, labels, overflow and axe passed
+Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390
+
+Browser screenshots
+oc009-cover-stale-1440.png: PNG image data, 1440 x 1636, 8-bit/color RGB, non-interlaced
+oc009-cover-stale-390.png:  PNG image data, 390 x 2732, 8-bit/color RGB, non-interlaced
+aa8144c19eaacc3a0489c9e08231fee7791b6239bfb463e82a12d7e649f00c59  oc009-cover-stale-1440.png
+f17a634eea2f868ee8ad375bcc5eae8322b38ea60d118b4cb09a51494d8a0d4f  oc009-cover-stale-390.png
+
+Guarded branch push
+PUSH_OK branch=cloud/sd-oncall-c-f285
