@@ -1,0 +1,253 @@
+{
+  "base": "df8efefe31a9813ebc5aa3f0c2a319c19e2667d7",
+  "branch": "cloud/sd-oncall-c-f292",
+  "checks": {
+    "build": {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    "candidate_identity": {
+      "author_and_committer_match_fleet": true,
+      "commits_examined": 1,
+      "side_parents": 0,
+      "trailers": 0
+    },
+    "committed_view_check": {
+      "differing_generated_files": [
+        "ACCEPTANCE.md"
+      ],
+      "exit": 1,
+      "prose_errors": 0
+    },
+    "core_browser": {
+      "command": "node tests/product-browser.mjs",
+      "exit": 0,
+      "selection": "ONCALL_PRODUCT_PART=core"
+    },
+    "first_party": {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    "focused_browser": {
+      "command": "node tests/product-browser.mjs",
+      "exit": 0,
+      "selection": "ONCALL_PRODUCT_JOURNEY=accessibility"
+    },
+    "migration_ledger": {
+      "applicable": false
+    },
+    "pinned_source_lock": {
+      "commands": [
+        "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+        "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check"
+      ],
+      "exit": 0
+    },
+    "typecheck": {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    "views_before_restore": {
+      "commands": [
+        "node src/base/contract-docs.mjs write",
+        "node src/base/contract-docs.mjs check"
+      ],
+      "exit": 0
+    }
+  },
+  "counts": {
+    "after": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41
+    },
+    "before": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41
+    }
+  },
+  "cover_shift": {
+    "loser_http": 409,
+    "protected_state_and_outbound_comparison": "passed",
+    "widths": [
+      390,
+      1440
+    ]
+  },
+  "execution": {
+    "chromium": "system headless Chromium",
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "worker": "emitted local Worker backed by D1"
+  },
+  "head": "8940e83f34a52700ab168f27f2f6e372afcd2c57",
+  "incident_note": {
+    "editable_draft": true,
+    "extra_notes": 0,
+    "horizontal_overflow": false,
+    "loser_http": 409,
+    "outbound_delta": 0,
+    "paging": "OFF",
+    "saved_confirmation": false,
+    "serious_or_critical_axe": 0,
+    "unchanged_paging": true,
+    "visible_alert": true,
+    "visible_keyboard_focus": true,
+    "widths": [
+      390,
+      1440
+    ],
+    "winner_http": 200,
+    "winning_revision_advances": 1
+  },
+  "publication_scan": {
+    "commit": "8940e83f34a52700ab168f27f2f6e372afcd2c57",
+    "complete": null,
+    "findings": null,
+    "historyScanned": null,
+    "status": "fleet pending"
+  },
+  "repository": "just-every/run-oncall",
+  "screenshots": [
+    {
+      "file": "oc009-rejected-write-1440.png",
+      "height": 1164,
+      "sha256": "a485b6297003726ee49801c4ab771e90994220c9739bbbc76536bdab320f6148",
+      "width": 1440
+    },
+    {
+      "file": "oc009-rejected-write-390.png",
+      "height": 1640,
+      "sha256": "476e7960ae8c78e25596d6b98b8e287151a1b74d7a728972627c90f49a17788c",
+      "width": 390
+    },
+    {
+      "file": "oc009-cover-stale-1440.png",
+      "height": 1636,
+      "sha256": "aa8144c19eaacc3a0489c9e08231fee7791b6239bfb463e82a12d7e649f00c59",
+      "width": 1440
+    },
+    {
+      "file": "oc009-cover-stale-390.png",
+      "height": 2732,
+      "sha256": "f17a634eea2f868ee8ad375bcc5eae8322b38ea60d118b4cb09a51494d8a0d4f",
+      "width": 390
+    }
+  ],
+  "starting_main": {
+    "head": "df8efefe31a9813ebc5aa3f0c2a319c19e2667d7",
+    "run_site_conclusion": "success",
+    "run_site_run": 44420542819,
+    "verify_conclusion": "success",
+    "verify_run": 44420542831
+  },
+  "tag": "sd-oncall-c-f292",
+  "verify": {
+    "classification": "generated-view-only",
+    "conclusion": "failure",
+    "event": "push",
+    "head_branch": "cloud/sd-oncall-c-f292",
+    "head_sha": "8940e83f34a52700ab168f27f2f6e372afcd2c57",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44422646109",
+    "id": 44422646109,
+    "jobs": [
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135219312433,
+        "name": "plan"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          "Check the generated contract documents"
+        ],
+        "id": 135219483288,
+        "name": "contract-docs"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135219483472,
+        "name": "build"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "id": 135219485262,
+        "name": "light"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135220408730,
+        "name": "shards (runtime)"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135220408735,
+        "name": "shards (agents)"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135220408781,
+        "name": "shards (hosted)"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135220408782,
+        "name": "shards (triage)"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135220408787,
+        "name": "shards (browser)"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135220408848,
+        "name": "shards (transfer)"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135220408854,
+        "name": "shards (intake)"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135220408872,
+        "name": "shards (changes)"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135226577267,
+        "name": "full-push-proof"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "id": 135226580150,
+        "name": "nightly-proof"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          "Require the selected coverage and its proof"
+        ],
+        "id": 135226611747,
+        "name": "verify"
+      }
+    ],
+    "name": "Verify",
+    "status": "completed"
+  }
+}

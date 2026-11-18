@@ -1,0 +1,8 @@
+Push Verify 44422646109
+Product head 8940e83f34a52700ab168f27f2f6e372afcd2c57
+Browser shard 135220408787 completed successfully.
+contract-docs	Check the generated contract documents	2026-11-18T23:40:29.4661977Z Contract prose: 0 errors, 0 warnings.
+contract-docs	Check the generated contract documents	2026-11-18T23:40:29.5249411Z ACCEPTANCE.md: generated content differs; run contract-docs write.
+verify	Require the selected coverage and its proof	2026-11-18T23:55:15.5861411Z   CONTRACT_DOCS: failure
+verify	Require the selected coverage and its proof	2026-11-18T23:55:15.5862095Z   BUILD: success
+verify	Require the selected coverage and its proof	2026-11-18T23:55:15.5862765Z   SHARDS: success
