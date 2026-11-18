@@ -1,0 +1,10 @@
+Product SHA eff87aeb96794c01e1db7801a673c734b38342c9
+Lander-Regenerate write and check, before restoring generated views.
+Wrote 1 contract documents.
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+On-checkout view check after restoration (exit 1, expected).
+Contract prose: 0 errors, 0 warnings.
+ACCEPTANCE.md: generated content differs; run contract-docs write.
+Pinned source lock check on the exact candidate.
+{"ok":true,"edition":"just-every/run-oncall","toolchain":{"id":"runeditrun/edition-authoring","version":"1.1.0","sha256":"fae294214f81f9890955eeeaf16a061aa45270bd8f5f6733c71d389969f5dece"}}

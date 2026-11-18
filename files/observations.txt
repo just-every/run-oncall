@@ -1,0 +1,17 @@
+Product SHA eff87aeb96794c01e1db7801a673c734b38342c9
+Node 22.20.0. Chromium /usr/bin/chromium.
+Exit 0: node tests/member-coordination-browser.mjs
+PASS existing service audience: grant, subscribe, reload, revoke and regrant through the browser
+Member coordination derived-status at 1440: overflow, hydration and accessibility passed
+Member coordination stakeholder-status-and-refusals at 1440: overflow, hydration and accessibility passed
+PASS OC-061 direct stakeholder details: owner reads populated incident, alert and service; stakeholder lands on Checkout status with no private document, response or hydrated content at 1440 and 390; custody intact and zero outbound requests
+OC-061 email-list browser: Settings authoring, started/ended recorded no-sender obligations, unsubscribe prevents future records and shared erasure receipt at 1440; overflow, axe and hydration passed
+OC-018 real hosted member coordination persists after reload: on the emitted production Worker a password member acknowledged and noted an incident, reloaded at 1440 and kept attribution; a viewer read it; signed-out, anonymous and revoked sessions got no workspace; paging refused (409)
+Exit 0: ONCALL_TRIAGE_PART=storm node tests/triage.mjs
+OC-061 business services and subscriptions: explicit audience, self subscription, recorded channel, unauthorized subscription and override refusals
+OC-061 derived incident impact and notice custody: degraded, one record per subscriber, no raw alert text, no sender or approved-update fabrication
+OC-061 audience changes: admin grants existing service access, stakeholder subscribes, revocation stops subscriptions and recorded obligations, invalid and unauthorized or stale writes preserve state
+OC-061 attributed override: derived value retained, explicit clear, permanent audit and audit-failure rollback
+OC-061 stakeholder boundary: workspace and HTML contain no response state; triage, timelines, runbooks, contacts, audit/archive/checkpoint, ICS, reports, source lists and OC-053 API refused; manual page and responder request create nothing
+OC-061 configured high-urgency impact: alert admission and source recovery recompute internal status without a browser or subscriber delivery
+OC-061 bulk impact recomputation and unsubscribe: resolution restores operational status and no new subscriber notice is recorded

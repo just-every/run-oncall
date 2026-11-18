@@ -1,0 +1,295 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f272",
+  "product_head": "eff87aeb96794c01e1db7801a673c734b38342c9",
+  "save_head": "557bcfa92aa4ca2871a34c5f7c8c8befee064eeb",
+  "fetched_main_before_push": "c7c61ef6e03c39d5863a1d472a99eb2436bf73dd",
+  "remote_main_at_report": "c7c61ef6e03c39d5863a1d472a99eb2436bf73dd",
+  "main_equals_candidate": false,
+  "remote_branch_matches_candidate": true,
+  "baseline_runs": {
+    "head": "c7c61ef6e03c39d5863a1d472a99eb2436bf73dd",
+    "verify": {
+      "id": 44246967278,
+      "conclusion": "success"
+    },
+    "run_site": {
+      "id": 44246967365,
+      "conclusion": "success"
+    }
+  },
+  "candidate_verify": {
+    "conclusion": "failure",
+    "head_sha": "eff87aeb96794c01e1db7801a673c734b38342c9",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44248131450",
+    "status": "completed",
+    "id": 44248131450,
+    "event": "push",
+    "jobs": [
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "eff87aeb96794c01e1db7801a673c734b38342c9",
+        "id": 134611963328,
+        "name": "plan",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "eff87aeb96794c01e1db7801a673c734b38342c9",
+        "id": 134612103409,
+        "name": "build",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          "Check the generated contract documents"
+        ],
+        "head_sha": "eff87aeb96794c01e1db7801a673c734b38342c9",
+        "id": 134612103609,
+        "name": "contract-docs",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "head_sha": "eff87aeb96794c01e1db7801a673c734b38342c9",
+        "id": 134612106236,
+        "name": "light",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "eff87aeb96794c01e1db7801a673c734b38342c9",
+        "id": 134612916862,
+        "name": "shards (triage)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "eff87aeb96794c01e1db7801a673c734b38342c9",
+        "id": 134612916874,
+        "name": "shards (transfer)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "eff87aeb96794c01e1db7801a673c734b38342c9",
+        "id": 134612916896,
+        "name": "shards (browser)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "eff87aeb96794c01e1db7801a673c734b38342c9",
+        "id": 134612916923,
+        "name": "shards (runtime)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "eff87aeb96794c01e1db7801a673c734b38342c9",
+        "id": 134612916926,
+        "name": "shards (intake)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "eff87aeb96794c01e1db7801a673c734b38342c9",
+        "id": 134612916930,
+        "name": "shards (agents)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "eff87aeb96794c01e1db7801a673c734b38342c9",
+        "id": 134612916940,
+        "name": "shards (changes)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "eff87aeb96794c01e1db7801a673c734b38342c9",
+        "id": 134612916947,
+        "name": "shards (hosted)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "eff87aeb96794c01e1db7801a673c734b38342c9",
+        "id": 134618288729,
+        "name": "full-push-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "head_sha": "eff87aeb96794c01e1db7801a673c734b38342c9",
+        "id": 134618291161,
+        "name": "nightly-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          "Require the selected coverage and its proof"
+        ],
+        "head_sha": "eff87aeb96794c01e1db7801a673c734b38342c9",
+        "id": 134618320796,
+        "name": "verify",
+        "status": "completed"
+      }
+    ]
+  },
+  "candidate_run_site": "main-only workflow, pending landing",
+  "publication_scan": {
+    "candidate": "eff87aeb96794c01e1db7801a673c734b38342c9",
+    "state": "delegated to lander",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  },
+  "clause": {
+    "id": "OC-061",
+    "before": "PARTIAL",
+    "after": "PARTIAL",
+    "selected_proof": "acceptance 3, direct stakeholder web paths",
+    "fully_proven_points": [
+      1,
+      2,
+      6
+    ]
+  },
+  "contract_counts": {
+    "before": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "after": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node tests/member-coordination-browser.mjs",
+      "exit": 0,
+      "node": "22.20.0",
+      "browser": "/usr/bin/chromium",
+      "viewport_widths": [
+        1440,
+        390
+      ],
+      "owner_detail_reads": 6,
+      "stakeholder_detail_reads": 6,
+      "native_custody_unchanged": true,
+      "paging": "OFF",
+      "paging_custody_unchanged": true,
+      "subscription_custody_unchanged": true,
+      "browser_outbound_attempts": 0,
+      "worker_outbound_attempts": 0
+    },
+    {
+      "command": "ONCALL_TRIAGE_PART=storm node tests/triage.mjs",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check after write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check after restoring generated views from main",
+      "exit": 1,
+      "expected_failure": "ACCEPTANCE.md generated content differs"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "browser/oc061-owner-alert-1440.png",
+      "sha256": "1c65aaa627cc3e0bccc4e3c37285b63ed7f53f7b8e61e99172d7d6c43c458128"
+    },
+    {
+      "file": "browser/oc061-owner-alert-390.png",
+      "sha256": "3fed9aba691bfb7fcca9deeb1ff4dd95bac55095e89f752b1c6c2f48cb655369"
+    },
+    {
+      "file": "browser/oc061-owner-incident-1440.png",
+      "sha256": "c43bf9d8274d407db37c5015ee34f620cf036b4248937eac8aa7ad11d5e9c66b"
+    },
+    {
+      "file": "browser/oc061-owner-incident-390.png",
+      "sha256": "663fb085f508fd74341c492982098c89a4959b4b9768db57b30cbfcb87516f9b"
+    },
+    {
+      "file": "browser/oc061-owner-service-1440.png",
+      "sha256": "6f1432316ba8718dad6ca690411097359959355b9783498604e6fd8f0a063d62"
+    },
+    {
+      "file": "browser/oc061-owner-service-390.png",
+      "sha256": "3f51f6fbbda234f5cb20a771f711470815b8d3f5a6b2ab9bf55535734fdbebb5"
+    },
+    {
+      "file": "browser/oc061-stakeholder-alert-1440.png",
+      "sha256": "3b96ca82b598633c5b8d405c923bfca8f1fb6c31f8121615558e2561f43554fb"
+    },
+    {
+      "file": "browser/oc061-stakeholder-alert-390.png",
+      "sha256": "218aed89e40b53b03eda11ac70af2cbd0f9a5143c3dc79da34c09cda6523b537"
+    },
+    {
+      "file": "browser/oc061-stakeholder-incident-1440.png",
+      "sha256": "3b96ca82b598633c5b8d405c923bfca8f1fb6c31f8121615558e2561f43554fb"
+    },
+    {
+      "file": "browser/oc061-stakeholder-incident-390.png",
+      "sha256": "218aed89e40b53b03eda11ac70af2cbd0f9a5143c3dc79da34c09cda6523b537"
+    },
+    {
+      "file": "browser/oc061-stakeholder-service-1440.png",
+      "sha256": "3b96ca82b598633c5b8d405c923bfca8f1fb6c31f8121615558e2561f43554fb"
+    },
+    {
+      "file": "browser/oc061-stakeholder-service-390.png",
+      "sha256": "218aed89e40b53b03eda11ac70af2cbd0f9a5143c3dc79da34c09cda6523b537"
+    }
+  ]
+}
