@@ -1127,7 +1127,7 @@ try {
   try {
   const login=await second.request.post('/api/login',{headers:{origin:worker.origin},data:credentials})
   assert.equal(login.status(),200,'the second browser context signs in through the real login door')
-  await secondPage.goto(worker.origin)
+  await secondPage?.goto(worker.origin)
   } finally { await worker.time(selectedTime) }
  }
  const focused=process.env.ONCALL_PRODUCT_JOURNEY;
@@ -1155,7 +1155,7 @@ try {
   const session=await (await context.request.get('/api/session')).json();
   await context.request.post('/api/command',{headers:{origin:worker.origin},data:{type:'service',id:'synthetic-oncall-1',name:'Checkout',environment:'test',owner:session.member.id,runbook:[],pager:''}});
   const {productSchedule}=await import('./product-browser-journey.mjs');
-  for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await productSchedule(page,context,width,session,{selectedOnly:true,setTime});}
+  for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await productSchedule(page,context,width,session,{openSession,selectedOnly:true,setTime,worker});}
  }
  if(focused==='readable-times'){
   const session=await (await context.request.get('/api/session')).json();
