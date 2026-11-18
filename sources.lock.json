@@ -200,7 +200,7 @@
       "executable": false
     },
     "docs/changes.md": {
-      "sha256": "ab4ebe80dd15bcc5da02276592f0df655a70e764fb624cfd66a9a7caf968b7f4",
+      "sha256": "cec08cc6f7edf4b33c69fd1943fbd21a4b93184fe89ffb2b8610025956dc4763",
       "executable": false
     },
     "docs/checkpoints.md": {
@@ -244,7 +244,7 @@
       "executable": false
     },
     "docs/data.md": {
-      "sha256": "b1629daf063a1727a4c153eb38042294e56a074f38f41b2e8214283c9fa86cd7",
+      "sha256": "383d420cb1c790b943b7f3718b871574c3bd0baec3b3eab29167c820688140c3",
       "executable": false
     },
     "docs/getting-started.md": {
@@ -5592,7 +5592,7 @@
       "executable": false
     },
     "src/move-in/MoveIn.tsx": {
-      "sha256": "dcbf78f0ed44e1ebb6e3aefc2e52dc5a944b41c04932232c6043386dadcd3a27",
+      "sha256": "e543daad24b9de59a656fcf898040296482c502208cdecec0dcc8287d5c89a81",
       "executable": false
     },
     "src/move-in/native-erasure.ts": {
@@ -6904,7 +6904,7 @@
       "executable": false
     },
     "tests/stranger-trip-steps.mjs": {
-      "sha256": "3b981f6a64c284d55053696c04bfa5cf9cc53a19e7f0d499d652454a30bc8af9",
+      "sha256": "0a2d4e889836e0d79a6dac51b7bccc74aed4917e3d017115539edaf67f9fce21",
       "executable": false
     },
     "tests/transfer.mjs": {

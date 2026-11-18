@@ -16,7 +16,8 @@ export async function readableErasure(page,context,receipt,{reload=false}={}) {
  assert.ok(!text.includes(receipt.receiptId),'the full erasure receipt stays internal');
  if(!reload){
   const confirmation=page.getByRole('status').filter({hasText:/Imported person erased/});
-  assert.ok((await confirmation.innerText()).includes(receipt.receiptId.slice(0,8).toUpperCase()),'the confirmation includes a short receipt reference');
+  assert.ok(receipt.receiptId,'the API retains an erasure receipt');
+  assert.ok(!(await confirmation.innerText()).toLowerCase().includes(receipt.receiptId.slice(0,8).toLowerCase()),'the confirmation keeps the receipt identifier internal');
  }
 }
 
