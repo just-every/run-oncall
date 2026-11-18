@@ -1041,6 +1041,7 @@ try{
  await teamReplay(runtime);
  await scheduleReplay(runtime);
  await staleOverrideRevision(runtime);
+ await staleOverrideRevision(runtime, {optionalExpectedRevision: true});
  await eraseReplay(runtime);
  await eraseClasses(runtime);
  await staleReassignmentNativeRevision(runtime);
