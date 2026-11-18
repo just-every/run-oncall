@@ -1,0 +1,58 @@
+{
+  "files": [
+    {
+      "blob": "8884b73cfc16503cf4a2b8a6c002ef7cdfa1b358",
+      "bytes": 4985,
+      "path": "CHECKS.md",
+      "sha256": "f37871e1c261b9836d9e7d8ca953b9a93b152be50ec75de45267039e8e997ab4"
+    },
+    {
+      "blob": "014b0a83ec92122db67c34ae624a95c7dd7ad469",
+      "bytes": 3875,
+      "path": "REPORT.md",
+      "sha256": "686dc101d7cbeead52a87a4f43a0b9146b461ff63eb48c708a36de1935a38a80"
+    },
+    {
+      "blob": "69a9d69751d9d8c8263272e1def2fe90485d1990",
+      "bytes": 85358,
+      "path": "browser/agent-door-follow-up-evidence-retained-autonomous-1440.png",
+      "sha256": "af18711b12f0daa9398abfbb8a2b4381ea535832e5e5d7fc8b168ecd94ac359e"
+    },
+    {
+      "blob": "aa0fcb0a9c88035374c3637662f2a9fc887b28a8",
+      "bytes": 34360,
+      "path": "browser/agent-door-follow-up-evidence-retained-autonomous-390.png",
+      "sha256": "a41405790d040414c4db0c9b928305f65d16d2870c2624edb1d64f2f4b67a406"
+    },
+    {
+      "blob": "816fc335fe34f7ba307e97c11c150b7b549be2f6",
+      "bytes": 49808,
+      "path": "browser/agent-door-follow-up-evidence-retained-executed-1440.png",
+      "sha256": "83f2db9000a8f3298284ef7b923301c951c66891c5882313767c10e14776d051"
+    },
+    {
+      "blob": "13beae96fe83d291e8e5a3df0cae0e5041bc0d20",
+      "bytes": 44577,
+      "path": "browser/agent-door-follow-up-evidence-retained-executed-390.png",
+      "sha256": "cd97d32bf3b9215b7dbaa49ca7d801a95a9215184075e10ef201158e1740edc2"
+    },
+    {
+      "blob": "69a9d69751d9d8c8263272e1def2fe90485d1990",
+      "bytes": 85358,
+      "path": "browser/agent-door-follow-up-evidence-retained-held-1440.png",
+      "sha256": "af18711b12f0daa9398abfbb8a2b4381ea535832e5e5d7fc8b168ecd94ac359e"
+    },
+    {
+      "blob": "ea82a6c52787003d0315255d0a2e97eb9a691422",
+      "bytes": 36802,
+      "path": "browser/agent-door-follow-up-evidence-retained-held-390.png",
+      "sha256": "a52b5074fc6cf107f15ae1cae48e8893ba7d117c07ab14479c9191fe8678b717"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f264-lin-1",
+  "product_head": "0f2dd0e8ba15aa28423a09282025134578694ea1",
+  "ref": "refs/heads/evidence/sd-oncall-c-f264-lin-1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f264-lin-1"
+}
