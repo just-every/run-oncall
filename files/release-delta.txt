@@ -1,0 +1,29 @@
+
+origin/main 071c74a352196f6778eb3b2942c351b4cf1e0ace
+version 0.5.19
+migration SQL files 68
+| Tier | Done | Partial | Missing | Total |
+| --- | ---: | ---: | ---: | ---: |
+| Core | 25 | 35 | 24 | 84 |
+| Agent surface | 1 | 6 | 10 | 17 |
+| Later | 0 | 0 | 0 | 0 |
+| Full target | 26 | 41 | 34 | 101 |
+
+HEAD e4123dded5d6a9f058880669ca10213bcfbe2646
+version 0.5.20
+migration SQL files 68
+| Tier | Done | Partial | Missing | Total |
+| --- | ---: | ---: | ---: | ---: |
+| Core | 25 | 35 | 24 | 84 |
+| Agent surface | 1 | 6 | 10 | 17 |
+| Later | 0 | 0 | 0 | 0 |
+| Full target | 26 | 41 | 34 | 101 |
+
+Tree changes
+ CHANGELOG.md      | 17 +++++++++++++++++
+ RELEASE.json      | 10 +++++-----
+ RELEASE.md        |  2 +-
+ package.json      |  2 +-
+ seed.json         |  2 +-
+ sources.lock.json | 10 +++++-----
+ 6 files changed, 30 insertions(+), 13 deletions(-)

@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "2e1ad95810f1b077f221e7c8f7a6718f32c2ab0f",
+      "bytes": 2500,
+      "path": "REPORT.md",
+      "sha256": "6087b5a087323cdc67a208c9698f7a99c8308f3b18dd46adbb9ae7127fb47e96"
+    },
+    {
+      "blob": "ec952e573e3f24177182116d741fdc4e3e153518",
+      "bytes": 790,
+      "path": "local-checks.txt",
+      "sha256": "f2aa165ac18ae9af359a959340980d3f06b43b28eba654295f506dadef269445"
+    },
+    {
+      "blob": "43e6797e215c8c8de4db8cf14b5fb7bc062a194c",
+      "bytes": 229,
+      "path": "product-refs.tsv",
+      "sha256": "712478156bbcba9cc7d66efd25de8393cdc453082599ca59e16479405541b2b7"
+    },
+    {
+      "blob": "c3baef171e093974e41348ef66d4695764b85c10",
+      "bytes": 852,
+      "path": "release-delta.txt",
+      "sha256": "831a82a562814ea2294bd80105a65c19a23e32454f005d76bface453d306e4af"
+    },
+    {
+      "blob": "5d67eb00598991622397620a6a0ab066e419a67f",
+      "bytes": 267,
+      "path": "setup-sha256.txt",
+      "sha256": "f0d41f000df8b69e72bd103b46accdc562d6b20985a997c505aefee254636268"
+    },
+    {
+      "blob": "b5a2f16fd2973092524ab8d8860d636282580f5f",
+      "bytes": 1633,
+      "path": "verify.json",
+      "sha256": "ac046fa6e8e3f06be0314861b7d358c56f2ae484fc0399698b8d9572ab31b63b"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-release-0-5-20-c2",
+  "product_head": "e4123dded5d6a9f058880669ca10213bcfbe2646",
+  "ref": "refs/heads/evidence/sd-oncall-release-0-5-20-c2",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-release-0-5-20-c2"
+}

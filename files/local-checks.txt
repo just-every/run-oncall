@@ -1,0 +1,17 @@
+Captured 2026-11-19T21:18:36Z
+Repository just-every/run-oncall
+Branch cloud/sd-oncall-release-0-5-20-c2
+Head e4123dded5d6a9f058880669ca10213bcfbe2646
+Parent 071c74a352196f6778eb3b2942c351b4cf1e0ace
+PASS git diff --check origin/main HEAD
+PASS contract and migration trees match origin/main byte-for-byte
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+Workflow permissions and shared artifact names are valid.
+PASS package, seed, and release versions agree at 0.5.19 on main and 0.5.20 on the candidate
+PASS source lock hash and mode for CHANGELOG.md
+PASS source lock hash and mode for RELEASE.json
+PASS source lock hash and mode for RELEASE.md
+PASS source lock hash and mode for package.json
+PASS source lock hash and mode for seed.json
+PASS product worktree is clean
