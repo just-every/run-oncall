@@ -613,7 +613,8 @@ export async function declareFromAlertParity(runtime, declareAsPerson) {
 }
 
 export async function acknowledgeParity(runtime, responder, acknowledgeAsPerson) {
-  const { db, http, tool, adopt, context } = runtime;
+  const { db, http, tool, adopt, context, completeResource } = runtime;
+  const { agentEffectSnapshot } = await import('./agent-door-runtime.mjs');
   const { autonomousPolicy, heldPolicy } = await import('../src/modules/agent-door/conformance/crypto.mjs');
   const fixture = context.surface.journey.find(row => row.id === 'acknowledge');
   const rows = async (sql, ...args) => (await db.prepare(sql).bind(...args).all()).results;
@@ -683,9 +684,10 @@ export async function acknowledgeParity(runtime, responder, acknowledgeAsPerson)
     assert.deepEqual(await reviews(), reviewsBefore, 'The signed-in acknowledgment opens no review');
     assert.deepEqual(await paging(), pagingBefore);
 
+    const idempotencyKey = randomUUID();
     const reply = await tool(fixture.tool, {
       ...fixture.args, incident: agentBefore.id, revision: agentBefore.revision, member: responder.id, summary,
-      idempotency_key: randomUUID(),
+      idempotency_key: idempotencyKey,
     }, { scope: 'incidents:write' });
     assert.equal(reply.status, 200);
     assert.equal(reply.result?.isError, false, JSON.stringify(reply.body));
@@ -755,8 +757,82 @@ export async function acknowledgeParity(runtime, responder, acknowledgeAsPerson)
     }
     assert.deepEqual(await paging(), pagingBefore, 'Acknowledgment preserves paging custody');
     assert.deepEqual(await runtime.outboundRequests(), []);
-    pairs.push({ mode, human, agent, humanLabel: responder.name, agentLabel: attribution.label });
     console.log('PROBE BASE-AGENT-002 5 acknowledgment ' + mode + ': equivalent ordinary incidents -> acknowledged with matching Lead and Assignee, incident and workspace revisions +1 per action, one command.transition per door, distinct attribution and explicit agent named-member history, ' + added.length + ' open reviews, paging OFF and zero outbound requests');
+
+    const links = reply.result.content.filter(item => item.type === 'resource_link');
+    assert.equal(links.length, 1, 'The first completed acknowledgment returns its incident link');
+    const [link] = links;
+    assert.equal(link.uri, 'oncall://incidents/' + agent.id);
+    const beforeRead = await agentEffectSnapshot(runtime);
+    const { agent_door_reviews: priorReviews, agent_door_usage: priorUsage, ...priorRecords } = beforeRead.records;
+    const savedWrite = priorRecords.agent_door_calls.find(row => row.agent === context.agentId && row.key === idempotencyKey);
+    assert.equal(savedWrite?.state, 'done');
+    assert.equal(savedWrite.decision_id, reply.decision.id);
+    const writeOutcome = JSON.parse(savedWrite.outcome);
+    assert.equal(writeOutcome.outcome, 'done');
+    assert.deepEqual(writeOutcome.result, agent);
+    assert.deepEqual(writeOutcome.review, review);
+    const agentAudit = () => rows('SELECT * FROM agent_door_audit ORDER BY sequence');
+    const priorAudit = await agentAudit();
+    const priorPaging = await json('/api/paging/state');
+
+    const { initial, answer, content, value } = await completeResource(link.uri, {
+      overrides: { scope: 'incidents:read' },
+      approve() { assert.fail('The standard acknowledgment read must complete without approval'); },
+    });
+    assert.equal(answer, initial);
+    assert.equal(content.uri, link.uri);
+    assert.deepEqual(value, agent, 'The link reads the whole completed acknowledgment');
+    const readId = answer.decision.id;
+    assert.notEqual(readId, reply.decision.id);
+    assert.equal(answer.decision.revision, context.revision);
+    assert.equal(answer.decision.disposition, disposition);
+    assert.deepEqual(answer.decision.classes.map(row => row.class), ['standard']);
+
+    const afterRead = await agentEffectSnapshot(runtime);
+    assert.deepEqual(value, afterRead.application.incidents.find(row => row.id === agentBefore.id),
+      'Protected native state agrees on the revision, Lead, Assignee and attributed named responder');
+    assert.deepEqual(afterRead.application, beforeRead.application);
+    const { agent_door_reviews: nextReviews, agent_door_usage: nextUsage, ...nextRecords } = afterRead.records;
+    assert.deepEqual(nextRecords, priorRecords,
+      'The read preserves native records, revisions, mutation audit, approvals and the original write outcome');
+    const readReview = answer.result._meta['com.runeditrun/review'];
+    if (mode === 'held') {
+      assert.ok(readReview?.id);
+      assert.notEqual(readReview.id, review.id);
+      const savedRead = nextReviews.find(row => row.id === readReview.id);
+      assert.equal(savedRead?.state, 'open');
+      const reviewRecord = JSON.parse(savedRead.saved);
+      assert.equal(reviewRecord.decision_id, readId);
+      assert.equal(reviewRecord.summary.uri, link.uri);
+      assert.deepEqual(nextReviews.filter(row => row.id !== readReview.id), priorReviews);
+    } else {
+      assert.equal(readReview, undefined);
+      assert.deepEqual(nextReviews, priorReviews);
+    }
+    const readUsage = nextUsage.filter(row => row.decision_id === readId);
+    assert.deepEqual(nextUsage.filter(row => row.decision_id !== readId), priorUsage);
+    assert.equal(readUsage.length, 1);
+    assert.equal(readUsage[0].agent, context.agentId);
+    assert.deepEqual(JSON.parse(readUsage[0].classes).map(row => row.class), ['standard']);
+    const readAudit = await agentAudit();
+    assert.equal(readAudit.length, priorAudit.length + 1);
+    assert.deepEqual(readAudit.slice(0, -1), priorAudit);
+    const readDecision = JSON.parse(readAudit.at(-1).row);
+    assert.equal(readDecision.id, readId);
+    assert.equal(readDecision.outcome, 'done');
+    assert.deepEqual(readDecision.tool.split('/'), ['resources', 'read']);
+    assert.equal(readDecision.resource, link.uri);
+    assert.equal(readDecision.agent.id, context.agentId);
+    assert.equal(readDecision.sponsor.id, sponsor.id);
+    assert.deepEqual(readDecision.scopes, ['incidents:read']);
+    assert.deepEqual(await json('/api/paging/state'), priorPaging);
+    assert.deepEqual(await runtime.outboundRequests(), []);
+    pairs.push({ mode, human, agent: value, humanLabel: responder.name, agentLabel: attribution.label });
+    console.log('PROBE BASE-AGENT-003 4 acknowledgment ' + mode + ': first returned link -> full protected incident at revision ' + value.revision +
+      ', matching the write, Lead, Assignee and attributed named responder; ' +
+      (readReview ? 'separate open standard read review' : 'autonomous read without review') +
+      '; write custody, native records, mutation audit and paging unchanged; zero outbound requests');
   }
   assert.equal((await adopt()).status, 200);
   return pairs;
