@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "e1da297e99af2071f34a32dae7c61be1f8016fd3d9e5fa396bdd5d8f253aeeb5",
+      "sha256": "7f8f381c18262c5df98b0a9145efe50539586f90a27c7a522dbcfda778212bae",
       "executable": false
     },
     "DEMO.md": {
@@ -6716,7 +6716,7 @@
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
-      "sha256": "4faa579b21c14f50941097367439381a7172a5f0d4de6585a96b4296ddd613f5",
+      "sha256": "f30655227c2fef9a25b21db6b562c69c01af803a6cbba9395267e05af3fa6ed0",
       "executable": false
     },
     "tests/missed-ack-flow.mjs": {
@@ -6932,7 +6932,7 @@
       "executable": false
     },
     "tests/triage.mjs": {
-      "sha256": "79f28209b9eeec8ea3d80ec0e86b2538cce0503fc911cd52a6c2644c5ef20218",
+      "sha256": "eb65bc08c1658cbb92afd0f3684f253b05883feae0d2b3a9bd0821d07da33962",
       "executable": false
     },
     "tests/verify.mjs": {

@@ -761,6 +761,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 **Observed (19 November 2026, Run Edit Run fleet).** A signed-in responder assigned as Checkout's communications owner set a major outage through the native status control. Reload showed the exact reason and member attribution, one new service revision and the unchanged derived degraded status. An administrator demoted the same member to active viewer. On reload the member could still read Checkout and the saved override, and the management controls were absent. The protected status endpoint refused an otherwise-valid override at the current revision with HTTP 403. Saved status, native records and paging custody were unchanged, with one refusal audit. Both roles were observed at 1440 and 390 pixels with no outbound browser or Worker requests.
 
+**Observed (19 November 2026, Run Edit Run fleet).** A signed-in Checkout stakeholder read degraded status after two warning incidents on the same supporting service were declared and merged. After the canonical incident moved through evidenced recovery and resolution with a summary, the protected status endpoint and the existing status view showed operational. The merged source kept its original lifecycle, service, severity and attributed timeline. Status reads changed no durable records or audit. The browser proof at 1440 and 390 pixels showed the degraded and operational states, with paging custody preserved and zero outbound requests.
+
 #### OC-062 — Configuration as code with Terraform and OpenTofu
 
 *Tier:* Core · *Rules:* D-3 · *Register:* R-10

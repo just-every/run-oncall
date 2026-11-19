@@ -816,7 +816,7 @@ try {
   console.log('OC-061 configured high-urgency impact: alert admission and source recovery recompute internal status without a browser or subscriber delivery');
   console.log('OC-061 bulk impact recomputation and unsubscribe: resolution restores operational status and no new subscriber notice is recorded');
 
-  const pagingBeforeMerge = ok(await req('/api/paging/state'));
+  const {workspaceRevision: beforeMergeRevision, ...pagingBeforeMerge} = ok(await req('/api/paging/state'));
   assert.equal(pagingBeforeMerge.paging, 'OFF');
   const readDerivedStatus = async (expected, phase) => {
     const beforeRead = durableSnapshot(w);
@@ -864,7 +864,9 @@ try {
   assert.ok(resolvedImpact.timeline.some(row => row.actor === actor.id && row.kind === 'merge' && row.text === mergeEntry.text));
   assert.ok(resolvedImpact.timeline.some(row => row.actor === actor.id && row.lifecycle?.to === 'recovered' && row.lifecycle.evidence === recoveryEvidence));
   assert.ok(resolvedImpact.timeline.some(row => row.actor === actor.id && row.lifecycle?.to === 'resolved' && row.text.includes(resolutionSummary)));
-  assert.deepEqual(ok(await req('/api/paging/state')), pagingBeforeMerge);
+  const {workspaceRevision: afterMergeRevision, ...pagingAfterMerge} = ok(await req('/api/paging/state'));
+  assert.ok(afterMergeRevision > beforeMergeRevision, 'incident commands advance the workspace revision');
+  assert.deepEqual(pagingAfterMerge, pagingBeforeMerge, 'incident commands preserve paging custody');
   assert.deepEqual(await w.outboundRequests(), []);
   console.log('PROBE OC-061 2 merged incident impact: signed-in Checkout stakeholder reads degraded after declaration and merge, then operational after evidenced canonical resolution; alias and attribution retained, reads write nothing, paging OFF unchanged and zero outbound requests.');
 

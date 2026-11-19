@@ -914,7 +914,7 @@ try {
  // Read the same signed-in Checkout status as the warning incidents merge and resolve.
  for(const context of [owner.context,samView.context])context.on('request',observeRequest)
  ok(await call(owner.page,'/api/status',{action:'override',id:current.id,revision:current.revision,value:null}))
- const pagingBeforeStatusMerge=ok(await call(owner.page,'/api/paging/state'))
+ const {workspaceRevision:beforeStatusMergeRevision,...pagingBeforeStatusMerge}=ok(await call(owner.page,'/api/paging/state'))
  assert.equal(pagingBeforeStatusMerge.paging,'OFF')
  const readStakeholderImpact=async (expected,screen)=>{
   const beforeRead=await custody()
@@ -951,7 +951,9 @@ try {
   }))
  }
  await readStakeholderImpact('operational','resolved-impact')
- assert.deepEqual(ok(await call(owner.page,'/api/paging/state')),pagingBeforeStatusMerge)
+ const {workspaceRevision:afterStatusMergeRevision,...pagingAfterStatusMerge}=ok(await call(owner.page,'/api/paging/state'))
+ assert.ok(afterStatusMergeRevision>beforeStatusMergeRevision,'incident commands advance the workspace revision')
+ assert.deepEqual(pagingAfterStatusMerge,pagingBeforeStatusMerge,'incident commands preserve paging custody')
  for(const context of [owner.context,samView.context])context.off('request',observeRequest)
  assert.deepEqual(outbound,[],'the merge and resolution browsers attempted no outbound requests')
  assert.deepEqual(await worker.outboundRequests(),[],'the emitted Worker attempted no outbound requests during status coordination')
