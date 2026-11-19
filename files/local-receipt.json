@@ -1,0 +1,151 @@
+{
+  "advertised_product_head": "b375c995f5a06cb63b8e42f83b841e308b25fbce",
+  "base_main": "d376e47b188ba8688ec7413341363fc7723c99dc",
+  "baseline_ci": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "d376e47b188ba8688ec7413341363fc7723c99dc",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44521933517",
+      "id": 44521933517,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "d376e47b188ba8688ec7413341363fc7723c99dc",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44521933751",
+      "id": 44521933751,
+      "name": "Run site",
+      "status": "completed"
+    }
+  ],
+  "branch": "cloud/sd-oncall-c-f294",
+  "browser_images": [
+    {
+      "file": "agent-door-follow-up-created-1440.png",
+      "sha256": "0609078926e1c97bc7fc700189acf84f680c5e76ca6b38bb395a31fc8591bc65"
+    },
+    {
+      "file": "agent-door-follow-up-created-390.png",
+      "sha256": "fe70efb819a2a496de38bc38c849c3fa5b60a9abaebd885c47ef77b769847c41"
+    }
+  ],
+  "browser_initial_attempt": {
+    "exit": 1,
+    "failure": "The proof selected the raw stored timeline text instead of the rendered UTC text",
+    "resolution": "After correcting the browser locator, the complete journey passed"
+  },
+  "browser_receipts": [
+    "Browser proof follow-up-created 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof follow-up-created 390: fits=true serious/critical=0 undersized-controls=0"
+  ],
+  "candidate_equals_main": false,
+  "candidate_file_sha256": {
+    "tests/agent-door-browser.mjs": "5f88e7ea55b528e1793f2f9467ef082536b56acd00ef0f389730a0953c37a5ec",
+    "tests/agent-door-runtime.mjs": "d991e3612aad1ec6b1bfcd7923d6b730c0fc986f80b2e3d8aa952926032abd90",
+    "tests/oncall-agent-flow.mjs": "917af086c8c95bdd4fbfbcf9d54669ec63b341b710bc9faa72a2ff060751c765",
+    "tests/runtime.mjs": "32ed3dc21357f6827a03c99ef57decb559d4f983a3221fa14cfe9e573ae1ae45"
+  },
+  "candidate_verify": {
+    "conclusion": null,
+    "event": "push",
+    "head_branch": "cloud/sd-oncall-c-f294",
+    "head_sha": "b375c995f5a06cb63b8e42f83b841e308b25fbce",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44528043066",
+    "id": 44528043066,
+    "name": "Verify",
+    "status": "in_progress"
+  },
+  "candidate_verify_jobs": [],
+  "counts_after": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "counts_before": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "generated_views": {
+    "committed_check_exit": 1,
+    "committed_check_output": [
+      "Contract prose: 0 errors, 0 warnings.",
+      "ACCEPTANCE.md: generated content differs; run contract-docs write."
+    ],
+    "committed_views_from_main": true,
+    "generated_and_checked_locally": true
+  },
+  "head": "b375c995f5a06cb63b8e42f83b841e308b25fbce",
+  "local_checks": [
+    {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "exit": 0,
+      "node": "24.19.0"
+    },
+    {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/agent-door-browser.mjs",
+      "exit": 0,
+      "node": "22.20.0"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "node": "22.20.0"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "state": "after generation"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "migration_ledger": "Not applicable. No migration in the diff.",
+  "publication_scan": {
+    "commit": "b375c995f5a06cb63b8e42f83b841e308b25fbce",
+    "complete": null,
+    "findings": null,
+    "historyScanned": null,
+    "status": "Awaiting fleet lander"
+  },
+  "recorded_utc": "2026-11-19T13:08:56.580936+00:00",
+  "repository": "just-every/run-oncall",
+  "run_site_candidate": "Awaiting main landing",
+  "runtime_receipts": [
+    "PROBE BASE-AGENT-003 4 autonomous follow-up creation: first returned link matches the complete protected parent, revision 2, open owned and due-dated P1 human-review follow-up and attributed creation; autonomous read without review; native records, revisions, mutation audit, original write custody and paging unchanged; zero outbound requests",
+    "PROBE BASE-AGENT-003 4 held follow-up creation: first returned link matches the complete protected parent, revision 2, open owned and due-dated P1 human-review follow-up and attributed creation; separate open standard read review; native records, revisions, mutation audit, original write custody and paging unchanged; zero outbound requests"
+  ],
+  "tag": "sd-oncall-c-f294",
+  "target": {
+    "clause": "BASE-AGENT-003",
+    "scope": "Acceptance 4 create follow-up parent incident link",
+    "status": "MISSING"
+  }
+}
