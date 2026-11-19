@@ -144,7 +144,9 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
         }
         const result = command(current.state, actor, nativeInput, new Date(ctx.now()).toISOString(),context) as Incident
         const auditType = operation.name === 'incidents.declare' ? 'command.declare'
-          : operation.name === 'incidents.acknowledge' ? 'command.transition' : operation.name
+          : operation.name === 'incidents.acknowledge' ? 'command.transition'
+          : nativeInput.type === 'reassign' && typeof nativeInput.member === 'string' && result.revision > currentRevision ? 'command.reassign'
+          : operation.name
         nativeAudit(env, ctx, auditType, result.id)
         if(operation.name==='incidents.acknowledge')auditIdentity(env.DB,{namedMember:{kind:'member',id:String(args.member)}})
         await persistNative(env, current)

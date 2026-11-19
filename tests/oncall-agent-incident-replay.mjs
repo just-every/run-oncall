@@ -54,7 +54,7 @@ export async function changedReassignmentReasonConflict(runtime,{observe=async()
   assert.deepEqual(result.actions,incident.actions);assert.deepEqual(result.alerts,incident.alerts);
   const commits=once.records.oc_admin_audit.filter(row=>!before.records.oc_admin_audit.some(prior=>prior.id===row.id));
   assert.equal(commits.length,1,'Exactly one native state-changing audit commits the reassignment');
-  const commit=commits[0];assert.equal(commit.kind,'incidents.update');assert.equal(commit.outcome,'accepted');
+  const commit=commits[0];assert.equal(commit.kind,'command.reassign');assert.equal(commit.outcome,'accepted');
   assert.equal(commit.workspace_before,before.application.revision);assert.equal(commit.workspace_after,once.application.revision);
   assert.equal(commit.paging_before,commit.paging_after);assert.equal(commit.handoff_before,commit.handoff_after);
   for(const prior of before.records.oc_admin_audit)assert.deepEqual(once.records.oc_admin_audit.find(row=>row.id===prior.id),prior);
