@@ -1316,6 +1316,8 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 
 **Requirement.** Oncall serves the Base MCP door with exactly the tools, resources, events and prompts this area lists. The table marks each tool shipped or not yet shipped, and the resources, events and prompts are marked as not yet declared by the door; this clause stays unmet until every row ships and the door declares them.
 
+**Local proof (Run Edit Run fleet, 19 November 2026).** Under both autonomous and held policies, the emitted MCP tool listing returned the read-only `oncall.changes.read` for `OC-065` with `services:read` scope and the standard and sensitive possible classes. The served agent guide displayed the same scope and class set and cited the existing `changes` fixture for both classes at 1440 and 390 pixels. Discovery and guide reads preserved native records, permanent mutation audit and paging state, with paging OFF and zero outbound requests.
+
 **Acceptance.**
 1. `tools/list` names exactly the tools in this area's table, each with its Core clauses and classes in `_meta`.
 2. `resources/templates/list` names the record types listed above, and each listed event type arrives with its record URI.
