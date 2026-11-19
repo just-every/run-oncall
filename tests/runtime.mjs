@@ -5,7 +5,7 @@ import {fileURLToPath} from 'node:url'
 import http from 'node:http'
 import {fixtureDatabase} from './fixture-database.mjs'
 import assert from 'node:assert/strict'
-import {heldWorkspace} from './worker.mjs'
+import {heldWorkspace,ruleDeclarationAuditFault} from './worker.mjs'
 import {spawn,spawnSync,execFileSync} from 'node:child_process'
 import {mkdtemp,rm,mkdir,readdir,copyFile,writeFile,readFile} from 'node:fs/promises'
 import {tmpdir} from 'node:os'
@@ -94,8 +94,8 @@ await automationJourney();
   const resume='/api/triage/workflows/'+run.id+'/resume',clear='/api/triage/workflows/'+run.id+'/clear-expired';
   assert.equal((await call(resume,{approve:true,revision:run.rule.revision},'')).status,401);assert.equal((await call(resume,{approve:true,revision:run.rule.revision},viewerSession)).status,403);await value(resume,{approve:false,revision:run.rule.revision},403);await value('/api/triage/bulk',{operationId:run.id,action:'orchestrate',...run.workflow,confirmedCount:1,durable:true},409);
   await value('/api/command',{...template,baseVersion:1,checklist:[{id:'synthetic-oncall-450',text:'Synthetic later checklist'}]});
-  await runtime.db.prepare("CREATE TRIGGER synthetic_oncall_450_step BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='triage.workflow-declare' AND NEW.workspace_after>NEW.workspace_before BEGIN SELECT RAISE(ABORT,'synthetic-oncall-450'); END").run();
-  try{await value(resume,{approve:true,revision:run.rule.revision},503);}finally{await runtime.db.prepare('DROP TRIGGER synthetic_oncall_450_step').run();}
+  await runtime.db.prepare(ruleDeclarationAuditFault.install).run();
+  try{await value(resume,{approve:true,revision:run.rule.revision},503);}finally{await runtime.db.prepare(ruleDeclarationAuditFault.remove).run();}
   state=await value('/api/state');run=state.triage.find(row=>row.rule);assert.equal(run.rule.state,'running');assert.equal(run.rule.outcome,'uncertain');assert.equal(run.results.length,1);assert.equal(state.incidents.length,0,'declaration and progress roll back with the step audit');assert.ok((await value('/api/audit/export')).rows.some(row=>row.kind==='triage.workflow-reserve'&&row.outcome==='accepted'));
   await runtime.restart();assert.deepEqual(await value('/api/state'),state,'restart never resumes a saved lease');await value(clear,{approve:true,revision:run.rule.revision},409);
   for(const [kind,id] of [['member',target.id],['native',source]]){await value('/api/erasure/'+kind+'/'+id,{workspaceRevision:state.revision,confirmation:'erase '+id,identitiesReviewed:true,importedPeople:[]},409);assert.deepEqual(await value('/api/state'),state,'an active or uncertain workflow lease prevents partial subject erasure');}

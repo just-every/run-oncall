@@ -1,3 +1,4 @@
+import {canManageBusinessStatus} from './authority';
 import {StakeholderAudience, StatusAudience} from './StatusAudience';
 import {useViewAnchor} from '../app/useViewAnchor';
 import { useEffect, useState } from 'react';
@@ -50,7 +51,7 @@ export function StatusPanel({actor, state}: {actor: Member; state?: State | null
     finally { setBusy(false); }
   };
   useEffect(()=>{if(!notice)return;const timer=setTimeout(()=>setNotice(''),2000);return()=>clearTimeout(timer);},[notice]);
-  const admin = actor.role === 'admin';
+  const admin = actor.active && actor.role === 'admin';
   return <section className="panel padded status-work" aria-label="Internal business status">
     <h2>Business services</h2>
 <details><summary>About this status</summary><p>Internal business-service impact. Subscriptions record a channel; email, push and chat delivery are off.</p></details>
@@ -63,7 +64,7 @@ export function StatusPanel({actor, state}: {actor: Member; state?: State | null
       {service.override && <p>Manual override: <strong>{service.override.value}</strong> · {service.override.reason} · {shortTime(service.override.at)}{service.override.by && ` · ${state?.members.find(member => member.id === service.override.by)?.name ?? 'Erased member'}`}</p>}
       <StatusSubscription actorId={actor.id} service={service} onServices={receiveServices}/>
       {service.notices.length > 0 && <div aria-label="Recorded impact obligations"><h4>Recorded impact obligations</h4>{service.notices.map((record: any) => <p key={record.id}>{record.businessName} · {record.phase?`impact ${record.phase} · `:''}{record.derivedStatus} · {record.channel} · {record.state} · no sender · non-automatic · paging OFF. {record.approvedUpdate === null && 'No approved update is available.'}</p>)}</div>}
-      {(admin || actor.id === service.communicationsOwner) && <details><summary>Manage internal status</summary>
+      {canManageBusinessStatus(actor, service) && <details><summary>Manage internal status</summary>
         {admin && state && <StatusAudience service={service} actorId={actor.id} members={state.members} onServices={receiveServices}/>}
         <ManualStatus service={service} busy={busy} save={save}/>
         {state && <Form inlineValidation busy={busy} label="Subscribe member" onSubmit={data => save({...data,action:'subscribe',id:service.id,revision:service.revision,active:data.active==='true'})}>

@@ -33,10 +33,10 @@ export function reviewCopy(items:any[]) {
   title:(item:any)=>item.kind==='timelines'?`Coverage comparison: ${items.find(other=>other.kind==='schedules'&&other.id===item.id)?.name??'a schedule'}`:`${reviewKind(item.kind)}: ${item.name}`,
   // One sentence per distinct difference; many fields kept for review share one line.
   differences:(item:any):{text:string;originals:any[]}[]=>{
-   const rows:{text:string;originals:any[]}[]=[],kept=item.unmapped.filter((value:any)=>retained(item,value))
+   const rows:{text:string;originals:any[]}[]=[],notes=item.unmapped.filter((value:any)=>!value.disposition),kept=notes.filter((value:any)=>retained(item,value))
    const add=(text:string,original:any)=>{const row=rows.find(row=>row.text===text);if(row){if(original!==undefined)row.originals.push(original)}else rows.push({text,originals:original===undefined?[]:[original]})}
    if(kept.length)rows.push({text:`The source’s ${list(kept.map((value:any)=>words(value.field)))} for ${item.name} will be kept for review, without becoming active Oncall rules.`,originals:kept.flatMap((value:any)=>value.original===undefined?[]:[value.original])})
-   for(const value of item.unmapped)if(!retained(item,value))add(copy.difference(item,value),value.original)
+   for(const value of notes)if(!retained(item,value))add(copy.difference(item,value),value.original)
    return rows
   },
   rejection:(item:any)=>sentence(readable(item.rejection).replace(new RegExp('^'+item.kind+'\\s'),reviewKind(item.kind)+' ')),

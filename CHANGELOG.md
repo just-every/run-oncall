@@ -1,3 +1,15 @@
+# 0.5.19 · 2026-11-18
+
+The install description's declared hash matched an older file: approving Oncall on the platform said it could not be installed yet; fixed.
+
+Name your installation during setup or in Settings → General. The name appears in the header, tab and sign-in pages. Local setup explains which mail option works without sending email. Settings → Team opens Add member at the name field, lets the owner edit their own name, and explains why the only active admin cannot change their own role or revoke their access.
+
+Alert details show the assigned responder, current rota backup and recorded notification steps, including wait times and outcomes. When a service has an acknowledgment timeout, an incident opened by its response policy shows a missed deadline even after a late acknowledgment. Settings → Services saves response settings as you change them, shows what is in effect and keeps the change history.
+
+Administrators can route Amazon CloudWatch alarms through an Amazon SNS routed key and see its subscription status. Live AWS delivery has yet to be verified. Agent clients submitting an approved follow-up or a schedule update against an older revision get a conflict with the current revision so they can reload and review.
+
+This update keeps rer pinned to 0.2.118 and adds no migrations. Back up before upgrading and keep all 68 migration files. Paging stays OFF. Keep your existing pager active.
+
 # 0.5.18 · 2026-11-17
 
 Move in now offers to continue or discard an unconfirmed review after a reload. Import reviews show existing-import conflicts before confirmation, name the earlier provider and file where available, and explain when a live schedule prevents undo. Making an imported schedule live warns when its service already has a rota and asks you to keep both explicitly. Coverage summaries show the next hand-over to a different person, or say when none is scheduled within 90 days; continuous coverage by the same person appears as one timeline bar. Shift swaps confirm where the request is waiting and explain when the substitute is on PTO. Schedule history names the person who made the change, and responder requests show Accept and Decline only to the eligible responder. Restoring and confirming the archived owner no longer repeats first-run setup. Demo pages are explicitly labelled simulated, with nothing delivered. Import, incident, team and readiness guidance is clearer. This patch keeps rer pinned to 0.2.118 and adds no migrations; all 68 applied migration files stay unchanged. Back up before upgrading and keep the existing pager authoritative: paging stays OFF.

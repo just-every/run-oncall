@@ -1,7 +1,7 @@
-import {useEffect, useRef, type ReactNode} from 'react';
+import {useEffect, useLayoutEffect, useRef, type ReactNode} from 'react';
 import {leaveAfterSaving} from '../app/autosave/leaveGuard';
 import {Tooltip} from '../app/Tooltip';
-export function RotaSheet({title, close, children}: {title: string; close: () => void; children: ReactNode}) {
+export function RotaSheet({title, close, recoverFocus, children}: {title: string; close: () => void; recoverFocus: boolean; children: ReactNode}) {
   const panel = useRef<HTMLDivElement>(null), opener = useRef<HTMLElement | null>(null);
   useEffect(() => {
     opener.current = document.activeElement as HTMLElement;
@@ -10,6 +10,11 @@ export function RotaSheet({title, close, children}: {title: string; close: () =>
     panel.current?.focus();
     return () => {document.body.style.overflow = previous;opener.current?.focus();};
   }, []);
+  useLayoutEffect(() => {
+    const dialog = panel.current;
+    // A refused apply replaces the review and can remove the focused control.
+    if (recoverFocus && dialog && !dialog.contains(document.activeElement)) dialog.focus();
+  }, [recoverFocus]);
   const dismiss = () => {void leaveAfterSaving(close);};
   return <div className="oc-sheet-backdrop" onMouseDown={event => {if (event.target === event.currentTarget) dismiss();}}><div className="oc-sheet" ref={panel} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} onKeyDown={event => {
     if (event.key === 'Escape') {event.preventDefault();dismiss();}
