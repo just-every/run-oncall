@@ -6192,7 +6192,7 @@
       "executable": false
     },
     "src/routing/RoutingDiagnostics.tsx": {
-      "sha256": "78caa782c85533aa3d67ee03b3ee2b2245ca7430cfe7373613394f43df652fbc",
+      "sha256": "6a5d6229c30e791c23431e687abf8057535cd91199db284631243e15c96b78d5",
       "executable": false
     },
     "src/routing/RoutingKeyForm.tsx": {
@@ -6200,7 +6200,7 @@
       "executable": false
     },
     "src/routing/RoutingWorkspace.tsx": {
-      "sha256": "c4fa0cb51d05faaab496684c24f586decb702ea2f2b7830edae3fadd1967d5ee",
+      "sha256": "0dec9525c23fd61d882dcb36eadeadf47e697705f4330f44b83922f5069cbd09",
       "executable": false
     },
     "src/routing/RuleEditor.tsx": {
@@ -6292,7 +6292,7 @@
       "executable": false
     },
     "src/sections/routing.tsx": {
-      "sha256": "4384243cf11a164cbf202aac005f4e3f9e751db8ce66cc01153d3aff5bce7b52",
+      "sha256": "1ec633732f85060b2c42c8cf82e2aae97fd6bba97ebb907c4178b1282b19ce4d",
       "executable": false
     },
     "src/sections/services.tsx": {
@@ -6880,7 +6880,7 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "da09ed70a1867b1ad49e0e0f924df62074e590fb3fa3cb57f2b3e844d23918d7",
+      "sha256": "3ea2fe9d1a10a27f3b139a51b0c59e2efd19d33859bd810f87034b306d7bfa66",
       "executable": false
     },
     "tests/readable-names-browser.mjs": {

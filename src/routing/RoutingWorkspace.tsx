@@ -19,7 +19,7 @@ import { RoutingDiagnostics } from './RoutingDiagnostics';
 import { RoutedSenderSetup } from './RoutedSenderSetup';
 import './routing.css';
 
-type Props={state:State;admin:boolean;busy:boolean;run:IntakeRun};
+type Props={state:State;memberId:string;admin:boolean;busy:boolean;run:IntakeRun};
 function OrchestrationDecision({label,value,state,source}:{label:string;value:RoutingExplanation;state:State;source:IntakeSource}) {
  const decision=value.serviceDecision,owner=decision?.owner??(value.service===null?source.routing?.owner:null);
  return <div style={{overflowWrap:'anywhere'}}><p><strong>{label}</strong>: routing v{value.version} · {decision?.version?'service rule v'+decision.version:'no service rule'} · {decision?.action??'unrouted'} · owner {state.members.find(member=>member.id===owner)?.name??'Unassigned'}.</p>{decision&&<><p>{decision.reason}</p><DecisionExplanation decision={decision} events={state.events}/></>}</div>;
@@ -35,7 +35,7 @@ export function RoutingWorkspace(props:Props) {
   </div>;
 }
 
-function RoutingKey({state,admin,busy,run,source}:Props&{source:IntakeSource}) {
+function RoutingKey({state,memberId,admin,busy,run,source}:Props&{source:IntakeSource}) {
   const initial=source.routing!.versions.at(-1)!,draft=useVersionDraft('routed-key',source.id,initial.version,{rules:initial.rules,catchAll:initial.catchAll});
   const base=draft.baseVersion,rules=draft.value.rules,catchAll=draft.value.catchAll,setRules=(rules:RoutingRule[])=>draft.edit({...draft.value,rules}),setCatchAll=(catchAll:string|null)=>draft.edit({...draft.value,catchAll});
   const [preview,setPreview]=useState<any>(null),[previewing,setPreviewing]=useState(false),[error,setError]=useState(''),[newKey,setNewKey]=useState(''),[reading,setReading]=useState(false),[confirm,setConfirm]=useState<'publish'|'rotate'|'revoke'>(),uid=useId();
@@ -69,6 +69,6 @@ function RoutingKey({state,admin,busy,run,source}:Props&{source:IntakeSource}) {
       </details>}{admin&&source.active&&newKey&&<OneTimeSecret readable value={newKey} onDone={()=>setNewKey('')}/>}
 
     </section>
-    <RoutingDiagnostics state={state} source={source} admin={admin} busy={busy} run={run}/>
+    <RoutingDiagnostics state={state} source={source} memberId={memberId} admin={admin} busy={busy} run={run}/>
   </>;
 }

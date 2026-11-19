@@ -175,6 +175,128 @@ async function incompleteIntakeBrowser(page,context) {
  assert.equal(original.service,null);assert.deepEqual(original.events,[]);assert.deepEqual(original.obligation.target,{kind:'user',id:member.id})
  assert.equal(declaredState.intakeReceipts.find(receipt=>receipt.id===incomplete.id).service,null,'declaring leaves the unrouted receipt untouched')
  assert.ok(declaredState.incidents.some(incident=>incident.service==='payments'&&incident.alerts.includes(queued.id)),'explicit scoped choice declares from the owner queue')
+ await routedRecoveryReadback(page,context,request)
+}
+
+async function routedRecoveryReadback(page,context,request) {
+ const password='synthetic-oncall-830-password';
+ const owner=await request('/api/members',{name:'Synthetic routing owner',role:'responder',password},201);
+ const chosen='payments',stillOpen='synthetic-oncall-831',otherService='synthetic-oncall-832';
+ for(const [id,name] of [[stillOpen,'Synthetic search'],[otherService,'Synthetic checkout']]){
+  await request('/api/command',{type:'service',id,name,environment:'production',owner:owner.id,runbook:[],pager:''});
+ }
+ const source='synthetic-oncall-833',otherSource='synthetic-oncall-834';
+ const key=randomBytes(32).toString('hex'),otherKey=randomBytes(32).toString('hex');
+ const rules=[{id:'search',match:'all',conditions:[{field:'details.service',op:'equals',value:stillOpen}],target:{service:stillOpen}}];
+ await request('/api/routing/keys',{id:source,name:'Synthetic shared routing',provider:'opsgenie',scope:[chosen,stillOpen],owner:owner.id,key,revision:0,rules,catchAll:chosen},201);
+ await request('/api/routing/keys',{id:otherSource,name:'Synthetic separate routing',provider:'opsgenie',scope:[otherService],owner:owner.id,key:otherKey,revision:0,rules:[],catchAll:otherService},201);
+
+ const alias='synthetic-oncall-835',otherTitle='Separate key trigger',recoverTitle='First source recovery',repeatedTitle='Repeated source recovery';
+ const closePath='/v2/alerts/'+alias+'/close?identifierType=alias';
+ const send=async(path,credential,service,message)=>{
+  const response=await context.request.post(path,{headers:{authorization:'GenieKey '+credential},data:{alias,message,details:{service}}});
+  assert.equal(response.status(),202);
+  const result=await response.json();
+  assert.ok(result.requestId&&!result.truncation,'the compatible door retains a complete receipt');
+  return result.requestId;
+ };
+ const outboundBefore=await worker.outboundRequests();
+ await send('/v2/alerts',key,chosen,'First key payments trigger');
+ await send('/v2/alerts',key,stillOpen,'First key search trigger');
+ await send('/v2/alerts',otherKey,otherService,otherTitle);
+ const matching=(state,id)=>state.alerts.filter(a=>a.key===alias&&a.source==='intake:'+id);
+ const byService=(alerts,id)=>alerts.find(a=>a.service===id);
+ const triggered=await request('/api/state'),original=matching(triggered,source);
+ assert.equal(original.length,2);
+ assert.equal(new Set(original.map(a=>a.generation)).size,2);
+ assert.ok(original.every(a=>a.generation&&a.state==='active'&&a.obligation?.state==='recorded'&&a.obligation.paging==='off'));
+ const separate=matching(triggered,otherSource);
+ assert.deepEqual(separate.map(a=>[a.service,a.state]),[[otherService,'active']]);
+
+ const recoveredId=await send(closePath,key,chosen,recoverTitle);
+ const recovered=await request('/api/state'),afterRecovery=matching(recovered,source);
+ const chosenAlert=byService(afterRecovery,chosen),otherAlert=byService(afterRecovery,stillOpen);
+ assert.equal(chosenAlert.generation,byService(original,chosen).generation);
+ assert.equal(chosenAlert.state,'recovered');
+ assert.equal(chosenAlert.obligation.state,'stopped');
+ assert.equal(chosenAlert.obligation.receipt,recoveredId);
+ assert.deepEqual(otherAlert,byService(original,stillOpen),'the other service keeps its exact open alert and obligation');
+ const paging=await request('/api/paging/state');
+ const repeatId=await send(closePath,key,chosen,repeatedTitle);
+ const retained=await request('/api/state'),receipt=retained.intakeReceipts.find(r=>r.id===repeatId);
+ assert.equal(retained.revision,recovered.revision+1,'the second resolve records a receipt');
+ assert.deepEqual(retained.intakeReceipts,[...recovered.intakeReceipts,receipt]);
+ assert.deepEqual(retained.alerts,recovered.alerts,'the second resolve changes no alert generation, revision or obligation');
+ assert.deepEqual(retained.events,recovered.events);
+ assert.deepEqual(retained.incidents,recovered.incidents);
+ const retainedPaging={...paging,workspaceRevision:retained.revision};
+ assert.deepEqual(await request('/api/paging/state'),retainedPaging,'recording the receipt leaves paging revision and records unchanged');
+ assert.deepEqual(matching(retained,otherSource),separate);
+ assert.deepEqual([receipt.source,receipt.action,receipt.outcome,receipt.alert,receipt.generation,receipt.event],[source,'recover','no-effect',null,null,null]);
+ assert.equal(receipt.service,chosen);
+ assert.equal(receipt.routing.service,chosen);
+ const prefix='resolve matched no open generation; key open on services: ';
+ const openServices=matching(retained,source).filter(a=>a.state==='active').map(a=>a.service);
+ assert.deepEqual(openServices,[stillOpen]);
+ const diagnostic=prefix+openServices.join(', ');
+ assert.deepEqual(receipt.routing.diagnostics,[diagnostic]);
+ const serviceName=retained.services.find(s=>s.id===receipt.service).name;
+ const selectedKey=retained.intakeSources.find(s=>s.id===source),separateKey=retained.intakeSources.find(s=>s.id===otherSource);
+
+ const width=process.env.ONCALL_PRODUCT_JOURNEY==='response-policy'&&process.env.ONCALL_PRODUCT_WIDTH==='390'?390:1440;
+ const ownerContext=await context.browser().newContext({baseURL:worker.origin,viewport:{width,height:1000},extraHTTPHeaders:{connection:'close'}});
+ const browserOutbound=[];
+ const recordOutbound=req=>{if(new URL(req.url()).origin!==worker.origin)browserOutbound.push(req.url());};
+ try{
+  const login=await ownerContext.request.post('/api/login',{headers:{origin:worker.origin},data:{name:owner.name,password}});
+  assert.equal(login.status(),200,'the routed source owner signs in as a responder');
+  const beforeReads=durableSnapshot(worker);
+  const ownerPage=await ownerContext.newPage();
+  ownerContext.on('request',recordOutbound);
+  page.on('request',recordOutbound);
+  const showReceipts=async(view,selected)=>{
+   await selectRoutedSource(view,selected);
+   const diagnostics=view.getByRole('region',{name:'Routing diagnostics',exact:true});
+   await diagnostics.getByLabel('Routing receipt filter',{exact:true}).selectOption('all');
+   return diagnostics;
+  };
+  await ownerPage.goto(worker.origin+'/settings/routing');
+  const diagnostics=await showReceipts(ownerPage,selectedKey);
+  const repeat=diagnostics.getByRole('article').filter({has:ownerPage.getByRole('heading',{name:repeatedTitle,exact:true})});
+  await expect(repeat.getByText('recover · no-effect · '+serviceName,{exact:true})).toBeVisible();
+  await expect(repeat.getByText(diagnostic,{exact:true})).toBeVisible();
+  await expect(diagnostics.getByText(/^resolve matched no open generation/)).toHaveText([diagnostic]);
+  await expect(diagnostics.getByRole('heading',{name:recoverTitle,exact:true})).toBeVisible();
+  await expect(diagnostics.getByRole('heading',{name:otherTitle,exact:true})).toHaveCount(0);
+  assert.ok(await ownerPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'routing receipts fit the viewport');
+  const axe=await new AxeBuilder({page:ownerPage}).include('.routing-diagnostics').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();
+  assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
+
+  const directory=process.env.ONCALL_BROWSER_EVIDENCE??'./evidence/browser';
+  await mkdir(directory,{recursive:true});
+  for(const captureWidth of [1440,390]){
+   await ownerPage.setViewportSize({width:captureWidth,height:1000});
+   await diagnostics.screenshot({path:directory+'/oc083-routed-recovery-'+captureWidth+'.png'});
+  }
+  await showReceipts(ownerPage,separateKey);
+  await expect(diagnostics.getByRole('heading',{name:otherTitle,exact:true})).toBeVisible();
+  await expect(diagnostics.getByRole('heading',{name:repeatedTitle,exact:true})).toHaveCount(0);
+  await expect(diagnostics.getByText(/^resolve matched no open generation/)).toHaveCount(0);
+
+  await page.goto(worker.origin+'/settings/routing');
+  const nonOwner=await showReceipts(page,selectedKey);
+  await expect(nonOwner.getByRole('heading',{name:repeatedTitle,exact:true})).toBeVisible();
+  await expect(nonOwner.getByText(/^resolve matched no open generation/)).toHaveCount(0);
+  assert.deepEqual(await request('/api/state'),retained,'reads preserve protected state and revision');
+  assert.deepEqual(await request('/api/paging/state'),retainedPaging,'reads preserve paging records and revision');
+  assert.deepEqual(durableSnapshot(worker),beforeReads,'reads preserve durable rows and permanent audit');
+  assert.deepEqual(await worker.outboundRequests(),outboundBefore,'intake and readback make zero outbound Worker requests');
+  assert.deepEqual(browserOutbound,[],'routing receipts make zero outbound browser requests');
+  console.log('PROBE OC-083 2 at '+width+': repeated compatible resolve -> '+serviceName+' receives a no-effect receipt; '+openServices.join(', ')+' remains open under the selected key. Responder owner only, separate key excluded, generation and obligation custody retained, reads leave durable rows, revisions and permanent audit unchanged, zero outbound requests.');
+ }finally{
+  page.off('request',recordOutbound);
+  await ownerContext.close();
+ }
 }
 
 // OC-056: publish response rules, recover a native alert, and keep human incidents open.
