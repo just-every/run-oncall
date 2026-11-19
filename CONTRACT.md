@@ -1186,6 +1186,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 **Oncall incident resolution.** After `oncall.incidents.resolve` completes under autonomous policy or after sponsor approval under held policy, a different summary with the original key, incident and supplied revision returns `idempotency_conflict` in the MCP error metadata and text without exposing the completed result. Retrying the original arguments with a new JSON-RPC id returns the stored result and any original approval receipt. The refusal and replay preserve the single saved resolution, native records, revisions, timeline, mutation audit, retained calls and outcomes, approvals, reviews and paging, with no outbound requests.
 
+**Oncall resolution response loss.** The resolution journey in `tests/oncall-agent-flow.mjs`, invoked by `tests/runtime.mjs`, drops the first completed `oncall.incidents.resolve` response at HTTP headers with the body unread. Under held policy the sponsor first approves the exact saved revision and summary once through the signed-in person door. Before recovery, D1 retains the terminal call and one attributed resolution, one native mutation audit commit and one advance of each revision. The same arguments and key with a new JSON-RPC id recover the exact saved result and any original approval receipt. Retrieval preserves native records, revisions, timeline, mutation audit, original call, outcome and expiry, approvals, reviews and paging, with only linked replay-attempt audit and capacity bookkeeping and zero outbound requests.
+
 **Acceptance.**
 1. Two calls with one key give one effect and equal results.
 2. A retry with a new JSON-RPC id and the same key, after a dropped stream, returns the recorded outcome.

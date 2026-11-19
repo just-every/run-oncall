@@ -707,6 +707,14 @@ try{
  const executedApproval=(await (await http('/agents/api/approvals/'+approvalHandle.id)).json()).approval;
  assert.equal(executedApproval.revision,savedApproval.revision);
  assert.equal(executedApproval.summary_sha256,savedApproval.summary_sha256);
+ const resolutionEffects=await agentEffectSnapshot(runtime);
+ const lostResolution=await runtime.discardToolResponse('oncall.incidents.resolve',resolveArgs);
+ assert.equal(lostResolution.status,200);
+ assert.equal(lostResolution.discarded,true);
+ assert.equal(lostResolution.aborted,true);
+ assert.equal(lostResolution.bodyRead,false);
+ assert.notEqual(lostResolution.id,heldResolution.body.id);
+ assert.deepEqual(await agentEffectSnapshot(runtime),resolutionEffects,'Losing the completed browser-approved result preserves native and approval custody');
  const changedSummary='A different summary for the completed browser resolution';
  const resolveConflict=await tool('oncall.incidents.resolve',{...resolveArgs,summary:changedSummary});
  assert.equal(resolveConflict.result?.isError,true);
@@ -714,8 +722,10 @@ try{
  assert.equal(resolveConflict.result.structuredContent,undefined);
  const resolveRetry=await tool('oncall.incidents.resolve',resolveArgs);
  assert.equal(resolveRetry.result?.isError,false,JSON.stringify(resolveRetry.body));
+ assert.notEqual(resolveRetry.body.id,lostResolution.id);
  assert.equal(resolveRetry.result.structuredContent.state,'resolved');
  assert.deepEqual(await native(),resolutionAfter,'Approved resolution retry creates no second effect');
+ assert.deepEqual(await agentEffectSnapshot(runtime),resolutionEffects,'Recovering the browser-approved result preserves native and approval custody');
  assert.deepEqual(await runtime.outboundRequests(),resolutionEdge);
  const resolutionRows=(await completeAudit()).filter(row=>row.agent.id===runtime.context.agentId);
  const executionRow=resolutionRows.find(row=>row.decision_id===heldResolution.decision.id);
@@ -735,7 +745,7 @@ try{
   await page.getByText('Responder assistant for Alex Chen',{exact:true}).first().waitFor();
  });
  assert.equal((await runtime.adopt()).status,200);
- console.log('PASS incident resolution browser: commitment-only approval, exact saved revision, native human approver and agent preparer, one attributed resolution and effect-free retry');
+ console.log('PASS incident resolution browser: commitment-only approval, exact saved revision, one attributed resolution visible after the completed response was lost and recovered');
  // The real signed-in URL holds each recorded deadline effect for its sponsor.
  for(const change of ['snooze','cancel-deadline','expire-deadline']){
   await runtime.time(Date.parse('2026-11-04T12:00:00.000Z'));
