@@ -15,9 +15,18 @@ use the same door and source allow-list.
 
 ## Opsgenie migration readiness checklist
 
+Atlassian ended Opsgenie sales on 4 June 2025. Support ends on **5 April 2027**,
+when Atlassian will shut down Opsgenie and delete unmigrated data. Atlassian's
+migration to Jira Service Management offers up to 120 days of parallel Opsgenie
+access after the move. Save your export while your account is still accessible.
+You can import it into Oncall alongside Atlassian's migration because Oncall
+reads only the saved files for this import.
+[Atlassian's Opsgenie migration guidance](https://www.atlassian.com/software/opsgenie/migration)
+(checked 19 November 2026).
+
 **Execution date for this public-documentation review: 31 October 2026 (UTC).**
-The announced Opsgenie shutdown is **5 April 2027**. This is planning guidance;
-no account migration was executed and no migration execution date is scheduled.
+This is planning guidance. No account migration was executed and no migration
+execution date is scheduled.
 At execution, record the actual UTC date, operator, account, region and evidence
 for each gate. Recheck current provider and export availability then: a public
 page being readable does not establish authenticated account access or a working
