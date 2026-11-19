@@ -1087,7 +1087,7 @@ async function responseReportBrowser(browser) {
  try {
   const scenario=await nightResponseScenario(w),origin=w.origin
   context=await browser.newContext({baseURL:origin,viewport:{width:1440,height:1000},timezoneId:'America/New_York',extraHTTPHeaders:{connection:'close'}})
-  await context.addCookies(scenario.headers.getSetCookie().map(line=>{const pair=line.split(';')[0],at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:origin,httpOnly:true,sameSite:'Lax'}}))
+  await context.addCookies(scenario.night.headers.getSetCookie().map(line=>{const pair=line.split(';')[0],at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:origin,httpOnly:true,sameSite:'Lax'}}))
   const page=await context.newPage();await page.clock.setFixedTime(new Date(scenario.observed))
   const errors=[];page.on('pageerror',error=>errors.push(error.message))
   await page.goto(origin+'/reviews');await page.getByText('Response numbers',{exact:true}).click()
@@ -1122,7 +1122,7 @@ async function responseReportBrowser(browser) {
   await stat(person(scenario.owner.name),'Backup','8 h')
   await stat(person('Synthetic night response'),'Primary covered','8 h');await stat(person('Synthetic night response'),'Primary uncovered','23 h')
   const noise=panel.locator('.alert-noise-stats')
-  for(const [label,value] of [['Alerts triggered','1'],['Trigger events','2'],['Repeated alerts','1'],['Noisy keys','1']])await stat(noise.locator('..'),label,value)
+  for(const [label,value] of [['Alerts triggered',snapshot.noise.alerts],['Trigger events',snapshot.noise.triggers],['Repeated alerts',snapshot.noise.repeatedAlerts],['Noisy keys',snapshot.noise.noisyKeys]])await stat(noise.locator('..'),label,String(value))
   await panel.getByText('How these are counted',{exact:true}).click()
   await expect(panel).toContainText('Exact UTC bounds: Mon, 28 Oct 2030 04:00:00 GMT inclusive to Wed, 30 Oct 2030 04:00:00 GMT exclusive.')
   await expect(panel).toContainText('They are scheduled hours, not worked hours.')
@@ -1145,11 +1145,45 @@ async function responseReportBrowser(browser) {
   await panel.getByRole('button',{name:'Export CSV',exact:true}).click();const downloaded=await download
   const exported=await exportResponse;assert.equal(exported.status(),200);assert.equal(await readFile(await downloaded.path(),'utf8'),csv)
   const exportQuery=new URL(exported.url()).searchParams;for(const [key,value] of frozen)assert.equal(exportQuery.get(key),value)
+  const group=noise.locator('..').locator('details'),summary=group.locator('summary')
+  await expect(group.getByRole('link')).toHaveCount(0)
+  await summary.focus();await summary.press('Enter')
+  const links=group.getByRole('link'),alertPath=id=>'/alerts/'+encodeURIComponent(id)
+  await expect(links).toHaveCount(scenario.alertIds.length)
+  assert.deepEqual((await links.evaluateAll(elements=>elements.map(link=>link.getAttribute('href')))).sort(),scenario.alertIds.map(alertPath).sort())
+  await summary.press('Enter');await expect(links).toHaveCount(0)
+  await summary.press('Enter');await expect(links).toHaveCount(scenario.alertIds.length)
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true)
   const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(axe.violations.filter(row=>['serious','critical'].includes(row.impact)),[])
-  assert.deepEqual(errors,[])
   const directory=process.env.ONCALL_BROWSER_EVIDENCE??'./evidence/browser';await mkdir(directory,{recursive:true})
-  for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:`${directory}/oc037-response-report-${width}.png`,fullPage:true})}
+  for(const width of [1440,390]){
+   await page.setViewportSize({width,height:1000})
+   await page.screenshot({path:`${directory}/oc037-response-report-${width}.png`,fullPage:true})
+   await noise.locator('..').screenshot({path:`${directory}/noise-links-${width}.png`})
+  }
+  await page.setViewportSize({width:1440,height:1000})
+  const retainedPath=alertPath(scenario.alertIds[0])
+  await links.and(page.locator(`[href="${retainedPath}"]`)).click()
+  await page.waitForURL(url=>url.pathname===retainedPath)
+  const detail=page.getByRole('article',{name:'Alert details'})
+  await expect(detail.getByRole('heading',{name:snapshot.noise.noisy[0].title,exact:true})).toBeVisible()
+  await detail.getByText('Event context',{exact:true}).click()
+  await expect(detail).toContainText('3 retained events')
+  for(const width of [1440,390]){
+   await page.setViewportSize({width,height:1000})
+   await detail.screenshot({path:`${directory}/noise-alert-${width}.png`})
+  }
+  await scenario.req('/api/command',{type:'member',id:scenario.night.id,role:'responder',active:false})
+  await page.reload()
+  const workspace=await context.request.get(origin+'/api/workspace')
+  assert.equal(workspace.status(),200)
+  const {member,state}=await workspace.json()
+  assert.deepEqual([member,state],[null,null])
+  await expect(page.locator('.oncall-frame')).toHaveCount(0)
+  await expect(detail).toHaveCount(0)
+  await expect(page.getByText(snapshot.noise.noisy[0].title,{exact:true})).toHaveCount(0)
+  assert.deepEqual(errors,[])
+  console.log('PASS Reviews noise drill-down: keyboard expansion reveals exactly the report links, opens retained alert events and refuses the same destination after membership revocation')
   console.log('PROBE OC-037 dashboard: emitted Reviews at 1440 -> measured mean 38.3 minutes, p50 15 minutes, p95 1.6 hours, 5-case cohort and load for 6 and 2 scheduled hours match frozen API and downloaded CSV; visual proof once at 1440 and 390')
  } finally {try{await context?.close()}finally{await w.close()}}
 }
@@ -1512,6 +1546,8 @@ try {
   const width=process.env.ONCALL_PRODUCT_WIDTH==='390'?390:1440;
   await unmatchedAlertQueue(page,context,{snapshot:()=>durableSnapshot(worker),outbound:()=>worker.outboundRequests()},width);
   assert.deepEqual(errors,[],'the unmatched alerts journey has no application errors');
+ }else if(process.env.ONCALL_PRODUCT_JOURNEY==='response-report'){
+  await responseReportBrowser(browser);
  }else{
  let selectedTime=null
  const openSession=async(second,secondPage)=>{
@@ -1626,4 +1662,4 @@ try {
 } finally {
  try {await browser?.close()} finally {await worker.close()}
 }
-if(!productPart&&!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','workspace-links','alert-run','unmatched-alerts'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');
+if(!productPart&&!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','workspace-links','alert-run','unmatched-alerts','response-report'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');

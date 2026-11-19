@@ -3,7 +3,7 @@ import {pagingSnapshot} from '../paging-store';
 import {responseReport} from './report';
 import {exportResponseCsv} from './csv';
 import {coverageLoad,type ProjectedReport} from './load';
-import {alertNoise} from './noise';
+import {alertNoiseWithIds} from './noise';
 import {reviewMaterial} from './material';
 export function installReviews(api:any,authorizedState:(c:any)=>Promise<State>){
  const project=async(c:any):Promise<ProjectedReport>=>{
@@ -17,7 +17,7 @@ export function installReviews(api:any,authorizedState:(c:any)=>Promise<State>){
   if(revision!==undefined&&String(state.revision)!==revision)fail('Workspace changed; refresh the report before exporting',409);
   if(schedulingRevision!==undefined&&String(s.revision)!==schedulingRevision)fail('Schedules changed; refresh the report before exporting',409);
   const report=responseReport(state,input,at??new Date().toISOString());
-  return {...report,load:coverageLoad(state,{revision:s.revision,schedules:s.archive.schedules},report),noise:alertNoise(state,report)};
+  return {...report,load:coverageLoad(state,{revision:s.revision,schedules:s.archive.schedules},report),noise:alertNoiseWithIds(state,report)};
  };
  api.get('/api/reports/response',async(c:any)=>c.json(await project(c)));
  api.get('/api/reports/response.csv',async(c:any)=>{
