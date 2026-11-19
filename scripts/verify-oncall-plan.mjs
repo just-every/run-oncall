@@ -4,7 +4,7 @@ import { join } from 'node:path';
 export const { lanes, browserLanes, push, nightly } = JSON.parse(await readFile(new URL('./verify-shards.json', import.meta.url), 'utf8'));
 
 export function verificationPlan() {
- const names = new Set(), selected = new Set();
+ const names = new Set(), selected = new Set(), commands = new Set();
  if (!Array.isArray(browserLanes) || new Set(browserLanes).size !== browserLanes.length
   || browserLanes.some(lane => !Object.hasOwn(lanes, lane))) throw Error('Invalid Oncall browser lanes');
  for (const shard of [...push, ...nightly]) {
@@ -16,6 +16,13 @@ export function verificationPlan() {
    if (!Object.hasOwn(lanes, lane) || selected.has(lane)) throw Error(`Missing or duplicate verification lane: ${lane}`);
    if (browserLanes.includes(lane) && !shard.browser) throw Error(`Browser lane needs Chromium: ${lane}`);
    selected.add(lane);
+   for (const entry of lanes[lane]) {
+    const { file, part, env } = typeof entry === 'string' ? { file: entry } : entry;
+    const overrides = { ...env, ...(part ? { ONCALL_RUNTIME_PART: part } : {}) };
+    const command = JSON.stringify([file, Object.entries(overrides).sort(([a], [b]) => a.localeCompare(b))]);
+    if (commands.has(command)) throw Error(`Duplicate Oncall verification command: ${command}`);
+    commands.add(command);
+   }
   }
  }
  if (selected.size !== Object.keys(lanes).length || push.filter(shard => shard.hosted).length !== 1) throw Error('Incomplete Oncall verification coverage');
