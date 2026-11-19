@@ -65,6 +65,14 @@ Provider reads go only to the US or EU API host for the provider selected. Every
 
 In **Settings → Move in**, choose **Opsgenie** or **PagerDuty** under **Source**, expand **No key? Use the exporter on your computer**, then **How to export from…**. That panel includes the download, runnable commands, provider key steps and troubleshooting. No API client, paging knowledge or manual JSON assembly is needed. Calendar (.ics) and CSV files do not contain the required rotation definitions.
 
+Save your Opsgenie configuration export before the configuration APIs retire
+in April 2027 or your account shuts down, whichever comes first. The US and EU
+Alert and integration-event APIs will continue for customers moving to or already
+on Jira Service Management. Schedule exports still depend on the configuration APIs
+to read users, schedules, overrides and escalations. Standalone Opsgenie support
+ends 5 April 2027.
+[Atlassian API notice](https://community.atlassian.com/forums/discussion/3313548/good-news-for-the-future-of-api-opsgenie-com) · [Opsgenie migration dates](https://www.atlassian.com/software/opsgenie/migration).
+
 ### Prepare a read-only API key
 
 **Opsgenie:** ask your administrator to create a separate API integration named **Oncall export**:
