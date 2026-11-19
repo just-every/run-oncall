@@ -1,0 +1,16 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f291-f294-lin-1",
+  "main_at_candidate_push": "49dc3d821091644713c8d1e418f04135f84ac3f9",
+  "head": "30202e35dcbc97fdb9cf5db94d49f18ff7e88481",
+  "candidate_push_utc": "2026-11-19T15:24:54Z",
+  "candidate_commits": [
+    "969a03e95c6b0347b5a3be68def78acc23864d72",
+    "30202e35dcbc97fdb9cf5db94d49f18ff7e88481"
+  ],
+  "candidate_merge_commits": [],
+  "follow_up_source": "b375c995f5a06cb63b8e42f83b841e308b25fbce",
+  "optional_resolution_source": "da6f6cfd973c83ff5fc9fdd240c7d34e6178ea7b",
+  "push_attempts": 1,
+  "identity_and_trailers_reviewed": true
+}

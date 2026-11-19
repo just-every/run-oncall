@@ -1,0 +1,218 @@
+{
+  "run_id": 44554518018,
+  "attempt": 1,
+  "observed_discovery_utc": "2026-11-19T15:25:46Z",
+  "discovery": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "30202e35dcbc97fdb9cf5db94d49f18ff7e88481",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44554518018",
+      "id": 44554518018,
+      "name": "Verify",
+      "run_attempt": 1,
+      "status": "in_progress"
+    }
+  ],
+  "polls": [
+    {
+      "conclusion": null,
+      "head_sha": "30202e35dcbc97fdb9cf5db94d49f18ff7e88481",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44554518018",
+      "status": "in_progress",
+      "observed_utc": "2026-11-19T15:30:46Z"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "30202e35dcbc97fdb9cf5db94d49f18ff7e88481",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44554518018",
+      "status": "in_progress",
+      "observed_utc": "2026-11-19T15:35:45Z"
+    },
+    {
+      "conclusion": "failure",
+      "head_sha": "30202e35dcbc97fdb9cf5db94d49f18ff7e88481",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44554518018",
+      "status": "completed",
+      "observed_utc": "2026-11-19T15:40:46Z"
+    }
+  ],
+  "observed_jobs_utc": "2026-11-19T15:45:46Z",
+  "jobs": [
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "30202e35dcbc97fdb9cf5db94d49f18ff7e88481",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44554518018/job/135666851568",
+      "id": 135666851568,
+      "name": "plan",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        {
+          "conclusion": "failure",
+          "name": "Check the generated contract documents",
+          "number": 4
+        }
+      ],
+      "head_sha": "30202e35dcbc97fdb9cf5db94d49f18ff7e88481",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44554518018/job/135667078965",
+      "id": 135667078965,
+      "name": "contract-docs",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "30202e35dcbc97fdb9cf5db94d49f18ff7e88481",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44554518018/job/135667079099",
+      "id": 135667079099,
+      "name": "build",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "head_sha": "30202e35dcbc97fdb9cf5db94d49f18ff7e88481",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44554518018/job/135667082788",
+      "id": 135667082788,
+      "name": "light",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "30202e35dcbc97fdb9cf5db94d49f18ff7e88481",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44554518018/job/135668402942",
+      "id": 135668402942,
+      "name": "shards (agents)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "30202e35dcbc97fdb9cf5db94d49f18ff7e88481",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44554518018/job/135668402966",
+      "id": 135668402966,
+      "name": "shards (hosted)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "30202e35dcbc97fdb9cf5db94d49f18ff7e88481",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44554518018/job/135668403054",
+      "id": 135668403054,
+      "name": "shards (triage)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "30202e35dcbc97fdb9cf5db94d49f18ff7e88481",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44554518018/job/135668403057",
+      "id": 135668403057,
+      "name": "shards (transfer)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "30202e35dcbc97fdb9cf5db94d49f18ff7e88481",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44554518018/job/135668403089",
+      "id": 135668403089,
+      "name": "shards (intake)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "30202e35dcbc97fdb9cf5db94d49f18ff7e88481",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44554518018/job/135668403118",
+      "id": 135668403118,
+      "name": "shards (changes)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "30202e35dcbc97fdb9cf5db94d49f18ff7e88481",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44554518018/job/135668403132",
+      "id": 135668403132,
+      "name": "shards (browser)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "30202e35dcbc97fdb9cf5db94d49f18ff7e88481",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44554518018/job/135668403162",
+      "id": 135668403162,
+      "name": "shards (runtime)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "30202e35dcbc97fdb9cf5db94d49f18ff7e88481",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44554518018/job/135676760087",
+      "id": 135676760087,
+      "name": "full-push-proof",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "head_sha": "30202e35dcbc97fdb9cf5db94d49f18ff7e88481",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44554518018/job/135676764044",
+      "id": 135676764044,
+      "name": "nightly-proof",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        {
+          "conclusion": "failure",
+          "name": "Require the selected coverage and its proof",
+          "number": 2
+        }
+      ],
+      "head_sha": "30202e35dcbc97fdb9cf5db94d49f18ff7e88481",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44554518018/job/135676813907",
+      "id": 135676813907,
+      "name": "verify",
+      "status": "completed"
+    }
+  ],
+  "failed_job_archives": [
+    {
+      "command": "gh run view 44554518018 --repo just-every/run-oncall --job 135667078965 --log-failed",
+      "utc": "2026-11-19T15:50:52Z",
+      "exit": 0,
+      "job_id": 135667078965,
+      "matched_output": [
+        "contract-docs\tCheck the generated contract documents\t2026-11-19T15:25:36.5989908Z Contract prose: 0 errors, 0 warnings.",
+        "contract-docs\tCheck the generated contract documents\t2026-11-19T15:25:36.6335605Z ACCEPTANCE.md: generated content differs; run contract-docs write.",
+        "contract-docs\tCheck the generated contract documents\t2026-11-19T15:25:36.6420143Z ##[error]Process completed with exit code 1."
+      ]
+    },
+    {
+      "command": "gh run view 44554518018 --repo just-every/run-oncall --job 135676813907 --log-failed",
+      "utc": "2026-11-19T15:55:47Z",
+      "exit": 0,
+      "job_id": 135676813907,
+      "matched_output": [
+        "verify\tRequire the selected coverage and its proof\t2026-11-19T15:39:51.8067320Z   CONTRACT_DOCS: failure",
+        "verify\tRequire the selected coverage and its proof\t2026-11-19T15:39:51.8068059Z   BUILD: success",
+        "verify\tRequire the selected coverage and its proof\t2026-11-19T15:39:51.8068596Z   SHARDS: success",
+        "verify\tRequire the selected coverage and its proof\t2026-11-19T15:39:51.8069545Z   PUSH_PROOF: success",
+        "verify\tRequire the selected coverage and its proof\t2026-11-19T15:39:51.8252538Z ##[error]Process completed with exit code 1."
+      ]
+    }
+  ],
+  "generated_view_exception": "ACCEPTANCE.md is published from CONTRACT.md at landing. The other Verify failure is the dependent summary job.",
+  "github_calls": 7
+}

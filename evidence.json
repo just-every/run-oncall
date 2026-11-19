@@ -1,0 +1,64 @@
+{
+  "files": [
+    {
+      "blob": "890b2ef157e6fe838e2a59bc5ef7222f31875ca9",
+      "bytes": 51,
+      "path": "BUILD-RECEIPT.json",
+      "sha256": "cc0825962606101db0a379c948bdf4d2dc334764dec8a1e5955a12305c665e96"
+    },
+    {
+      "blob": "cbd45709bfc45953b34e891cd1b7fda0acb8207f",
+      "bytes": 8098,
+      "path": "CI-RECEIPT.json",
+      "sha256": "19b2c53f4bcc7c336c741bdce5cecdef04b8d945aa31870bfe90c401595ee480"
+    },
+    {
+      "blob": "e811f74fd7e5686365a62cf525e1679c58dec238",
+      "bytes": 3236,
+      "path": "LOCAL-CHECKS.md",
+      "sha256": "b0956f9ad04fa37ee3acd17812be9dd05d53bf0a8a8c0e15a8b66417010eeeaa"
+    },
+    {
+      "blob": "d2262dbb4b9be0a78722381dfcafc23013d0c54b",
+      "bytes": 631,
+      "path": "REPLAY-RECEIPT.json",
+      "sha256": "3ac963c6a6d66ba78a3fce2b4104da1073e5fad6303ab731930f494052d7a82a"
+    },
+    {
+      "blob": "1ab162daec493f55dd562b835452b58ad4f332f4",
+      "bytes": 4986,
+      "path": "REPORT.md",
+      "sha256": "b2c3b3da892e4f50c4ef5d49197403110b82c8ac98937a5fff15631f1f19576d"
+    },
+    {
+      "blob": "f1618d44a586ae64e9f9fc665fa3c7f496b504a1",
+      "bytes": 117415,
+      "path": "agent-door-follow-up-created-1440.png",
+      "sha256": "94f4421c950b4e17de68f4d964884123b1b5c8025d429fe5a1b27be24b748ba8"
+    },
+    {
+      "blob": "78857efc21ca06d87eaeea2aea17b472ffc28153",
+      "bytes": 58835,
+      "path": "agent-door-follow-up-created-390.png",
+      "sha256": "de35ca1b809bb36627dea77a5c488ef56e73405ee203464d2a62fb666167c671"
+    },
+    {
+      "blob": "25a01910a7d70e78d9c54da0a9689c6cdcacf72a",
+      "bytes": 569312,
+      "path": "agent-door-resolution-timeline-1440.png",
+      "sha256": "8f3afa3988733bc958979cece7250c88eea51bfc080d0099bca5664064ae85dd"
+    },
+    {
+      "blob": "bc415483a646c1d603cdb1e869cf784583d4cb0d",
+      "bytes": 122400,
+      "path": "agent-door-resolution-timeline-390.png",
+      "sha256": "3944d0aec67221b0cf737d67dc824244a5c02e18fda50089560750b8ab98ac8b"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f291-f294-lin-1",
+  "product_head": "30202e35dcbc97fdb9cf5db94d49f18ff7e88481",
+  "ref": "refs/heads/evidence/sd-oncall-c-f291-f294-lin-1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f291-f294-lin-1"
+}
