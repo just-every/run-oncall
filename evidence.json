@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "blob": "ea58ca21f0518450f3fbb09a0c947e5a9e66973d",
+      "bytes": 66466,
+      "path": "CI-RECEIPT.json",
+      "sha256": "ff5f83da4a92f36ebf5d496e3ff2ca8adc10f9747bf5684d03ca69cf007cf912"
+    },
+    {
+      "blob": "726f58cc9f04dcfbd001cca78522daf9b08f773a",
+      "bytes": 3185,
+      "path": "LOCAL-RECEIPT.md",
+      "sha256": "86e7139eb7f707c344c6767413b70659981db42febe687af69ef94fde88adf22"
+    },
+    {
+      "blob": "622df2b6c29031b8db454cacc03ebcebfe6134ed",
+      "bytes": 5856,
+      "path": "REPORT.md",
+      "sha256": "5dd149103ea31a8fc26dddb6b06a6c6888c7d528153161a9d1c731cd0308b8b2"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-ci-changes-split-1",
+  "product_head": "03c3b2a27c311b525a4202451c4b873f4b5d7e2e",
+  "ref": "refs/heads/evidence/sd-oncall-ci-changes-split-1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-ci-changes-split-1"
+}
