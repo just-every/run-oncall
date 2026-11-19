@@ -1,0 +1,248 @@
+{
+  "branch": "cloud/sd-oncall-c-f290-pc1",
+  "head": "320cf77b3bd92226c0fac0ea03c4b96ad05501a8",
+  "merged_main": "df8efefe31a9813ebc5aa3f0c2a319c19e2667d7",
+  "saved_head": "6052b446cc8f6da18f0620fb4e2dabf6bed7cbf3",
+  "contract_counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "contract_counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "clause_status_before": "missing",
+  "clause_status_after": "missing",
+  "node": "22.20.0",
+  "chromium": "/usr/bin/chromium",
+  "local_checks": {
+    "contract docs write": 0,
+    "contract docs check after write": 0,
+    "edition source lock write and check after restoring main views": 0,
+    "workflow permissions check": 0,
+    "rer check --profile first-party": 0,
+    "rer build": 0,
+    "pnpm run typecheck": 0,
+    "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs": 0,
+    "node tests/agent-door-browser.mjs": 0,
+    "node tests/member-coordination-browser.mjs": 0
+  },
+  "proof_files": [
+    {
+      "file": "agent-door-acknowledgment-autonomous-person-1440.png",
+      "sha256": "2157c6163aab69bda41b65640868aff1cef8ca4187e2d25237b7aa09e1a8000d",
+      "width": 1440,
+      "policy": "autonomous",
+      "actor": "person"
+    },
+    {
+      "file": "agent-door-acknowledgment-autonomous-person-390.png",
+      "sha256": "a9ee76863858304b6250290ead744059247018382ad0c44721c3878933213660",
+      "width": 390,
+      "policy": "autonomous",
+      "actor": "person"
+    },
+    {
+      "file": "agent-door-acknowledgment-autonomous-agent-1440.png",
+      "sha256": "b903b5d80f0994d768e3eda2c4ead312a42383640d8a3a3b8dd564d211f6bd17",
+      "width": 1440,
+      "policy": "autonomous",
+      "actor": "agent"
+    },
+    {
+      "file": "agent-door-acknowledgment-autonomous-agent-390.png",
+      "sha256": "d79f4515f37ed49bb8bc2b644ad5fa4111b311baee4794bdfd7c63fc68d0cc64",
+      "width": 390,
+      "policy": "autonomous",
+      "actor": "agent"
+    },
+    {
+      "file": "agent-door-acknowledgment-held-person-1440.png",
+      "sha256": "457cbf285a586234615e272f4d8c34c97c507cf93d3c3ceb2b020e45a83f9f9c",
+      "width": 1440,
+      "policy": "held",
+      "actor": "person"
+    },
+    {
+      "file": "agent-door-acknowledgment-held-person-390.png",
+      "sha256": "c6a3e01f14adc28f0f68526013f9e08d7b4963ada9d4116d284b2081909786f7",
+      "width": 390,
+      "policy": "held",
+      "actor": "person"
+    },
+    {
+      "file": "agent-door-acknowledgment-held-agent-1440.png",
+      "sha256": "10a21524f46adc01e0a06eb4c22a0dbf47b2c1493e25d8db857d795fdf4cd2ed",
+      "width": 1440,
+      "policy": "held",
+      "actor": "agent"
+    },
+    {
+      "file": "agent-door-acknowledgment-held-agent-390.png",
+      "sha256": "fff20620e8dee70cc77fdbe83c7ee6c6594749c3dae9dcf1bfd4228fbf7c8567",
+      "width": 390,
+      "policy": "held",
+      "actor": "agent"
+    }
+  ],
+  "source_lock_sha256": "f9d452fb75421a87d3550730b04e66860ba26f322354a7322dba389bb6979654",
+  "upstream_push_attempts": 1,
+  "test_harness_recovery": {
+    "check": "member coordination browser",
+    "first_exit": 1,
+    "first_error": "Verification browser missing",
+    "adjustment": "Installed Playwright Chromium headless-shell for the operations diagnostic",
+    "retry_exit": 0
+  },
+  "main_workflows": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_branch": "main",
+      "head_sha": "df8efefe31a9813ebc5aa3f0c2a319c19e2667d7",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44420542831",
+      "id": 44420542831,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_branch": "main",
+      "head_sha": "df8efefe31a9813ebc5aa3f0c2a319c19e2667d7",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44420542819",
+      "id": 44420542819,
+      "name": "Run site",
+      "status": "completed"
+    }
+  ],
+  "verify": {
+    "conclusion": "failure",
+    "head_sha": "320cf77b3bd92226c0fac0ea03c4b96ad05501a8",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44423793316",
+    "status": "completed",
+    "id": 44423793316,
+    "event": "push",
+    "jobs": [
+      {
+        "conclusion": "success",
+        "failures": [],
+        "id": 135223269327,
+        "name": "plan"
+      },
+      {
+        "conclusion": "failure",
+        "failures": [
+          "Check the generated contract documents"
+        ],
+        "id": 135223568432,
+        "name": "contract-docs"
+      },
+      {
+        "conclusion": "success",
+        "failures": [],
+        "id": 135223568443,
+        "name": "build"
+      },
+      {
+        "conclusion": "skipped",
+        "failures": [],
+        "id": 135223570564,
+        "name": "light"
+      },
+      {
+        "conclusion": "success",
+        "failures": [],
+        "id": 135224479811,
+        "name": "shards (hosted)"
+      },
+      {
+        "conclusion": "success",
+        "failures": [],
+        "id": 135224479833,
+        "name": "shards (changes)"
+      },
+      {
+        "conclusion": "success",
+        "failures": [],
+        "id": 135224479836,
+        "name": "shards (browser)"
+      },
+      {
+        "conclusion": "success",
+        "failures": [],
+        "id": 135224479863,
+        "name": "shards (agents)"
+      },
+      {
+        "conclusion": "success",
+        "failures": [],
+        "id": 135224479866,
+        "name": "shards (intake)"
+      },
+      {
+        "conclusion": "success",
+        "failures": [],
+        "id": 135224479873,
+        "name": "shards (runtime)"
+      },
+      {
+        "conclusion": "success",
+        "failures": [],
+        "id": 135224479948,
+        "name": "shards (transfer)"
+      },
+      {
+        "conclusion": "success",
+        "failures": [],
+        "id": 135224480006,
+        "name": "shards (triage)"
+      },
+      {
+        "conclusion": "success",
+        "failures": [],
+        "id": 135230700735,
+        "name": "full-push-proof"
+      },
+      {
+        "conclusion": "skipped",
+        "failures": [],
+        "id": 135230703531,
+        "name": "nightly-proof"
+      },
+      {
+        "conclusion": "failure",
+        "failures": [
+          "Require the selected coverage and its proof"
+        ],
+        "id": 135230739264,
+        "name": "verify"
+      }
+    ],
+    "generated_view_exception": true
+  },
+  "prior_verify": {
+    "head": "6052b446cc8f6da18f0620fb4e2dabf6bed7cbf3",
+    "run": 44410867187,
+    "attempt": 2,
+    "status": "completed",
+    "conclusion": "failure",
+    "failed_job_ids": {
+      "contract-docs": 135191580884,
+      "verify": 135196705868
+    },
+    "cause": "generated contract view freshness and dependent aggregate"
+  },
+  "publication_scan": {
+    "head": "320cf77b3bd92226c0fac0ea03c4b96ad05501a8",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "custody": "fleet lander"
+  },
+  "candidate_run_site": "pending main landing",
+  "observed_remote_main": "df8efefe31a9813ebc5aa3f0c2a319c19e2667d7",
+  "observed_remote_candidate": "320cf77b3bd92226c0fac0ea03c4b96ad05501a8"
+}
