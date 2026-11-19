@@ -1,0 +1,208 @@
+{
+  "head": "8318782d57443960556d505e27230ea371ab7ffd",
+  "remote_branch": "cloud/sd-oncall-c-f289-pc1",
+  "main_before_push": "df8efefe31a9813ebc5aa3f0c2a319c19e2667d7",
+  "saved_head": "278752e5c9b0060e2a589dc2c2b1f0dc58412f0c",
+  "saved_verify": 44417255890,
+  "local": {
+    "verify_build": {
+      "command": "node scripts/verify-oncall-build.mjs",
+      "exit": 0
+    },
+    "runtime": {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "exit": 0,
+      "probes": [
+        "PROBE BASE-AGENT-003 4 declaration autonomous: first completed MCP write link -> full incident equals the write and protected native state; direct autonomous read; zero approvals, unchanged write outcome and native custody, paging OFF, zero outbound requests",
+        "PROBE BASE-AGENT-003 4 declaration held: first completed MCP write link -> full incident equals the write and protected native state; separate open standard read review; zero approvals, unchanged write outcome and native custody, paging OFF, zero outbound requests"
+      ]
+    },
+    "browser": {
+      "command": "node tests/agent-door-browser.mjs",
+      "exit": 0,
+      "probes": [
+        "Browser proof alert-declaration-autonomous-person 1440: fits=true serious/critical=0 undersized-controls=0",
+        "Browser proof alert-declaration-autonomous-person 390: fits=true serious/critical=0 undersized-controls=0",
+        "Browser proof alert-declaration-autonomous-agent 1440: fits=true serious/critical=0 undersized-controls=0",
+        "Browser proof alert-declaration-autonomous-agent 390: fits=true serious/critical=0 undersized-controls=0",
+        "Browser proof alert-declaration-held-person 1440: fits=true serious/critical=0 undersized-controls=0",
+        "Browser proof alert-declaration-held-person 390: fits=true serious/critical=0 undersized-controls=0",
+        "Browser proof alert-declaration-held-agent 1440: fits=true serious/critical=0 undersized-controls=0",
+        "Browser proof alert-declaration-held-agent 390: fits=true serious/critical=0 undersized-controls=0",
+        "PROBE BASE-AGENT-003 4 declaration browser: returned incidents under both policies -> saved declaration, copied runbook and agent attribution shown at 1440 and 390; zero outbound requests"
+      ],
+      "screenshots": [
+        {
+          "file": "agent-door-alert-declaration-autonomous-agent-1440.png",
+          "sha256": "b939b346256a443d080786c1d06cfdeb9587a9c9e2506077ce28312fb7c3cf45",
+          "dimensions": "1440 1106"
+        },
+        {
+          "file": "agent-door-alert-declaration-autonomous-agent-390.png",
+          "sha256": "c0a49d46f5ff5a4f0e0c73296c2acc58a1f7218a7d292265238957d9e11c6e5a",
+          "dimensions": "390 1076"
+        },
+        {
+          "file": "agent-door-alert-declaration-held-agent-1440.png",
+          "sha256": "17011f729f684c1f56726413ee59cc2f02c6a1a8a5cdf010fd5cfa841df47805",
+          "dimensions": "1440 1106"
+        },
+        {
+          "file": "agent-door-alert-declaration-held-agent-390.png",
+          "sha256": "fa100a0be4badf7804f129732bd8dfaac1a745f907d4241d73d662f77235fa8a",
+          "dimensions": "390 1076"
+        }
+      ]
+    },
+    "views": {
+      "command": "node src/base/contract-docs.mjs write && node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "restored_from_main": true
+    },
+    "lock": {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock then check",
+      "exit": 0
+    },
+    "migration_ledger": "No migration change.",
+    "new_test_registrations": 0,
+    "publication_scan": "Pending Mac lander."
+  },
+  "verify": {
+    "conclusion": "failure",
+    "event": "push",
+    "head_sha": "8318782d57443960556d505e27230ea371ab7ffd",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44428208231",
+    "id": 44428208231,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "verify_jobs": [
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135238469512,
+      "name": "plan",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135238625416,
+      "name": "build",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Check the generated contract documents"
+      ],
+      "id": 135238625693,
+      "name": "contract-docs",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "id": 135238627000,
+      "name": "light",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135239949981,
+      "name": "shards (agents)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135239949995,
+      "name": "shards (browser)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135239950011,
+      "name": "shards (hosted)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135239950029,
+      "name": "shards (triage)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135239950048,
+      "name": "shards (transfer)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135239950084,
+      "name": "shards (changes)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135239950234,
+      "name": "shards (intake)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135239950418,
+      "name": "shards (runtime)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135245770242,
+      "name": "full-push-proof",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "id": 135245772772,
+      "name": "nightly-proof",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Require the selected coverage and its proof"
+      ],
+      "id": 135245808713,
+      "name": "verify",
+      "status": "completed"
+    }
+  ],
+  "VERIFY_REPRODUCED": [
+    {
+      "head": "278752e5c9b0060e2a589dc2c2b1f0dc58412f0c",
+      "job": "contract-docs (135200908034)",
+      "command": "node src/base/contract-docs.mjs check",
+      "test": "Check the generated contract documents",
+      "exit": 1,
+      "failure": "ACCEPTANCE.md: generated content differs; run contract-docs write."
+    },
+    {
+      "head": "278752e5c9b0060e2a589dc2c2b1f0dc58412f0c",
+      "job": "verify (135208726834)",
+      "command": "set -euo pipefail\ntest \"$PLAN\" = success\ncase \"$CONTRACT_DOCS:$SKIP\" in\n  success:false|skipped:true) ;;\n  *) exit 1 ;;\nesac\ncase \"$PUSH_PROOF:$NIGHTLY_PROOF\" in\n  *failure*|*cancelled*) exit 1 ;;\nesac\ncase \"$COVERAGE\" in\n  reuse) test \"$SKIP\" = true && test \"$BUILD\" = skipped && test \"$SHARDS\" = skipped && test \"$LIGHT\" = skipped ;;\n  light) test \"$SKIP\" = false && test \"$LIGHT\" = success && test \"$BUILD\" = skipped && test \"$SHARDS\" = skipped ;;\n  full) test \"$LIGHT\" = skipped && { { test \"$BUILD\" = success && test \"$SHARDS\" = success; } || { test \"$HAS_SHARDS\" = false && test \"$BUILD\" = skipped && test \"$SHARDS\" = skipped; }; } ;;\n  *) exit 1 ;;\nesac",
+      "test": "Require the selected coverage and its proof",
+      "exit": 1,
+      "failure": "The contract-docs result was failure and SKIP was false."
+    }
+  ]
+}

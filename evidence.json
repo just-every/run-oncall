@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "a7ee0cf8b098b8877117e99580ad72cf8095f17c",
+      "bytes": 10132,
+      "path": "REPORT.md",
+      "sha256": "c99679f3a44453f42bf9ea95efb3b8b71a67b21bbeb8f3225109a23aadeaf4fb"
+    },
+    {
+      "blob": "aa1e84538ef904ee3aa6f623d8d8e098c8b6315a",
+      "bytes": 170911,
+      "path": "agent-door-alert-declaration-autonomous-agent-1440.png",
+      "sha256": "b939b346256a443d080786c1d06cfdeb9587a9c9e2506077ce28312fb7c3cf45"
+    },
+    {
+      "blob": "6e5073e72703bd80d2b9446bc7b692b15004a3ca",
+      "bytes": 71251,
+      "path": "agent-door-alert-declaration-autonomous-agent-390.png",
+      "sha256": "c0a49d46f5ff5a4f0e0c73296c2acc58a1f7218a7d292265238957d9e11c6e5a"
+    },
+    {
+      "blob": "99cef88ced01997a8a1c08d2010e1fea2709aa79",
+      "bytes": 169836,
+      "path": "agent-door-alert-declaration-held-agent-1440.png",
+      "sha256": "17011f729f684c1f56726413ee59cc2f02c6a1a8a5cdf010fd5cfa841df47805"
+    },
+    {
+      "blob": "57c58cd533c21cdcd7ac90efd40866a359880d49",
+      "bytes": 69867,
+      "path": "agent-door-alert-declaration-held-agent-390.png",
+      "sha256": "fa100a0be4badf7804f129732bd8dfaac1a745f907d4241d73d662f77235fa8a"
+    },
+    {
+      "blob": "cd16af25d256fb7beeaf4db3eb66b0f14b6956e2",
+      "bytes": 7723,
+      "path": "receipt.json",
+      "sha256": "07fb40dd8e64ab28e2542294f16dc43ff416424426c9821af453162693041d6e"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f289-pc1",
+  "product_head": "8318782d57443960556d505e27230ea371ab7ffd",
+  "ref": "refs/heads/evidence/sd-oncall-c-f289-pc1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f289-pc1"
+}
