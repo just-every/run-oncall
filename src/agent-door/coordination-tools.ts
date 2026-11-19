@@ -146,9 +146,9 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
           && nativeInput.type === 'transition' && nativeInput.state === 'mitigating'
           && incident?.state === 'acknowledged' && !protectedRecords(incident) && !nativeInput.evidence
         const result = command(current.state, actor, nativeInput, new Date(ctx.now()).toISOString(),context) as Incident
-        const auditKind = operation.name === 'incidents.declare' ? 'command.declare'
-          : evidenceFreeMitigation ? 'command.transition' : operation.name
-        nativeAudit(env, ctx, auditKind, result.id)
+        const auditType = operation.name === 'incidents.declare' ? 'command.declare'
+          : operation.name === 'incidents.acknowledge' || evidenceFreeMitigation ? 'command.transition' : operation.name
+        nativeAudit(env, ctx, auditType, result.id)
         if(operation.name==='incidents.acknowledge')auditIdentity(env.DB,{namedMember:{kind:'member',id:String(args.member)}})
         await persistNative(env, current)
         const uri = `oncall://incidents/${result.id}`

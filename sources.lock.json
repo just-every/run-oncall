@@ -144,7 +144,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "e81455facf3f248df0cbc448d09d1857ef76771fe96da26ff43b39ee49c40e5d",
+      "sha256": "270e287fdd8f239b0e89c31bf0500bfbe4eaec43b39c70d460127609634b7a65",
       "executable": false
     },
     "agent-surface.json": {
@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "406a76757a3fa5e383e90a34531783fd12e5440cf53ff0c979072c792f28385f",
+      "sha256": "ef5a095a53b2aa033db53ee00e1438ff79d201703d01f028cb06844f41ee2977",
       "executable": false
     },
     "DEMO.md": {
@@ -1700,7 +1700,7 @@
       "executable": false
     },
     "src/agent-door/coordination-tools.ts": {
-      "sha256": "2c45a0a2e763a1d8e494e71a6fba8297145e71402c1eebe0632e3d8312dfbb9e",
+      "sha256": "4d466c0bb854e6a74be6644dba56ff97ed7995e30f101e784e19c673505201a3",
       "executable": false
     },
     "src/agent-door/deadlines.ts": {
@@ -6524,7 +6524,7 @@
       "executable": false
     },
     "tests/agent-door-browser.mjs": {
-      "sha256": "b713fbab9189bd66aa22bc814e5a2ca3c92bd2055610a6b7011f91fb4005245e",
+      "sha256": "4f9b0261f8b9ca2f5890342e95a36061bd72fac9ed9bca3116e2f22dc1d31a1f",
       "executable": false
     },
     "tests/agent-door-runtime.mjs": {
@@ -6788,11 +6788,11 @@
       "executable": false
     },
     "tests/oncall-agent-fixtures.mjs": {
-      "sha256": "d66b377d5c6a3be6f9f55166862c76946f776c155ea927f04ea11ba96e95d6e2",
+      "sha256": "6cf11b3696186408d0a983015ae184abb0c9803f34213df64e2a76caece73f8f",
       "executable": false
     },
     "tests/oncall-agent-flow.mjs": {
-      "sha256": "ea2ff993a352a4ea5a2036c1386c6d326bfe5e0e3afeef974bc39523ba619dbd",
+      "sha256": "a7cddfc9acee41c655e859b63b6bacc048a9f98e5e8ba076cded8a96e6b637ba",
       "executable": false
     },
     "tests/oncall-agent-incident-replay.mjs": {
