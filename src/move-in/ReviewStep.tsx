@@ -8,6 +8,6 @@ export function ReviewStep({ preview, bytes, filename, busy, back, next }: { pre
   {preview.conflict&&<p role="alert">{preview.conflict}</p>}
   <CompatibilityReview preview={preview} busy={busy} hasJob={false} />
   {download&&<a className="move-in-footer" href={download} download={filename}>Download read data</a>}
-  <div className="move-in-actions"><button disabled={busy} onClick={back}>Back to connection</button><button className="scheduling-primary" disabled={busy} onClick={next}>Import paused</button></div>
+  <div className="move-in-actions"><button disabled={busy} onClick={back}>Back to connection</button><button className="scheduling-primary" disabled={busy||Boolean(preview.conflict)} onClick={next}>Import paused</button></div>
  </section>
 }

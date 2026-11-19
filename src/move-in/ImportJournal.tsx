@@ -16,6 +16,7 @@ export function ImportJournal({jobs,job,busy,select,resume,reconcile,undo}:{jobs
  {job&&<div role="status"><h3>Import journal</h3><p>{label(job)} · {job.checkpoint}/{job.total} source objects processed</p>
  {job.exportedAt&&<p>Export date from filename: {new Date(job.exportedAt).toLocaleDateString([], {month:'short',day:'numeric',year:'numeric'})}</p>}
  {job.comparisons?.map((comparison:string)=><p key={comparison}>Coverage compared from {comparison.split(' → ').map(day).join(' to ')}</p>)}
+ {job.uncompared?.length>0&&<p>Coverage was not compared for {job.uncompared.join(', ')}: the file did not include the source’s final coverage list.</p>}
  {job.approval&&<details><summary>Approval details</summary><p style={{overflowWrap:'anywhere'}}>{job.approval}</p></details>}
  {resumable(job)&&<button disabled={busy} onClick={resume}>{job.state==='rolling_back'?'Continue rollback':'Resume import'}</button>}
  {job.door&&job.state==='completed'&&<button disabled={busy} onClick={reconcile}>Check imported data</button>}

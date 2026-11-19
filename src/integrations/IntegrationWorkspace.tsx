@@ -3,10 +3,11 @@ import { request } from '../useWorkspace';
 import { AddIntegration } from './AddIntegration';
 import { IntegrationsHome } from './IntegrationsHome';
 import { SourcePage } from './SourcePage';
+import { CreatedSource, type Created } from './CreatedSource';
 import { integrationKinds, sourcePath, sourcesFrom, type IntegrationProps, type NativeDefinition, type SourceRecord } from './catalog';
 
 export function IntegrationWorkspace(props: IntegrationProps & { path: string; panels?: ReactNode; emailPage?: (source: SourceRecord) => ReactNode }) {
-  const [native, setNative] = useState<NativeDefinition[]>([]), [failed, setFailed] = useState(false), [loaded, setLoaded] = useState(!props.admin);
+  const [native, setNative] = useState<NativeDefinition[]>([]), [failed, setFailed] = useState(false), [loaded, setLoaded] = useState(!props.admin), [created, setCreated] = useState<Created>();
   async function read() {
     try { const value = await request('/api/sources'); setNative(value.sources); setFailed(false); setLoaded(true); }
     catch { setFailed(true); setLoaded(true); }
@@ -18,7 +19,10 @@ export function IntegrationWorkspace(props: IntegrationProps & { path: string; p
     return result;
   };
   const tail = props.path.replace(/^\/settings\/integrations\/?/, '').replace(/\/$/, '');
-  if (tail === 'new' || tail.startsWith('new/')) return <AddIntegration {...props} run={run} kind={tail.slice(4)} />;
+  // The key is shown once from memory. The address moves to the saved source so a refresh reopens it, not a blank form.
+  const keep = (made: Created) => { setCreated(made); history.replaceState(history.state, '', made.path); };
+  if (created && decodeURIComponent(props.path) === decodeURIComponent(created.path)) return <CreatedSource created={created} onOpen={() => setCreated(undefined)} />;
+  if (tail === 'new' || tail.startsWith('new/')) return <AddIntegration {...props} run={run} kind={tail.slice(4)} onCreated={keep} />;
   const readFailure = failed ? <p role="alert">Some sources could not be read. <button type="button" onClick={read}>Retry</button></p> : undefined;
   if (!tail) return <IntegrationsHome {...props} native={native} readFailure={readFailure} />;
   let id: string;

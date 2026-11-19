@@ -10,7 +10,7 @@ export function ReplayComparison({ result, members, events = [] }: { result: Res
   function decision(value: Decision | null, people: Member[]) {
     if (!value) return <p>No accepted event with this identity.</p>;
     const owner = value.owner ? people.find(member => member.id === value.owner)?.name ?? `Unavailable member` : "Unassigned";
-    return <><p><strong>{value.action === 'route' ? 'Routed' : value.action === 'suppress' ? 'Suppressed' : 'Unassigned'}</strong> · {owner}</p><p>{value.reason}</p><DecisionExplanation decision={value} events={events} ownerView/><span>{value.policy ? "Service response policy" : "No matching policy"}</span></>;
+    return <><p><strong>{value.action === 'route' ? 'Routed' : value.action === 'suppress' ? 'Suppressed' : 'Unassigned'}</strong> · {owner}</p><p>{value.reason}</p><DecisionExplanation decision={value} events={events} ownerView/><span>{value.policy ? `Service response policy${value.version != null ? ` · rule version ${value.version}` : ""}` : "No matching policy"}</span></>;
   }
   return <section aria-label="Replay comparison">
     <p>{result.decisions.length} events compared. No records changed.</p>

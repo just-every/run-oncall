@@ -13,7 +13,7 @@ import { IMPORT_DOOR_KEY } from './door-key'
 import { targets } from './target'
 import type { Vendor } from './source'
 import { sourceRefusal, withdrawUpload } from './saved-file-refusals'
-import { alreadyImported, changedSinceImport, Refusal, supersededBy } from './refusals'
+import { alreadyImported, changedSinceImport, heldObjects, Refusal, supersededBy } from './refusals'
 import { expireInterruptedImports, importAttempt } from './import-lifecycle'
 
 // The owner's move-in screen imports through Base's owner-session door, the
@@ -94,7 +94,7 @@ async function reviewAnswer(db: D1Database, vendor: string, principal: string, s
  for (const item of items) classification[item.disposition === 'mapped-with-differences' ? 'mappedWithDifferences' : item.disposition === 'rejected' ? 'rejected' : 'mapped']++
  // Say now what apply would refuse later: people or schedules an earlier import already put in Oncall.
  const held = await alreadyImported(db, snapshot.plan, vendor, undefined, importFiles(db, principal)).catch(() => null)
- return { ...(plan as object), items, classification, ...(held ? { conflict: held.message } : {}) }
+ return { ...(plan as object), items, classification, ...(held ? { conflict: held.message, conflicts: await heldObjects(db, snapshot.plan).catch(() => []) } : {}) }
 }
 
 /** The owner's own unconfirmed preview, if any source holds one: a reload keeps the review it was showing. */

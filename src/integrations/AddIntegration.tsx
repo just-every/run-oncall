@@ -1,26 +1,25 @@
 import { useEffect, useState } from 'react';
 import { Form } from '../forms';
 import { request } from '../useWorkspace';
-import { RequestExample } from './RequestExample';
-import { OneTimeSecret } from './OneTimeSecret';
+import { CreatedSource, type Created } from './CreatedSource';
 import { addPath, integrationKinds, newIdentity, privateKey, sourcePath, type IntegrationKind, type IntegrationProps } from './catalog';
 import './integrations.css';
 
-export function AddIntegration(props: IntegrationProps & { kind?: string }) {
+export function AddIntegration(props: IntegrationProps & { kind?: string; onCreated?: (created: Created) => void }) {
   const kind = props.kind && props.kind in integrationKinds ? props.kind as IntegrationKind : undefined;
   if (!kind) return <section className="panel padded integrations" aria-label="Add integration"><h2>Add integration</h2><ul className="integration-rows">{Object.entries(integrationKinds).map(([key, name]) => <li key={key}><a href={addPath(key)}>{name}</a></li>)}</ul></section>;
   return <IntegrationCreate key={kind} {...props} kind={kind} />;
 }
 
-export function IntegrationCreate({ state, admin, busy, run, kind }: IntegrationProps & { kind: IntegrationKind }) {
+export function IntegrationCreate({ state, admin, busy, run, kind, onCreated }: IntegrationProps & { kind: IntegrationKind; onCreated?: (created: Created) => void }) {
   const [name, setName] = useState(''), [service, setService] = useState(state.services[0]?.id ?? ''), [mode, setMode] = useState('bearer');
   const [provider, setProvider] = useState('native'), [repository, setRepository] = useState('');
   const [domain, setDomain] = useState<string | null | undefined>(), [readError, setReadError] = useState(false);
-  const [created, setCreated] = useState<{ value: string; path: string; source: string }>();
+  const [created, setCreated] = useState<Created>();
   const readEmail = () => { setReadError(false); request('/api/email').then(value => setDomain(value.domain)).catch(() => setReadError(true)); };
   useEffect(() => { if (admin && kind === 'email') readEmail(); }, [admin, kind]);
   if (!admin) return <section className="panel padded integrations"><h2>{integrationKinds[kind]}</h2><p>An administrator can add integrations.</p></section>;
-  if (created) return <section className="panel padded integrations"><h2>{name}</h2><OneTimeSecret value={created.value} readable={kind!=='email'} label={kind === 'email' ? 'Private address' : 'Private key'} />{kind === 'events' && <RequestExample source={created.source} service={state.services.find(s => s.id === service)!} mode={mode} defaultOpen />}<a className="integration-link" href={created.path}>Open source</a></section>;
+  if (created) return <CreatedSource created={created} />;
   return <section className="panel padded integrations" aria-label="Create integration">
     <a className="integration-link" href="/settings/integrations">‹ Integrations</a><h2>{integrationKinds[kind]}</h2>
     {!state.services.length ? <p><a href="/settings/services">Add a service first</a></p> : kind === 'email' && domain === undefined ? <p role="status">{readError ? <>Email settings could not be read. <button onClick={readEmail}>Retry</button></> : 'Reading email settings…'}</p> : kind === 'email' && !domain ? <p>Inbound email needs a receiving domain. <a href="/docs/compatible-intake#integration-email">Set up email routing</a></p> : <Form busy={busy} label={kind === 'email' ? 'Create address' : 'Create source'} onSubmit={async () => {
@@ -39,7 +38,10 @@ export function IntegrationCreate({ state, admin, busy, run, kind }: Integration
         path = '/api/intake/sources'; namespace = 'intake:'; data = { id, name, provider: kind, service, key, revision: 0 };
       }
       const result = await run(path, data, 'Integration created');
-      if (result) setCreated({ value: kind === 'email' ? key + '@' + domain : key, path: sourcePath(namespace + id), source: id });
+      if (result) {
+        const made: Created = { name, kind, mode, service: state.services.find(s => s.id === service), value: kind === 'email' ? key + '@' + domain : key, path: sourcePath(namespace + id), source: id };
+        if (onCreated) onCreated(made); else setCreated(made);
+      }
       return false;
     }}>
       <label className="field">Name<input aria-label="Name" autoFocus required maxLength={kind === 'events' ? 80 : kind === 'email' ? 100 : 200} value={name} onChange={e => setName(e.target.value)} /></label>

@@ -37,6 +37,7 @@ export function MoveIn({admin,connect,request}:{admin:boolean;connect:boolean;re
  const failures=useActionFailure()
  const [failureDetails,setFailureDetails]=useState<unknown>(null)
  const door=doorClient(vendor)
+ const uncompared:string[]=(jobs.find(saved=>saved.id===job?.id)??job)?.uncompared??[]
 
  const run=async<T,>(action:()=>Promise<T>,options:RunOptions={}):Promise<T|null>=>{
   pending.current++;setBusy(true)
@@ -60,14 +61,16 @@ export function MoveIn({admin,connect,request}:{admin:boolean;connect:boolean;re
 
  const load=async()=>{
   const version=++loadVersion.current
-  let objects:any,latest:any,options:any,histories:any[]
-  try { [objects,histories,options]=await Promise.all([request('/api/move-in/objects'),Promise.all(Object.keys(vendorNames).map(source=>request('/api/move-in/jobs?vendor='+source))),request('/api/move-in/adoption')]);latest=histories[Object.keys(vendorNames).indexOf(vendor)] } catch(error){if(version!==loadVersion.current||vendor!==activeVendor.current)return;throw error}
+  let objects:any,options:any,histories:any[]
+  try { [objects,histories,options]=await Promise.all([request('/api/move-in/objects'),Promise.all(Object.keys(vendorNames).map(source=>request('/api/move-in/jobs?vendor='+source))),request('/api/move-in/adoption')]) } catch(error){if(version!==loadVersion.current||vendor!==activeVendor.current)return;throw error}
   if(version!==loadVersion.current||vendor!==activeVendor.current)return
-  setChoices(options);setRows(objects);setJobs(latest)
+  // The journal lists imports from every source, so a refresh never hides an earlier import made from another one.
+  const all=histories.flat()
+  setChoices(options);setRows(objects);setJobs(all)
   // Names remain in erasable journal custody. Read every source so a reload or
   // another Source selection cannot replace distinct integration names.
   setLabels(Object.assign({},...histories.flatMap(history=>[...history].reverse().map((saved:any)=>saved.labels??{}))))
-  setJob((current:any)=>current?latest.find((saved:any)=>saved.id===current.id)??null:null)
+  setJob((current:any)=>current?all.find((saved:any)=>saved.id===current.id)??null:null)
  }
  const refreshAfterSave=async()=>{try{await load()}catch(error){failures.show(transportError(error),{read:true,target:null})}}
  const checkImport=async(planId:string)=>{
@@ -139,11 +142,12 @@ export function MoveIn({admin,connect,request}:{admin:boolean;connect:boolean;re
  <p>{reconciliation.ok?'Matched. The imported data agrees with the saved export.':'The native data differs from the saved export. Review these differences before continuing.'}</p>
  <p>{reconciliation.counts.sourceRecords} {reconciliation.counts.sourceRecords===1?'object':'objects'} in the file, {reconciliation.counts.present+reconciliation.counts.explained} accounted for ({reconciliation.counts.nativeTargets} created in Oncall, the rest kept as source evidence)</p>
  {!reconciliation.ok&&<ul>{reconciliation.sourceIds.filter(row=>row.status==='mismatched').map(row=><li key={JSON.stringify([row.kind,row.sourceId])}>{row.kind}: {row.sourceId}<ul>{row.conflicts?.map(conflict=><li key={conflict}>Changed or missing native object: {conflict}</li>)}</ul></li>)}</ul>}
+ {reconciliation.ok&&uncompared.length>0&&<p>Who is on call was not compared for {uncompared.join(', ')}: the file did not include the source’s final coverage list. The records agree with the export, but the coverage is not verified.</p>}
  {reconciliation.ok&&<p>Review imported data below. Adopt a schedule when you’re ready.</p>}
  </>:<p>Check the native data before treating this import as complete. Use Check imported data in the saved journal to try again.</p>}
  <button onClick={()=>{setStep(1);setPreview(null);setReconciliation(null)}}>Read another account or file</button></section>}
  {(jobs.length>0||job)&&<section className="scheduling-panel move-in-data">
- <ImportJournal jobs={jobs} job={job} busy={busy} select={selected=>{setJob(selected);setReconciliation(null);setStep(1)}} reconcile={()=>{void run(()=>checkImport(job.door.planId),{read:true,retryInput:true})}} resume={()=>{
+ <ImportJournal jobs={jobs} job={job} busy={busy} select={selected=>{if(selected?.vendor){setVendor(selected.vendor);setSourceChoice(selected.vendor==='pagerduty'||selected.vendor==='opsgenie'?selected.vendor:'file')};setJob(selected);setReconciliation(null);setStep(1)}} reconcile={()=>{void run(()=>checkImport(job.door.planId),{read:true,retryInput:true})}} resume={()=>{
   const selected=job
   const hasPlan=Boolean(selected?.door?.planId)
   void run(async()=>{

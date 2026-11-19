@@ -24,10 +24,12 @@ export async function readMoveInJournal(id:string,context:D1ImportContext) {
   const comparison=(effect.value as any).equivalence
   return comparison?.from&&comparison?.to?[`${comparison.from} → ${comparison.to}`]:[]
  }))]
+ // Schedules whose source coverage list was not in the file: imported, but never compared with who the source says is on call.
+ const uncompared=[...new Set(plan.entries.filter(entry=>!entry.erased).flatMap(entry=>entry.effects.filter(effect=>effect.targetKind==='schedule'&&(effect.value as any).equivalence?.status==='not-supplied').map(()=>String((entry.source.payload as any)?.name??(entry.source.payload as any)?.summary??entry.source.sourceId))))]
  const labels=Object.fromEntries(plan.entries.filter(entry=>!entry.erased).flatMap(entry=>{
   const value=entry.source.payload as any
   const name=value?.name??value?.fullName??value?.summary
   return typeof name==='string'?entry.effects.map(effect=>[effect.targetKind+':'+effect.targetId,name]):[]
  }))
- return {...job,schedules,files,exportedAt,comparisons,labels}
+ return {...job,schedules,files,exportedAt,comparisons,uncompared,labels}
 }

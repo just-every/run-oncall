@@ -29,6 +29,14 @@ export function IncidentPage(incidentProps: IncidentProps) {
   const after = useMutateAfterSaves(incidentProps.mutate);
   const props = {...incidentProps, mutate: after.mutate, busy: incidentProps.busy || after.waiting};
   const Sheet = action ? sheets[action] : null;
+  // The review's "Add a follow-up" link opens this incident with its follow-up form already showing.
+  useEffect(() => {
+    const url = new URL(location.href), wanted = url.searchParams.get('action');
+    if (!wanted) return;
+    url.searchParams.delete('action');
+    history.replaceState(history.state, '', url.pathname + url.search + url.hash);
+    if (incidentActions.some(([id]) => id === wanted)) setAction(wanted as IncidentAction);
+  }, [props.incident.id]);
   useEffect(() => {
     const heading = document.querySelector<HTMLElement>('.incident-head h1');
     heading?.focus({preventScroll: true});

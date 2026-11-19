@@ -40,6 +40,11 @@ async function holders(db: D1Database, effects: TargetEffect[], job?: string): P
 }
 const vendorName = (namespace: string) => namespace === 'pagerduty' ? 'PagerDuty' : namespace === 'opsgenie' ? 'Opsgenie' : namespace
 
+/** The objects in this plan that an earlier import already holds, for flagging them in the preview. */
+export async function heldObjects(db: D1Database, plan: ImportPlan, job?: string) {
+ return (await holders(db, plan.entries.flatMap(entry => entry.effects).filter(effect => effect.expectedRevision === undefined), job)).map(h => ({ kind: h.kind, id: h.id }))
+}
+
 /** TARGET_REVISION_CONFLICT: the file brings people or schedules an earlier import already put in Oncall; name them and that import
  * by its provider and file, and give the way out that still works. A catch-up's replacements carry the revision their own import
  * wrote, so only new objects are checked. Null when nothing is held. `files` names an import's saved files; the preview and the
