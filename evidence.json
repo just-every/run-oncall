@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "blob": "a75f292609bb4494639bbe104940e6314b17ea88",
+      "bytes": 3352,
+      "path": "HANDOFF_RECEIPT.json",
+      "sha256": "cff8b5c41e5b2e9fbb3ccdcce0f27614a6f4eb275f96365c1c08078159d5940a"
+    },
+    {
+      "blob": "bc71e5fdbd47458ab1fe5cc5feea1a64bcc42a33",
+      "bytes": 2040,
+      "path": "PLAN_CHECK.txt",
+      "sha256": "08d3da379246cbad0ca6e2f72ab8a42d3024a90d02861c6977f4c4820cfe867d"
+    },
+    {
+      "blob": "5e2b6c626a8947e1c1fb21597ceae7697a86e67a",
+      "bytes": 2304,
+      "path": "REPORT.md",
+      "sha256": "84c74c7cedcd31ea5dbb8a67dc6650a0d14584cf2b9e8a08b85539ee225d2e32"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-ci-changes-split-c2",
+  "product_head": "03c3b2a27c311b525a4202451c4b873f4b5d7e2e",
+  "ref": "refs/heads/evidence/sd-oncall-ci-changes-split-c2",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-ci-changes-split-c2"
+}

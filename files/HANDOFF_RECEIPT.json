@@ -1,0 +1,101 @@
+{
+  "candidate_audit": {
+    "count": 1,
+    "fleet_author": true,
+    "fleet_committer": true,
+    "trailers": 0
+  },
+  "checks": {
+    "Contract documents current with zero prose errors and warnings": "pass",
+    "Git diff whitespace check passed": "pass",
+    "Plan check passed with full coverage, push tier, and all nine shards": "pass",
+    "Shard matrix validation passed": "pass",
+    "Workflow permissions check passed": "pass"
+  },
+  "clause_status_changes": [],
+  "contract_counts": {
+    "after": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41,
+      "total": 101
+    },
+    "before": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41,
+      "total": 101
+    }
+  },
+  "destination_verify_latest": {
+    "conclusion": "success",
+    "event": "push",
+    "head_branch": "cloud/sd-oncall-ci-changes-split-c2",
+    "head_sha": "03c3b2a27c311b525a4202451c4b873f4b5d7e2e",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44623235127",
+    "id": 44623235127,
+    "name": "Verify",
+    "path": ".github/workflows/verify.yml",
+    "run_attempt": 1,
+    "status": "completed"
+  },
+  "destination_verify_polls": [
+    {
+      "conclusion": "success",
+      "head_sha": "03c3b2a27c311b525a4202451c4b873f4b5d7e2e",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44623235127",
+      "status": "completed"
+    }
+  ],
+  "observed_refs_after": {
+    "refs/heads/cloud/sd-oncall-ci-changes-split-1": "03c3b2a27c311b525a4202451c4b873f4b5d7e2e",
+    "refs/heads/cloud/sd-oncall-ci-changes-split-c2": "03c3b2a27c311b525a4202451c4b873f4b5d7e2e",
+    "refs/heads/main": "071c74a352196f6778eb3b2942c351b4cf1e0ace"
+  },
+  "observed_refs_before": {
+    "refs/heads/cloud/sd-oncall-ci-changes-split-1": "03c3b2a27c311b525a4202451c4b873f4b5d7e2e",
+    "refs/heads/main": "071c74a352196f6778eb3b2942c351b4cf1e0ace"
+  },
+  "product_branch": "cloud/sd-oncall-ci-changes-split-c2",
+  "product_commits_created": 0,
+  "product_head": "03c3b2a27c311b525a4202451c4b873f4b5d7e2e",
+  "product_parent": "071c74a352196f6778eb3b2942c351b4cf1e0ace",
+  "pull_request_created": false,
+  "push": {
+    "status": "published",
+    "transport": "fleet cloud push guard"
+  },
+  "recorded_at_utc": "2026-11-19T21:59:04.223410+00:00",
+  "repository": "just-every/run-oncall",
+  "tag": "sd-oncall-ci-changes-split-c2",
+  "workflow_runs_discovered": {
+    "runs": [
+      {
+        "conclusion": null,
+        "event": "push",
+        "head_branch": "cloud/sd-oncall-ci-changes-split-c2",
+        "head_sha": "03c3b2a27c311b525a4202451c4b873f4b5d7e2e",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44623235127",
+        "id": 44623235127,
+        "name": "Verify",
+        "path": ".github/workflows/verify.yml",
+        "run_attempt": 1,
+        "status": "in_progress"
+      },
+      {
+        "conclusion": "success",
+        "event": "push",
+        "head_branch": "cloud/sd-oncall-ci-changes-split-1",
+        "head_sha": "03c3b2a27c311b525a4202451c4b873f4b5d7e2e",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44614800229",
+        "id": 44614800229,
+        "name": "Verify",
+        "path": ".github/workflows/verify.yml",
+        "run_attempt": 2,
+        "status": "completed"
+      }
+    ],
+    "total_count": 2
+  },
+  "working_tree_clean": true
+}

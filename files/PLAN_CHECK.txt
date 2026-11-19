@@ -1,0 +1,40 @@
+Product SHA 03c3b2a27c311b525a4202451c4b873f4b5d7e2e
+Parent SHA 071c74a352196f6778eb3b2942c351b4cf1e0ace
+Before (push shards / nightly shards / explicit test commands) 8 / 0 / 21
+After (push shards / nightly shards / explicit test commands) 9 / 0 / 21
+The 21 explicit test commands and their environment overrides are identical.
+The hosted lane retains its separate verification command.
+Push shards from scripts/verify-shards.json
+- runtime ( runtime, member-browser )
+- intake ( intake )
+- agents ( agents )
+- browser ( browser )
+- hosted ( hosted, browser-settings, agent-browser )
+- transfer ( transfer )
+- changes ( changes, imports )
+- activation ( activation )
+- triage ( triage )
+Nightly shards 0
+
+$ node scripts/verify-ci.mjs --check-workflows
+Workflow permissions and shared artifact names are valid.
+Exit 0
+
+$ node scripts/verify-oncall.mjs --matrix all
+{"include":[{"name":"runtime","browser":true,"timeout":22},{"name":"intake","browser":false,"timeout":15},{"name":"agents","browser":false,"timeout":15},{"name":"browser","browser":true,"timeout":15},{"name":"hosted","browser":true,"timeout":15},{"name":"transfer","browser":true,"timeout":15},{"name":"changes","browser":false,"timeout":15},{"name":"activation","browser":false,"timeout":15},{"name":"triage","browser":false,"timeout":15}]}
+Exit 0
+
+$ node scripts/verify-oncall.mjs --plan
+coverage=full
+skip=false
+reason=Evidence lookup or comparison unavailable
+readers=[]
+tier=push
+matrix={"include":[{"name":"runtime","browser":true,"timeout":22},{"name":"intake","browser":false,"timeout":15},{"name":"agents","browser":false,"timeout":15},{"name":"browser","browser":true,"timeout":15},{"name":"hosted","browser":true,"timeout":15},{"name":"transfer","browser":true,"timeout":15},{"name":"changes","browser":false,"timeout":15},{"name":"activation","browser":false,"timeout":15},{"name":"triage","browser":false,"timeout":15}]}
+has_shards=true
+Exit 0
+
+$ node src/base/contract-docs.mjs check
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+Exit 0
