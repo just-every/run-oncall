@@ -1,6 +1,7 @@
 import {readableErasure,coveredSwap,nextCoverageBrowser} from './stranger-trip-steps.mjs'
 import {localPart,mail,recoveryRules,savedEmailBundle} from './email-fixtures.mjs'
 import {durableSnapshot,ruleDeclarationAuditFault} from './worker.mjs'
+import {alertTriageTimeFixture} from './triage-time-fixture.mjs'
 import {pathToFileURL} from 'node:url'
 import {resolve} from 'node:path'
 import {isDeepStrictEqual} from 'node:util'
@@ -1013,23 +1014,26 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
  await page.setViewportSize({width:1440,height:1000});
  const triage=page.getByRole('region',{name:'Incident triage',exact:true});
  const ids=rows=>rows.map(row=>row.id).sort();
- const compare=async(query,expected,{navigate=true}={})=>{
+ const compare=async(query,expected,{navigate=true,ordered=false}={})=>{
+  const rowIds=rows=>ordered?rows.map(row=>row.id):ids(rows);
   const api=await call('/api/triage?'+new URLSearchParams({...query,limit:'100'}));
-  assert.equal(api.total,expected.length);assert.deepEqual(ids(api.items),ids(expected));
+  assert.equal(api.total,expected.length);assert.deepEqual(rowIds(api.items),rowIds(expected));
   if(navigate)await page.goto(origin+'/incidents?'+new URLSearchParams(Object.entries(query).map(([key,value])=>['triage_'+key,value])));
   await triage.locator('.triage-count').getByText(`${expected.length} matching ${query.kind==='alerts'?'alert-only items':'incidents'}`,{exact:true}).waitFor();
   for(let loaded=25;loaded<expected.length;loaded+=25){
    await triage.getByRole('button',{name:'Load more incidents',exact:true}).click();
    await page.waitForFunction(count=>document.querySelectorAll('[data-triage-id]').length>=count,Math.min(expected.length,loaded+25));
   }
-  await page.waitForFunction(expected=>{
-   const actual=[...document.querySelectorAll('[data-triage-id]')].map(row=>row.dataset.triageId).sort();
+  await page.waitForFunction(({expected,ordered})=>{
+   const actual=[...document.querySelectorAll('[data-triage-id]')].map(row=>row.dataset.triageId);
+   if(!ordered)actual.sort();
    return JSON.stringify(actual)===JSON.stringify(expected);
-  },ids(expected));
-  assert.deepEqual(await triage.locator('[data-triage-id]').evaluateAll(rows=>rows.map(row=>row.dataset.triageId).sort()),ids(api.items));
+  },{expected:rowIds(expected),ordered});
+  const displayed=await triage.locator('[data-triage-id]').evaluateAll(rows=>rows.map(row=>({id:row.dataset.triageId})));
+  assert.deepEqual(rowIds(displayed),rowIds(api.items));
   return api;
  };
- const capture=async (name,reloadRow)=>{
+ const capture=async (name,reloadRow,showFilters=false)=>{
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'triage fits the desktop viewport');
   const axe=await new AxeBuilder({page}).include('[aria-label="Incident triage"]').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();
   assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
@@ -1038,6 +1042,7 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
    if(width===390&&reloadRow){
     await page.reload();
     await triage.locator(`[data-triage-id="${reloadRow}"]`).waitFor();
+    if(showFilters)await triage.getByText('Filter and sort incidents',{exact:true}).click();
    }
    await triage.screenshot({path:`${directory}/OC-060-${name}-${width}.png`});
   }
@@ -1165,6 +1170,60 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
  assert.deepEqual(pagingRecords(await call('/api/paging/state')),assignmentPaging);
  assert.deepEqual(await outbound(),assignmentOutbound);
  console.log('PROBE OC-060 acceptance 1 web: bulk Reassign to Unassigned cleared one of two owned alert-only items. Reloaded Assigned to me and Unassigned rows and counts agree with protected HTTP and retain the attributed clear. Paging custody unchanged, zero outbound requests, reloaded screens captured at 1440 and 390.');
+ try {
+  const chronology=await alertTriageTimeFixture({
+   call, setTime, service:services[0], actor,
+   admit:async(path,input,key,status)=>{
+    const response=await context.request.post(origin+path,{headers:{authorization:'Bearer '+key},data:input});
+    assert.equal(response.status(),status,path);
+    return response.json();
+   },
+  });
+  const {query,times,recovered,coordinated,untouched}=chronology;
+  const beforeReads=snapshot(),pagingBeforeReads=await call('/api/paging/state');
+  const applicationRequests=[];
+  const recordExternal=request=>{if(/^https?:/.test(request.url())&&new URL(request.url()).origin!==origin)applicationRequests.push(request.url());};
+  page.on('request',recordExternal);
+  try {
+   const compareOrder=(filters,expected)=>compare({...query,...filters},expected,{navigate:false,ordered:true});
+   await page.goto(origin+'/incidents');
+   await triage.getByLabel('Triage items',{exact:true}).selectOption('alerts');
+   await triage.getByLabel('Search incidents',{exact:true}).fill(query.q);
+   const filterPanel=triage.getByText('Filter and sort incidents',{exact:true});
+   await filterPanel.click();
+   await triage.getByLabel('Filter service',{exact:true}).selectOption(query.service);
+   await compareOrder({},[untouched,coordinated,recovered]);
+   const sort=triage.getByLabel('Sort incidents',{exact:true});
+   await sort.selectOption({label:'Recently updated'});
+   await compareOrder({sort:'updated'},[coordinated,recovered,untouched]);
+   const from=triage.getByLabel('Updated from',{exact:true}),before=triage.getByLabel('Updated before',{exact:true});
+   const minute=instant=>instant.slice(0,16);
+   await from.fill(minute(times.recovered));
+   await before.fill(minute(times.laterHuman));
+   await compareOrder({sort:'updated',updatedAfter:times.recovered,updatedBefore:times.laterHuman},[recovered]);
+   await from.fill(minute(times.untouchedOpened));
+   await before.fill(minute(times.recovered));
+   await compareOrder({sort:'updated',updatedAfter:times.untouchedOpened,updatedBefore:times.recovered},[untouched]);
+   await before.fill(minute(times.duplicate));
+   await from.fill(minute(times.recovered));
+   const filters={sort:'updated',updatedAfter:times.recovered,updatedBefore:times.duplicate};
+   await compareOrder(filters,[coordinated,recovered]);
+   const shared=new URL(page.url());
+   for(const [key,value] of Object.entries({...query,...filters}))assert.equal(shared.searchParams.get('triage_'+key),value);
+   await page.goto(shared.href);
+   await compareOrder(filters,[coordinated,recovered]);
+   await filterPanel.click();
+   await expect(sort).toHaveValue('updated');
+   await expect(from).toHaveValue(minute(times.recovered));
+   await expect(before).toHaveValue(minute(times.duplicate));
+   await capture('updated-range',coordinated.id,true);
+   assert.deepEqual(await call('/api/paging/state'),pagingBeforeReads);
+   assert.deepEqual(snapshot(),beforeReads,'chronology controls and shared URL preserve durable records, revisions and permanent audit');
+   assert.deepEqual(await outbound(),[]);
+   assert.deepEqual(applicationRequests,[]);
+  } finally {page.off('request',recordExternal);}
+  console.log('PROBE OC-060 acceptance 1 web chronology: alert-only controls and shared URL return exact protected HTTP order and time cohorts. Created sorting, both updated boundaries, replay cutoff, durable records, revisions, audit, paging and zero outbound pass. Changed filter view captured at 1440 and 390.');
+ } finally {await setTime(null);}
  await page.goto(origin+'/incidents');
 }
 
