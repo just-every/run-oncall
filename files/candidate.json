@@ -1,0 +1,258 @@
+{
+  "base_ci": {
+    "run_site": {
+      "conclusion": "success",
+      "head_sha": "eeb1ac5166482fc1a2a54e68deb587080f72d95e",
+      "id": 44585615890,
+      "status": "completed"
+    },
+    "verify": {
+      "conclusion": "success",
+      "head_sha": "eeb1ac5166482fc1a2a54e68deb587080f72d95e",
+      "id": 44585616014,
+      "status": "completed"
+    }
+  },
+  "base_head": "eeb1ac5166482fc1a2a54e68deb587080f72d95e",
+  "candidate_ci": {
+    "classification": "Plan, build, all eight shards and full push proof succeeded. The contract-docs job (135804656819) failed only on the deliberately retained generated ACCEPTANCE.md. The final verify job (135816517134) failed its dependent contract-docs condition. Both job logs confirmed this, and the contract check reproduced the same result locally. This is the fleet generated-view exception for READY.",
+    "conclusion": "failure",
+    "event": "push",
+    "head_sha": "7a20b6b326c81c99ff9711e90c7ac1c68dbb3344",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44593189787",
+    "id": 44593189787,
+    "jobs": [
+      {
+        "conclusion": "success",
+        "id": 135804419513,
+        "name": "plan",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "id": 135804656768,
+        "name": "build",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "id": 135804656819,
+        "name": "contract-docs",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "id": 135804659787,
+        "name": "light",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "id": 135807778927,
+        "name": "shards (agents)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "id": 135807778975,
+        "name": "shards (browser)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "id": 135807779012,
+        "name": "shards (changes)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "id": 135807779014,
+        "name": "shards (intake)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "id": 135807779033,
+        "name": "shards (triage)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "id": 135807779046,
+        "name": "shards (runtime)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "id": 135807779052,
+        "name": "shards (transfer)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "id": 135807779069,
+        "name": "shards (hosted)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "id": 135816451857,
+        "name": "full-push-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "id": 135816454788,
+        "name": "nightly-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "id": 135816517134,
+        "name": "verify",
+        "status": "completed"
+      }
+    ],
+    "status": "completed"
+  },
+  "checks": [
+    {
+      "candidate_bytes": true,
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "candidate_bytes": true,
+      "command": "ONCALL_TRIAGE_PART=storm cloud_run timeout 1200 node tests/triage.mjs",
+      "exit": 0,
+      "observation": "PROBE OC-061 2 merged incident impact: signed-in Checkout stakeholder reads degraded after declaration and merge, then operational after evidenced canonical resolution; alias and attribution retained, reads write nothing, paging OFF unchanged and zero outbound requests."
+    },
+    {
+      "candidate_bytes": true,
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium cloud_run node tests/member-coordination-browser.mjs",
+      "exit": 0,
+      "observation": "PASS OC-061 merged Checkout status: stakeholder sees degraded after declaration and merge, then operational after evidence and summary; protected status agrees, reads are write-free, paging custody is unchanged, and no outbound requests were attempted."
+    },
+    {
+      "candidate_bytes": true,
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "candidate_bytes": true,
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "candidate_bytes": true,
+      "command": "emitted Worker stale-cache probe",
+      "exit": 0,
+      "observation": "PASS legacy cached status probe: stale persisted degraded value reads as operational for the signed-in stakeholder with no workspace or audit writes and zero outbound requests."
+    },
+    {
+      "candidate_bytes": true,
+      "command": "node src/base/contract-docs.mjs write then check",
+      "exit": 0,
+      "observation": "One generated view refreshed, contract prose 0 errors and 0 warnings"
+    },
+    {
+      "candidate_bytes": true,
+      "command": "git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md",
+      "exit": 0
+    },
+    {
+      "candidate_bytes": true,
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock then check",
+      "exit": 0
+    },
+    {
+      "candidate_bytes": true,
+      "command": "git diff origin/main...HEAD --check",
+      "exit": 0
+    }
+  ],
+  "clause": {
+    "after": "PARTIAL",
+    "before": "PARTIAL",
+    "id": "OC-061",
+    "judgment_cells_changed": false,
+    "observed_points": [
+      2
+    ]
+  },
+  "committed_view_check": {
+    "command": "node src/base/contract-docs.mjs check",
+    "exit": 1,
+    "observation": "ACCEPTANCE.md: generated content differs; run contract-docs write."
+  },
+  "counts": {
+    "after": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41
+    },
+    "before": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41
+    }
+  },
+  "local_tools": {
+    "browser": "system Chromium",
+    "node": "24.19.0",
+    "pnpm": "10.12.4"
+  },
+  "migrations_touched": false,
+  "predecessors": {
+    "f272": {
+      "advertised": "eff87aeb96794c01e1db7801a673c734b38342c9",
+      "landed_counterpart": "fdfc6d4c4dbd8698a14978b9c875886f96b6883d"
+    },
+    "f298": {
+      "advertised": "8b9d6a9c069e39ccb0527f5c3f17ad8dc328c16d",
+      "landed_counterpart": "26b686df336d403204c21fabe83ea8862cb5505a"
+    }
+  },
+  "product_branch": "cloud/sd-oncall-c-f307",
+  "product_head": "7a20b6b326c81c99ff9711e90c7ac1c68dbb3344",
+  "product_push": "advertised",
+  "publication_scan_candidate": "pending guarded landing",
+  "pull_request": null,
+  "recorded_utc": "2026-11-19T19:18:52+00:00",
+  "repository": "just-every/run-oncall",
+  "run_site_candidate": "pending guarded landing",
+  "save_head": "836105ee73c4fafb8d9f373861956e64d991d095",
+  "schema": 1,
+  "screens": [
+    {
+      "bytes": 54494,
+      "file": "oc061-merged-impact-1440.png",
+      "sha256": "92f388479ea1ce9586792a35b84458ce26efac232c6b445dd743ddd4a3c7072a",
+      "state": "degraded",
+      "width": 1440
+    },
+    {
+      "bytes": 54614,
+      "file": "oc061-resolved-impact-1440.png",
+      "sha256": "48bae67c2d380c1b2df29e6c902cf52a0f781c3e9a36f0deffa611c5c1d1876e",
+      "state": "operational",
+      "width": 1440
+    },
+    {
+      "bytes": 43862,
+      "file": "oc061-merged-impact-390.png",
+      "sha256": "914eb08006fbb7364c3670ede2ab3bee4fac131ea145c09fa36a0b19b003324e",
+      "state": "degraded",
+      "width": 390
+    },
+    {
+      "bytes": 43960,
+      "file": "oc061-resolved-impact-390.png",
+      "sha256": "7f619ff61cbc279d209ea9cbd32621edf60e55166a3d24c4dc8a627a6fcf850f",
+      "state": "operational",
+      "width": 390
+    }
+  ],
+  "source_lock_sha256": "1fc2a74a6a0353bcc2f4ee329e2e3ba095ed1099d4b48790ffba7f0fb0dc2a41",
+  "tag": "sd-oncall-c-f307"
+}
