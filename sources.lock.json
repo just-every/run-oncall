@@ -144,7 +144,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "3d585016f593d1be71eff5c5f89e29a0e5aa6e27b09786c5248fdf581c131775",
+      "sha256": "065ed71a697127cdc220a66533fd071dc446bf00864992ba5f144ad94905bb45",
       "executable": false
     },
     "agent-surface.json": {
@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "3c1268af4c44493e7812b8c9d457413631092c84c3eb379b4da7616310d3bf60",
+      "sha256": "000c047c7d97a4343b2469990caf8676d3e72c2a29cdf7e9091786276458f205",
       "executable": false
     },
     "DEMO.md": {
@@ -1872,7 +1872,7 @@
       "executable": false
     },
     "src/app/IncidentTriage.tsx": {
-      "sha256": "d51a1a9941439dad3f02900fa2e0d792e216d4713355d412f2c788824a8ace57",
+      "sha256": "c83864353879b9b82714bc6cd12661b9a6e5fb45a46736be5eac4ad7f4d99187",
       "executable": false
     },
     "src/app/lobbyPaths.ts": {
@@ -6888,11 +6888,11 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "866e2b561a72191165f3f0caf45a967d6547dd5a90f0de1ef51e51713403e7ae",
+      "sha256": "7e5f889918046a34e4aab44c47035909958a721ffb0411f173be69e10ebbc3ad",
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "da09ed70a1867b1ad49e0e0f924df62074e590fb3fa3cb57f2b3e844d23918d7",
+      "sha256": "fb01b08d3b4c82a9687c0648a0c07f99a8a7bfe7069ec17a2288d0fe8ad1c8b0",
       "executable": false
     },
     "tests/readable-names-browser.mjs": {
