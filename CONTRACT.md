@@ -722,6 +722,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 **Observed (18 November 2026, Run Edit Run fleet).** A signed-in responder started with two alert-only records routed to them and cleared one using bulk reassignment. Protected triage filters returned the untouched alert for Mine and the explicit responder filter. Unassigned returned the cleared alert with a null assignee, a triggered status and the attributed operation history. The existing Reassign control also cleared an owned alert in the browser. Reloaded Assigned to me and Unassigned views matched the protected results, with captures at 1440 and 390 pixels. The original owner and admission evidence were retained. Paging custody was unchanged and the outbound ledger was empty.
 
+**Observed (19 November 2026, Run Edit Run fleet).** For service-bound alert-only results, the updated-time range and Recently updated order use the latest retained event acceptance or human coordination for each generation. Protected reads placed a later human acknowledgment first, an older generation with a later source recovery second, and its untouched newer generation third. An exact replay retained the original acceptance. The lower bound included its boundary and the upper bound excluded it. Creation order and cursor traversal were retained. The signed-in controls and reopened shared URL returned the same ordered results as protected HTTP, with captures at 1440 and 390 pixels. Reads preserved durable records, revisions, permanent audit and paging custody, with zero outbound requests.
+
 #### OC-079 — Bulk triage actions with per-item results
 
 *Tier:* Core · *From:* OC-060
