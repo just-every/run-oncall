@@ -1,0 +1,263 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f310-pc1",
+  "head": "ad3f36af15cbbe05ec068a8fdea2a9131d1f75c7",
+  "mainBase": "071c74a352196f6778eb3b2942c351b4cf1e0ace",
+  "branchAdvertised": true,
+  "mainAtHandoff": "e4123dded5d6a9f058880669ca10213bcfbe2646",
+  "productPublication": "Named branch was already advertised at the tested head before this continuation.",
+  "beforeAndAfterCounts": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "contract": {
+    "id": "OC-058",
+    "before": "PARTIAL",
+    "after": "PARTIAL",
+    "provenPoints": [
+      1
+    ],
+    "additionalLocalEvidence": [
+      6
+    ]
+  },
+  "checks": [
+    {
+      "command": "node scripts/verify-oncall-build.mjs",
+      "exit": 0,
+      "includes": [
+        "first-party check",
+        "production build",
+        "typecheck"
+      ]
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=core node tests/runtime.mjs",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=machines node tests/runtime.mjs",
+      "exit": 0,
+      "observation": "OC-058 scheduled source recovery passed, together with deadline, failure, restart and cancellation coverage"
+    },
+    {
+      "command": "node tests/member-coordination-browser.mjs",
+      "exit": 0,
+      "observation": "After installing the pinned Playwright browser for the rer readiness check. The previous attempt failed during browser discovery. The actual journey launched system Chromium."
+    },
+    {
+      "command": "node tests/.cloud-oc058-proof.mjs",
+      "exit": 0,
+      "observation": "One-time leg based on the existing member journey. Source generation, browser closure and both screen widths are recorded in the browser receipt."
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "phase": "generated views before restore"
+    },
+    {
+      "command": "git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    }
+  ],
+  "verifyReproduced": [
+    {
+      "head": "ad3f36af15cbbe05ec068a8fdea2a9131d1f75c7",
+      "job": "contract-docs",
+      "command": "node src/base/contract-docs.mjs check",
+      "test": "Check the generated contract documents",
+      "exit": 1,
+      "failure": "ACCEPTANCE.md: generated content differs; run contract-docs write."
+    },
+    {
+      "head": "ad3f36af15cbbe05ec068a8fdea2a9131d1f75c7",
+      "job": "verify",
+      "command": "env PLAN=success CONTRACT_DOCS=failure BUILD=success SHARDS=success LIGHT=skipped PUSH_PROOF=success NIGHTLY_PROOF=skipped COVERAGE=full HAS_SHARDS=true SKIP=false bash -ex /tmp/sd-oncall-verify-coverage.sh",
+      "test": "Require the selected coverage and its proof",
+      "exit": 1,
+      "failure": "The contract-docs coverage case exits 1 for failure:false. With the fresh-view result success:false the same step exits 0."
+    }
+  ],
+  "verify": [
+    {
+      "conclusion": "failure",
+      "event": "push",
+      "head_branch": "cloud/sd-oncall-c-f310",
+      "head_sha": "ad3f36af15cbbe05ec068a8fdea2a9131d1f75c7",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44623417157",
+      "id": 44623417157,
+      "name": "Verify",
+      "status": "completed",
+      "successfulShards": {
+        "browser": 135912296630,
+        "agents": 135912296698,
+        "runtime": 135912296705,
+        "changes": 135912296724,
+        "triage": 135912296741,
+        "transfer": 135912296750,
+        "intake": 135912296757,
+        "hosted": 135912297125
+      },
+      "successfulFullPushProof": 135920169361,
+      "generatedViewOnlyFailure": true
+    },
+    {
+      "conclusion": "failure",
+      "event": "push",
+      "head_branch": "cloud/sd-oncall-c-f310-pc1",
+      "head_sha": "ad3f36af15cbbe05ec068a8fdea2a9131d1f75c7",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44630131089",
+      "id": 44630131089,
+      "name": "Verify",
+      "status": "completed",
+      "jobs": [
+        {
+          "conclusion": "success",
+          "failed": [],
+          "id": 135934236222,
+          "name": "plan",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "failed": [],
+          "id": 135934413075,
+          "name": "build",
+          "status": "completed"
+        },
+        {
+          "conclusion": "failure",
+          "failed": [
+            "Check the generated contract documents"
+          ],
+          "id": 135934413447,
+          "name": "contract-docs",
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "failed": [],
+          "id": 135934416276,
+          "name": "light",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "failed": [],
+          "id": 135935505880,
+          "name": "shards (transfer)",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "failed": [],
+          "id": 135935505886,
+          "name": "shards (intake)",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "failed": [],
+          "id": 135935505960,
+          "name": "shards (runtime)",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "failed": [],
+          "id": 135935506008,
+          "name": "shards (agents)",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "failed": [],
+          "id": 135935506026,
+          "name": "shards (hosted)",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "failed": [],
+          "id": 135935506036,
+          "name": "shards (triage)",
+          "status": "completed"
+        },
+        {
+          "conclusion": "cancelled",
+          "failed": [],
+          "id": 135935506050,
+          "name": "shards (changes)",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "failed": [],
+          "id": 135935506170,
+          "name": "shards (browser)",
+          "status": "completed"
+        },
+        {
+          "conclusion": "failure",
+          "failed": [
+            "Require the selected coverage and its proof"
+          ],
+          "id": 135943560481,
+          "name": "verify",
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "failed": [],
+          "id": 135943561789,
+          "name": "nightly-proof",
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "failed": [],
+          "id": 135943561865,
+          "name": "full-push-proof",
+          "status": "completed"
+        }
+      ],
+      "cancelledJob": {
+        "id": 135935506050,
+        "name": "shards (changes)",
+        "started_at": "2026-11-19T22:38:22Z",
+        "completed_at": "2026-11-19T22:53:38Z",
+        "conclusion": "cancelled",
+        "configuredJobTimeoutMinutes": 15
+      },
+      "archiveError": {
+        "command": "gh run view 44630131089 --repo just-every/run-oncall --job 135943560481 --log-failed",
+        "exit": 1,
+        "failure": "failed to get run log: zip: not a valid zip file",
+        "httpStatus": null
+      }
+    }
+  ],
+  "readyBasis": {
+    "run": 44623417157,
+    "generatedViewException": true
+  },
+  "landing": {
+    "publicationScan": "pending on fleet lander",
+    "runSite": "pending on fleet lander",
+    "merged": false
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "productHead": "ad3f36af15cbbe05ec068a8fdea2a9131d1f75c7",
+  "sourceGeneration": "synthetic-oncall-58-generation",
+  "serviceVisibility": "public",
+  "browserContextsDuringRecoveryAndTick": 0,
+  "snoozeStartedAt": "2026-11-19T12:00:00.000Z",
+  "recoveredAt": "2026-11-19T12:05:00.000Z",
+  "dueAt": "2026-11-19T12:15:00.000Z",
+  "incidentState": "acknowledged",
+  "deadlineCount": 1,
+  "deadlineState": "cancelled",
+  "deadlineObligation": null,
+  "deadlineFiredEntries": 0,
+  "paging": "OFF",
+  "pagingRecordsChanged": false,
+  "workerOutboundRequests": 0,
+  "browserOutboundRequests": 0,
+  "anonymousStateStatus": 401,
+  "screens": [
+    {
+      "width": 1440,
+      "row": "Snooze · Cancelled · due Nov 19, 2026, 12:15 PM UTC (GMT+0) · Source recovered; no re-trigger obligation",
+      "cancellationText": "snooze: 15 minutes, due 2026-11-19T12:15:00.000Z: Source recovered; no re-trigger obligation; paging OFF",
+      "cancellationActor": "Deadline scheduler",
+      "cancellationAt": "2026-11-19T12:05:00.000Z"
+    },
+    {
+      "width": 390,
+      "row": "Snooze · Cancelled · due Nov 19, 2026, 12:15 PM UTC (GMT+0) · Source recovered; no re-trigger obligation",
+      "cancellationText": "snooze: 15 minutes, due 2026-11-19T12:15:00.000Z: Source recovered; no re-trigger obligation; paging OFF",
+      "cancellationActor": "Deadline scheduler",
+      "cancellationAt": "2026-11-19T12:05:00.000Z"
+    }
+  ]
+}
