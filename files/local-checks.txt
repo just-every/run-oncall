@@ -1,0 +1,62 @@
+Exact product HEAD: 407a14046e0d793e174c7df84985510f176e0330
+2026-11-19T23:07:10Z
+
+node --check tests/append-only-merge.mjs
+Exit 0
+
+node tests/append-only-merge.mjs
+Append-only browser assertions survive merge and rebase exactly once and parse successfully
+Elapsed 0.206s
+Exit 0
+
+Git attributes in the candidate
+tests/agent-door-browser.mjs: merge: union
+tests/oncall-agent-flow.mjs: merge: union
+tests/oncall-agent-fixtures.mjs: merge: union
+tests/product-browser-journey.mjs: merge: union
+tests/triage.mjs: merge: union
+tests/append-only-merge.mjs: merge: unspecified
+
+Mutation with all five union rules removed in a scratch copy, expected failure
+CONFLICT (content): Merge conflict in tests/agent-door-browser.mjs
+
+Verification plan
+Plan registrations: 21 -> 22
+Push shards: 8 -> 8
+The Changes shard invokes node tests/append-only-merge.mjs exactly once.
+Workflow permissions and shared artifact names are valid.
+coverage=full
+tier=push
+matrix={"include":[{"name":"runtime","browser":true,"timeout":22},{"name":"intake","browser":false,"timeout":15},{"name":"agents","browser":false,"timeout":15},{"name":"browser","browser":true,"timeout":15},{"name":"hosted","browser":true,"timeout":15},{"name":"transfer","browser":true,"timeout":15},{"name":"changes","browser":false,"timeout":15},{"name":"triage","browser":false,"timeout":15}]}
+has_shards=true
+
+Contract generator and local build
+Wrote 0 contract documents.
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+> pnpm exec rer check --profile first-party
+> pnpm run build
+build: complete (exit 0)
+> pnpm run typecheck
+The prerequisite pnpm run typecheck and every preparation step finished with exit 0.
+
+Source lock
+Pinned edition-authoring lock and check both exited 0 after the build.
+Source lock digest: 77fe9bda41230ddcb48a78783f53f8834480a5e5f0bd49f36be109676a6360b8
+
+Candidate address audit
+Added-line address matches: (no output).
+Commit message lines containing an at-sign: 0
+Candidate commits: 1
+Merge commits: 0
+
+Published branch
+407a14046e0d793e174c7df84985510f176e0330	refs/heads/cloud/sd-oncall-union-merge-2
+
+Read-only checks repeated on the published commit
+2026-11-19T23:13:13Z
+Workflow permissions and shared artifact names are valid.
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+Pinned source lock check exit 0.
+Git patch whitespace and contract scope checks exit 0.

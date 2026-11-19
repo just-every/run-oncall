@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "blob": "3c3b336d728662e7d11be589cd04998e85434398",
+      "bytes": 4022,
+      "path": "REPORT.md",
+      "sha256": "10f1c713d2fc39b9e56adb488c967d57a05e17ce3efcd6f68b50912a9032988a"
+    },
+    {
+      "blob": "5b0988b63c8af0bb51ea1e8238cca6c9149abbdf",
+      "bytes": 2387,
+      "path": "local-checks.txt",
+      "sha256": "74efe412f39f1bb5a6d3780a081046d605908d066bf903695bcbe8af636b0d92"
+    },
+    {
+      "blob": "5767bd40d93c66d1c6fb30660d6d76e002b82994",
+      "bytes": 608,
+      "path": "verify.json",
+      "sha256": "8c3e5aaa2c61e6ee1ceff6e3e2b6ee20ff99c8028bebde4e2bf4ac5c3d064460"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-union-merge-2",
+  "product_head": "407a14046e0d793e174c7df84985510f176e0330",
+  "ref": "refs/heads/evidence/sd-oncall-union-merge-2",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-union-merge-2"
+}

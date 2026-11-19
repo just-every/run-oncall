@@ -1,0 +1,20 @@
+{
+  "branch": "cloud/sd-oncall-union-merge-2",
+  "calls": 5,
+  "checked_at": "2026-11-19T23:24:35Z",
+  "head": "407a14046e0d793e174c7df84985510f176e0330",
+  "repository": "just-every/run-oncall",
+  "reran_failed_jobs": false,
+  "state": "success",
+  "verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_branch": "cloud/sd-oncall-union-merge-2",
+    "head_sha": "407a14046e0d793e174c7df84985510f176e0330",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44634418757",
+    "id": 44634418757,
+    "name": "Verify",
+    "run_attempt": 1,
+    "status": "completed"
+  }
+}
