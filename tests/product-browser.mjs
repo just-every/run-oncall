@@ -1186,7 +1186,7 @@ try {
  }
  if(focused==='move-in-guide')await providerExport(page,context,1440,triageProof);
  if(['limitations','readiness'].includes(focused))await limitationsBrowser(page,context);
- if(focused==='triage')await triageFiltersBrowser(page,context,{setTime,proof:triageProof});
+ if(focused==='triage')await triageFiltersBrowser(page,context,{setTime,proof:triageProof,stormWidth:process.env.ONCALL_PRODUCT_WIDTH==='390'?390:1440});
  if(!['sender-setup','response-policy','imported-email','events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','workspace-links','alert-run'].includes(focused)){
  await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime,triageProof,worker})
  if(focused!=='accessibility'){

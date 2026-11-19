@@ -989,7 +989,7 @@ export async function scheduleCoordinationBrowser(page,context,width,session,{ow
 
 
 // OC-060 extends the product journey with one populated storm and two low alerts.
-export async function triageFiltersBrowser(page,context,{setTime=async()=>{},proof}={}) {
+export async function triageFiltersBrowser(page,context,{setTime=async()=>{},proof,stormWidth=1440}={}) {
  const origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
  const call=async(path,data,status=200)=>{const response=data===undefined?await context.request.get(origin+path):await context.request.post(origin+path,{headers:{origin},data});assert.equal(response.status(),status,path);return response.json();};
  const actor=(await call('/api/session')).member,prefix='Synthetic triage storm';
@@ -1049,6 +1049,111 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
   }
   await page.setViewportSize({width:1440,height:1000});
  };
+ const checkLateContinuation=async()=>{
+  await page.setViewportSize({width:stormWidth,height:1000});
+  const allQuery=new URLSearchParams({q:prefix});
+  const first=await call('/api/triage?'+allQuery);
+  assert.equal(first.total,50);
+  assert.ok(first.nextCursor,'the initial storm has a second page');
+  const queueQuery=new URLSearchParams({q:prefix,service:services[1].id});
+  const queue=await call('/api/triage?'+queueQuery);
+  assert.equal(queue.total,20);
+  assert.deepEqual(ids(queue.items),ids(storm.slice(30)));
+  assert.equal(queue.nextCursor,null);
+  const more=triage.getByRole('button',{name:'Load more incidents',exact:true});
+  const rowIds=()=>triage.locator('[data-triage-id]').evaluateAll(rows=>rows.map(row=>row.dataset.triageId));
+  const count=triage.locator('.triage-count');
+  const chips=triage.getByRole('list',{name:'Applied filters',exact:true}).getByRole('listitem');
+  const protectedView=async()=>({
+   rows:await rowIds(),
+   count:await count.innerText(),
+   chips:await chips.allTextContents(),
+   url:new URL(page.url()).pathname+new URL(page.url()).search,
+   hasContinuation:await more.isVisible(),
+  });
+  const expectedQueue={
+   rows:queue.items.map(row=>row.id),
+   count:queue.total+' matching incidents',
+   chips:['Service: '+services[1].name+' ×'],
+   url:'/incidents?'+new URLSearchParams({triage_q:prefix,triage_service:services[1].id}),
+   hasContinuation:Boolean(queue.nextCursor),
+  };
+  const oldUrl=origin+'/api/triage?'+allQuery+'&cursor='+encodeURIComponent(first.nextCursor);
+  const held=Promise.withResolvers(),release=Promise.withResolvers();
+  const hold=async route=>{
+   try {
+    assert.equal(route.request().method(),'GET');
+    const response=await route.fetch({timeout:15000});
+    assert.equal(response.status(),200);
+    held.resolve(await response.json());
+    await release.promise;
+    await route.fulfill({response});
+   } catch(error) {
+    held.reject(error);
+    throw error;
+   }
+  };
+  const externalRequests=[];
+  const recordExternal=request=>{
+   if(/^https?:/.test(request.url())&&new URL(request.url()).origin!==origin)externalRequests.push(request.url());
+  };
+  page.on('request',recordExternal);
+  try {
+   await page.goto(origin+'/incidents?'+new URLSearchParams({triage_q:prefix}));
+   await expect(count).toHaveText(first.total+' matching incidents');
+   assert.deepEqual(await rowIds(),first.items.map(row=>row.id));
+   await triage.getByText('Filter and sort incidents',{exact:true}).click();
+   await page.route(url=>url.href===oldUrl,hold,{times:1});
+   try {
+    const [,oldPage]=await Promise.all([
+     page.waitForRequest(request=>request.url()===oldUrl),
+     held.promise,
+     more.click(),
+    ]);
+    assert.equal(oldPage.workspaceRevision,first.workspaceRevision);
+    assert.deepEqual(ids([...first.items,...oldPage.items]),ids(storm));
+    await expect(count).toHaveText('Loading incidents…');
+    await triage.getByLabel('Filter service',{exact:true}).selectOption(services[1].id);
+    await expect(count).toHaveText(expectedQueue.count);
+    assert.deepEqual(await protectedView(),expectedQueue,'the new first page renders before releasing the previous response');
+
+    const late=page.waitForResponse(response=>response.url()===oldUrl);
+    release.resolve();
+    const response=await late;
+    assert.equal(response.status(),200);
+    await response.body();
+    // Give the page a paint after delivery and the application promise handlers.
+    await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+    assert.deepEqual(await protectedView(),expectedQueue,'a late continuation must leave the exact filtered page intact');
+    assert.equal(await triage.locator('.failure-line').count(),0);
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'filtered triage fits the viewport');
+    await triage.screenshot({path:`${directory}/OC-060-late-continuation-${stormWidth}.png`});
+   } finally {
+    release.resolve();
+    await page.unroute(url=>url.href===oldUrl,hold);
+   }
+
+   const paymentQuery=new URLSearchParams({q:prefix,service:services[0].id});
+   const payment=await call('/api/triage?'+paymentQuery);
+   assert.ok(payment.nextCursor,'the current service filter also has a continuation');
+   const paymentTail=await call('/api/triage?'+paymentQuery+'&cursor='+encodeURIComponent(payment.nextCursor));
+   const paymentIds=[...payment.items,...paymentTail.items].map(row=>row.id);
+   await triage.getByLabel('Filter service',{exact:true}).selectOption(services[0].id);
+   await expect(count).toHaveText(payment.total+' matching incidents');
+   assert.deepEqual(await rowIds(),payment.items.map(row=>row.id));
+   await more.click();
+   await expect(triage.locator('[data-triage-id]')).toHaveCount(paymentIds.length);
+   assert.deepEqual(await rowIds(),paymentIds,'the current-query continuation still appends the exact next rows');
+   await expect(count).toHaveText(payment.total+' matching incidents');
+   assert.equal(await more.isVisible(),Boolean(paymentTail.nextCursor));
+   assert.deepEqual(externalRequests,[],'the browser makes zero outbound requests during the read sequence');
+   console.log(`PROBE OC-060 late continuation ${stormWidth}: 50 unfiltered incidents -> 20 exact ordered queue rows retained after the held GET, filter chip and URL retained, no continuation; the payments filter appended its current next page in order.`);
+  } finally {
+   page.off('request',recordExternal);
+   await page.setViewportSize({width:1440,height:1000});
+  }
+ };
+ await checkLateContinuation();
  await compare({q:prefix},storm);
  await compare({q:prefix,service:services[0].id},storm.slice(0,30));
  await compare({q:prefix,service:services[1].id,urgency:'low'},storm.slice(30));
