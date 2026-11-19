@@ -1,0 +1,337 @@
+{
+  "base_main_workflows": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "d376e47b188ba8688ec7413341363fc7723c99dc",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44521933517",
+      "id": 44521933517,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "d376e47b188ba8688ec7413341363fc7723c99dc",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44521933751",
+      "id": 44521933751,
+      "name": "Run site",
+      "status": "completed"
+    }
+  ],
+  "branch": "cloud/sd-oncall-c-f295",
+  "browser_evidence": [
+    {
+      "bytes": 110395,
+      "file": "OC-060-updated-range-1440.png",
+      "sha256": "8a9f854b20bef8efbd4636b717039207ddabc4e57f303b9089d0b4484f05d300"
+    },
+    {
+      "bytes": 111398,
+      "file": "OC-060-updated-range-390.png",
+      "sha256": "8adf9a5ee11116bfc9fb0b253143c1d54413aa000191f3417d78b72071e15bf8"
+    }
+  ],
+  "candidate_verify": {
+    "conclusion": "failure",
+    "event": "push",
+    "head_sha": "c912d12f2dced5b7255890ba7c53fb4cf1474f86",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44525584397",
+    "id": 44525584397,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "candidate_verify_job_logs": [
+    {
+      "command": "gh run view 44525584397 --repo just-every/run-oncall --job 135565367580 --log-failed",
+      "excerpt": [
+        "contract-docs\tCheck the generated contract documents\t2026-11-19T12:38:08.5932265Z ACCEPTANCE.md: generated content differs; run contract-docs write.",
+        "contract-docs\tCheck the generated contract documents\t2026-11-19T12:38:08.6013411Z ##[error]Process completed with exit code 1."
+      ],
+      "exit": 0,
+      "id": 135565367580
+    },
+    {
+      "command": "gh run view 44525584397 --repo just-every/run-oncall --job 135573301265 --log-failed",
+      "excerpt": [
+        "verify\tRequire the selected coverage and its proof\t2026-11-19T12:52:23.9062273Z \u001b[36;1mcase \"$CONTRACT_DOCS:$SKIP\" in\u001b[0m",
+        "verify\tRequire the selected coverage and its proof\t2026-11-19T12:52:23.9065760Z \u001b[36;1mcase \"$PUSH_PROOF:$NIGHTLY_PROOF\" in\u001b[0m",
+        "verify\tRequire the selected coverage and its proof\t2026-11-19T12:52:23.9314979Z   PLAN: success",
+        "verify\tRequire the selected coverage and its proof\t2026-11-19T12:52:23.9315474Z   CONTRACT_DOCS: failure",
+        "verify\tRequire the selected coverage and its proof\t2026-11-19T12:52:23.9315963Z   BUILD: success",
+        "verify\tRequire the selected coverage and its proof\t2026-11-19T12:52:23.9316489Z   SHARDS: success",
+        "verify\tRequire the selected coverage and its proof\t2026-11-19T12:52:23.9317527Z   PUSH_PROOF: success",
+        "verify\tRequire the selected coverage and its proof\t2026-11-19T12:52:23.9319013Z   HAS_SHARDS: true",
+        "verify\tRequire the selected coverage and its proof\t2026-11-19T12:52:23.9545550Z ##[error]Process completed with exit code 1."
+      ],
+      "exit": 0,
+      "id": 135573301265
+    }
+  ],
+  "candidate_verify_jobs": [
+    {
+      "completed_at": "2026-11-19T12:37:45Z",
+      "conclusion": "success",
+      "head_sha": "c912d12f2dced5b7255890ba7c53fb4cf1474f86",
+      "id": 135565155320,
+      "name": "plan",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T12:38:10Z",
+      "conclusion": "failure",
+      "head_sha": "c912d12f2dced5b7255890ba7c53fb4cf1474f86",
+      "id": 135565367580,
+      "name": "contract-docs",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "failure",
+          "name": "Check the generated contract documents",
+          "number": 4
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-19T12:39:28Z",
+      "conclusion": "success",
+      "head_sha": "c912d12f2dced5b7255890ba7c53fb4cf1474f86",
+      "id": 135565367632,
+      "name": "build",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T12:37:45Z",
+      "conclusion": "skipped",
+      "head_sha": "c912d12f2dced5b7255890ba7c53fb4cf1474f86",
+      "id": 135565371194,
+      "name": "light",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T12:52:15Z",
+      "conclusion": "success",
+      "head_sha": "c912d12f2dced5b7255890ba7c53fb4cf1474f86",
+      "id": 135566293083,
+      "name": "shards (transfer)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T12:47:15Z",
+      "conclusion": "success",
+      "head_sha": "c912d12f2dced5b7255890ba7c53fb4cf1474f86",
+      "id": 135566293091,
+      "name": "shards (browser)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T12:48:28Z",
+      "conclusion": "success",
+      "head_sha": "c912d12f2dced5b7255890ba7c53fb4cf1474f86",
+      "id": 135566293135,
+      "name": "shards (changes)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T12:50:27Z",
+      "conclusion": "success",
+      "head_sha": "c912d12f2dced5b7255890ba7c53fb4cf1474f86",
+      "id": 135566293140,
+      "name": "shards (intake)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T12:49:15Z",
+      "conclusion": "success",
+      "head_sha": "c912d12f2dced5b7255890ba7c53fb4cf1474f86",
+      "id": 135566293203,
+      "name": "shards (triage)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T12:50:47Z",
+      "conclusion": "success",
+      "head_sha": "c912d12f2dced5b7255890ba7c53fb4cf1474f86",
+      "id": 135566293205,
+      "name": "shards (hosted)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T12:50:25Z",
+      "conclusion": "success",
+      "head_sha": "c912d12f2dced5b7255890ba7c53fb4cf1474f86",
+      "id": 135566293249,
+      "name": "shards (agents)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T12:46:02Z",
+      "conclusion": "success",
+      "head_sha": "c912d12f2dced5b7255890ba7c53fb4cf1474f86",
+      "id": 135566293343,
+      "name": "shards (runtime)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T12:52:21Z",
+      "conclusion": "success",
+      "head_sha": "c912d12f2dced5b7255890ba7c53fb4cf1474f86",
+      "id": 135573244246,
+      "name": "full-push-proof",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T12:52:15Z",
+      "conclusion": "skipped",
+      "head_sha": "c912d12f2dced5b7255890ba7c53fb4cf1474f86",
+      "id": 135573246171,
+      "name": "nightly-proof",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T12:52:25Z",
+      "conclusion": "failure",
+      "head_sha": "c912d12f2dced5b7255890ba7c53fb4cf1474f86",
+      "id": 135573301265,
+      "name": "verify",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "failure",
+          "name": "Require the selected coverage and its proof",
+          "number": 2
+        }
+      ]
+    }
+  ],
+  "candidate_verify_observed_utc": "2026-11-19T12:52:40+00:00",
+  "counts": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "head": "c912d12f2dced5b7255890ba7c53fb4cf1474f86",
+  "local_checks": [
+    {
+      "command": "node scripts/verify-oncall-build.mjs",
+      "exit": 0,
+      "head": "c912d12f2dced5b7255890ba7c53fb4cf1474f86",
+      "includes": [
+        "rer check --profile first-party",
+        "production build",
+        "typecheck"
+      ],
+      "node": "22.20.0"
+    },
+    {
+      "command": "ONCALL_TRIAGE_PART=bulk node tests/triage.mjs",
+      "exit": 0,
+      "head": "c912d12f2dced5b7255890ba7c53fb4cf1474f86",
+      "node": "22.20.0",
+      "observations": [
+        "PROBE OC-079 acceptance 1 and 2: protected bulk HTTP acknowledged 50 distinct declared incidents with expected revisions, responder attribution and one shared-operation timeline entry each; identical payload continuations completed and exact retry added only a value-free attempt audit.",
+        "PASS held alert revisions: absent through strict restore, first human change advances implicit revision 1 to 2, stale second write refuses 409 without mutation",
+        "PROBE OC-060 acceptance 3: native low alerts -> two stable identities retained over repeated protected reads, one attributed acknowledgment, one explicit human close, acknowledged and resolved views retain history with active source state; anonymous and intake-only reads refused, duplicate intake cannot reopen, revoked intake changes nothing; unchanged paging and zero outbound requests",
+        "PROBE OC-060 acceptance 1 HTTP: two alert-only records routed to the signed-in responder, then one cleared by bulk reassignment. Mine and the explicit responder filter keep one; Unassigned returns the cleared active item with null assignee and attributed history. Admission and paging custody unchanged, zero outbound requests.",
+        "PROBE OC-060 acceptance 1 HTTP chronology: protected responder triage returns later human action, older recovered generation, then untouched newer generation. Exact replay does not move the cutoff; inclusive lower and exclusive upper bounds, creation order, cursors and revisions pass. Durable records, audit and paging unchanged; zero outbound requests.",
+        "PASS OC-079 public bulk completion: revisioned incident snooze and multi-source merge, independent stale refusal and exact replay, attributed atomic merge history, selected and confirmed matching alert-only closes, unchanged source recovery/incident semantics, viewer denial, source-revision fencing, no-timer alert snooze, per-item audit rollback/retry and full archive/restart custody. Paging OFF."
+      ]
+    },
+    {
+      "command": "ONCALL_TRIAGE_PART=storm node tests/triage.mjs",
+      "exit": 0,
+      "head": "c912d12f2dced5b7255890ba7c53fb4cf1474f86",
+      "node": "22.20.0",
+      "observations": [
+        "PROBE OC-060 acceptance 1: protected HTTP on 50 incidents -> exact service, high and low urgency, triggered, declared, acknowledged, snoozed and assigned-to-me IDs; overdue reads preserve all durable rows, audit, paging and zero outbound requests"
+      ]
+    },
+    {
+      "command": "ONCALL_TRIAGE_PART=bounds node tests/triage.mjs",
+      "exit": 0,
+      "identical_product_and_test_bytes": "19c85e457bc942addd88ca9bcbf0f866abc0c3bb",
+      "node": "24.19.0",
+      "observations": [
+        "PROBE OC-079 500 selected: protected bulk HTTP -> 500 unique successful alert resolutions in 250 identical-payload continuations, expected revisions and responder history; completed retry preserves all records and results with one value-free attempt audit; source lifecycle and paging custody unchanged, no incident and zero outbound requests.",
+        "PROBE OC-079 refusal bounds: protected bulk HTTP -> selected count 499 and matching count 999 refuse 409 for confirmation; 501 selected and 1001 matching refuse 400 for the published bound; no application effects and only value-free refusal audit.",
+        "PROBE OC-079 1000 matching: protected bulk HTTP -> 1000 unique successful alert resolutions in 500 identical-payload continuations, expected revisions and responder history; completed retry preserves all records and results with one value-free attempt audit; source lifecycle and paging custody unchanged, no incident and zero outbound requests."
+      ]
+    },
+    {
+      "assertions_width": 1440,
+      "capture_widths": [
+        1440,
+        390
+      ],
+      "command": "ONCALL_PRODUCT_JOURNEY=triage ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/product-browser.mjs",
+      "exit": 0,
+      "head": "c912d12f2dced5b7255890ba7c53fb4cf1474f86",
+      "node": "22.20.0",
+      "observations": [
+        "PROBE OC-060 acceptance 1 web: 50 incidents -> rendered IDs and counts equal protected HTTP for service, urgency, triggered, declared, acknowledged, snoozed, resolved and mine; controls and URL agree; all durable rows, audit and paging unchanged, zero outbound requests",
+        "PROBE OC-060 acceptance 3 web: two native low alerts -> retained explicit low urgency across reloads, separate attributed acknowledgment and close, retained acknowledged and resolved history despite duplicate intake and source revocation, active source state, unchanged paging and zero outbound requests; changed screens captured once at 1440 and 390",
+        "PROBE OC-060 acceptance 1 web: bulk Reassign to Unassigned cleared one of two owned alert-only items. Reloaded Assigned to me and Unassigned rows and counts agree with protected HTTP and retain the attributed clear. Paging custody unchanged, zero outbound requests, reloaded screens captured at 1440 and 390.",
+        "PROBE OC-060 acceptance 1 web chronology: alert-only controls and shared URL return exact protected HTTP order and time cohorts. Created sorting, both updated boundaries, replay cutoff, durable records, revisions, audit, paging and zero outbound pass. Changed filter view captured at 1440 and 390.",
+        "Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390"
+      ]
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write and check",
+      "exit": 0,
+      "generated_before_restore": [
+        "ACCEPTANCE.md"
+      ],
+      "restored_from_main": [
+        "ACCEPTANCE.md",
+        "docs/CLAIMS.md"
+      ]
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock and check",
+      "exit": 0,
+      "head": "c912d12f2dced5b7255890ba7c53fb4cf1474f86",
+      "phase": "After restoring generated views"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "diagnostic": "ACCEPTANCE.md: generated content differs; run contract-docs write.",
+      "exit": 1,
+      "head": "c912d12f2dced5b7255890ba7c53fb4cf1474f86",
+      "phase": "Committed candidate"
+    }
+  ],
+  "main_observed_after_candidate_push": {
+    "head": "4eadad478aa00b538a9750a6727306937a4fd54c",
+    "observed_utc": "2026-11-19T13:05:52Z"
+  },
+  "publication_scan": {
+    "commit": "c912d12f2dced5b7255890ba7c53fb4cf1474f86",
+    "complete": null,
+    "findings": null,
+    "historyScanned": null,
+    "status": "Mac lander pending"
+  },
+  "recorded_utc": "2026-11-19T13:08:02+00:00",
+  "regression_control": {
+    "changed_only_the_local_emitted_worker": "Substituted the prior timeline fallback for the computed update timestamp, then restored the build artifact.",
+    "door": "tests/product-browser.mjs through triageFiltersBrowser",
+    "exit": 1,
+    "observed": "The protected HTTP ordered ID comparison failed at tests/product-browser-journey.mjs:1198."
+  },
+  "repository": "just-every/run-oncall",
+  "tag": "sd-oncall-c-f295"
+}
