@@ -1,0 +1,119 @@
+{
+  "base": "071c74a352196f6778eb3b2942c351b4cf1e0ace",
+  "clauses": {
+    "OC-025": {
+      "acceptance": 1,
+      "live_calendar_viewing": "held",
+      "proven_subset": "local own-shifts calendar scope across an accepted swap",
+      "status": "partial"
+    },
+    "counts_after": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41,
+      "total": 101
+    },
+    "counts_before": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41,
+      "total": 101
+    }
+  },
+  "head": "0462eff8318f6e672783d93cce1f6af0cfcb01a8",
+  "landing_disposition": "PUSHED",
+  "local_checks": [
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/verify-ci.mjs --check-workflows",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/verify-oncall.mjs --matrix push",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/verify-oncall.mjs changes",
+      "exit": 0,
+      "observations": [
+        "Journey completed: tests/changes.mjs (34.7s)",
+        "PASS OC-025 own shifts across an accepted swap: same two bearer feeds match protected UTC coverage before and after, only the bounded primary window transfers, no private data or decoy coverage, unchanged assignments and paging across reads, calendar-export audit only, zero outbound requests",
+        "PASS OC-025 secondary service feed: bounded UTC coverage before and after reviewed override, unrelated rota and member data excluded, immediate 404 after revocation, assignments and paging retained, zero outbound requests",
+        "PASS OC-025 public schedule coordination: holder/substitute authority, default admin and none approval, racing acceptance, one effective override, audit rollback, recorded not-deliverable notices, durable reminder settings/due label, three digest-only feed scopes, 20 cap, immediate revocation and unchanged history, strict inactive recovery and overdue cancellation. Paging OFF.",
+        "Activation passed: 40 requirement flow groups",
+        "Journey completed: tests/activation.mjs (316.3s)",
+        "Oncall verification passed: changes",
+        "Journey completed: tests/oncall-agent-erase-subjects.mjs (7.9s)",
+        "Journey completed: tests/oncall-agent-erase-roster.mjs (6.2s)",
+        "Journey completed: tests/triage.mjs [reports journey] (62.6s)",
+        "Oncall verification passed: import-followups"
+      ],
+      "wall_seconds": 428.701
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "condition": "after regenerating views locally",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "condition": "on the committed candidate",
+      "exit": 1,
+      "findings": [
+        "Contract prose: 0 errors, 0 warnings.",
+        "ACCEPTANCE.md: generated content differs; run contract-docs write."
+      ]
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    }
+  ],
+  "node_version": "22.20.0",
+  "previous_repair_head": "aa88b1526410a18c891f0e4b47942f8eb63b4f29",
+  "previous_repair_verify": 44615473833,
+  "published": true,
+  "published_branch_ref": "refs/heads/cloud/sd-oncall-c-f306-pc1",
+  "repository": "just-every/run-oncall",
+  "retained_proof": {
+    "head": "aa88b1526410a18c891f0e4b47942f8eb63b4f29",
+    "observation": "Both commands passed locally on the first repair. The continuation changes shard assignments and the lock, with identical product implementation and test sources.",
+    "tests": [
+      "tests/triage.mjs",
+      "tests/import-door.mjs"
+    ]
+  },
+  "verification": {
+    "conclusion": null,
+    "created_at": "2026-11-19T21:40:36Z",
+    "event": "push",
+    "head_sha": "0462eff8318f6e672783d93cce1f6af0cfcb01a8",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44621149532",
+    "id": 44621149532,
+    "name": "Verify",
+    "status": "in_progress"
+  },
+  "workflow_call_budget": {
+    "maximum": 10,
+    "used": 10
+  }
+}

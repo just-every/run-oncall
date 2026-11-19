@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "blob": "7aae0a9205987f6469883f2b963cc3677c766413",
+      "bytes": 12396,
+      "path": "REPORT.md",
+      "sha256": "c411fd44fc9ee8197e10a9d2996091b866f2e1c8ceabaf6519d1dc920b0decbb"
+    },
+    {
+      "blob": "e8deeae8690069864153dce9e931c5bc09b12652",
+      "bytes": 4346,
+      "path": "receipt.json",
+      "sha256": "ff33bf972a3480436f426839933016adb45d18a9932edd68c3e4051fa86e3995"
+    },
+    {
+      "blob": "12696ccae56168e5e0ef7c9595bde61ba0565816",
+      "bytes": 11818,
+      "path": "repair-1.json",
+      "sha256": "e7213df965d78114801e07fc84a45f6b68c07682ef1073f0a57f80775c5f0b5d"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f306-pc1",
+  "product_head": "0462eff8318f6e672783d93cce1f6af0cfcb01a8",
+  "ref": "refs/heads/evidence/sd-oncall-c-f306-pc1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f306-pc1"
+}
