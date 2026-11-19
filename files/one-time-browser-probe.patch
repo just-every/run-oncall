@@ -1,0 +1,161 @@
+diff --git a/tests/member-coordination-browser.mjs b/tests/member-coordination-browser.mjs
+index c37ba1d..e1f381f 100644
+--- a/tests/member-coordination-browser.mjs
++++ b/tests/member-coordination-browser.mjs
+@@ -1065,6 +1065,156 @@ try {
+  assert.ok(after.timeline.some(e=>e.text===noteText&&e.actor===rosaMember.id),'revocation keeps the attributed history')
+  assert.deepEqual(errors,[])
+  console.log('OC-018 real hosted member coordination persists after reload: on the emitted production Worker a password member acknowledged and noted an incident, reloaded at 1440 and kept attribution; a viewer read it; signed-out, anonymous and revoked sessions got no workspace; paging refused (409)')
++
++ // One-time OC-058 evidence. Exercise the existing signed-in Snooze controls against one native generation.
++ const recoveryResponder={name:'Deadline Responder',password:'synthetic-oncall-58-'+randomBytes(12).toString('hex')}
++ const recoveryMember=ok(await call(owner.page,'/api/members',{...recoveryResponder,role:'responder'}),201)
++ const checkoutService=ok(await call(owner.page,'/api/state')).services.find(s=>s.id==='checkout')
++ const source58='synthetic-oncall-58-browser-source',key58=randomBytes(32).toString('hex')
++ ok(await call(owner.page,'/api/sources',{id:source58,key:key58,scopes:[checkoutService.id],mode:'bearer'}))
++ const launch58=()=>chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM_PATH??process.env.CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox','--use-mock-keychain','--password-store=basic']})
++ const httpSession58=await worker.request('/api/login',recoveryResponder)
++ assert.equal(httpSession58.status,200)
++ const read58=async()=>ok(await worker.request('/api/state',undefined,httpSession58.cookie))
++ const paging58=async()=>{
++  const {workspaceRevision,...paging}=ok(await worker.request('/api/paging/state',undefined,httpSession58.cookie))
++  return paging
++ }
++ const started58=Math.ceil((Date.parse(incident58.deadlines.at(-1).dueAt)+60000)/60000)*60000
++ const recoveryAt58=new Date(started58+5*60000).toISOString()
++ const dueAt58=new Date(started58+15*60000).toISOString()
++ await worker.time(started58)
++ const signal58={
++  source:source58,eventId:'synthetic-oncall-58-browser-trigger',service:checkoutService.id,
++  environment:checkoutService.environment,key:'synthetic-oncall-58-browser-key',
++  generation:'synthetic-oncall-58-browser-generation',intent:'trigger',severity:'warning',
++  title:'Checkout source failure during local snooze',observedAt:new Date(started58).toISOString(),
++ }
++ const receive58=input=>worker.request('/api/ingress/'+source58,input,'',{authorization:'Bearer '+key58})
++ const priorPaging58=await paging58()
++ assert.equal(priorPaging58.paging,'OFF')
++ const trigger58=ok(await receive58(signal58),201)
++ const alert58=(await read58()).alerts.find(a=>a.events.includes(trigger58.id))
++ assert.ok(alert58,'the trigger opens a native alert')
++ const linked58=ok(await call(owner.page,'/api/command',{
++  type:'declare',service:checkoutService.id,title:'Checkout recovery during snooze',
++  severity:'warning',summary:'Investigating a checkout source failure',alerts:[alert58.id],
++ }))
++ await browser.close()
++ browser=await launch58()
++ const session58=await open(1440)
++ const browserOutbound58=[]
++ const watchRequests58=context=>context.on('request',request=>{
++  const url=new URL(request.url())
++  if(/^https?:$/.test(url.protocol)&&url.origin!==worker.origin)browserOutbound58.push(url.origin)
++ })
++ watchRequests58(session58.context)
++ assert.equal((await passwordSignIn(session58.page,recoveryResponder)).id,recoveryMember.id)
++ await openIncident(session58.page,linked58.id)
++ await session58.page.getByRole('button',{name:'Acknowledge',exact:true}).click()
++ await session58.page.locator('.incident-state.state-acknowledged').waitFor()
++ const snooze58=await openIncidentAction(session58.page,'Snooze')
++ await snooze58.getByLabel('Snooze duration (minutes)',{exact:true}).fill('15')
++ await snooze58.getByRole('button',{name:'Snooze incident',exact:true}).click()
++ await snooze58.getByRole('status').filter({hasText:'Snoozed / acknowledgment held until'}).waitFor()
++ await session58.context.close()
++ await browser.close()
++ assert.equal(browser.isConnected(),false)
++ const find58=async()=>(await read58()).incidents.find(i=>i.id===linked58.id)
++ const pending58=await find58()
++ assert.deepEqual(pending58.alerts,[alert58.id])
++ assert.equal(pending58.state,'acknowledged')
++ assert.equal(pending58.commander,recoveryMember.id)
++ const pendingDeadline58=pending58.deadlines.find(d=>d.kind==='snooze'&&d.state==='pending')
++ assert.ok(pendingDeadline58)
++ assert.deepEqual([pendingDeadline58.actor,pendingDeadline58.createdAt,pendingDeadline58.dueAt,pendingDeadline58.minutes],
++  [recoveryMember.id,signal58.observedAt,dueAt58,15])
++ await worker.time(Date.parse(recoveryAt58))
++ const recovered58=ok(await receive58({...signal58,eventId:'synthetic-oncall-58-browser-recover',intent:'recover',observedAt:recoveryAt58}),201)
++ const recoveredState58=await read58()
++ const recoveredAlert58=recoveredState58.alerts.find(a=>a.id===alert58.id)
++ assert.equal(recoveredAlert58.state,'recovered')
++ assert.ok(recoveredAlert58.events.includes(recovered58.id),'recovery is attached to the same alert generation')
++ const cancelled58=recoveredState58.incidents.find(i=>i.id===linked58.id)
++ assert.equal(cancelled58.sourceRecovery.receipt,recovered58.id)
++ const reason58='Source recovered; no re-trigger obligation'
++ const cancelledDeadline58=cancelled58.deadlines.find(d=>d.id===pendingDeadline58.id)
++ assert.deepEqual(cancelledDeadline58,{...pendingDeadline58,state:'cancelled',endedAt:recoveryAt58,outcome:reason58,obligation:null})
++ const timeline58=cancelled58.timeline.filter(row=>row.id==='deadline-cancelled:'+pendingDeadline58.id)
++ assert.equal(timeline58.length,1)
++ const [cancelEntry58]=timeline58
++ assert.deepEqual(
++  [cancelEntry58.kind,cancelEntry58.actor,cancelEntry58.at,cancelEntry58.text],
++  ['deadline-cancelled','system:incident-deadlines',recoveryAt58,'snooze: 15 minutes, due '+dueAt58+': '+reason58+'; paging OFF'],
++ )
++ await worker.time(Date.parse(dueAt58))
++ const sweep58=await worker.send('/cdn-cgi/local/scheduled',undefined,{},'GET')
++ assert.equal(sweep58.status,200)
++ assert.equal(browser.isConnected(),false)
++ const after58=await find58()
++ assert.deepEqual(after58,cancelled58,'the deadline sweep leaves the complete cancelled incident unchanged')
++ assert.equal(after58.state,'acknowledged')
++ assert.equal(after58.commander,recoveryMember.id)
++ assert.ok(after58.deadlines.every(deadline=>deadline.obligation===null))
++ assert.ok(!after58.timeline.some(row=>row.kind==='deadline-fired'))
++ assert.deepEqual(await paging58(),priorPaging58,'no paging jobs, receipts, callbacks or paging revisions change')
++ assert.equal((await worker.request('/api/state')).status,401)
++ browser=await launch58()
++ for(const width of [1440,390]){
++  const reopened=await open(width)
++  watchRequests58(reopened.context)
++  assert.equal((await passwordSignIn(reopened.page,recoveryResponder)).id,recoveryMember.id)
++  await openIncident(reopened.page,linked58.id)
++  const stateBadge=reopened.page.locator('.incident-state.state-acknowledged')
++  await stateBadge.waitFor()
++  const deadlineTimeline=reopened.page.getByRole('region',{name:'Timeline'}).getByRole('listitem')
++   .filter({hasText:'Deadline cancelled'}).filter({hasText:reason58})
++  await deadlineTimeline.waitFor()
++  let shownDue
++  if(width===1440){
++   const protectedState=ok(await call(reopened.page,'/api/state'))
++   assert.deepEqual(protectedState.incidents.find(i=>i.id===linked58.id),after58)
++   shownDue=await reopened.page.evaluate(value=>{
++    const zone=Intl.DateTimeFormat().resolvedOptions().timeZone
++    const date=new Date(value)
++    const label=date.toLocaleString([], {timeZone:zone,month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'})
++    const offset=new Intl.DateTimeFormat('en-GB',{timeZone:zone,timeZoneName:'shortOffset'}).formatToParts(date)
++     .find(part=>part.type==='timeZoneName').value
++    return label+' '+zone+' ('+offset+')'
++   },cancelledDeadline58.dueAt)
++   await expect(stateBadge).toHaveText('Acknowledged')
++   await expect(deadlineTimeline.locator('p')).toHaveText(cancelEntry58.text.replace(dueAt58,shownDue))
++   await expect(deadlineTimeline.locator('small')).toHaveText('Deadline scheduler')
++   await expect(deadlineTimeline.locator('time')).toHaveAttribute('datetime',cancelEntry58.at)
++   await expect(reopened.page.getByRole('region',{name:'Timeline'}).getByText('Deadline reached',{exact:true})).toHaveCount(0)
++  }
++  await deadlineTimeline.scrollIntoViewIfNeeded()
++  await reopened.page.screenshot({path:captureDirectory+'/oc058-cancelled-timeline-'+width+'.png'})
++  const reopenedSnooze=await openIncidentAction(reopened.page,'Snooze')
++  const row=reopenedSnooze.getByRole('region',{name:'Incident deadlines'}).getByText(/^Snooze · Cancelled · due /)
++  await row.waitFor()
++  if(width===1440){
++   await expect(row).toHaveText('Snooze · Cancelled · due '+shownDue+' · '+cancelledDeadline58.outcome)
++   await expect(reopenedSnooze.getByRole('button',{name:'Cancel pending deadline',exact:true})).toHaveCount(0)
++   assert.ok(await reopened.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))
++  }
++  await row.scrollIntoViewIfNeeded()
++  await reopened.page.screenshot({path:captureDirectory+'/oc058-cancelled-snooze-'+width+'.png'})
++  await reopened.context.close()
++ }
++ assert.deepEqual(browserOutbound58,[],'no browser egress')
++ const workerOutbound58=await worker.outboundRequests()
++ assert.deepEqual(workerOutbound58,[],'no Worker egress')
++ assert.deepEqual(errors,[])
++ console.log('OC-058-RECEIPT '+JSON.stringify({
++  trigger:201,recovery:201,sweep:sweep58.status,anonymousState:401,browserClosedThroughSweep:true,
++  singleLinkedGeneration:true,state:after58.state,durationMinutes:cancelledDeadline58.minutes,
++  responder:recoveryResponder.name,startedAt:pendingDeadline58.createdAt,endedAt:cancelledDeadline58.endedAt,
++  dueAt:cancelledDeadline58.dueAt,deadlineState:cancelledDeadline58.state,reason:cancelledDeadline58.outcome,
++  obligation:cancelledDeadline58.obligation,timeline:{actor:cancelEntry58.actor,at:cancelEntry58.at,text:cancelEntry58.text},
++  deadlineFiredEntries:0,paging:priorPaging58.paging,pagingChanges:0,
++  workerOutbound:workerOutbound58.length,browserOutbound:browserOutbound58.length,assertedWidth:1440,capturedWidths:[1440,390],
++ }))
+  }
+ }
+ }

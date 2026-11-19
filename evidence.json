@@ -1,0 +1,52 @@
+{
+  "files": [
+    {
+      "blob": "37f5d00e20ebadfca65b7110870e4faf8958c1ce",
+      "bytes": 7279,
+      "path": "REPORT.md",
+      "sha256": "73310bce54f2019e9645c41bb9016b6c5175a35007d7a64eafc78bcdc4099d55"
+    },
+    {
+      "blob": "8abc47200a392d27f78266a9022370b16985961f",
+      "bytes": 2084,
+      "path": "browser-receipt.json",
+      "sha256": "ddba8e97182f818e580441b0304981c368b4d91206a4a55c05687f14607e62bd"
+    },
+    {
+      "blob": "458e3b02a0dbf11b3f413923cb192b93d38b281f",
+      "bytes": 234212,
+      "path": "oc058-cancelled-snooze-1440.png",
+      "sha256": "0d84d7b88c3a9a6dd9ae3d3a5c39b6a0bab39943b82a7c092f734857ba451342"
+    },
+    {
+      "blob": "a79d46fb2cea9715b94a7d86c9f1fe7a2725e138",
+      "bytes": 42297,
+      "path": "oc058-cancelled-snooze-390.png",
+      "sha256": "867deb34b0a1679aa3a16c0b3735aa3aa3e6864312fd778725697225e76463c4"
+    },
+    {
+      "blob": "27cce4bed82d02450ce9ce8469422bf852e86b33",
+      "bytes": 210482,
+      "path": "oc058-cancelled-timeline-1440.png",
+      "sha256": "3a0e46a154c15b7faf96bf36f6d0d862cf03e5e1c2ff557f1d46dbdfcb58e530"
+    },
+    {
+      "blob": "3942634b856dd3c8f9b24756285681ed964a510a",
+      "bytes": 75747,
+      "path": "oc058-cancelled-timeline-390.png",
+      "sha256": "805d01c64317440fad2fdbad0865de5c555666de19e2e4b92801b7b831ea590d"
+    },
+    {
+      "blob": "f1561b18037dd5752d1620d9895f9e2b4bd4f52d",
+      "bytes": 10603,
+      "path": "one-time-browser-probe.patch",
+      "sha256": "68ab5a9434d4fbc5a1cbd4cf31979827bf719ec62159c0e5db4330f74694d61f"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f310",
+  "product_head": "ad3f36af15cbbe05ec068a8fdea2a9131d1f75c7",
+  "ref": "refs/heads/evidence/sd-oncall-c-f310",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f310"
+}

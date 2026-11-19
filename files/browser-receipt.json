@@ -1,0 +1,66 @@
+{
+  "base": "071c74a352196f6778eb3b2942c351b4cf1e0ace",
+  "branch": "cloud/sd-oncall-c-f310",
+  "head": "ad3f36af15cbbe05ec068a8fdea2a9131d1f75c7",
+  "local": {
+    "ONCALL_RUNTIME_PART=core node tests/runtime.mjs": 0,
+    "ONCALL_RUNTIME_PART=machines node tests/runtime.mjs": 0,
+    "node": "22.20.0",
+    "node src/base/contract-docs.mjs write and check": [
+      0,
+      0
+    ],
+    "node tests/member-coordination-browser.mjs with the one-time extension": 0,
+    "paired product code and tests diff": "empty",
+    "pinned edition-authoring lock and check": [
+      0,
+      0
+    ],
+    "pnpm exec rer check --profile first-party": 0,
+    "pnpm typecheck": 0,
+    "post-restore generated view": "ACCEPTANCE.md differs as expected"
+  },
+  "observation": {
+    "anonymousState": 401,
+    "assertedWidth": 1440,
+    "browserClosedThroughSweep": true,
+    "browserOutbound": 0,
+    "capturedWidths": [
+      1440,
+      390
+    ],
+    "deadlineFiredEntries": 0,
+    "deadlineState": "cancelled",
+    "dueAt": "2026-11-19T22:10:00.000Z",
+    "durationMinutes": 15,
+    "endedAt": "2026-11-19T22:00:00.000Z",
+    "obligation": null,
+    "paging": "OFF",
+    "pagingChanges": 0,
+    "reason": "Source recovered; no re-trigger obligation",
+    "recovery": 201,
+    "responder": "Deadline Responder",
+    "singleLinkedGeneration": true,
+    "startedAt": "2026-11-19T21:55:00.000Z",
+    "state": "acknowledged",
+    "sweep": 200,
+    "timeline": {
+      "actor": "system:incident-deadlines",
+      "at": "2026-11-19T22:00:00.000Z",
+      "text": "snooze: 15 minutes, due 2026-11-19T22:10:00.000Z: Source recovered; no re-trigger obligation; paging OFF"
+    },
+    "trigger": 201,
+    "workerOutbound": 0
+  },
+  "repository": "just-every/run-oncall",
+  "save": "84fbc7baa1404aad3672bfc6d51866dd82675e48",
+  "verify": {
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "ad3f36af15cbbe05ec068a8fdea2a9131d1f75c7",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44623417157",
+    "id": 44623417157,
+    "name": "Verify",
+    "status": "in_progress"
+  }
+}
