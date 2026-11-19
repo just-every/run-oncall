@@ -759,6 +759,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 **Observed (18 November 2026, Run Edit Run fleet).** The installation owner opened populated incident, alert and service runbook pages through their direct web addresses. At 1440 and 390 pixels, a signed-in Checkout subscriber in the explicit member audience opened those same addresses and was redirected to `/status`. Checkout still showed degraded status and the subscriber's recorded impact obligation. The initial HTML and workspace bootstrap, browser API responses and hydrated views disclosed none of the private incident, alert, timeline or runbook data from the fixture. The stakeholder reads left native records, paging and subscription custody unchanged. The browser and Worker attempted zero outbound requests.
 
+**Observed (19 November 2026, Run Edit Run fleet).** A signed-in responder assigned as Checkout's communications owner set a major outage through the native status control. Reload showed the exact reason and member attribution, one new service revision and the unchanged derived degraded status. An administrator demoted the same member to active viewer. On reload the member could still read Checkout and the saved override, and the management controls were absent. The protected status endpoint refused an otherwise-valid override at the current revision with HTTP 403. Saved status, native records and paging custody were unchanged, with one refusal audit. Both roles were observed at 1440 and 390 pixels with no outbound browser or Worker requests.
+
 #### OC-062 — Configuration as code with Terraform and OpenTofu
 
 *Tier:* Core · *Rules:* D-3 · *Register:* R-10
