@@ -993,15 +993,19 @@ async function acknowledgmentBrowser(runtime,browser,capture) {
      const named=entry.locator('.named-responder');
      const attribution=await entry.locator('small').textContent();
      const namedResponder=door==='agent'?await named.textContent():null;
+     const namedVisible=door==='agent'&&await named.isVisible();
      if(page.viewportSize().width===1440){
       assert.equal(state.trim(),'Acknowledged');
       assert.equal(lead,'Lead: '+member.name);
       assert.equal(assignee,'Assignee: '+member.name);
       assert.equal(attribution,label);
-      if(door==='agent')assert.equal(namedResponder,'Named responder: '+member.name);
+      if(door==='agent'){
+       assert.ok(namedVisible,'The saved acknowledgment displays its named responder');
+       assert.equal(namedResponder,'Named responder: '+member.name);
+      }
       else assert.equal(await named.count(),0);
      }
-     console.log('Acknowledgment readback '+mode+' '+door+' '+page.viewportSize().width+': '+[state.trim(),lead,assignee,attribution,namedResponder].filter(Boolean).join(' | '));
+     console.log('Acknowledgment readback '+mode+' '+door+' '+page.viewportSize().width+': '+[state.trim(),lead,assignee,attribution,namedVisible&&namedResponder].filter(Boolean).join(' | '));
     },runtime,page);
    }
   }
