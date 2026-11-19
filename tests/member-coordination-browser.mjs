@@ -827,7 +827,6 @@ try {
  assert.deepEqual(outbound,[],'the detail browsers attempted no outbound request')
  assert.deepEqual(await worker.outboundRequests(),[],'the emitted Worker attempted no outbound request')
  console.log('PASS OC-061 direct stakeholder details: owner reads populated incident, alert and service; stakeholder lands on Checkout status with no private document, response or hydrated content at 1440 and 390; custody intact and zero outbound requests')
- await samView.context.close()
 
  // The current role controls management even when the service still names this member.
  const {context:communicationsContext,page:communicationsPage}=await open(1440)
@@ -911,6 +910,53 @@ try {
  assert.deepEqual(await worker.outboundRequests(),[],'the status Worker attempted no outbound request')
  await communicationsContext.close()
  console.log(`PROBE OC-061 6: signed-in communications owner saved major outage with reason and attribution at revision ${beforeSave.revision} -> ${saved.revision}; derived degraded. Same session as active viewer read the override and no management controls; current-revision POST returned ${denial.status}, with one refusal audit and unchanged native and paging custody. Both roles captured at 1440 and 390 with zero outbound requests.`)
+
+ // Read the same signed-in Checkout status as the warning incidents merge and resolve.
+ for(const context of [owner.context,samView.context])context.on('request',observeRequest)
+ ok(await call(owner.page,'/api/status',{action:'override',id:current.id,revision:current.revision,value:null}))
+ const pagingBeforeStatusMerge=ok(await call(owner.page,'/api/paging/state'))
+ assert.equal(pagingBeforeStatusMerge.paging,'OFF')
+ const readStakeholderImpact=async (expected,screen)=>{
+  const beforeRead=await custody()
+  await samView.page.setViewportSize({width:1440,height:1000})
+  await samView.page.reload()
+  await expect(samCheckout.getByText('Derived status: '+expected,{exact:true})).toBeVisible()
+  const status=ok(await call(samView.page,'/api/status')).services.find(row=>row.id===current.id)
+  assert.equal(status?.derived,expected)
+  assert.equal(status.override,null)
+  assert.deepEqual(status.subscription,subscription)
+  if(screen){
+   await statusCapture(samView.page,screen,1440)
+   await samView.page.setViewportSize({width:390,height:1000})
+   await samView.page.screenshot({path:`${captureDirectory}/oc061-${screen}-390.png`,fullPage:true})
+  }
+  assert.deepEqual(await custody(),beforeRead,'status reads preserve workspace, audit, paging and subscriptions')
+ }
+ const alias=ok(await call(owner.page,'/api/command',{
+  type:'declare',service:gateway.id,severity:'warning',title:'Synthetic duplicate Checkout impact',
+  summary:'Customer payment attempts delayed',
+ }))
+ await readStakeholderImpact('degraded')
+ const canonicalBeforeMerge=ok(await call(owner.page,'/api/state')).incidents.find(row=>row.id===statusIncident.id)
+ let canonical=ok(await call(owner.page,'/api/command',{
+  type:'merge-incidents',incident:canonicalBeforeMerge.id,revision:canonicalBeforeMerge.revision,
+  sources:[{id:alias.id,revision:alias.revision}],reason:'Both incidents describe the same gateway delay',
+ }))
+ await readStakeholderImpact('degraded','merged-impact')
+ const recoveryEvidence='https://example.test/checkout-merge-recovery'
+ for(const state of ['acknowledged','recovered','resolved']){
+  canonical=ok(await call(owner.page,'/api/command',{
+   type:'transition',incident:canonical.id,revision:canonical.revision,state,
+   summary:'Gateway payment recovery verified',...(state==='recovered'?{evidence:recoveryEvidence}:{}),
+  }))
+ }
+ await readStakeholderImpact('operational','resolved-impact')
+ assert.deepEqual(ok(await call(owner.page,'/api/paging/state')),pagingBeforeStatusMerge)
+ for(const context of [owner.context,samView.context])context.off('request',observeRequest)
+ assert.deepEqual(outbound,[],'the merge and resolution browsers attempted no outbound requests')
+ assert.deepEqual(await worker.outboundRequests(),[],'the emitted Worker attempted no outbound requests during status coordination')
+ await samView.context.close()
+ console.log('PASS OC-061 merged Checkout status: stakeholder sees degraded after declaration and merge, then operational after evidence and summary; protected status agrees, reads are write-free, paging custody is unchanged, and no outbound requests were attempted.')
 
  // OC-061 email lists: configure in Settings, inspect start/end records, unsubscribe and use shared erasure.
  for(const width of [1440]){

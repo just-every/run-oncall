@@ -2200,7 +2200,7 @@
       "executable": false
     },
     "src/business-status/model.ts": {
-      "sha256": "0b033548f631cfd5f505492443edb5e27a4c5ab51b2a5d6802351a62a11eae96",
+      "sha256": "1e30ea355a51c7f9cec4ce9a0c4d17cf537ac2c1cad476d0f170d2b39e34516b",
       "executable": false
     },
     "src/business-status/status-work.css": {
@@ -6716,7 +6716,7 @@
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
-      "sha256": "f0c51bcc21f7fe46e642883d53235157e36092fff972820f3158adbe504af8d7",
+      "sha256": "4faa579b21c14f50941097367439381a7172a5f0d4de6585a96b4296ddd613f5",
       "executable": false
     },
     "tests/missed-ack-flow.mjs": {
@@ -6932,7 +6932,7 @@
       "executable": false
     },
     "tests/triage.mjs": {
-      "sha256": "66505469583156ff91ac1ddf577920d65722d748e15f05eb86d9b5aa0ad257f8",
+      "sha256": "79f28209b9eeec8ea3d80ec0e86b2538cce0503fc911cd52a6c2644c5ef20218",
       "executable": false
     },
     "tests/verify.mjs": {
