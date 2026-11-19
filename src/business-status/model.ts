@@ -1,6 +1,7 @@
 import {canManageBusinessStatus} from './authority.ts';
 import {emailListAddress} from './email-lists.ts';
 import { fail, text, type Member, type State } from '../family/response-operations/domain.ts';
+import { resolveIncidentAlias } from '../incident-workflows/relations.ts';
 import type { BusinessService, InternalStatus } from './types.ts';
 const statuses = ['operational', 'degraded', 'major outage'];
 const responder = (member: Member) => member.active && ['admin', 'responder'].includes(member.role);
@@ -11,7 +12,8 @@ export function statusView(state:State,actor:Member){
  const current=state.members.find(member=>member.id===actor.id&&member.active);if(!current)fail('Access revoked',401);actor=current;
  return (state.businessServices??[]).filter(service=>visibleBusiness(service,actor)).map(service=>{
   const manages=canManageBusinessStatus(actor, service);
-  return {id:service.id,name:service.name,owningTeam:service.owningTeam,active:service.active,derived:service.derived,revision:service.revision,
+  // Older stored summaries can still reflect a resolved alias; reads never repair them in storage.
+  return {id:service.id,name:service.name,owningTeam:service.owningTeam,active:service.active,derived:derivedStatus(state,service),revision:service.revision,
    override:service.override&&{value:service.override.value,reason:service.override.reason,at:service.override.at,...(actor.role==='stakeholder'?{}:{by:service.override.by})},
    subscription:service.subscriptions.find(row=>row.member===actor.id)??null,
    notices:service.notices.filter(row=>row.target.kind==='user'&&row.target.id===actor.id||manages&&row.target.kind==='email-list'),
@@ -29,7 +31,9 @@ function supportingServices(state: State, service: BusinessService) {
 }
 export function derivedStatus(state: State, business: BusinessService): InternalStatus {
   const ids = supportingServices(state, business);
-  const incidents = state.incidents.filter(row => ids.has(row.service) && row.state !== 'resolved');
+  // A retained source still contributes its own service and severity while its canonical incident is open.
+  const incidents = state.incidents.filter(row => ids.has(row.service) &&
+    (row.mergedInto ? resolveIncidentAlias(state, row.id) : row).state !== 'resolved');
   if (incidents.some(row => row.severity === 'critical')) return 'major outage';
   if (incidents.length || business.highUrgencyImpact && state.alerts.some(row => row.service && ids.has(row.service) && row.state === 'active' && row.coordination?.state!=='closed' && !row.suppressed && (row.urgency ?? 'high') === 'high')) return 'degraded';
   return 'operational';

@@ -816,6 +816,58 @@ try {
   console.log('OC-061 configured high-urgency impact: alert admission and source recovery recompute internal status without a browser or subscriber delivery');
   console.log('OC-061 bulk impact recomputation and unsubscribe: resolution restores operational status and no new subscriber notice is recorded');
 
+  const pagingBeforeMerge = ok(await req('/api/paging/state'));
+  assert.equal(pagingBeforeMerge.paging, 'OFF');
+  const readDerivedStatus = async (expected, phase) => {
+    const beforeRead = durableSnapshot(w);
+    const checkout = ok(await w.request('/api/status', undefined, statusCookie)).services.find(row => row.id === status.id);
+    assert.equal(checkout?.derived, expected, 'Checkout status ' + phase);
+    assert.deepEqual(durableSnapshot(w), beforeRead, 'reading Checkout changes no durable state or audit ' + phase);
+  };
+  const declareImpact = async title => ok(await req('/api/command', {
+    type:'declare', service:statusService.id, severity:'warning', title, summary:'Checkout payments are delayed',
+  }));
+  let canonicalImpact = await declareImpact('Synthetic checkout payment delay');
+  const sourceImpact = await declareImpact('Synthetic duplicate checkout payment delay');
+  await readDerivedStatus('degraded', 'after declaration');
+  const mergeReason = 'Both incidents describe the same payment delay';
+  canonicalImpact = ok(await req('/api/command', {
+    type:'merge-incidents', incident:canonicalImpact.id, revision:canonicalImpact.revision,
+    sources:[{id:sourceImpact.id, revision:sourceImpact.revision}], reason:mergeReason,
+  }));
+  const retainedAlias = ok(await req('/api/state')).incidents.find(row => row.id === sourceImpact.id);
+  const mergeEntry = retainedAlias.timeline.at(-1);
+  assert.deepEqual(retainedAlias.mergedInto, {target:canonicalImpact.id, by:actor.id, at:mergeEntry.at, reason:mergeReason});
+  assert.deepEqual(retainedAlias.timeline.slice(0, -1), sourceImpact.timeline);
+  assert.deepEqual([mergeEntry.kind, mergeEntry.actor], ['merge', actor.id]);
+  assert.deepEqual(canonicalImpact.mergedSources, [sourceImpact.id]);
+  assert.ok(canonicalImpact.timeline.some(row => row.kind === 'merge' && row.actor === actor.id && row.text === mergeEntry.text));
+  await readDerivedStatus('degraded', 'after merge');
+  const recoveryEvidence = 'https://example.test/checkout-merge-recovery';
+  const resolutionSummary = 'Verified that checkout payments are processing';
+  for (const state of ['acknowledged', 'recovered', 'resolved']) {
+    canonicalImpact = ok(await req('/api/command', {
+      type:'transition', incident:canonicalImpact.id, revision:canonicalImpact.revision,
+      state, summary:resolutionSummary, ...(state === 'recovered' ? {evidence:recoveryEvidence} : {}),
+    }));
+  }
+  await readDerivedStatus('operational', 'after canonical resolution');
+  const afterResolution = ok(await req('/api/state'));
+  assert.equal(afterResolution.businessServices.find(row => row.id === status.id).derived, 'operational',
+    'the resolution also commits the corrected derived status');
+  const resolvedImpact = afterResolution.incidents.find(row => row.id === canonicalImpact.id);
+  assert.deepEqual(afterResolution.incidents.find(row => row.id === sourceImpact.id), retainedAlias);
+  assert.deepEqual([retainedAlias.state, retainedAlias.service, retainedAlias.severity],
+    [sourceImpact.state, sourceImpact.service, sourceImpact.severity]);
+  assert.deepEqual([resolvedImpact.state, resolvedImpact.recovery, resolvedImpact.mergedSources],
+    ['resolved', recoveryEvidence, [sourceImpact.id]]);
+  assert.ok(resolvedImpact.timeline.some(row => row.actor === actor.id && row.kind === 'merge' && row.text === mergeEntry.text));
+  assert.ok(resolvedImpact.timeline.some(row => row.actor === actor.id && row.lifecycle?.to === 'recovered' && row.lifecycle.evidence === recoveryEvidence));
+  assert.ok(resolvedImpact.timeline.some(row => row.actor === actor.id && row.lifecycle?.to === 'resolved' && row.text.includes(resolutionSummary)));
+  assert.deepEqual(ok(await req('/api/paging/state')), pagingBeforeMerge);
+  assert.deepEqual(await w.outboundRequests(), []);
+  console.log('PROBE OC-061 2 merged incident impact: signed-in Checkout stakeholder reads degraded after declaration and merge, then operational after evidenced canonical resolution; alias and attribution retained, reads write nothing, paging OFF unchanged and zero outbound requests.');
+
   // OC-056: one generation owns one truthful, non-automatic obligation at every intake door.
   let fixture = 0; const synthetic = () => 'synthetic-oncall-' + ++fixture;
   const recoveryService = ok(await req('/api/command', {type: 'service', id: synthetic(), name: synthetic(), environment: 'production', owner: actor.id, runbook: [], pager: ''}));
