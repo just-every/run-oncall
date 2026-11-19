@@ -1,0 +1,8 @@
+Exact candidate 23c8f4db2528abdb6c640086710d3fe6520370f2
+Browser proof resolution-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-executed 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-timeline 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-timeline 390: fits=true serious/critical=0 undersized-controls=0
+PASS incident resolution browser: commitment-only approval, exact saved revision, one attributed resolution visible after the completed response was lost and recovered

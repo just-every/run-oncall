@@ -1,0 +1,296 @@
+{
+  "branch": "cloud/sd-oncall-c-f304",
+  "candidate_run_site": "awaiting landing",
+  "candidate_verify": {
+    "aggregate_dependency": ".github/workflows/verify.yml:287 requires contract-docs success",
+    "checked_at": "2026-11-19T18:25:11.829482+00:00",
+    "conclusion": "failure",
+    "event": "push",
+    "generated_view_log": {
+      "command": "gh run view 44582221564 --repo just-every/run-oncall --job 135765852913 --log-failed",
+      "exit": 0,
+      "generated_acceptance_only": true,
+      "matches": [
+        "contract-docs\tCheck the generated contract documents\t2026-11-19T17:55:39.1675453Z Contract prose: 0 errors, 0 warnings.",
+        "contract-docs\tCheck the generated contract documents\t2026-11-19T17:55:39.2160207Z ACCEPTANCE.md: generated content differs; run contract-docs write."
+      ]
+    },
+    "generated_view_only": true,
+    "head_sha": "23c8f4db2528abdb6c640086710d3fe6520370f2",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44582221564",
+    "id": 44582221564,
+    "interrupted_poll": "Execution environment resumed without the in-flight poll result. The subsequent poll confirmed completion.",
+    "jobs": [
+      {
+        "conclusion": "success",
+        "head_sha": "23c8f4db2528abdb6c640086710d3fe6520370f2",
+        "id": 135765596057,
+        "name": "plan",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "conclusion": "failure",
+        "head_sha": "23c8f4db2528abdb6c640086710d3fe6520370f2",
+        "id": 135765852913,
+        "name": "contract-docs",
+        "status": "completed",
+        "steps": [
+          {
+            "conclusion": "failure",
+            "name": "Check the generated contract documents"
+          }
+        ]
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "23c8f4db2528abdb6c640086710d3fe6520370f2",
+        "id": 135765852976,
+        "name": "build",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "conclusion": "skipped",
+        "head_sha": "23c8f4db2528abdb6c640086710d3fe6520370f2",
+        "id": 135765854854,
+        "name": "light",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "23c8f4db2528abdb6c640086710d3fe6520370f2",
+        "id": 135767466131,
+        "name": "shards (browser)",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "23c8f4db2528abdb6c640086710d3fe6520370f2",
+        "id": 135767466146,
+        "name": "shards (changes)",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "23c8f4db2528abdb6c640086710d3fe6520370f2",
+        "id": 135767466149,
+        "name": "shards (triage)",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "23c8f4db2528abdb6c640086710d3fe6520370f2",
+        "id": 135767466152,
+        "name": "shards (intake)",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "23c8f4db2528abdb6c640086710d3fe6520370f2",
+        "id": 135767466178,
+        "name": "shards (agents)",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "23c8f4db2528abdb6c640086710d3fe6520370f2",
+        "id": 135767466180,
+        "name": "shards (transfer)",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "23c8f4db2528abdb6c640086710d3fe6520370f2",
+        "id": 135767466263,
+        "name": "shards (hosted)",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "23c8f4db2528abdb6c640086710d3fe6520370f2",
+        "id": 135767466492,
+        "name": "shards (runtime)",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "23c8f4db2528abdb6c640086710d3fe6520370f2",
+        "id": 135776358893,
+        "name": "full-push-proof",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "conclusion": "skipped",
+        "head_sha": "23c8f4db2528abdb6c640086710d3fe6520370f2",
+        "id": 135776362889,
+        "name": "nightly-proof",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "conclusion": "failure",
+        "head_sha": "23c8f4db2528abdb6c640086710d3fe6520370f2",
+        "id": 135776411463,
+        "name": "verify",
+        "status": "completed",
+        "steps": [
+          {
+            "conclusion": "failure",
+            "name": "Require the selected coverage and its proof"
+          }
+        ]
+      }
+    ],
+    "name": "Verify",
+    "status": "completed"
+  },
+  "checked_at": "2026-11-19T18:26:36.411627+00:00",
+  "clause": {
+    "bounded_point": "acceptance 2 resolution completed-response loss",
+    "id": "BASE-AGENT-012",
+    "registrations_added": 0,
+    "status_after": "MISSING",
+    "status_before": "MISSING"
+  },
+  "counts": {
+    "after": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41
+    },
+    "before": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41
+    }
+  },
+  "full_history_clone": true,
+  "initial_main_actions": {
+    "head_sha": "802d6eacc60e5a1638423ce6396905b33771a150",
+    "run_site": {
+      "conclusion": "success",
+      "event": "push",
+      "id": 44570210013
+    },
+    "verify": {
+      "conclusion": "success",
+      "event": "push",
+      "id": 44570210163
+    }
+  },
+  "local": {
+    "commands": {
+      "browser": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/agent-door-browser.mjs",
+      "build": "npx -y @runeditrun/rer build",
+      "first_party": "pnpm exec rer check --profile first-party",
+      "runtime": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "typecheck": "pnpm run typecheck"
+    },
+    "exits": {
+      "browser": 0,
+      "build": 0,
+      "first-party": 0,
+      "lock": 0,
+      "runtime": 0,
+      "typecheck": 0
+    },
+    "head": "23c8f4db2528abdb6c640086710d3fe6520370f2",
+    "mechanical": {
+      "ledger": {
+        "command": null,
+        "reason": "no migration changes"
+      },
+      "lock": {
+        "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock and check",
+        "exit": 0
+      },
+      "views": {
+        "command": "node src/base/contract-docs.mjs write and check",
+        "committed_check_exit": 1,
+        "exit": 0,
+        "stale_committed_view": "ACCEPTANCE.md"
+      }
+    },
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "screenshots": [
+      {
+        "file": "agent-door-resolution-executed-1440.png",
+        "height": 1000,
+        "sha256": "6694ce323d4ccb9c382f1360cd9189b91f12a3233d13282238f913b10911e0d4",
+        "viewport_width": 1440
+      },
+      {
+        "file": "agent-door-resolution-executed-390.png",
+        "height": 1000,
+        "sha256": "1894bcec5656d456d4eb3855a454291f74b60360b7f600762f2452d8593eeb61",
+        "viewport_width": 390
+      },
+      {
+        "file": "agent-door-resolution-timeline-1440.png",
+        "height": 4148,
+        "sha256": "9ea951813307a54f0a50f100fc7f9e846ac44b99b255d4d0a8489274a4d5ec4c",
+        "viewport_width": 1440
+      },
+      {
+        "file": "agent-door-resolution-timeline-390.png",
+        "height": 1566,
+        "sha256": "d5b90b333323d6ffe23711f31f50a8ca8bc67d792308ed07dbab909342bc28bd",
+        "viewport_width": 390
+      }
+    ]
+  },
+  "main_equals_candidate": false,
+  "main_head": "eeb1ac5166482fc1a2a54e68deb587080f72d95e",
+  "merged_save": "ec46a23f41c05b7ae3510d018b5d444a4a19ab40",
+  "predecessors": {
+    "changed_summary": {
+      "landed": "5417bb85b87aa8035ab4f3b0fe58dd058b556f7b",
+      "tag": "f296"
+    },
+    "optional_revision": {
+      "integration": "30202e35dcbc97fdb9cf5db94d49f18ff7e88481",
+      "tag": "f291"
+    },
+    "required_revision": {
+      "landed": "66405c0864bdd587bb711809fa52a3eba6dce20f",
+      "tag": "f286"
+    }
+  },
+  "product_head": "23c8f4db2528abdb6c640086710d3fe6520370f2",
+  "publication_scan": {
+    "commit": "23c8f4db2528abdb6c640086710d3fe6520370f2",
+    "complete": null,
+    "findings": null,
+    "historyScanned": null,
+    "status": "awaiting fleet lander"
+  },
+  "pushed_save": "86504bd0fe30cda24f704ce223ad84276bef1f03",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "task": "sd-oncall-c-f304",
+  "updated_main_actions": {
+    "head_sha": "3e278dea3b663bc5d8cd4b66889b2e85b24d7cc8",
+    "run_site": {
+      "conclusion": "success",
+      "event": "push",
+      "id": 44576969490
+    },
+    "verify": {
+      "conclusion": "success",
+      "event": "push",
+      "id": 44576969484
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "files": [
+    {
+      "blob": "e19f23b94cdd34e7f27f921ffb7b5142f45f77c7",
+      "bytes": 8828,
+      "path": "RECEIPT.json",
+      "sha256": "6cb9d2c550a1c1c36bca08df580331a97c2d4b79ee9fc6a9e19c5a80900f49fa"
+    },
+    {
+      "blob": "e4052e140211f592f256260cb84c24ef31c149d8",
+      "bytes": 8972,
+      "path": "REPORT.md",
+      "sha256": "121207cd7f24af10db80beb06d8da079cd179ebe71cadc723e71df8e993f4235"
+    },
+    {
+      "blob": "0bb06aa83ac2bb569ff0ed3fbaeb77ad289e49bd",
+      "bytes": 44562,
+      "path": "agent-door-resolution-executed-1440.png",
+      "sha256": "6694ce323d4ccb9c382f1360cd9189b91f12a3233d13282238f913b10911e0d4"
+    },
+    {
+      "blob": "b11622d8068c436a43b459f111cc265f27c3158f",
+      "bytes": 37050,
+      "path": "agent-door-resolution-executed-390.png",
+      "sha256": "1894bcec5656d456d4eb3855a454291f74b60360b7f600762f2452d8593eeb61"
+    },
+    {
+      "blob": "e95e343afed3fc4f79b44d9552227930a7b68af7",
+      "bytes": 560155,
+      "path": "agent-door-resolution-timeline-1440.png",
+      "sha256": "9ea951813307a54f0a50f100fc7f9e846ac44b99b255d4d0a8489274a4d5ec4c"
+    },
+    {
+      "blob": "15fe29083e9dcfb6c40bf7137bc41fbc47ac0b9a",
+      "bytes": 111588,
+      "path": "agent-door-resolution-timeline-390.png",
+      "sha256": "d5b90b333323d6ffe23711f31f50a8ca8bc67d792308ed07dbab909342bc28bd"
+    },
+    {
+      "blob": "d365a688254ed7e046b3b92133a04725fbec99b4",
+      "bytes": 766,
+      "path": "resolution-browser.txt",
+      "sha256": "4a0159ae0c987a221d65095da77276880d32c5e81929702fc7f00e325202cfc3"
+    },
+    {
+      "blob": "746e7132a7c6371ee4c2082b55d7c54b14159623",
+      "bytes": 2646,
+      "path": "resolution-runtime.txt",
+      "sha256": "e6906f8505247043bb3ff63fcba2b83f9fe267ecb653809f716d63faaeaff191"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f304",
+  "product_head": "23c8f4db2528abdb6c640086710d3fe6520370f2",
+  "ref": "refs/heads/evidence/sd-oncall-c-f304",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f304"
+}
