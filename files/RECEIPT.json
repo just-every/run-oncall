@@ -1,0 +1,375 @@
+{
+  "base": "071c74a352196f6778eb3b2942c351b4cf1e0ace",
+  "branch": "cloud/sd-oncall-c-f309",
+  "changedFiles": [
+    "CONTRACT.md",
+    "sources.lock.json"
+  ],
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "name": "emitted build"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "name": "typecheck"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "name": "first-party"
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "exit": 0,
+      "name": "runtime agent journey",
+      "observations": [
+        "PROBE BASE-AGENT-013 1 autonomous: GET /docs/agents and MCP discovery -> 42 exact tools, scopes and class sets; 17 scoped resource templates; event target withheld; native and paging unchanged; zero outbound requests",
+        "PROBE BASE-AGENT-013 2 autonomous: generated class references -> every documented class names tests/agent-door.mjs and all matching maintained fixture IDs",
+        "PROBE BASE-AGENT-013 1 held: GET /docs/agents and MCP discovery -> 42 exact tools, scopes and class sets; 17 scoped resource templates; event target withheld; native and paging unchanged; zero outbound requests",
+        "PROBE BASE-AGENT-013 2 held: generated class references -> every documented class names tests/agent-door.mjs and all matching maintained fixture IDs",
+        "Runtime agents completed (544.7s)"
+      ]
+    },
+    {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/agent-door-browser.mjs",
+      "exit": 0,
+      "name": "browser journey",
+      "observations": [
+        "PROBE BASE-AGENT-013 rendered autonomous: /docs/agents -> complete 42-tool class, scope and fixture inventory agrees with MCP; 17 resource templates; native and paging unchanged; zero outbound requests",
+        "PROBE BASE-AGENT-013 rendered held: /docs/agents -> complete 42-tool class, scope and fixture inventory agrees with MCP; 17 resource templates; native and paging unchanged; zero outbound requests",
+        "Browser proof guide 1440: fits=true serious or critical=0 undersized-controls=0",
+        "Browser proof guide 390: fits=true serious or critical=0 undersized-controls=0",
+        "PASS agent door browser: native incident, review and responders, linked, pending and error people, pending, executed and paused approval, Agents and guide; assertions at 1440, browser proof at 1440 and 390 with overflow, 44px controls and axe measurements"
+      ]
+    },
+    {
+      "command": "node scripts/verify-ci.mjs --check-workflows",
+      "exit": 0,
+      "name": "workflow validation"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "name": "contract views generation"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "name": "generated contract check"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 1,
+      "name": "restored contract check",
+      "observations": [
+        "Contract prose: 0 errors, 0 warnings.",
+        "ACCEPTANCE.md: generated content differs; run contract-docs write."
+      ]
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "name": "pinned source lock generation"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "name": "pinned source lock freshness"
+    }
+  ],
+  "counts": {
+    "after": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41
+    },
+    "before": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41
+    }
+  },
+  "custody": "pushed",
+  "githubCallBudget": {
+    "limit": 10,
+    "used": 10
+  },
+  "head": "308c610d2edaebae3a9397e515bf2e6db2fdfb56",
+  "localChangesShard": {
+    "command": "CI=true SHARD=changes node scripts/verify-oncall.mjs changes",
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "results": {
+      "candidate": {
+        "buildExit": 0,
+        "completed": [
+          "Journey completed: tests/changes.mjs (31.4s)",
+          "Journey completed: tests/activation.mjs (265.5s)",
+          "Oncall verification passed: changes",
+          "Journey completed: tests/import-door.mjs (524.3s)",
+          "Journey completed: tests/oncall-agent-erase-subjects.mjs (5.4s)",
+          "Journey completed: tests/oncall-agent-erase-roster.mjs (5.4s)",
+          "Journey completed: tests/triage.mjs {\"ONCALL_TRIAGE_PART\":\"reports\"} (51.8s)",
+          "Oncall verification passed: imports"
+        ],
+        "exit": 0,
+        "head": "308c610d2edaebae3a9397e515bf2e6db2fdfb56",
+        "seconds": 884
+      },
+      "main": {
+        "buildExit": 0,
+        "completed": [
+          "Journey completed: tests/changes.mjs (30.1s)",
+          "Journey completed: tests/activation.mjs (247.1s)",
+          "Oncall verification passed: changes",
+          "Journey completed: tests/import-door.mjs (528.6s)",
+          "Journey completed: tests/oncall-agent-erase-subjects.mjs (5.7s)",
+          "Journey completed: tests/oncall-agent-erase-roster.mjs (5.2s)",
+          "Journey completed: tests/triage.mjs {\"ONCALL_TRIAGE_PART\":\"reports\"} (56.9s)",
+          "Oncall verification passed: imports"
+        ],
+        "exit": 0,
+        "head": "071c74a352196f6778eb3b2942c351b4cf1e0ace",
+        "seconds": 874
+      }
+    }
+  },
+  "localToolchain": {
+    "chromium": "/usr/bin/chromium",
+    "node": "v24.19.0",
+    "pnpm": "10.12.4",
+    "sourceLockPackagePin": "0.2.118"
+  },
+  "mainActions": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "071c74a352196f6778eb3b2942c351b4cf1e0ace",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44599061529",
+      "id": 44599061529,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "071c74a352196f6778eb3b2942c351b4cf1e0ace",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44599061677",
+      "id": 44599061677,
+      "name": "Run site",
+      "status": "completed"
+    }
+  ],
+  "proofFiles": [
+    "before.jsonl",
+    "after.jsonl",
+    "agent-guide-1440.png",
+    "agent-guide-390.png"
+  ],
+  "proofSha256": {
+    "after.jsonl": "80987da985903710498d2338e77155e823e35b2d6f21e390180be29fd828004a",
+    "agent-guide-1440.png": "c16e5def1d88e67e1425353f2b158e20f87a6c909bbe8a5d3303aaa70a3e2dbf",
+    "agent-guide-390.png": "d77443af6d8245ec470682a852946d203742f3147a4a8a6529a8ca1a56fdca86",
+    "before.jsonl": "d7f77fa28b92fb6019fd7af02760a4170d194d2d68c544bbb8ab993472e1dfc6"
+  },
+  "publicationScan": {
+    "commit": "308c610d2edaebae3a9397e515bf2e6db2fdfb56",
+    "complete": null,
+    "findings": null,
+    "historyScanned": null,
+    "status": "pending guarded landing"
+  },
+  "readyGate": "Exact-SHA Verify completed with the documented generated-view difference and an independent cancelled changes shard.",
+  "remoteRefs": {
+    "refs/heads/cloud/sd-oncall-c-f309": "308c610d2edaebae3a9397e515bf2e6db2fdfb56",
+    "refs/heads/main": "e4123dded5d6a9f058880669ca10213bcfbe2646"
+  },
+  "repository": "just-every/run-oncall",
+  "save": "c15cc0b862a6ad6cd17e3aa732fed21704230602",
+  "statusSectionMatchesMain": true,
+  "tag": "sd-oncall-c-f309",
+  "verify": {
+    "conclusion": "failure",
+    "head_sha": "308c610d2edaebae3a9397e515bf2e6db2fdfb56",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44624425448",
+    "id": 44624425448,
+    "status": "completed"
+  },
+  "verifyDiscovery": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_branch": "cloud/sd-oncall-c-f309",
+      "head_sha": "308c610d2edaebae3a9397e515bf2e6db2fdfb56",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44624425448",
+      "id": 44624425448,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ],
+  "verifyFailedLogs": [
+    {
+      "command": "gh run view 44624425448 --repo just-every/run-oncall --job 135914547236 --log-failed",
+      "diagnostic": "ACCEPTANCE.md: generated content differs; run contract-docs write.",
+      "exit": 0,
+      "job": 135914547236
+    },
+    {
+      "command": "gh run view 44624425448 --repo just-every/run-oncall --job 135925221090 --log-failed",
+      "diagnostic": "Aggregate environment reported CONTRACT_DOCS: failure, SHARDS: cancelled, HAS_SHARDS: true.",
+      "exit": 0,
+      "job": 135925221090
+    },
+    {
+      "command": "gh run view 44624425448 --repo just-every/run-oncall --job 135916392172 --log-failed",
+      "diagnostic": "The cancelled changes job returned an empty failed-step archive.",
+      "exit": 0,
+      "job": 135916392172
+    }
+  ],
+  "verifyJobs": [
+    {
+      "conclusion": "success",
+      "head_sha": "308c610d2edaebae3a9397e515bf2e6db2fdfb56",
+      "id": 135914347944,
+      "name": "plan",
+      "nonPassingSteps": [],
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "308c610d2edaebae3a9397e515bf2e6db2fdfb56",
+      "id": 135914547156,
+      "name": "build",
+      "nonPassingSteps": [],
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "head_sha": "308c610d2edaebae3a9397e515bf2e6db2fdfb56",
+      "id": 135914547236,
+      "name": "contract-docs",
+      "nonPassingSteps": [
+        {
+          "conclusion": "failure",
+          "name": "Check the generated contract documents"
+        }
+      ],
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "head_sha": "308c610d2edaebae3a9397e515bf2e6db2fdfb56",
+      "id": 135914550648,
+      "name": "light",
+      "nonPassingSteps": [],
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "308c610d2edaebae3a9397e515bf2e6db2fdfb56",
+      "id": 135916392017,
+      "name": "shards (browser)",
+      "nonPassingSteps": [],
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "308c610d2edaebae3a9397e515bf2e6db2fdfb56",
+      "id": 135916392034,
+      "name": "shards (hosted)",
+      "nonPassingSteps": [],
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "308c610d2edaebae3a9397e515bf2e6db2fdfb56",
+      "id": 135916392060,
+      "name": "shards (runtime)",
+      "nonPassingSteps": [],
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "308c610d2edaebae3a9397e515bf2e6db2fdfb56",
+      "id": 135916392084,
+      "name": "shards (intake)",
+      "nonPassingSteps": [],
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "308c610d2edaebae3a9397e515bf2e6db2fdfb56",
+      "id": 135916392108,
+      "name": "shards (triage)",
+      "nonPassingSteps": [],
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "308c610d2edaebae3a9397e515bf2e6db2fdfb56",
+      "id": 135916392138,
+      "name": "shards (transfer)",
+      "nonPassingSteps": [],
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "308c610d2edaebae3a9397e515bf2e6db2fdfb56",
+      "id": 135916392144,
+      "name": "shards (agents)",
+      "nonPassingSteps": [],
+      "status": "completed"
+    },
+    {
+      "conclusion": "cancelled",
+      "head_sha": "308c610d2edaebae3a9397e515bf2e6db2fdfb56",
+      "id": 135916392172,
+      "name": "shards (changes)",
+      "nonPassingSteps": [
+        {
+          "conclusion": "cancelled",
+          "name": "Run this shard"
+        }
+      ],
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "head_sha": "308c610d2edaebae3a9397e515bf2e6db2fdfb56",
+      "id": 135925221090,
+      "name": "verify",
+      "nonPassingSteps": [
+        {
+          "conclusion": "failure",
+          "name": "Require the selected coverage and its proof"
+        }
+      ],
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "head_sha": "308c610d2edaebae3a9397e515bf2e6db2fdfb56",
+      "id": 135925223259,
+      "name": "full-push-proof",
+      "nonPassingSteps": [],
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "head_sha": "308c610d2edaebae3a9397e515bf2e6db2fdfb56",
+      "id": 135925223518,
+      "name": "nightly-proof",
+      "nonPassingSteps": [],
+      "status": "completed"
+    }
+  ],
+  "verifyTiming": {
+    "cancellationReason": "unconfirmed",
+    "candidateShardCommandSeconds": 884,
+    "changesJobTimeoutSeconds": 900
+  }
+}

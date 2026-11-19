@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "107320c7ad878c34e91a1311febf4dbdfe3ae495",
+      "bytes": 12619,
+      "path": "RECEIPT.json",
+      "sha256": "8613ee08f95c84dbbe5cabac3f197f368a42b1e167ad497d2c66f01e4251c061"
+    },
+    {
+      "blob": "bcbb9c281643dbc2e663bac057674f820e34be1e",
+      "bytes": 10089,
+      "path": "REPORT.md",
+      "sha256": "698e00f4cc635d67bca24c65af26c8c7157c7cba36af7f9cd3a432d3caf0d314"
+    },
+    {
+      "blob": "4a03b500e5ec7abcfbd128a8e37f72ef5bc90c90",
+      "bytes": 2048,
+      "path": "after.jsonl",
+      "sha256": "80987da985903710498d2338e77155e823e35b2d6f21e390180be29fd828004a"
+    },
+    {
+      "blob": "5cbd4ce92e5427edf4898e5a2c486e33e5d4ffab",
+      "bytes": 15190,
+      "path": "agent-guide-1440.png",
+      "sha256": "c16e5def1d88e67e1425353f2b158e20f87a6c909bbe8a5d3303aaa70a3e2dbf"
+    },
+    {
+      "blob": "6836213536300b75207b6a550e0d08f62e332e62",
+      "bytes": 7900,
+      "path": "agent-guide-390.png",
+      "sha256": "d77443af6d8245ec470682a852946d203742f3147a4a8a6529a8ca1a56fdca86"
+    },
+    {
+      "blob": "d263ee401afbd09af661788ca2f26b6a56bf2a0b",
+      "bytes": 1990,
+      "path": "before.jsonl",
+      "sha256": "d7f77fa28b92fb6019fd7af02760a4170d194d2d68c544bbb8ab993472e1dfc6"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f309",
+  "product_head": "308c610d2edaebae3a9397e515bf2e6db2fdfb56",
+  "ref": "refs/heads/evidence/sd-oncall-c-f309",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f309"
+}
