@@ -22,8 +22,12 @@
 .response-source { font-size: 14px; overflow-wrap: anywhere; }
 .coverage-load { margin: 18px 0; }
 .alert-noise-stats { grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); margin: 12px 0; }
-.alert-noise-list { padding-left: 20px; overflow-wrap: anywhere; }
-.alert-noise-list li { margin: 8px 0; }
+.alert-noise-list { list-style: none; padding-left: 0; overflow-wrap: anywhere; }
+.alert-noise-list > li { margin: 10px 0; }
+.alert-noise-list details { margin: 0; }
+.alert-noise-list ul { padding-left: 22px; }
+.alert-noise-list ul li { margin: 6px 0; }
+.response-report .alert-noise-list li a { display: block; align-content: center; }
 .coverage-load-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 16px; margin: 12px 0 18px; }
 .coverage-load h5 { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 12px; font-size: 16px; overflow-wrap: anywhere; }
 .response-source p { margin: 6px 0; }

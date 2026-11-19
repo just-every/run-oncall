@@ -79,7 +79,7 @@ export function ResponseReport({state}: {state: State}) {
           </article>;
         })}
       </div>
-      <AlertNoise noise={report.noise} state={state} showDefinition={false}/>
+      <AlertNoise noise={report.noise} state={state} zone={zone} showDefinition={false}/>
       <CoverageLoad load={report.load} showBasis={false} zone={zone}/>
       <details className="review-material"><summary>How these are counted</summary>
         <p>Declarations from {shortTime(report.cohort.from,zone)} inclusive to {shortTime(report.cohort.to,zone)} exclusive · {zone}.</p><p>Exact UTC bounds: {new Date(report.cohort.from).toUTCString()} inclusive to {new Date(report.cohort.to).toUTCString()} exclusive.</p><p>Observed through {shortTime(report.generatedAt,zone)}. Unassignable declaration timestamps: {report.cohort.unassignableDeclarations}; erased cases with unknown durations: {report.cohort.erased}.</p><p>Censored cases are lower bounds and are excluded from measured averages and percentiles. Unknown durations have no measurable source.</p><p>{report.noise.definition}</p><p>{report.cohort.inclusion}</p><ul>{report.load.basis.map(line=><li key={line}>{line}</li>)}</ul>

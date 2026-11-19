@@ -15,18 +15,20 @@ export async function nightResponseScenario(w) {
  const responder=async name=>{
   const member=await req('/api/members',{name,role:'responder',password:'synthetic-oncall-370-password'},cookie,201)
   const login=await w.request('/api/login',{name,password:'synthetic-oncall-370-password'});assert.equal(login.status,200)
-  return {...member,cookie:login.cookie}
+  return {...member,cookie:login.cookie,headers:login.headers}
  }
  const night=await responder('Synthetic night responder'),relief=await responder('Synthetic night relief')
  await req('/api/command',{type:'service',id:service,name:'Synthetic night response',environment:'production',owner:owner.id,runbook:[],pager:''})
+ const otherService='synthetic-oncall-371'
+ await req('/api/command',{type:'service',id:otherService,name:'Synthetic checkout response',environment:'production',owner:owner.id,runbook:[],pager:''})
  await req('/api/paging/schedules',{id:service,name:'Synthetic New York night',service,revision:0,timezone:zone,
   validFrom:'2030-10-29T02:00:00.000Z',validUntil:'2030-10-29T10:00:00.000Z',
   primary:{anchorLocal:'2030-10-28T22:00',periodDays:1,members:[night.id],ambiguity:'earlier'},
   backup:{anchorLocal:'2030-10-28T22:00',periodDays:1,members:[owner.id],ambiguity:'earlier'},
   overrides:[{id:'synthetic-oncall-370-relief',role:'primary',start:'2030-10-29T08:00:00.000Z',end:'2030-10-29T10:00:00.000Z',member:relief.id}]})
- const key=randomBytes(32).toString('hex');await req('/api/sources',{id:service,key,scopes:[service]})
- const signal=async(eventId,generation,intent='trigger')=>{
-  const result=await w.request('/api/ingress/'+service,{source:service,eventId,service,environment:'production',key:service,generation,intent,severity:'warning',title:'Synthetic night backlog',observedAt:sourceAt,evidence:'https://monitor.example.test/night'},undefined,{authorization:'Bearer '+key})
+ const key=randomBytes(32).toString('hex');await req('/api/sources',{id:service,key,scopes:[service,otherService]})
+ const signal=async(eventId,generation,intent='trigger',target=service)=>{
+  const result=await w.request('/api/ingress/'+service,{source:service,eventId,service:target,environment:'production',key:service,generation,intent,severity:'warning',title:'Synthetic night backlog',observedAt:sourceAt,evidence:'https://monitor.example.test/night'},undefined,{authorization:'Bearer '+key})
   assert.equal(result.status,201);return result.value
  }
  const declare=(title,alerts=[])=>req('/api/command',{type:'declare',service,severity:'warning',title,summary:'Synthetic controlled response timeline',alerts})
@@ -49,9 +51,18 @@ export async function nightResponseScenario(w) {
  await at('2030-10-29T10:30:00.000Z');const open=await declare('Synthetic unacknowledged night incident')
  await at('2030-10-29T10:35:00.000Z');const unknown=await declare('Synthetic resolved without acknowledgement')
  await at('2030-10-29T10:40:00.000Z');await req('/api/triage/bulk',{operationId:'synthetic-oncall-370-resolve',action:'resolve',items:[{id:unknown.id,revision:unknown.revision}],reason:'Synthetic human recovery',evidence:'https://monitor.example.test/night-repair'})
+ const repeatAt='2030-10-29T10:45:00.000Z'
+ await at(repeatAt)
+ await req('/api/command',{type:'policy',service,severity:'*',action:'suppress',owner:owner.id,reason:'Synthetic planned queue restart',baseVersion:0,suppressionWindow:{start:repeatAt,end:'2030-10-29T11:30:00.000Z'}})
+ const repeat=await signal('synthetic-oncall-370-b','synthetic-oncall-370-b')
+ await at('2030-10-29T10:50:00.000Z');const other=await signal('synthetic-oncall-371-a','synthetic-oncall-371-a','trigger',otherService)
+ await signal('synthetic-oncall-371-repeat','synthetic-oncall-371-a','trigger',otherService)
+ const alerts=(await req('/api/state')).alerts
+ const alertIds=[alert.id,alerts.find(row=>row.events.includes(repeat.id)).id]
+ const otherAlertId=alerts.find(row=>row.events.includes(other.id)).id
  const observed='2030-10-29T11:00:00.000Z';await at(observed)
  const query=new URLSearchParams({from:'2030-10-29T02:00:00.000Z',to:observed,service,at:observed})
- return {cookie,headers:setup.headers,service,zone,night,relief,owner,late,quick,outside,open,unknown,acknowledgement,query,observed,req}
+ return {cookie,service,zone,night,relief,owner,late,quick,outside,open,unknown,acknowledgement,query,observed,req,alertIds,otherAlertId,repeatAt}
 }
 
 export function assertNightResponse(report,s,{from='2030-10-29T02:00:00.000Z',to=s.observed,uncovered=3600}={}) {
@@ -72,7 +83,8 @@ export function assertNightResponse(report,s,{from='2030-10-29T02:00:00.000Z',to
  assert.deepEqual([night.acknowledgements,night.outsideCoverage,night.acknowledgementShare,night.primaryShare,night.per24PrimaryHours,night.loadToCoverage],[2,1,2/3,3/4,8,(2/3)/(3/4)])
  assert.deepEqual([relief.acknowledgements,relief.outsideCoverage,relief.acknowledgementShare,relief.primaryShare,relief.per24PrimaryHours,relief.loadToCoverage],[1,0,1/3,1/4,12,(1/3)/(1/4)])
  assert.deepEqual(report.load.services.map(row=>[row.primarySeconds,row.uncoveredPrimarySeconds,row.incidents]),[[28800,uncovered,5]])
- assert.deepEqual([report.noise.alerts,report.noise.triggers,report.noise.repeatedAlerts,report.noise.noisyKeys],[1,2,1,1])
+ assert.deepEqual([report.noise.alerts,report.noise.triggers,report.noise.repeatedAlerts,report.noise.noisyKeys,report.noise.suppressedAlerts],[2,3,1,1,1])
+ assert.deepEqual(report.noise.noisy.map(row=>[row.service,[...row.alertIds].sort()]),[[s.service,[...s.alertIds].sort()]],'the report links exactly its retained alert generations')
 }
 
 export const responseCsvRows=text=>text.trim().split('\r\n').map(line=>[...line.matchAll(/"((?:[^"]|"")*)"/g)].map(match=>match[1].replaceAll('""','"')))
