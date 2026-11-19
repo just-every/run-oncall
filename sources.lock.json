@@ -2460,7 +2460,7 @@
       "executable": false
     },
     "src/family/response-operations/triage.ts": {
-      "sha256": "a0074c3c31f940b7662f03e698a84881e956238b46fa39fa58031b4fff3609c5",
+      "sha256": "45e830540caf1f1b423ebf45b5e01c94c13d2d9f5d342ee57d63756fd2d22b00",
       "executable": false
     },
     "src/form-validation.tsx": {
@@ -6872,7 +6872,7 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "33a6aeb9400e1af5bb0137665f05f7bda450a5b2ff14f8b73c4a83672a676f1c",
+      "sha256": "3fa4f187c7d9025fd4e655d1cc1572c386342d5a58ee5e0e4ea3db879407dfd1",
       "executable": false
     },
     "tests/product-browser.mjs": {
@@ -6911,8 +6911,12 @@
       "sha256": "c8da689c2f9c24345cb42f5c528bab2d49a0bc6b99cf4d6f8c5fdacfc7175783",
       "executable": false
     },
+    "tests/triage-time-fixture.mjs": {
+      "sha256": "8a4eb8016508589e2461a1a0c874f16c8dfbca884b078a83b8a1628da13ee30b",
+      "executable": false
+    },
     "tests/triage.mjs": {
-      "sha256": "57cef02d6c444c9e63378adb91ac0f8a059812368c4e395f71455339e7716303",
+      "sha256": "55c3f78dc83ff32e6d48f48ece6e0bd72d7760ea9b0717bf058c4b539f4700d5",
       "executable": false
     },
     "tests/verify.mjs": {
