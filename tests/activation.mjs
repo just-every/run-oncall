@@ -161,13 +161,17 @@ async function ownShiftsAcrossSwap(){
   });
   const readFeeds=async()=>{
    const before=await readState(),durableBefore=durableSnapshot(w);
+   assert.equal(before.paging.paging,'OFF');
    const windows=[];
    for(const schedule of [rota,decoy]){
     windows.push({schedule,coverage:ok(await req('/api/paging/preview',{scheduleId:schedule.id,from,to}))});
    }
    const [effective,unrelated]=windows.map(({coverage})=>coverage);
-   assert.equal(unrelated[0].primary,backup.id,'the decoy has populated coverage');
-   assert.ok(effective.every(window=>window.at>=Date.parse(validUntil)||window.backup===backup.id),'the distinct backup remains assigned throughout the rota');
+   const activeWindows=coverage=>coverage.filter(window=>window.at<Date.parse(validUntil));
+   assert.ok(activeWindows(unrelated).length>0,'the decoy has populated coverage');
+   assert.ok(activeWindows(unrelated).every(window=>window.primary===backup.id&&window.backup===owner.value.member.id),
+    'the decoy covers both roles throughout the test interval without either subscriber');
+   assert.ok(activeWindows(effective).every(window=>window.backup===backup.id),'the distinct backup remains assigned throughout the rota');
 
    const feeds=[];
    for(const subscriber of subscriptions){
@@ -175,11 +179,13 @@ async function ownShiftsAcrossSwap(){
     assert.equal(response.status,200);
     assert.match(response.headers.get('content-type'),/^text\/calendar/);
     assert.equal(response.headers.get('cache-control'),'private, no-store');
+    assert.equal(response.headers.get('referrer-policy'),'no-referrer');
     const unfolded=response.value.replace(/\r\n[ \t]/g,'');
     assert.match(unfolded,/^BEGIN:VCALENDAR\r\n[\s\S]*\r\nEND:VCALENDAR\r\n$/);
     for(const forbidden of [...privateValues,rota.id,decoy.id,decoy.name,'CONTACT','ATTENDEE','mailto:']){
      assert.ok(!unfolded.includes(forbidden),'own shifts disclose no unrelated rota, raw member or bearer data');
     }
+    assert.ok(!/^(?:URL|SOURCE|ATTACH)[;:]/im.test(unfolded),'the feed has no link that can disclose subscription access');
     const actual=calendarEvents(response.value).map(({DTSTART,DTEND,SUMMARY})=>({DTSTART,DTEND,SUMMARY}));
     const expected=windows.flatMap(({schedule,coverage})=>coverage.flatMap((window,index)=>
      ['primary','backup'].filter(role=>window[role]===subscriber.member.id).map(role=>({
