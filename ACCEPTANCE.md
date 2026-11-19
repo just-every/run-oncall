@@ -289,7 +289,7 @@ Core · published · **done**
 **Acceptance.**
 1. Following the provider export instructions, saved Opsgenie and PagerDuty list and detail bundles preview with zero native-object writes, exact rejected and unmapped rules and fingerprints are shown, and the apply stays paused, with people and services explicitly mapped before native coverage is adopted.
 
-**Evidence.** `src/move-in/owner-door.ts`; `src/move-in/source.ts`; `src/move-in/adoption.ts`; `tests/activation.mjs`; `tests/import-door.mjs`; `tests/product-browser-journey.mjs`; `tests/import-door.mjs`
+**Evidence.** `src/move-in/owner-door.ts`; `src/move-in/source.ts`; `src/move-in/adoption.ts`; `tests/activation.mjs`; `tests/import-door.mjs`; `tests/product-browser-journey.mjs`; `tests/import-door.mjs`; `tests/import-door.mjs` (documented PagerDuty account); `tests/activation.mjs` (OC-021/022 saved-response journeys); `tests/product-browser-journey.mjs` (documentedPagerDutyReview)
 **Gap.** None.
 
 #### OC-022 — Resume and undo
