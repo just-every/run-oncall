@@ -482,11 +482,16 @@ async function staleMergeConfirmation(context, req, proof, {origin, target, firs
   assert.equal(row.paging_before, row.paging_after);
   assert.equal(row.handoff_before, row.handoff_after);
 
+  const firstPath = '/incidents/' + encodeURIComponent(first.id);
+  await reviewerPage.goto(firstPath);
+  await expect(reviewerPage.locator('.detail').getByRole('heading', {name:first.title, exact:true})).toBeVisible();
+  await expect(reviewerPage).toHaveURL(origin + firstPath);
+
   await writeFile(`${directory}/oc050-stale-merge.json`, JSON.stringify({
    journey:'incidentWorkflowBrowser', response:refused.status(), commandCount:merges.length,
    note:{actor:writer.name, beforeRevision:secondAtReview.revision, afterRevision:secondBefore.revision},
    refusal:{kind:row.kind, outcome:row.outcome, actor:reviewer.name, subject:target.title},
-   workspaceRevision:stateBefore.revision, unchangedProtectedState:true, unchangedDurableRecords:true,
+   workspaceRevision:stateBefore.revision, unchangedProtectedState:true, unchangedDurableRecords:true, firstSourceStillOpens:true,
    unchangedPaging:pagingBefore.paging, outboundRequests:outboundBefore.length, screenshots,
   }, null, 2) + '\n');
   console.log('PROBE OC-050 acceptance 2: reviewed public-service merge with two ordered sources; separate responder note advanced the second source; one protected 409 and visible conflict, one attributed refusal, no alias, timeline, revision, paging or outbound change from confirmation.');
