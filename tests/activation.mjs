@@ -113,8 +113,137 @@ export async function pagingHistory(w,cookie) {
 const calendarDate=at=>new Date(at).toISOString().replace(/[-:]/g,'').replace('.000','')
 const calendarEvents=text=>text.replace(/\r\n[ \t]/g,'').split('BEGIN:VEVENT\r\n').slice(1).map(block=>Object.fromEntries(block.split('END:VEVENT')[0].trim().split('\r\n').map(line=>{const colon=line.indexOf(':');return [line.slice(0,colon),line.slice(colon+1)]})))
 
+// Read the same two own-shifts subscriptions on both sides of an accepted swap.
+async function ownShiftsAcrossSwap(){
+ const w=await localWorker({}, {clock:true,outboundLedger:true});
+ try{
+  const clock=Date.parse('2026-01-05T12:34:56.789Z');
+  const from=Math.floor(clock / 1000)*1000,to=from+31*86400000;
+  const start='2026-01-05T15:00:00.000Z',end='2026-01-05T16:00:00.000Z';
+  const validFrom=new Date(from).toISOString(),validUntil='2026-01-05T18:00:00.000Z';
+  const owner=await w.request('/api/setup',{name:'synthetic-oncall-260',password:'synthetic-oncall-260-password'});
+  ok(owner);
+  const req=(path,input)=>w.request(path,input,owner.cookie);
+  const coordination='/api/schedule-coordination';
+  const respond=async n=>{
+   const name='synthetic-oncall-'+n,password=name+'-password';
+   const member=ok(await req('/api/members',{name,role:'responder',password}),201);
+   const login=await w.request('/api/login',{name,password});ok(login);
+   return {member,coord:input=>w.request(coordination,input,login.cookie)};
+  };
+  const holder=await respond(261),substitute=await respond(262);
+  const backup=ok(await req('/api/members',{name:'synthetic-oncall-263',role:'responder',password:'synthetic-oncall-263-password'}),201);
+  // Issue sessions before freezing schedule time. D1 checks expiry against its own clock.
+  await w.time(clock);
+  const service=ok(await req('/api/command',{type:'service',id:'synthetic-oncall-260',name:'Synthetic own shifts service',environment:'test',owner:owner.value.member.id,runbook:[],pager:''}));
+  const rotation=members=>({anchorLocal:validFrom.slice(0,16),periodDays:1,members,ambiguity:'earlier'});
+  const rota=ok(await req('/api/paging/schedules',{
+   id:'synthetic-oncall-264',name:'Synthetic own shifts rota',service:service.id,revision:0,timezone:'UTC',
+   validFrom,validUntil,primary:rotation([holder.member.id]),backup:rotation([backup.id]),overrides:[]
+  }));
+  const decoy=ok(await req('/api/paging/schedules',{
+   ...rota,id:'synthetic-oncall-265',name:'Synthetic decoy rota',revision:0,
+   primary:rotation([backup.id]),backup:rotation([owner.value.member.id])
+  }));
+  const subscriptions=[];
+  for(const subscriber of [holder,substitute]){
+   const issued=ok(await subscriber.coord({action:'subscribe',scope:'own'}));
+   assert.deepEqual(issued.record.data,{scope:'own',target:subscriber.member.id});
+   const path=new URL(issued.url).pathname;
+   subscriptions.push({...subscriber,id:issued.record.id,path,bearer:path.slice('/calendar/'.length,-'.ics'.length)});
+  }
+  const privateValues=[
+   ...[holder.member,substitute.member,backup,owner.value.member].flatMap(member=>[member.id,member.name]),
+   ...subscriptions.flatMap(({path,bearer})=>[path,bearer]),
+  ];
+  const readState=async()=>({
+   workspace:ok(await req('/api/state')),paging:ok(await req('/api/paging/state')),
+  });
+  const readFeeds=async()=>{
+   const before=await readState(),durableBefore=durableSnapshot(w);
+   const windows=[];
+   for(const schedule of [rota,decoy]){
+    windows.push({schedule,coverage:ok(await req('/api/paging/preview',{scheduleId:schedule.id,from,to}))});
+   }
+   const [effective,unrelated]=windows.map(({coverage})=>coverage);
+   assert.equal(unrelated[0].primary,backup.id,'the decoy has populated coverage');
+   assert.ok(effective.every(window=>window.at>=Date.parse(validUntil)||window.backup===backup.id),'the distinct backup remains assigned throughout the rota');
+
+   const feeds=[];
+   for(const subscriber of subscriptions){
+    const response=await w.send(subscriber.path,undefined,{},'GET');
+    assert.equal(response.status,200);
+    assert.match(response.headers.get('content-type'),/^text\/calendar/);
+    assert.equal(response.headers.get('cache-control'),'private, no-store');
+    const unfolded=response.value.replace(/\r\n[ \t]/g,'');
+    assert.match(unfolded,/^BEGIN:VCALENDAR\r\n[\s\S]*\r\nEND:VCALENDAR\r\n$/);
+    for(const forbidden of [...privateValues,rota.id,decoy.id,decoy.name,'CONTACT','ATTENDEE','mailto:']){
+     assert.ok(!unfolded.includes(forbidden),'own shifts disclose no unrelated rota, raw member or bearer data');
+    }
+    const actual=calendarEvents(response.value).map(({DTSTART,DTEND,SUMMARY})=>({DTSTART,DTEND,SUMMARY}));
+    const expected=windows.flatMap(({schedule,coverage})=>coverage.flatMap((window,index)=>
+     ['primary','backup'].filter(role=>window[role]===subscriber.member.id).map(role=>({
+      DTSTART:calendarDate(window.at),DTEND:calendarDate(coverage[index+1]?.at??to),
+      SUMMARY:schedule.name+' / '+role+': Responder',
+     }))
+    ));
+    assert.deepEqual(actual,expected,'own shifts match the protected UTC coverage for this member and role');
+    const records=ok(await subscriber.coord()).records;
+    assert.deepEqual(records.find(row=>row.id===subscriber.id).data,{scope:'own',target:subscriber.member.id});
+    assert.ok(subscriptions.every(({bearer})=>!JSON.stringify(records).includes(bearer)),'subscription reads cannot recover a bearer');
+    feeds.push(actual);
+   }
+
+   assert.deepEqual(await readState(),before,'feed reads preserve workspace, assignments, revisions and paging history');
+   const {oc_admin_audit:priorAudit,oc_audit_clock:priorClock,oc_audit_identities:priorIdentities,...prior}=durableBefore;
+   const {oc_admin_audit:audit,oc_audit_clock:auditClock,oc_audit_identities:identities,...after}=durableSnapshot(w);
+   assert.deepEqual(after,prior,'feed reads mutate only calendar-export audit and its bookkeeping');
+   const previousIds=new Set(priorAudit.map(row=>row.id));
+   assert.deepEqual(audit.filter(row=>previousIds.has(row.id)),priorAudit,'past audit entries remain intact');
+   assert.equal(auditClock[0].revision,priorClock[0].revision);
+   const identityKeys=new Set(priorIdentities.map(row=>row.label));
+   assert.deepEqual(identities.filter(row=>identityKeys.has(row.label)),priorIdentities);
+   const exports=audit.filter(row=>!previousIds.has(row.id));
+   assert.equal(exports.length,subscriptions.length);
+   for(const {id,member} of subscriptions){
+    const label=(kind,entity)=>identities.find(row=>row.kind===kind&&row.entity_id===entity)?.label;
+    assert.ok(exports.some(row=>row.actor===label('service','calendar:'+id)
+     &&row.subject===label('member',member.id)&&row.source===label('door','calendar')));
+   }
+   assert.deepEqual(exports.map(row=>({
+    kind:row.kind,outcome:row.outcome,workspace:[row.workspace_before,row.workspace_after],paging:[row.paging_before,row.paging_after],
+   })),subscriptions.map(()=>({
+    kind:'calendar.export',outcome:'accepted',workspace:[before.workspace.revision,before.workspace.revision],
+    paging:[before.paging.revision,before.paging.revision],
+   })));
+   assert.deepEqual(await w.outboundRequests(),[],'subscriptions, swap coordination and reads make zero outbound requests');
+   return feeds.map(events=>events.map(event=>[event.DTSTART,event.DTEND]));
+  };
+
+  const interval=(left,right)=>[calendarDate(Date.parse(left)),calendarDate(Date.parse(right))];
+  assert.deepEqual(await readFeeds(),[[interval(validFrom,validUntil)],[]],'only the holder sees the original primary interval');
+  const requested=ok(await holder.coord({
+   action:'request',schedule:rota.id,scheduleRevision:rota.revision,substitute:substitute.member.id,role:'primary',start,end,
+  })).record;
+  assert.equal(requested.data.approved,false);
+  const approved=ok(await req(coordination,{action:'approve',id:requested.id,revision:requested.revision})).record;
+  const accepted=ok(await substitute.coord({action:'accept',id:approved.id,revision:approved.revision})).record;
+  assert.equal(accepted.data.status,'accepted');
+  const saved=ok(await req('/api/paging/state')).schedules;
+  assert.deepEqual(saved.find(schedule=>schedule.id===rota.id),{
+   ...rota,revision:rota.revision+1,overrides:[{id:accepted.data.override,role:'primary',start,end,member:substitute.member.id}],
+  });
+  assert.deepEqual(saved.find(schedule=>schedule.id===decoy.id),decoy);
+  assert.deepEqual(await readFeeds(),[
+   [interval(validFrom,start),interval(end,validUntil)],[interval(start,end)],
+  ],'the same subscriptions transfer only the bounded primary window; neither gets backup or decoy coverage');
+  console.log('PASS OC-025 own shifts across an accepted swap: same two bearer feeds match protected UTC coverage before and after, only the bounded primary window transfers, no private data or decoy coverage, unchanged assignments and paging across reads, calendar-export audit only, zero outbound requests');
+ }finally{await w.close();}
+}
+
 // schedule-coordination: part of this public journey.
 export async function scheduleCoordination(){
+ await ownShiftsAcrossSwap();
  await scheduleLayers();
  await savedRotationCoverage();
  const w=await localWorker({}, {clock:true,outboundLedger:true});
