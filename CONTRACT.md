@@ -320,6 +320,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 **Observed (18 November 2026, Run Edit Run fleet).** In `tests/activation.mjs`, a responder issued a service-scoped subscription for the second service linked to a shared rota. The bearer feed matched 31 days of protected UTC coverage for both roles before and after a reviewed override. It omitted unrelated rotas, raw member names and IDs, and the bearer token. A different responder could not revoke it. Revocation by the subscriber made the same URL return 404 immediately. Saved assignments, protected coverage and paging records were unchanged by revocation, and the Worker made zero outbound requests.
 
+**Observed (19 November 2026, Run Edit Run fleet).** In `tests/activation.mjs`, the primary holder and named substitute each issued an own-shifts subscription. Under a fixed Worker clock, the holder requested a future primary swap, an administrator approved it, and the named substitute accepted it. The same two feeds matched protected coverage filtered by member and role. The exact 15:00–16:00 UTC primary window left the holder's feed and appeared in the substitute's feed. Neither feed exposed the distinct backup, an unrelated rota, raw member information or a bearer. Feed reads preserved assignments, workspace and paging revisions, and paging records. Only attributed calendar-export audit was recorded, with zero outbound requests. The feed scope and masking are in `src/schedule-coordination/feed.ts` lines 21–32 and the member filter and UTC event windows are in `src/calendar.ts` lines 7–16.
+
 #### OC-026 — Native US phone, SMS, push and email paging
 
 *Tier:* Core · *Cites:* BASE-MAIL-001 · *Rules:* D-1, D-3, D-4 · *Register:* R-5, R-6
