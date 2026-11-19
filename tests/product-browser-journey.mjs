@@ -137,23 +137,30 @@ async function opsgenieReadiness(page,context,proof) {
  }
  context.on('request',record)
  try {
+  const step=page.locator('.move-in-step')
+  const link=step.getByRole('link',{name:'Opsgenie migration readiness checklist',exact:true})
   for(const width of [1440,390]) {
    await page.setViewportSize({width,height:1000})
    await page.goto(new URL('/settings/move-in',page.url()).href)
+   assert.equal(await link.count(),0,'PagerDuty does not show the Opsgenie checklist beside Source')
    await page.getByLabel('Source',{exact:true}).selectOption('opsgenie')
-   await page.locator('.move-in-fallback > summary').click()
+   await link.waitFor({state:'visible'})
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))
+   await page.screenshot({path:`${directory}/opsgenie-checklist-source-${width}.png`})
+   const fallback=step.locator('.move-in-fallback > summary')
+   await fallback.click()
    const help=page.locator('.move-in-export-help');await help.locator('summary').click()
-   const link=help.getByRole('link',{name:'Opsgenie migration readiness checklist',exact:true})
-   await link.scrollIntoViewIfNeeded()
    if(width===1440){
-    const dates=await help.locator('time').evaluateAll(times=>times.map(time=>time.dateTime))
-    assert.equal(dates.length,2);assert.ok(dates.every(value=>Number.isFinite(Date.parse(value))))
-    assert.ok(Date.parse(dates[0])<Date.parse(dates[1]),'dated review precedes the announced shutdown')
+    const reviewed=Date.parse(await help.locator('time').getAttribute('datetime'))
+    const shutdown=Date.parse(await step.locator(':scope > p time').getAttribute('datetime'))
+    assert.ok(reviewed<shutdown,'dated review precedes the announced shutdown')
     assert.match(await help.innerText(),/Recheck provider and export availability at execution/)
     assert.match(await help.innerText(),/account and export checks are blocked and unverified/)
    }
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))
+   await help.getByRole('heading',{name:'Opsgenie migration readiness',exact:true}).scrollIntoViewIfNeeded()
    await page.screenshot({path:`${directory}/opsgenie-checklist-help-${width}.png`})
+   await fallback.click()
    await link.click()
    await page.waitForURL('**/docs/move-in#opsgenie-migration-readiness-checklist')
    const heading=page.getByRole('heading',{name:'Opsgenie migration readiness checklist',exact:true})
@@ -192,6 +199,13 @@ async function opsgenieReadiness(page,context,proof) {
     return {x:0,y:top,width:innerWidth,height:end.getBoundingClientRect().top+scrollY-top}
    })
    await page.screenshot({path:`${directory}/opsgenie-checklist-docs-${width}.png`,fullPage:true,clip})
+   await fileSource(page,'opsgenie')
+   await link.waitFor({state:'visible'})
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))
+   await page.screenshot({path:`${directory}/opsgenie-checklist-file-source-${width}.png`})
+   await link.click()
+   await page.waitForURL('**/docs/move-in#opsgenie-migration-readiness-checklist')
+   await heading.waitFor({state:'visible'})
    // The saved-response help had the other deadline reference; its link must
    // reach this same served checklist without starting an import either.
    await fileSource(page,'splunk')

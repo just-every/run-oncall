@@ -17,8 +17,11 @@ export function ConnectStep({ waiting, source, vendor, choose, fileVendor, conne
   <label className="scheduling-field"><span id="move-in-source">Source</span><select aria-labelledby="move-in-source" value={source} disabled={busy} onChange={event => { setKey(''); setUseKey(false); choose(event.target.value) }}>
    <option value="pagerduty">PagerDuty</option><option value="opsgenie">Opsgenie</option><option value="file">Other: from a file</option>
   </select></label>
+  {source === 'file' && <label className="scheduling-field"><span id="move-in-file-source">File source</span><select aria-labelledby="move-in-file-source" value={vendor} disabled={busy} onChange={event => fileVendor(event.target.value)}>{Object.entries(vendorNames).map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label>}
+  {(source === 'opsgenie' || (source === 'file' && vendor === 'opsgenie')) && <p>
+   The announced Opsgenie shutdown is <time dateTime="2027-04-05">5 April 2027</time>. Read the <a href="/docs/move-in#opsgenie-migration-readiness-checklist">Opsgenie migration readiness checklist</a> before exporting.
+  </p>}
   {source === 'file' ? <>
-   <label className="scheduling-field"><span id="move-in-file-source">File source</span><select aria-labelledby="move-in-file-source" value={vendor} disabled={busy} onChange={event => fileVendor(event.target.value)}>{Object.entries(vendorNames).map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label>
    {upload}
    <details className="move-in-fallback"><summary>No key? Use the exporter on your computer</summary><ExportHelp vendor={vendor} /></details>
   </> : <>
