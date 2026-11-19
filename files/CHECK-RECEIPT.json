@@ -1,0 +1,156 @@
+{
+  "tag": "sd-oncall-c-f296",
+  "repository": "just-every/run-oncall",
+  "productBranch": "cloud/sd-oncall-c-f296",
+  "productHead": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+  "baseline": "4eadad478aa00b538a9750a6727306937a4fd54c",
+  "changedFiles": [
+    "CONTRACT.md",
+    "sources.lock.json",
+    "tests/agent-door-browser.mjs",
+    "tests/oncall-agent-flow.mjs"
+  ],
+  "counts": {
+    "before": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "after": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "clause": {
+    "id": "BASE-AGENT-012",
+    "recordedBefore": "missing",
+    "recordedAfter": "missing",
+    "observedPoint": 3
+  },
+  "tests": {
+    "runtime": {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "node": "24.19.0",
+      "exit": 0,
+      "resolution": [
+        "PROBE BASE-AGENT-012 acceptance 3 autonomous oncall.incidents.resolve: a changed summary with the original key and revision returns idempotency_conflict with no private result; the exact request replays the stored result and original receipt when held; one resolution, unchanged native custody and paging, zero outbound requests",
+        "PROBE BASE-AGENT-012 acceptance 4 autonomous oncall.incidents.resolve: first call with native revision 3 and no expected_revision returned revision_conflict with current_revision 4 in metadata and text; scoped-out and missing incidents returned identical not_found; corrected key recorded one resolution and audit, 0 approvals, effect-free replay, unchanged paging, zero outbound requests",
+        "PROBE BASE-AGENT-012 acceptance 3 held oncall.incidents.resolve: a changed summary with the original key and revision returns idempotency_conflict with no private result; the exact request replays the stored result and original receipt when held; one resolution, unchanged native custody and paging, zero outbound requests",
+        "PROBE BASE-AGENT-012 acceptance 4 held oncall.incidents.resolve: first call with native revision 3 and no expected_revision returned revision_conflict with current_revision 4 in metadata and text; scoped-out and missing incidents returned identical not_found; corrected key recorded one resolution and audit, 1 approvals, effect-free replay, unchanged paging, zero outbound requests"
+      ],
+      "completion": "Runtime agents completed (625.5s)"
+    },
+    "browser": {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/agent-door-browser.mjs",
+      "node": "22.20.0",
+      "exit": 0,
+      "observed": [
+        "Browser proof resolution-pending 1440: fits=true serious/critical=0 undersized-controls=0",
+        "Browser proof resolution-pending 390: fits=true serious/critical=0 undersized-controls=0",
+        "Browser proof resolution-executed 1440: fits=true serious/critical=0 undersized-controls=0",
+        "Browser proof resolution-executed 390: fits=true serious/critical=0 undersized-controls=0",
+        "Browser proof resolution-timeline 1440: fits=true serious/critical=0 undersized-controls=0",
+        "Browser proof resolution-timeline 390: fits=true serious/critical=0 undersized-controls=0",
+        "PASS incident resolution browser: commitment-only approval, exact saved revision, native human approver and agent preparer, one attributed resolution and effect-free retry"
+      ],
+      "screenshots": [
+        {
+          "path": "agent-door-resolution-executed-1440.png",
+          "width": 1440,
+          "sha256": "6615df645e5cf47203d61d1875e941475608d627b12c91360c1102f14204e8cf"
+        },
+        {
+          "path": "agent-door-resolution-executed-390.png",
+          "width": 390,
+          "sha256": "aa38e8d265a0198c3ce49049c0bbd73e142783b4ecf99316e740edc2568f9988"
+        },
+        {
+          "path": "agent-door-resolution-pending-1440.png",
+          "width": 1440,
+          "sha256": "e9bc35ebced990fe1a826e96a8a0e6d16f3f5977e8922ea3071ad90d46a6f84e"
+        },
+        {
+          "path": "agent-door-resolution-pending-390.png",
+          "width": 390,
+          "sha256": "cf37740f88c29cd9d07d8f2f5e1eaee7479818860e39842183333baa38e7f289"
+        },
+        {
+          "path": "agent-door-resolution-timeline-1440.png",
+          "width": 1440,
+          "sha256": "6b52f70dae548280d58cb395ae0876aab7242eb427490756b2ac52d01f648935"
+        },
+        {
+          "path": "agent-door-resolution-timeline-390.png",
+          "width": 390,
+          "sha256": "7be31873d124b80845191cdf62559b7052329efa92fb7fe1c8ee1a1399e015a2"
+        }
+      ]
+    },
+    "typecheck": {
+      "command": "pnpm run typecheck",
+      "node": "22.20.0",
+      "exit": 0
+    },
+    "build": {
+      "command": "npx -y @runeditrun/rer build",
+      "node": "22.20.0",
+      "exit": 0
+    },
+    "firstParty": {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    "runtimeExactCandidate": {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "node": "22.20.0",
+      "exit": 0,
+      "productHead": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+      "completion": "Runtime agents completed (637.4s)",
+      "resolution": [
+        "PROBE BASE-AGENT-012 acceptance 3 autonomous oncall.incidents.resolve: a changed summary with the original key and revision returns idempotency_conflict with no private result; the exact request replays the stored result and original receipt when held; one resolution, unchanged native custody and paging, zero outbound requests",
+        "PROBE BASE-AGENT-012 acceptance 4 autonomous oncall.incidents.resolve: first call with native revision 3 and no expected_revision returned revision_conflict with current_revision 4 in metadata and text; scoped-out and missing incidents returned identical not_found; corrected key recorded one resolution and audit, 0 approvals, effect-free replay, unchanged paging, zero outbound requests",
+        "PROBE BASE-AGENT-012 acceptance 3 held oncall.incidents.resolve: a changed summary with the original key and revision returns idempotency_conflict with no private result; the exact request replays the stored result and original receipt when held; one resolution, unchanged native custody and paging, zero outbound requests",
+        "PROBE BASE-AGENT-012 acceptance 4 held oncall.incidents.resolve: first call with native revision 3 and no expected_revision returned revision_conflict with current_revision 4 in metadata and text; scoped-out and missing incidents returned identical not_found; corrected key recorded one resolution and audit, 1 approvals, effect-free replay, unchanged paging, zero outbound requests"
+      ]
+    }
+  },
+  "mechanical": {
+    "generatedViews": {
+      "writeExit": 0,
+      "generatedCheckExit": 0,
+      "trackedCandidateCheckExit": 1,
+      "diagnostic": [
+        "Contract prose: 0 errors, 0 warnings.",
+        "ACCEPTANCE.md: generated content differs; run contract-docs write."
+      ],
+      "restoredFrom": "4eadad478aa00b538a9750a6727306937a4fd54c"
+    },
+    "sourceLock": {
+      "writeExit": 0,
+      "checkExit": 0,
+      "trackedFiles": 1717
+    },
+    "migrationLedger": "not applicable",
+    "statusSection": "byte-identical to baseline",
+    "candidateHistoryScanned": false,
+    "publicationScan": {
+      "commit": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+      "complete": false,
+      "historyScanned": false,
+      "findings": null,
+      "reason": "guarded Mac lander owns the full-history publication scan"
+    }
+  },
+  "verifyDiscovery": {
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44539202074",
+    "id": 44539202074,
+    "name": "Verify",
+    "status": "in_progress"
+  }
+}

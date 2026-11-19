@@ -1,0 +1,160 @@
+{
+  "discovery": {
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44539202074",
+    "id": 44539202074,
+    "name": "Verify",
+    "status": "in_progress"
+  },
+  "polls": [
+    {
+      "conclusion": null,
+      "head_sha": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44539202074",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44539202074",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": "failure",
+      "head_sha": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44539202074",
+      "status": "completed"
+    }
+  ],
+  "jobs": [
+    {
+      "conclusion": "success",
+      "failed": [],
+      "head_sha": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+      "id": 135612683291,
+      "name": "plan"
+    },
+    {
+      "conclusion": "success",
+      "failed": [],
+      "head_sha": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+      "id": 135612889073,
+      "name": "build"
+    },
+    {
+      "conclusion": "failure",
+      "failed": [
+        "Check the generated contract documents"
+      ],
+      "head_sha": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+      "id": 135612889366,
+      "name": "contract-docs"
+    },
+    {
+      "conclusion": "skipped",
+      "failed": [],
+      "head_sha": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+      "id": 135612893328,
+      "name": "light"
+    },
+    {
+      "conclusion": "success",
+      "failed": [],
+      "head_sha": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+      "id": 135613941536,
+      "name": "shards (intake)"
+    },
+    {
+      "conclusion": "success",
+      "failed": [],
+      "head_sha": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+      "id": 135613941589,
+      "name": "shards (browser)"
+    },
+    {
+      "conclusion": "success",
+      "failed": [],
+      "head_sha": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+      "id": 135613941601,
+      "name": "shards (runtime)"
+    },
+    {
+      "conclusion": "success",
+      "failed": [],
+      "head_sha": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+      "id": 135613941614,
+      "name": "shards (triage)"
+    },
+    {
+      "conclusion": "success",
+      "failed": [],
+      "head_sha": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+      "id": 135613941626,
+      "name": "shards (hosted)"
+    },
+    {
+      "conclusion": "success",
+      "failed": [],
+      "head_sha": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+      "id": 135613941628,
+      "name": "shards (agents)"
+    },
+    {
+      "conclusion": "success",
+      "failed": [],
+      "head_sha": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+      "id": 135613941715,
+      "name": "shards (transfer)"
+    },
+    {
+      "conclusion": "success",
+      "failed": [],
+      "head_sha": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+      "id": 135613941771,
+      "name": "shards (changes)"
+    },
+    {
+      "conclusion": "success",
+      "failed": [],
+      "head_sha": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+      "id": 135621831277,
+      "name": "full-push-proof"
+    },
+    {
+      "conclusion": "skipped",
+      "failed": [],
+      "head_sha": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+      "id": 135621831895,
+      "name": "nightly-proof"
+    },
+    {
+      "conclusion": "failure",
+      "failed": [
+        "Require the selected coverage and its proof"
+      ],
+      "head_sha": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+      "id": 135621905113,
+      "name": "verify"
+    }
+  ],
+  "refs": {
+    "refs/heads/cloud/sd-oncall-c-f291": "da6f6cfd973c83ff5fc9fdd240c7d34e6178ea7b",
+    "refs/heads/cloud/sd-oncall-c-f296": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+    "refs/heads/main": "50a05ac92632c5eba8f30cc0b9405fcab4df685b"
+  },
+  "disposition": "ready under the generated-view exception",
+  "diagnostic": "ACCEPTANCE.md reports generated content differs in the committed candidate",
+  "publicationScan": {
+    "commit": "69478c5ec3a91cd755c3dacca0a4c9322e3496f9",
+    "complete": false,
+    "historyScanned": false,
+    "findings": null,
+    "reason": "guarded Mac lander owns the full-history publication scan"
+  },
+  "runSite": {
+    "status": "pending guarded landing"
+  },
+  "githubCalls": 9
+}
