@@ -761,6 +761,12 @@ try{
  assert.equal(resolveRetry.result?.isError,false,JSON.stringify(resolveRetry.body));
  assert.notEqual(resolveRetry.body.id,lostResolution.id);
  assert.equal(resolveRetry.result.structuredContent.state,'resolved');
+ assert.deepEqual(resolveRetry.result.structuredContent,resolvedIncident,'The recovered result is the incident the sponsor resolved');
+ const resolutionCall=resolutionEffects.records.agent_door_calls.find(row=>row.agent===runtime.context.agentId&&row.key===resolveArgs.idempotency_key);
+ assert.equal(resolutionCall.state,'done');
+ const {receipt,decision}=JSON.parse(resolutionCall.outcome);
+ assert.equal(receipt.approval_id,approvalHandle.id);
+ assert.deepEqual(resolveRetry.result._meta['com.runeditrun/receipt'],{...receipt,decision});
  assert.deepEqual(await native(),resolutionAfter,'Approved resolution retry creates no second effect');
  assert.deepEqual(await agentEffectSnapshot(runtime),resolutionEffects,'Recovering the browser-approved result preserves native and approval custody');
  assert.deepEqual(await runtime.outboundRequests(),resolutionEdge);
