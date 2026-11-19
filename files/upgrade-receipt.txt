@@ -1,0 +1,4 @@
+2026-11-19T20:13:13Z
+Node v22.20.0, pnpm 10.12.4
+PASS migration inventory: v0.5.19=68; candidate=68; all filenames, modes and bytes match
+PASS Wrangler D1 v0.5.19 upgrade on populated state: no pending migrations; held owner, service, runbook, revision and migration journal preserved

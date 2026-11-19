@@ -1,0 +1,22 @@
+Verify run 44605997400, attempt 1
+Discovered in_progress for e4123dded5d6a9f058880669ca10213bcfbe2646 at https://github.com/just-every/run-oncall/actions/runs/44605997400
+Terminal status completed/failure for e4123dded5d6a9f058880669ca10213bcfbe2646, updated 2026-11-19T20:30:11Z
+
+Job ID	Job	Conclusion	Start UTC	End UTC
+135849714626	plan	success	2026-11-19T20:10:59Z	2026-11-19T20:11:20Z
+135849962121	contract-docs	success	2026-11-19T20:11:23Z	2026-11-19T20:11:48Z
+135849962258	build	success	2026-11-19T20:11:23Z	2026-11-19T20:14:45Z
+135849965234	light	skipped	2026-11-19T20:11:21Z	2026-11-19T20:11:20Z
+135852047839	shards (runtime)	success	2026-11-19T20:14:48Z	2026-11-19T20:22:18Z
+135852047840	shards (triage)	success	2026-11-19T20:14:47Z	2026-11-19T20:22:27Z
+135852047871	shards (agents)	success	2026-11-19T20:14:47Z	2026-11-19T20:24:09Z
+135852047897	shards (intake)	success	2026-11-19T20:14:47Z	2026-11-19T20:23:30Z
+135852047922	shards (browser)	failure	2026-11-19T20:14:48Z	2026-11-19T20:18:18Z
+135852047928	shards (hosted)	success	2026-11-19T20:14:48Z	2026-11-19T20:26:27Z
+135852047977	shards (changes)	cancelled	2026-11-19T20:14:47Z	2026-11-19T20:30:04Z
+135852048038	shards (transfer)	success	2026-11-19T20:14:47Z	2026-11-19T20:27:23Z
+135861278866	verify	failure	2026-11-19T20:30:06Z	2026-11-19T20:30:10Z
+135861280332	nightly-proof	skipped	2026-11-19T20:30:04Z	2026-11-19T20:30:04Z
+135861281678	full-push-proof	skipped	2026-11-19T20:30:04Z	2026-11-19T20:30:04Z
+
+Changes job elapsed 15m17s (15-minute timeout). Transfer passed in 12m36s.

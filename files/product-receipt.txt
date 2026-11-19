@@ -1,0 +1,23 @@
+2026-11-19T20:11:11Z
+e4123dded5d6a9f058880669ca10213bcfbe2646
+071c74a352196f6778eb3b2942c351b4cf1e0ace
+e4123dded5d6a9f058880669ca10213bcfbe2646	refs/heads/cloud/sd-oncall-release-0-5-20-c1
+CHANGELOG.md
+RELEASE.json
+RELEASE.md
+package.json
+seed.json
+sources.lock.json
+1
+Edition source lock ok=true
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+PASS pinned rer first-party check and TypeScript typecheck
+Workflow permissions and shared artifact names are valid.
+PASS pinned rer release source validation head=e4123dded5d6a9f058880669ca10213bcfbe2646 version=v0.5.20
+sha256sum rer-setup.json
+7296a21b69f52706bb0043c0f82321b54c2d3dc3a0eeb788cd2de65815092f5a  rer-setup.json
+PASS release metadata: versions, previous release, notes and upgrade history agree; rer 0.2.118; no declared migrations or clause changes
+setup.sha256 path=rer-setup.json declared=7296a21b69f52706bb0043c0f82321b54c2d3dc3a0eeb788cd2de65815092f5a actual=7296a21b69f52706bb0043c0f82321b54c2d3dc3a0eeb788cd2de65815092f5a
+PASS project declared file hashes
+Publication scan is assigned to the Mac lander by the cloud brief.

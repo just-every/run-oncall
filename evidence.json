@@ -1,0 +1,52 @@
+{
+  "files": [
+    {
+      "blob": "23316884dc2407597d72f903637dbbca5852ee2e",
+      "bytes": 5900,
+      "path": "REPORT.md",
+      "sha256": "79042492d8adf5baaed820d39829bc6b9aecd30bcc17ffd1616fa14260d4fce5"
+    },
+    {
+      "blob": "252e169adbcaf7d12886def89dec9da8e157e0d9",
+      "bytes": 1099,
+      "path": "browser-failure-receipt.txt",
+      "sha256": "4d273f8af559886c37e1de205a60d8f60a5949ad215c712ab24d4922d8b61493"
+    },
+    {
+      "blob": "7efb7254449df27829714065c1f8799fd681c01f",
+      "bytes": 351,
+      "path": "metadata-receipt.txt",
+      "sha256": "6b5849b5288fd3c14db11a0e39515c20771d761ae2ab0f96b233d968d0076bd5"
+    },
+    {
+      "blob": "9e77a324c4d69a8886b5e9ab555f3ffa2d3f7eb0",
+      "bytes": 112,
+      "path": "pinned-toolchain-receipt.txt",
+      "sha256": "80b23d9f72d3656f7120d461f4b4afe4123dd388ce405d0ac823b46c58f814c1"
+    },
+    {
+      "blob": "ebe1226a3f6e4f68a1012ddd14b312204447d531",
+      "bytes": 1112,
+      "path": "product-receipt.txt",
+      "sha256": "557702f96bd63286d0dc9c058730811af3a8fea17ed849dc9e7836de2aa24b8e"
+    },
+    {
+      "blob": "8244e1a378fed7fa7149e99547c997119ce11020",
+      "bytes": 285,
+      "path": "upgrade-receipt.txt",
+      "sha256": "5853e744c6f56ccd6efd3183f58dea989fa3bf4d40326440fdc0c09c4224966a"
+    },
+    {
+      "blob": "c3de6d6da2f2d072a6f5fcb85cff544e14069758",
+      "bytes": 1545,
+      "path": "verify-receipt.txt",
+      "sha256": "18aab844a4b4b7227229676723e3574c4c4ac2c71ac2c308c5c3f40d537f838d"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-release-0-5-20-c1",
+  "product_head": "e4123dded5d6a9f058880669ca10213bcfbe2646",
+  "ref": "refs/heads/evidence/sd-oncall-release-0-5-20-c1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-release-0-5-20-c1"
+}

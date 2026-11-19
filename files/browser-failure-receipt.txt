@@ -1,0 +1,8 @@
+gh run view 44605997400 --repo just-every/run-oncall --job 135852047922 --log-failed
+shards (browser)	Run this shard	2026-11-19T20:18:13.6650570Z Call log:
+shards (browser)	Run this shard	2026-11-19T20:18:13.6655295Z     at api (/home/runner/work/run-oncall/run-oncall/tests/product-browser-journey.mjs:879:114)
+shards (browser)	Run this shard	2026-11-19T20:18:13.6656557Z     at coverageRulesBrowser (/home/runner/work/run-oncall/run-oncall/tests/product-browser-journey.mjs:895:19)
+shards (browser)	Run this shard	2026-11-19T20:18:13.6658000Z     at async productSchedule (/home/runner/work/run-oncall/run-oncall/tests/product-browser-journey.mjs:819:20)
+shards (browser)	Run this shard	2026-11-19T20:18:13.6658919Z     at async productBrowserJourney (/home/runner/work/run-oncall/run-oncall/tests/product-browser-journey.mjs:2485:19)
+shards (browser)	Run this shard	2026-11-19T20:18:13.6659754Z     at async file:///home/runner/work/run-oncall/run-oncall/tests/product-browser.mjs:1191:2 {
+shards (browser)	Run this shard	2026-11-19T20:18:13.7455633Z ##[error]Process completed with exit code 1.
