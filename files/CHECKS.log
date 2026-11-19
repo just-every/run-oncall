@@ -1,0 +1,67 @@
+Product commit da6f6cfd973c83ff5fc9fdd240c7d34e6178ea7b
+Push guard: exit 0. Advertised refs:
+da6f6cfd973c83ff5fc9fdd240c7d34e6178ea7b	refs/heads/cloud/sd-oncall-c-f291-c1
+df8efefe31a9813ebc5aa3f0c2a319c19e2667d7	refs/heads/main
+
+> pnpm exec rer check --profile first-party
+exit=0
+
+> pnpm exec rer build
+exit=0
+Your application is built
+build: complete (exit 0)
+
+> pnpm run typecheck
+exit=0
+
+> ONCALL_RUNTIME_PART=agents node tests/runtime.mjs
+exit=0
+PASS native-target-audit and mutation-replay-native-authority: once-only outcome; Pause, changed policy, new approval and scope checked before cached content
+PASS incident resolution classification: commitment and sensitive facts, autonomous and isolated blocked policies, immutable pending and stale approval, ignored caller and record claims, attributed once-only resolution and effect-free retry
+PROBE BASE-AGENT-012 4 autonomous oncall.incidents.resolve: native revision 4 and stale expected_revision 3 -> revision_conflict naming 4 in metadata and text, no structured result or effect; out-of-scope and absent -> identical not_found; fresh key and current revisions -> one persisted resolution autonomously; exact retry reuses retained result and approval identity; zero outbound requests
+PROBE BASE-AGENT-012 4 held oncall.incidents.resolve: native revision 4 and stale expected_revision 3 -> revision_conflict naming 4 in metadata and text, no structured result or effect; out-of-scope and absent -> identical not_found; fresh key and current revisions -> one persisted resolution after exact sponsor approval; exact retry reuses retained result and approval identity; zero outbound requests
+PASS native sponsor erasure: retained agent audit IDs, redacted sponsor name/label and immediate Business admission refusal
+Runtime agents completed (530.1s)
+
+> ONCALL_CHROMIUM_PATH=system-chromium node tests/agent-door-browser.mjs
+exit=0
+Browser proof resolution-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-executed 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-timeline 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-timeline 390: fits=true serious/critical=0 undersized-controls=0
+PASS incident resolution browser: commitment-only approval, exact saved revision, native human approver and agent preparer, one attributed resolution and effect-free retry
+PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements
+
+> node src/base/contract-docs.mjs write
+exit=0
+Wrote 1 contract documents.
+
+> node src/base/contract-docs.mjs check
+exit=0
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+
+> git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md
+exit=0
+
+> node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock
+exit=0
+
+> node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check
+exit=0
+5dfdce34636bdc8a12b231103ff8d0eba0855acccde7096d7ba5f098801d0689  sources.lock.json
+
+> node src/base/contract-docs.mjs check (after restoring main views)
+exit=1
+Contract prose: 0 errors, 0 warnings.
+ACCEPTANCE.md: generated content differs; run contract-docs write.
+
+> git diff --check origin/main...HEAD
+exit=0
+Identity and trailers passed for every candidate commit, including side parents. One candidate commit and no trailers. Generated views and complete Status table equal main.
+
+Saved branch exact-SHA Verify 44425186632 source logs:
+contract-docs	Check the generated contract documents	2026-11-18T23:59:09.3932294Z ACCEPTANCE.md: generated content differs; run contract-docs write.
+verify	Require the selected coverage and its proof	2026-11-19T00:14:30.2857480Z   CONTRACT_DOCS: failure

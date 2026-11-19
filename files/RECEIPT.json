@@ -1,0 +1,325 @@
+{
+  "advertised_product_ref": "refs/heads/cloud/sd-oncall-c-f291-c1",
+  "branch": "cloud/sd-oncall-c-f291-c1",
+  "branch_verify": {
+    "observations": [
+      {
+        "query": [
+          "discover"
+        ],
+        "result": [
+          {
+            "conclusion": null,
+            "event": "push",
+            "head_branch": "cloud/sd-oncall-c-f291-c1",
+            "head_sha": "da6f6cfd973c83ff5fc9fdd240c7d34e6178ea7b",
+            "html_url": "https://github.com/just-every/run-oncall/actions/runs/44430276079",
+            "id": 44430276079,
+            "status": "in_progress"
+          }
+        ],
+        "utc": "2026-11-19T00:36:33.548897+00:00"
+      },
+      {
+        "query": [
+          "status",
+          "44430276079"
+        ],
+        "result": {
+          "conclusion": null,
+          "event": "push",
+          "head_branch": "cloud/sd-oncall-c-f291-c1",
+          "head_sha": "da6f6cfd973c83ff5fc9fdd240c7d34e6178ea7b",
+          "html_url": "https://github.com/just-every/run-oncall/actions/runs/44430276079",
+          "id": 44430276079,
+          "status": "in_progress"
+        },
+        "utc": "2026-11-19T00:41:35.246629+00:00"
+      },
+      {
+        "query": [
+          "status",
+          "44430276079"
+        ],
+        "result": {
+          "conclusion": "failure",
+          "event": "push",
+          "head_branch": "cloud/sd-oncall-c-f291-c1",
+          "head_sha": "da6f6cfd973c83ff5fc9fdd240c7d34e6178ea7b",
+          "html_url": "https://github.com/just-every/run-oncall/actions/runs/44430276079",
+          "id": 44430276079,
+          "status": "completed"
+        },
+        "utc": "2026-11-19T00:52:15.672868+00:00"
+      },
+      {
+        "query": [
+          "jobs",
+          "44430276079"
+        ],
+        "result": [
+          {
+            "conclusion": "success",
+            "failed": [],
+            "id": 135245575711,
+            "name": "plan"
+          },
+          {
+            "conclusion": "failure",
+            "failed": [
+              "Check the generated contract documents"
+            ],
+            "id": 135245726500,
+            "name": "contract-docs"
+          },
+          {
+            "conclusion": "success",
+            "failed": [],
+            "id": 135245726722,
+            "name": "build"
+          },
+          {
+            "conclusion": "skipped",
+            "failed": [],
+            "id": 135245729222,
+            "name": "light"
+          },
+          {
+            "conclusion": "success",
+            "failed": [],
+            "id": 135246633347,
+            "name": "shards (runtime)"
+          },
+          {
+            "conclusion": "success",
+            "failed": [],
+            "id": 135246633391,
+            "name": "shards (intake)"
+          },
+          {
+            "conclusion": "success",
+            "failed": [],
+            "id": 135246633398,
+            "name": "shards (hosted)"
+          },
+          {
+            "conclusion": "success",
+            "failed": [],
+            "id": 135246633413,
+            "name": "shards (agents)"
+          },
+          {
+            "conclusion": "success",
+            "failed": [],
+            "id": 135246633417,
+            "name": "shards (transfer)"
+          },
+          {
+            "conclusion": "success",
+            "failed": [],
+            "id": 135246633479,
+            "name": "shards (changes)"
+          },
+          {
+            "conclusion": "success",
+            "failed": [],
+            "id": 135246633500,
+            "name": "shards (triage)"
+          },
+          {
+            "conclusion": "success",
+            "failed": [],
+            "id": 135246633548,
+            "name": "shards (browser)"
+          },
+          {
+            "conclusion": "success",
+            "failed": [],
+            "id": 135252381822,
+            "name": "full-push-proof"
+          },
+          {
+            "conclusion": "skipped",
+            "failed": [],
+            "id": 135252383807,
+            "name": "nightly-proof"
+          },
+          {
+            "conclusion": "failure",
+            "failed": [
+              "Require the selected coverage and its proof"
+            ],
+            "id": 135252417539,
+            "name": "verify"
+          }
+        ],
+        "utc": "2026-11-19T00:57:17.747622+00:00"
+      }
+    ],
+    "result": "generated_view_exception",
+    "run": 44430276079
+  },
+  "candidate_run_site": "guarded lander pending",
+  "checks": [
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/agent-door-browser.mjs",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check on regenerated files",
+      "exit": 0
+    },
+    {
+      "command": "git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check on restored candidate",
+      "exit": 1
+    },
+    {
+      "command": "git diff --check origin/main...HEAD",
+      "exit": 0
+    }
+  ],
+  "head": "da6f6cfd973c83ff5fc9fdd240c7d34e6178ea7b",
+  "main_at_push": "df8efefe31a9813ebc5aa3f0c2a319c19e2667d7",
+  "main_equals_candidate": false,
+  "main_workflows": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_branch": "main",
+      "head_sha": "df8efefe31a9813ebc5aa3f0c2a319c19e2667d7",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44420542831",
+      "id": 44420542831,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_branch": "main",
+      "head_sha": "df8efefe31a9813ebc5aa3f0c2a319c19e2667d7",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44420542819",
+      "id": 44420542819,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_branch": "cloud/sd-oncall-c-f285-rebase-df8efefe31a9813ebc5aa3f0c2a319c19e2667d7",
+      "head_sha": "df8efefe31a9813ebc5aa3f0c2a319c19e2667d7",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44412727500",
+      "id": 44412727500,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "prefix_status": {
+    "after": "MISSING",
+    "before": "MISSING",
+    "clause": "BASE-AGENT-012",
+    "counts_after": [
+      26,
+      41,
+      34,
+      101
+    ],
+    "counts_before": [
+      26,
+      41,
+      34,
+      101
+    ],
+    "counts_order": [
+      "DONE",
+      "PARTIAL",
+      "MISSING",
+      "total"
+    ],
+    "observed_acceptance": 4
+  },
+  "public_scan": {
+    "commit": "da6f6cfd973c83ff5fc9fdd240c7d34e6178ea7b",
+    "complete": null,
+    "findings": null,
+    "historyScanned": null,
+    "status": "guarded lander pending"
+  },
+  "repository": "just-every/run-oncall",
+  "saved_exact_head_verify": {
+    "conclusion": "failure",
+    "coverage_guard_job": 135235652854,
+    "generated_job": 135228252783,
+    "head_sha": "da6f6cfd973c83ff5fc9fdd240c7d34e6178ea7b",
+    "other_required_jobs": "success",
+    "root_failure": "generated ACCEPTANCE.md freshness",
+    "run": 44425186632,
+    "status": "completed"
+  },
+  "screens": [
+    {
+      "path": "browser/agent-door-resolution-pending-1440.png",
+      "sha256": "5f0bc8839c41db9b4d4acd5c628465e7718e41f1e4944ea4c1be3e7cd06676b6",
+      "viewport_width": 1440
+    },
+    {
+      "path": "browser/agent-door-resolution-pending-390.png",
+      "sha256": "f372b5ebc8b4b5e86a99b592b4fc99017f2bb847499f327329a6303048fe2541",
+      "viewport_width": 390
+    },
+    {
+      "path": "browser/agent-door-resolution-executed-1440.png",
+      "sha256": "d8fa2db75ee167015d45d0065f395cd09eb6644b9001054e79b3718ced0404b6",
+      "viewport_width": 1440
+    },
+    {
+      "path": "browser/agent-door-resolution-executed-390.png",
+      "sha256": "93695aa3d8a360484f67281f59503dea4882f7cd61191d022c8ace0c5f226c04",
+      "viewport_width": 390
+    },
+    {
+      "path": "browser/agent-door-resolution-timeline-1440.png",
+      "sha256": "6c3ef27903de91be0b9e55d1f3283f7b96076deb0ed6e3e6dc7f0cafa3d62715",
+      "viewport_width": 1440
+    },
+    {
+      "path": "browser/agent-door-resolution-timeline-390.png",
+      "sha256": "1de7148f4f2b5b868f21e0a29b63e7753d0c9c8624fa46b739f3490f8ce516e1",
+      "viewport_width": 390
+    }
+  ],
+  "source_lock_sha256": "5dfdce34636bdc8a12b231103ff8d0eba0855acccde7096d7ba5f098801d0689",
+  "tag": "sd-oncall-c-f291-c1",
+  "tree": "a6db2da974fe1ce6a67dfcece231984b90bf22d3"
+}
