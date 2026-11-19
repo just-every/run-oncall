@@ -128,7 +128,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "ef1ede9253cdb1006bbed8eee3e7b6ca71de28e3b53a57dc9bb357f388bc1b2e",
+      "sha256": "b1daba3154f1f9eb23371ef5eeed842e66a8b294cfa7bf5ad163891610805877",
       "executable": false
     },
     ".gitignore": {
@@ -1656,7 +1656,7 @@
       "executable": false
     },
     "scripts/verify-oncall-plan.mjs": {
-      "sha256": "e2d3c201a810cd0f730c656c0e2e4b6d6e77e18adf634f0a9dc08c76b12ebef7",
+      "sha256": "c18066708abf006593ee42d431148a49c11dc993e153a52b778526cf13390919",
       "executable": false
     },
     "scripts/verify-oncall.mjs": {
@@ -1668,7 +1668,7 @@
       "executable": false
     },
     "scripts/verify-shards.json": {
-      "sha256": "184abe68b4c02d9a838f20a8f65e3aa4602d937336bfea451e2b0c1b201ce44e",
+      "sha256": "c1889ba241a5067dceaa8f277cd48ab4c497be9c4f20f57e90ee9ca75d7a2da3",
       "executable": false
     },
     "scripts/write-agent-surface.mjs": {
