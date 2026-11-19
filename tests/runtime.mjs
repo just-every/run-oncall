@@ -1750,7 +1750,15 @@ try {
  const noteFact=ok(await owner('/api/audit/export')).rows.find(r=>r.kind==='command.note'&&r.outcome==='accepted');
  const acknowledgmentFact=machineFacts[1];assert.equal(acknowledgmentFact.namedMember,noteFact.actor);assert.notEqual(acknowledgmentFact.actor,noteFact.actor);assert.ok(!JSON.stringify(acknowledgmentFact).includes(memberA.id));
  ok(await api('incidents',{type:'reassign',incident:incident.id,revision:1,member:admin.id,reason:'Stale'}),409);
- await transition('reassign',{member:memberB.id,reason:'Explicit reassignment'});await transition('assign-role',{role:'commander',member:memberB.id,reason:'Role assignment'});
+ const beforeReassign=(await state()).revision;
+ await transition('reassign',{member:memberB.id,reason:'Explicit reassignment'});
+ const reassignmentFacts=ok(await owner('/api/audit/export')).rows.filter(row=>row.workspaceBefore>=beforeReassign&&row.workspaceAfter>row.workspaceBefore);
+ assert.deepEqual(reassignmentFacts.map(({kind,outcome,workspaceBefore,workspaceAfter})=>[kind,outcome,workspaceBefore,workspaceAfter]),[
+  ['automation.request','accepted',beforeReassign,beforeReassign+1],
+  ['automation.incidents','accepted',beforeReassign+1,beforeReassign+2],
+ ],'The OC-053 REST door retains its request bookkeeping and native audit override');
+ assert.equal(reassignmentFacts[1].actor,acknowledgmentFact.actor);
+ await transition('assign-role',{role:'commander',member:memberB.id,reason:'Role assignment'});
  assert.equal(incident.assignee,memberB.id);assert.equal(incident.commander,memberB.id);assert.deepEqual(incident.timeline.find(e=>e.id===acknowledgment.id),acknowledgment);assert.ok(!incident.timeline.some(e=>e.kind==='transition'&&e.lifecycle?.to==='acknowledged'&&e.actor===memberA.id));
  assert.deepEqual(ok(await owner('/api/audit/export')).rows.find(r=>r.id===acknowledgmentFact.id),acknowledgmentFact);
  ok(await api('actions',{type:'action',incident:incident.id,revision:incident.revision,title:'Follow up',owner:admin.id,due:'2026-12-01',completionPolicy:'human-review'}),201);incident=ok(await api('incidents/'+incident.id));
@@ -1762,7 +1770,7 @@ try {
  assert.equal(incident.actions[1].submission.by,client.id);assert.equal(incident.actions[1].accepted.by,client.id);assert.equal(incident.timeline.at(-1).actor,client.id);assert.equal(incident.actions[0].done,false);
  await transition('transition',{state:'recovered',summary:'Recovery evidence recorded',evidence:'https://example.test/evidence'});await transition('transition',{state:'resolved',summary:'Resolved with evidence'});
  assert.deepEqual(incident.timeline.find(e=>e.id===acknowledgment.id),acknowledgment);assert.deepEqual(ok(await owner('/api/audit/export')).rows.find(r=>r.id===acknowledgmentFact.id),acknowledgmentFact);
- console.log('PASS OC-053 permanent named responder: service-account acknowledgment names A; reassignment and new commander B and resolution preserve timeline and pseudonymous audit attribution');
+ console.log('PASS OC-053 permanent named responder: service-account acknowledgment names A; reassignment and new commander B and resolution preserve timeline, pseudonymous attribution and the REST incident audit override');
  for(let n=0;n<3;n++)ok(await api('incidents',{...input,title:'Synthetic page '+n}),201);
  const page=ok(await api('incidents?limit=2'));assert.equal(page.data.length,2);assert.ok(page.nextCursor);const page2=ok(await api('incidents?limit=2&cursor='+encodeURIComponent(page.nextCursor)));assert.equal(new Set([...page.data,...page2.data].map(i=>i.id)).size,4);
  for(const family of ['services','schedules','actions','analytics','integrations'])assert.ok(Array.isArray(ok(await api(family)).data));
