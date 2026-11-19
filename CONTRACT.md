@@ -726,6 +726,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 **Observed (19 November 2026, Run Edit Run fleet).** For service-bound alert-only results, the updated-time range and Recently updated order use the latest retained event acceptance or human coordination for each generation. Protected reads placed a later human acknowledgment first, an older generation with a later source recovery second, and its untouched newer generation third. An exact replay retained the original acceptance. The lower bound included its boundary and the upper bound excluded it. Creation order and cursor traversal were retained. The signed-in controls and reopened shared URL returned the same ordered results as protected HTTP, with captures at 1440 and 390 pixels. Reads preserved durable records, revisions, permanent audit and paging custody, with zero outbound requests.
 
+**Observed (19 November 2026, Run Edit Run fleet).** In the 50-incident web storm, a signed-in member saved the search term with the service, low urgency, snoozed status and Assigned to me filters. The protected saved-view list returned that exact personal query, and a different signed-in responder received an empty list. Starting from a clean Incidents URL, selecting the view restored the controls and URL and returned the same five incident IDs and count as protected triage HTTP at 1440 and 390 pixels. After the preference write, listing and recall preserved durable rows, revisions, permanent audit and paging state, with zero outbound requests.
+
 #### OC-079 — Bulk triage actions with per-item results
 
 *Tier:* Core · *From:* OC-060

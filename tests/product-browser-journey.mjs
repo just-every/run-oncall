@@ -1079,19 +1079,7 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
  assert.deepEqual(await call('/api/paging/state'),paging);assert.deepEqual((await outbound()).slice(beforeOutbound.length),[]);
  console.log('PROBE OC-060 acceptance 1 web: 50 incidents -> rendered IDs and counts equal protected HTTP for service, urgency, triggered, declared, acknowledged, snoozed, resolved and mine; controls and URL agree; all durable rows, audit and paging unchanged, zero outbound requests');
  const savedViews=triage.locator('.saved-views'),viewName='My snoozed queue';
- await savedViews.getByText('Saved views',{exact:true}).click();
- await savedViews.getByLabel('View name',{exact:true}).fill(viewName);
- const preferenceWrite=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/triage/views'&&response.request().method()==='POST');
- await savedViews.getByRole('button',{name:'Save current view',exact:true}).click();
- assert.equal((await preferenceWrite).status(),200);
- await savedViews.getByRole('button',{name:viewName,exact:true}).waitFor();
- const {views}=await call('/api/triage/views');
- assert.equal(views.length,1);
- const [view]=views;
- assert.ok(view.id);
- assert.deepEqual(view,{id:view.id,kind:'view',actor:actor.id,name:viewName,query:personalQuery});
-
- // Issue the second session before the read-only window: login writes session state.
+ // Issue the second session before saving so recall can be checked from the write boundary.
  const otherSession=await context.browser().newContext({baseURL:origin,extraHTTPHeaders:{connection:'close'}});
  try {
   const login=await otherSession.request.post('/api/login',{headers:{origin},data:otherCredentials});
@@ -1099,9 +1087,20 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
   const session=await otherSession.request.get('/api/session');
   assert.equal(session.status(),200);
   assert.equal((await session.json()).member.id,other.id);
+
+  await savedViews.getByText('Saved views',{exact:true}).click();
+  await savedViews.getByLabel('View name',{exact:true}).fill(viewName);
+  const preferenceWrite=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/triage/views'&&response.request().method()==='POST');
+  await savedViews.getByRole('button',{name:'Save current view',exact:true}).click();
+  assert.equal((await preferenceWrite).status(),200);
   const afterSave=snapshot(),pagingAfterSave=await call('/api/paging/state');
   assert.deepEqual(await outbound(),[],'saving a personal view makes no outbound request');
 
+  const {views}=await call('/api/triage/views');
+  assert.equal(views.length,1);
+  const [view]=views;
+  assert.ok(view.id);
+  assert.deepEqual(view,{id:view.id,kind:'view',actor:actor.id,name:viewName,query:personalQuery});
   const foreignViews=await otherSession.request.get('/api/triage/views');
   assert.equal(foreignViews.status(),200);
   assert.deepEqual(await foreignViews.json(),{views:[]},'a signed-in responder cannot list another member’s saved view');
@@ -1113,6 +1112,7 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
    await expect(triage.getByLabel('Incident status',{exact:true})).toHaveValue(query.status??'');
    await expect(triage.getByLabel('Assigned to me',{exact:true})).toBeChecked({checked:query.mine==='true'});
   };
+  const queryEntries=Object.entries(personalQuery).sort();
   const externalRequests=[];
   const recordExternal=request=>{if(/^https?:/.test(request.url())&&new URL(request.url()).origin!==origin)externalRequests.push(request.url());};
   page.on('request',recordExternal);
@@ -1124,11 +1124,18 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
     await triage.getByText('Filter and sort incidents',{exact:true}).click();
     await checkControls();
     await savedViews.getByText('Saved views',{exact:true}).click();
+    const recalledRead=page.waitForResponse(response=>{
+     const url=new URL(response.url());
+     return url.origin===origin&&url.pathname==='/api/triage'&&response.request().method()==='GET'&&url.searchParams.get('q')===prefix;
+    });
     await savedViews.getByRole('button',{name:viewName,exact:true}).click();
+    const response=await recalledRead;
+    assert.equal(response.status(),200);
+    assert.deepEqual([...new URL(response.url()).searchParams].sort(),queryEntries);
     await checkControls(personalQuery);
     const recalled=new URL(page.url());
     assert.equal(recalled.pathname,'/incidents');
-    assert.deepEqual([...recalled.searchParams].sort(),Object.entries(personalQuery).map(([key,value])=>['triage_'+key,value]).sort());
+    assert.deepEqual([...recalled.searchParams].sort(),queryEntries.map(([key,value])=>['triage_'+key,value]));
     await compare(personalQuery,snoozedMine,{navigate:false});
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'saved triage view fits the viewport');
     await triage.screenshot({path:`${directory}/OC-060-personal-saved-view-${width}.png`});
