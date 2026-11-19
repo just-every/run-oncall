@@ -278,6 +278,7 @@ async function routedRecoveryReadback(page,context,request) {
    await ownerPage.setViewportSize({width:captureWidth,height:1000});
    await diagnostics.screenshot({path:directory+'/oc083-routed-recovery-'+captureWidth+'.png'});
   }
+  await ownerPage.setViewportSize({width,height:1000});
   await showReceipts(ownerPage,separateKey);
   await expect(diagnostics.getByRole('heading',{name:otherTitle,exact:true})).toBeVisible();
   await expect(diagnostics.getByRole('heading',{name:repeatedTitle,exact:true})).toHaveCount(0);
