@@ -1,0 +1,352 @@
+{
+  "advertised_main_at_handoff": "071c74a352196f6778eb3b2942c351b4cf1e0ace",
+  "branch": "cloud/sd-oncall-c-f305",
+  "browser_observations": [
+    "PROBE BASE-AGENT-003 4 acknowledgment autonomous: first returned link -> full protected incident at revision 2, matching the write, Lead, Assignee and attributed named responder; autonomous read without review; write custody, native records, mutation audit and paging unchanged; zero outbound requests",
+    "PROBE BASE-AGENT-003 4 acknowledgment held: first returned link -> full protected incident at revision 2, matching the write, Lead, Assignee and attributed named responder; separate open standard read review; write custody, native records, mutation audit and paging unchanged; zero outbound requests",
+    "Acknowledgment readback autonomous person 1440: Acknowledged | Lead: Synthetic acknowledgment responder | Assignee: Synthetic acknowledgment responder | Synthetic acknowledgment responder",
+    "Browser proof acknowledgment-autonomous-person 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Acknowledgment readback autonomous person 390: Acknowledged | Lead: Synthetic acknowledgment responder | Assignee: Synthetic acknowledgment responder | Synthetic acknowledgment responder",
+    "Browser proof acknowledgment-autonomous-person 390: fits=true serious/critical=0 undersized-controls=0",
+    "Acknowledgment readback autonomous agent 1440: Acknowledged | Lead: Synthetic acknowledgment responder | Assignee: Synthetic acknowledgment responder | Responder assistant for Alex Chen | Named responder: Synthetic acknowledgment responder",
+    "Browser proof acknowledgment-autonomous-agent 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Acknowledgment readback autonomous agent 390: Acknowledged | Lead: Synthetic acknowledgment responder | Assignee: Synthetic acknowledgment responder | Responder assistant for Alex Chen | Named responder: Synthetic acknowledgment responder",
+    "Browser proof acknowledgment-autonomous-agent 390: fits=true serious/critical=0 undersized-controls=0",
+    "Acknowledgment readback held person 1440: Acknowledged | Lead: Synthetic acknowledgment responder | Assignee: Synthetic acknowledgment responder | Synthetic acknowledgment responder",
+    "Browser proof acknowledgment-held-person 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Acknowledgment readback held person 390: Acknowledged | Lead: Synthetic acknowledgment responder | Assignee: Synthetic acknowledgment responder | Synthetic acknowledgment responder",
+    "Browser proof acknowledgment-held-person 390: fits=true serious/critical=0 undersized-controls=0",
+    "Acknowledgment readback held agent 1440: Acknowledged | Lead: Synthetic acknowledgment responder | Assignee: Synthetic acknowledgment responder | Responder assistant for Alex Chen | Named responder: Synthetic acknowledgment responder",
+    "Browser proof acknowledgment-held-agent 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Acknowledgment readback held agent 390: Acknowledged | Lead: Synthetic acknowledgment responder | Assignee: Synthetic acknowledgment responder | Responder assistant for Alex Chen | Named responder: Synthetic acknowledgment responder",
+    "Browser proof acknowledgment-held-agent 390: fits=true serious/critical=0 undersized-controls=0",
+    "PROBE BASE-AGENT-002 5 acknowledgment browser: real Acknowledge button and MCP in both policies; saved state, responsibility and attribution read at 1440 and 390; zero outbound requests",
+    "PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements"
+  ],
+  "cancelled_shard_local_diagnosis": {
+    "build_command": "node scripts/verify-oncall-build.mjs",
+    "candidate": {
+      "exit": 124,
+      "head": "7a3062afd6cf7b2f936d2a1de39b40305231a7df",
+      "observations": [
+        "Journey completed: tests/changes.mjs (30.9s)",
+        "Journey completed: tests/activation.mjs (258.3s)",
+        "Oncall verification passed: changes",
+        "Journey completed: tests/import-door.mjs (562.6s)",
+        "Journey completed: tests/oncall-agent-erase-subjects.mjs (5.6s)",
+        "Journey completed: tests/oncall-agent-erase-roster.mjs (5.4s)"
+      ]
+    },
+    "command": "node scripts/verify-oncall.mjs changes",
+    "integrated_main": {
+      "exit": 124,
+      "head": "738f5efacaad9f65191a4a851b701c6fc953cd5d",
+      "observations": [
+        "Journey completed: tests/changes.mjs (31.4s)",
+        "Journey completed: tests/activation.mjs (285.2s)",
+        "Oncall verification passed: changes"
+      ]
+    },
+    "local_limit_seconds": 900,
+    "node": "24.19.0"
+  },
+  "candidate_paths": {
+    "CONTRACT.md": "0ad50e4da1a412230009a26a64f53a97a94d041f",
+    "sources.lock.json": "6333bad977d9435b1ceb2f69e21b12ab07dc2017",
+    "tests/agent-door-browser.mjs": "084236ffa776b6476c5619dd4022cdcb04381a8f",
+    "tests/agent-door-runtime.mjs": "c5152cdd4f25b25aff3d14da054d5b8695cfbcd9",
+    "tests/oncall-agent-fixtures.mjs": "a85d515c6de7f0ab96d7469cc8f001333803303b",
+    "tests/oncall-agent-flow.mjs": "81673a6ccee913bc4bdc16b980a6324d753fcf1c",
+    "tests/runtime.mjs": "6e180d0e733dff6fc4e0ca2e45fc964f84ea0da7"
+  },
+  "captures": [
+    {
+      "file": "agent-door-acknowledgment-autonomous-agent-1440.png",
+      "sha256": "81e9769303038e2cf45fd511558f3fdaa8deadb847b05b548359d957bf92096f",
+      "viewport_width": 1440
+    },
+    {
+      "file": "agent-door-acknowledgment-autonomous-agent-390.png",
+      "sha256": "d06a1b8e0841f16744314377a06bd9d8dd669e2947d6ad646aecba25a8b8dd1a",
+      "viewport_width": 390
+    },
+    {
+      "file": "agent-door-acknowledgment-held-agent-1440.png",
+      "sha256": "7a524cc452bb1f40915aef7e823ba2e467b78cd018b513ca9bb0cde2ab861950",
+      "viewport_width": 1440
+    },
+    {
+      "file": "agent-door-acknowledgment-held-agent-390.png",
+      "sha256": "2540f14da2a8081253feca93b0cf0dcd2aeeb405585a1186bdd1b8bcd4c50e95",
+      "viewport_width": 390
+    }
+  ],
+  "ci_note": "Exact-SHA push Verify 44597070445 completed with failure. The shared build and seven of eight application shards passed, including agents 135819899324 and hosted browser 135819899052. Changes job 135819898687 was cancelled with no failed step reported. Full push coverage proof was skipped and aggregate job 135829336300 failed. Contract-docs job 135818383618 failed its generated document check. Its exact command on the candidate reproduced only the expected stale ACCEPTANCE.md view. The same Changes shard command reached its 900-second local limit and exited 124 on both the exact candidate and its integrated main on the same VM. Both ran with Node 24.19.0. Neither output recorded a failing assertion, and GitHub did not report the cancellation cause. The ten-call GitHub budget is exhausted. Full exact-SHA workflow proof remains pending.",
+  "complete_history": true,
+  "contract_views_after_restore": {
+    "command": "node src/base/contract-docs.mjs check",
+    "diagnostic": [
+      "Contract prose: 0 errors, 0 warnings.",
+      "ACCEPTANCE.md: generated content differs; run contract-docs write."
+    ],
+    "exit": 1
+  },
+  "github_actions": {
+    "candidate": {
+      "conclusion": "failure",
+      "event": "push",
+      "head_sha": "7a3062afd6cf7b2f936d2a1de39b40305231a7df",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44597070445",
+      "id": 44597070445,
+      "status": "completed"
+    },
+    "candidate_jobs": [
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135818126437,
+        "name": "plan",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          {
+            "name": "Check the generated contract documents",
+            "number": 4
+          }
+        ],
+        "id": 135818383618,
+        "name": "contract-docs",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135818383749,
+        "name": "build",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "id": 135818385834,
+        "name": "light",
+        "status": "completed"
+      },
+      {
+        "conclusion": "cancelled",
+        "failed_steps": [],
+        "id": 135819898687,
+        "name": "shards (changes)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135819898805,
+        "name": "shards (runtime)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135819898887,
+        "name": "shards (transfer)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135819898931,
+        "name": "shards (browser)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135819899052,
+        "name": "shards (hosted)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135819899224,
+        "name": "shards (triage)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135819899289,
+        "name": "shards (intake)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135819899324,
+        "name": "shards (agents)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          {
+            "name": "Require the selected coverage and its proof",
+            "number": 2
+          }
+        ],
+        "id": 135829336300,
+        "name": "verify",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "id": 135829337715,
+        "name": "nightly-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "id": 135829338109,
+        "name": "full-push-proof",
+        "status": "completed"
+      }
+    ],
+    "main": [
+      {
+        "conclusion": "skipped",
+        "event": "push",
+        "head_sha": "738f5efacaad9f65191a4a851b701c6fc953cd5d",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44594320149",
+        "id": 44594320149,
+        "name": "Run demo",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "event": "push",
+        "head_sha": "738f5efacaad9f65191a4a851b701c6fc953cd5d",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44594320372",
+        "id": 44594320372,
+        "name": "Run site",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "event": "push",
+        "head_sha": "738f5efacaad9f65191a4a851b701c6fc953cd5d",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44594320217",
+        "id": 44594320217,
+        "name": "Verify",
+        "status": "completed"
+      },
+      {
+        "conclusion": null,
+        "event": "dynamic",
+        "head_sha": "738f5efacaad9f65191a4a851b701c6fc953cd5d",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44594319602",
+        "id": 44594319602,
+        "name": "Push on main",
+        "status": "in_progress"
+      },
+      {
+        "conclusion": "success",
+        "event": "push",
+        "head_sha": "738f5efacaad9f65191a4a851b701c6fc953cd5d",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44586639106",
+        "id": 44586639106,
+        "name": "Verify",
+        "status": "completed"
+      }
+    ]
+  },
+  "head": "7a3062afd6cf7b2f936d2a1de39b40305231a7df",
+  "main": "738f5efacaad9f65191a4a851b701c6fc953cd5d",
+  "main_equals_candidate": false,
+  "main_only_run_site_on_candidate": "pending guarded landing",
+  "passed_local_checks": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node tests/runtime.mjs",
+      "exit": 0,
+      "shard": "agents"
+    },
+    {
+      "browser": "system Chromium, headless, no sandbox",
+      "command": "node tests/agent-door-browser.mjs",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "scope": "after generation and before restoring views"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "publication_scan": {
+    "commit": "7a3062afd6cf7b2f936d2a1de39b40305231a7df",
+    "complete": null,
+    "findings": null,
+    "historyScanned": null,
+    "state": "not run in cloud; guarded lander owns the scan"
+  },
+  "repository": "just-every/run-oncall",
+  "runtime_observations": [
+    "PROBE BASE-AGENT-002 5 acknowledgment autonomous: equivalent ordinary incidents -> acknowledged with matching Lead and Assignee, incident and workspace revisions +1 per action, one command.transition per door, distinct attribution and explicit agent named-member history, 0 open reviews, paging OFF and zero outbound requests",
+    "PROBE BASE-AGENT-003 4 acknowledgment autonomous: first returned link -> full protected incident at revision 2, matching the write, Lead, Assignee and attributed named responder; autonomous read without review; write custody, native records, mutation audit and paging unchanged; zero outbound requests",
+    "PROBE BASE-AGENT-002 5 acknowledgment held: equivalent ordinary incidents -> acknowledged with matching Lead and Assignee, incident and workspace revisions +1 per action, one command.transition per door, distinct attribution and explicit agent named-member history, 1 open reviews, paging OFF and zero outbound requests",
+    "PROBE BASE-AGENT-003 4 acknowledgment held: first returned link -> full protected incident at revision 2, matching the write, Lead, Assignee and attributed named responder; separate open standard read review; write custody, native records, mutation audit and paging unchanged; zero outbound requests",
+    "PASS Business consent receiving door: both company policies, same unexpired bearers, maximum refusal 1349ms, exact native and approval and review and paging isolation, attributed refusal audit only, separately consented controls and zero outbound requests; no Business account propagation claim",
+    "PROBE BASE-AGENT-012 acceptance 4 held oncall.incidents.acknowledge: current native revision 1 with stale expected_revision -> isError revision_conflict and exact parent current_revision 1 in metadata and text; no private result or native effect; fresh returned revision and key -> one agent-attributed acknowledgment naming active responder, review; new RPC id retry -> stored result, no duplicate effect or review; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 4 held oncall.incidents.acknowledge non-disclosure: scoped client with valid current native revision and stale optional revision against foreign and missing incidents -> identical not_found, no revision or private result; native custody unchanged; zero outbound requests",
+    "PASS native erasure receipts: atomic rollback, held approval, equal one-effect replay, no retained content; new key, changed arguments, scope, consent, client, Pause and owner demotion refused",
+    "Runtime agents completed (527.3s)"
+  ],
+  "status_counts": {
+    "after": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41
+    },
+    "before": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41
+    }
+  }
+}
