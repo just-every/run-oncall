@@ -1,0 +1,225 @@
+{
+  "aggregate_archive": {
+    "command": "gh run view 44544913966 --repo just-every/run-oncall --job 135643547357 --log-failed",
+    "diagnostic": "failed to get run log: zip: not a valid zip file",
+    "exit": 1,
+    "http_status": null
+  },
+  "as_of": "2026-11-19T14:54:18.778323+00:00",
+  "base": "50a05ac92632c5eba8f30cc0b9405fcab4df685b",
+  "branch": "cloud/sd-oncall-c-f297",
+  "browser_probes": [
+    "PROBE OC-060 acceptance 1 web: 50 incidents -> rendered IDs and counts equal protected HTTP for service, urgency, triggered, declared, acknowledged, snoozed, resolved and mine; controls and URL agree; all durable rows, audit and paging unchanged, zero outbound requests",
+    "PROBE OC-060 acceptance 1 personal saved view: exact member-scoped query saved; another signed-in responder sees no view; clean Incidents URL recalls five exact protected IDs and count at 1440 and 390, with unchanged durable rows, revisions, audit and paging after save, and zero outbound requests.",
+    "PROBE OC-060 acceptance 3 web: two native low alerts -> retained explicit low urgency across reloads, separate attributed acknowledgment and close, retained acknowledged and resolved history despite duplicate intake and source revocation, active source state, unchanged paging and zero outbound requests; changed screens captured once at 1440 and 390",
+    "PROBE OC-060 acceptance 1 web: bulk Reassign to Unassigned cleared one of two owned alert-only items. Reloaded Assigned to me and Unassigned rows and counts agree with protected HTTP and retain the attributed clear. Paging custody unchanged, zero outbound requests, reloaded screens captured at 1440 and 390.",
+    "PROBE OC-060 acceptance 1 web chronology: alert-only controls and shared URL return exact protected HTTP order and time cohorts. Created sorting, both updated boundaries, replay cutoff, durable records, revisions, audit, paging and zero outbound pass. Changed filter view captured at 1440 and 390."
+  ],
+  "candidate": "3636c1a6c7a2ccd99c85bee1f40abc3391d6c4d9",
+  "candidate_generated_check_excerpt": [
+    "contract-docs\tCheck the generated contract documents\t2026-11-19T14:33:32.4557289Z ACCEPTANCE.md: generated content differs; run contract-docs write.",
+    "contract-docs\tCheck the generated contract documents\t2026-11-19T14:33:32.4647186Z ##[error]Process completed with exit code 1."
+  ],
+  "candidate_published": true,
+  "candidate_run_site": "Main-only workflow. Fleet lander pending.",
+  "candidate_verify": {
+    "conclusion": "failure",
+    "event": "push",
+    "head_sha": "3636c1a6c7a2ccd99c85bee1f40abc3391d6c4d9",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44544913966",
+    "id": 44544913966,
+    "status": "completed"
+  },
+  "candidate_verify_jobs": [
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135632783686,
+      "name": "plan",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Check the generated contract documents"
+      ],
+      "id": 135632989315,
+      "name": "contract-docs",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135632989338,
+      "name": "build",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "id": 135632992254,
+      "name": "light",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135634327867,
+      "name": "shards (agents)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135634327899,
+      "name": "shards (transfer)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135634328000,
+      "name": "shards (hosted)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135634328009,
+      "name": "shards (intake)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135634328037,
+      "name": "shards (triage)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135634328265,
+      "name": "shards (runtime)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135634328504,
+      "name": "shards (changes)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135634328821,
+      "name": "shards (browser)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135643494719,
+      "name": "full-push-proof",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "id": 135643498420,
+      "name": "nightly-proof",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Require the selected coverage and its proof"
+      ],
+      "id": 135643547357,
+      "name": "verify",
+      "status": "completed"
+    }
+  ],
+  "checks": {
+    "ONCALL_PRODUCT_JOURNEY=triage node tests/product-browser.mjs": 0,
+    "ONCALL_PRODUCT_PART=core node tests/product-browser.mjs, first attempt": 1,
+    "ONCALL_PRODUCT_PART=core node tests/product-browser.mjs, retry": 1,
+    "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check": 0,
+    "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock": 0,
+    "node src/base/contract-docs.mjs check after write": 0,
+    "node src/base/contract-docs.mjs check with published views restored": 1,
+    "node src/base/contract-docs.mjs write": 0,
+    "npx -y @runeditrun/rer build": 0,
+    "pnpm exec rer check --profile first-party": 0,
+    "pnpm run typecheck": 0
+  },
+  "clause": "OC-060",
+  "core_first_attempt_failure": "A local Worker connection reset on the protected state read in incidentWorkflowBrowser, after all OC-060 probes passed.",
+  "core_retry_failure": "A local Worker connection reset in importedEmailBrowser after the incident workflow and all OC-060 probes passed.",
+  "counts_after": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "counts_before": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "fleet_readiness": "READY under the generated-view exception",
+  "local_generated_view_check": "Contract prose: 0 errors, 0 warnings.\nACCEPTANCE.md: generated content differs; run contract-docs write.",
+  "main_workflows": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "50a05ac92632c5eba8f30cc0b9405fcab4df685b",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44542108898",
+      "id": 44542108898,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "50a05ac92632c5eba8f30cc0b9405fcab4df685b",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44542108915",
+      "id": 44542108915,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "50a05ac92632c5eba8f30cc0b9405fcab4df685b",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44535859837",
+      "id": 44535859837,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "publication_scan": {
+    "commit": "3636c1a6c7a2ccd99c85bee1f40abc3391d6c4d9",
+    "complete": null,
+    "findings": null,
+    "historyScanned": null,
+    "status": "Fleet lander pending"
+  },
+  "registration_delta": 0,
+  "same_sha_as_main": false,
+  "save": "cdc88948d948efd8db5722e442efa23ff29d9175",
+  "screenshots": {
+    "OC-060-personal-saved-view-1440.png": {
+      "sha256": "cc376d684ff6eb7e7e58d99466a053b8fe3a961fa6753ef98c0c2e09942f15e9",
+      "viewport_width": 1440
+    },
+    "OC-060-personal-saved-view-390.png": {
+      "sha256": "dc75e13b5e78f0ab0cc79ce2e032735342dc8385d5256dae964cff459aa6a23c",
+      "viewport_width": 390
+    }
+  },
+  "status_after": "PARTIAL",
+  "status_before": "PARTIAL"
+}
