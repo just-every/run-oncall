@@ -996,7 +996,8 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
  const pagingRecords=({workspaceRevision,...records})=>records;
  const services=[];
  for(const [n,name] of ['Triage payments','Triage queue'].entries())services.push(await call('/api/command',{type:'service',id:'synthetic-oncall-6060-'+n,name,environment:'test',owner:actor.id,runbook:[],pager:''}));
- const other=await call('/api/members',{name:'synthetic-oncall-6060-responder',role:'responder',password:randomBytes(24).toString('hex')},201),storm=[];
+ const otherCredentials={name:'synthetic-oncall-6060-responder',password:randomBytes(24).toString('hex')};
+ const other=await call('/api/members',{...otherCredentials,role:'responder'},201),storm=[];
  for(let n=0;n<50;n++) {
   let incident=await call('/api/command',{type:'declare',service:services[n<30?0:1].id,severity:n<20?'critical':'warning',title:prefix+' '+n,summary:'Customer requests need a human response'});
   if(n>=10)incident=await call('/api/command',{type:'transition',incident:incident.id,revision:incident.revision,state:'acknowledged',summary:'Take responsibility'});
@@ -1061,7 +1062,9 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
  await triage.locator('.incident-meta').getByText('Snoozed',{exact:true}).first().waitFor();await capture('snoozed');
  await page.reload();await compare({q:prefix,status:'snoozed'},storm.slice(30,35),{navigate:false});
  await compare({q:prefix,mine:'true'},storm.slice(10,40));
- await compare({q:prefix,mine:'true',service:services[1].id,urgency:'low',status:'snoozed'},storm.slice(30,35));
+ const personalQuery={q:prefix,mine:'true',service:services[1].id,urgency:'low',status:'snoozed'};
+ const snoozedMine=storm.slice(30,35);
+ await compare(personalQuery,snoozedMine);
  // Exercise the same combination through actual controls, including URL state.
  await page.goto(origin+'/incidents');
  await triage.getByLabel('Search incidents',{exact:true}).fill(prefix);
@@ -1070,11 +1073,78 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
  await triage.getByLabel('Filter urgency',{exact:true}).selectOption('low');
  await triage.getByLabel('Incident status',{exact:true}).selectOption('snoozed');
  await triage.getByLabel('Assigned to me',{exact:true}).check();
- await compare({q:prefix,mine:'true',service:services[1].id,urgency:'low',status:'snoozed'},storm.slice(30,35),{navigate:false});
+ await compare(personalQuery,snoozedMine,{navigate:false});
  assert.equal(new URL(page.url()).searchParams.get('triage_status'),'snoozed');
  assert.deepEqual(snapshot(),before,'filtering, pagination and reloads preserve all durable rows and permanent audit');
  assert.deepEqual(await call('/api/paging/state'),paging);assert.deepEqual((await outbound()).slice(beforeOutbound.length),[]);
  console.log('PROBE OC-060 acceptance 1 web: 50 incidents -> rendered IDs and counts equal protected HTTP for service, urgency, triggered, declared, acknowledged, snoozed, resolved and mine; controls and URL agree; all durable rows, audit and paging unchanged, zero outbound requests');
+ const savedViews=triage.locator('.saved-views'),viewName='My snoozed queue';
+ await savedViews.getByText('Saved views',{exact:true}).click();
+ await savedViews.getByLabel('View name',{exact:true}).fill(viewName);
+ const preferenceWrite=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/triage/views'&&response.request().method()==='POST');
+ await savedViews.getByRole('button',{name:'Save current view',exact:true}).click();
+ assert.equal((await preferenceWrite).status(),200);
+ await savedViews.getByRole('button',{name:viewName,exact:true}).waitFor();
+ const {views}=await call('/api/triage/views');
+ assert.equal(views.length,1);
+ const [view]=views;
+ assert.ok(view.id);
+ assert.deepEqual(view,{id:view.id,kind:'view',actor:actor.id,name:viewName,query:personalQuery});
+
+ // Issue the second session before the read-only window: login writes session state.
+ const otherSession=await context.browser().newContext({baseURL:origin,extraHTTPHeaders:{connection:'close'}});
+ try {
+  const login=await otherSession.request.post('/api/login',{headers:{origin},data:otherCredentials});
+  assert.equal(login.status(),200,'the other responder signs in');
+  const session=await otherSession.request.get('/api/session');
+  assert.equal(session.status(),200);
+  assert.equal((await session.json()).member.id,other.id);
+  const afterSave=snapshot(),pagingAfterSave=await call('/api/paging/state');
+  assert.deepEqual(await outbound(),[],'saving a personal view makes no outbound request');
+
+  const foreignViews=await otherSession.request.get('/api/triage/views');
+  assert.equal(foreignViews.status(),200);
+  assert.deepEqual(await foreignViews.json(),{views:[]},'a signed-in responder cannot list another member’s saved view');
+
+  const checkControls=async (query={})=>{
+   await expect(triage.getByLabel('Search incidents',{exact:true})).toHaveValue(query.q??'');
+   await expect(triage.getByLabel('Filter service',{exact:true})).toHaveValue(query.service??'');
+   await expect(triage.getByLabel('Filter urgency',{exact:true})).toHaveValue(query.urgency??'');
+   await expect(triage.getByLabel('Incident status',{exact:true})).toHaveValue(query.status??'');
+   await expect(triage.getByLabel('Assigned to me',{exact:true})).toBeChecked({checked:query.mine==='true'});
+  };
+  const externalRequests=[];
+  const recordExternal=request=>{if(/^https?:/.test(request.url())&&new URL(request.url()).origin!==origin)externalRequests.push(request.url());};
+  page.on('request',recordExternal);
+  try {
+   for(const width of [1440,390]){
+    await page.setViewportSize({width,height:1000});
+    await page.goto(origin+'/incidents');
+    assert.equal(new URL(page.url()).search,'','recall starts on a clean Incidents URL');
+    await triage.getByText('Filter and sort incidents',{exact:true}).click();
+    await checkControls();
+    await savedViews.getByText('Saved views',{exact:true}).click();
+    await savedViews.getByRole('button',{name:viewName,exact:true}).click();
+    await checkControls(personalQuery);
+    const recalled=new URL(page.url());
+    assert.equal(recalled.pathname,'/incidents');
+    assert.deepEqual([...recalled.searchParams].sort(),Object.entries(personalQuery).map(([key,value])=>['triage_'+key,value]).sort());
+    await compare(personalQuery,snoozedMine,{navigate:false});
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'saved triage view fits the viewport');
+    await triage.screenshot({path:`${directory}/OC-060-personal-saved-view-${width}.png`});
+   }
+  } finally {
+   page.off('request',recordExternal);
+   await page.setViewportSize({width:1440,height:1000});
+  }
+  assert.deepEqual(await call('/api/paging/state'),pagingAfterSave);
+  assert.deepEqual(snapshot(),afterSave,'listing and recall preserve durable rows, revisions and permanent audit after the preference write');
+  assert.deepEqual(await outbound(),[],'listing and recall make no Worker outbound requests');
+  assert.deepEqual(externalRequests,[],'recall makes no browser outbound requests');
+ } finally {
+  await otherSession.close();
+ }
+ console.log('PROBE OC-060 acceptance 1 personal saved view: exact member-scoped query saved; another signed-in responder sees no view; clean Incidents URL recalls five exact protected IDs and count at 1440 and 390, with unchanged durable rows, revisions, audit and paging after save, and zero outbound requests.');
  await setTime(null);
  const source='synthetic-oncall-6060',key=randomBytes(32).toString('hex');await call('/api/sources',{id:source,key,scopes:[services[0].id]});
  const lowInputs=[];
