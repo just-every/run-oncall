@@ -14,6 +14,7 @@ import {agedActionSubmitRetention} from './oncall-agent-action-submit-retention.
 import {actionSubmitResponseLoss} from './oncall-agent-action-submit-response-loss.mjs';
 import {changedReassignmentReasonConflict} from './oncall-agent-incident-replay.mjs';
 import {scribeClearReadback} from './oncall-agent-role-clear-replay.mjs';
+import {changedScribeReasonConflict} from './oncall-agent-role-replay.mjs';
 import {readClearedAssignee} from './oncall-agent-assignee-clear-replay.mjs';
 import {accessToken,autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {openIncidentAction} from './keyboard.mjs';
@@ -488,6 +489,26 @@ try{
    },
    close:()=>retainedContext.close(),
   };
+ }});
+ await changedScribeReasonConflict(runtime,{async observe({mode,saved,responder,reason,agentLabel}){
+  const before=await agentEffectSnapshot(runtime),path='/incidents/'+saved.id;
+  await capture('scribe-assigned-'+mode+'-timeline',path,async()=>{
+   const readable=responder.name+' is now scribe. Previously Unassigned. Reason: '+reason;
+   const entry=page.getByRole('region',{name:'Timeline',exact:true}).getByRole('listitem').filter({hasText:readable});
+   await entry.getByText(readable,{exact:true}).waitFor();
+   await entry.getByText(agentLabel,{exact:true}).waitFor();
+   await entry.scrollIntoViewIfNeeded();
+  });
+  await capture('scribe-assigned-'+mode+'-people',path,async()=>{
+   const people=await openIncidentAction(page,'People and priority');
+   const scribe=people.getByRole('combobox',{name:'Scribe',exact:true});
+   await scribe.waitFor();
+   if(page.viewportSize().width===1440)assert.equal(await scribe.inputValue(),responder.id);
+   await people.getByRole('button',{name:'Close',exact:true}).focus();
+   await page.getByRole('tooltip',{name:'Close dialog',exact:true}).waitFor();
+  });
+  assert.deepEqual(await agentEffectSnapshot(runtime),before,'Viewing the saved Scribe and attribution changes no durable records');
+  assert.deepEqual(await runtime.outboundRequests(),[]);
  }});
  await specialist({request:runtime.request,origin:runtime.origin,cookie:runtime.cookie,fixtures:runtime.fixtures,tool});
  const native=async()=> (await (await http('/api/state')).json());
