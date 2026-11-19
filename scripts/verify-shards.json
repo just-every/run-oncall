@@ -53,7 +53,9 @@
       }
     ],
     "imports": [
-      "tests/import-door.mjs",
+      "tests/import-door.mjs"
+    ],
+    "import-followups": [
       "tests/oncall-agent-erase-subjects.mjs",
       "tests/oncall-agent-erase-roster.mjs",
       {
@@ -152,16 +154,17 @@
     {
       "name": "changes",
       "lanes": [
-        "changes"
+        "changes",
+        "triage",
+        "import-followups"
       ],
       "browser": false,
       "hosted": false,
       "timeout": 15
     },
     {
-      "name": "triage",
+      "name": "imports",
       "lanes": [
-        "triage",
         "imports"
       ],
       "browser": false,
