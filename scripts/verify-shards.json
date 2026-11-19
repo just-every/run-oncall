@@ -41,7 +41,9 @@
       "tests/transfer.mjs"
     ],
     "changes": [
-      "tests/changes.mjs",
+      "tests/changes.mjs"
+    ],
+    "activation": [
       "tests/activation.mjs"
     ],
     "triage": [
@@ -96,8 +98,7 @@
       "name": "runtime",
       "lanes": [
         "runtime",
-        "member-browser",
-        "triage"
+        "member-browser"
       ],
       "browser": true,
       "hosted": false,
@@ -153,16 +154,26 @@
     {
       "name": "changes",
       "lanes": [
-        "changes"
+        "changes",
+        "imports"
       ],
       "browser": false,
       "hosted": false,
       "timeout": 15
     },
     {
-      "name": "imports",
+      "name": "activation",
       "lanes": [
-        "imports"
+        "activation"
+      ],
+      "browser": false,
+      "hosted": false,
+      "timeout": 15
+    },
+    {
+      "name": "triage",
+      "lanes": [
+        "triage"
       ],
       "browser": false,
       "hosted": false,
