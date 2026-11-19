@@ -1720,7 +1720,7 @@ async function singleIncidentPerAlert(page,context,width,service,source,key) {
 
 
 // keyboard-coordination: part of this public journey.
-export async function keyboardCoordination(page,context,width,ownerLink,openSession) {
+export async function keyboardCoordination(page,context,width,{ownerLink,openSession,worker}) {
  const key=keyboardUser(page),directory=process.env.ONCALL_BROWSER_EVIDENCE??'./evidence/browser'
  await mkdir(directory,{recursive:true})
  const hostile=`<img data-hostile="oncall-probe" src="https://hostile.invalid/probe" onerror="window.__oncallHostile=true"><script data-hostile="oncall-probe">window.__oncallHostile=true</script>`
@@ -1805,51 +1805,105 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
  assert.ok(acknowledged.timeline.some(entry=>entry.text===hostile&&entry.actor===actor),'protected readback retains the literal keyboard note and its actor')
  await accessibleState(page,'acknowledged',width,page.getByRole('button',{name:'Add note',exact:true}))
  console.log(`PROBE OC-009 declaration, acknowledgment and notes ${width}: native keyboard incident and action dialog -> protected incident, commander and literal attributed note retained; focus, Tab containment, Escape return, labels, overflow and axe passed`)
- // The existing desktop conflict is the acceptance-2 proof. The phone leg
- // adds the selected coordination screens, without duplicating the transport race.
- if(width!==1440)return
- // A separately authenticated HTTP context advances the real stored revision.
- // Delay this browser's real workspace reads while the second session wins,
- // so a live-update clock cannot make this stale-write transport case disappear.
- await focusWorkspace(page)
- let releaseWorkspace
- const workspaceGate=new Promise(resolve=>{releaseWorkspace=resolve})
- const heldReads=new Set()
- const holdWorkspace=route=>{
-  const read=workspaceGate.then(()=>route.continue())
-  heldReads.add(read)
-  return read.finally(()=>heldReads.delete(read))
- }
- const releaseReads=async()=>{releaseWorkspace();await Promise.all([...heldReads]);await page.unroute('**/api/workspace',holdWorkspace)}
- await page.route('**/api/workspace',holdWorkspace)
- const second=await context.browser().newContext({baseURL:new URL(page.url()).origin})
+ if(width!==390)return
+ const origin=new URL(page.url()).origin
+ const second=await context.browser().newContext({baseURL:origin,extraHTTPHeaders:{connection:'close'}})
  try {
   const secondPage=await second.newPage()
   if(openSession) await openSession(second,secondPage)
   else await secondPage.goto(ownerLink)
   await secondPage.waitForURL(url=>url.pathname==='/on-call'&&!url.hash,{timeout:60000})
   await secondPage.locator('.oncall-frame').waitFor({timeout:60000})
-  const secondSession=await second.request.get('/api/session');assert.equal(secondSession.status(),200)
-  assert.equal((await secondSession.json()).member.role,'admin','second session authenticates independently')
-  assert.notDeepEqual(await second.cookies(),await context.cookies(),'second owner-open establishes independent session cookies')
-  const current=await (await second.request.get('/api/state')).json(),incident=current.incidents.find(item=>item.title===`Keyboard incident ${width}`)
-  const winner=await second.request.post('/api/command',{data:{type:'note',incident:incident.id,revision:incident.revision,text:'Second HTTP session wins'},headers:{origin:new URL(page.url()).origin}})
-  assert.equal(winner.status(),200,'second session publishes the winning note')
-  const before=await (await second.request.get('/api/state')).json()
-  await key.text(page.getByLabel('Observation, decision or evidence',{exact:true}),'Losing browser note must not save')
-  const rejected=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().method()==='POST')
-  await key.activate(page.getByRole('button',{name:'Add note',exact:true}))
-  assert.equal((await rejected).status(),409,'real stale browser write rejected by server')
-  await releaseReads()
-  await page.locator('.failure-line[role="alert"]').waitFor()
-  assert.ok((await page.locator('.failure-line[role="alert"]').innerText()).length>0,'failed write is announced by an alert live region')
-  await page.waitForFunction(()=>document.querySelector('.notice[role="status"]')?.textContent==='')
-  assert.equal(await page.locator('.notice[role="status"]').innerText(),'','failed write never claims saved')
-  assert.equal(await page.getByLabel('Observation, decision or evidence',{exact:true}).inputValue(),'Losing browser note must not save','failed draft remains editable')
-  assert.deepEqual(await (await second.request.get('/api/state')).json(),before,'rejected write leaves the winning server data unchanged')
-  await accessibleState(page,'rejected-write',width,page.getByRole('button',{name:'Add note',exact:true}))
-  console.log('PROBE OC-009 stale write 1440: second authenticated HTTP session wins -> real 409, alert announcement, editable losing draft and no saved claim; winning data unchanged')
- } finally { await releaseReads();await second.close() }
+  const read=async path=>{
+   const response=await second.request.get(path)
+   assert.equal(response.status(),200)
+   return response.json()
+  }
+  const {member:secondMember}=await read('/api/session')
+  assert.equal(secondMember.role,'admin','second session authenticates independently')
+  assert.ok(!isDeepStrictEqual(await second.cookies(),await context.cookies()),'second sign-in establishes independent session cookies')
+
+  await focusWorkspace(page)
+  const draft=page.getByLabel('Observation, decision or evidence',{exact:true})
+  const submit=page.getByRole('button',{name:'Add note',exact:true})
+  const losingText='Losing browser note must not save',winningText='Second HTTP session wins'
+  await key.text(draft,losingText)
+  await key.reach(submit)
+  await key.visibleFocus(submit)
+  const stateBefore=await read('/api/state')
+  const incident=stateBefore.incidents.find(item=>item.id===manual.id)
+  const {workspaceRevision,...pagingBefore}=await read('/api/paging/state')
+  assert.equal(pagingBefore.paging,'OFF')
+  const outboundBefore=await worker.outboundRequests()
+
+  // Hold only the first browser's ordinary workspace GET. The winning and
+  // losing POSTs both reach the real Worker, with no response substitution.
+  let releaseWorkspace
+  const workspaceGate=new Promise(resolve=>{releaseWorkspace=resolve})
+  const heldReads=new Set()
+  const holdWorkspace=route=>{
+   if(route.request().method()!=='GET')return route.continue()
+   const read=workspaceGate.then(()=>route.continue())
+   heldReads.add(read)
+   return read.finally(()=>heldReads.delete(read))
+  }
+  const command={type:'note',incident:incident.id,revision:incident.revision}
+  await page.route('**/api/workspace',holdWorkspace)
+  let winner
+  try {
+   const winningReply=await second.request.post('/api/command',{data:{...command,text:winningText},headers:{origin}})
+   assert.equal(winningReply.status(),200,'second session publishes the winning note')
+   winner=await winningReply.json()
+   await Promise.all([
+    page.waitForRequest(request=>new URL(request.url()).pathname==='/api/workspace'&&request.method()==='GET'),
+    page.evaluate(()=>window.dispatchEvent(new Event('focus'))),
+   ])
+   const [rejected]=await Promise.all([
+    page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().method()==='POST'),
+    page.keyboard.press('Enter'),
+   ])
+   assert.equal(rejected.status(),409,'real stale browser write rejected by server')
+   const {type,incident:attemptedId,revision,text}=rejected.request().postDataJSON()
+   assert.deepEqual({type,incident:attemptedId,revision,text},{...command,text:losingText})
+  } finally {
+   releaseWorkspace()
+   await Promise.all([...heldReads])
+   await page.unroute('**/api/workspace',holdWorkspace)
+  }
+
+  const alert=page.locator('.failure-line[role="alert"]')
+  await expect(alert).toContainText('Incident changed')
+  await expect(alert).toBeInViewport()
+  await expect(alert).toContainText(winningText)
+  await expect(alert).not.toContainText(losingText)
+  await expect(page.locator('.notice[role="status"]')).toHaveText('')
+  await expect(draft).toBeEditable()
+  await expect(draft).toHaveValue(losingText)
+  await expect(page.locator('.timeline').getByText(winningText,{exact:true})).toBeVisible()
+  await expect(page.locator('.timeline').getByText(losingText,{exact:true})).toHaveCount(0)
+  await key.visibleFocus(submit)
+  await expect(submit).toBeInViewport()
+  await accessibleState(page,'rejected-write',width,submit)
+  // Capture the same failure on desktop without repeating the stale-write race.
+  const viewport=page.viewportSize()
+  try {
+   await page.setViewportSize({...viewport,width:1440})
+   await alert.scrollIntoViewIfNeeded()
+   await page.screenshot({path:`${directory}/oc009-rejected-write-1440.png`,fullPage:true})
+  } finally {await page.setViewportSize(viewport)}
+
+  const winningEntry=winner.timeline.at(-1)
+  assert.equal(winningEntry.kind,'note')
+  assert.equal(winningEntry.text,winningText)
+  assert.equal(winningEntry.actor,secondMember.id)
+  assert.deepEqual(winner,{...incident,revision:incident.revision+1,timeline:[...incident.timeline,winningEntry]})
+  assert.deepEqual(await read('/api/state'),{...stateBefore,revision:stateBefore.revision+1,incidents:stateBefore.incidents.map(item=>item.id===incident.id?winner:item)},'protected workspace includes only the exact winning incident update')
+  const {workspaceRevision:afterRevision,...pagingAfter}=await read('/api/paging/state')
+  assert.equal(afterRevision,workspaceRevision+1,'only the winning note advances the protected workspace revision')
+  assert.deepEqual(pagingAfter,pagingBefore,'neither note changes paging state')
+  assert.deepEqual(await worker.outboundRequests(),outboundBefore,'neither note creates outbound work')
+  console.log(`PROBE OC-009 2 note at ${width}: independent session 200, keyboard stale note 409, visible alert and submit focus, no saved claim, editable draft, exact winning note and one revision, paging OFF unchanged, zero new outbound requests, no overflow or serious or critical axe findings`)
+ } finally {await second.close()}
 }
 
 
@@ -1982,7 +2036,7 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession,
  if(accessibilityOnly){
   for(const width of [1440,390]){
    await page.setViewportSize({width,height:1000});await setTime(keyboardInstant);
-   await keyboardCoordination(page,context,width,ownerLink,openSession);
+   await keyboardCoordination(page,context,width,{ownerLink,openSession,worker});
    await productSchedule(page,context,width,session,{ownerLink,openSession,selectedOnly:true,observePhoneStaleCover:true,setTime,worker});
   }
   return;
@@ -1990,7 +2044,7 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession,
  for(const width of [1440]) {
   await page.setViewportSize({width,height:1000})
   await setTime(keyboardInstant)
-  await keyboardCoordination(page,context,width,ownerLink,openSession)
+  await keyboardCoordination(page,context,width,{ownerLink,openSession,worker})
   await setTime(null)
   if(width===1440)await sharedIncidentLinks(page,context)
   await alertSeverity(page,context,width)
@@ -2007,13 +2061,13 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession,
   const [replay]=await Promise.all([page.waitForResponse(r=>new URL(r.url()).pathname==='/api/replay',{timeout:15000}),page.mouse.click(box.x+box.width/2,box.y+box.height/2)]);assert.equal(replay.status(),200)
   await page.getByLabel('Replay comparison',{exact:true}).waitFor();await page.getByRole('button',{name:'Close comparison',exact:true}).click()
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'routing viewport has no horizontal overflow')
-  console.log(`Product browser journey ${width}: keyboard incident coordination, stale-write alert, hostile text, schedules, overrides, coverage/ICS, provider export, reviewed import/adoption/erasure, pointer replay and responsive layout passed`)
+  console.log(`Product browser journey ${width}: keyboard incident coordination, hostile text, schedules, overrides, coverage/ICS, provider export, reviewed import/adoption/erasure, pointer replay and responsive layout passed`)
  }
  // OC-009's bounded phone leg reuses the selected flow; unrelated desktop
  // imports, routing, bulk actions and provider journeys keep their single width.
  await page.setViewportSize({width:390,height:1000})
  await setTime(keyboardInstant)
- await keyboardCoordination(page,context,390,ownerLink,openSession)
+ await keyboardCoordination(page,context,390,{ownerLink,openSession,worker})
  await productSchedule(page,context,390,session,{ownerLink,openSession,selectedOnly:true,setTime,worker})
  await page.setViewportSize({width:1440,height:1000})
 }
