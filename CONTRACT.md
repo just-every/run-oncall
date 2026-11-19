@@ -1284,7 +1284,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 | `oncall.coordination.read` | Read the workspace coordination state and its revision | OC-003, OC-004, OC-036, OC-053 | standard | Shipped |
 | `oncall.events.list` | List events an agent can follow | BASE-AGENT-010 | standard | Shipped |
 | `oncall.imports.read` | Read imports | OC-038, OC-040 | standard | Shipped |
-| `oncall.changes.read` | List recent changes for a service, alert or incident | OC-065 | standard | Shipped |
+| `oncall.changes.read` | List recent changes for a service, alert or incident | OC-065 | standard (+ sensitive) | Shipped |
 | `oncall.archive.export` | Export the archive, a checkpoint or the permanent audit | OC-007, OC-015, OC-016, OC-041, OC-052 | standard | Not yet shipped |
 | `oncall.archive.restore` | Restore an archive or checkpoint, replacing state | OC-007, OC-013, OC-015, OC-016, OC-052 | destructive · live · access (+ security) | Not yet shipped |
 | `oncall.paging.history` | Acknowledge or cancel held historical paging jobs | OC-013 | standard | Not yet shipped |
