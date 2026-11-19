@@ -1481,6 +1481,8 @@ Agent surface · target · **missing**
 
 **Oncall schedule overrides.** When the required native revision is stale, the authorized override refusal returns the current rota revision in MCP error metadata and text even when the request omits the optional expected revision. An out-of-scope rota and an absent rota return the same not-found error with no revision. The schedule replay journey in `tests/oncall-agent-schedule-replay.mjs` exercises the refusal and a fresh-key override under both company policies.
 
+**Oncall incident resolution.** After `oncall.incidents.resolve` completes under autonomous policy or after sponsor approval under held policy, a different summary with the original key, incident and supplied revision returns `idempotency_conflict` in the MCP error metadata and text without exposing the completed result. Retrying the original arguments with a new JSON-RPC id returns the stored result and any original approval receipt. The refusal and replay preserve the single saved resolution, native records, revisions, timeline, mutation audit, retained calls and outcomes, approvals, reviews and paging, with no outbound requests.
+
 **Acceptance.**
 1. Two calls with one key give one effect and equal results.
 2. A retry with a new JSON-RPC id and the same key, after a dropped stream, returns the recorded outcome.
