@@ -303,7 +303,7 @@ Core · published · **done**
 **Acceptance.**
 1. Apply, interrupt and restart, resume and undo both vendor imports over HTTP; revoke authority at publication, inject an SQL failure, replay unchanged and changed identities, and preserve native edits as named undo conflicts.
 
-**Evidence.** `src/move-in/owner-door.ts`; `src/move-in/api.ts`; `src/move-in/journal.ts`; `tests/activation.mjs`; `tests/import-door.mjs`; `tests/import-door.mjs`; `tests/import-door.mjs`; `tests/activation.mjs` (OC-022 pagerduty: unfinished checkpoint); `tests/activation.mjs` (OC-022 opsgenie: unfinished checkpoint); `tests/import-door.mjs` (OC-038 PagerDuty account HTTP)
+**Evidence.** `src/move-in/owner-door.ts`; `src/move-in/api.ts`; `src/move-in/journal.ts`; `tests/activation.mjs`; `tests/import-door.mjs`; `tests/import-door.mjs`; `tests/import-door.mjs`; `tests/activation.mjs` (OC-022 pagerduty: unfinished checkpoint); `tests/activation.mjs` (OC-022 opsgenie: unfinished checkpoint); `tests/import-door.mjs` (OC-038 PagerDuty account HTTP); `tests/import-door.mjs` (documented PagerDuty account); `tests/activation.mjs` (OC-022 unfinished checkpoint and native-edit undo conflicts)
 **Gap.** None.
 
 ### Complete category job
