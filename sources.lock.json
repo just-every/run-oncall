@@ -2192,7 +2192,7 @@
       "executable": false
     },
     "src/business-status/model.ts": {
-      "sha256": "fd3c1e9a189762460630434521e3b0f50c2c5c7332fbdf26f322385e6e608710",
+      "sha256": "0b033548f631cfd5f505492443edb5e27a4c5ab51b2a5d6802351a62a11eae96",
       "executable": false
     },
     "src/business-status/status-work.css": {
@@ -2204,7 +2204,7 @@
       "executable": false
     },
     "src/business-status/StatusPanel.tsx": {
-      "sha256": "49094a2e3cdc9223924e4f7ec347d68e2b234848bd90b1fa8052c2b6a36adf8c",
+      "sha256": "7647f38dafe0a4a0160358c882fa7fa538e6896c8f066f263010c1c8ec7fa6d7",
       "executable": false
     },
     "src/business-status/types.ts": {
