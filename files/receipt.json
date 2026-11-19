@@ -1,0 +1,361 @@
+{
+  "product_head": "8470abfd4f365e0ad584dae3016758b2852d2a7f",
+  "product_branch": "cloud/sd-oncall-c-f299",
+  "main_at_candidate_push": "49dc3d821091644713c8d1e418f04135f84ac3f9",
+  "product_saves": [
+    "261c1d68e46780d222cce5aff5d712b116c2dfe4",
+    "f2c37ad2ffee14a0db9b1fc8309916182f64fa44"
+  ],
+  "predecessor_main_workflows": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "49dc3d821091644713c8d1e418f04135f84ac3f9",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44548697738",
+      "id": 44548697738,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "49dc3d821091644713c8d1e418f04135f84ac3f9",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44548697830",
+      "id": 44548697830,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "49dc3d821091644713c8d1e418f04135f84ac3f9",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44543427790",
+      "id": 44543427790,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "contract_status": {
+    "before": "MISSING",
+    "after": "MISSING"
+  },
+  "counts": {
+    "before": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34
+    },
+    "after": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34
+    }
+  },
+  "checked_product_blobs": {
+    "src/agent-door/coordination-tools.ts": "e06b85c0a2dc474e1a2fcfb6602f60803f2e47fb",
+    "src/agent-door/native.ts": "dccb50984839d87f5be7dc0e1d6b2976f28ecd47",
+    "src/audit-request.ts": "8c9be2b413bd7bd36aba268c532be0e209009b98",
+    "src/incident/NextStep.tsx": "c34ff842cb598bc6830bae9de1370815d21f3510",
+    "src/modules/agent-door/conformance/crypto.mjs": "538de6fb299fa985ffafbde20505ec25c89fed83",
+    "tests/agent-door-browser.mjs": "567e73a122c4aeeb8320f24392330cbcea67ff94",
+    "tests/oncall-agent-fixtures.mjs": "f95075a15caa49d018e5c7fc1cf1476917e1062c",
+    "tests/oncall-agent-flow.mjs": "f4087463c4a48e02c43e6f57a8f741b3f7782c86",
+    "tests/oncall-agent-transition-replay.mjs": "2712537f3d285538088bffaa93413cd3b0b5c513",
+    "tests/runtime.mjs": "6e180d0e733dff6fc4e0ca2e45fc964f84ea0da7"
+  },
+  "local_checks": [
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "exit": 0,
+      "completion": "Runtime agents completed (690.5s)"
+    },
+    {
+      "command": "node tests/agent-door-browser.mjs with system Chromium and 1200 second deadline",
+      "exit": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check after regeneration",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check after restoring the two views from main",
+      "exit": 1,
+      "diagnostic": "ACCEPTANCE.md: generated content differs; run contract-docs write."
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "migration ledger",
+      "applicable": false
+    }
+  ],
+  "runtime_observations": [
+    "PROBE BASE-AGENT-002 5 mitigation autonomous: matching saved lifecycle, roles and timeline; incident and workspace +1 and one command.transition per door; distinct attribution; 0 open reviews; paging OFF and zero outbound requests",
+    "PROBE BASE-AGENT-002 5 mitigation held: matching saved lifecycle, roles and timeline; incident and workspace +1 and one command.transition per door; distinct attribution; 1 open reviews; paging OFF and zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 1 and 3 autonomous mitigation: standard-only acknowledged to mitigating once, companion fields retained; new RPC id returns equal original result; original key and revision with changed summary -> isError idempotency_conflict in metadata and text without private result; original arguments still replay; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 2 autonomous mitigation: real MCP response destroyed at headers without reading body; D1 proves completed original call, outcome and one native mitigation; new RPC id recovers original result and review; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 4 autonomous mitigation expected revision: stale expected revision -> revision_conflict and exact parent current_revision 4 in metadata and text without private result; fresh key corrected from diagnostic mitigates once; exact retry adds no effect or review; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 4 autonomous mitigation native revision: stale native revision -> revision_conflict and exact parent current_revision 4 in metadata and text without private result; fresh key corrected from diagnostic mitigates once; exact retry adds no effect or review; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 1 and 3 held mitigation: standard-only acknowledged to mitigating once, companion fields retained; new RPC id returns equal original result; original key and revision with changed summary -> isError idempotency_conflict in metadata and text without private result; original arguments still replay; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 2 held mitigation: real MCP response destroyed at headers without reading body; D1 proves completed original call, outcome and one native mitigation; new RPC id recovers original result and review; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 4 held mitigation expected revision: stale expected revision -> revision_conflict and exact parent current_revision 4 in metadata and text without private result; fresh key corrected from diagnostic mitigates once; exact retry adds no effect or review; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 4 held mitigation native revision: stale native revision -> revision_conflict and exact parent current_revision 4 in metadata and text without private result; fresh key corrected from diagnostic mitigates once; exact retry adds no effect or review; zero outbound requests"
+  ],
+  "browser_observations": [
+    "PROBE BASE-AGENT-002 5 mitigation autonomous: matching saved lifecycle, roles and timeline; incident and workspace +1 and one command.transition per door; distinct attribution; 0 open reviews; paging OFF and zero outbound requests",
+    "PROBE BASE-AGENT-002 5 mitigation held: matching saved lifecycle, roles and timeline; incident and workspace +1 and one command.transition per door; distinct attribution; 1 open reviews; paging OFF and zero outbound requests",
+    "Browser proof mitigation-autonomous-person 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof mitigation-autonomous-person 390: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof mitigation-autonomous-agent 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof mitigation-autonomous-agent 390: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof mitigation-held-person 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof mitigation-held-person 390: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof mitigation-held-agent 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof mitigation-held-agent 390: fits=true serious/critical=0 undersized-controls=0",
+    "PROBE BASE-AGENT-002 5 mitigation browser: Mark mitigating button and MCP in both policies; saved lifecycle, roles and distinct timeline attribution; four incident screens captured at 1440 and 390; zero outbound requests",
+    "PROBE BASE-AGENT-002 5 declaration autonomous: equivalent unlinked alerts -> matching saved declarations and one command.declare per door, separate attribution, workspace +1 per action, 0 open reviews, paging OFF and zero outbound requests",
+    "PROBE BASE-AGENT-002 5 declaration held: equivalent unlinked alerts -> matching saved declarations and one command.declare per door, separate attribution, workspace +1 per action, 1 open reviews, paging OFF and zero outbound requests",
+    "PROBE BASE-AGENT-002 5 browser: Alert details button and MCP in both policies; saved incidents, runbooks and separate attribution read at 1440 and 390; zero outbound requests",
+    "PROBE BASE-AGENT-002 5 acknowledgment autonomous: equivalent ordinary incidents -> acknowledged with matching Lead and Assignee, incident and workspace revisions +1 per action, one command.transition per door, distinct attribution and explicit agent named-member history, 0 open reviews, paging OFF and zero outbound requests",
+    "PROBE BASE-AGENT-002 5 acknowledgment held: equivalent ordinary incidents -> acknowledged with matching Lead and Assignee, incident and workspace revisions +1 per action, one command.transition per door, distinct attribution and explicit agent named-member history, 1 open reviews, paging OFF and zero outbound requests",
+    "PROBE BASE-AGENT-002 5 acknowledgment browser: real Acknowledge button and MCP in both policies; saved state, responsibility and attribution read at 1440 and 390; zero outbound requests"
+  ],
+  "screens": [
+    {
+      "path": "screens/agent-door-mitigation-autonomous-agent-1440.png",
+      "bytes": 207106,
+      "sha256": "537a2df9f6fcc3f3d4f242658ae9082b99d65bee6565df265853fc8d4c10521b"
+    },
+    {
+      "path": "screens/agent-door-mitigation-autonomous-agent-390.png",
+      "bytes": 101883,
+      "sha256": "7841b4b10dd6d0c4df65b607f1d8d1389386a03b8d658a1f86f2d3448d8e5718"
+    },
+    {
+      "path": "screens/agent-door-mitigation-autonomous-person-1440.png",
+      "bytes": 204993,
+      "sha256": "5371630ebe0b2521d88caa3c3be1d2cde727be4e4b2a94f69f9f376dce89c154"
+    },
+    {
+      "path": "screens/agent-door-mitigation-autonomous-person-390.png",
+      "bytes": 100196,
+      "sha256": "90d27430acc3f1aa990a417c1c158f4f26cbfd9627075abdfccbb8e32590ba77"
+    },
+    {
+      "path": "screens/agent-door-mitigation-held-agent-1440.png",
+      "bytes": 205216,
+      "sha256": "2292c69fed8d47d01d8238e9d04c1aab10add5796a25805d663dc86df96ccff3"
+    },
+    {
+      "path": "screens/agent-door-mitigation-held-agent-390.png",
+      "bytes": 101017,
+      "sha256": "c439bc437de2eddd7fc8c22645bc4cb5a540d00df2412d6a242d18cecea5f66e"
+    },
+    {
+      "path": "screens/agent-door-mitigation-held-person-1440.png",
+      "bytes": 203235,
+      "sha256": "e3ae8001f7ddca2730f46c48c9c3b04aeb466feec2d606a7bcf8876135d5e767"
+    },
+    {
+      "path": "screens/agent-door-mitigation-held-person-390.png",
+      "bytes": 99332,
+      "sha256": "5fbf437e4bb35e45e595fd3b58b6dc020d79a601b3e5ed794e51b59acca02d7d"
+    }
+  ],
+  "publication_scan": {
+    "commit": "8470abfd4f365e0ad584dae3016758b2852d2a7f",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "status": "pending-guarded-lander"
+  },
+  "candidate_workflows": [
+    {
+      "conclusion": "failure",
+      "event": "push",
+      "head_branch": "cloud/sd-oncall-c-f299",
+      "head_sha": "8470abfd4f365e0ad584dae3016758b2852d2a7f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44553218914",
+      "id": 44553218914,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "candidate_poll_observations": [
+    {
+      "conclusion": null,
+      "head_sha": "8470abfd4f365e0ad584dae3016758b2852d2a7f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44553218914",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "8470abfd4f365e0ad584dae3016758b2852d2a7f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44553218914",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": "failure",
+      "head_sha": "8470abfd4f365e0ad584dae3016758b2852d2a7f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44553218914",
+      "status": "completed"
+    }
+  ],
+  "candidate_jobs": [
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "8470abfd4f365e0ad584dae3016758b2852d2a7f",
+      "id": 135662208130,
+      "name": "plan",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Check the generated contract documents"
+      ],
+      "head_sha": "8470abfd4f365e0ad584dae3016758b2852d2a7f",
+      "id": 135662456459,
+      "name": "contract-docs",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "8470abfd4f365e0ad584dae3016758b2852d2a7f",
+      "id": 135662456506,
+      "name": "build",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "head_sha": "8470abfd4f365e0ad584dae3016758b2852d2a7f",
+      "id": 135662460016,
+      "name": "light",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "8470abfd4f365e0ad584dae3016758b2852d2a7f",
+      "id": 135663787268,
+      "name": "shards (agents)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "8470abfd4f365e0ad584dae3016758b2852d2a7f",
+      "id": 135663787342,
+      "name": "shards (browser)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "8470abfd4f365e0ad584dae3016758b2852d2a7f",
+      "id": 135663787381,
+      "name": "shards (hosted)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "8470abfd4f365e0ad584dae3016758b2852d2a7f",
+      "id": 135663787409,
+      "name": "shards (triage)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "8470abfd4f365e0ad584dae3016758b2852d2a7f",
+      "id": 135663787489,
+      "name": "shards (runtime)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "8470abfd4f365e0ad584dae3016758b2852d2a7f",
+      "id": 135663787543,
+      "name": "shards (changes)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "8470abfd4f365e0ad584dae3016758b2852d2a7f",
+      "id": 135663787616,
+      "name": "shards (transfer)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "8470abfd4f365e0ad584dae3016758b2852d2a7f",
+      "id": 135663787697,
+      "name": "shards (intake)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "8470abfd4f365e0ad584dae3016758b2852d2a7f",
+      "id": 135670832351,
+      "name": "full-push-proof",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "head_sha": "8470abfd4f365e0ad584dae3016758b2852d2a7f",
+      "id": 135670835227,
+      "name": "nightly-proof",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Require the selected coverage and its proof"
+      ],
+      "head_sha": "8470abfd4f365e0ad584dae3016758b2852d2a7f",
+      "id": 135670904188,
+      "name": "verify",
+      "status": "completed"
+    }
+  ],
+  "candidate_contract_job_archive": {
+    "command": "gh run view 44553218914 --repo just-every/run-oncall --job 135662456459 --log-failed",
+    "exit": 0,
+    "diagnostic": "contract-docs\tCheck the generated contract documents\t2026-11-19T15:18:44.4525444Z ##[group]Run node src/base/contract-docs.mjs check\ncontract-docs\tCheck the generated contract documents\t2026-11-19T15:18:44.4525897Z node src/base/contract-docs.mjs check\ncontract-docs\tCheck the generated contract documents\t2026-11-19T15:18:44.5516529Z Contract prose: 0 errors, 0 warnings.\ncontract-docs\tCheck the generated contract documents\t2026-11-19T15:18:44.6139135Z ACCEPTANCE.md: generated content differs; run contract-docs write.\ncontract-docs\tCheck the generated contract documents\t2026-11-19T15:18:44.6249064Z ##[error]Process completed with exit code 1."
+  },
+  "verify_disposition": "permitted-generated-acceptance-view-exception",
+  "latest_observed_main": "a84709b61fcbfbba9743ac55e5779d6e9186887a",
+  "main_equals_candidate": false,
+  "candidate_run_site": "pending-after-guarded-landing"
+}

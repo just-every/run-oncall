@@ -1,0 +1,70 @@
+{
+  "files": [
+    {
+      "blob": "06c6a64734ca9ae41c0a09544273c0d451f21765",
+      "bytes": 10372,
+      "path": "REPORT.md",
+      "sha256": "c1c869e17fc2ac9cef88fd0bf4055b4fee5fc1f80e907e5b902cb17c903a65bf"
+    },
+    {
+      "blob": "8381d3abe8ad58d29c34469054d930ad0e69d9b7",
+      "bytes": 16940,
+      "path": "receipt.json",
+      "sha256": "66eb3be2941e0dbd5267f7a495fd82bb275ff970adda3dae71251dc485b3735a"
+    },
+    {
+      "blob": "385a04d1ebdcbfc3cb591b0bfadae451bb035c6e",
+      "bytes": 207106,
+      "path": "screens/agent-door-mitigation-autonomous-agent-1440.png",
+      "sha256": "537a2df9f6fcc3f3d4f242658ae9082b99d65bee6565df265853fc8d4c10521b"
+    },
+    {
+      "blob": "c87d009454f355bb7530fbc81ad195149230cf5d",
+      "bytes": 101883,
+      "path": "screens/agent-door-mitigation-autonomous-agent-390.png",
+      "sha256": "7841b4b10dd6d0c4df65b607f1d8d1389386a03b8d658a1f86f2d3448d8e5718"
+    },
+    {
+      "blob": "04d82b1be4404f8776291b36d264f58762e4d81e",
+      "bytes": 204993,
+      "path": "screens/agent-door-mitigation-autonomous-person-1440.png",
+      "sha256": "5371630ebe0b2521d88caa3c3be1d2cde727be4e4b2a94f69f9f376dce89c154"
+    },
+    {
+      "blob": "da131a8493a0eb7d93dd66991595a380e3f4ee82",
+      "bytes": 100196,
+      "path": "screens/agent-door-mitigation-autonomous-person-390.png",
+      "sha256": "90d27430acc3f1aa990a417c1c158f4f26cbfd9627075abdfccbb8e32590ba77"
+    },
+    {
+      "blob": "329a141a07c2f42b3d836f2ed35a0c21e5460b05",
+      "bytes": 205216,
+      "path": "screens/agent-door-mitigation-held-agent-1440.png",
+      "sha256": "2292c69fed8d47d01d8238e9d04c1aab10add5796a25805d663dc86df96ccff3"
+    },
+    {
+      "blob": "76197796d5eedb5e4a7846f7a244b54c7f38872f",
+      "bytes": 101017,
+      "path": "screens/agent-door-mitigation-held-agent-390.png",
+      "sha256": "c439bc437de2eddd7fc8c22645bc4cb5a540d00df2412d6a242d18cecea5f66e"
+    },
+    {
+      "blob": "d8ae935b328757ddbee7f454ff8c108160d31a58",
+      "bytes": 203235,
+      "path": "screens/agent-door-mitigation-held-person-1440.png",
+      "sha256": "e3ae8001f7ddca2730f46c48c9c3b04aeb466feec2d606a7bcf8876135d5e767"
+    },
+    {
+      "blob": "fe7bf07876ae9572908258c568dec265a0d4d8b2",
+      "bytes": 99332,
+      "path": "screens/agent-door-mitigation-held-person-390.png",
+      "sha256": "5fbf437e4bb35e45e595fd3b58b6dc020d79a601b3e5ed794e51b59acca02d7d"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f299",
+  "product_head": "8470abfd4f365e0ad584dae3016758b2852d2a7f",
+  "ref": "refs/heads/evidence/sd-oncall-c-f299",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f299"
+}
