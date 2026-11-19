@@ -1,0 +1,110 @@
+{
+  "checkout": {
+    "repository": "just-every/run-oncall",
+    "branch": "cloud/sd-oncall-c-f303",
+    "head": "9e6b21aaee69fb04eb545b32ce8d9afed83d3b12",
+    "save": "61b21d1f0157a82ee01aa379fd8e38a1b3e775ea",
+    "main_at_integration": "3e278dea3b663bc5d8cd4b66889b2e85b24d7cc8",
+    "shallow": false,
+    "previous_candidate": "19db7d09a3a67035bc12405919c56088ab9ec18b"
+  },
+  "counts": {
+    "before": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34
+    },
+    "after": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34
+    }
+  },
+  "changes_after_save": [
+    "CONTRACT.md",
+    "sources.lock.json",
+    "src/routing/RoutingDiagnostics.tsx",
+    "src/routing/RoutingWorkspace.tsx",
+    "src/sections/routing.tsx",
+    "tests/product-browser.mjs"
+  ],
+  "local_checks": [
+    {
+      "command": "node scripts/verify-oncall-build.mjs",
+      "exit": 0,
+      "head": "9e6b21aaee69fb04eb545b32ce8d9afed83d3b12",
+      "includes": [
+        "first-party profile",
+        "emitted Worker build",
+        "typecheck"
+      ]
+    },
+    {
+      "command": "node tests/routing.mjs",
+      "exit": 0,
+      "head": "9e6b21aaee69fb04eb545b32ce8d9afed83d3b12",
+      "output": "OC-070 modes and rules map email onto derived generations. Routed intake: scoped fixed/dynamic rules, per-service generations, suppression ordering, replay/no writes, stale publish, readmission, authority, rollback, rotation and inactive archive/restart"
+    },
+    {
+      "command": "node scripts/verify-oncall.mjs browser",
+      "exit": 0,
+      "head": "9e6b21aaee69fb04eb545b32ce8d9afed83d3b12",
+      "output": "PROBE OC-083 2 at 1440: repeated compatible resolve -> Payments receives a no-effect receipt; synthetic-oncall-831 remains open under the selected key. Responder owner only, separate key excluded, generation and obligation custody retained, reads leave durable rows, revisions and permanent audit unchanged, zero outbound requests."
+    },
+    {
+      "command": "ONCALL_PRODUCT_JOURNEY=response-policy node tests/product-browser.mjs",
+      "exit": 0,
+      "test_content_matches": "9e6b21aaee69fb04eb545b32ce8d9afed83d3b12",
+      "output": "PROBE OC-083 2 at 1440: repeated compatible resolve -> Payments receives a no-effect receipt; synthetic-oncall-831 remains open under the selected key. Responder owner only, separate key excluded, generation and obligation custody retained, reads leave durable rows, revisions and permanent audit unchanged, zero outbound requests."
+    },
+    {
+      "command": "ONCALL_PRODUCT_JOURNEY=response-policy ONCALL_PRODUCT_WIDTH=390 node tests/product-browser.mjs",
+      "exit": 0,
+      "test_content_matches": "9e6b21aaee69fb04eb545b32ce8d9afed83d3b12",
+      "output": "PROBE OC-083 2 at 390: repeated compatible resolve -> Payments receives a no-effect receipt; synthetic-oncall-831 remains open under the selected key. Responder owner only, separate key excluded, generation and obligation custody retained, reads leave durable rows, revisions and permanent audit unchanged, zero outbound requests."
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write and check",
+      "exit": 0,
+      "phase": "views generated"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 1,
+      "phase": "views restored from origin/main",
+      "observed": "ACCEPTANCE.md: generated content differs; run contract-docs write."
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock and check",
+      "exit": 0
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "browser/routed-recovery-1440.png",
+      "viewport_width": 1440,
+      "image_width": 1160,
+      "image_height": 950,
+      "sha256": "7bfa3f14645e9caeb07e1e18a312085198204500952897fff27514fc844289b9",
+      "head": "9e6b21aaee69fb04eb545b32ce8d9afed83d3b12"
+    },
+    {
+      "file": "browser/routed-recovery-390.png",
+      "viewport_width": 390,
+      "image_width": 358,
+      "image_height": 1001,
+      "sha256": "4d2c2c9457cd74aa6b2b0d60578fc7e82bcc7f6ca954eb195bbf48b39fb6bb4e",
+      "head": "9e6b21aaee69fb04eb545b32ce8d9afed83d3b12"
+    }
+  ],
+  "f235": {
+    "product": "e9da4de5d47ec834cb25e3bece5e86bd215c87ba",
+    "evidence": "4bcd7e423d53db324feff3dce02ee24d1ae5c635",
+    "separate_landing_ref": "5d27aafb14a8e7d86299f2ce153be7ea3ca42258",
+    "verify_run_id": 43141820984
+  },
+  "publication_scan": "fleet landing gate",
+  "initial_base_verify": 44570210163,
+  "merged_base_verify": 44576969484,
+  "merged_base_run_site": 44576969490
+}
