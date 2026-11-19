@@ -1,0 +1,34 @@
+UTC receipt recorded 2026-11-19T17:44:02Z
+Repository just-every/run-oncall
+Branch cloud/sd-oncall-union-merge-1
+Base 3e278dea3b663bc5d8cd4b66889b2e85b24d7cc8
+Product c31772574d3946b8737b89608614849202123cc5
+Node 22.20.0; pnpm 10.12.4
+PASS pnpm install --frozen-lockfile
+PASS pnpm run deps
+PASS node tests/append-only-merge.mjs
+Append-only browser assertions survive merge and rebase exactly once and parse successfully.
+EXPECTED FAIL node tests/append-only-merge.mjs with only the browser union rule removed in a scratch copy
+Error: git merge --no-edit second failed: Auto-merging tests/agent-door-browser.mjs
+CONFLICT (content): Merge conflict in tests/agent-door-browser.mjs
+Automatic merge failed; fix conflicts and then commit the result.
+PASS push changes shard includes node tests/append-only-merge.mjs
+PASS pnpm run typecheck
+PASS CI=true node scripts/verify-oncall-build.mjs
+> pnpm exec rer check --profile first-party
+> pnpm run build
+✓ built in 1.31s
+✓ built in 1.98s
+build: complete (exit 0)
+> pnpm run typecheck
+> tsc --noEmit
+PASS node scripts/verify-ci.mjs --check-workflows
+PASS node src/base/contract-docs.mjs write (0 documents written)
+PASS node src/base/contract-docs.mjs check (0 errors, 0 warnings)
+PASS restored generated views from origin/main; candidate has no contract or generated-view diff
+PASS node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock
+PASS node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check (also rerun after push on exact HEAD)
+PASS git diff --check origin/main..HEAD; worktree clean
+PASS product commit identity and trailer audit
+PASS guarded product push on first attempt; git ls-remote confirmed exact product head
+PASS reran focused test on the exact published SHA (0.201 seconds wall time)

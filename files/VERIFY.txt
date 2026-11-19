@@ -1,0 +1,8 @@
+Run 44580102051 (Verify)
+First observed 2026-11-19T17:42:53Z
+{"conclusion":null,"event":"push","head_sha":"c31772574d3946b8737b89608614849202123cc5","html_url":"https://github.com/just-every/run-oncall/actions/runs/44580102051","id":44580102051,"name":"Verify","status":"in_progress"}
+Subsequent observations at 2026-11-19T17:47:54Z, 17:52:55Z, 17:57:56Z and 18:02:57Z
+{"conclusion":null,"head_sha":"c31772574d3946b8737b89608614849202123cc5","html_url":"https://github.com/just-every/run-oncall/actions/runs/44580102051","status":"in_progress"}
+{"conclusion":null,"head_sha":"c31772574d3946b8737b89608614849202123cc5","html_url":"https://github.com/just-every/run-oncall/actions/runs/44580102051","status":"in_progress"}
+{"conclusion":null,"head_sha":"c31772574d3946b8737b89608614849202123cc5","html_url":"https://github.com/just-every/run-oncall/actions/runs/44580102051","status":"in_progress"}
+{"conclusion":"success","head_sha":"c31772574d3946b8737b89608614849202123cc5","html_url":"https://github.com/just-every/run-oncall/actions/runs/44580102051","status":"completed"}
