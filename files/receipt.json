@@ -1,0 +1,282 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f301",
+  "product_head": "7eec722c605a476a0f63beff8158e4b685f2418e",
+  "main_parent": "802d6eacc60e5a1638423ce6396905b33771a150",
+  "main_at_handoff": "3e278dea3b663bc5d8cd4b66889b2e85b24d7cc8",
+  "published_save": "1ff2b6038d95862b0148dbf77acf288a0c6b4b67",
+  "pr": null,
+  "observed_at": "2026-11-19T17:45:33.483211+00:00",
+  "counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "clause_status_before": "MISSING",
+  "clause_status_after": "MISSING",
+  "main_baseline_runs": {
+    "sha": "802d6eacc60e5a1638423ce6396905b33771a150",
+    "verify": 44570210163,
+    "run_site": 44570210013,
+    "conclusion": "success"
+  },
+  "predecessors": {
+    "scribe_clear": [
+      "443c3613",
+      "96d1b7a9"
+    ],
+    "followup_create": {
+      "head": "b375c995f5a06cb63b8e42f83b841e308b25fbce",
+      "verify": 44528043066,
+      "retry": 44534654588
+    }
+  },
+  "verify": {
+    "conclusion": "failure",
+    "event": "push",
+    "head_branch": "cloud/sd-oncall-c-f301",
+    "head_sha": "7eec722c605a476a0f63beff8158e4b685f2418e",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44576792700",
+    "id": 44576792700,
+    "status": "completed",
+    "assessment": "completed with the generated ACCEPTANCE.md freshness failure only, plus its dependent aggregate failure. All eight shards and full push proof succeeded. This meets the cloud READY contract",
+    "jobs": [
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135746317745,
+        "name": "plan"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          "Check the generated contract documents"
+        ],
+        "id": 135746609491,
+        "name": "contract-docs"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135746609638,
+        "name": "build"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "id": 135746612334,
+        "name": "light"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135750477000,
+        "name": "shards (runtime)"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135750477024,
+        "name": "shards (agents)"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135750477143,
+        "name": "shards (transfer)"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135750477184,
+        "name": "shards (browser)"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135750477210,
+        "name": "shards (changes)"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135750477225,
+        "name": "shards (hosted)"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135750477649,
+        "name": "shards (intake)"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135750483400,
+        "name": "shards (triage)"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 135757993390,
+        "name": "full-push-proof"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "id": 135757998780,
+        "name": "nightly-proof"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          "Require the selected coverage and its proof"
+        ],
+        "id": 135758054227,
+        "name": "verify"
+      }
+    ],
+    "generated_view_diagnostic": "ACCEPTANCE.md: generated content differs; run contract-docs write.",
+    "aggregate_dependency": "The workflow requires a successful contract-docs result for a full push, so the aggregate exits after the expected view failure."
+  },
+  "candidate_publication_scan": {
+    "commit": "7eec722c605a476a0f63beff8158e4b685f2418e",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "status": "pending fleet lander"
+  },
+  "candidate_run_site": {
+    "status": "pending main"
+  },
+  "local_checks": {
+    "npx -y @runeditrun/rer build": 0,
+    "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs": 0,
+    "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/agent-door-browser.mjs": 0,
+    "pnpm run typecheck": 0,
+    "pnpm exec rer check --profile first-party": 0,
+    "node src/base/contract-docs.mjs write": 0,
+    "node src/base/contract-docs.mjs check with regenerated views": 0,
+    "node src/base/contract-docs.mjs check after restoring views": 1,
+    "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock": 0,
+    "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check": 0,
+    "git diff --check": 0
+  },
+  "journey_hashes": {
+    "tests/oncall-agent-role-replay.mjs": "57208922ec97ed73cc3d131d9bfb9aa0d7aa3dd163f053d888ab18e3de0fcfa0",
+    "tests/agent-door-browser.mjs": "2dbfe5610b573d5431063efe8f80f3f5117ff450a09c52be85eb4728a928017f"
+  },
+  "browser_evidence": [
+    {
+      "name": "agent-door-scribe-assigned-autonomous-timeline-1440.png",
+      "width": 1440,
+      "height": 4166,
+      "sha256": "43d7fc3e07337108d57139ba3ffb1e27506218c327a8288965c52b1b42520502"
+    },
+    {
+      "name": "agent-door-scribe-assigned-autonomous-timeline-390.png",
+      "width": 390,
+      "height": 1220,
+      "sha256": "8eb4244e97c518eba965f2faab931495b26b767e2d1c767b3751faf9a7c1b2ae"
+    },
+    {
+      "name": "agent-door-scribe-assigned-autonomous-people-1440.png",
+      "width": 1440,
+      "height": 4166,
+      "sha256": "d2e27e594482416300ce7c0e3f8d62899fc63f41a10b29554e4eac6a722deaaf"
+    },
+    {
+      "name": "agent-door-scribe-assigned-autonomous-people-390.png",
+      "width": 390,
+      "height": 1220,
+      "sha256": "8cd5e311225d06eaf93ddec5d9abd55961c60d7010422bf292166578819b3737"
+    },
+    {
+      "name": "agent-door-scribe-assigned-held-timeline-1440.png",
+      "width": 1440,
+      "height": 4281,
+      "sha256": "cc003d22393eec4433892ccf3305d04156f2b64567ac1ac215bcc08048449f59"
+    },
+    {
+      "name": "agent-door-scribe-assigned-held-timeline-390.png",
+      "width": 390,
+      "height": 1220,
+      "sha256": "ce0fcaa170303f544ba1167765f5477c1fc2480985c04fc9b6d1dcd56ba38c47"
+    },
+    {
+      "name": "agent-door-scribe-assigned-held-people-1440.png",
+      "width": 1440,
+      "height": 4281,
+      "sha256": "6a2b45e839b9f087b35b8a119bb612a7677a6f305094e1b0b9c537209ddbdd7f"
+    },
+    {
+      "name": "agent-door-scribe-assigned-held-people-390.png",
+      "width": 390,
+      "height": 1220,
+      "sha256": "8cd5e311225d06eaf93ddec5d9abd55961c60d7010422bf292166578819b3737"
+    }
+  ],
+  "probe_output": [
+    {
+      "source": "runtime",
+      "observed": "PROBE BASE-AGENT-003 4 autonomous first Scribe assignment: returned parent link matches the full write and sponsor state; direct read without review; native state, revisions, mutation audit and paging unchanged; zero outbound requests"
+    },
+    {
+      "source": "runtime",
+      "observed": "PROBE BASE-AGENT-003 4 held first Scribe assignment: returned parent link matches the full write and sponsor state; distinct open standard read review with original write review unchanged; native state, revisions, mutation audit and paging unchanged; zero outbound requests"
+    },
+    {
+      "source": "runtime",
+      "observed": "Runtime agents completed (596.8s)"
+    },
+    {
+      "source": "browser-rerun",
+      "observed": "Browser proof scribe-assigned-autonomous-timeline 1440: fits=true serious/critical=0 undersized-controls=0"
+    },
+    {
+      "source": "browser-rerun",
+      "observed": "Browser proof scribe-assigned-autonomous-timeline 390: fits=true serious/critical=0 undersized-controls=0"
+    },
+    {
+      "source": "browser-rerun",
+      "observed": "Browser proof scribe-assigned-autonomous-people 1440: fits=true serious/critical=0 undersized-controls=0"
+    },
+    {
+      "source": "browser-rerun",
+      "observed": "Browser proof scribe-assigned-autonomous-people 390: fits=true serious/critical=0 undersized-controls=0"
+    },
+    {
+      "source": "browser-rerun",
+      "observed": "PROBE BASE-AGENT-003 4 autonomous first Scribe assignment: returned parent link matches the full write and sponsor state; direct read without review; native state, revisions, mutation audit and paging unchanged; zero outbound requests"
+    },
+    {
+      "source": "browser-rerun",
+      "observed": "Browser proof scribe-assigned-held-timeline 1440: fits=true serious/critical=0 undersized-controls=0"
+    },
+    {
+      "source": "browser-rerun",
+      "observed": "Browser proof scribe-assigned-held-timeline 390: fits=true serious/critical=0 undersized-controls=0"
+    },
+    {
+      "source": "browser-rerun",
+      "observed": "Browser proof scribe-assigned-held-people 1440: fits=true serious/critical=0 undersized-controls=0"
+    },
+    {
+      "source": "browser-rerun",
+      "observed": "Browser proof scribe-assigned-held-people 390: fits=true serious/critical=0 undersized-controls=0"
+    },
+    {
+      "source": "browser-rerun",
+      "observed": "PROBE BASE-AGENT-003 4 held first Scribe assignment: returned parent link matches the full write and sponsor state; distinct open standard read review with original write review unchanged; native state, revisions, mutation audit and paging unchanged; zero outbound requests"
+    },
+    {
+      "source": "browser-rerun",
+      "observed": "PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements"
+    }
+  ]
+}
