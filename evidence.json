@@ -1,0 +1,40 @@
+{
+  "files": [
+    {
+      "blob": "7f469c10256217717e6c0701394f588793f6817e",
+      "bytes": 1979,
+      "path": "CI.md",
+      "sha256": "43cb13803112a21847ee94c5105771b4d8ce9f3f35eb6aaa662440a7c1a83de0"
+    },
+    {
+      "blob": "f2cba173b756567564257f1ed04af74c5733c989",
+      "bytes": 3225,
+      "path": "LOCAL-CHECKS.md",
+      "sha256": "72a7bf3a7bcc3dd1d6085b9282106d2fc24de5940646075a630fec9050a17265"
+    },
+    {
+      "blob": "c5d4ce67ef9ffcdb0cff40b01b738a7f5c5eaa87",
+      "bytes": 5198,
+      "path": "REPORT.md",
+      "sha256": "26225dd71067ecf617a953f8cdf1c64ed68e82ebe80e4eb3884222d764613dc1"
+    },
+    {
+      "blob": "adfdcfbf3723531bb296df918d51d7e47ee1c840",
+      "bytes": 202898,
+      "path": "oc009-rejected-write-1440.png",
+      "sha256": "5c48cbff577801b1be827dc0be8945fbc31bf27fc40513d69d7c3d93d54c4a51"
+    },
+    {
+      "blob": "7ddd482515597d015bf2324ff134e115650ecd4b",
+      "bytes": 125244,
+      "path": "oc009-rejected-write-390.png",
+      "sha256": "476e7960ae8c78e25596d6b98b8e287151a1b74d7a728972627c90f49a17788c"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f292-lin-1",
+  "product_head": "f4042c24eb5429651be0c04d099bb37aba27abaf",
+  "ref": "refs/heads/evidence/sd-oncall-c-f292-lin-1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f292-lin-1"
+}
