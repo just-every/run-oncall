@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {agentEffectSnapshot} from './agent-door-runtime.mjs';
-import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
+import {accessToken,autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 
 /** Recover the original Scribe assignment after losing the real MCP response. */
 export async function droppedScribeAssignmentReplay(runtime){
@@ -124,8 +124,8 @@ export async function droppedRoleAssignmentReplay(runtime,role,label){
 }
 
 /** A completed Scribe assignment rejects a changed reason and retains its first outcome. */
-export async function changedScribeReasonConflict(runtime){
- const {db,http,tool,adopt,context}=runtime;
+export async function changedScribeReasonConflict(runtime,{observe=async()=>{}}={}){
+ const {db,http,tool,adopt,context,completeResource}=runtime;
  const read=async path=>{const response=await http(path);assert.equal(response.status,200);return response.json()};
  const command=async input=>{const response=await http('/api/command',input);assert.equal(response.status,200);return response.json()};
  const rows=async(sql,...values)=>(await db.prepare(sql).bind(...values).all()).results;
@@ -146,7 +146,8 @@ export async function changedScribeReasonConflict(runtime){
   assert.deepEqual(incident.alerts,[]);assert.deepEqual(incident.actions,[]);assert.equal(incident.recovery,'');
   const args=Object.freeze({change:'assign-role',role:'scribe',incident:incident.id,revision:incident.revision,member:responder.id,
    reason:'Synthetic literal Scribe reason <keep this text> & retain it',idempotency_key:randomUUID()});
-  const first=await tool(name,args);
+  const bearer=await accessToken(context,{act:{sub:context.agentId,name:'Responder assistant',specialist:'oncall-responder'}});
+  const first=await tool(name,args,{},bearer);
   assert.equal(first.status,200);assert.equal(first.body.error,undefined);assert.equal(first.result.isError,false);
   assert.deepEqual(first.decision.classes.map(row=>row.class),['standard']);assert.equal(first.decision.disposition,disposition);
   const once=await snapshot(),result=first.result.structuredContent,pagingOnce=await read('/api/paging/state');
@@ -199,27 +200,82 @@ export async function changedScribeReasonConflict(runtime){
   assert.equal(original.idempotency_key,args.idempotency_key);assert.equal(original.replay_of,null);
   assert.equal(original.agent.id,context.agentId);assert.equal(original.sponsor.id,owner.id);
   const permanentOnce=await permanent(),relayOnce=await rows('SELECT * FROM agent_door_relay ORDER BY sequence');
+  const links=first.result.content.filter(item=>item.type==='resource_link');
+  assert.equal(first.result.resultType,'complete');
+  assert.equal(links.length,1,'The first completed Scribe assignment returns one parent link');
+  const [link]=links;
+  const resource=await completeResource(link.uri,{bearer});
+  assert.equal(resource.initial,resource.answer,'A standard incident read completes on its first request');
+  assert.equal(resource.content.uri,link.uri);
+  assert.deepEqual(resource.value,result,'The link returns the whole saved incident, including Scribe, revision, attributed timeline and companion fields');
+  const afterRead=await snapshot();
+  assert.deepEqual(resource.value,afterRead.application.incidents.find(row=>row.id===incident.id),'The resource matches the sponsor’s protected GET state');
+  assert.deepEqual(afterRead.application,once.application,'Reading changes no native record or revision');
+  const {agent_door_reviews:readReviews,agent_door_usage:readUsage,...readRecords}=afterRead.records;
+  const {agent_door_reviews:writeReviews,agent_door_usage:writeUsage,...writeRecords}=once.records;
+  assert.deepEqual(readRecords,writeRecords,'The read preserves native tables, mutation audit, paging, calls, outcomes and approvals');
+  assert.deepEqual(await read('/api/paging/state'),pagingOnce);
+
+  const {decision:readDecision,result:readResult}=resource.answer;
+  assert.deepEqual(readDecision.classes.map(row=>row.class),['standard']);
+  assert.equal(readDecision.revision,first.decision.revision);
+  assert.equal(readDecision.disposition,disposition);
+  assert.notEqual(readDecision.id,first.decision.id);
+  const addedUsage=readUsage.filter(row=>row.decision_id===readDecision.id);
+  assert.equal(addedUsage.length,1);
+  assert.equal(addedUsage[0].agent,context.agentId);
+  assert.deepEqual(readUsage.filter(row=>row.decision_id!==readDecision.id),writeUsage);
+  const readReview=readResult._meta['com.runeditrun/review'];
+  if(mode==='held'){
+   assert.ok(readReview?.id);
+   assert.notEqual(readReview.id,stored.review.id);
+   assert.deepEqual(readReviews.filter(row=>row.id!==readReview.id),writeReviews,'The original open write review stays unchanged');
+   const added=readReviews.find(row=>row.id===readReview.id);
+   assert.equal(added?.state,'open');
+   const savedRead=JSON.parse(added.saved);
+   assert.equal(savedRead.decision_id,readDecision.id);
+   assert.equal(savedRead.summary.uri,link.uri);
+   assert.equal(savedRead.principal.agent.id,context.agentId);
+   const visible=(await read('/agents/api/reviews')).reviews;
+   assert.equal(visible.find(row=>row.id===stored.review.id)?.state,'open');
+   assert.equal(visible.find(row=>row.id===readReview.id)?.state,'open');
+  }else{
+   assert.equal(readReview,undefined);
+   assert.deepEqual(readReviews,writeReviews);
+  }
+  const readAudit=await audits();
+  assert.deepEqual(readAudit.slice(0,-1),originalAudit,'The write audit remains intact');
+  assert.equal(readAudit.length,originalAudit.length+1);
+  const receipt=JSON.parse(readAudit.at(-1).row);
+  assert.equal(receipt.id,readDecision.id);assert.equal(receipt.tool,'resources/read');
+  assert.equal(receipt.resource,link.uri);assert.equal(receipt.outcome,'done');
+  assert.equal(receipt.agent.id,context.agentId);assert.equal(receipt.sponsor.id,owner.id);
+  const relayAfterRead=await rows('SELECT * FROM agent_door_relay ORDER BY sequence');
+  assert.deepEqual(relayAfterRead.slice(0,relayOnce.length),relayOnce);
+  assert.deepEqual(relayAfterRead.slice(relayOnce.length).map(row=>row.decision_id),[readDecision.id]);
+  assert.deepEqual(await runtime.outboundRequests(),[],'The Scribe assignment and resource read make zero outbound requests');
+
   // Both calls below retain the original key and now-stale native revision.
   const changed={...args,reason:'Another schema-valid literal Scribe reason'};
   assert.deepEqual({...changed,reason:args.reason},args,'Only the reason changes');
-  const conflict=await tool(name,changed);
+  const conflict=await tool(name,changed,{},bearer);
   assert.equal(conflict.status,200);assert.equal(conflict.body.error,undefined);assert.notEqual(conflict.body.id,first.body.id);
   assert.equal(conflict.result.isError,true);assert.equal(conflict.result._meta['com.runeditrun/error'].code,'idempotency_conflict');
   assert.equal(JSON.parse(conflict.result.content[0].text).code,'idempotency_conflict');assert.equal(conflict.result.structuredContent,undefined);
-  assert.deepEqual(await snapshot(),once,'Changed reason preserves native records, revisions, timeline, permanent state-changing audit, original calls and outcomes, approvals, reviews and paging');
+  assert.deepEqual(await snapshot(),afterRead,'Changed reason preserves native records, revisions, timeline, permanent state-changing audit, original calls and outcomes, approvals, reviews and paging');
   assert.deepEqual(await read('/api/paging/state'),pagingOnce);
-  const refused=await audits();assert.deepEqual(refused.slice(0,-1),originalAudit);assert.equal(refused.length,originalAudit.length+1);
+  const refused=await audits();assert.deepEqual(refused.slice(0,-1),readAudit);assert.equal(refused.length,readAudit.length+1);
   const refusal=JSON.parse(refused.at(-1).row);
   assert.equal(refusal.tool,name);assert.equal(refusal.outcome,'refused');assert.equal(refusal.code,'idempotency_conflict');
   assert.notEqual(refusal.id,first.decision.id);
   assert.equal(refusal.idempotency_key,args.idempotency_key);assert.equal(refusal.agent.id,context.agentId);assert.equal(refusal.sponsor.id,owner.id);
   assert.equal(refusal.review,null);assert.equal(refusal.approval,null);
   assert.deepEqual(await rows('SELECT * FROM agent_door_calls WHERE agent=? AND key=?',context.agentId,args.idempotency_key),calls);
-  const replay=await tool(name,args);
+  const replay=await tool(name,args,{},bearer);
   assert.equal(replay.status,200);assert.equal(replay.body.error,undefined);assert.equal(replay.result.isError,false);
   assert.notEqual(replay.body.id,first.body.id);assert.notEqual(replay.body.id,conflict.body.id);
   assert.deepEqual(replay.result.structuredContent,stored.result);assert.deepEqual(replay.result._meta['com.runeditrun/review'],stored.review);
-  assert.deepEqual(await snapshot(),once,'Exact original arguments return the saved outcome with no second Scribe assignment, revision, state-changing audit or held review');
+  assert.deepEqual(await snapshot(),afterRead,'Exact original arguments return the saved outcome with no second Scribe assignment, revision, state-changing audit or held review');
   assert.deepEqual(await read('/api/paging/state'),pagingOnce);
   assert.deepEqual(await rows('SELECT * FROM agent_door_calls WHERE agent=? AND key=?',context.agentId,args.idempotency_key),calls);
   const retried=await audits();assert.deepEqual(retried.slice(0,-1),refused);assert.equal(retried.length,refused.length+1);
@@ -228,8 +284,8 @@ export async function changedScribeReasonConflict(runtime){
   assert.equal(retry.replay_of,first.decision.id);assert.equal(retry.operation_id,original.operation_id);
   assert.equal(retry.idempotency_key,args.idempotency_key);assert.equal(retry.agent.id,context.agentId);assert.equal(retry.sponsor.id,owner.id);
   const relayAfter=await rows('SELECT * FROM agent_door_relay ORDER BY sequence');
-  assert.deepEqual(relayAfter.slice(0,relayOnce.length),relayOnce);
-  assert.deepEqual(relayAfter.slice(relayOnce.length).map(row=>row.decision_id),[refusal.id,retry.id]);
+  assert.deepEqual(relayAfter.slice(0,relayAfterRead.length),relayAfterRead);
+  assert.deepEqual(relayAfter.slice(relayAfterRead.length).map(row=>row.decision_id),[refusal.id,retry.id]);
   if(mode==='held'){
    const review=(await read('/agents/api/reviews')).reviews.find(row=>row.id===stored.review.id);
    assert.equal(review.state,'open');assert.equal(review.decision_id,first.decision.id);
@@ -241,6 +297,8 @@ export async function changedScribeReasonConflict(runtime){
    for(const family of ['workspace','paging','handoff'])assert.equal(record[family+'_before'],record[family+'_after'],'Attempt audit never commits another application effect');
   }
   assert.deepEqual(await runtime.outboundRequests(),[],'Scribe assignment, changed reason and exact retry attempt zero outbound requests');
+  await observe({mode,saved:resource.value,responder,reason:args.reason,agentLabel:entry.metadata.agent.agent.name+' for '+owner.name});
+  console.log('PROBE BASE-AGENT-003 4 '+mode+' first Scribe assignment: returned parent link matches the full write and sponsor state; '+(mode==='held'?'distinct open standard read review with original write review unchanged':'direct read without review')+'; native state, revisions, mutation audit and paging unchanged; zero outbound requests');
   console.log('PROBE BASE-AGENT-012 acceptance 3 '+mode+' Scribe assignment: one standard-only agent-attributed assign-role from unassigned to an existing active responder, one incident and workspace revision and native audit commit; original key and revision with changed reason -> isError idempotency_conflict in metadata and text, no private result; exact original arguments with new RPC id -> saved result and original review; native effect custody and paging unchanged; attributed refusal and linked replay audit only; zero outbound requests');
  }
  assert.equal((await adopt()).status,200);
