@@ -1,6 +1,7 @@
 import { readFileSource } from '../modules/import-kit/src/readers/file'
 import type { Json, ParsedRecord } from '../modules/import-kit/src/types'
 import { pagerdutyRecords } from './pagerduty-source'
+import { grafanaRecords, validateGrafanaPages } from './grafana-source'
 import { fail } from '../family/response-operations/domain'
 
 import {isVendor, type Vendor} from './vendor-formats'
@@ -12,11 +13,11 @@ const detail:Record<string,string>={users:'user',schedules:'schedule',escalation
 const credentialKey=/^(?:password|passwd|secret|token|credentials?|authorization|cookie)$|(?:api|access|auth|integration|routing|service|signing|private|client|refresh|session)[_-]?(?:key|secret|token)$|^webhook[_-]?(?:url|secret)$|(?:http|web)[_-]?cal[_-]?url$/i
 const escape=(key:string)=>key.replaceAll('~','~0').replaceAll('/','~1')
 
-function refuseCredentials(value:unknown,pointer:string) {
- if(Array.isArray(value))value.forEach((item,index)=>refuseCredentials(item,`${pointer}/${index}`))
+function refuseCredentials(value:unknown,pointer:string,vendor:Vendor) {
+ if(Array.isArray(value))value.forEach((item,index)=>refuseCredentials(item,`${pointer}/${index}`,vendor))
  else if(value&&typeof value==='object')for(const [key,child] of Object.entries(value)) {
-  if(credentialKey.test(key))fail(`Credential-bearing field "${key}" at ${pointer}/${escape(key)}: remove it from the saved response; Oncall never accepts keys or tokens`)
-  refuseCredentials(child,`${pointer}/${escape(key)}`)
+  if(credentialKey.test(key)||(vendor==='grafana'&&child!==null&&/^ical_url(?:_primary|_overrides)?$/i.test(key)))fail(`Credential-bearing field "${key}" at ${pointer}/${escape(key)}: remove it from the saved response; Oncall never accepts keys or tokens`)
+  refuseCredentials(child,`${pointer}/${escape(key)}`,vendor)
  }
 }
 
@@ -27,7 +28,8 @@ function entries(vendor:Vendor,kind:string,body:any,pointer:string):Entry[] {
  if(!body||typeof body!=='object')return [{payload:body,pointer}]
  if(vendor==='pagerduty'&&body.data!==undefined)fail(`PagerDuty ${kind} at ${pointer} uses an Opsgenie-shaped data wrapper; choose Opsgenie for this file, or save PagerDuty REST list/detail responses and preview again. Nothing was imported.`)
  let items:any,at=pointer
- if(vendor==='jsm'&&body.values!==undefined)at=`${pointer}/values`,items=body.values
+ if(vendor==='grafana'&&Array.isArray(body.results))at=`${pointer}/results`,items=body.results
+ else if(vendor==='jsm'&&body.values!==undefined)at=`${pointer}/values`,items=body.values
  else if(vendor==='betterstack'&&body.data!==undefined)at=`${pointer}/data`,items=body.data
  else if(vendor==='betterstack'&&kind==='events'&&body.events!==undefined)at=`${pointer}/events`,items=body.events
  else if(vendor==='splunk'&&Array.isArray(body[kind]))at=`${pointer}/${escape(kind)}`,items=body[kind]
@@ -51,7 +53,6 @@ export async function fileSource(vendor:Vendor,raw:string,filename?:unknown) {
  const size=new TextEncoder().encode(raw).byteLength
  if(size>512*1024)fail(`The saved export is ${size} bytes, above the 524288-byte (512 KiB) limit; narrow the export and preview again. Nothing was imported or truncated.`,413)
  let parsed:unknown;try{parsed=JSON.parse(raw)}catch{fail('Malformed JSON in the saved export; save a complete JSON response without edits or truncation and preview again. Nothing was imported.')}
- if(parsed&&typeof parsed==='object')refuseCredentials(parsed,'')
  // Run the seed validation outside the kit's safe parser-error wrapper, so the owner gets the exact cause.
  savedExportRecords(vendor,parsed as Json)
  return readFileSource({namespace:vendor,name:typeof filename==='string'?filename:`${vendor}-export.json`,bytes:new TextEncoder().encode(raw),format:'json',parse(value:Json){
@@ -62,13 +63,15 @@ export async function fileSource(vendor:Vendor,raw:string,filename?:unknown) {
 /** Both the saved-file UI and Business use the same parser and credential rules. */
 export function savedExportRecords(vendor:Vendor,value:Json):ParsedRecord[] {
   if(!value||Array.isArray(value)||typeof value!=='object')throw Error('Export bundle must be an object')
-  refuseCredentials(value,'')
+  refuseCredentials(value,'',vendor)
   const records:ParsedRecord[]=[],count=new Map<string,number>()
-  for(const [kind,response] of Object.entries(value))
+  for(const [kind,response] of Object.entries(value)) {
+   if(vendor==='grafana')validateGrafanaPages(kind,response)
    for(const {payload,pointer} of entries(vendor,kind,response,`/${escape(kind)}`)) {
     const index=count.get(kind)??0;count.set(kind,index+1)
     records.push({kind,sourceId:String(payload?.id??payload?.accountId??payload?.alias??payload?.username??payload?.slug??payload?._parent?.id??(kind==='event_orchestrations'?payload?.parent?.id:undefined)??`${kind}-${index}`),payload,pointer})
    }
+  }
   if(!records.length)throw Error('The export bundle is empty')
   if(vendor==='opsgenie') {
    if(records.some(row=>Object.hasOwn(row.payload as object,'_emailActions')))fail('Reserved email action binding; save the original integration and action responses instead')
@@ -82,7 +85,7 @@ export function savedExportRecords(vendor:Vendor,value:Json):ParsedRecord[] {
     integration.payload={...(integration.payload as any),_emailActions:row.payload}
    }
   }
-  const result=vendor==='pagerduty'?pagerdutyRecords(records):records
+  const result=vendor==='pagerduty'?pagerdutyRecords(records):vendor==='grafana'?grafanaRecords(records):records
   if(result.length>500)fail(`The saved export holds ${result.length} records, above the 500-record limit (including embedded integrations); narrow the export and preview again. Nothing was imported or truncated.`,413)
   return result
 }

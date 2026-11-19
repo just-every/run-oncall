@@ -1,5 +1,5 @@
 /** Saved-response formats only. No provider connection or credential is used here. */
-export const vendorNames={opsgenie:'Opsgenie',pagerduty:'PagerDuty',splunk:'Splunk On-Call',jsm:'Jira Service Management Ops',betterstack:'Better Stack'} as const
+export const vendorNames={opsgenie:'Opsgenie',pagerduty:'PagerDuty',splunk:'Splunk On-Call',jsm:'Jira Service Management Ops',betterstack:'Better Stack',grafana:'Grafana OnCall OSS'} as const
 export type Vendor=keyof typeof vendorNames
 export const vendorName=(vendor:string)=>vendorNames[vendor as Vendor]??vendor
 export const isVendor=(vendor:string):vendor is Vendor=>Object.hasOwn(vendorNames,vendor)
@@ -15,6 +15,7 @@ export function mappingPayload(vendor:Vendor,kind:string,raw:any):any {
  }
  if(vendor==='betterstack'&&kind==='users')return {...raw.attributes,id:raw.id,name:[raw.attributes?.first_name,raw.attributes?.last_name].filter(Boolean).join(' '),sourceType:raw.type}
  if(vendor==='splunk'&&kind==='users')return {...raw,id:raw.id??raw.username,name:[raw.firstName,raw.lastName].filter(Boolean).join(' ')}
+ if(vendor==='grafana'&&kind==='users')return {...raw,name:raw.username}
  return raw
 }
 

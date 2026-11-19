@@ -1,0 +1,203 @@
+{
+  "users": [
+    {
+      "count": 2,
+      "next": "https://grafana.example.test/api/v1/users/?page=2",
+      "previous": null,
+      "results": [
+        {
+          "id": "synthetic-oncall-1",
+          "grafana_id": 1,
+          "email": "MAYA@example.test",
+          "username": "Maya Chen",
+          "role": "viewer",
+          "is_phone_number_verified": false,
+          "slack": null,
+          "timezone": "UTC",
+          "teams": []
+        }
+      ],
+      "current_page_number": 1,
+      "page_size": 1,
+      "total_pages": 2
+    },
+    {
+      "count": 2,
+      "next": null,
+      "previous": "https://grafana.example.test/api/v1/users/",
+      "results": [
+        {
+          "id": "synthetic-oncall-2",
+          "grafana_id": 2,
+          "email": "eli@example.test",
+          "username": "Eli Navarro",
+          "role": "viewer",
+          "is_phone_number_verified": false,
+          "slack": null,
+          "timezone": "UTC",
+          "teams": []
+        }
+      ],
+      "current_page_number": 2,
+      "page_size": 1,
+      "total_pages": 2
+    }
+  ],
+  "schedules": {
+    "count": 3,
+    "next": null,
+    "previous": null,
+    "results": [
+      {
+        "id": "synthetic-oncall-3",
+        "name": "Payments primary",
+        "team_id": null,
+        "type": "calendar",
+        "time_zone": "UTC",
+        "slack": {
+          "channel_id": null,
+          "user_group_id": null
+        },
+        "on_call_now": [
+          "synthetic-oncall-2"
+        ],
+        "shifts": [
+          "synthetic-oncall-6"
+        ],
+        "ical_url_overrides": null,
+        "enable_web_overrides": false
+      },
+      {
+        "id": "synthetic-oncall-4",
+        "name": "Infrastructure primary",
+        "team_id": null,
+        "type": "calendar",
+        "time_zone": "UTC",
+        "slack": {
+          "channel_id": null,
+          "user_group_id": null
+        },
+        "on_call_now": [
+          "synthetic-oncall-2"
+        ],
+        "shifts": [
+          "synthetic-oncall-7"
+        ],
+        "ical_url_overrides": null,
+        "enable_web_overrides": false
+      },
+      {
+        "id": "synthetic-oncall-5",
+        "name": "Weekend standby",
+        "team_id": null,
+        "type": "web",
+        "time_zone": "UTC",
+        "slack": {
+          "channel_id": null,
+          "user_group_id": null
+        },
+        "on_call_now": [
+          "synthetic-oncall-2"
+        ],
+        "shifts": []
+      }
+    ],
+    "current_page_number": 1,
+    "page_size": 50,
+    "total_pages": 1
+  },
+  "on_call_shifts": [
+    {
+      "id": "synthetic-oncall-6",
+      "name": "Payments daily handover",
+      "team_id": null,
+      "schedule": "synthetic-oncall-3",
+      "type": "rolling_users",
+      "time_zone": null,
+      "level": 0,
+      "start": "2026-11-16T09:00:00",
+      "duration": 86400,
+      "rotation_start": "2026-11-16T09:00:00",
+      "frequency": "daily",
+      "interval": 1,
+      "until": null,
+      "by_day": null,
+      "by_month": null,
+      "by_monthday": null,
+      "rolling_users": [
+        [
+          "synthetic-oncall-1"
+        ],
+        [
+          "synthetic-oncall-2"
+        ]
+      ],
+      "start_rotation_from_user_index": 0
+    },
+    {
+      "id": "synthetic-oncall-7",
+      "name": "Infrastructure weekly handover",
+      "team_id": null,
+      "schedule": "synthetic-oncall-4",
+      "type": "rolling_users",
+      "time_zone": null,
+      "level": 0,
+      "start": "2026-11-16T09:00:00",
+      "duration": 604800,
+      "rotation_start": "2026-11-16T09:00:00",
+      "frequency": "weekly",
+      "interval": 1,
+      "until": null,
+      "by_day": [
+        "MO"
+      ],
+      "by_month": null,
+      "by_monthday": null,
+      "rolling_users": [
+        [
+          "synthetic-oncall-1"
+        ],
+        [
+          "synthetic-oncall-2"
+        ]
+      ],
+      "start_rotation_from_user_index": 1,
+      "week_start": "MO"
+    }
+  ],
+  "escalation_chains": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+      {
+        "id": "synthetic-oncall-8",
+        "name": "Payments escalation",
+        "team_id": null
+      }
+    ],
+    "current_page_number": 1,
+    "page_size": 50,
+    "total_pages": 1
+  },
+  "escalation_policies": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+      {
+        "id": "synthetic-oncall-9",
+        "escalation_chain_id": "synthetic-oncall-8",
+        "position": 0,
+        "type": "notify_persons",
+        "persons_to_notify": [
+          "synthetic-oncall-1"
+        ],
+        "important": false
+      }
+    ],
+    "current_page_number": 1,
+    "page_size": 50,
+    "total_pages": 1
+  }
+}

@@ -34,7 +34,7 @@
 
 .move-in-workspace .move-in-step form { margin: 0; max-width: 560px; }
 .move-in-workspace .move-in-step form > button { justify-self: start; }
-.move-in-workspace .move-in-step > details { margin: 0; padding: 0; }
+.move-in-workspace .move-in-step > details:not(.move-in-export-help) { margin: 0; padding: 0; }
 .move-in-workspace summary::before { content: '›'; margin-right: 8px; font-size: 18px; }
 .move-in-workspace details[open] > summary::before { content: '⌄'; }
 

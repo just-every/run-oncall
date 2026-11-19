@@ -25,10 +25,12 @@ export const ERASED_SLOT = 'erased-person'
 const hex = () => [...crypto.getRandomValues(new Uint8Array(8))].map(b => b.toString(16).padStart(2, '0')).join('')
 const names = (text: string, email: string) => addressRanges(text, email).length > 0
 const without = (text: string, email: string) => addressRanges(text, email).reduceRight((out, [start, end]) => out.slice(0, start) + ERASED_SLOT + out.slice(end), text)
+const grafanaUserLists = new Set(['on_call_now', 'rolling_users', 'persons_to_notify', 'persons_to_notify_next_each_time'])
 
 /** Whether a retained source object (or any object inside it) refers to the person: by email or username, or by the vendor user id where the object is a user reference. */
 export function refers(value: any, email: string, ids: ReadonlySet<string>, key = ''): boolean {
   if (Array.isArray(value)) return value.some(item => refers(item, email, ids, key))
+  if (typeof value === 'string' && grafanaUserLists.has(key)) return ids.has(value)
   if (!value || typeof value !== 'object') return false
   for (const field of ['email', 'username']) if (typeof value[field] === 'string' && value[field].trim().toLowerCase() === email) return true
   if (value.id !== undefined && ids.has(String(value.id)) && (['user', 'user_reference'].includes(value.type) || (value.type === undefined && ['user', 'recipient'].includes(key)))) return true

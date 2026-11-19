@@ -11,19 +11,19 @@ import { targets } from './target'
 import { IMPORT_DOOR_KEY } from './door-key'
 import { auditIdentity } from '../audit-store'
 import { expireInterruptedImports, importAttempt } from './import-lifecycle'
+import { isVendor } from './vendor-formats'
 
 const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }
 /** The saved-export bounds both mounts read a bundle under. */
 export const DOOR_LIMITS = { maxBytes: 512 * 1024, maxRecordBytes: 512 * 1024, maxRecords: 500 }
-const sources: Record<Vendor, true> = { opsgenie: true, pagerduty: true, splunk: true, jsm: true, betterstack: true }
 
 /** Oncall's one server-owned allow-list, shared by the owner's move-in screen
  * (owner-door.ts) and Business: one import namespace per vendor. A
  * listed vendor gets fresh per-request state, because its mapping needs the whole
  * parsed bundle (users and overrides belong to schedules); anything else is null. */
 export function importSource(name: string): ImportDoorSource | null {
- if (!Object.hasOwn(sources, name)) return null
- const vendor = name as Vendor, parsed: ParsedRecord[] = [], now = Date.now()
+ if (!isVendor(name)) return null
+ const vendor = name, parsed: ParsedRecord[] = [], now = Date.now()
  let prepared: ImportMapping | undefined
  return {
   parse(value) {
