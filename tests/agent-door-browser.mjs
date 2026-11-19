@@ -707,6 +707,11 @@ try{
  const executedApproval=(await (await http('/agents/api/approvals/'+approvalHandle.id)).json()).approval;
  assert.equal(executedApproval.revision,savedApproval.revision);
  assert.equal(executedApproval.summary_sha256,savedApproval.summary_sha256);
+ const changedSummary='A different summary for the completed browser resolution';
+ const resolveConflict=await tool('oncall.incidents.resolve',{...resolveArgs,summary:changedSummary});
+ assert.equal(resolveConflict.result?.isError,true);
+ assert.equal(resolveConflict.result._meta['com.runeditrun/error'].code,'idempotency_conflict');
+ assert.equal(resolveConflict.result.structuredContent,undefined);
  const resolveRetry=await tool('oncall.incidents.resolve',resolveArgs);
  assert.equal(resolveRetry.result?.isError,false,JSON.stringify(resolveRetry.body));
  assert.equal(resolveRetry.result.structuredContent.state,'resolved');
@@ -720,7 +725,13 @@ try{
  await capture('resolution-timeline','/incidents/'+resolutionTarget.id,async()=>{
   await page.getByRole('region',{name:'Timeline',exact:true}).waitFor();
   if(await page.getByRole('button',{name:/^Earlier entries/}).count())await page.getByRole('button',{name:/^Earlier entries/}).click();
-  if((await page.viewportSize()).width===1440){const headings=await page.locator('.event-line strong').allTextContents();for(const raw of ['transition','complete','incident deadline'])assert.ok(!headings.includes(raw),'timeline headings describe activity');}
+  if((await page.viewportSize()).width===1440){
+   const headings=await page.locator('.event-line strong').allTextContents();
+   for(const raw of ['transition','complete','incident deadline'])assert.ok(!headings.includes(raw),'timeline headings describe activity');
+   const timeline=await page.getByRole('region',{name:'Timeline',exact:true}).innerText();
+   assert.ok(timeline.includes(resolveArgs.summary),'The original summary remains visible after the conflict and retry');
+   assert.ok(!timeline.includes(changedSummary),'The refused summary never enters the timeline');
+  }
   await page.getByText('Responder assistant for Alex Chen',{exact:true}).first().waitFor();
  });
  assert.equal((await runtime.adopt()).status,200);

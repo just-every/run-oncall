@@ -465,6 +465,14 @@ async function staleResolutionRevision(runtime){
   return response.json();
  };
  const snapshot=()=>agentEffectSnapshot(runtime);
+ const audits=async()=>(await db.prepare('SELECT * FROM agent_door_audit ORDER BY sequence').all()).results;
+ const permanentAudit=async()=>(await db.prepare('SELECT * FROM oc_admin_audit ORDER BY ordinal').all()).results;
+ async function attemptAfter(prior){
+  const after=await audits();
+  assert.equal(after.length,prior.length+1);
+  assert.deepEqual(after.slice(0,-1),prior,'The new attempt preserves every earlier audit row');
+  return {rows:after,attempt:JSON.parse(after.at(-1).row)};
+ }
  const owner=(await read('/api/workspace')).member;
  const credential='synthetic-oncall-'+randomUUID();
  const client=await http('/api/automation/clients',{name:'Synthetic resolution scope',key:credential,
@@ -548,19 +556,66 @@ async function staleResolutionRevision(runtime){
    assert.deepEqual(once.records[table],before.records[table]);
   }
   assert.deepEqual(await read('/api/paging/state'),{...pagingBefore,workspaceRevision:once.application.revision});
-  const saved=once.records.agent_door_calls.find(call=>call.key===corrected.idempotency_key);
-  assert.equal(saved.state,'done');assert.equal(saved.decision_id,fresh.decision.id);
-  assert.deepEqual(JSON.parse(saved.outcome).result,resolved);
-  const execution=(await db.prepare("SELECT row FROM agent_door_audit WHERE json_extract(row,'$.idempotency_key')=? AND json_extract(row,'$.outcome')='done'").bind(corrected.idempotency_key).all()).results;
+  const call=once.records.agent_door_calls.find(row=>row.agent===context.agentId&&row.key===corrected.idempotency_key);
+  assert.equal(call.state,'done');assert.equal(call.decision_id,fresh.decision.id);
+  const stored=JSON.parse(call.outcome);
+  assert.equal(stored.outcome,'done');assert.deepEqual(stored.result,resolved);
+  const completedAudit=await audits(),completedPermanent=await permanentAudit();
+  const execution=completedAudit.map(row=>JSON.parse(row.row)).filter(row=>row.idempotency_key===corrected.idempotency_key&&row.outcome==='done');
   assert.equal(execution.length,1);
-  const committed=JSON.parse(execution[0].row);
+  const [committed]=execution;
   assert.deepEqual(committed.resource,{kind:'incident',id:current.id});
-  if(mode==='held')assert.deepEqual(committed.approval,{id:approval.id,by:[owner.id]});
+  if(mode==='held'){
+   assert.deepEqual(committed.approval,{id:approval.id,by:[owner.id]});
+   assert.ok(stored.receipt.id);assert.equal(stored.receipt.approval_id,approval.id);
+   assert.deepEqual(stored.receipt.approved_by,[owner.id]);
+  }else{
+   assert.deepEqual(fresh.result.structuredContent,stored.result);
+   assert.equal(stored.receipt,undefined);
+  }
+
+  async function unchanged(priorPermanent){
+   assert.deepEqual(await snapshot(),once,'A completed-key attempt preserves the single resolution, native effects and custody');
+   const after=await permanentAudit();
+   assert.deepEqual(after.slice(0,priorPermanent.length),priorPermanent);
+   for(const row of after.slice(priorPermanent.length)){
+    assert.equal(row.kind,'agent-door.persistence');
+    assert.ok(['accepted','refused'].includes(row.outcome));
+    for(const family of ['workspace','paging','handoff'])assert.equal(row[family+'_before'],row[family+'_after']);
+   }
+   return after;
+  }
+
+  const conflict=await tool(name,{...corrected,summary:'Different resolution summary with the same retained recovery'});
+  assert.equal(conflict.status,200);assert.equal(conflict.body.error,undefined);
+  assert.notEqual(conflict.body.id,fresh.body.id);assert.equal(conflict.result.isError,true);
+  const expected={code:'idempotency_conflict'};
+  assert.deepEqual(conflict.result._meta['com.runeditrun/error'],expected);
+  assert.equal(conflict.result.content.length,1);assert.equal(conflict.result.content[0].type,'text');
+  assert.deepEqual(JSON.parse(conflict.result.content[0].text),expected);
+  assert.equal(conflict.result.structuredContent,undefined);
+  for(const key of ['approval','review','receipt'])assert.equal(conflict.result._meta['com.runeditrun/'+key],undefined);
+  const {rows:refusedAudit,attempt:refusal}=await attemptAfter(completedAudit);
+  assert.equal(refusal.tool,name);assert.equal(refusal.outcome,'refused');assert.equal(refusal.code,expected.code);
+  assert.equal(refusal.idempotency_key,corrected.idempotency_key);assert.equal(refusal.agent.id,context.agentId);
+  assert.equal(refusal.approval,null);assert.equal(refusal.review,null);
+  const refusedPermanent=await unchanged(completedPermanent);
+
   const replay=await tool(name,corrected);
-  assert.equal(replay.status,200);assert.equal(replay.result.isError,false);assert.notEqual(replay.body.id,fresh.body.id);
-  assert.deepEqual(replay.result.structuredContent,resolved);
-  assert.deepEqual(await snapshot(),once,'Retrieving the completed resolution preserves native effects and custody');
+  assert.equal(replay.status,200);assert.equal(replay.body.error,undefined);assert.equal(replay.result.isError,false);
+  assert.notEqual(replay.body.id,fresh.body.id);assert.notEqual(replay.body.id,conflict.body.id);
+  assert.deepEqual(replay.result.structuredContent,stored.result);
+  assert.deepEqual(JSON.parse(replay.result.content[0].text),stored.result);
+  assert.deepEqual(replay.result._meta['com.runeditrun/receipt'],stored.receipt?{...stored.receipt,decision:stored.decision}:undefined);
+  assert.equal(replay.result._meta['com.runeditrun/approval'],undefined);
+  assert.equal(replay.result._meta['com.runeditrun/review'],undefined);
+  const {attempt}=await attemptAfter(refusedAudit);
+  assert.equal(attempt.id,replay.decision.id);assert.equal(attempt.tool,name);assert.equal(attempt.outcome,'replayed');
+  assert.equal(attempt.idempotency_key,corrected.idempotency_key);
+  assert.equal(attempt.replay_of,call.decision_id);assert.equal(attempt.operation_id,committed.operation_id);
+  await unchanged(refusedPermanent);
   assert.deepEqual(await runtime.outboundRequests(),[]);
+  console.log('PROBE BASE-AGENT-012 acceptance 3 '+mode+' '+name+': a changed summary with the original key and revision returns idempotency_conflict with no private result; the exact request replays the stored result and original receipt when held; one resolution, unchanged native custody and paging, zero outbound requests');
   console.log(`PROBE BASE-AGENT-012 acceptance 4 ${mode} ${name}: first call with native revision ${reviewed.revision} and no expected_revision returned revision_conflict with current_revision ${returned} in metadata and text; scoped-out and missing incidents returned identical not_found; corrected key recorded one resolution and audit, ${mode==='held'?1:0} approvals, effect-free replay, unchanged paging, zero outbound requests`);
  }
  assert.equal((await adopt()).status,200);
