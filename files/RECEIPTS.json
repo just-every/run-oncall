@@ -1,0 +1,88 @@
+{
+  "repository": "just-every/run-oncall",
+  "tag": "sd-oncall-c-f293",
+  "branch": "cloud/sd-oncall-c-f293",
+  "head": "8ebbda5bff4b31e24deb83cb7024c5176f7f8e79",
+  "base_main": "df8efefe31a9813ebc5aa3f0c2a319c19e2667d7",
+  "recorded_utc": "2026-11-19T00:07:41+00:00",
+  "emitted_worker_source_sha": "8ebbda5bff4b31e24deb83cb7024c5176f7f8e79",
+  "branch_push": "advertised",
+  "verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "8ebbda5bff4b31e24deb83cb7024c5176f7f8e79",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44423580620",
+    "id": 44423580620,
+    "status": "completed"
+  },
+  "run_site": {
+    "status": "pending guarded landing",
+    "prior_main_success": 44420542819
+  },
+  "publication_scan": {
+    "status": "pending guarded landing",
+    "commit": "8ebbda5bff4b31e24deb83cb7024c5176f7f8e79",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  },
+  "clause": {
+    "id": "OC-043",
+    "before": "PARTIAL",
+    "after": "PARTIAL",
+    "selected_acceptance": 2,
+    "before_counts": [
+      26,
+      41,
+      34
+    ],
+    "after_counts": [
+      26,
+      41,
+      34
+    ]
+  },
+  "toolchain": {
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "rer": "0.2.118"
+  },
+  "checks": {
+    "pnpm exec rer build": 0,
+    "pnpm run typecheck": 0,
+    "pnpm exec rer check --profile first-party": 0,
+    "node src/base/contract-docs.mjs write": 0,
+    "node src/base/contract-docs.mjs check": 0,
+    "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock": 0,
+    "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check": 0,
+    "ONCALL_PRODUCT_JOURNEY=unmatched-alerts node tests/product-browser.mjs at 1440": 0,
+    "ONCALL_PRODUCT_JOURNEY=unmatched-alerts node tests/product-browser.mjs at 390": 0,
+    "ONCALL_PRODUCT_PART=core node tests/product-browser.mjs": "pass",
+    "node tests/routing.mjs": 0
+  },
+  "local_probes": [
+    "PROBE OC-043 2 Alerts at 1440: two native unmatched admissions and five controls -> exact protected cohort and reasons, cleared filter restores all alerts, durable records, revision, audit, paging and outbound state unchanged. Screens captured at 1440 and 390.",
+    "PROBE OC-043 2 Alerts at 390: two native unmatched admissions and five controls -> exact protected cohort and reasons, cleared filter restores all alerts, durable records, revision, audit, paging and outbound state unchanged. Screens captured at 1440 and 390.",
+    "PASS OC-043 approved rule browser: one admitted original and attributed reassignment, audit fault and uncertain lease, premature clear refused, expired clear retained interrupted progress after reload, separate explicit declaration and unsent notification, frozen checklist, permanent audit, paging OFF and zero outbound; screens at 1440 and 390",
+    "PROBE OC-043 2 Alerts at 1440: two native unmatched admissions and five controls -> exact protected cohort and reasons, cleared filter restores all alerts, durable records, revision, audit, paging and outbound state unchanged. Screens captured at 1440 and 390.",
+    "PASS OC-043 later observation after expiry routes the existing group without rewriting its original event",
+    "PASS OC-043 admission maintenance: stale/unauthorized shape and owner validation, atomic audit rollback, routed error/Datadog/Prometheus suppression, owner queue, exact expiry without timers, immutable originals, read-only replay and restart",
+    "Native routed public journey: bearer/HMAC, immutable retries, scope, per-service recovery, unrouted/readmission, zero-write replay, stale publication, audit rollback, rotation/revocation and secret-free checkpoint passed",
+    "PASS OC-043 correlation: Datadog/Prometheus/error labels, routed-first versions, immutable originals, exact event-time boundary, dependency/environment isolation, audit rollback, ordered zero-write replay, restart, flapping and explicit next-admission release",
+    "PASS OC-043 routed severity/priority transformation: OC-072 routing version then selected service version, original event, label action and zero-write replay table counts",
+    "PASS OC-043 urgency transformation: versioned explained lowering at new admission, unchanged severity and open high urgency, ordered correlation and both urgency decisions with zero durable/audit writes",
+    "PASS OC-043 severity/priority transformations: versioned reasoned lowering, open-alert floors, original fields, raising, duplicate identity, authority, stale/invalid zero writes, ordered replay table counts, audit rollback and restart",
+    "PASS OC-043 effective response classification: transformed severity selects response rule and declaration, original retained; recovery stops only the alert obligation and preserves human incident state",
+    "PASS OC-043 declared priority field: severity/priority raises from source priority and original classification; malformed priority stays in OC-059 high incomplete custody without transformation or declaration",
+    "PASS OC-043 ordered future replay: prior hypothetical raises protect the same generation with zero durable or permanent-audit writes"
+  ],
+  "candidate_file_sha256": {
+    "sources.lock.json": "d8fb3e671460dc7127c54b483d2db1e8d7eff2b78d6dcd6caba729a39ef62e74",
+    "src/alerts/AlertList.tsx": "972452ea3fd1ba7afeac3e796dbbf8f6dc765a02af17182993f21bbdab519640",
+    "src/alerts/AlertPage.tsx": "f1614351c3f4448d337a799f9f74b814e5b9f99c9217c7d294333fe97e9c0c06",
+    "src/alerts/alert-display.ts": "62ea000d0e4a22843b4e9e073b8d29119679135a3a8fc9b8ce35d46584845de5",
+    "tests/product-browser-journey.mjs": "71d86be3024fbee6abea75a751019bb3ae59cf50bd6b04130ed7213ddd5dfcf0",
+    "tests/product-browser.mjs": "85e747f09176f3ee85e844f8e96580f4f66760ec47817514a23502016073be60"
+  },
+  "proof_provenance": "The two targeted browser journeys used a Worker built from the exact candidate HEAD. The core browser and routing runs used identical app and test bytes before commit. The pre-push rebase reported the branch up to date, and the subsequent edition source lock and generated-document checks left the commit clean."
+}
