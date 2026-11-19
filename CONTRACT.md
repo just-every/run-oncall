@@ -697,6 +697,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 **Observed (18 November 2026, Run Edit Run fleet).** A signed-in responder acknowledged a declared incident and submitted a 15-minute snooze through the browser. With the browser closed, an independent authenticated read returned one pending snooze with the responder, the recorded start and an absolute due time exactly 15 minutes later. The timeline attributed the snooze to that responder. Paging stayed OFF, with zero notification work or outbound provider requests. A fresh browser session reopened the incident before expiry and showed the saved deadline at 1440 and 390 pixels.
 
+**Observed (19 November 2026, Run Edit Run fleet).** In the emitted local Worker, recovery of the single native alert generation linked to a declared incident cancelled its pending snooze. Invoking the local scheduled entry at the original deadline left the incident acknowledged and the cancelled deadline retained without a re-trigger obligation.
+
 #### OC-059 — Large and partly readable payloads still page
 
 *Tier:* Core · *Rules:* D-2
