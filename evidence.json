@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "f74832117baa2b763fb1be881cf3ab6d7a34bbb7",
+      "bytes": 1762,
+      "path": "RELEASE-CHECKS.txt",
+      "sha256": "8a0d6dc9276ce27293a7142608f71f07c0f03ecf711cdc435458e48dd6fbbc3a"
+    },
+    {
+      "blob": "3636a899f8c96f8131ddb3d167388ab77e51f217",
+      "bytes": 5568,
+      "path": "REPORT.md",
+      "sha256": "7219f9f4dd33b8583d6dd284fc5e9fcfb0ffeb79a0ceccd284a0443a344d5cac"
+    },
+    {
+      "blob": "d8d2c9a1d285591622ef36bf4837d35d6e8efcd8",
+      "bytes": 221,
+      "path": "TYPECHECK.txt",
+      "sha256": "3fcd8277335dafd9a3e13c10c1523bd744961418c178a625841db8875a0654d8"
+    },
+    {
+      "blob": "c8ebf2009216f49a55fe4f29dacc5e53b2d1d4f2",
+      "bytes": 1069,
+      "path": "VERIFY-DIAGNOSTICS.md",
+      "sha256": "56b517971f6b288d30be039efa6b1efa5230b50c2772dcbcffec6f1a0c90734f"
+    },
+    {
+      "blob": "613af2a9b483eab299dba207c6f466274e6022af",
+      "bytes": 4142,
+      "path": "VERIFY-JOBS.json",
+      "sha256": "c46667939107697dd8236fa68973fa6a8dee0c26b813f82e9eb1b905f585edb5"
+    },
+    {
+      "blob": "7e344e9d178ba2a4379640795d9a9c9f0f13be83",
+      "bytes": 1380,
+      "path": "VERIFY.jsonl",
+      "sha256": "265e02fe26b8d93a92dbad3204962437ddffdd4859fa03a6e9c2c499cf6dc88c"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-release-0-5-20",
+  "product_head": "d06b4e0741f3f33d6acb7114e35dc1b54637d1c0",
+  "ref": "refs/heads/evidence/sd-oncall-release-0-5-20",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-release-0-5-20"
+}

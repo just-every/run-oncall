@@ -1,0 +1,8 @@
+2026-11-19T19:17:09Z
+v22.20.0
+10.12.4
+
+> @just-every/oncall@0.5.20 typecheck /home/agent/rer-consolidation/work/sd-oncall-release-0-5-20/run-oncall
+> tsc --noEmit
+
+Typecheck passed on the exact candidate and pinned Node.

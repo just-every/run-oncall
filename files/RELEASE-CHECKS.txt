@@ -1,0 +1,25 @@
+2026-11-19T19:16:42Z
+Candidate: d06b4e0741f3f33d6acb7114e35dc1b54637d1c0
+Main base: 738f5efacaad9f65191a4a851b701c6fc953cd5d
+Previous release commit: 518317b385c4535599bfc670dd676da46069b451
+Changed files: CHANGELOG.md, RELEASE.json, RELEASE.md, package.json, seed.json, sources.lock.json
+Migrations: 68 -> 68; added=[]; removed=[]; changed=[].
+All 68 v0.5.19 migration files have identical Git blob objects and modes.
+v0.5.19 Core (done, partial, missing, total): 25, 35, 24, 84
+v0.5.19 Agent surface (done, partial, missing, total): 1, 6, 10, 17
+v0.5.19 Full target (done, partial, missing, total): 26, 41, 34, 101
+origin/main Core (done, partial, missing, total): 25, 35, 24, 84
+origin/main Agent surface (done, partial, missing, total): 1, 6, 10, 17
+origin/main Full target (done, partial, missing, total): 26, 41, 34, 101
+HEAD Core (done, partial, missing, total): 25, 35, 24, 84
+HEAD Agent surface (done, partial, missing, total): 1, 6, 10, 17
+HEAD Full target (done, partial, missing, total): 26, 41, 34, 101
+Release metadata: 0.5.19 -> 0.5.20; matching changelog and public notes; all earlier upgrade instructions retained; no screenshot.
+Installed-tool pin: 0.2.118; package and seed version fields are the only JSON changes outside RELEASE.json and the generated lock.
+setup.sha256 rer-setup.json: declared=7296a21b69f52706bb0043c0f82321b54c2d3dc3a0eeb788cd2de65815092f5a actual=7296a21b69f52706bb0043c0f82321b54c2d3dc3a0eeb788cd2de65815092f5a
+7296a21b69f52706bb0043c0f82321b54c2d3dc3a0eeb788cd2de65815092f5a  rer-setup.json
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+Pinned edition-authoring lock check: passed.
+Git diff whitespace: passed.
+d06b4e0741f3f33d6acb7114e35dc1b54637d1c0	refs/heads/cloud/sd-oncall-release-0-5-20
