@@ -295,6 +295,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 2. A foreign team's incidents are neither listed nor selectable.
 3. Team-scoped audit export proves door rule D-1: atomic rollback, subject-erasure-safe export and interruption at the execution boundary.
 
+**Local proof (Run Edit Run fleet, 18 November 2026).** Through the signed-in Alert details door, a one-off observation in the `alertSeverity` journey in `tests/product-browser-journey.mjs` compared an active, unlinked alert’s three displayed runbook steps in exact order with the associated public service’s protected state. “Declare incident from alert” was available at 1440 and 390 and was left unused. The alert remained unlinked on reload. Protected native and paging state, durable revisions and permanent audit were unchanged, and the Worker and browser attempted zero outbound requests. The reviewed Backstage import retains dependency provenance and conflict evidence in `tests/changes.mjs`. OC-005 retains the separate `coordinationJourney` proof of the immutable runbook copy after declaration in `tests/runtime.mjs`.
+
 #### OC-024 — Follow-the-sun, PTO and holiday coverage
 
 *Tier:* Core · *Register:* R-14
@@ -589,6 +591,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 **Acceptance.**
 1. Trigger a service template, request backup responders and assign/transfer commander/scribe/communications roles through web/chat.
 2. Merge related incidents, split an unrelated alert, miss an update deadline with the browser closed and inspect reminders, aliases and attributed timelines; reject unauthorized role and state mutations.
+
+**Observed (18 November 2026, Run Edit Run fleet).** In the emitted Worker storm journey in `tests/triage.mjs`, a signed-in viewer used the current revision of an acknowledged incident to request a transfer of its Communications role to a different active responder. The native command returned 403 and recorded exactly one `command.assign-role` refusal attributed to the viewer and the incident. The role, timeline, workspace and incident revisions and paging records stayed unchanged, and the Worker made zero outbound requests. The same command succeeded for the signed-in responder.
 
 #### OC-051 — Reviewed Lamp and Statuspage communication
 
@@ -907,6 +911,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 6. Send the same key to a second service's address and observe no merge.
 7. Test a draft rule against saved mail and observe the would-be actions with zero writes.
 8. Import a PagerDuty service with custom email rules and an Opsgenie email integration with filters, and read the mapping report, which names each rule it could not convert.
+
+**Native proof for acceptance 7.** In `tests/product-browser-journey.mjs`, the saved mail draft journey admits a matching failure, its recovery, and unmatched mail with the published subject fallback. The existing administrator preview shows each sample's historical and tested draft action, mode, matched rule, rules version and key. After changing only the draft fallback, the trigger and resolve still match their archived decisions apart from the proposed version. The unmatched sample shows a historical trigger and a proposed quarantine. The preview preserves published rules, durable records, audit, alerts, receipts, quarantine and paging state, with zero outbound requests.
 
 #### OC-071 — Notification bundling per responder and channel
 

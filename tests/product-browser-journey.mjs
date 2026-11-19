@@ -1,10 +1,10 @@
 import {readableErasure,coveredSwap,nextCoverageBrowser} from './stranger-trip-steps.mjs'
-import {savedEmailBundle} from './email-fixtures.mjs'
-import {ruleDeclarationAuditFault} from './worker.mjs'
+import {localPart,mail,recoveryRules,savedEmailBundle} from './email-fixtures.mjs'
+import {durableSnapshot,ruleDeclarationAuditFault} from './worker.mjs'
 import {pathToFileURL} from 'node:url'
 import {resolve} from 'node:path'
 import {isDeepStrictEqual} from 'node:util'
-import {readFile,mkdir} from 'node:fs/promises'
+import {readFile,mkdir,writeFile} from 'node:fs/promises'
 import {selectRoutedSource,openIncidentAction,focusWorkspace,openWorkspaceSection,routingBrowser,openHistoryComparison,keyboardUser} from './keyboard.mjs'
 import {randomBytes,randomUUID} from 'node:crypto'
 import AxeBuilder from '@axe-core/playwright'
@@ -1651,6 +1651,155 @@ export async function declareIncidentFromAlert(page,title) {
 
 // alert-severity-browser: part of this public journey.
 // One core flow: admitted monitoring events -> visible severity -> declared incident -> stored severity.
+export async function unmatchedAlertQueue(page, context, proof, width = 1440) {
+ const origin = new URL(page.url()).origin;
+ const call = async (path, data, status = 200, headers = {}) => {
+  const response = data === undefined
+   ? await context.request.get(path)
+   : await context.request.post(path, {headers: {origin, ...headers}, data});
+  assert.equal(response.status(), status, path);
+  return response.json();
+ };
+ const {member} = await call('/api/session');
+ const responder = await call('/api/members', {name: 'Synthetic queue responder', role: 'responder', password: 'synthetic-oncall-43-password'}, 201);
+ const command = data => call('/api/command', data);
+ const services = {};
+ for (const [kind, name] of Object.entries({missing: 'Warehouse', unavailable: 'Fulfillment', routed: 'Dispatch', suppressed: 'Inventory'})) {
+  const runbook = kind === 'missing' ? ['Check the inventory feed', 'Compare the last successful import', 'Record the missing updates'] : [];
+  services[kind] = await command({type: 'service', id: 'synthetic-oncall-43-'+kind, name, environment: 'test', owner: member.id, runbook, pager: ''});
+ }
+ const policy = (kind, severity, action, owner, extra = {}) => command({
+  type: 'policy', service: services[kind].id, severity, action, owner, reason: 'Synthetic service policy', ...extra,
+ });
+ await policy('unavailable', '*', 'route', responder.id);
+ await command({type: 'member', id: responder.id, role: 'responder', active: false});
+ await policy('routed', 'critical', 'route', member.id);
+ await policy('suppressed', '*', 'suppress', null);
+
+ const source = 'synthetic-oncall-43-queue', key = randomBytes(32).toString('hex');
+ await call('/api/routing/keys', {
+  id: source, name: 'Queue check: Regional intake', provider: 'native', authentication: 'bearer',
+  scope: Object.values(services).map(service => service.id), owner: member.id, key, revision: 0,
+  rules: [{id: 'pick-service', match: 'all', conditions: [{field: 'details.destination', op: 'exists'}], target: {field: 'details.destination'}}],
+  catchAll: null,
+ }, 201);
+ const ingress = '/api/ingress/intake:' + source;
+ const admit = (id, title, destination, extra = {}) => call(ingress, {
+  source: 'intake:' + source, service: 'sender-hint', environment: 'sender-hint', eventId: id,
+  key: id, generation: id, intent: 'trigger', severity: 'warning', title: 'Queue check: ' + title,
+  observedAt: '2026-10-22T05:00:00.000Z', details: {destination}, ...extra,
+ }, 201, {authorization: 'Bearer ' + key});
+ const missing = await admit('missing', 'Warehouse stock feed delayed', services.missing.id);
+ const unavailable = await admit('unavailable', 'Fulfillment processor stalled', services.unavailable.id);
+ const routed = await admit('routed', 'Dispatch latency', services.routed.id, {severity: 'critical'});
+ const suppressed = await admit('suppressed', 'Inventory maintenance', services.suppressed.id);
+ const unrouted = await call(ingress, '{"source":', 202, {authorization: 'Bearer ' + key, 'content-type': 'application/json'});
+ const recovered = await admit('recovered', 'Recovered warehouse alert', services.missing.id);
+ await admit('recovery', 'Recovered warehouse alert', services.missing.id, {intent: 'recover', key: 'recovered', generation: 'recovered'});
+ const nowOwned = await admit('now-owned', 'Dispatch responder assigned', services.routed.id);
+ await policy('routed', 'warning', 'route', member.id, {
+  baseVersion: 0, correlation: {field: 'key', windowSeconds: 60, includeDependencies: false, flappingCount: 0},
+ });
+ await admit('owned-update', 'Dispatch responder assigned', services.routed.id, {key: 'now-owned', generation: 'now-owned'});
+ // A policy published after admission must neither hide the original alert nor replace its reason.
+ await policy('missing', '*', 'route', member.id);
+ const laterTrigger = await admit('missing-update', 'Warehouse stock feed delayed', services.missing.id, {key: 'missing', generation: 'missing'});
+
+ const native = await call('/api/state');
+ const forEvent = receipt => ({
+  alert: native.alerts.find(alert => alert.events.includes(receipt.id)),
+  event: native.events.find(event => event.id === receipt.id),
+ });
+ const unmatched = [forEvent(missing), forEvent(unavailable)];
+ for (const {alert, event} of unmatched) {
+  assert.ok(alert.service);
+  assert.equal(alert.state, 'active');
+  assert.equal(alert.owner, null);
+  assert.equal(event.decision.action, 'unmatched');
+ }
+ assert.equal(unmatched[0].event.decision.policy, null);
+ assert.ok(unmatched[1].event.decision.policy);
+ assert.notEqual(unmatched[0].event.decision.reason, unmatched[1].event.decision.reason);
+ assert.equal(forEvent(laterTrigger).alert.id, unmatched[0].alert.id);
+ assert.equal(forEvent(laterTrigger).event.decision.action, 'route');
+ assert.equal(forEvent(routed).event.decision.action, 'route');
+ assert.equal(forEvent(suppressed).alert.suppressed, true);
+ assert.equal(forEvent(suppressed).alert.owner, null);
+ assert.equal(forEvent(recovered).alert.state, 'recovered');
+ assert.equal(forEvent(nowOwned).event.decision.action, 'unmatched');
+ assert.equal(forEvent(nowOwned).alert.owner, member.id);
+ const parked = native.intakeReceipts.find(receipt => receipt.id === unrouted.id);
+ assert.equal(parked.outcome, 'unrouted');
+ const parkedAlert = native.alerts.find(alert => alert.id === parked.alert);
+ assert.equal(parkedAlert.service, null);
+
+ const before = proof.snapshot();
+ const paging = await call('/api/paging/state');
+ const outbound = await proof.outbound();
+ const directory = process.env.ONCALL_BROWSER_EVIDENCE ?? 'evidence/browser';
+ await mkdir(directory, {recursive: true});
+ const capture = async name => {
+  for (const proofWidth of [1440, 390]) {
+   await page.setViewportSize({width: proofWidth, height: 1000});
+   await page.screenshot({path: directory + '/oc043-unmatched-' + name + '-' + proofWidth + '.png', fullPage: true});
+  }
+  await page.setViewportSize({width, height: 1000});
+ };
+ const list = page.getByRole('region', {name: 'Alerts list', exact: true});
+ const rows = list.locator('.alert-row');
+ const urlFor = alert => '/alerts/' + encodeURIComponent(alert.id);
+ const compare = async alerts => {
+  await expect(rows).toHaveCount(alerts.length);
+  assert.deepEqual((await rows.evaluateAll(links => links.map(link => link.getAttribute('href')))).sort(), alerts.map(urlFor).sort());
+ };
+ const filter = list.getByText('Filter', {exact: true});
+ const clear = list.getByRole('button', {name: 'Clear unmatched service alerts filter', exact: true});
+ await page.setViewportSize({width, height: 1000});
+ await page.goto(origin + '/alerts');
+ await focusWorkspace(page);
+ await compare(native.alerts);
+ const search = list.getByRole('searchbox', {name: 'Search alerts', exact: true});
+ await search.fill('Queue check:');
+ const normalCohort = [missing, unavailable, routed, suppressed, recovered, nowOwned].map(receipt => forEvent(receipt).alert);
+ normalCohort.push(parkedAlert);
+ await compare(normalCohort);
+ await filter.click();
+ await list.getByLabel('Filter queue', {exact: true}).selectOption({label: 'Unmatched service alerts'});
+ await capture('filter');
+ if (width === 390) await list.getByRole('button', {name: 'Done', exact: true}).click();
+ else await filter.click();
+ const cohort = unmatched.map(({alert}) => alert);
+ await compare(cohort);
+ await capture('queue');
+ for (const {alert, event} of unmatched) {
+  await rows.filter({has: page.getByText(event.title, {exact: true})}).click();
+  await page.waitForURL(url => url.pathname === urlFor(alert));
+  const detail = page.getByRole('article', {name: 'Alert details', exact: true});
+  if (alert.service === services.missing.id) {
+   const service = native.services.find(service => service.id === alert.service);
+   assert.ok(!native.incidents.some(incident => incident.alerts.includes(alert.id)));
+   await expect(detail.locator('.alert-runbook').getByRole('listitem')).toHaveText(service.runbook);
+   await expect(detail.getByRole('button', {name: 'Declare incident from alert', exact: true})).toBeEnabled();
+  }
+  await detail.getByText('Event context', {exact: true}).click();
+  await expect(detail.getByText(event.decision.reason, {exact: true})).toBeVisible();
+  await capture(event.eventId);
+  await detail.getByRole('link', {name: '‹ Alerts', exact: true}).click();
+  await expect(clear).toBeVisible();
+  await compare(cohort);
+ }
+ await clear.click();
+ await compare(normalCohort);
+ await search.clear();
+ await compare(native.alerts);
+ assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+ assert.deepEqual(await call('/api/state'), native, 'protected records and revision are unchanged by the reads');
+ assert.deepEqual(await call('/api/paging/state'), paging);
+ assert.deepEqual(await proof.outbound(), outbound);
+ assert.deepEqual(proof.snapshot(), before, 'the browser reads change no durable rows or permanent audit');
+ console.log(`PROBE OC-043 2 Alerts at ${width}: two native unmatched admissions and five controls -> exact protected cohort and reasons, cleared filter restores all alerts, durable records, revision, audit, paging and outbound state unchanged. Screens captured at 1440 and 390.`);
+}
+
 export async function alertSeverity(page,context,width) {
  const origin=new URL(page.url()).origin
  const state=await (await context.request.get('/api/state')).json()
@@ -2016,6 +2165,8 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession,
  await keyboardCoordination(page,context,390,ownerLink,openSession)
  await productSchedule(page,context,390,session,{ownerLink,openSession,selectedOnly:true,setTime,worker})
  await page.setViewportSize({width:1440,height:1000})
+ await setTime(null)
+ await unmatchedAlertQueue(page,context,triageProof)
 }
 
 export async function sharedIncidentLinks(page,context) {
@@ -2115,7 +2266,7 @@ async function unknownWorkspaceLinks(page,context) {
 
 
 // Saved email import is exercised at one width; 390 is visual evidence only.
-export async function importedEmailBrowser(page,context) {
+export async function importedEmailBrowser(page,context,worker) {
  const directory=process.env.ONCALL_BROWSER_EVIDENCE??'./evidence/browser',origin=new URL(page.url()).origin;
  await mkdir(directory,{recursive:true});await page.setViewportSize({width:1440,height:1000});
  const api=async(path,data)=>{
@@ -2173,6 +2324,116 @@ export async function importedEmailBrowser(page,context) {
   assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0);
  }
  console.log('PASS OC-070 email import browser: mapping reports and original unsupported action, inactive custody, explicit administrator activation and one-time address; assertions at 1440; changed screens captured once at 1440 and 390');
+ await savedMailDraftBrowser(page,context,worker,{api,directory,service,owner:session.member.id});
+}
+
+async function savedMailDraftBrowser(page,context,worker,{api,directory,service,owner}) {
+ const id='synthetic-oncall-mail-draft',part=localPart();
+ const address=await api('/api/email/addresses',{
+  id,name:'Saved mail comparison',service,owner,localPart:part,mode:'custom',fallback:'subject',rules:recoveryRules(),
+ });
+ const cases=[
+  {subject:'FAILED: synthetic-oncall-db',rule:'failed',key:'synthetic-oncall-db',action:'trigger',outcome:'opened'},
+  {subject:'OK: synthetic-oncall-db',rule:'ok',key:'synthetic-oncall-db',action:'resolve',outcome:'recovered'},
+  {subject:'Unmatched observation',rule:null,key:'Unmatched observation',action:'trigger',outcome:'opened'},
+ ];
+ for(const {subject} of cases) {
+  assert.equal((await mail(worker,part,subject)).status,200,'emitted email door admitted '+subject);
+ }
+ const saved=await api('/api/email'),samples=saved.samples.filter(sample=>sample.address===id);
+ const published=saved.versions.find(version=>version.address===id);
+ assert.deepEqual(samples.map(sample=>sample.subject),cases.map(row=>row.subject));
+ assert.equal(published.fallback,'subject');
+ const previewPath='/api/email/addresses/'+id+'/preview';
+ const draft={revision:address.revision,mode:published.mode,fallback:'quarantine',rules:published.rules,samples:samples.map(s=>s.id)};
+ assert.equal((await worker.request(previewPath,draft)).status,401,'anonymous callers cannot compare saved mail');
+ await page.goto('/settings/integrations/'+encodeURIComponent('email:'+id));
+ await page.getByText('Rules · version '+published.version,{exact:true}).click();
+ const comparison=page.getByText('Test draft against saved mail',{exact:true});
+ await comparison.click();
+ const panel=comparison.locator('..'),test=panel.getByRole('button',{name:'Test draft rules',exact:true});
+ const beforeArchive=await api('/api/archive'),beforePaging=await api('/api/paging/state');
+ const beforeDurable=durableSnapshot(worker),beforeOutbound=await worker.outboundRequests();
+ const browserOutbound=[],browserMutations=[];
+ const record=request=>{
+  const url=new URL(request.url());
+  if(url.origin!==worker.origin)browserOutbound.push(url.origin);
+  else if(request.method()!=='GET')browserMutations.push({method:request.method(),path:url.pathname});
+ };
+ context.on('request',record);
+ try {
+  await expect(page.getByLabel('Unmatched mail',{exact:true})).toHaveValue('subject');
+  await page.getByLabel('Unmatched mail',{exact:true}).selectOption('quarantine');
+  const preview=page.waitForResponse(response=>new URL(response.url()).pathname===previewPath&&response.request().method()==='POST');
+  await test.click();
+  const response=await preview;
+  assert.equal(response.status(),200);
+  assert.deepEqual(response.request().postDataJSON(),draft,'the control sends only the draft fallback change and the current saved samples');
+  const result=await response.json();
+  assert.equal(result.sideEffects,false);
+  assert.deepEqual(result.decisions.map(row=>row.sample),samples.map(s=>s.id));
+  await expect(panel.getByRole('status')).toContainText(cases.length+' saved messages compared');
+  const list=panel.getByRole('list',{name:'Saved mail decisions'});
+  await expect(list.getByRole('listitem')).toHaveCount(cases.length);
+  const actions={trigger:'Trigger an alert',resolve:'Recover the matching alert',quarantine:'Held for review'};
+  const fields=decision=>({mode:decision.mode,version:decision.version,rule:decision.rule,key:decision.key,action:decision.action});
+  const observed=[];
+  for(const expected of cases) {
+   const sample=samples.find(s=>s.subject===expected.subject);
+   const archived=beforeArchive.emailReceipts.find(r=>r.sample===sample.id);
+   const {historical,proposed}=result.decisions.find(row=>row.sample===sample.id);
+   assert.equal(archived.outcome,expected.outcome);
+   assert.deepEqual(historical,archived.decision);
+   const retained={mode:'custom',version:published.version,rule:expected.rule,key:expected.key,action:expected.action};
+   assert.deepEqual(fields(historical),retained);
+   assert.deepEqual(fields(proposed),{
+    ...retained,version:published.version+1,key:expected.rule?expected.key:null,action:expected.rule?expected.action:'quarantine',
+   });
+   const row=list.getByRole('listitem').filter({has:page.getByText(sample.subject,{exact:true})});
+   for(const [label,decision] of [['Historical decision',historical],['Tested draft decision',proposed]]) {
+    const side=row.getByRole('group',{name:label,exact:true});
+    for(const text of [actions[decision.action],'Mode: Custom rules','Rules version: '+decision.version,
+     'Matched rule: '+(decision.rule??'None'),'Key: '+(decision.key??'None')]) {
+     await expect(side.getByText(text,{exact:true})).toBeVisible();
+    }
+   }
+   observed.push({subject:sample.subject,outcome:archived.outcome,historical:fields(historical),proposed:fields(proposed)});
+  }
+  assert.deepEqual(await api('/api/email'),saved,'published rules, address revision, samples, receipts and quarantine are unchanged');
+  assert.deepEqual(await api('/api/paging/state'),beforePaging,'paging state and custody are unchanged');
+  assert.ok(isDeepStrictEqual(durableSnapshot(worker),beforeDurable),'the preview changes no durable records or audit rows');
+  assert.ok(isDeepStrictEqual(await api('/api/archive'),beforeArchive),'alerts, revisions and archived decisions are unchanged');
+  assert.deepEqual(await worker.outboundRequests(),beforeOutbound);
+  assert.deepEqual(beforeOutbound,[],'the Worker makes zero outbound requests');
+  const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();
+  assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
+  const layouts=[];
+  for(const width of [1440,390]) {
+   await page.setViewportSize({width,height:1000});
+   const layout=await panel.evaluate(node=>({
+    width:innerWidth,documentWidth:document.documentElement.scrollWidth,
+    minimumTextSize:Math.min(...[...node.querySelectorAll('summary,button,p,strong')].map(element=>parseFloat(getComputedStyle(element).fontSize))),
+   }));
+   if(width===1440) {
+    assert.ok(layout.documentWidth<=width,'saved mail comparison fits desktop');
+    assert.ok(layout.minimumTextSize>=13,'saved mail comparison text is readable');
+   }
+   layouts.push(layout);
+   await panel.screenshot({path:directory+'/email-draft-comparison-'+width+'.png'});
+  }
+  assert.deepEqual(browserMutations,[{method:'POST',path:previewPath}],'the browser only posts to the read-only preview door');
+  assert.deepEqual(browserOutbound,[],'the browser makes zero outbound requests');
+  await writeFile(directory+'/email-draft-receipt.json',JSON.stringify({
+   assertionWidth:1440,layouts,previewStatus:response.status(),anonymousStatus:401,publishedVersion:published.version,
+   publishedFallback:published.fallback,draftFallback:draft.fallback,samples:observed,unchangedDurableRows:true,
+   unchangedAudit:true,unchangedPaging:true,unchangedArchive:true,workerOutboundRequests:0,browserOutboundRequests:0,
+   seriousCriticalAccessibilityFindings:0,
+  },null,2)+'\n');
+ } finally {
+  context.off('request',record);
+  await page.setViewportSize({width:1440,height:1000});
+ }
+ console.log('PROBE OC-070 7: savedMailDraftBrowser compared three saved decisions through the admin preview; matched trigger and resolve agreed with the archive; unmatched trigger became proposed quarantine; zero writes and outbound requests; captures at 1440 and 390');
 }
 
 // Read the actual MCP-saved service after reloading its Settings route.
