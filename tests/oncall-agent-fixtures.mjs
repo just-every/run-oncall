@@ -761,3 +761,160 @@ export async function acknowledgeParity(runtime, responder, acknowledgeAsPerson)
   assert.equal((await adopt()).status, 200);
   return pairs;
 }
+
+/** Compare a signed-in reassignment and one service-scoped MCP call per policy. */
+export async function reassignParity(runtime, person, reassignAsPerson) {
+  const { db, http, tool, adopt } = runtime;
+  const { autonomousPolicy, heldPolicy } = await import('../src/modules/agent-door/conformance/crypto.mjs');
+  const rows = async (sql, ...args) => (await db.prepare(sql).bind(...args).all()).results;
+  async function json(path, input, status = 200) {
+    const response = await http(path, input);
+    assert.equal(response.status, status, path);
+    return response.json();
+  }
+  const command = input => json('/api/command', input);
+  const state = () => json('/api/state');
+  const audit = () => rows('SELECT * FROM oc_admin_audit ORDER BY ordinal');
+  const reviews = () => rows('SELECT * FROM agent_door_reviews ORDER BY id');
+  async function paging() {
+    const { workspaceRevision, ...custody } = await json('/api/paging/state');
+    return custody;
+  }
+  async function identity(kind, id) {
+    const [row] = await rows('SELECT label FROM oc_audit_identities WHERE kind=? AND entity_id=?', kind, id);
+    assert.ok(row, 'Permanent audit retains ' + kind + ' attribution');
+    return row.label;
+  }
+  function reassignmentAudit(before, after, revision) {
+    assert.deepEqual(after.slice(0, before.length), before, 'Prior permanent audit is immutable');
+    const effects = after.slice(before.length).filter(row => row.kind === 'command.reassign' || row.kind === 'incidents.update'
+      || row.workspace_before !== row.workspace_after || row.paging_before !== row.paging_after || row.handoff_before !== row.handoff_after);
+    assert.equal(effects.length, 1, 'One reassignment appends exactly one native audit event');
+    const [event] = effects;
+    assert.equal(event.kind, 'command.reassign');
+    assert.equal(event.outcome, 'accepted');
+    assert.equal(event.workspace_before, revision);
+    assert.equal(event.workspace_after, revision + 1);
+    assert.equal(event.paging_before, event.paging_after);
+    assert.equal(event.handoff_before, event.handoff_after);
+    return event;
+  }
+
+  const { member: sponsor } = await json('/api/workspace');
+  assert.notEqual(person.id, sponsor.id);
+  const responder = (await state()).members.find(member => member.id !== person.id && member.active && member.role === 'responder');
+  assert.ok(responder);
+  const service = 'synthetic-oncall-reassignment';
+  await command({ type: 'service', id: service, name: 'Synthetic reassignment service', environment: 'production',
+    owner: sponsor.id, runbook: ['Check coordination status'], pager: '' });
+  const credential = 'synthetic-oncall-' + randomUUID();
+  const client = await json('/api/automation/clients', { name: 'Reassignment assistant', key: credential,
+    services: [service], permissions: ['incidents:write'] }, 201);
+  const agentId = 'oncall-client:' + client.id;
+  const agentLabel = client.name + ' for ' + sponsor.name;
+  const name = 'oncall.incidents.update';
+
+  async function target(mode) {
+    let incident = await command({ type: 'declare', service, severity: 'warning', alerts: [],
+      title: 'Synthetic reassignment under ' + mode + ' policy', summary: 'Coordinate an ordinary incident' });
+    incident = await command({ type: 'transition', incident: incident.id, revision: incident.revision,
+      state: 'acknowledged', summary: 'Accept initial responsibility' });
+    for (const [role, member] of [['scribe', sponsor], ['communications', person]]) {
+      incident = await command({ type: 'assign-role', incident: incident.id, revision: incident.revision, role, member: member.id });
+    }
+    assert.equal(incident.state, 'acknowledged');
+    assert.equal(incident.assignee, sponsor.id);
+    assert.equal(incident.commander, sponsor.id);
+    assert.equal(incident.scribe, sponsor.id);
+    assert.equal(incident.communications, person.id);
+    assert.deepEqual(incident.alerts, []);
+    assert.deepEqual(incident.actions, []);
+    assert.ok(!incident.recovery);
+    return incident;
+  }
+
+  const pairs = [];
+  for (const [mode, policy, disposition] of [
+    ['autonomous', autonomousPolicy(), 'autonomous'],
+    ['held', heldPolicy(), 'review'],
+  ]) {
+    assert.equal((await adopt(policy)).status, 200);
+    const humanBefore = await target(mode), agentBefore = await target(mode);
+    assert.notEqual(humanBefore.id, agentBefore.id);
+    const before = await state(), auditBefore = await audit(), pagingBefore = await paging(), reviewsBefore = await reviews();
+    assert.equal(pagingBefore.paging, 'OFF');
+    const human = await reassignAsPerson(humanBefore, sponsor, responder);
+    const humanState = await state(), humanAudit = await audit();
+    assert.deepEqual(await reviews(), reviewsBefore, 'The signed-in assignment opens no review');
+    assert.deepEqual(await paging(), pagingBefore);
+
+    const reply = await tool(name, { change: 'reassign', incident: agentBefore.id, revision: agentBefore.revision,
+      member: responder.id, idempotency_key: randomUUID() }, {}, credential);
+    assert.equal(reply.status, 200);
+    assert.equal(reply.result?.isError, false, JSON.stringify(reply.body));
+    assert.equal(reply.decision.disposition, disposition);
+    assert.deepEqual(reply.decision.classes.map(row => row.class), ['standard']);
+    const agent = reply.result.structuredContent;
+    const after = await state();
+    for (const [saved, prior, stateBefore, stateAfter] of [
+      [human, humanBefore, before, humanState],
+      [agent, agentBefore, humanState, after],
+    ]) {
+      assert.deepEqual(stateAfter, {
+        ...stateBefore, revision: stateBefore.revision + 1,
+        incidents: stateBefore.incidents.map(row => row.id === prior.id ? saved : row),
+      }, 'Protected state advances only the target incident and workspace revision');
+      const entry = saved.timeline.at(-1);
+      assert.deepEqual(saved, {
+        ...prior, assignee: responder.id, revision: prior.revision + 1, timeline: [...prior.timeline, entry],
+      }, 'Only the assignee, timeline and revision change');
+      assert.equal(entry.kind, 'reassign');
+      assert.equal(entry.text, 'assignee: ' + sponsor.name + ' → ' + responder.name);
+    }
+    const humanEntry = human.timeline.at(-1), agentEntry = agent.timeline.at(-1);
+    assert.equal(humanEntry.actor, person.id);
+    assert.equal(humanEntry.metadata?.agent, undefined);
+    assert.equal(agentEntry.actor, client.id);
+    assert.deepEqual(agentEntry.metadata.agent.agent, { id: agentId, name: client.name });
+    assert.deepEqual(agentEntry.metadata.agent.for, { id: sponsor.id, name: sponsor.name });
+    assert.equal(agentEntry.metadata.agent.label, agentLabel);
+
+    const humanEvent = reassignmentAudit(auditBefore, humanAudit, before.revision);
+    const agentEvent = reassignmentAudit(humanAudit, await audit(), humanState.revision);
+    assert.equal(humanEvent.actor, await identity('member', person.id));
+    assert.equal(humanEvent.subject, await identity('entity', human.id));
+    assert.equal(agentEvent.actor, await identity('agent', agentId));
+    assert.equal(agentEvent.subject, await identity('entity', agent.id));
+    assert.equal(agentEvent.source, await identity('member', sponsor.id));
+    assert.notEqual(agentEvent.actor, humanEvent.actor);
+    assert.notEqual(agentEvent.source, humanEvent.actor);
+
+    const [attempt] = await rows('SELECT row FROM agent_door_audit WHERE id=?', reply.decision.id);
+    const decision = JSON.parse(attempt.row);
+    assert.equal(decision.tool, name);
+    assert.equal(decision.outcome, 'done');
+    assert.deepEqual(decision.resource, { kind: 'incident', id: agent.id });
+    assert.equal(decision.agent.id, agentId);
+    assert.equal(decision.sponsor.id, sponsor.id);
+
+    const review = reply.result._meta['com.runeditrun/review'];
+    const afterReviews = await reviews();
+    const priorReviews = new Set(reviewsBefore.map(row => row.id));
+    assert.deepEqual(afterReviews.filter(row => priorReviews.has(row.id)), reviewsBefore);
+    const added = afterReviews.filter(row => !priorReviews.has(row.id));
+    assert.equal(added.length, Number(mode === 'held'));
+    if (mode === 'held') {
+      assert.equal(added[0].id, review.id);
+      assert.equal(added[0].state, 'open');
+      assert.equal(JSON.parse(added[0].saved).decision_id, reply.decision.id);
+    } else {
+      assert.equal(review, undefined);
+    }
+    assert.deepEqual(await paging(), pagingBefore);
+    assert.deepEqual(await runtime.outboundRequests(), []);
+    pairs.push({ mode, human, agent, sponsor, responder, agentLabel });
+    console.log('PROBE BASE-AGENT-002 5 reassignment ' + mode + ': matching saved assignee, companion roles and timeline; incident and workspace +1 and one command.reassign per door; distinct attribution; ' + added.length + ' open reviews; paging OFF and zero outbound requests');
+  }
+  assert.equal((await adopt()).status, 200);
+  return pairs;
+}

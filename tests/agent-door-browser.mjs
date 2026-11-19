@@ -4,7 +4,7 @@ import {mkdir} from 'node:fs/promises';
 import {chromium} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {agentRuntime,agentEffectSnapshot,pauseMatrix} from './agent-door-runtime.mjs';
-import {declareFromAlertParity,acknowledgeParity,recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy,deadlineTarget} from './oncall-agent-fixtures.mjs';
+import {declareFromAlertParity,acknowledgeParity,reassignParity,recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy,deadlineTarget} from './oncall-agent-fixtures.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-revisions.mjs';
 import {actionSubmitNativeRevision} from './oncall-agent-action-submit-native-revision.mjs';
@@ -181,7 +181,7 @@ try{
  assert.deepEqual(await runtime.outboundRequests(),[]);
  console.log('PROBE BASE-AGENT-002 5 browser: Alert details button and MCP in both policies; saved incidents, runbooks and separate attribution read at 1440 and 390; zero outbound requests');
  console.log('PROBE BASE-AGENT-003 4 declaration browser: returned incidents under both policies -> saved declaration, copied runbook and agent attribution shown at 1440 and 390; zero outbound requests');
- await acknowledgmentBrowser(runtime,browser,capture);
+ await signedInCoordinationBrowser(runtime,browser,capture);
  await savedServiceRunbookBrowser(page,runtime.origin,await standardServiceRunbookUpdate(runtime));
  await page.setViewportSize({width:1440,height:1000});
  await changedReassignmentReasonConflict(runtime,{async observe({mode,saved,assignee,responder,reason,agentLabel}){
@@ -953,7 +953,7 @@ try{
 // Reuse the same two-role parity journey in push Verify's browser invocation.
 await (await import('./oncall-agent-resource-parity.mjs')).resourceParity({browserProof:true});
 
-async function acknowledgmentBrowser(runtime,browser,capture) {
+async function signedInCoordinationBrowser(runtime,browser,capture) {
  const {member,cookie}=await runtime.memberSession('Synthetic acknowledgment responder','responder');
  const context=await browser.newContext({baseURL:runtime.origin,viewport:{width:1440,height:1000}});
  await context.addCookies(cookie.split('; ').map(pair=>{
@@ -1008,7 +1008,61 @@ async function acknowledgmentBrowser(runtime,browser,capture) {
   assert.deepEqual(await runtime.outboundRequests(),[]);
   assert.deepEqual(outbound,[]);
   console.log('PROBE BASE-AGENT-002 5 acknowledgment browser: real Acknowledge button and MCP in both policies; saved state, responsibility and attribution read at 1440 and 390; zero outbound requests');
+  await reassignmentBrowser(runtime,page,member,capture);
+  assert.deepEqual(outbound,[],'The signed-in browser attempts no outbound requests');
+
  }finally{
   await context.close();
  }
+}
+
+async function reassignmentBrowser(runtime,page,member,capture) {
+ const pairs=await reassignParity(runtime,member,async (incident,prior,responder)=>{
+  await page.goto('/incidents/'+incident.id);
+  await page.getByRole('button',{name:'Assignee: '+prior.name,exact:true}).click();
+  const picker=page.getByRole('dialog',{name:'Choose assignee',exact:true});
+  await picker.getByRole('button',{name:'Close picker',exact:true}).focus();
+  await picker.getByRole('tooltip',{name:'Close picker',exact:true}).waitFor();
+  const [response]=await Promise.all([
+   page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().method()==='POST'),
+   picker.getByRole('option',{name:responder.name,exact:true}).click(),
+  ]);
+  assert.equal(response.status(),200);
+  assert.deepEqual(response.request().postDataJSON(),{
+   type:'reassign',member:responder.id,incident:incident.id,revision:incident.revision,
+  });
+  return response.json();
+ });
+ const saved=await agentEffectSnapshot(runtime);
+ for(const {mode,human,agent,sponsor,responder,agentLabel} of pairs){
+  for(const [door,incident,label] of [['person',human,member.name],['agent',agent,agentLabel]]){
+   await capture('reassignment-parity-'+mode+'-'+door,'/incidents/'+incident.id,async()=>{
+    const detail=page.locator('.detail');
+    const title=await detail.getByRole('heading',{level:1}).textContent();
+    const state=await detail.locator('.incident-state').textContent();
+    const lead=await detail.getByRole('button',{name:/^Lead:/}).getAttribute('aria-label');
+    const assignee=await detail.getByRole('button',{name:/^Assignee:/}).getAttribute('aria-label');
+    const timeline=detail.getByRole('region',{name:'Timeline',exact:true});
+    const readable=responder.name+' is now assignee. Previously '+sponsor.name+'.';
+    const entry=timeline.getByRole('listitem').last();
+    const effect=await entry.locator('p').textContent();
+    const attribution=await entry.locator('small').textContent();
+    const textSizes=await detail.locator('.incident-person button, .incident-state, .event p, .event small')
+     .evaluateAll(nodes=>nodes.map(node=>parseFloat(getComputedStyle(node).fontSize)));
+    const width=page.viewportSize().width;
+    if(width===1440){
+     assert.equal(title,incident.title);
+     assert.equal(state.trim(),'Acknowledged');
+     assert.equal(lead,'Lead: '+sponsor.name);
+     assert.equal(assignee,'Assignee: '+responder.name);
+     assert.equal(effect,readable);
+     assert.equal(attribution,label);
+    }
+    console.log('Reassignment readback '+mode+' '+door+' '+width+': '+[state.trim(),lead,assignee,effect,attribution,'min text '+Math.min(...textSizes)+'px'].join(' | '));
+   },runtime,page);
+  }
+ }
+ assert.deepEqual(await agentEffectSnapshot(runtime),saved,'Reading the saved reassignments preserves native and paging custody');
+ assert.deepEqual(await runtime.outboundRequests(),[]);
+ console.log('PROBE BASE-AGENT-002 5 reassignment browser: real Assignee picker and scoped MCP in both policies; saved assignee, Lead and timeline shown at 1440 and 390; zero Worker outbound requests');
 }
