@@ -1,0 +1,254 @@
+{
+  "recordedUtc": "2026-11-19T23:09:57+00:00",
+  "repository": "just-every/run-oncall",
+  "tag": "sd-oncall-c-f306-pc2",
+  "head": "087598f4a4c07c4525b6587fe5509ca8a47f239d",
+  "branch": "cloud/sd-oncall-c-f306-pc2",
+  "advertisedProductRef": "refs/heads/cloud/sd-oncall-c-f306-pc2",
+  "productPushExit": 0,
+  "publicHistory": {
+    "shallow": false,
+    "candidateCommitCount": 6,
+    "identityAndTrailerCheck": "pass",
+    "publicationScan": "pending guarded lander"
+  },
+  "mainAtCandidatePush": {
+    "head": "071c74a352196f6778eb3b2942c351b4cf1e0ace",
+    "verify": [
+      44599061529,
+      44595350511
+    ],
+    "verifyConclusion": "success",
+    "runSite": 44599061677,
+    "runSiteConclusion": "success"
+  },
+  "predecessors": {
+    "lease": "eeb1ac5166482fc1a2a54e68deb587080f72d95e",
+    "priorBuild": "4efb655d24cccca45d8fdabd205f93a88189734a",
+    "continuedFrom": "0462eff8318f6e672783d93cce1f6af0cfcb01a8",
+    "continuedFromVerify": 44621149532,
+    "f282LandedReplay": "82a4b02d2be3a0031afbeb08bca7ccdd25cc5a72"
+  },
+  "local": {
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "activationTestGitBlob": "faad895ea861e596e02a7aa22174275db5560405",
+    "sourceLockGitBlob": "ba17d84a22d1030b5a9e8cb144e69e1c11a467ca",
+    "build": {
+      "command": "pnpm run build",
+      "exit": 0
+    },
+    "activation": {
+      "command": "node tests/activation.mjs",
+      "exit": 0,
+      "stdoutSelection": [
+        "PASS OC-025 own shifts across an accepted swap: same two bearer feeds match protected UTC coverage before and after, only the bounded primary window transfers, no private data or decoy coverage, unchanged assignments and paging across reads, calendar-export audit only, zero outbound requests",
+        "PASS OC-025 secondary service feed: bounded UTC coverage before and after reviewed override, unrelated rota and member data excluded, immediate 404 after revocation, assignments and paging retained, zero outbound requests",
+        "PASS OC-025 public schedule coordination: holder/substitute authority, default admin and none approval, racing acceptance, one effective override, audit rollback, recorded not-deliverable notices, durable reminder settings/due label, three digest-only feed scopes, 20 cap, immediate revocation and unchanged history, strict inactive recovery and overdue cancellation. Paging OFF."
+      ]
+    },
+    "typecheck": {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    "firstParty": {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    "contractWrite": {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "changed": [
+        "ACCEPTANCE.md"
+      ]
+    },
+    "contractCheckAfterWrite": {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    "contractViewsRestoredFromMain": [
+      "ACCEPTANCE.md",
+      "docs/CLAIMS.md"
+    ],
+    "lockWrite": {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    "lockCheck": {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    "ledger": {
+      "applicable": false
+    }
+  },
+  "candidateVerify": {
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "087598f4a4c07c4525b6587fe5509ca8a47f239d",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44630545063",
+    "id": 44630545063,
+    "name": "Verify",
+    "status": "in_progress"
+  },
+  "candidateVerifyJobs": [
+    {
+      "completed_at": "2026-11-19T22:39:23Z",
+      "conclusion": "success",
+      "id": 135935901096,
+      "name": "plan",
+      "started_at": "2026-11-19T22:39:07Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T22:43:12Z",
+      "conclusion": "success",
+      "id": 135936055568,
+      "name": "build",
+      "started_at": "2026-11-19T22:39:25Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T22:40:08Z",
+      "conclusion": "failure",
+      "id": 135936055645,
+      "name": "contract-docs",
+      "started_at": "2026-11-19T22:39:25Z",
+      "status": "completed",
+      "steps": [
+        "Check the generated contract documents"
+      ]
+    },
+    {
+      "completed_at": "2026-11-19T22:39:23Z",
+      "conclusion": "skipped",
+      "id": 135936059203,
+      "name": "light",
+      "started_at": "2026-11-19T22:39:23Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T23:00:29Z",
+      "conclusion": "success",
+      "id": 135938081259,
+      "name": "shards (runtime)",
+      "started_at": "2026-11-19T22:43:14Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T22:55:04Z",
+      "conclusion": "success",
+      "id": 135938081343,
+      "name": "shards (transfer)",
+      "started_at": "2026-11-19T22:43:14Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T22:55:26Z",
+      "conclusion": "success",
+      "id": 135938081350,
+      "name": "shards (imports)",
+      "started_at": "2026-11-19T22:43:14Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T22:51:23Z",
+      "conclusion": "success",
+      "id": 135938081353,
+      "name": "shards (browser)",
+      "started_at": "2026-11-19T22:43:15Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T22:52:13Z",
+      "conclusion": "success",
+      "id": 135938081372,
+      "name": "shards (intake)",
+      "started_at": "2026-11-19T22:43:14Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T22:56:41Z",
+      "conclusion": "success",
+      "id": 135938081380,
+      "name": "shards (hosted)",
+      "started_at": "2026-11-19T22:43:14Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T22:54:11Z",
+      "conclusion": "success",
+      "id": 135938081423,
+      "name": "shards (agents)",
+      "started_at": "2026-11-19T22:43:14Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T22:51:17Z",
+      "conclusion": "success",
+      "id": 135938081468,
+      "name": "shards (changes)",
+      "started_at": "2026-11-19T22:43:14Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T23:00:34Z",
+      "conclusion": "success",
+      "id": 135947064322,
+      "name": "full-push-proof",
+      "started_at": "2026-11-19T23:00:31Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T23:00:29Z",
+      "conclusion": "skipped",
+      "id": 135947066592,
+      "name": "nightly-proof",
+      "started_at": "2026-11-19T23:00:30Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T23:00:39Z",
+      "conclusion": "failure",
+      "id": 135947109482,
+      "name": "verify",
+      "started_at": "2026-11-19T23:00:36Z",
+      "status": "completed",
+      "steps": [
+        "Require the selected coverage and its proof"
+      ]
+    }
+  ],
+  "candidateRunSite": "main-only, pending guarded landing",
+  "browserProof": "not applicable to the HTTP-only change",
+  "beforeAndAfterCounts": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "clauseBeforeAndAfter": {
+    "OC-025": "PARTIAL"
+  },
+  "candidateVerifyAssessment": {
+    "observedAfterWorkflowStatusPolls": "all 15 exact-run jobs completed",
+    "rootFailure": "generated ACCEPTANCE.md differs",
+    "aggregateFailure": "generated-view job is an upstream prerequisite",
+    "productShards": "8 of 8 passed",
+    "landingContract": "READY under generated-view-only exception",
+    "githubTaskCalls": 10
+  }
+}
