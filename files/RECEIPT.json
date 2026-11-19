@@ -1,0 +1,356 @@
+{
+  "schema": 1,
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f305-pc1",
+  "head": "e0557f3212b532ff668fe0ebedb2af04bc0e8f9f",
+  "published_base": "071c74a352196f6778eb3b2942c351b4cf1e0ace",
+  "previous_head": "7a3062afd6cf7b2f936d2a1de39b40305231a7df",
+  "timestamp": "2026-11-19T22:34:31+00:00",
+  "product_status": "pushed",
+  "counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "clause": {
+    "id": "BASE-AGENT-003",
+    "status": "missing",
+    "point": 4,
+    "proof_scope": "First completed standard-only acknowledgment link under both policies"
+  },
+  "old_verify": {
+    "id": 44597070445,
+    "attempt": 1,
+    "head": "7a3062afd6cf7b2f936d2a1de39b40305231a7df",
+    "jobs": {
+      "contract-docs": {
+        "id": 135818383618,
+        "conclusion": "failure"
+      },
+      "verify": {
+        "id": 135829336300,
+        "conclusion": "failure"
+      },
+      "shards (changes)": {
+        "id": 135819898687,
+        "conclusion": "cancelled"
+      }
+    },
+    "archive_calls": "One request per job, exit 0 with no failed log lines",
+    "verify_reproduced": [
+      {
+        "head": "7a3062afd6cf7b2f936d2a1de39b40305231a7df",
+        "job": "contract-docs",
+        "command": "node src/base/contract-docs.mjs check",
+        "test": "Check the generated contract documents",
+        "exit": 1,
+        "failure": "ACCEPTANCE.md: generated content differs; run contract-docs write."
+      },
+      {
+        "head": "7a3062afd6cf7b2f936d2a1de39b40305231a7df",
+        "job": "verify",
+        "command": "bash -c 'set -euo pipefail\ntest \"$PLAN\" = success\ncase \"$CONTRACT_DOCS:$SKIP\" in\n  success:false|skipped:true) ;;\n  *) exit 1 ;;\nesac\ncase \"$PUSH_PROOF:$NIGHTLY_PROOF\" in\n  *failure*|*cancelled*) exit 1 ;;\nesac\ncase \"$COVERAGE\" in\n  reuse) test \"$SKIP\" = true && test \"$BUILD\" = skipped && test \"$SHARDS\" = skipped && test \"$LIGHT\" = skipped ;;\n  light) test \"$SKIP\" = false && test \"$LIGHT\" = success && test \"$BUILD\" = skipped && test \"$SHARDS\" = skipped ;;\n  full) test \"$LIGHT\" = skipped && { { test \"$BUILD\" = success && test \"$SHARDS\" = success; } || { test \"$HAS_SHARDS\" = false && test \"$BUILD\" = skipped && test \"$SHARDS\" = skipped; }; } ;;\n  *) exit 1 ;;\nesac\n'",
+        "test": "Require the selected coverage and its proof",
+        "exit": 1,
+        "failure": "The contract-docs job failure fails the aggregate dependency check. The changes shard dependency was cancelled."
+      }
+    ],
+    "changes_local": {
+      "command": "node scripts/verify-oncall.mjs changes",
+      "node": "22.20.0",
+      "exit": 0
+    }
+  },
+  "local_candidate": {
+    "node": "22.20.0",
+    "browser": {
+      "command": "node tests/agent-door-browser.mjs",
+      "exit": 0,
+      "observations": [
+        "Acknowledgment readback autonomous person 1440: Acknowledged | Lead: Synthetic acknowledgment responder | Assignee: Synthetic acknowledgment responder | Synthetic acknowledgment responder",
+        "Browser proof acknowledgment-autonomous-person 1440: fits=true serious/critical=0 undersized-controls=0",
+        "Acknowledgment readback autonomous person 390: Acknowledged | Lead: Synthetic acknowledgment responder | Assignee: Synthetic acknowledgment responder | Synthetic acknowledgment responder",
+        "Browser proof acknowledgment-autonomous-person 390: fits=true serious/critical=0 undersized-controls=0",
+        "Acknowledgment readback autonomous agent 1440: Acknowledged | Lead: Synthetic acknowledgment responder | Assignee: Synthetic acknowledgment responder | Responder assistant for Alex Chen | Named responder: Synthetic acknowledgment responder",
+        "Browser proof acknowledgment-autonomous-agent 1440: fits=true serious/critical=0 undersized-controls=0",
+        "Acknowledgment readback autonomous agent 390: Acknowledged | Lead: Synthetic acknowledgment responder | Assignee: Synthetic acknowledgment responder | Responder assistant for Alex Chen | Named responder: Synthetic acknowledgment responder",
+        "Browser proof acknowledgment-autonomous-agent 390: fits=true serious/critical=0 undersized-controls=0",
+        "Acknowledgment readback held person 1440: Acknowledged | Lead: Synthetic acknowledgment responder | Assignee: Synthetic acknowledgment responder | Synthetic acknowledgment responder",
+        "Browser proof acknowledgment-held-person 1440: fits=true serious/critical=0 undersized-controls=0",
+        "Acknowledgment readback held person 390: Acknowledged | Lead: Synthetic acknowledgment responder | Assignee: Synthetic acknowledgment responder | Synthetic acknowledgment responder",
+        "Browser proof acknowledgment-held-person 390: fits=true serious/critical=0 undersized-controls=0",
+        "Acknowledgment readback held agent 1440: Acknowledged | Lead: Synthetic acknowledgment responder | Assignee: Synthetic acknowledgment responder | Responder assistant for Alex Chen | Named responder: Synthetic acknowledgment responder",
+        "Browser proof acknowledgment-held-agent 1440: fits=true serious/critical=0 undersized-controls=0",
+        "Acknowledgment readback held agent 390: Acknowledged | Lead: Synthetic acknowledgment responder | Assignee: Synthetic acknowledgment responder | Responder assistant for Alex Chen | Named responder: Synthetic acknowledgment responder",
+        "Browser proof acknowledgment-held-agent 390: fits=true serious/critical=0 undersized-controls=0",
+        "PROBE BASE-AGENT-002 5 acknowledgment browser: real Acknowledge button and MCP in both policies; saved state, responsibility and attribution read at 1440 and 390; zero outbound requests",
+        "PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements"
+      ],
+      "screenshots": [
+        {
+          "file": "agent-door-acknowledgment-autonomous-agent-1440.png",
+          "viewport": 1440,
+          "sha256": "d377148fee3b3a414c02bb52a7ebdf1eb85a8af7c10086f020c37decfabdeb98"
+        },
+        {
+          "file": "agent-door-acknowledgment-autonomous-agent-390.png",
+          "viewport": 390,
+          "sha256": "73a75da787fd39e67e0e5e3bc20ee07f051b34dca1d4398a1a24407c9724cb28"
+        },
+        {
+          "file": "agent-door-acknowledgment-held-agent-1440.png",
+          "viewport": 1440,
+          "sha256": "1d0d8a0fc75a009c2624ea63b4e2324d3943c88a649aef224b8b0f72a0350a4e"
+        },
+        {
+          "file": "agent-door-acknowledgment-held-agent-390.png",
+          "viewport": 390,
+          "sha256": "8aa433848633eeba70cd9642d033608d8f612ed8d41f58c222dc5fe558478938"
+        }
+      ]
+    },
+    "build_typecheck_first_party": {
+      "command": "node scripts/verify-oncall-build.mjs",
+      "exit": 0
+    },
+    "runtime": {
+      "command": "node scripts/verify-oncall.mjs agents",
+      "exit": 0,
+      "observations": [
+        "PROBE BASE-AGENT-003 authority: revoked scoped bearer -> 401; erased incident and handoff links -> Resource unavailable; captured note -> not_found; native and paging unchanged; zero outbound requests",
+        "PROBE BASE-AGENT-002 5 acknowledgment autonomous: equivalent ordinary incidents -> acknowledged with matching Lead and Assignee, incident and workspace revisions +1 per action, one command.transition per door, distinct attribution and explicit agent named-member history, 0 open reviews, paging OFF and zero outbound requests",
+        "PROBE BASE-AGENT-003 4 acknowledgment autonomous: first returned link -> full protected incident at revision 2, matching the write, Lead, Assignee and attributed named responder; autonomous read without review; write custody, native records, mutation audit and paging unchanged; zero outbound requests",
+        "PROBE BASE-AGENT-002 5 acknowledgment held: equivalent ordinary incidents -> acknowledged with matching Lead and Assignee, incident and workspace revisions +1 per action, one command.transition per door, distinct attribution and explicit agent named-member history, 1 open reviews, paging OFF and zero outbound requests",
+        "PROBE BASE-AGENT-003 4 acknowledgment held: first returned link -> full protected incident at revision 2, matching the write, Lead, Assignee and attributed named responder; separate open standard read review; write custody, native records, mutation audit and paging unchanged; zero outbound requests"
+      ]
+    },
+    "views": {
+      "write": 0,
+      "check_after_write": 0,
+      "check_after_restoring_main": 1
+    },
+    "source_lock": {
+      "lock": 0,
+      "check": 0,
+      "package": "0.2.118"
+    },
+    "status_section_diff": "empty"
+  },
+  "verify": {
+    "conclusion": "failure",
+    "event": "push",
+    "head_sha": "e0557f3212b532ff668fe0ebedb2af04bc0e8f9f",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44619020929",
+    "id": 44619020929,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "verify_jobs": [
+    {
+      "completed_at": "2026-11-19T21:28:16Z",
+      "conclusion": "success",
+      "head_sha": "e0557f3212b532ff668fe0ebedb2af04bc0e8f9f",
+      "id": 135895337416,
+      "name": "plan",
+      "started_at": "2026-11-19T21:27:57Z",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T21:30:15Z",
+      "conclusion": "success",
+      "head_sha": "e0557f3212b532ff668fe0ebedb2af04bc0e8f9f",
+      "id": 135895550573,
+      "name": "build",
+      "started_at": "2026-11-19T21:28:18Z",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T21:28:39Z",
+      "conclusion": "failure",
+      "head_sha": "e0557f3212b532ff668fe0ebedb2af04bc0e8f9f",
+      "id": 135895550638,
+      "name": "contract-docs",
+      "started_at": "2026-11-19T21:28:18Z",
+      "steps": [
+        {
+          "conclusion": "failure",
+          "name": "Check the generated contract documents"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-19T21:28:16Z",
+      "conclusion": "skipped",
+      "head_sha": "e0557f3212b532ff668fe0ebedb2af04bc0e8f9f",
+      "id": 135895553445,
+      "name": "light",
+      "started_at": "2026-11-19T21:28:16Z",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T21:38:31Z",
+      "conclusion": "success",
+      "head_sha": "e0557f3212b532ff668fe0ebedb2af04bc0e8f9f",
+      "id": 135896712985,
+      "name": "shards (runtime)",
+      "started_at": "2026-11-19T21:30:17Z",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T21:43:20Z",
+      "conclusion": "success",
+      "head_sha": "e0557f3212b532ff668fe0ebedb2af04bc0e8f9f",
+      "id": 135896713026,
+      "name": "shards (hosted)",
+      "started_at": "2026-11-19T21:30:17Z",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T21:40:12Z",
+      "conclusion": "success",
+      "head_sha": "e0557f3212b532ff668fe0ebedb2af04bc0e8f9f",
+      "id": 135896713055,
+      "name": "shards (triage)",
+      "started_at": "2026-11-19T21:30:17Z",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T21:45:34Z",
+      "conclusion": "cancelled",
+      "head_sha": "e0557f3212b532ff668fe0ebedb2af04bc0e8f9f",
+      "id": 135896713089,
+      "name": "shards (changes)",
+      "started_at": "2026-11-19T21:30:17Z",
+      "steps": [
+        {
+          "conclusion": "cancelled",
+          "name": "Run this shard"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-19T21:39:07Z",
+      "conclusion": "success",
+      "head_sha": "e0557f3212b532ff668fe0ebedb2af04bc0e8f9f",
+      "id": 135896713230,
+      "name": "shards (transfer)",
+      "started_at": "2026-11-19T21:30:17Z",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T21:41:16Z",
+      "conclusion": "success",
+      "head_sha": "e0557f3212b532ff668fe0ebedb2af04bc0e8f9f",
+      "id": 135896713262,
+      "name": "shards (agents)",
+      "started_at": "2026-11-19T21:30:17Z",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T21:40:03Z",
+      "conclusion": "success",
+      "head_sha": "e0557f3212b532ff668fe0ebedb2af04bc0e8f9f",
+      "id": 135896713272,
+      "name": "shards (intake)",
+      "started_at": "2026-11-19T21:30:17Z",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T21:38:43Z",
+      "conclusion": "success",
+      "head_sha": "e0557f3212b532ff668fe0ebedb2af04bc0e8f9f",
+      "id": 135896714100,
+      "name": "shards (browser)",
+      "started_at": "2026-11-19T21:30:17Z",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T21:45:45Z",
+      "conclusion": "failure",
+      "head_sha": "e0557f3212b532ff668fe0ebedb2af04bc0e8f9f",
+      "id": 135905723239,
+      "name": "verify",
+      "started_at": "2026-11-19T21:45:42Z",
+      "steps": [
+        {
+          "conclusion": "failure",
+          "name": "Require the selected coverage and its proof"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-19T21:45:34Z",
+      "conclusion": "skipped",
+      "head_sha": "e0557f3212b532ff668fe0ebedb2af04bc0e8f9f",
+      "id": 135905724933,
+      "name": "nightly-proof",
+      "started_at": "2026-11-19T21:45:34Z",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-19T21:45:34Z",
+      "conclusion": "skipped",
+      "head_sha": "e0557f3212b532ff668fe0ebedb2af04bc0e8f9f",
+      "id": 135905725448,
+      "name": "full-push-proof",
+      "started_at": "2026-11-19T21:45:35Z",
+      "steps": []
+    }
+  ],
+  "changes_shard_follow_up": {
+    "repository_job": 135896713089,
+    "conclusion": "cancelled",
+    "cancelled_step": "Run this shard",
+    "workflow_job_limit_minutes": 15,
+    "workflow_job_elapsed_seconds": 917,
+    "local_command": "node scripts/verify-oncall.mjs changes",
+    "local_comparison": {
+      "candidate": {
+        "head": "e0557f3212b532ff668fe0ebedb2af04bc0e8f9f",
+        "exit": 0,
+        "elapsed_seconds": 906,
+        "journeys": [
+          "Journey completed: tests/changes.mjs (31.4s)",
+          "Journey completed: tests/activation.mjs (247.8s)",
+          "Journey completed: tests/import-door.mjs (542.6s)",
+          "Journey completed: tests/oncall-agent-erase-subjects.mjs (13.2s)",
+          "Journey completed: tests/oncall-agent-erase-roster.mjs (7.0s)",
+          "Journey completed: tests/triage.mjs {\"ONCALL_TRIAGE_PART\":\"reports\"} (62.5s)"
+        ]
+      },
+      "main": {
+        "head": "071c74a352196f6778eb3b2942c351b4cf1e0ace",
+        "exit": 0,
+        "elapsed_seconds": 896,
+        "journeys": [
+          "Journey completed: tests/changes.mjs (29.8s)",
+          "Journey completed: tests/activation.mjs (257.5s)",
+          "Journey completed: tests/import-door.mjs (545.9s)",
+          "Journey completed: tests/oncall-agent-erase-subjects.mjs (5.5s)",
+          "Journey completed: tests/oncall-agent-erase-roster.mjs (5.5s)",
+          "Journey completed: tests/triage.mjs {\"ONCALL_TRIAGE_PART\":\"reports\"} (51.8s)"
+        ]
+      }
+    }
+  },
+  "verify_disposition": "Blocked by the changes shard cancellation at the job limit. The shard passed locally on the candidate and on current main",
+  "previous_main_checks": {
+    "head": "071c74a352196f6778eb3b2942c351b4cf1e0ace",
+    "verify": 44599061529,
+    "site": 44599061677,
+    "conclusion": "success"
+  },
+  "publication_scan": {
+    "commit": "e0557f3212b532ff668fe0ebedb2af04bc0e8f9f",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "custody": "guarded lander"
+  },
+  "run_site_on_candidate": "Pending landing"
+}

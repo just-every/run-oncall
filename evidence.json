@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "7df60ff2715e1eb6afbe5be682761ad55892ba54",
+      "bytes": 15645,
+      "path": "RECEIPT.json",
+      "sha256": "ff822479de38b81526e688e40c77a381e6ffe172edb0782ac7cd2419d9cc5056"
+    },
+    {
+      "blob": "66cccf46c575dfc45a68e687f0bca7f09def1dab",
+      "bytes": 15202,
+      "path": "REPORT.md",
+      "sha256": "94acd6abfe615c1b2a60765e5c1f31becb2d4f7cbc09b3dceea1afd0a268e36a"
+    },
+    {
+      "blob": "aaa05fee21160549c4bf8d14f38d334a83397f38",
+      "bytes": 290129,
+      "path": "agent-door-acknowledgment-autonomous-agent-1440.png",
+      "sha256": "d377148fee3b3a414c02bb52a7ebdf1eb85a8af7c10086f020c37decfabdeb98"
+    },
+    {
+      "blob": "adbd7046454e7e3893837727f08c571f89944784",
+      "bytes": 91141,
+      "path": "agent-door-acknowledgment-autonomous-agent-390.png",
+      "sha256": "73a75da787fd39e67e0e5e3bc20ee07f051b34dca1d4398a1a24407c9724cb28"
+    },
+    {
+      "blob": "1c8e2dfe41db3430e3e4b2045748e77520231a70",
+      "bytes": 288055,
+      "path": "agent-door-acknowledgment-held-agent-1440.png",
+      "sha256": "1d0d8a0fc75a009c2624ea63b4e2324d3943c88a649aef224b8b0f72a0350a4e"
+    },
+    {
+      "blob": "75e8056610d94bd3bbeef8b38a5f22d9fd7fd707",
+      "bytes": 90076,
+      "path": "agent-door-acknowledgment-held-agent-390.png",
+      "sha256": "8aa433848633eeba70cd9642d033608d8f612ed8d41f58c222dc5fe558478938"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f305-pc1",
+  "product_head": "e0557f3212b532ff668fe0ebedb2af04bc0e8f9f",
+  "ref": "refs/heads/evidence/sd-oncall-c-f305-pc1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f305-pc1"
+}
