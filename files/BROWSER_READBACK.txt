@@ -1,0 +1,21 @@
+Candidate: eee43b208c0b2e3a02c98d130c49ef39c67ff458
+Worker test with system Chromium. The picker and visual assertions run at 1440 px; the retained incidents are also read at 390 px.
+PROBE BASE-AGENT-002 5 reassignment autonomous: matching saved assignee, companion roles and timeline; stored incident and workspace +1 and one command.reassign per door; distinct attribution; 0 open reviews; paging OFF and zero outbound requests
+PROBE BASE-AGENT-002 5 reassignment held: matching saved assignee, companion roles and timeline; stored incident and workspace +1 and one command.reassign per door; distinct attribution; 1 open reviews; paging OFF and zero outbound requests
+Reassignment readback autonomous person 1440: Acknowledged | Lead: Alex Chen | Assignee: Mira Patel | Mira Patel is now assignee. Previously Alex Chen. | Synthetic acknowledgment responder | min text 13px
+Browser proof reassignment-parity-autonomous-person 1440: fits=true serious/critical=0 undersized-controls=0
+Reassignment readback autonomous person 390: Acknowledged | Lead: Alex Chen | Assignee: Mira Patel | Mira Patel is now assignee. Previously Alex Chen. | Synthetic acknowledgment responder | min text 13px
+Browser proof reassignment-parity-autonomous-person 390: fits=true serious/critical=0 undersized-controls=0
+Reassignment readback autonomous agent 1440: Acknowledged | Lead: Alex Chen | Assignee: Mira Patel | Mira Patel is now assignee. Previously Alex Chen. | Reassignment assistant for Alex Chen | min text 13px
+Browser proof reassignment-parity-autonomous-agent 1440: fits=true serious/critical=0 undersized-controls=0
+Reassignment readback autonomous agent 390: Acknowledged | Lead: Alex Chen | Assignee: Mira Patel | Mira Patel is now assignee. Previously Alex Chen. | Reassignment assistant for Alex Chen | min text 13px
+Browser proof reassignment-parity-autonomous-agent 390: fits=true serious/critical=0 undersized-controls=0
+Reassignment readback held person 1440: Acknowledged | Lead: Alex Chen | Assignee: Mira Patel | Mira Patel is now assignee. Previously Alex Chen. | Synthetic acknowledgment responder | min text 13px
+Browser proof reassignment-parity-held-person 1440: fits=true serious/critical=0 undersized-controls=0
+Reassignment readback held person 390: Acknowledged | Lead: Alex Chen | Assignee: Mira Patel | Mira Patel is now assignee. Previously Alex Chen. | Synthetic acknowledgment responder | min text 13px
+Browser proof reassignment-parity-held-person 390: fits=true serious/critical=0 undersized-controls=0
+Reassignment readback held agent 1440: Acknowledged | Lead: Alex Chen | Assignee: Mira Patel | Mira Patel is now assignee. Previously Alex Chen. | Reassignment assistant for Alex Chen | min text 13px
+Browser proof reassignment-parity-held-agent 1440: fits=true serious/critical=0 undersized-controls=0
+Reassignment readback held agent 390: Acknowledged | Lead: Alex Chen | Assignee: Mira Patel | Mira Patel is now assignee. Previously Alex Chen. | Reassignment assistant for Alex Chen | min text 13px
+Browser proof reassignment-parity-held-agent 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-002 5 reassignment browser: real Assignee picker and scoped MCP in both policies; saved assignee, Lead and timeline shown at 1440 and 390; zero Worker outbound requests

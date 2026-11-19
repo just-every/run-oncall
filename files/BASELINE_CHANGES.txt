@@ -1,0 +1,23 @@
+Exact published starting SHA: c88515d973486ba9908d54d6574b3c00c0047e4a
+Command: CI=true WRANGLER_SEND_METRICS=false node scripts/verify-oncall.mjs changes
+Node: 22.20.0. Local exit: 0. GitHub job 135836796984 was cancelled.
+Journey completed: tests/changes.mjs (28.8s)
+Journey completed: tests/activation.mjs (255.6s)
+Oncall verification passed: changes
+Journey completed: tests/import-door.mjs (566.8s)
+Journey completed: tests/oncall-agent-erase-subjects.mjs (5.6s)
+Journey completed: tests/oncall-agent-erase-roster.mjs (6.8s)
+Journey completed: tests/triage.mjs {"ONCALL_TRIAGE_PART":"reports"} (55.1s)
+Oncall verification passed: imports
+
+Rechecked main changes shard replay (Node 22.20.0, same CI environment and local 15-minute command cap)
+MAIN_CHANGES_EXIT=0
+MAIN_CHANGES_COMPLETED=2026-11-19T22:33:04Z
+Journey completed: tests/changes.mjs (28.8s)
+Journey completed: tests/activation.mjs (244.8s)
+Oncall verification passed: changes
+Journey completed: tests/import-door.mjs (558.6s)
+Journey completed: tests/oncall-agent-erase-subjects.mjs (5.6s)
+Journey completed: tests/oncall-agent-erase-roster.mjs (5.0s)
+Journey completed: tests/triage.mjs {"ONCALL_TRIAGE_PART":"reports"} (52.0s)
+Oncall verification passed: imports

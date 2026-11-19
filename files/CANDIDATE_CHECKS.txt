@@ -1,0 +1,47 @@
+Candidate: eee43b208c0b2e3a02c98d130c49ef39c67ff458
+Toolchain: Node 22.20.0 and pnpm 10.12.4
+Exact build: node scripts/verify-oncall-build.mjs, exit 0. Includes first-party check and typecheck.
+Agent shard: CI=true WRANGLER_SEND_METRICS=false node scripts/verify-oncall.mjs agents, exit 0.
+PROBE BASE-AGENT-002 5 declaration autonomous: equivalent unlinked alerts -> matching saved declarations and one command.declare per door, separate attribution, workspace +1 per action, 0 open reviews, paging OFF and zero outbound requests
+PROBE BASE-AGENT-002 5 declaration held: equivalent unlinked alerts -> matching saved declarations and one command.declare per door, separate attribution, workspace +1 per action, 1 open reviews, paging OFF and zero outbound requests
+PROBE BASE-AGENT-002 5 acknowledgment autonomous: equivalent ordinary incidents -> acknowledged with matching Lead and Assignee, incident and workspace revisions +1 per action, one command.transition per door, distinct attribution and explicit agent named-member history, 0 open reviews, paging OFF and zero outbound requests
+PROBE BASE-AGENT-002 5 acknowledgment held: equivalent ordinary incidents -> acknowledged with matching Lead and Assignee, incident and workspace revisions +1 per action, one command.transition per door, distinct attribution and explicit agent named-member history, 1 open reviews, paging OFF and zero outbound requests
+PROBE BASE-AGENT-002 5 reassignment autonomous: matching saved assignee, companion roles and timeline; stored incident and workspace +1 and one command.reassign per door; distinct attribution; 0 open reviews; paging OFF and zero outbound requests
+PROBE BASE-AGENT-002 5 reassignment held: matching saved assignee, companion roles and timeline; stored incident and workspace +1 and one command.reassign per door; distinct attribution; 1 open reviews; paging OFF and zero outbound requests
+PROBE BASE-AGENT-012 acceptance 2 autonomous reassign: real MCP response destroyed at headers with unread body; D1 confirms completed call, saved outcome and one attributed reassignment before retry; original revision and key with new RPC id return exact result; one incident and workspace revision increment, one native audit commit; retained effects unchanged; one linked replay-attempt audit; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 2 held reassign: real MCP response destroyed at headers with unread body; D1 confirms completed call, saved outcome and one attributed reassignment before retry; original revision and key with new RPC id return exact result; one incident and workspace revision increment, one native audit commit; one original open review; retained effects unchanged; one linked replay-attempt audit; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 3 autonomous reassignment: one standard-only agent-attributed assignment to a distinct active responder, one incident and workspace revision and native audit commit; original key and revision with changed reason -> isError idempotency_conflict in metadata and text, no private result; exact original arguments with new RPC id -> saved result and original review; native effect custody and paging unchanged; attributed refusal and linked replay audit only; zero outbound requests
+PROBE BASE-AGENT-003 4 autonomous: original reassignment link -> full write and protected native state equality, new assignee and attributed timeline, unchanged companion roles; autonomous read without review; native records, revisions, state-changing audit and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 3 held reassignment: one standard-only agent-attributed assignment to a distinct active responder, one incident and workspace revision and native audit commit; original key and revision with changed reason -> isError idempotency_conflict in metadata and text, no private result; exact original arguments with new RPC id -> saved result and original review; native effect custody and paging unchanged; attributed refusal and linked replay audit only; zero outbound requests
+PROBE BASE-AGENT-003 4 held: original reassignment link -> full write and protected native state equality, new assignee and attributed timeline, unchanged companion roles; separate open read review and original write review unchanged; native records, revisions, state-changing audit and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 4 autonomous reassignment native revision: stale revision with expected_revision omitted -> isError revision_conflict and exact authorized current_revision 2 in metadata and text, no private result or native effect; fresh key and returned revision -> standard-only autonomous, one agent-attributed reassignment, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 4 autonomous reassignment non-disclosure: valid scoped client with stale native revision against foreign and missing incidents -> identical not_found, no revision or private result, custody and paging unchanged, zero outbound requests
+PROBE BASE-AGENT-012 acceptance 4 held reassignment native revision: stale revision with expected_revision omitted -> isError revision_conflict and exact authorized current_revision 2 in metadata and text, no private result or native effect; fresh key and returned revision -> standard-only review, one agent-attributed reassignment, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 4 held reassignment non-disclosure: valid scoped client with stale native revision against foreign and missing incidents -> identical not_found, no revision or private result, custody and paging unchanged, zero outbound requests
+PROBE BASE-AGENT-003 4 autonomous assignee clear: first returned resource link matched full native incident, explicit null assignee, new revision, companion roles and attributed reassign history; autonomous read; original write outcome, native records, revisions, state-changing audit and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-003 4 held assignee clear: first returned resource link matched full native incident, explicit null assignee, new revision, companion roles and attributed reassign history; separate open read review; original write outcome, native records, revisions, state-changing audit and paging unchanged; zero outbound requests
+Journey completed: tests/runtime.mjs {"ONCALL_RUNTIME_PART":"agents"} (515.6s)
+Oncall verification passed: agents
+Machine REST journey: ONCALL_RUNTIME_PART=machines node tests/runtime.mjs, exit 0.
+PASS OC-053 permanent named responder: service-account acknowledgment names A; reassignment and new commander B and resolution preserve timeline, pseudonymous attribution and the REST incident audit override
+Committed candidate view check: Contract prose: 0 errors, 0 warnings.
+ACCEPTANCE.md: generated content differs; run contract-docs write.
+Committed candidate view check exit: 1. The lander regenerates this view.
+Lander-Regenerate write then check both exited 0 before both views were restored to main.
+Pinned edition-authoring lock then check both exited 0. No migration changes.
+Agent browser lane: ONCALL_VERIFY_LANE=agent-browser ONCALL_VERIFY_PREBUILT=true node tests/verify.mjs, exit 0.
+Journey completed: tests/agent-door-browser.mjs (431.4s)
+Oncall verification passed: agent-browser
+Exact candidate changes shard replay (Node 22.20.0, local 15-minute command cap)
+CANDIDATE_CHANGES_EXIT=0
+CANDIDATE_CHANGES_COMPLETED=2026-11-19T22:17:16Z
+Journey completed: tests/changes.mjs (34.6s)
+Journey completed: tests/activation.mjs (245.7s)
+Oncall verification passed: changes
+Journey completed: tests/import-door.mjs (551.7s)
+Journey completed: tests/oncall-agent-erase-subjects.mjs (5.2s)
+Journey completed: tests/oncall-agent-erase-roster.mjs (5.1s)
+Journey completed: tests/triage.mjs {"ONCALL_TRIAGE_PART":"reports"} (51.2s)
+Oncall verification passed: imports
+CI log archive command: gh run view 44620652289 --repo just-every/run-oncall --job 135902823253 --log-failed
+ARCHIVE_EXIT=0 ARCHIVE_LINES=0

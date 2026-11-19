@@ -1,0 +1,212 @@
+{
+  "run": {
+    "conclusion": "failure",
+    "event": "push",
+    "head_branch": "cloud/sd-oncall-c-f308-pc1",
+    "head_sha": "eee43b208c0b2e3a02c98d130c49ef39c67ff458",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44620652289",
+    "id": 44620652289,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "polls": [
+    {
+      "conclusion": null,
+      "head_sha": "eee43b208c0b2e3a02c98d130c49ef39c67ff458",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44620652289",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": "failure",
+      "head_sha": "eee43b208c0b2e3a02c98d130c49ef39c67ff458",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44620652289",
+      "status": "completed"
+    }
+  ],
+  "jobs": [
+    {
+      "cancelled": [],
+      "completed_at": "2026-11-19T21:37:55Z",
+      "conclusion": "success",
+      "failed": [],
+      "id": 135901079685,
+      "name": "plan",
+      "started_at": "2026-11-19T21:37:38Z",
+      "status": "completed"
+    },
+    {
+      "cancelled": [],
+      "completed_at": "2026-11-19T21:38:18Z",
+      "conclusion": "failure",
+      "failed": [
+        "Check the generated contract documents"
+      ],
+      "id": 135901265249,
+      "name": "contract-docs",
+      "started_at": "2026-11-19T21:37:57Z",
+      "status": "completed"
+    },
+    {
+      "cancelled": [],
+      "completed_at": "2026-11-19T21:40:35Z",
+      "conclusion": "success",
+      "failed": [],
+      "id": 135901265308,
+      "name": "build",
+      "started_at": "2026-11-19T21:37:57Z",
+      "status": "completed"
+    },
+    {
+      "cancelled": [],
+      "completed_at": "2026-11-19T21:37:55Z",
+      "conclusion": "skipped",
+      "failed": [],
+      "id": 135901267948,
+      "name": "light",
+      "started_at": "2026-11-19T21:37:56Z",
+      "status": "completed"
+    },
+    {
+      "cancelled": [],
+      "completed_at": "2026-11-19T21:54:03Z",
+      "conclusion": "success",
+      "failed": [],
+      "id": 135902823211,
+      "name": "shards (hosted)",
+      "started_at": "2026-11-19T21:40:38Z",
+      "status": "completed"
+    },
+    {
+      "cancelled": [],
+      "completed_at": "2026-11-19T21:49:14Z",
+      "conclusion": "success",
+      "failed": [],
+      "id": 135902823240,
+      "name": "shards (runtime)",
+      "started_at": "2026-11-19T21:40:37Z",
+      "status": "completed"
+    },
+    {
+      "cancelled": [
+        "Run this shard"
+      ],
+      "completed_at": "2026-11-19T21:55:53Z",
+      "conclusion": "cancelled",
+      "failed": [],
+      "id": 135902823253,
+      "name": "shards (changes)",
+      "started_at": "2026-11-19T21:40:38Z",
+      "status": "completed"
+    },
+    {
+      "cancelled": [],
+      "completed_at": "2026-11-19T21:48:49Z",
+      "conclusion": "success",
+      "failed": [],
+      "id": 135902823262,
+      "name": "shards (browser)",
+      "started_at": "2026-11-19T21:40:37Z",
+      "status": "completed"
+    },
+    {
+      "cancelled": [],
+      "completed_at": "2026-11-19T21:51:54Z",
+      "conclusion": "success",
+      "failed": [],
+      "id": 135902823289,
+      "name": "shards (transfer)",
+      "started_at": "2026-11-19T21:40:37Z",
+      "status": "completed"
+    },
+    {
+      "cancelled": [],
+      "completed_at": "2026-11-19T21:49:48Z",
+      "conclusion": "success",
+      "failed": [],
+      "id": 135902823334,
+      "name": "shards (triage)",
+      "started_at": "2026-11-19T21:40:38Z",
+      "status": "completed"
+    },
+    {
+      "cancelled": [],
+      "completed_at": "2026-11-19T21:52:05Z",
+      "conclusion": "success",
+      "failed": [],
+      "id": 135902823423,
+      "name": "shards (agents)",
+      "started_at": "2026-11-19T21:40:37Z",
+      "status": "completed"
+    },
+    {
+      "cancelled": [],
+      "completed_at": "2026-11-19T21:49:37Z",
+      "conclusion": "success",
+      "failed": [],
+      "id": 135902823507,
+      "name": "shards (intake)",
+      "started_at": "2026-11-19T21:40:37Z",
+      "status": "completed"
+    },
+    {
+      "cancelled": [],
+      "completed_at": "2026-11-19T21:55:59Z",
+      "conclusion": "failure",
+      "failed": [
+        "Require the selected coverage and its proof"
+      ],
+      "id": 135911632910,
+      "name": "verify",
+      "started_at": "2026-11-19T21:55:55Z",
+      "status": "completed"
+    },
+    {
+      "cancelled": [],
+      "completed_at": "2026-11-19T21:55:53Z",
+      "conclusion": "skipped",
+      "failed": [],
+      "id": 135911635208,
+      "name": "nightly-proof",
+      "started_at": "2026-11-19T21:55:53Z",
+      "status": "completed"
+    },
+    {
+      "cancelled": [],
+      "completed_at": "2026-11-19T21:55:53Z",
+      "conclusion": "skipped",
+      "failed": [],
+      "id": 135911635443,
+      "name": "full-push-proof",
+      "started_at": "2026-11-19T21:55:53Z",
+      "status": "completed"
+    }
+  ],
+  "discovery": {
+    "conclusion": null,
+    "event": "push",
+    "head_branch": "cloud/sd-oncall-c-f308-pc1",
+    "head_sha": "eee43b208c0b2e3a02c98d130c49ef39c67ff458",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44620652289",
+    "id": 44620652289,
+    "name": "Verify",
+    "status": "in_progress"
+  },
+  "archive": {
+    "command": "gh run view 44620652289 --repo just-every/run-oncall --job 135902823253 --log-failed",
+    "exit": 0,
+    "lines": 0
+  },
+  "local_changes": [
+    {
+      "head": "eee43b208c0b2e3a02c98d130c49ef39c67ff458",
+      "exit": 0,
+      "elapsed_seconds": 894
+    },
+    {
+      "head": "071c74a352196f6778eb3b2942c351b4cf1e0ace",
+      "exit": 0,
+      "elapsed_seconds": 896
+    }
+  ],
+  "github_tool_calls": 10
+}

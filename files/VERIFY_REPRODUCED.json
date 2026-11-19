@@ -1,0 +1,24 @@
+{
+  "head": "c88515d973486ba9908d54d6574b3c00c0047e4a",
+  "job": "contract-docs",
+  "command": "node src/base/contract-docs.mjs check",
+  "test": "Check the generated contract documents",
+  "exit": 1,
+  "failure": "ACCEPTANCE.md: generated content differs; run contract-docs write.",
+  "node": "22.20.0",
+  "verify_run": 44601711462,
+  "verify_attempt": 1,
+  "job_id": 135834829102,
+  "aggregate": {
+    "job_id": 135846112556,
+    "command": "Require the selected coverage and its proof (shell step sourced from .github/workflows/verify.yml)",
+    "exit": 1,
+    "failure": "The generated-contract gate exits 1 with CONTRACT_DOCS=failure and SKIP=false before evaluating shard results."
+  },
+  "changes": {
+    "job_id": 135836796984,
+    "ci_conclusion": "cancelled",
+    "command": "node scripts/verify-oncall.mjs changes",
+    "local_exit": 0
+  }
+}

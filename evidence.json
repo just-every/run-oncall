@@ -1,0 +1,94 @@
+{
+  "files": [
+    {
+      "blob": "159b397377dc05d157d923c9c04af4f4495f804d",
+      "bytes": 1231,
+      "path": "BASELINE_CHANGES.txt",
+      "sha256": "8bcda892c96e20309d1669ecd5f68785584c7a584c15c6359275219ceb1aa5a8"
+    },
+    {
+      "blob": "d4dd85dc350626c1717c57ee1f6123f8190d19de",
+      "bytes": 3313,
+      "path": "BROWSER_READBACK.txt",
+      "sha256": "d80f3e085e1dbcb78db746d0a3004e065f9b5b135855edb8ca32783d7023e5e2"
+    },
+    {
+      "blob": "eb438dc36df7f42c11e69c37190cbcd097c7f645",
+      "bytes": 8300,
+      "path": "CANDIDATE_CHECKS.txt",
+      "sha256": "135f841737b00fe4f23b90cf3accdf2dfca17531e410fad0cbb4411b2d84cd6a"
+    },
+    {
+      "blob": "15ac1582c86179cd39e4dc08fc1738267d0ff93f",
+      "bytes": 11795,
+      "path": "REPORT.md",
+      "sha256": "a3bb10412ce6d84d4be3163d3a777d29b1fea128ba6abf3089315afce7f56dfc"
+    },
+    {
+      "blob": "8669cab2f4bde81d06e46e3fc5b06d54d18c093e",
+      "bytes": 853,
+      "path": "VERIFY_REPRODUCED.json",
+      "sha256": "000604800d7dc9e481089375646af9457d272997296956f5a0ea91a377faddbb"
+    },
+    {
+      "blob": "78403afc3fcea9905eb612f3d0ecdab4917e6cde",
+      "bytes": 5651,
+      "path": "VERIFY_RUN.json",
+      "sha256": "ba5607af1b159be38584f7fe95a625ea7f37e87d0d037bf099bc6548b3e80860"
+    },
+    {
+      "blob": "e67eecd84c97bf7bb2689e4e9048ad448a1d53b9",
+      "bytes": 378668,
+      "path": "browser/agent-door-reassignment-parity-autonomous-agent-1440.png",
+      "sha256": "b47b901257b0c6c1931e87e8c65ea1a42d6010636ab0167ae7ef5037845190da"
+    },
+    {
+      "blob": "70e512a825693a0ec2861c5ea751e83422eb22b9",
+      "bytes": 98105,
+      "path": "browser/agent-door-reassignment-parity-autonomous-agent-390.png",
+      "sha256": "036972350b71896f0a93ace4507b9d8038e196e42f1b013cc41a3e5b4615182a"
+    },
+    {
+      "blob": "6f064f81260d923f454fedcb202371a7e01ba977",
+      "bytes": 378484,
+      "path": "browser/agent-door-reassignment-parity-autonomous-person-1440.png",
+      "sha256": "be59000cbd41a7bac024b727bd43108e95b998fb0b7e478ecf9a8b356ddfd79b"
+    },
+    {
+      "blob": "4f2bed1bad7bb49571bd04ca5dfe0382af592ec1",
+      "bytes": 98068,
+      "path": "browser/agent-door-reassignment-parity-autonomous-person-390.png",
+      "sha256": "298457765590044b2a252ea3fa9da19b49ac645921411053af04d7541655afb6"
+    },
+    {
+      "blob": "518e5413912a9d503ade63563da2923ace0c4440",
+      "bytes": 377284,
+      "path": "browser/agent-door-reassignment-parity-held-agent-1440.png",
+      "sha256": "8803e5a9e9db0dc2fea2fc70b2da5db51e998c9d5643743a23eb8ea7d50e6659"
+    },
+    {
+      "blob": "f4ad54dc917a0a5cbc6bfaf377c592fdf24ec090",
+      "bytes": 96876,
+      "path": "browser/agent-door-reassignment-parity-held-agent-390.png",
+      "sha256": "d2f6500a32c7b48823c6423d8a9b8e0942cf0e6add1280c5c08f9c35f89c9f44"
+    },
+    {
+      "blob": "28c777a3bad36e5e96586b4e45391e74b7b82647",
+      "bytes": 377004,
+      "path": "browser/agent-door-reassignment-parity-held-person-1440.png",
+      "sha256": "a8f220015991266907ba6c6a95f51164845f7f0d30f122195ae157c462b77e0b"
+    },
+    {
+      "blob": "a99a69e832f24b8d5ed082ada2f04df9c53018b1",
+      "bytes": 96841,
+      "path": "browser/agent-door-reassignment-parity-held-person-390.png",
+      "sha256": "7e4cc245d0d95e585f690e71538dce946433126a4898cd9e5064f53234753a8d"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f308-pc1",
+  "product_head": "eee43b208c0b2e3a02c98d130c49ef39c67ff458",
+  "ref": "refs/heads/evidence/sd-oncall-c-f308-pc1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f308-pc1"
+}
