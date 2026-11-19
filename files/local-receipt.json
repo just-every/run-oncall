@@ -1,0 +1,69 @@
+{
+  "branch": "cloud/sd-oncall-c-f294-pc1",
+  "candidate_commit_checks": {
+    "all_parents": true,
+    "commits": 2,
+    "trailers": 0
+  },
+  "continuation_head": "b375c995f5a06cb63b8e42f83b841e308b25fbce",
+  "contract_counts_before_and_after": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "contract_target_status": "missing",
+  "head": "2248108a262aece8279a0f783b3d2c6f70ebf2b8",
+  "main_at_integration": "4eadad478aa00b538a9750a6727306937a4fd54c",
+  "main_run_site": "pending fleet lander",
+  "node_local": "24.19.0",
+  "observations": [
+    "PROBE BASE-AGENT-003 4 autonomous follow-up creation: first returned link matches the complete protected parent, revision 2, open owned and due-dated P1 human-review follow-up and attributed creation; autonomous read without review; native records, revisions, mutation audit, original write custody and paging unchanged; zero outbound requests",
+    "PROBE BASE-AGENT-003 4 held follow-up creation: first returned link matches the complete protected parent, revision 2, open owned and due-dated P1 human-review follow-up and attributed creation; separate open standard read review; native records, revisions, mutation audit, original write custody and paging unchanged; zero outbound requests",
+    "Browser proof follow-up-created 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof follow-up-created 390: fits=true serious/critical=0 undersized-controls=0"
+  ],
+  "publication_scan": "pending fleet lander",
+  "screenshots": {
+    "follow-up-created-1440.png": {
+      "height": 1000,
+      "sha256": "feedb0d80e5685cede9c0638119cbc7d748ee0401b3629d70433797cadc45b69",
+      "width": 1440
+    },
+    "follow-up-created-390.png": {
+      "height": 1000,
+      "sha256": "44c23f6b9ed33773989c20fe804e7bbcc9f254f1debcbaf8b9513704572bceb7",
+      "width": 390
+    }
+  },
+  "tests": [
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/agent-door-browser.mjs",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write, then check, before restoring main views",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock, then check",
+      "exit": 0
+    }
+  ]
+}

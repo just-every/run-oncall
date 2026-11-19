@@ -1,0 +1,23 @@
+{
+  "verify_run_id": 44528043066,
+  "head": "b375c995f5a06cb63b8e42f83b841e308b25fbce",
+  "classification": "expected generated-view drift, aggregate failure solely downstream",
+  "reproductions": [
+    {
+      "job": "contract-docs",
+      "job_id": 135573919621,
+      "command": "node src/base/contract-docs.mjs check",
+      "test": "Check the generated contract documents",
+      "exit": 1,
+      "failure": "ACCEPTANCE.md: generated content differs; run contract-docs write."
+    },
+    {
+      "job": "verify",
+      "job_id": 135583126507,
+      "command": "run the exact Require the selected coverage and its proof shell block from .github/workflows/verify.yml with the recorded job variables",
+      "test": "Require the selected coverage and its proof",
+      "exit": 1,
+      "failure": "CONTRACT_DOCS=failure with SKIP=false dispatches to exit 1; the other coverage and proof dependencies succeeded or were skipped by plan"
+    }
+  ]
+}

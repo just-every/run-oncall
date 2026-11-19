@@ -1,0 +1,128 @@
+{
+  "aggregate": "The exact aggregate shell step reproduced exit 1 at the generated-contract dependency check with observed job outcomes.",
+  "aggregate_archive_command": "gh run view 44539521180 --repo just-every/run-oncall --job 135623504854 --log-failed",
+  "aggregate_archive_error": "failed to get run log: zip: not a valid zip file",
+  "attempt": 1,
+  "conclusion": "failure",
+  "event": "push",
+  "generated_view_failure": "ACCEPTANCE.md: generated content differs; run contract-docs write.",
+  "guarded_main_landing": "pending",
+  "head_sha": "2248108a262aece8279a0f783b3d2c6f70ebf2b8",
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/44539521180",
+  "jobs": [
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135613788452,
+      "name": "plan",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135613970145,
+      "name": "build",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Check the generated contract documents"
+      ],
+      "id": 135613970257,
+      "name": "contract-docs",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "id": 135613974051,
+      "name": "light",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135615151258,
+      "name": "shards (browser)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135615151276,
+      "name": "shards (triage)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135615151285,
+      "name": "shards (transfer)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135615151289,
+      "name": "shards (intake)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135615151315,
+      "name": "shards (changes)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135615151320,
+      "name": "shards (agents)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135615151395,
+      "name": "shards (runtime)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135615151424,
+      "name": "shards (hosted)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135623451490,
+      "name": "full-push-proof",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "id": 135623454107,
+      "name": "nightly-proof",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Require the selected coverage and its proof"
+      ],
+      "id": 135623504854,
+      "name": "verify",
+      "status": "completed"
+    }
+  ],
+  "observed_remote_main": "50a05ac92632c5eba8f30cc0b9405fcab4df685b",
+  "previous_verify_run_id": 44528043066,
+  "readiness": "eligible under generated-view exception",
+  "run_id": 44539521180,
+  "status": "completed"
+}
