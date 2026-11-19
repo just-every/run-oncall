@@ -20,6 +20,7 @@ import {openIncidentAction} from './keyboard.mjs';
 import {standardServiceRunbookUpdate} from './oncall-agent-service-replay.mjs';
 import {declareIncidentFromAlert,savedServiceRunbookBrowser} from './product-browser-journey.mjs';
 import {staleOverrideRevision} from './oncall-agent-schedule-replay.mjs';
+import {mitigationParity} from './oncall-agent-fixtures.mjs';
 
 const weekStart=Date.parse('2026-11-02T00:00:00.000Z'),weekNow=Date.parse('2026-11-04T12:00:00.000Z');
 const runtime=await agentRuntime({clock:null}),directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';
@@ -34,7 +35,7 @@ try{
  async function capture(label,path,prepare=async()=>{},proofRuntime=runtime,proofPage=page){
   for(const width of [1440,390]){
    await proofPage.setViewportSize({width,height:1000});
-   await proofPage.goto(proofRuntime.origin+path);await prepare();
+   await proofPage.goto(proofRuntime.origin+path);await prepare(width);
    const fits=await proofPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth);
    const findings=(await new AxeBuilder({page:proofPage}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations.filter(row=>['serious','critical'].includes(row.impact));
    const controls=await proofPage.locator('button,input:not([type=hidden]),select,textarea').evaluateAll(nodes=>nodes.filter(node=>node.getClientRects().length).map(node=>({label:node.getAttribute('aria-label')??node.textContent?.trim().slice(0,60)??node.name,height:(node.matches('input[type=checkbox],input[type=radio]')?node.labels?.[0]??node:node).getBoundingClientRect().height})).filter(row=>row.height<44));
@@ -145,6 +146,43 @@ try{
  console.log('PROBE BASE-AGENT-009 acceptance 3: native MCP at UTC week boundaries, complete paginated audit and Agents at 1440 and 390 -> 210 retained calls, 207 in period, exactly 8 cohorts, multi-class contributions once each, stable records and zero outbound requests');
  await runtime.time(null);
  // The empty outbound ledger above isolates this edit from the later provider fixtures.
+ const mitigationOutbound=[];
+ const collectOutbound=request=>{if(new URL(request.url()).origin!==runtime.origin)mitigationOutbound.push(request.url())};
+ context.on('request',collectOutbound);
+ const mitigations=await mitigationParity(runtime,async (incident,summary)=>{
+  await page.goto(runtime.origin+'/incidents/'+incident.id);
+  const [response]=await Promise.all([
+   page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().method()==='POST'),
+   page.getByRole('button',{name:'Mark mitigating',exact:true}).click(),
+  ]);
+  assert.equal(response.status(),200);
+  assert.deepEqual(response.request().postDataJSON(),{
+   type:'transition',state:'mitigating',summary,incident:incident.id,revision:incident.revision,
+  });
+  await page.locator('.incident-state').filter({hasText:/^Mitigating$/}).waitFor();
+  return response.json();
+ });
+ const savedMitigations=await agentEffectSnapshot(runtime);
+ for(const {mode,human,agent,humanLabel,agentLabel} of mitigations){
+  for(const [door,incident,label] of [['person',human,humanLabel],['agent',agent,agentLabel]]){
+   await capture('mitigation-'+mode+'-'+door,'/incidents/'+incident.id,async width=>{
+    await page.getByRole('region',{name:'Incident',exact:true}).getByRole('heading',{name:incident.title,exact:true}).waitFor();
+    if(width!==1440)return;
+    await page.locator('.incident-state').filter({hasText:/^Mitigating$/}).waitFor();
+    await page.getByRole('button',{name:'Lead: '+humanLabel,exact:true}).waitFor();
+    await page.getByRole('button',{name:'Assignee: '+humanLabel,exact:true}).waitFor();
+    const entry=page.getByRole('region',{name:'Timeline',exact:true}).getByRole('listitem')
+     .filter({hasText:incident.timeline.at(-1).text});
+    await entry.getByText(incident.timeline.at(-1).text,{exact:true}).waitFor();
+    await entry.getByText(label,{exact:true}).waitFor();
+   });
+  }
+ }
+ context.off('request',collectOutbound);
+ assert.deepEqual(mitigationOutbound,[],'The mitigation screens attempt no external requests');
+ assert.deepEqual(await agentEffectSnapshot(runtime),savedMitigations,'Viewing mitigations preserves native and paging custody');
+ assert.deepEqual(await runtime.outboundRequests(),[]);
+ console.log('PROBE BASE-AGENT-002 5 mitigation browser: Mark mitigating button and MCP in both policies; saved lifecycle, roles and distinct timeline attribution; four incident screens captured at 1440 and 390; zero outbound requests');
  const declarations=await declareFromAlertParity(runtime,async ({title,alerts:[id]})=>{
   await page.goto(runtime.origin+'/alerts/'+id);
   const [response]=await Promise.all([

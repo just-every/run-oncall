@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {agentEffectSnapshot} from './agent-door-runtime.mjs';
+import {acknowledgedMitigationTarget, mitigationParity} from './oncall-agent-fixtures.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 
 /** Evidence-free mitigation keeps its original outcome across conflicts and response loss. */
@@ -20,17 +21,10 @@ export async function transitionReplay(runtime){
   services:['agent-service'],permissions:['services:read','incidents:read','incidents:write']});
  assert.equal(client.status,201);await client.json();
  const observed=[];
- async function target(label,service='agent-service'){
-  let incident=await command({type:'declare',service,title:'Synthetic mitigation '+label,
-   summary:'Ordinary coordination without protected evidence',severity:'warning',alerts:[]});
-  incident=await command({type:'transition',incident:incident.id,revision:incident.revision,state:'acknowledged',summary:'Synthetic human acknowledgment'});
-  for(const [role,member] of [['scribe',responder.id],['communications',owner.id]])
-   incident=await command({type:'assign-role',incident:incident.id,revision:incident.revision,role,member,reason:'Synthetic companion responsibility'});
-  assert.equal(incident.state,'acknowledged');assert.equal(incident.recovery,'');
-  assert.deepEqual(incident.alerts,[]);assert.deepEqual(incident.actions,[]);
-  assert.equal(incident.commander,owner.id);assert.equal(incident.assignee,owner.id);
-  return incident;
- }
+ const target=(label,service)=>acknowledgedMitigationTarget(command,owner,responder,'Synthetic mitigation '+label,service);
+ await mitigationParity(runtime,(incident,summary)=>command({
+  type:'transition',state:'mitigating',incident:incident.id,revision:incident.revision,summary,
+ }));
  const argumentsFor=incident=>({change:'transition',state:'mitigating',incident:incident.id,revision:incident.revision,
   summary:'Synthetic literal mitigation <retain this text> & coordination',idempotency_key:randomUUID()});
  async function bookkeeping(before){
