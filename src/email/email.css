@@ -4,3 +4,10 @@
 .email-workspace pre {white-space:pre-wrap;overflow-wrap:anywhere;max-height:28rem;overflow:auto}
 .email-condition {border-bottom:1px solid var(--line,#ccc);padding-bottom:1rem;margin-bottom:1rem}
 .email-workspace .intake-actions {flex-wrap:wrap}
+.email-decision-pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: 8px 20px;
+  margin-top: 4px;
+}
+.email-decision-pair p {white-space: pre-wrap}

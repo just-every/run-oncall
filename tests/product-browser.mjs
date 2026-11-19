@@ -98,7 +98,7 @@ import {mkdir,readFile,writeFile} from 'node:fs/promises'
 import {chromium,expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import {localWorker,ownerDoor,durableSnapshot} from './worker.mjs'
-import {importedEmailBrowser,productBrowserJourney,triageFiltersBrowser,incidentRolesBrowser,providerExport,supportStartBrowser,scheduleCoordinationBrowser,keyboardCoordination,coverageRulesBrowser,sharedIncidentLinks} from './product-browser-journey.mjs'
+import {importedEmailBrowser,productBrowserJourney,triageFiltersBrowser,incidentRolesBrowser,providerExport,supportStartBrowser,scheduleCoordinationBrowser,keyboardCoordination,coverageRulesBrowser,sharedIncidentLinks,unmatchedAlertQueue} from './product-browser-journey.mjs'
 import {redact} from './diagnostics.mjs'
 // OC-059: one oversized real intake produces readable service custody and an owner queue alert.
 async function incompleteIntakeBrowser(page,context) {
@@ -1117,6 +1117,10 @@ try {
  if(productPart==='settings'){
   await changeAndSigningBrowser(page,context);
   assert.deepEqual(errors,[],'settings browser has no application errors');
+ }else if(process.env.ONCALL_PRODUCT_JOURNEY==='unmatched-alerts'){
+  const width=process.env.ONCALL_PRODUCT_WIDTH==='390'?390:1440;
+  await unmatchedAlertQueue(page,context,{snapshot:()=>durableSnapshot(worker),outbound:()=>worker.outboundRequests()},width);
+  assert.deepEqual(errors,[],'the unmatched alerts journey has no application errors');
  }else{
  let selectedTime=null
  const openSession=async(second,secondPage)=>{
@@ -1127,7 +1131,7 @@ try {
   try {
   const login=await second.request.post('/api/login',{headers:{origin:worker.origin},data:credentials})
   assert.equal(login.status(),200,'the second browser context signs in through the real login door')
-  await secondPage.goto(worker.origin)
+  await secondPage?.goto(worker.origin)
   } finally { await worker.time(selectedTime) }
  }
  const focused=process.env.ONCALL_PRODUCT_JOURNEY;
@@ -1155,17 +1159,17 @@ try {
   const session=await (await context.request.get('/api/session')).json();
   await context.request.post('/api/command',{headers:{origin:worker.origin},data:{type:'service',id:'synthetic-oncall-1',name:'Checkout',environment:'test',owner:session.member.id,runbook:[],pager:''}});
   const {productSchedule}=await import('./product-browser-journey.mjs');
-  for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await productSchedule(page,context,width,session,{selectedOnly:true,setTime});}
+  for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await productSchedule(page,context,width,session,{openSession,selectedOnly:true,setTime,worker});}
  }
  if(focused==='readable-times'){
   const session=await (await context.request.get('/api/session')).json();
   await context.request.post('/api/command',{headers:{origin:worker.origin},data:{type:'service',id:'synthetic-oncall-1',name:'Checkout',environment:'test',owner:session.member.id,runbook:[],pager:''}});
-  await keyboardCoordination(page,context,1440,undefined,openSession);
+  await keyboardCoordination(page,context,1440,{openSession,worker});
   await scheduleCoordinationBrowser(page,context,1440,session);
   await coverageRulesBrowser(page,context,1440,session,{setTime});
   await readinessBrowser(page,context);
  }
- if(focused==='imported-email')await importedEmailBrowser(page,context);
+ if(focused==='imported-email')await importedEmailBrowser(page,context,worker);
  if(focused==='events-source')await eventsSourceBrowser(page,context);
  if(focused==='sender-setup'){
   const request=async(path,data)=>{const r=await worker.request(path,data,owner.cookie);assert.ok(r.status>=200&&r.status<300,JSON.stringify(r.value));return r.value;};
@@ -1195,7 +1199,7 @@ try {
  }
  }
  if(!['sender-setup','response-policy','imported-email','events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','workspace-links','alert-run'].includes(focused))await readinessBrowser(page,context)
- if(!focused)await importedEmailBrowser(page,context)
+ if(!focused)await importedEmailBrowser(page,context,worker)
  if(!focused)await responseReportBrowser(browser)
  if(!focused)await eventsSourceBrowser(page,context)
  assert.deepEqual(errors,[],'no browser application errors')
@@ -1213,4 +1217,4 @@ try {
 } finally {
  try {await browser?.close()} finally {await worker.close()}
 }
-if(!productPart&&!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','workspace-links','alert-run'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');
+if(!productPart&&!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline','owner-faults','move-in','workspace-links','alert-run','unmatched-alerts'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');

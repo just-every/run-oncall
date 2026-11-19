@@ -14,10 +14,12 @@ import {agedActionSubmitRetention} from './oncall-agent-action-submit-retention.
 import {actionSubmitResponseLoss} from './oncall-agent-action-submit-response-loss.mjs';
 import {changedReassignmentReasonConflict} from './oncall-agent-incident-replay.mjs';
 import {scribeClearReadback} from './oncall-agent-role-clear-replay.mjs';
+import {readClearedAssignee} from './oncall-agent-assignee-clear-replay.mjs';
 import {accessToken,autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {openIncidentAction} from './keyboard.mjs';
 import {standardServiceRunbookUpdate} from './oncall-agent-service-replay.mjs';
 import {declareIncidentFromAlert,savedServiceRunbookBrowser} from './product-browser-journey.mjs';
+import {staleOverrideRevision} from './oncall-agent-schedule-replay.mjs';
 
 const weekStart=Date.parse('2026-11-02T00:00:00.000Z'),weekNow=Date.parse('2026-11-04T12:00:00.000Z');
 const runtime=await agentRuntime({clock:null}),directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';
@@ -160,7 +162,14 @@ try{
     const entry=page.getByRole('region',{name:'Timeline',exact:true}).getByRole('listitem').filter({hasText:'Incident declared'});
     await entry.getByText(incident.timeline[0].text,{exact:true}).waitFor();
     await entry.getByText(label,{exact:true}).waitFor();
-    await page.getByRole('region',{name:'Runbook',exact:true}).getByText(incident.runbook[0].text,{exact:true}).waitFor();
+    const runbook=page.getByRole('region',{name:'Runbook',exact:true});
+    await runbook.getByText(incident.runbook[0].text,{exact:true}).waitFor();
+    if(page.viewportSize().width===1440){
+     const steps=await runbook.getByRole('checkbox').evaluateAll(nodes=>nodes.map(node=>({
+      text:node.getAttribute('aria-label'),done:node.checked,
+     })));
+     assert.deepEqual(steps,incident.runbook,'The displayed checklist matches the saved incident');
+    }
     if(mode==='autonomous'&&door==='person'){
      await page.getByRole('button',{name:'Incident actions',exact:true}).focus();
      await page.getByRole('tooltip',{name:'Incident actions',exact:true}).waitFor();
@@ -171,6 +180,7 @@ try{
  assert.deepEqual(await agentEffectSnapshot(runtime),savedDeclarations,'Viewing saved incidents preserves native and paging custody');
  assert.deepEqual(await runtime.outboundRequests(),[]);
  console.log('PROBE BASE-AGENT-002 5 browser: Alert details button and MCP in both policies; saved incidents, runbooks and separate attribution read at 1440 and 390; zero outbound requests');
+ console.log('PROBE BASE-AGENT-003 4 declaration browser: returned incidents under both policies -> saved declaration, copied runbook and agent attribution shown at 1440 and 390; zero outbound requests');
  await acknowledgmentBrowser(runtime,browser,capture);
  await savedServiceRunbookBrowser(page,runtime.origin,await standardServiceRunbookUpdate(runtime));
  await page.setViewportSize({width:1440,height:1000});
@@ -186,6 +196,26 @@ try{
   assert.deepEqual(await agentEffectSnapshot(runtime),before,'Viewing the saved reassignment changes no durable records');
   assert.deepEqual(await runtime.outboundRequests(),[]);
  }});
+ const retainedRotas=await staleOverrideRevision(runtime,{optionalExpectedRevision:true});
+ const beforeRotaReads=await agentEffectSnapshot(runtime),rotaOutbound=[];
+ const recordRotaOutbound=request=>{if(new URL(request.url()).origin!==runtime.origin)rotaOutbound.push(request.url())};
+ page.on('request',recordRotaOutbound);
+ for(const {mode,schedule,holder} of retainedRotas){
+  await capture('override-revision-retained-'+mode,'/on-call/'+schedule.id,async()=>{
+   await page.getByRole('heading',{name:schedule.name,exact:true}).waitFor();
+   const cover=page.locator('.oc-cover-list').getByRole('listitem');
+   await cover.getByText(holder,{exact:true}).waitFor();
+   if(page.viewportSize().width===1440){
+    assert.equal(await cover.count(),1);
+    assert.equal(await cover.getByText(/^primary · /).count(),1);
+   }
+   await cover.scrollIntoViewIfNeeded();
+  });
+ }
+ page.off('request',recordRotaOutbound);
+ assert.deepEqual(await agentEffectSnapshot(runtime),beforeRotaReads,'Viewing saved rota cover changes no durable records');
+ assert.deepEqual(rotaOutbound,[]);
+ assert.deepEqual(await runtime.outboundRequests(),[]);
  assert.equal((await runtime.adopt()).status,200);
  const submitEvidenceRequests=[];
  const stopEvidence=route=>{submitEvidenceRequests.push(route.request().url());return route.abort()};
@@ -452,7 +482,7 @@ try{
    const answer=await tool('oncall.incidents.update',{change,...(role==='assignee'?{}:{role}),member:null,
     incident:target.id,revision:target.revision,reason,idempotency_key:randomUUID()},{},bearer);
    assert.equal(answer.result.isError,false);assert.deepEqual(answer.decision.classes.map(row=>row.class),['standard']);
-   const saved=answer.result.structuredContent;
+   const saved=role==='assignee'?await readClearedAssignee(runtime,{mode,first:answer}):answer.result.structuredContent;
    assert.deepEqual(saved,{...target,[role]:null,revision:target.revision+1,timeline:saved.timeline});
    if(role==='scribe')await scribeClearReadback(runtime,answer,bearer,mode);
    const readingBefore=await agentEffectSnapshot(runtime);
@@ -475,7 +505,7 @@ try{
    const entry=timeline.getByRole('listitem').filter({hasText:readable});
    await entry.getByText(readable,{exact:true}).waitFor();
    await entry.getByText('Responder assistant for Alex Chen',{exact:true}).waitFor();
-   if(mode==='held'||role==='scribe'){
+   if(mode==='held'||role==='scribe'||role==='assignee'){
     const proof=role+(mode==='autonomous'?'-autonomous':'')+'-cleared';
     await capture(proof+'-timeline','/incidents/'+saved.id,async()=>{
      await page.getByRole('button',{name:lead,exact:true}).waitFor();
@@ -677,6 +707,11 @@ try{
  const executedApproval=(await (await http('/agents/api/approvals/'+approvalHandle.id)).json()).approval;
  assert.equal(executedApproval.revision,savedApproval.revision);
  assert.equal(executedApproval.summary_sha256,savedApproval.summary_sha256);
+ const changedSummary='A different summary for the completed browser resolution';
+ const resolveConflict=await tool('oncall.incidents.resolve',{...resolveArgs,summary:changedSummary});
+ assert.equal(resolveConflict.result?.isError,true);
+ assert.equal(resolveConflict.result._meta['com.runeditrun/error'].code,'idempotency_conflict');
+ assert.equal(resolveConflict.result.structuredContent,undefined);
  const resolveRetry=await tool('oncall.incidents.resolve',resolveArgs);
  assert.equal(resolveRetry.result?.isError,false,JSON.stringify(resolveRetry.body));
  assert.equal(resolveRetry.result.structuredContent.state,'resolved');
@@ -690,7 +725,13 @@ try{
  await capture('resolution-timeline','/incidents/'+resolutionTarget.id,async()=>{
   await page.getByRole('region',{name:'Timeline',exact:true}).waitFor();
   if(await page.getByRole('button',{name:/^Earlier entries/}).count())await page.getByRole('button',{name:/^Earlier entries/}).click();
-  if((await page.viewportSize()).width===1440){const headings=await page.locator('.event-line strong').allTextContents();for(const raw of ['transition','complete','incident deadline'])assert.ok(!headings.includes(raw),'timeline headings describe activity');}
+  if((await page.viewportSize()).width===1440){
+   const headings=await page.locator('.event-line strong').allTextContents();
+   for(const raw of ['transition','complete','incident deadline'])assert.ok(!headings.includes(raw),'timeline headings describe activity');
+   const timeline=await page.getByRole('region',{name:'Timeline',exact:true}).innerText();
+   assert.ok(timeline.includes(resolveArgs.summary),'The original summary remains visible after the conflict and retry');
+   assert.ok(!timeline.includes(changedSummary),'The refused summary never enters the timeline');
+  }
   await page.getByText('Responder assistant for Alex Chen',{exact:true}).first().waitFor();
  });
  assert.equal((await runtime.adopt()).status,200);

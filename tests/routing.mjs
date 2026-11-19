@@ -1,3 +1,4 @@
+import {isDeepStrictEqual} from 'node:util'
 import {createHmac,createHash,randomBytes} from 'node:crypto'
 import assert from 'node:assert/strict'
 import {localWorker,durableSnapshot} from './worker.mjs'
@@ -432,10 +433,36 @@ try {
  const declared=ok(await req('/api/command',{type:'declare',service:'payments',severity:'critical',title:'Nightly customer impact',summary:'Source recovery is separate',alerts:[web.alert]}));
  await mail(w,local,'OK: nightly-web');assert.equal(ok(await req('/api/state')).incidents.find(i=>i.id===declared.id).state,'declared');
  await mail(w,second,'FAILED: nightly-db');assert.notEqual(ok(await req('/api/email')).receipts.at(-1).generation,db.generation);
- await mail(w,local,'Unmatched failure');assert.equal(ok(await req('/api/email')).receipts.at(-1).outcome,'opened');
- const draft={revision:1,mode:'custom',fallback:'quarantine',rules:recoveryRules()};
- const beforeWorkspace=ok(await req('/api/archive')),beforeReplay=w.sql('SELECT COUNT(*) AS n FROM oc_admin_audit')[0].n;
- const replay=ok(await req('/api/email/addresses/nightly/preview',{...draft,samples:email.samples.filter(s=>s.address==='nightly').map(s=>s.id)}));assert.equal(replay.sideEffects,false);assert.equal(replay.decisions.length,4);assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_admin_audit')[0].n,beforeReplay);assert.deepEqual(ok(await req('/api/archive')),beforeWorkspace);
+ await mail(w,local,'Unmatched failure');
+ email=ok(await req('/api/email'));
+ assert.equal(email.receipts.at(-1).outcome,'opened');
+ const savedMail=email.samples.filter(s=>s.address==='nightly');
+ assert.equal(savedMail.length,6,'all admitted samples on this address enter the comparison');
+ const publishedEmail=email.versions.find(v=>v.address==='nightly');
+ assert.equal(publishedEmail.fallback,'subject');
+ const draft={revision:1,mode:publishedEmail.mode,fallback:'quarantine',rules:publishedEmail.rules};
+ const beforeWorkspace=ok(await req('/api/archive')),pagingBeforeEmailPreview=ok(await req('/api/paging/state'));
+ const beforeReplay=durableSnapshot(w),outboundBeforeEmailPreview=await w.outboundRequests();
+ const replay=ok(await req('/api/email/addresses/nightly/preview',{...draft,samples:savedMail.map(s=>s.id)}));
+ assert.equal(replay.sideEffects,false);
+ assert.deepEqual(replay.decisions.map(row=>row.sample),savedMail.map(s=>s.id));
+ for(const row of replay.decisions) {
+  const archived=beforeWorkspace.emailReceipts.find(r=>r.sample===row.sample);
+  assert.deepEqual(row.historical,archived.decision);
+  assert.equal(row.historical.version,publishedEmail.version);
+  if(row.historical.rule)assert.deepEqual(row.proposed,{...row.historical,version:publishedEmail.version+1});
+ }
+ const unmatchedMail=savedMail.find(sample=>sample.subject==='Unmatched failure');
+ const fallbackDecisions=replay.decisions.find(row=>row.sample===unmatchedMail.id);
+ assert.deepEqual([fallbackDecisions.historical.mode,fallbackDecisions.historical.rule,fallbackDecisions.historical.key,fallbackDecisions.historical.action],
+  ['custom',null,'Unmatched failure','trigger']);
+ assert.deepEqual([fallbackDecisions.proposed.mode,fallbackDecisions.proposed.version,fallbackDecisions.proposed.rule,fallbackDecisions.proposed.key,fallbackDecisions.proposed.action],
+  ['custom',publishedEmail.version+1,null,null,'quarantine']);
+ assert.deepEqual(ok(await req('/api/paging/state')),pagingBeforeEmailPreview);
+ assert.ok(isDeepStrictEqual(durableSnapshot(w),beforeReplay),'draft replay changes no durable records or audit');
+ assert.deepEqual(ok(await req('/api/archive')),beforeWorkspace);
+ assert.deepEqual(await w.outboundRequests(),outboundBeforeEmailPreview);
+ console.log('PASS saved email draft replay: current samples, archived decisions, proposed quarantine, unchanged durable and paging state');
  ok(await req('/api/email/addresses/nightly/publish',draft));await mail(w,local,'Unmatched quarantine');assert.equal(ok(await req('/api/email')).receipts.at(-1).diagnostic,'no_rule_matched');
  const pathological={id:'linear',action:'trigger',match:'all',conditions:[{field:'text',op:'matches',value:'^(a+)+$'}],key:{field:'subject',kind:'markers',start:'[',end:']'}};
  ok(await req('/api/email/addresses/nightly/publish',{revision:2,mode:'custom',fallback:'subject',rules:[pathological]}));await mail(w,local,'Pathological input',{body:'a'.repeat(128*1024)+'!'});assert.equal(ok(await req('/api/email')).receipts.at(-1).outcome,'opened');

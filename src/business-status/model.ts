@@ -1,3 +1,4 @@
+import {canManageBusinessStatus} from './authority.ts';
 import {emailListAddress} from './email-lists.ts';
 import { fail, text, type Member, type State } from '../family/response-operations/domain.ts';
 import type { BusinessService, InternalStatus } from './types.ts';
@@ -9,7 +10,7 @@ export function visibleBusiness(service: BusinessService, actor: Member) {
 export function statusView(state:State,actor:Member){
  const current=state.members.find(member=>member.id===actor.id&&member.active);if(!current)fail('Access revoked',401);actor=current;
  return (state.businessServices??[]).filter(service=>visibleBusiness(service,actor)).map(service=>{
-  const manages=actor.role==='admin'||actor.id===service.communicationsOwner&&responder(actor);
+  const manages=canManageBusinessStatus(actor, service);
   return {id:service.id,name:service.name,owningTeam:service.owningTeam,active:service.active,derived:service.derived,revision:service.revision,
    override:service.override&&{value:service.override.value,reason:service.override.reason,at:service.override.at,...(actor.role==='stakeholder'?{}:{by:service.override.by})},
    subscription:service.subscriptions.find(row=>row.member===actor.id)??null,
@@ -82,7 +83,7 @@ export function businessCommand(state: State, actor: Member, input: any) {
   const service = rows.find(row => row.id === input.id);
   if (!service || !visibleBusiness(service, current)) fail('Business service not found', 404);
   if (input.revision !== service.revision) fail('Business service changed; reload', 409);
-  const manages = current.role === 'admin' || current.id === service.communicationsOwner && responder(current);
+  const manages = canManageBusinessStatus(current, service);
   if (input.action === 'audience') {
     if (current.role !== 'admin') fail('Admin required', 403);
     validateAudience(state, input.audience);

@@ -366,7 +366,8 @@ export async function analyticsFixture(runtime) {
 
 /** Compare ordinary declaration doors against equivalent, still-unlinked alerts. */
 export async function declareFromAlertParity(runtime, declareAsPerson) {
-  const { db, http, origin, request, tool, adopt, context } = runtime;
+  const { db, http, origin, request, tool, adopt, context, completeResource } = runtime;
+  const { agentEffectSnapshot } = await import('./agent-door-runtime.mjs');
   const { autonomousPolicy, heldPolicy } = await import('../src/modules/agent-door/conformance/crypto.mjs');
   const rows = async (sql, ...args) => (await db.prepare(sql).bind(...args).all()).results;
   const json = async (path, input) => {
@@ -454,10 +455,11 @@ export async function declareFromAlertParity(runtime, declareAsPerson) {
     assert.deepEqual(await reviews(), reviewsBefore, 'Human coordination opens no agent review');
     assert.deepEqual(await paging(), pagingBefore, 'Human declaration preserves paging custody');
 
-    const name = 'oncall.incidents.declare';
+    const name = 'oncall.incidents.declare', idempotencyKey = randomUUID();
     const reply = await tool(name, {
-      ...input, alerts: [agentAlert], revision: humanState.revision, idempotency_key: randomUUID(),
+      ...input, alerts: [agentAlert], revision: humanState.revision, idempotency_key: idempotencyKey,
     }, { scope: 'incidents:write' });
+    assert.equal(reply.result?.resultType, 'complete');
     assert.equal(reply.status, 200);
     assert.equal(reply.result?.isError, false, JSON.stringify(reply.body));
     assert.equal(reply.decision.disposition, disposition);
@@ -522,8 +524,89 @@ export async function declareFromAlertParity(runtime, declareAsPerson) {
     }
     assert.deepEqual(await paging(), pagingBefore, 'Agent declaration preserves paging custody');
     assert.deepEqual(await runtime.outboundRequests(), []);
-    pairs.push({ mode, human, agent, humanLabel: actor.name, agentLabel: attribution.label });
     console.log('PROBE BASE-AGENT-002 5 declaration ' + mode + ': equivalent unlinked alerts -> matching saved declarations and one command.declare per door, separate attribution, workspace +1 per action, ' + added.length + ' open reviews, paging OFF and zero outbound requests');
+
+    const links = reply.result.content.filter(row => row.type === 'resource_link');
+    assert.equal(links.length, 1, 'The first completed declaration returns its incident link');
+    const [link] = links;
+    assert.equal(link.uri, 'oncall://incidents/' + agent.id);
+
+    const beforeRead = await agentEffectSnapshot(runtime);
+    const { agent_door_reviews: priorReviews, agent_door_usage: priorUsage, ...priorRecords } = beforeRead.records;
+    const savedWrite = priorRecords.agent_door_calls.find(row => row.agent === context.agentId && row.key === idempotencyKey);
+    assert.equal(savedWrite.decision_id, reply.decision.id);
+    const writeOutcome = JSON.parse(savedWrite.outcome);
+    assert.equal(writeOutcome.outcome, 'done');
+    assert.deepEqual(writeOutcome.result, agent);
+    assert.deepEqual(writeOutcome.review, review);
+    const readMethod = ['resources', 'read'].join('/');
+    const priorAudit = await rows('SELECT * FROM agent_door_audit ORDER BY sequence');
+    const priorRelay = await rows('SELECT * FROM agent_door_relay ORDER BY sequence');
+
+    const { initial, answer, content, value } = await completeResource(link.uri, {
+      overrides: { scope: 'incidents:read' },
+      approve() { assert.fail('Neither signed policy requires approval of this standard incident read'); },
+    });
+    assert.equal(answer, initial, 'A standard read completes on its first response under both policies');
+    assert.equal(content.uri, link.uri);
+    assert.deepEqual(value, agent, 'The returned URI reads back the entire completed declaration');
+    assert.deepEqual(value, (await state()).incidents.find(row => row.id === agent.id),
+      'The incident matches protected native state, including its alert link, copied runbook, revision and attributed declaration');
+    assert.notEqual(answer.decision.id, reply.decision.id);
+    assert.equal(answer.decision.revision, context.revision);
+    assert.equal(answer.decision.disposition, disposition);
+    assert.deepEqual(answer.decision.classes.map(row => row.class), ['standard']);
+
+    const afterRead = await agentEffectSnapshot(runtime);
+    const { agent_door_reviews: nextReviews, agent_door_usage: nextUsage, ...nextRecords } = afterRead.records;
+    assert.deepEqual(afterRead.application, beforeRead.application, 'The read preserves native state and revisions');
+    assert.deepEqual(nextRecords, priorRecords,
+      'The read preserves stored records, mutation audit, the completed write result, approvals and paging');
+    const readId = answer.decision.id;
+    const readUsage = nextUsage.filter(row => row.decision_id === readId);
+    assert.deepEqual(nextUsage.filter(row => row.decision_id !== readId), priorUsage);
+    assert.equal(readUsage.length, 1);
+    assert.equal(readUsage[0].agent, context.agentId);
+
+    const readReview = answer.result._meta['com.runeditrun/review'];
+    if (mode === 'held') {
+      assert.ok(readReview?.id);
+      assert.notEqual(readReview.id, review.id);
+      const newReview = nextReviews.find(row => row.id === readReview.id);
+      assert.equal(newReview?.state, 'open');
+      const saved = JSON.parse(newReview.saved);
+      assert.equal(saved.decision_id, readId);
+      assert.equal(saved.tool, readMethod);
+      assert.equal(saved.summary.uri, link.uri);
+      assert.deepEqual(nextReviews.filter(row => row.id !== readReview.id), priorReviews,
+        'The distinct read review preserves the original open write review');
+    } else {
+      assert.equal(readReview, undefined);
+      assert.deepEqual(nextReviews, priorReviews);
+    }
+
+    const readAudit = await rows('SELECT * FROM agent_door_audit ORDER BY sequence');
+    assert.deepEqual(readAudit.slice(0, -1), priorAudit, 'The original write audit stays immutable');
+    assert.equal(readAudit.length, priorAudit.length + 1);
+    const readDecision = JSON.parse(readAudit.at(-1).row);
+    assert.equal(readDecision.id, readId);
+    assert.equal(readDecision.outcome, 'done');
+    assert.equal(readDecision.tool, readMethod);
+    assert.equal(readDecision.resource, link.uri);
+    assert.equal(readDecision.agent.id, context.agentId);
+    assert.equal(readDecision.sponsor.id, actor.id);
+    assert.deepEqual(readDecision.scopes, ['incidents:read']);
+
+    const relay = await rows('SELECT * FROM agent_door_relay ORDER BY sequence');
+    assert.deepEqual(relay.slice(0, priorRelay.length), priorRelay, 'The read preserves existing decision relay custody');
+    assert.equal(relay.length, priorRelay.length + 1);
+    assert.equal(relay.at(-1).decision_id, readId);
+    assert.equal(relay.at(-1).business, context.business);
+    assert.deepEqual(await paging(), pagingBefore);
+    assert.deepEqual(await runtime.outboundRequests(), []);
+
+    pairs.push({ mode, human, agent: value, humanLabel: actor.name, agentLabel: attribution.label });
+    console.log('PROBE BASE-AGENT-003 4 declaration ' + mode + ': first completed MCP write link -> full incident equals the write and protected native state; ' + (readReview ? 'separate open standard read review' : 'direct autonomous read') + '; zero approvals, unchanged write outcome and native custody, paging OFF, zero outbound requests');
   }
   assert.equal((await adopt()).status, 200);
   return pairs;

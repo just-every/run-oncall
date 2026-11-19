@@ -175,6 +175,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 1. Run declaration, acknowledgment, notes, schedules, overrides and preview against BASE-ACCESSIBILITY-001.
 2. A real stale-write failure is announced with no saved claim.
 
+**Native proof.** The signed-in incident journey in `tests/product-browser-journey.mjs` exercises keyboard note refusal at 390 CSS pixels, with browser captures at 390 and 1440. An independently authenticated session commits one note. The stale keyboard submission returns HTTP 409, announces the conflict in an alert, restores visible focus to Add note and leaves the draft editable without a saved confirmation. Protected readback contains exactly the winning note and revision advance. Paging records and outbound work stay unchanged, and the phone failure state fits the viewport with zero serious or critical axe findings.
+
 #### OC-010 — Health and honest commands
 
 **Requirement.** Health identifies the deployed version, operating commands describe actual local and hosted effects, and acceptance records distinguish local evidence from remote, provider and pilot outcomes. Capacity promises require measured evidence. Pager, timer, mobile and standby health are OC-026 to OC-029's, and paging measurements are OC-064's. Each new execution class proves its own durable failure diagnostics under door rule D-1 before it ships.
@@ -294,6 +296,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 1. Create two teams and a dependent service through the UI/API, read the alert runbook, import a Backstage ownership change, deny a foreign-team user through direct/export/chat doors, and resolve an ownership conflict without losing incident history.
 2. A foreign team's incidents are neither listed nor selectable.
 3. Team-scoped audit export proves door rule D-1: atomic rollback, subject-erasure-safe export and interruption at the execution boundary.
+
+**Local proof (Run Edit Run fleet, 18 November 2026).** Through the signed-in Alert details door, a one-off observation in the `alertSeverity` journey in `tests/product-browser-journey.mjs` compared an active, unlinked alert’s three displayed runbook steps in exact order with the associated public service’s protected state. “Declare incident from alert” was available at 1440 and 390 and was left unused. The alert remained unlinked on reload. Protected native and paging state, durable revisions and permanent audit were unchanged, and the Worker and browser attempted zero outbound requests. The reviewed Backstage import retains dependency provenance and conflict evidence in `tests/changes.mjs`. OC-005 retains the separate `coordinationJourney` proof of the immutable runbook copy after declaration in `tests/runtime.mjs`.
 
 #### OC-024 — Follow-the-sun, PTO and holiday coverage
 
@@ -590,6 +594,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 1. Trigger a service template, request backup responders and assign/transfer commander/scribe/communications roles through web/chat.
 2. Merge related incidents, split an unrelated alert, miss an update deadline with the browser closed and inspect reminders, aliases and attributed timelines; reject unauthorized role and state mutations.
 
+**Observed (18 November 2026, Run Edit Run fleet).** In the emitted Worker storm journey in `tests/triage.mjs`, a signed-in viewer used the current revision of an acknowledged incident to request a transfer of its Communications role to a different active responder. The native command returned 403 and recorded exactly one `command.assign-role` refusal attributed to the viewer and the incident. The role, timeline, workspace and incident revisions and paging records stayed unchanged, and the Worker made zero outbound requests. The same command succeeded for the signed-in responder.
+
 #### OC-051 — Reviewed Lamp and Statuspage communication
 
 *Tier:* Core · *Rules:* D-1, D-3, D-4 · *Register:* R-12
@@ -718,6 +724,10 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 **Observed (18 November 2026, Run Edit Run fleet).** A signed-in responder started with two alert-only records routed to them and cleared one using bulk reassignment. Protected triage filters returned the untouched alert for Mine and the explicit responder filter. Unassigned returned the cleared alert with a null assignee, a triggered status and the attributed operation history. The existing Reassign control also cleared an owned alert in the browser. Reloaded Assigned to me and Unassigned views matched the protected results, with captures at 1440 and 390 pixels. The original owner and admission evidence were retained. Paging custody was unchanged and the outbound ledger was empty.
 
+**Observed (19 November 2026, Run Edit Run fleet).** For service-bound alert-only results, the updated-time range and Recently updated order use the latest retained event acceptance or human coordination for each generation. Protected reads placed a later human acknowledgment first, an older generation with a later source recovery second, and its untouched newer generation third. An exact replay retained the original acceptance. The lower bound included its boundary and the upper bound excluded it. Creation order and cursor traversal were retained. The signed-in controls and reopened shared URL returned the same ordered results as protected HTTP, with captures at 1440 and 390 pixels. Reads preserved durable records, revisions, permanent audit and paging custody, with zero outbound requests.
+
+**Observed (19 November 2026, Run Edit Run fleet).** In the 50-incident web storm, a signed-in member saved the search term with the service, low urgency, snoozed status and Assigned to me filters. The protected saved-view list returned that exact personal query, and a different signed-in responder received an empty list. Starting from a clean Incidents URL, selecting the view restored the controls and URL and returned the same five incident IDs and count as protected triage HTTP at 1440 and 390 pixels. After the preference write, listing and recall preserved durable rows, revisions, permanent audit and paging state, with zero outbound requests.
+
 #### OC-079 — Bulk triage actions with per-item results
 
 *Tier:* Core · *From:* OC-060
@@ -748,6 +758,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 6. A manual status override is attributed.
 
 **Observed (18 November 2026, Run Edit Run fleet).** The installation owner opened populated incident, alert and service runbook pages through their direct web addresses. At 1440 and 390 pixels, a signed-in Checkout subscriber in the explicit member audience opened those same addresses and was redirected to `/status`. Checkout still showed degraded status and the subscriber's recorded impact obligation. The initial HTML and workspace bootstrap, browser API responses and hydrated views disclosed none of the private incident, alert, timeline or runbook data from the fixture. The stakeholder reads left native records, paging and subscription custody unchanged. The browser and Worker attempted zero outbound requests.
+
+**Observed (19 November 2026, Run Edit Run fleet).** A signed-in responder assigned as Checkout's communications owner set a major outage through the native status control. Reload showed the exact reason and member attribution, one new service revision and the unchanged derived degraded status. An administrator demoted the same member to active viewer. On reload the member could still read Checkout and the saved override, and the management controls were absent. The protected status endpoint refused an otherwise-valid override at the current revision with HTTP 403. Saved status, native records and paging custody were unchanged, with one refusal audit. Both roles were observed at 1440 and 390 pixels with no outbound browser or Worker requests.
 
 #### OC-062 — Configuration as code with Terraform and OpenTofu
 
@@ -908,6 +920,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 7. Test a draft rule against saved mail and observe the would-be actions with zero writes.
 8. Import a PagerDuty service with custom email rules and an Opsgenie email integration with filters, and read the mapping report, which names each rule it could not convert.
 
+**Native proof for acceptance 7.** In `tests/product-browser-journey.mjs`, the saved mail draft journey admits a matching failure, its recovery, and unmatched mail with the published subject fallback. The existing administrator preview shows each sample's historical and tested draft action, mode, matched rule, rules version and key. After changing only the draft fallback, the trigger and resolve still match their archived decisions apart from the proposed version. The unmatched sample shows a historical trigger and a proposed quarantine. The preview preserves published rules, durable records, audit, alerts, receipts, quarantine and paging state, with zero outbound requests.
+
 #### OC-071 — Notification bundling per responder and channel
 
 *Tier:* Core · *Rules:* D-4 · *Register:* R-6
@@ -1029,9 +1043,13 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 **Requirement.** Each primary record type has a URI template, and tools return `resource_link`s to the records they touch. A read returns exactly the fields the caller's role sees in the UI. File bytes count against any byte budget on the grant. A record the caller cannot open reads as not found, identical to a missing id. Text from customers, imports or files carries an untrusted marker in `_meta`.
 
+**Observed declaration readback (18 November 2026, Run Edit Run fleet).** In `tests/oncall-agent-fixtures.mjs`, the admitted agent followed the actual `resource_link` from the first completed `oncall.incidents.declare` for an existing same-service alert. Under autonomous and held policies the full incident matched the write and the sponsor’s protected GET `/api/state`, including the linked alert, copied runbook, revision and agent-attributed declaration. The autonomous read completed directly. The held standard read opened its own review and preserved the original write review. Neither read required approval. Native records and revisions, mutation audit, the original write outcome and paging were unchanged, with zero outbound requests. `tests/agent-door-browser.mjs` showed both saved declarations, copied runbooks and attribution at 1440 and 390 pixels. The native write and resource projection are in `src/agent-door/coordination-tools.ts:140–147` and `src/agent-door/resources.ts:154–157`. The wire link is in `src/modules/agent-door/wire.ts:39–43`.
+
 **Observed readback.** The admitted agent followed the `resource_link` returned by `oncall.incidents.update` after reassigning an evidence-free acknowledged incident to a distinct active responder. Under both company policies the full incident matched the write result and the sponsor's protected GET `/api/state` incident, including the new assignee, attributed reassignment and unchanged companion roles. The autonomous read needed no review. The held read opened a separate review and preserved the original open write review. Native records and revisions, state-changing audit and paging were unchanged across the read, with zero outbound requests. The saved assignee and attributed timeline were observed on the incident page at 1440 and 390 pixels in `tests/agent-door-browser.mjs`, using the reassignment fixture in `tests/oncall-agent-incident-replay.mjs`.
 
 **Observed readback (18 November 2026, Run Edit Run fleet).** In `tests/oncall-agent-action-evidence-replay.mjs`, the same admitted MCP agent followed the link returned by the first completed `oncall.actions.submit` response for an owned, due-dated P2 follow-up under the evidence policy. The full parent incident matched the completed response and the sponsor's protected GET `/api/state`, including the new revision, evidence, attributed completion and unchanged companion follow-up. The autonomous read needed no approval. The held read withheld the resource until the sponsor separately approved the saved read revision and summary. The read preserved the original write outcome, receipt and approval, native records and revisions, mutation audit and paging. The Worker attempted zero outbound requests. In `tests/agent-door-browser.mjs`, the saved completed follow-up was visible at 1440 and 390 pixels under both policies and the browser never fetched the evidence URL.
+
+**Observed service runbook readback (18 November 2026, Run Edit Run fleet).** In `tests/oncall-agent-service-replay.mjs`, the same admitted MCP agent followed the `resource_link` from the first completed standard-only `oncall.services.update` in each company policy. The full service, including its in-grant dependency and edited runbook, matched the protected native state and the write projection excluding its separate ETag. The autonomous read completed directly. The held read completed with its own open standard review and preserved the original open write review. The read preserved the original write result and receipt, the incident's copied runbook, native records and revisions, mutation audit and paging state. The Worker attempted zero outbound requests. The write link comes from `src/agent-door/service-tools.ts` and the scoped read comes from `src/agent-door/resources.ts`.
 
 **Acceptance.**
 1. `resources / templates / list` names every record type in the Agent surface.
@@ -1165,6 +1183,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 **Requirement.** Every mutating tool requires an idempotency key and takes an optional expected revision. The same key with the same arguments returns the first outcome for at least 24 hours; the same key with different arguments returns `idempotency_conflict`; a stale revision returns `revision_conflict` with the current revision. Long work returns a job handle and a status tool, with no dependence on the Tasks extension.
 
 **Oncall schedule overrides.** When the required native revision is stale, the authorized override refusal returns the current rota revision in MCP error metadata and text even when the request omits the optional expected revision. An out-of-scope rota and an absent rota return the same not-found error with no revision. The schedule replay journey in `tests/oncall-agent-schedule-replay.mjs` exercises the refusal and a fresh-key override under both company policies.
+
+**Oncall incident resolution.** After `oncall.incidents.resolve` completes under autonomous policy or after sponsor approval under held policy, a different summary with the original key, incident and supplied revision returns `idempotency_conflict` in the MCP error metadata and text without exposing the completed result. Retrying the original arguments with a new JSON-RPC id returns the stored result and any original approval receipt. The refusal and replay preserve the single saved resolution, native records, revisions, timeline, mutation audit, retained calls and outcomes, approvals, reviews and paging, with no outbound requests.
 
 **Acceptance.**
 1. Two calls with one key give one effect and equal results.
