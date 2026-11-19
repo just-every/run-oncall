@@ -1,3 +1,20 @@
+# 0.5.20 · 2026-11-19
+
+- Service calendar subscriptions now include a shared rota for every service it covers.
+- Clearing an alert's assignee keeps it Unassigned in triage. Recently updated sorting and filters now include retained events, such as a recovery, as well as responder actions.
+- In Alerts, choose Unmatched service alerts to find active, unassigned, unsuppressed alerts that entered without a matching route. Event context shows why each alert was unmatched.
+- If a newer change prevents a cover apply or note from saving, keyboard focus returns to the cover sheet or the incident's Add note button. You can revise the retained draft. Agent clients that try to resolve an incident from a stale revision receive the current revision before an approval is created.
+- Loading more incidents no longer mixes in results from a previous set of triage filters.
+- Test draft against saved mail compares historical and draft decisions side by side, including the rule versions, without changing any saved mail or alerts.
+- Move in reviews separately saved PagerDuty details with their exported parents, including contacts and overrides. Copy or download the full field-by-field review to see what maps, what is kept for reference and what is refused.
+- Internal business status shows management controls only to active administrators and active responders assigned as communications owner.
+
+Back up before upgrading and keep all 68 applied migration files unchanged. This update adds no migrations and keeps rer pinned to 0.2.118.
+
+## Known limits
+
+Paging stays OFF. Keep your existing pager active. Release 2 paging and independent standby are still unavailable. Live AWS delivery and live PagerDuty account migration or cutover remain unverified.
+
 # 0.5.19 · 2026-11-18
 
 The install description's declared hash matched an older file: approving Oncall on the platform said it could not be installed yet; fixed.

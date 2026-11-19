@@ -96,7 +96,8 @@
       "name": "runtime",
       "lanes": [
         "runtime",
-        "member-browser"
+        "member-browser",
+        "triage"
       ],
       "browser": true,
       "hosted": false,
@@ -152,17 +153,16 @@
     {
       "name": "changes",
       "lanes": [
-        "changes",
-        "imports"
+        "changes"
       ],
       "browser": false,
       "hosted": false,
       "timeout": 15
     },
     {
-      "name": "triage",
+      "name": "imports",
       "lanes": [
-        "triage"
+        "imports"
       ],
       "browser": false,
       "hosted": false,

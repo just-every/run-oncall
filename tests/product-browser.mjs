@@ -375,6 +375,7 @@ async function staleMergeConfirmation(context, req, proof, {origin, target, firs
  try {
   const reviewer = await openResponder('Checkout merge responder', reviewerSession);
   const writer = await openResponder('Checkout note responder', writerSession);
+  assert.notEqual(reviewer.id, writer.id, 'the note and merge are attributed to separate responders');
   const reviewerPage = await reviewerSession.newPage();
   const writerPage = await writerSession.newPage();
   const reviewPath = '/incidents/' + encodeURIComponent(target.id);
@@ -442,6 +443,7 @@ async function staleMergeConfirmation(context, req, proof, {origin, target, firs
   assert.match((await refused.json()).error, /incident changed/i);
   const conflict = workflow.getByRole('alert').filter({hasText:/incident changed.*reload/i});
   await expect(conflict).toBeVisible();
+  const conflictText = await conflict.innerText();
   await expect(confirm).toBeEnabled();
   await expect(workflow.getByRole('status').filter({hasText:/^Merged /})).toHaveCount(0);
   assert.ok(await reviewerPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
@@ -477,10 +479,12 @@ async function staleMergeConfirmation(context, req, proof, {origin, target, firs
   const auditLabel = (kind, id) => identities.find(item => item.kind === kind && item.entity_id === id).label;
   assert.deepEqual([row.kind, row.outcome, row.actor, row.subject],
    ['command.merge-incidents', 'refused', auditLabel('member', reviewer.id), auditLabel('entity', target.id)]);
-  assert.equal(row.before_revision, row.after_revision);
+  const auditRevision = before.oc_audit_clock[0].revision;
+  const handoffRevision = before.handoff_state[0]?.revision ?? 0;
+  assert.deepEqual([row.before_revision, row.after_revision], [auditRevision, auditRevision]);
   assert.deepEqual([row.workspace_before, row.workspace_after], [stateBefore.revision, stateBefore.revision]);
-  assert.equal(row.paging_before, row.paging_after);
-  assert.equal(row.handoff_before, row.handoff_after);
+  assert.deepEqual([row.paging_before, row.paging_after], [pagingBefore.revision, pagingBefore.revision]);
+  assert.deepEqual([row.handoff_before, row.handoff_after], [handoffRevision, handoffRevision]);
 
   const firstPath = '/incidents/' + encodeURIComponent(first.id);
   await reviewerPage.goto(firstPath);
@@ -488,11 +492,14 @@ async function staleMergeConfirmation(context, req, proof, {origin, target, firs
   await expect(reviewerPage).toHaveURL(origin + firstPath);
 
   await writeFile(`${directory}/oc050-stale-merge.json`, JSON.stringify({
-   journey:'incidentWorkflowBrowser', response:refused.status(), commandCount:merges.length,
+   journey:'incidentWorkflowBrowser', assertionWidth:1440, response:refused.status(), conflict:conflictText,
+   commandCount:merges.length,
+   reviewedRevisions:{target:targetAtReview.revision, firstSource:firstAtReview.revision, secondSource:secondAtReview.revision},
    note:{actor:writer.name, beforeRevision:secondAtReview.revision, afterRevision:secondBefore.revision},
    refusal:{kind:row.kind, outcome:row.outcome, actor:reviewer.name, subject:target.title},
-   workspaceRevision:stateBefore.revision, unchangedProtectedState:true, unchangedDurableRecords:true, firstSourceStillOpens:true,
-   unchangedPaging:pagingBefore.paging, outboundRequests:outboundBefore.length, screenshots,
+   unchangedRevisions:{audit:auditRevision, workspace:stateBefore.revision, paging:pagingBefore.revision, handoff:handoffRevision},
+   unchangedProtectedState:true, unchangedDurableRecords:true, firstSourceStillOpens:true,
+   pagingMode:pagingBefore.paging, outboundRequests:outboundBefore.length, screenshots,
   }, null, 2) + '\n');
   console.log('PROBE OC-050 acceptance 2: reviewed public-service merge with two ordered sources; separate responder note advanced the second source; one protected 409 and visible conflict, one attributed refusal, no alias, timeline, revision, paging or outbound change from confirmation.');
  } finally {
