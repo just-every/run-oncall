@@ -766,6 +766,7 @@ export async function acknowledgeParity(runtime, responder, acknowledgeAsPerson)
 export async function reassignParity(runtime, person, reassignAsPerson) {
   const { db, http, tool, adopt } = runtime;
   const { autonomousPolicy, heldPolicy } = await import('../src/modules/agent-door/conformance/crypto.mjs');
+  const { agentEffectSnapshot } = await import('./agent-door-runtime.mjs');
   const rows = async (sql, ...args) => (await db.prepare(sql).bind(...args).all()).results;
   async function json(path, input, status = 200) {
     const response = await http(path, input);
@@ -841,10 +842,10 @@ export async function reassignParity(runtime, person, reassignAsPerson) {
     assert.equal((await adopt(policy)).status, 200);
     const humanBefore = await target(mode), agentBefore = await target(mode);
     assert.notEqual(humanBefore.id, agentBefore.id);
-    const before = await state(), auditBefore = await audit(), pagingBefore = await paging(), reviewsBefore = await reviews();
+    const before = await agentEffectSnapshot(runtime), auditBefore = await audit(), pagingBefore = await paging(), reviewsBefore = await reviews();
     assert.equal(pagingBefore.paging, 'OFF');
     const human = await reassignAsPerson(humanBefore, sponsor, responder);
-    const humanState = await state(), humanAudit = await audit();
+    const afterHuman = await agentEffectSnapshot(runtime), humanAudit = await audit();
     assert.deepEqual(await reviews(), reviewsBefore, 'The signed-in assignment opens no review');
     assert.deepEqual(await paging(), pagingBefore);
 
@@ -855,15 +856,24 @@ export async function reassignParity(runtime, person, reassignAsPerson) {
     assert.equal(reply.decision.disposition, disposition);
     assert.deepEqual(reply.decision.classes.map(row => row.class), ['standard']);
     const agent = reply.result.structuredContent;
-    const after = await state();
-    for (const [saved, prior, stateBefore, stateAfter] of [
-      [human, humanBefore, before, humanState],
-      [agent, agentBefore, humanState, after],
+    const afterAgent = await agentEffectSnapshot(runtime);
+    for (const [saved, prior, previous, committed] of [
+      [human, humanBefore, before, afterHuman],
+      [agent, agentBefore, afterHuman, afterAgent],
     ]) {
+      const { application: stateBefore, records: recordsBefore } = previous;
+      const { application: stateAfter, records: recordsAfter } = committed;
       assert.deepEqual(stateAfter, {
         ...stateBefore, revision: stateBefore.revision + 1,
         incidents: stateBefore.incidents.map(row => row.id === prior.id ? saved : row),
       }, 'Protected state advances only the target incident and workspace revision');
+      assert.equal(recordsAfter.workspace_control[0].revision, recordsBefore.workspace_control[0].revision + 1);
+      const stored = recordsAfter.oc_incidents.find(row => row.id === saved.id);
+      assert.ok(stored, 'Reassignment persists the incident');
+      assert.deepEqual(JSON.parse(stored.data), saved, 'The persisted incident matches the response');
+      for (const table of Object.keys(recordsBefore).filter(table => table.startsWith('paging_'))) {
+        assert.deepEqual(recordsAfter[table], recordsBefore[table], 'Reassignment leaves ' + table + ' unchanged');
+      }
       const entry = saved.timeline.at(-1);
       assert.deepEqual(saved, {
         ...prior, assignee: responder.id, revision: prior.revision + 1, timeline: [...prior.timeline, entry],
@@ -879,8 +889,8 @@ export async function reassignParity(runtime, person, reassignAsPerson) {
     assert.deepEqual(agentEntry.metadata.agent.for, { id: sponsor.id, name: sponsor.name });
     assert.equal(agentEntry.metadata.agent.label, agentLabel);
 
-    const humanEvent = reassignmentAudit(auditBefore, humanAudit, before.revision);
-    const agentEvent = reassignmentAudit(humanAudit, await audit(), humanState.revision);
+    const humanEvent = reassignmentAudit(auditBefore, humanAudit, before.application.revision);
+    const agentEvent = reassignmentAudit(humanAudit, await audit(), afterHuman.application.revision);
     assert.equal(humanEvent.actor, await identity('member', person.id));
     assert.equal(humanEvent.subject, await identity('entity', human.id));
     assert.equal(agentEvent.actor, await identity('agent', agentId));
@@ -913,7 +923,7 @@ export async function reassignParity(runtime, person, reassignAsPerson) {
     assert.deepEqual(await paging(), pagingBefore);
     assert.deepEqual(await runtime.outboundRequests(), []);
     pairs.push({ mode, human, agent, sponsor, responder, agentLabel });
-    console.log('PROBE BASE-AGENT-002 5 reassignment ' + mode + ': matching saved assignee, companion roles and timeline; incident and workspace +1 and one command.reassign per door; distinct attribution; ' + added.length + ' open reviews; paging OFF and zero outbound requests');
+    console.log('PROBE BASE-AGENT-002 5 reassignment ' + mode + ': matching saved assignee, companion roles and timeline; stored incident and workspace +1 and one command.reassign per door; distinct attribution; ' + added.length + ' open reviews; paging OFF and zero outbound requests');
   }
   assert.equal((await adopt()).status, 200);
   return pairs;
