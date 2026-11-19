@@ -356,6 +356,145 @@ async function responsePolicyBrowser(page,context) {
  }
 }
 
+async function staleMergeConfirmation(context, req, proof, {origin, target, first, second, reason}) {
+ const directory = process.env.ONCALL_BROWSER_EVIDENCE ?? './evidence/browser';
+ const openResponder = async (name, session) => {
+  const password = randomBytes(24).toString('hex');
+  const member = await req('/api/members', {name, password, role:'responder'}, 201);
+  const login = await session.request.post('/api/login', {headers:{origin}, data:{name, password}});
+  assert.equal(login.status(), 200);
+  const response = await session.request.get('/api/session');
+  assert.equal(response.status(), 200);
+  const current = (await response.json()).member;
+  assert.deepEqual([current.id, current.role], [member.id, 'responder']);
+  return member;
+ };
+ const browser = context.browser();
+ const reviewerSession = await browser.newContext({baseURL:origin, viewport:{width:1440,height:1000}, extraHTTPHeaders:{connection:'close'}});
+ const writerSession = await browser.newContext({baseURL:origin, viewport:{width:1440,height:1000}, extraHTTPHeaders:{connection:'close'}});
+ try {
+  const reviewer = await openResponder('Checkout merge responder', reviewerSession);
+  const writer = await openResponder('Checkout note responder', writerSession);
+  const reviewerPage = await reviewerSession.newPage();
+  const writerPage = await writerSession.newPage();
+  const reviewPath = '/incidents/' + encodeURIComponent(target.id);
+  await reviewerPage.goto(reviewPath);
+  await reviewerPage.locator('.detail').getByRole('heading', {name:target.title, exact:true}).waitFor();
+  await reviewerPage.getByRole('button', {name:'Incident actions', exact:true}).focus();
+  await expect(reviewerPage.getByRole('tooltip', {name:'Incident actions', exact:true})).toBeVisible();
+  const dialog = await openIncidentAction(reviewerPage, 'Merge related incidents');
+  const workflow = dialog.getByRole('region', {name:'Incident workflows', exact:true});
+  await dialog.getByRole('button', {name:'Close', exact:true}).focus();
+  await expect(dialog.getByRole('tooltip', {name:'Close dialog', exact:true})).toBeVisible();
+  const merges = [];
+  const isCommand = (request, type) => new URL(request.url()).pathname === '/api/command' &&
+   request.method() === 'POST' && request.postDataJSON()?.type === type;
+  reviewerPage.on('request', request => {
+   if(isCommand(request, 'merge-incidents')) merges.push(request.postDataJSON());
+  });
+  for(const source of [first, second]) {
+   await workflow.getByRole('group', {name:'Related incidents'}).locator('label')
+    .filter({hasText:source.title}).getByRole('checkbox').check();
+  }
+  await workflow.getByLabel('Reason for merging', {exact:true}).fill(reason);
+  await workflow.getByRole('button', {name:'Review merge', exact:true}).click();
+  const confirm = workflow.getByRole('button', {name:'Merge selected incidents', exact:true});
+  await expect(confirm).toBeEnabled();
+  assert.deepEqual(merges, [], 'reviewing a merge submits no protected command');
+
+  const participants = state => [target, first, second].map(incident => state.incidents.find(row => row.id === incident.id));
+  const reviewed = await req('/api/state');
+  const [targetAtReview, firstAtReview, secondAtReview] = participants(reviewed);
+  const pagingBeforeNote = await req('/api/paging/state');
+  const outboundBefore = await proof.outbound();
+  await writerPage.goto('/incidents/' + encodeURIComponent(second.id));
+  await writerPage.locator('.detail').getByRole('heading', {name:second.title, exact:true}).waitFor();
+  const note = 'The checkout retry queue is growing again.';
+  await writerPage.getByLabel('Observation, decision or evidence', {exact:true}).fill(note);
+  const [noteResponse] = await Promise.all([
+   writerPage.waitForResponse(response => isCommand(response.request(), 'note')),
+   writerPage.getByRole('button', {name:'Add note', exact:true}).click(),
+  ]);
+  assert.equal(noteResponse.status(), 200);
+  const timeline = writerPage.getByRole('region', {name:'Timeline', exact:true});
+  await expect(timeline.getByText(note, {exact:true})).toBeVisible();
+
+  const stateBefore = await req('/api/state');
+  const [targetBefore, firstBefore, secondBefore] = participants(stateBefore);
+  assert.deepEqual([targetBefore, firstBefore], [targetAtReview, firstAtReview]);
+  const entry = secondBefore.timeline.at(-1);
+  assert.deepEqual([entry.kind, entry.actor, entry.text], ['note', writer.id, note]);
+  assert.deepEqual(secondBefore, {
+   ...secondAtReview, revision:secondAtReview.revision + 1, timeline:[...secondAtReview.timeline, entry],
+  });
+  assert.equal(stateBefore.revision, reviewed.revision + 1);
+  const pagingBefore = await req('/api/paging/state');
+  assert.deepEqual(pagingBefore, {...pagingBeforeNote, workspaceRevision:stateBefore.revision});
+  assert.equal(pagingBefore.paging, 'OFF');
+  assert.deepEqual(await proof.outbound(), outboundBefore);
+  const before = proof.snapshot();
+
+  const [refused] = await Promise.all([
+   reviewerPage.waitForResponse(response => isCommand(response.request(), 'merge-incidents')),
+   confirm.click(),
+  ]);
+  assert.equal(refused.status(), 409);
+  assert.match((await refused.json()).error, /incident changed/i);
+  const conflict = workflow.getByRole('alert').filter({hasText:/incident changed.*reload/i});
+  await expect(conflict).toBeVisible();
+  await expect(confirm).toBeEnabled();
+  await expect(workflow.getByRole('status').filter({hasText:/^Merged /})).toHaveCount(0);
+  assert.ok(await reviewerPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  assert.equal(await reviewerPage.evaluate(() => window.__rerHydration?.count ?? 0), 0);
+  const axe = await new AxeBuilder({page:reviewerPage}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();
+  assert.deepEqual(axe.violations.filter(row => ['serious','critical'].includes(row.impact)), []);
+  const screenshots = [1440, 390];
+  for(const width of screenshots) {
+   await reviewerPage.setViewportSize({width,height:1000});
+   await conflict.scrollIntoViewIfNeeded();
+   await reviewerPage.screenshot({path:`${directory}/oc050-stale-merge-${width}.png`});
+  }
+
+  assert.deepEqual(merges, [{
+   type:'merge-incidents', incident:target.id, revision:targetAtReview.revision, reason,
+   sources:[{id:first.id, revision:firstAtReview.revision}, {id:second.id, revision:secondAtReview.revision}],
+  }], 'confirmation submits exactly one command, retaining the reviewed order and revisions');
+  assert.deepEqual(await req('/api/state'), stateBefore, 'refusal preserves all protected records and revisions');
+  assert.deepEqual(await req('/api/paging/state'), pagingBefore);
+  assert.deepEqual(await proof.outbound(), outboundBefore);
+  assert.deepEqual(outboundBefore, [], 'the two-session merge attempt makes zero outbound requests');
+  const after = proof.snapshot();
+  const records = snapshot => Object.fromEntries(Object.entries(snapshot).filter(([table]) =>
+   !['oc_admin_audit', 'oc_audit_clock', 'oc_audit_identities'].includes(table)));
+  const {oc_admin_audit: priorAudit} = before;
+  const {oc_admin_audit: audit, oc_audit_identities: identities} = after;
+  assert.deepEqual(records(after), records(before), 'refusal leaves durable state intact, including both source records and the target timeline');
+  const lastOrdinal = Math.max(...priorAudit.map(row => row.ordinal));
+  assert.deepEqual(audit.filter(row => row.ordinal <= lastOrdinal), priorAudit);
+  const refusals = audit.filter(row => row.ordinal > lastOrdinal);
+  assert.equal(refusals.length, 1, 'one permanent refusal and no accepted merge audit');
+  const [row] = refusals;
+  const auditLabel = (kind, id) => identities.find(item => item.kind === kind && item.entity_id === id).label;
+  assert.deepEqual([row.kind, row.outcome, row.actor, row.subject],
+   ['command.merge-incidents', 'refused', auditLabel('member', reviewer.id), auditLabel('entity', target.id)]);
+  assert.equal(row.before_revision, row.after_revision);
+  assert.deepEqual([row.workspace_before, row.workspace_after], [stateBefore.revision, stateBefore.revision]);
+  assert.equal(row.paging_before, row.paging_after);
+  assert.equal(row.handoff_before, row.handoff_after);
+
+  await writeFile(`${directory}/oc050-stale-merge.json`, JSON.stringify({
+   journey:'incidentWorkflowBrowser', response:refused.status(), commandCount:merges.length,
+   note:{actor:writer.name, beforeRevision:secondAtReview.revision, afterRevision:secondBefore.revision},
+   refusal:{kind:row.kind, outcome:row.outcome, actor:reviewer.name, subject:target.title},
+   workspaceRevision:stateBefore.revision, unchangedProtectedState:true, unchangedDurableRecords:true,
+   unchangedPaging:pagingBefore.paging, outboundRequests:outboundBefore.length, screenshots,
+  }, null, 2) + '\n');
+  console.log('PROBE OC-050 acceptance 2: reviewed public-service merge with two ordered sources; separate responder note advanced the second source; one protected 409 and visible conflict, one attributed refusal, no alias, timeline, revision, paging or outbound change from confirmation.');
+ } finally {
+  await Promise.all([reviewerSession.close(), writerSession.close()]);
+ }
+}
+
 async function incidentWorkflowBrowser(page,context,proof) {
  const origin=new URL(page.url()).origin;
  const req=async(path,data,status=200)=>{const r=data===undefined?await context.request.get(path):await context.request.post(path,{headers:{origin},data});assert.equal(r.status(),status,`OC-050 ${path}`);return r.json()};
@@ -392,6 +531,13 @@ async function incidentWorkflowBrowser(page,context,proof) {
   const sourceTitle='Replica and batch investigation '+width;let source=await req('/api/command',{type:'declare',service:serviceId,severity:'warning',title:sourceTitle,summary:'Investigate related source alerts before separating the batch group.',alerts});source=await req('/api/command',{type:'note',incident:source.id,revision:source.revision,text:'Replica lag was observed before customer impact.'});source=await req('/api/command',{type:'action',incident:source.id,revision:source.revision,title:'Replica capacity follow-up',owner:member.id,escalationRecipient:member.id,due:'2026-12-01',completionPolicy:'human-review',priority:'P2'});
   await focusWorkspace(page);const workflow=page.getByRole('region',{name:'Incident workflows',exact:true});
   const checklist=page.getByRole('region',{name:'Runbook',exact:true}).getByRole('checkbox',{name:'Confirm customer checkout recovery',exact:false});const [tick]=await Promise.all([page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().method()==='POST'),checklist.check()]);assert.equal(tick.status(),200);await page.getByRole('region',{name:'Runbook',exact:true}).getByText(/Last changed by/).waitFor();await capture('checklist',width,page.getByRole('region',{name:'Runbook',exact:true}));
+  const second = await req('/api/command', {
+   type:'declare', service:serviceId, severity:'warning', title:'Checkout retry queue '+width,
+   summary:'Investigate whether checkout retries share the customer impact.', alerts:[],
+  });
+  await staleMergeConfirmation(context, req, proof, {
+   origin, target, first:source, second, reason:'Compare both investigations with the checkout impact.',
+  });
   await openIncidentAction(page,'Merge related incidents');await workflow.locator('label').filter({hasText:sourceTitle}).getByRole('checkbox').check();await workflow.getByLabel('Reason for merging',{exact:true}).fill('The replica investigation explains the same checkout impact.');await workflow.getByRole('button',{name:'Review merge',exact:true}).click();await submit(workflow.getByRole('button',{name:'Merge selected incidents',exact:true}));await page.getByRole('button',{name:'Close',exact:true}).click();await openIncidentAction(page,'Service context');
   await workflow.getByText('Retained source incidents',{exact:true}).waitFor();await workflow.locator('summary').filter({hasText:sourceTitle}).click();await workflow.getByText('Replica lag was observed before customer impact.',{exact:true}).waitFor();await workflow.getByLabel('Completion evidence for Replica capacity follow-up',{exact:true}).fill('https://example.test/replica-capacity');await submit(workflow.getByRole('button',{name:'Submit evidence for Replica capacity follow-up',exact:true}));await workflow.getByLabel('Acceptance reason for Replica capacity follow-up',{exact:true}).fill('The commander reviewed the retained dependency evidence.');await submit(workflow.getByRole('button',{name:'Accept completion of Replica capacity follow-up',exact:true}));assert.equal((await req('/api/state')).incidents.find(i=>i.id===source.id).actions[0].done,true);await capture('merge',width,workflow);
   await page.goto(origin+'/incidents/'+encodeURIComponent(source.id));await page.locator('.detail').getByRole('heading',{name:targetTitle,exact:true}).waitFor();await page.waitForURL(url=>url.pathname==='/incidents/'+encodeURIComponent(target.id));await capture('alias',width,page.locator('.detail'));
