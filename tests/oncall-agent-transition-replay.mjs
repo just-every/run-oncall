@@ -76,7 +76,7 @@ export async function transitionReplay(runtime){
    incidents:before.application.incidents.map(row=>row.id===incident.id?result:row)});
   const commits=after.records.oc_admin_audit.filter(row=>!before.records.oc_admin_audit.some(prior=>prior.id===row.id));
   assert.equal(commits.length,1,'Exactly one native state-changing audit commits mitigation');
-  const [commit]=commits;assert.equal(commit.kind,'incidents.update');assert.equal(commit.outcome,'accepted');
+  const [commit]=commits;assert.equal(commit.kind,'command.transition');assert.equal(commit.outcome,'accepted');
   assert.equal(commit.workspace_before,before.application.revision);assert.equal(commit.workspace_after,after.application.revision);
   assert.equal(commit.paging_before,commit.paging_after);assert.equal(commit.handoff_before,commit.handoff_after);
   for(const [field,kind,id] of [['actor','agent',context.agentId],['subject','entity',incident.id],['source','member',owner.id]]){

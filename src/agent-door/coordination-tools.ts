@@ -142,8 +142,13 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
           current.guard.sql+=' AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?)';current.guard.values.push(snapshot.revision)
           context=responseContext(snapshot,ctx.now())
         }
+        const evidenceFreeMitigation = operation.name === 'incidents.update'
+          && nativeInput.type === 'transition' && nativeInput.state === 'mitigating'
+          && incident?.state === 'acknowledged' && !protectedRecords(incident) && !nativeInput.evidence
         const result = command(current.state, actor, nativeInput, new Date(ctx.now()).toISOString(),context) as Incident
-        nativeAudit(env, ctx, operation.name === 'incidents.declare' ? 'command.declare' : operation.name, result.id)
+        const auditKind = operation.name === 'incidents.declare' ? 'command.declare'
+          : evidenceFreeMitigation ? 'command.transition' : operation.name
+        nativeAudit(env, ctx, auditKind, result.id)
         if(operation.name==='incidents.acknowledge')auditIdentity(env.DB,{namedMember:{kind:'member',id:String(args.member)}})
         await persistNative(env, current)
         const uri = `oncall://incidents/${result.id}`
