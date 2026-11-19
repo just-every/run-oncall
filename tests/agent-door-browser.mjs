@@ -207,6 +207,43 @@ try{
  assert.deepEqual(await agentEffectSnapshot(runtime),beforeRotaReads,'Viewing saved rota cover changes no durable records');
  assert.deepEqual(rotaOutbound,[]);
  assert.deepEqual(await runtime.outboundRequests(),[]);
+ assert.equal((await runtime.adopt(heldPolicy())).status,200);
+ const followUpFixture=runtime.context.surface.journey.find(row=>row.id==='follow-up');
+ const parentResponse=await http('/api/command',{type:'declare',service:'agent-service',
+  title:'Synthetic incident with an open follow-up',summary:'Review the saved coordination work',severity:'warning',alerts:[]});
+ assert.equal(parentResponse.status,200);
+ const parent=await parentResponse.json();
+ const rosterResponse=await http('/api/state');assert.equal(rosterResponse.status,200);
+ const followUpOwner=(await rosterResponse.json()).members.find(row=>row.active&&row.role==='responder');
+ assert.ok(followUpOwner);
+ const creation=await tool(followUpFixture.tool,{...followUpFixture.args,title:'Review the deployment handoff',
+  incident:parent.id,revision:parent.revision,owner:followUpOwner.id,idempotency_key:randomUUID()});
+ assert.equal(creation.status,200);assert.equal(creation.result.isError,false);
+ assert.equal(creation.decision.disposition,'review');
+ const createdIncident=creation.result.structuredContent;
+ const [openAction]=createdIncident.actions,createdEntry=createdIncident.timeline.at(-1);
+ const due=new Intl.DateTimeFormat('en-US',{timeZone:'UTC',month:'short',day:'numeric'}).format(new Date(followUpFixture.args.due+'T12:00:00Z'));
+ const creationText='Follow-up P1: '+openAction.title+' due '+due+', end of day UTC; human review';
+ const savedFollowUp=await agentEffectSnapshot(runtime);
+ await capture('follow-up-created','/reviews/'+parent.id,async()=>{
+  const dialog=page.getByRole('dialog',{name:parent.title,exact:true});
+  const material=dialog.locator('.review-material-body');
+  const followUps=material.locator('summary').filter({hasText:/^Follow-ups \(/});
+  const history=material.locator('summary').filter({hasText:/^From the timeline \(/});
+  await history.click();await followUps.click();
+  const followUp=followUps.locator('..').getByRole('listitem').filter({hasText:openAction.title});
+  const entry=history.locator('..').getByRole('listitem').filter({has:page.getByText(creationText,{exact:true})});
+  await followUp.waitFor();
+  await entry.getByText(createdEntry.metadata.agent.label,{exact:false}).waitFor();
+  await followUp.scrollIntoViewIfNeeded();
+  if(page.viewportSize().width===1440){
+   assert.equal((await followUp.innerText()).trim(),
+    [openAction.title,followUpOwner.name,'P1','due '+due+', end of day UTC','Open','Human review'].join(' · '));
+   assert.match(await entry.innerText(),/Responder assistant for Alex Chen · agent coordination record/);
+  }
+ });
+ assert.deepEqual(await agentEffectSnapshot(runtime),savedFollowUp,'Viewing the open follow-up and its history changes no durable records');
+ assert.deepEqual(await runtime.outboundRequests(),[]);
  assert.equal((await runtime.adopt()).status,200);
  const submitEvidenceRequests=[];
  const stopEvidence=route=>{submitEvidenceRequests.push(route.request().url());return route.abort()};
