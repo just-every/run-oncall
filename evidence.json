@@ -1,0 +1,52 @@
+{
+  "files": [
+    {
+      "blob": "f64a5e2defe2954ae4ada3d5a064b85295e98909",
+      "bytes": 2403,
+      "path": "LOCAL.md",
+      "sha256": "5ccb2d1110bf309960755d783aadc6a776b4d1a8b6ab4d71c3220ac31ce4eb7e"
+    },
+    {
+      "blob": "5808dfdc5587dec8560cc9683d7fb19ac4c5c3e5",
+      "bytes": 9974,
+      "path": "REPORT.md",
+      "sha256": "fdd56f9ae5377c617ec056712fab19329e31736c2b54508b61c1cdeec38e1cb8"
+    },
+    {
+      "blob": "3921b6c2ef7903d921a334d9e89ffc46c0ff54da",
+      "bytes": 30031,
+      "path": "VERIFY.json",
+      "sha256": "bc26305fd9bff2017e8757b087810a520863f8767a00def71add2f93e4fc8d1c"
+    },
+    {
+      "blob": "d85fce560694b0d8d5f8b63dd3e3485cc7d2a894",
+      "bytes": 91120,
+      "path": "oc061-status-communications-owner-1440.png",
+      "sha256": "c1e3fbea4827d12f1699b3bac1843a8a3a58c11acfa53f283fc29373f0ae43ae"
+    },
+    {
+      "blob": "67bf4811ce623d9fb88ce5c8eb53fdb89a2d3c31",
+      "bytes": 70274,
+      "path": "oc061-status-communications-owner-390.png",
+      "sha256": "60596a5f8c471373db1deef4db0a7a6bd0b0fb8b1bf168ae8d3fd21b266e9eb0"
+    },
+    {
+      "blob": "8336f2d1311f6621f68d0bada11ec1c1a311ab74",
+      "bytes": 62764,
+      "path": "oc061-status-demoted-viewer-1440.png",
+      "sha256": "310bfb2f3e286658df43151aec65f8560e17f61992e8c0c6e7cc1fada82ffb62"
+    },
+    {
+      "blob": "90892e2ed7cc99472d030de94bd17db2f5178ad9",
+      "bytes": 44238,
+      "path": "oc061-status-demoted-viewer-390.png",
+      "sha256": "b3bb4526e7cda55318ad036c76bb443cc0344721697eb57231f86cb4ff0e62a6"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f298",
+  "product_head": "8b9d6a9c069e39ccb0527f5c3f17ad8dc328c16d",
+  "ref": "refs/heads/evidence/sd-oncall-c-f298",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f298"
+}
