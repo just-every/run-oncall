@@ -152,8 +152,7 @@
     {
       "name": "changes",
       "lanes": [
-        "changes",
-        "imports"
+        "changes"
       ],
       "browser": false,
       "hosted": false,
@@ -162,7 +161,8 @@
     {
       "name": "triage",
       "lanes": [
-        "triage"
+        "triage",
+        "imports"
       ],
       "browser": false,
       "hosted": false,
