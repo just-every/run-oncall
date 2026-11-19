@@ -1,0 +1,136 @@
+{
+  "run": 44573707673,
+  "name": "Verify",
+  "event": "push",
+  "conclusion": "failure",
+  "head_sha": "8d3a241f3c74dbac69c68ff769d21b1c7d8aaa22",
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/44573707673",
+  "status": "completed",
+  "jobs": [
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "8d3a241f3c74dbac69c68ff769d21b1c7d8aaa22",
+      "id": 135735380862,
+      "name": "plan"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Check the generated contract documents"
+      ],
+      "head_sha": "8d3a241f3c74dbac69c68ff769d21b1c7d8aaa22",
+      "id": 135735627289,
+      "name": "contract-docs"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "8d3a241f3c74dbac69c68ff769d21b1c7d8aaa22",
+      "id": 135735627641,
+      "name": "build"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "head_sha": "8d3a241f3c74dbac69c68ff769d21b1c7d8aaa22",
+      "id": 135735630978,
+      "name": "light"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "8d3a241f3c74dbac69c68ff769d21b1c7d8aaa22",
+      "id": 135737840864,
+      "name": "shards (agents)"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "8d3a241f3c74dbac69c68ff769d21b1c7d8aaa22",
+      "id": 135737840902,
+      "name": "shards (transfer)"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "8d3a241f3c74dbac69c68ff769d21b1c7d8aaa22",
+      "id": 135737840940,
+      "name": "shards (browser)"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "8d3a241f3c74dbac69c68ff769d21b1c7d8aaa22",
+      "id": 135737840947,
+      "name": "shards (triage)"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "8d3a241f3c74dbac69c68ff769d21b1c7d8aaa22",
+      "id": 135737840948,
+      "name": "shards (intake)"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "8d3a241f3c74dbac69c68ff769d21b1c7d8aaa22",
+      "id": 135737840994,
+      "name": "shards (hosted)"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "8d3a241f3c74dbac69c68ff769d21b1c7d8aaa22",
+      "id": 135737841251,
+      "name": "shards (runtime)"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "8d3a241f3c74dbac69c68ff769d21b1c7d8aaa22",
+      "id": 135737841340,
+      "name": "shards (changes)"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "8d3a241f3c74dbac69c68ff769d21b1c7d8aaa22",
+      "id": 135746722299,
+      "name": "full-push-proof"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "head_sha": "8d3a241f3c74dbac69c68ff769d21b1c7d8aaa22",
+      "id": 135746725471,
+      "name": "nightly-proof"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Require the selected coverage and its proof"
+      ],
+      "head_sha": "8d3a241f3c74dbac69c68ff769d21b1c7d8aaa22",
+      "id": 135746783390,
+      "name": "verify"
+    }
+  ],
+  "generatedViewFailure": "ACCEPTANCE.md: generated content differs; run contract-docs write.",
+  "disposition": "Expected generated-view freshness exception for cloud READY",
+  "startingMain": {
+    "head": "802d6eacc60e5a1638423ce6396905b33771a150",
+    "verifyRun": 44570210163,
+    "runSite": 44570210013,
+    "conclusions": "success"
+  },
+  "advertisedMainAtHandoff": "3e278dea3b663bc5d8cd4b66889b2e85b24d7cc8",
+  "publicationScan": {
+    "commit": "8d3a241f3c74dbac69c68ff769d21b1c7d8aaa22",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "status": "deferred to guarded fleet landing"
+  }
+}

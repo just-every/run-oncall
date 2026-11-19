@@ -1,0 +1,96 @@
+{
+  "head": "8d3a241f3c74dbac69c68ff769d21b1c7d8aaa22",
+  "branch": "cloud/sd-oncall-c-f302",
+  "browserJourney": "triageFiltersBrowser",
+  "entrypoint": "node tests/product-browser.mjs",
+  "focus": "triage",
+  "node": "22.20.0",
+  "checks": [
+    {
+      "width": 1440,
+      "exit": 0,
+      "firstQueryTotal": 50,
+      "protectedQueueTotal": 20,
+      "orderedRowIdsEqual": true,
+      "countEqual": true,
+      "chipsEqual": true,
+      "urlEqual": true,
+      "hasContinuation": false,
+      "currentPaymentsPageRows": 25,
+      "currentPaymentsContinuationRows": 5,
+      "currentPaymentsOrderedIdsEqual": true,
+      "durableSnapshotsEqual": true,
+      "revisionsEqual": true,
+      "permanentAuditEqual": true,
+      "pagingEqual": true,
+      "workerOutboundRequests": 0,
+      "browserOutboundRequests": 0,
+      "screenshot": {
+        "file": "OC-060-late-continuation-1440.png",
+        "panelPixels": [
+          1160,
+          3272
+        ],
+        "sha256": "a39b7e384b33196e47425f737f5f812c4410439795a955af414a99bd7734adda"
+      }
+    },
+    {
+      "width": 390,
+      "exit": 0,
+      "firstQueryTotal": 50,
+      "protectedQueueTotal": 20,
+      "orderedRowIdsEqual": true,
+      "countEqual": true,
+      "chipsEqual": true,
+      "urlEqual": true,
+      "hasContinuation": false,
+      "currentPaymentsPageRows": 25,
+      "currentPaymentsContinuationRows": 5,
+      "currentPaymentsOrderedIdsEqual": true,
+      "durableSnapshotsEqual": true,
+      "revisionsEqual": true,
+      "permanentAuditEqual": true,
+      "pagingEqual": true,
+      "workerOutboundRequests": 0,
+      "browserOutboundRequests": 0,
+      "screenshot": {
+        "file": "OC-060-late-continuation-390.png",
+        "panelPixels": [
+          358,
+          4199
+        ],
+        "sha256": "98eef4022838242030cb2482cefe05e4682d549f6647c41dc3665bbc81ed17fd"
+      }
+    }
+  ],
+  "mechanical": {
+    "build": 0,
+    "typecheck": 0,
+    "firstPartyCheck": 0,
+    "generatedViewsWrite": 0,
+    "generatedViewsCheckBeforeRestore": 0,
+    "editionSourceLockWrite": 0,
+    "editionSourceLockCheck": 0,
+    "statusTableUnchanged": true,
+    "generatedViewsExcluded": true,
+    "generatedViewsCheckAfterRestore": {
+      "exit": 1,
+      "changed": [
+        "ACCEPTANCE.md"
+      ]
+    }
+  },
+  "predecessorsRechecked": [
+    "f283 explicit alert unassignment",
+    "f295 updated-time alert chronology",
+    "f297 personal saved-view recall",
+    "low-alert retention"
+  ],
+  "coreBrowser": {
+    "entrypoint": "node tests/product-browser.mjs",
+    "productPart": "core",
+    "ciMode": true,
+    "exit": 0,
+    "selectedAssertionWidth": 1440
+  }
+}

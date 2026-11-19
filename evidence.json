@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "e4458e1989e630173e937c1ed04f0d8996f82763",
+      "bytes": 343688,
+      "path": "OC-060-late-continuation-1440.png",
+      "sha256": "a39b7e384b33196e47425f737f5f812c4410439795a955af414a99bd7734adda"
+    },
+    {
+      "blob": "090da477c78721103ba6a4adf2a11c85da0e1f01",
+      "bytes": 336293,
+      "path": "OC-060-late-continuation-390.png",
+      "sha256": "98eef4022838242030cb2482cefe05e4682d549f6647c41dc3665bbc81ed17fd"
+    },
+    {
+      "blob": "013afcc0f535e918cbec1e62534496cc3098d9e5",
+      "bytes": 8580,
+      "path": "REPORT.md",
+      "sha256": "fecfe657d4ff1fb049b67b9c45dec0fd246a356a7d01bcc7371e8e0c7405ef9f"
+    },
+    {
+      "blob": "8dc30920054c49482a24906854fed4972c4867e4",
+      "bytes": 8715,
+      "path": "baseline-receipt.json",
+      "sha256": "b384953f956728ff459e615c5ef331ab2ffff9e28b7efa67cd1f6782c2b2e728"
+    },
+    {
+      "blob": "c7e0897c6872f19ecf7337575f0316772b3c7794",
+      "bytes": 2643,
+      "path": "candidate-receipt.json",
+      "sha256": "73fd5a107b1847b6b32658415c0abeabd3e7c1123733161b0e7652b5b3c8fff6"
+    },
+    {
+      "blob": "1d8834af1a2711b00d7533f195988b8d3f3e6ed5",
+      "bytes": 3826,
+      "path": "verify-receipt.json",
+      "sha256": "509d3dae9f44e0e790b61ae38deb2ecbefd0ad5c1be32e5c3734ddbc85cf9690"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f302",
+  "product_head": "8d3a241f3c74dbac69c68ff769d21b1c7d8aaa22",
+  "ref": "refs/heads/evidence/sd-oncall-c-f302",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f302"
+}
