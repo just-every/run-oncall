@@ -674,7 +674,8 @@ try {
   };
   await assertViewerCommandRefusal(mitigate, 'command.transition');
   const acceptedMitigation = ok(await w.request('/api/command', mitigate, workflowResponder));
-  const mitigated = await workflowIncident(acknowledged.id);
+  const mitigated = ok(await w.request('/api/state', undefined, workflowResponder))
+    .incidents.find(i => i.id === acknowledged.id);
   assert.deepEqual(mitigated, acceptedMitigation);
   assert.equal(mitigated.state, 'mitigating');
   assert.equal(mitigated.revision, acknowledged.revision + 1);

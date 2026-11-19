@@ -596,6 +596,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 **Observed (18 November 2026, Run Edit Run fleet).** In the emitted Worker storm journey in `tests/triage.mjs`, a signed-in viewer used the current revision of an acknowledged incident to request a transfer of its Communications role to a different active responder. The native command returned 403 and recorded exactly one `command.assign-role` refusal attributed to the viewer and the incident. The role, timeline, workspace and incident revisions and paging records stayed unchanged, and the Worker made zero outbound requests. The same command succeeded for the signed-in responder.
 
+**Observed (19 November 2026, Run Edit Run fleet).** In the emitted Worker storm journey in `tests/triage.mjs`, a signed-in viewer submitted a current-revision command to move an ordinary acknowledged incident in a public service to mitigating. The protected native command returned 403 and recorded exactly one `command.transition` refusal attributed to the viewer and the incident at equal revisions. The saved incident and timeline, workspace revision, paging records and empty outbound ledger were identical before and after. The signed-in responder submitted the identical command and read back one new mitigation attributed to that responder. The native door records the command and subject in `src/audit-request.ts` (lines 14–20), checks authority in `src/family/response-operations/domain.ts` (line 471), and checks the current revision and lifecycle in the same file (lines 673–700).
+
 #### OC-051 — Reviewed Lamp and Statuspage communication
 
 *Tier:* Core · *Rules:* D-1, D-3, D-4 · *Register:* R-12
