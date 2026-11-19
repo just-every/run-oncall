@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "406a76757a3fa5e383e90a34531783fd12e5440cf53ff0c979072c792f28385f",
+      "sha256": "07c040a8302781948fbc0216734ab5f5a2f83008776c15a4a8e4baa907f61bb8",
       "executable": false
     },
     "DEMO.md": {
@@ -2185,6 +2185,10 @@
     },
     "src/business-status/archive.ts": {
       "sha256": "b9c7bac0676e48e948fb7bc9903ab31229906a93b697eb7e96e3b497ca4cc700",
+      "executable": false
+    },
+    "src/business-status/authority.ts": {
+      "sha256": "82417e7dff6cdd1de6b2196bdccea5da972ea285a710a316d0e14c3b4cfc07c3",
       "executable": false
     },
     "src/business-status/email-lists.ts": {
@@ -6700,7 +6704,7 @@
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
-      "sha256": "56bf2cb28695da0525d1c307cfadb255c307f2a0f3e6eef833932aedc8ac9716",
+      "sha256": "f0c51bcc21f7fe46e642883d53235157e36092fff972820f3158adbe504af8d7",
       "executable": false
     },
     "tests/missed-ack-flow.mjs": {
@@ -6916,7 +6920,7 @@
       "executable": false
     },
     "tests/triage.mjs": {
-      "sha256": "55c3f78dc83ff32e6d48f48ece6e0bd72d7760ea9b0717bf058c4b539f4700d5",
+      "sha256": "66505469583156ff91ac1ddf577920d65722d748e15f05eb86d9b5aa0ad257f8",
       "executable": false
     },
     "tests/verify.mjs": {
