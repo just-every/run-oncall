@@ -1,0 +1,13 @@
+Product HEAD cbcebc573ba9e8cb52d08689a865bc67d684dc03
+
+Node 22.20.0 and pnpm 10.12.4
+Pinned emitted Worker build exit 0
+
+ONCALL_TRIAGE_PART=storm node tests/triage.mjs
+Exit 0
+PROBE OC-050 acceptance 2: viewer Communications transfer -> 403, one refusal attributed to the viewer and incident, unchanged role, timeline, revisions and paging, zero outbound requests. The same command succeeded for the responder.
+PROBE OC-050 acceptance 2: viewer mitigation -> 403 and one attributed command.transition refusal at equal revisions. Saved incidents, timelines, workspace revision, paging and outbound ledger were unchanged. The same command saved one responder-attributed mitigation.
+
+ONCALL_TRIAGE_PART=bulk node tests/triage.mjs
+Exit 0
+PROBE OC-060 acceptance 1 HTTP chronology: protected responder triage returns later human action, older recovered generation, then untouched newer generation. Exact replay does not move the cutoff; inclusive lower and exclusive upper bounds, creation order, cursors and revisions pass. Durable records, audit and paging unchanged; zero outbound requests.

@@ -1,0 +1,202 @@
+{
+  "counts_after": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "counts_before": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "generated_view_handoff": "ACCEPTANCE.md differs after restoring published views",
+  "integrated_main": "802d6eacc60e5a1638423ce6396905b33771a150",
+  "local_checks": [
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_TRIAGE_PART=storm node tests/triage.mjs",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_TRIAGE_PART=bulk node tests/triage.mjs",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "after_generation": true,
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    }
+  ],
+  "product_advertised": true,
+  "product_branch": "cloud/sd-oncall-c-f300",
+  "product_head": "cbcebc573ba9e8cb52d08689a865bc67d684dc03",
+  "published_save": "9bdcd28b60481aee9965d847c4aafb5e6ada0efc",
+  "repository": "just-every/run-oncall",
+  "run_site": null,
+  "scanned_full_history": false,
+  "scope": "OC-050 acceptance 2 native lifecycle authority",
+  "status_after": "PARTIAL",
+  "status_before": "PARTIAL",
+  "tag": "sd-oncall-c-f300",
+  "verify": {
+    "assessment": "All eight shards, the build and the full push proof passed. GitHub reported failure from the expected ACCEPTANCE.md generated-view check (job 135733495496) and its aggregate Verify guard (job 135743457922). Runtime shard 135735040308 passed. This is the brief's generated-view exception for READY.",
+    "conclusion": "failure",
+    "event": "push",
+    "head_sha": "cbcebc573ba9e8cb52d08689a865bc67d684dc03",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44573109843",
+    "id": 44573109843,
+    "jobs": [
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "cbcebc573ba9e8cb52d08689a865bc67d684dc03",
+        "id": 135733259039,
+        "name": "plan",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "cbcebc573ba9e8cb52d08689a865bc67d684dc03",
+        "id": 135733495316,
+        "name": "build",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          "Check the generated contract documents"
+        ],
+        "head_sha": "cbcebc573ba9e8cb52d08689a865bc67d684dc03",
+        "id": 135733495496,
+        "name": "contract-docs",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "head_sha": "cbcebc573ba9e8cb52d08689a865bc67d684dc03",
+        "id": 135733498956,
+        "name": "light",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "cbcebc573ba9e8cb52d08689a865bc67d684dc03",
+        "id": 135735040176,
+        "name": "shards (agents)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "cbcebc573ba9e8cb52d08689a865bc67d684dc03",
+        "id": 135735040204,
+        "name": "shards (intake)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "cbcebc573ba9e8cb52d08689a865bc67d684dc03",
+        "id": 135735040227,
+        "name": "shards (browser)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "cbcebc573ba9e8cb52d08689a865bc67d684dc03",
+        "id": 135735040241,
+        "name": "shards (triage)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "cbcebc573ba9e8cb52d08689a865bc67d684dc03",
+        "id": 135735040250,
+        "name": "shards (transfer)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "cbcebc573ba9e8cb52d08689a865bc67d684dc03",
+        "id": 135735040256,
+        "name": "shards (hosted)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "cbcebc573ba9e8cb52d08689a865bc67d684dc03",
+        "id": 135735040308,
+        "name": "shards (runtime)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "cbcebc573ba9e8cb52d08689a865bc67d684dc03",
+        "id": 135735040316,
+        "name": "shards (changes)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "cbcebc573ba9e8cb52d08689a865bc67d684dc03",
+        "id": 135743406919,
+        "name": "full-push-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "head_sha": "cbcebc573ba9e8cb52d08689a865bc67d684dc03",
+        "id": 135743410501,
+        "name": "nightly-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          "Require the selected coverage and its proof"
+        ],
+        "head_sha": "cbcebc573ba9e8cb52d08689a865bc67d684dc03",
+        "id": 135743457922,
+        "name": "verify",
+        "status": "completed"
+      }
+    ],
+    "observed_utc": "2026-11-19T17:39:48+00:00",
+    "status": "completed"
+  }
+}

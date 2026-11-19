@@ -1,0 +1,12 @@
+Exact product HEAD cbcebc573ba9e8cb52d08689a865bc67d684dc03
+
+gh run view 44573109843 --repo just-every/run-oncall --job 135733495496 --log-failed
+Exit 0
+contract-docs	Check the generated contract documents	2026-11-19T17:04:53.1710887Z Contract prose: 0 errors, 0 warnings.
+contract-docs	Check the generated contract documents	2026-11-19T17:04:53.2175477Z ACCEPTANCE.md: generated content differs; run contract-docs write.
+contract-docs	Check the generated contract documents	2026-11-19T17:04:53.2268065Z ##[error]Process completed with exit code 1.
+
+gh run view 44573109843 --repo just-every/run-oncall --job 135743457922 --log-failed
+Exit 0
+verify	Require the selected coverage and its proof	2026-11-19T17:19:47.0005503Z   CONTRACT_DOCS: failure
+verify	Require the selected coverage and its proof	2026-11-19T17:19:47.0150882Z ##[error]Process completed with exit code 1.

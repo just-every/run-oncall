@@ -1,0 +1,34 @@
+{
+  "files": [
+    {
+      "blob": "48fb5f2c628170278429cf6c24998f3133d2b29b",
+      "bytes": 6965,
+      "path": "REPORT.md",
+      "sha256": "9342fbaf585ba40e35452de23ec835918f1f2b2a535e5a9c6c01f8b8dfb475f2"
+    },
+    {
+      "blob": "c8bf10bc523a7985d2b6910d8d43ce6c6ad21b53",
+      "bytes": 5926,
+      "path": "candidate-receipt.json",
+      "sha256": "e68e9566facd6254b82fc3d26546acc28a485f854286258fe1fe0cc5c4b76448"
+    },
+    {
+      "blob": "17d7d9e2e488e2bd380941b6af2436d00ee9bc09",
+      "bytes": 872,
+      "path": "verify-receipt.txt",
+      "sha256": "5a1768dafe1ff3f678948eff5ef9be45aca28755f7c75ee0851bf4dfc62f76a1"
+    },
+    {
+      "blob": "29c76a41f35118a7133730a876379250d2358380",
+      "bytes": 1088,
+      "path": "worker-receipt.txt",
+      "sha256": "d78d920268937bfdff0777895694e5d696a949f0630b18eb684ed171dea4c0d5"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f300",
+  "product_head": "cbcebc573ba9e8cb52d08689a865bc67d684dc03",
+  "ref": "refs/heads/evidence/sd-oncall-c-f300",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f300"
+}
