@@ -591,6 +591,8 @@ try {
  // OC-061: the existing shell carries internal status, with a status-only stakeholder session.
  const stakeholder={name:'Sam Stakeholder',password:'synthetic-oncall-61-password'}
  const sam=ok(await call(owner.page,'/api/members',{...stakeholder,role:'stakeholder'}),201)
+ const communicator={name:'Casey Communications',password:'synthetic-oncall-611-password'}
+ const communications=ok(await call(owner.page,'/api/members',{...communicator,role:'responder'}),201)
  const gateway={id:'synthetic-oncall-61',name:'Payment gateway',environment:'production'}
  const incidentTitle='Private gateway timeouts'
  const alertTitle='Private gateway queue stalled'
@@ -614,7 +616,7 @@ try {
  }
  // Refused creates retain their draft and name the invalid field beside it.
  const supporting=statusPanel.getByLabel('Supporting technical services',{exact:true}),createBusiness=statusPanel.getByRole('button',{name:'Create business service',exact:true});
- await statusPanel.getByLabel('Communications owner',{exact:true}).selectOption(rosaRecord.id);
+ await statusPanel.getByLabel('Communications owner',{exact:true}).selectOption(communications.id);
  const statusBefore=ok(await call(owner.page,'/api/status')),createRequests=[];
  const observeCreate=request=>{if(new URL(request.url()).pathname==='/api/status'&&request.method()==='POST')createRequests.push(request);};
  owner.page.on('request',observeCreate);
@@ -647,7 +649,7 @@ try {
  await expect(statusPanel.getByLabel('Business-service name',{exact:true})).toHaveValue('Checkout '.repeat(15));
  await captureRefusal('server-create',createBusiness);owner.page.off('request',observeCreate);
  await statusPanel.getByLabel('Business-service name',{exact:true}).fill('Checkout')
- await statusPanel.getByLabel('Communications owner',{exact:true}).selectOption(rosaRecord.id)
+ await statusPanel.getByLabel('Communications owner',{exact:true}).selectOption(communications.id)
  await statusPanel.getByRole('button',{name:'Create business service',exact:true}).click()
  const checkout=statusPanel.getByRole('article',{name:'Checkout',exact:true})
  await checkout.getByText('Derived status: operational',{exact:true}).waitFor()
@@ -826,6 +828,89 @@ try {
  assert.deepEqual(await worker.outboundRequests(),[],'the emitted Worker attempted no outbound request')
  console.log('PASS OC-061 direct stakeholder details: owner reads populated incident, alert and service; stakeholder lands on Checkout status with no private document, response or hydrated content at 1440 and 390; custody intact and zero outbound requests')
  await samView.context.close()
+
+ // The current role controls management even when the service still names this member.
+ const {context:communicationsContext,page:communicationsPage}=await open(1440)
+ for(const context of [owner.context,communicationsContext])context.on('request',observeRequest)
+ const signedIn=await passwordSignIn(communicationsPage,communicator)
+ assert.deepEqual([signedIn.id,signedIn.role,signedIn.active],[communications.id,'responder',true])
+ await communicationsPage.goto(worker.origin+'/status')
+ const communicationsCard=communicationsPage.getByRole('article',{name:'Checkout',exact:true})
+ const manage=communicationsCard.getByText('Manage internal status',{exact:true})
+ const manual=communicationsCard.getByLabel('Status set by hand',{exact:true})
+ const readCheckout=async()=>ok(await call(communicationsPage,'/api/status')).services.find(service=>service.name==='Checkout')
+ const beforeSave=await readCheckout()
+ assert.equal(beforeSave.communicationsOwner,communications.id)
+ await manage.click()
+ const reasonForOverride='The alternate gateway is now unavailable'
+ await manual.selectOption('major outage')
+ await communicationsCard.getByLabel('Reason',{exact:true}).fill(reasonForOverride)
+ const overrideReply=communicationsPage.waitForResponse(response=>new URL(response.url()).pathname==='/api/status'&&response.request().postDataJSON()?.action==='override')
+ await communicationsCard.getByRole('button',{name:'Set status',exact:true}).click()
+ assert.equal((await overrideReply).status(),200)
+ await communicationsPage.reload()
+ const saved=await readCheckout()
+ assert.deepEqual(
+  [saved.revision,saved.derived,saved.override.value,saved.override.reason,saved.override.by],
+  [beforeSave.revision+1,'degraded','major outage',reasonForOverride,communications.id],
+ )
+ const renderedOverride=communicationsCard.getByText(/^Manual override:/)
+ await expect(renderedOverride.getByText('major outage',{exact:true})).toBeVisible()
+ await expect(renderedOverride).toContainText(reasonForOverride)
+ await expect(renderedOverride).toContainText(communications.name)
+ await expect(communicationsCard.getByText('Derived status: degraded',{exact:true})).toBeVisible()
+ await manage.click()
+ await expect(manual).toHaveValue('major outage')
+ const captureRole=async role=>{
+  for(const width of [1440,390]){
+   await communicationsPage.setViewportSize({width,height:1000})
+   await communicationsCard.scrollIntoViewIfNeeded()
+   await communicationsPage.screenshot({path:`${captureDirectory}/oc061-status-${role}-${width}.png`,fullPage:true})
+  }
+  await communicationsPage.setViewportSize({width:1440,height:1000})
+ }
+ await captureRole('communications-owner')
+
+ const demoted=ok(await call(owner.page,'/api/command',{type:'member',id:communications.id,field:'role',from:'responder',to:'viewer'}))
+ assert.deepEqual([demoted.id,demoted.role,demoted.active],[communications.id,'viewer',true])
+ await communicationsPage.reload()
+ const currentMember=ok(await call(communicationsPage,'/api/session')).member
+ assert.deepEqual([currentMember.id,currentMember.role,currentMember.active],[communications.id,'viewer',true])
+ await expect(renderedOverride).toContainText(reasonForOverride)
+ await expect(renderedOverride).toContainText(communications.name)
+ await expect(communicationsCard.getByText('Derived status: degraded',{exact:true})).toBeVisible()
+ await expect(communicationsCard.getByText('Your subscription',{exact:true})).toBeVisible()
+ await expect(manage).toHaveCount(0)
+ await expect(manual).toHaveCount(0)
+ const current=await readCheckout()
+ assert.deepEqual([current.communicationsOwner,current.revision,current.derived,current.override],
+  [communications.id,saved.revision,saved.derived,saved.override])
+ const beforeDenial=await custody()
+ const denial=await call(communicationsPage,'/api/status',{
+  action:'override',id:current.id,revision:current.revision,value:'operational',reason:'Try to replace the saved override',
+ })
+ assert.equal(denial.status,403)
+ assert.deepEqual(await readCheckout(),current,'the viewer still reads the same saved status')
+ const afterDenial=await custody()
+ assert.deepEqual(afterDenial.status,beforeDenial.status)
+ assert.deepEqual(afterDenial.paging,beforeDenial.paging)
+ assert.equal(afterDenial.paging.paging,'OFF')
+ const {oc_admin_audit:priorAudit,oc_audit_clock:priorClock,...priorNative}=beforeDenial.native
+ const {oc_admin_audit:currentAudit,oc_audit_clock:currentClock,...currentNative}=afterDenial.native
+ assert.deepEqual(currentNative,priorNative,'the refusal preserves every non-audit record and revision')
+ assert.equal(currentClock[0].revision,priorClock[0].revision,'the refusal commits no workspace write')
+ const priorAuditIds=new Set(priorAudit.map(row=>row.id))
+ assert.deepEqual(currentAudit.filter(row=>priorAuditIds.has(row.id)),priorAudit)
+ const refusalRows=currentAudit.filter(row=>!priorAuditIds.has(row.id))
+ assert.equal(refusalRows.length,1)
+ assert.equal(refusalRows[0].outcome,'refused')
+ assert.equal(refusalRows[0].detail,null)
+ await captureRole('demoted-viewer')
+ for(const context of [owner.context,communicationsContext])context.off('request',observeRequest)
+ assert.deepEqual(outbound,[],'the status browsers attempted no outbound request')
+ assert.deepEqual(await worker.outboundRequests(),[],'the status Worker attempted no outbound request')
+ await communicationsContext.close()
+ console.log(`PROBE OC-061 6: signed-in communications owner saved major outage with reason and attribution at revision ${beforeSave.revision} -> ${saved.revision}; derived degraded. Same session as active viewer read the override and no management controls; current-revision POST returned ${denial.status}, with one refusal audit and unchanged native and paging custody. Both roles captured at 1440 and 390 with zero outbound requests.`)
 
  // OC-061 email lists: configure in Settings, inspect start/end records, unsubscribe and use shared erasure.
  for(const width of [1440]){

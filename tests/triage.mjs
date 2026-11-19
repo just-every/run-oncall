@@ -754,6 +754,37 @@ try {
   ok(await req('/api/status',{action:'override',id:status.id,revision:status.revision,value:'major outage',reason:'This must roll back'}),503);
   w.sql('DROP TRIGGER injected_status_audit_failure');
   assert.deepEqual(ok(await req('/api/state')),priorStatus,'failed audit rolls back the complete override transaction');
+  const managerOverride={
+    action:'override',id:status.id,revision:status.revision,value:'major outage',reason:'Alternate gateway is unavailable',
+  };
+  ok(await w.request('/api/status',managerOverride,statusManagerCookie));
+  status=await business();
+  assert.deepEqual(
+    [status.revision,status.derived,status.override.value,status.override.reason,status.override.by],
+    [managerOverride.revision+1,'degraded',managerOverride.value,managerOverride.reason,statusManager.id],
+    'one override revision preserves derived status and retains the responder as its author',
+  );
+  const demoted=ok(await req('/api/command',{type:'member',id:statusManager.id,field:'role',from:'responder',to:'viewer'}));
+  assert.deepEqual([demoted.role,demoted.active],['viewer',true]);
+  const managerRead=async()=>ok(await w.request('/api/status',undefined,statusManagerCookie)).services.find(row=>row.id===status.id);
+  const viewerStatus=await managerRead();
+  assert.deepEqual([viewerStatus.communicationsOwner,viewerStatus.revision,viewerStatus.derived,viewerStatus.override],
+    [statusManager.id,status.revision,status.derived,status.override]);
+  const beforeStatusDenial=ok(await req('/api/state'));
+  const beforePagingDenial=ok(await req('/api/paging/state'));
+  const beforeRefusalAudit=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal');
+  ok(await w.request('/api/status',{...managerOverride,revision:status.revision,value:'operational',reason:'Attempt after demotion'},statusManagerCookie),403);
+  assert.deepEqual(await managerRead(),viewerStatus,'denial preserves the saved override and service revision');
+  assert.deepEqual(ok(await req('/api/state')),beforeStatusDenial);
+  assert.deepEqual(ok(await req('/api/paging/state')),beforePagingDenial);
+  const afterRefusalAudit=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal');
+  assert.deepEqual(afterRefusalAudit.slice(0,-1),beforeRefusalAudit);
+  const refusal=afterRefusalAudit.at(-1);
+  assert.equal(refusal.outcome,'refused');
+  assert.equal(refusal.detail,null);
+  for(const scope of ['workspace','paging','handoff'])assert.equal(refusal[scope+'_before'],refusal[scope+'_after']);
+  assert.deepEqual(await w.outboundRequests(),[],'status coordination attempts no outbound requests');
+  console.log('PASS OC-061 communications owner override: one attributed revision with derived status preserved; demotion keeps reads and refuses a valid override with unchanged status and paging custody');
   ok(await req('/api/status',{action:'override',id:status.id,revision:status.revision,value:null}));
   status=await business();assert.equal(status.override,null);
   console.log('OC-061 attributed override: derived value retained, explicit clear, permanent audit and audit-failure rollback');
