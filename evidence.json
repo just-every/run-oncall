@@ -1,0 +1,124 @@
+{
+  "files": [
+    {
+      "blob": "fb1975f5d51af42de3efd06905b430b3f9849062",
+      "bytes": 9051,
+      "path": "GITHUB-VERIFY.json",
+      "sha256": "17dc6e2929cc100d62ffb55b2e4d94ce8e21c3ad1e17a703374fe4b8d50670b8"
+    },
+    {
+      "blob": "b35d09ac5ef36351d87527bd214325e8d302b863",
+      "bytes": 5904,
+      "path": "LOCAL-VERIFY.md",
+      "sha256": "97bedb62da6102d213156f8b410b885b6cf3b7cfa47f388a926f36488af05676"
+    },
+    {
+      "blob": "78d1bd15bcac5682eee535c666d4efe9e84439b2",
+      "bytes": 9106,
+      "path": "REPORT.md",
+      "sha256": "1c2d2707267ff1f71c2a6c72859939ed64e6abddf99cdfd51349faf2413fe9d9"
+    },
+    {
+      "blob": "8f7973afc6cacd64d97d76b7c078bf5b9b8411f7",
+      "bytes": 291195,
+      "path": "browser/agent-door-acknowledgment-autonomous-agent-1440.png",
+      "sha256": "b1e7df0e025a818b80ab99ee4532527c36f9d5c7141a7128e977f5faf1e1a78f"
+    },
+    {
+      "blob": "6b02d1b2fd35b4ccfdf029775c8e10664d2c9433",
+      "bytes": 91076,
+      "path": "browser/agent-door-acknowledgment-autonomous-agent-390.png",
+      "sha256": "2ed915ce41b492516b0bdcabaf0206f32c076e5d4855470b8aea4e99749908c0"
+    },
+    {
+      "blob": "d4a7c6196b45d1cde5a2c6daf491fe6ea453b116",
+      "bytes": 286043,
+      "path": "browser/agent-door-acknowledgment-autonomous-person-1440.png",
+      "sha256": "5e6aa6be069a23e3a6606058f8ead092a7287e9257e018642934a769ab2561d7"
+    },
+    {
+      "blob": "f5928f6702db6e476f9c50be8d205f17e45a9365",
+      "bytes": 86476,
+      "path": "browser/agent-door-acknowledgment-autonomous-person-390.png",
+      "sha256": "23476dd3def3e1472427d9c5f5f40a0539a63f89986af5020f637750b45d46a0"
+    },
+    {
+      "blob": "b79f5d8695460582ffefcb951e5e0ee2b2e1cc79",
+      "bytes": 289126,
+      "path": "browser/agent-door-acknowledgment-held-agent-1440.png",
+      "sha256": "f16b96c4e1d3ef2c251dbbd6837358f0d591832e2941afcf9caff6ac014911a2"
+    },
+    {
+      "blob": "f4316569eb3372a74f4225cced63e3d33ac8b82a",
+      "bytes": 90013,
+      "path": "browser/agent-door-acknowledgment-held-agent-390.png",
+      "sha256": "7f13c503d83dbad95eb7961c9f5b61a63b66318299443582b531467fdfd03772"
+    },
+    {
+      "blob": "c73ed5dc3cc5195f5b90b422a944567a12be601e",
+      "bytes": 283866,
+      "path": "browser/agent-door-acknowledgment-held-person-1440.png",
+      "sha256": "2b04c88272db8ded1a3e256c558011a4ec1d0cddd5cffad046241db909e3a3a1"
+    },
+    {
+      "blob": "6799694f849ad813c0f373bc9ef20fb3a5106fa3",
+      "bytes": 85414,
+      "path": "browser/agent-door-acknowledgment-held-person-390.png",
+      "sha256": "63fd034fba666b8d2f5a9e3065e4c02208215b58af94b01ed7982fd6dc41dd3e"
+    },
+    {
+      "blob": "29ce45b52db01b12f21a4db0b3db1bd87846cb82",
+      "bytes": 172402,
+      "path": "browser/agent-door-alert-declaration-autonomous-agent-1440.png",
+      "sha256": "632a4876e898968a3cd9283cbee690acf96f845ec86ae11b19be263687ef20cd"
+    },
+    {
+      "blob": "e3f428acc50dcc1b7b98c194b7db9c288ad0cba0",
+      "bytes": 71751,
+      "path": "browser/agent-door-alert-declaration-autonomous-agent-390.png",
+      "sha256": "f6c47a78ddef7ede720c8c8a945e64f3da2b46ac2a9d88ee5a0a292d3e99cd79"
+    },
+    {
+      "blob": "d5c287be10601d74a672c988b3c306733c17a29a",
+      "bytes": 173837,
+      "path": "browser/agent-door-alert-declaration-autonomous-person-1440.png",
+      "sha256": "5f69d7850717cdb1db6b21b1dfea6bf9216371e01ca9821891aa8e11aed00e9d"
+    },
+    {
+      "blob": "37319d410cf64c9204b5fc877b7fcdbab1f19fe9",
+      "bytes": 73250,
+      "path": "browser/agent-door-alert-declaration-autonomous-person-390.png",
+      "sha256": "c9844d4c182b7fb234334fad28253ea8ee58317affdb78f5b3430c75f88ac3da"
+    },
+    {
+      "blob": "e9958ae85e8f7ec378cd2293c335a39367c6a934",
+      "bytes": 171320,
+      "path": "browser/agent-door-alert-declaration-held-agent-1440.png",
+      "sha256": "662a89e7f0fccd728b4d99224ff7d28a2cbf5bb4cc5efa260402b27d2c1285b7"
+    },
+    {
+      "blob": "6d63ad5f0ecd9d331b78251a604bcd3f9ef55f78",
+      "bytes": 70371,
+      "path": "browser/agent-door-alert-declaration-held-agent-390.png",
+      "sha256": "1a8beb71475bb71b8f29377895bf7aed0c7f5b02d9d5301de95f7a1348973e6f"
+    },
+    {
+      "blob": "5eb46227f1a97b949b42a8bbd2ee08b431e5143a",
+      "bytes": 169233,
+      "path": "browser/agent-door-alert-declaration-held-person-1440.png",
+      "sha256": "3f95d0c00470d24000f3724f71939625a013cbef1fc82a5ea204b28581ed05cc"
+    },
+    {
+      "blob": "b02cba7dae980f025a89d16afa69348b61829f03",
+      "bytes": 68674,
+      "path": "browser/agent-door-alert-declaration-held-person-390.png",
+      "sha256": "8f33b4f869c1368f69e32631fe68709336c2351de259db7da8e8978e5376441b"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f289-f290-lin-1",
+  "product_head": "71c2f9235545e5392046cc2e155339faa9269e43",
+  "ref": "refs/heads/evidence/sd-oncall-c-f289-f290-lin-1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f289-f290-lin-1"
+}
