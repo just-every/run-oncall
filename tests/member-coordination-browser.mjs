@@ -982,12 +982,13 @@ try {
  assert.equal(manual68.manualPage.creator,ownerMember.id);assert.equal(manual68.manualPage.obligations[0].target.id,rosaRecord.id)
  await openIncidentAction(owner.page,'Request responders')
  const requests68=owner.page.getByRole('region',{name:'Manual obligations and responder requests'})
- for(const message of ['Inspect payment provider','Inspect payment network']){
+ const recordRequest=async message=>{
   await requests68.getByLabel('Named responders',{exact:true}).selectOption(rosaRecord.id)
   await requests68.getByLabel('Responder request message',{exact:true}).fill(message)
   await requests68.getByRole('button',{name:'Record responder requests',exact:true}).click()
   await requests68.getByText(message,{exact:true}).waitFor()
  }
+ for(const message of ['Inspect payment provider','Inspect payment network'])await recordRequest(message)
  assert.equal(await requests68.getByRole('button',{name:'Accept request',exact:true}).count(),0,'the requester is not offered Accept for another responder')
  await openIncident(rosa.page,manual68.id);await rosa.page.reload()
  await openIncidentAction(rosa.page,'Request responders')
@@ -998,6 +999,115 @@ try {
  await responseRegion.getByRole('article').filter({hasText:'Inspect payment network'}).getByText(/^declined · requested/).waitFor()
  await responseRegion.getByText('Primary acknowledgment: Unacknowledged',{exact:true}).waitFor()
  for(const width of [1440])await statusCapture(rosa.page,'oc068-requests-and-obligations',width)
+
+ const readWorkspace=async page=>ok(await call(page,'/api/state'))
+ const readManual=state=>state.incidents.find(incident=>incident.id===manual68.id)
+ const requestCard=(page,region,message)=>region.getByRole('article').filter({has:page.getByText(message,{exact:true})})
+ const cancelMessage='Review provider follow-up',siblingMessage='Review network follow-up'
+ const cancelButton={name:'Cancel request',exact:true}
+ const openRequests=async page=>{
+  await openIncident(page,manual68.id)
+  await openIncidentAction(page,'Request responders')
+ }
+ const outboundBefore=await worker.outboundRequests()
+ for(const context of [owner.context,rosa.context])context.on('request',observeRequest)
+ try{
+  await openRequests(owner.page)
+  await recordRequest(cancelMessage)
+  await recordRequest(siblingMessage)
+  await openIncident(rosa.page,manual68.id)
+  await rosa.page.getByRole('button',{name:'Acknowledge',exact:true}).click()
+  await rosa.page.locator('.incident-state.state-acknowledged').waitFor()
+
+  const before=await readWorkspace(owner.page),incident=readManual(before)
+  const service=before.services.find(row=>row.id===incident.service)
+  assert.equal(before.teams.find(team=>team.id===service.team)?.visibility,'public')
+  assert.equal(incident.manualPage.acknowledgment.by,rosaRecord.id)
+  assert.deepEqual(incident.manualPage.obligations.map(row=>[row.target.id,row.state,row.outcome]),
+   [[rosaRecord.id,'stopped','Primary incident acknowledged']])
+  const pending=incident.responderRequests.filter(row=>row.status==='pending')
+  assert.deepEqual(pending.map(row=>row.message),[cancelMessage,siblingMessage])
+  const [target,sibling]=pending
+  for(const row of [target,sibling]){
+   assert.equal(row.requester,ownerMember.id)
+   assert.deepEqual(row.obligation.target,{kind:'user',id:rosaRecord.id})
+   assert.deepEqual([row.obligation.state,row.obligation.paging,row.obligation.automatic],['recorded','off',false])
+  }
+  assert.notEqual(target.obligation.id,sibling.obligation.id)
+
+  const beforePaging=ok(await call(owner.page,'/api/paging/state'))
+  const readEffects=()=>Object.fromEntries(Object.entries(durableSnapshot(worker))
+   .filter(([table])=>table.startsWith('paging_')||table.includes('outbox')||table.endsWith('_deadlines')))
+  const beforeEffects=readEffects()
+  const auditOrdinal=worker.sql('SELECT MAX(ordinal) AS ordinal FROM oc_admin_audit')[0].ordinal
+  await openRequests(rosa.page)
+  for(const message of [cancelMessage,siblingMessage]){
+   const card=requestCard(rosa.page,responseRegion,message)
+   await expect(card.getByText(/^pending · requested/)).toBeVisible()
+   await expect(card.getByRole('button',{name:'Accept request',exact:true})).toBeVisible()
+   await expect(card.getByRole('button',cancelButton)).toHaveCount(0)
+  }
+  assert.deepEqual(await readWorkspace(owner.page),before,'opening as the named responder preserves protected state')
+  for(const width of [1440,390]){
+   await rosa.page.setViewportSize({width,height:1000})
+   await openRequests(rosa.page)
+   await responseRegion.screenshot({path:`${captureDirectory}/oc068-cancel-non-requester-${width}.png`})
+  }
+  await rosa.page.setViewportSize({width:1440,height:1000})
+
+  await owner.page.setViewportSize({width:1440,height:1000})
+  await openRequests(owner.page)
+  const cancelled=owner.page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'
+   &&response.request().method()==='POST'&&response.request().postDataJSON()?.type==='cancel-request')
+  await requestCard(owner.page,requests68,cancelMessage).getByRole('button',cancelButton).click()
+  const response=await cancelled
+  assert.equal(response.status(),200)
+  assert.deepEqual(response.request().postDataJSON(),{type:'cancel-request',incident:incident.id,revision:incident.revision,request:target.id})
+  await openRequests(owner.page)
+  const targetCard=requestCard(owner.page,requests68,cancelMessage),siblingCard=requestCard(owner.page,requests68,siblingMessage)
+  await expect(targetCard.getByText(/^cancelled · requested/)).toContainText('response by '+ownerMember.name)
+  await expect(targetCard.getByRole('button',cancelButton)).toHaveCount(0)
+  await expect(siblingCard.getByText(/^pending · requested/)).toBeVisible()
+  await expect(siblingCard.getByRole('button',cancelButton)).toBeEnabled()
+  await expect(requests68.getByText('Primary acknowledgment: '+responder.name,{exact:true})).toBeVisible()
+  for(const width of [1440,390]){
+   await owner.page.setViewportSize({width,height:1000})
+   await openRequests(owner.page)
+   await requests68.screenshot({path:`${captureDirectory}/oc068-cancel-reopened-${width}.png`})
+  }
+  await owner.page.setViewportSize({width:1440,height:1000})
+
+  const after=await readWorkspace(owner.page),saved=readManual(after)
+  const cancellation=saved.timeline.at(-1)
+  assert.deepEqual([cancellation.kind,cancellation.actor],['cancel-request',ownerMember.id])
+  assert.ok(cancellation.text.includes(target.id),'the attributed timeline entry identifies the cancelled request')
+  assert.ok(Number.isFinite(Date.parse(cancellation.at)))
+  const stopped={...target,status:'cancelled',response:{by:ownerMember.id,at:cancellation.at},
+   obligation:{...target.obligation,state:'stopped',outcome:'cancelled'}}
+  const expected={...incident,revision:incident.revision+1,timeline:[...incident.timeline,cancellation],
+   responderRequests:incident.responderRequests.map(row=>row.id===target.id?stopped:row)}
+  assert.deepEqual(saved,expected,'only the target request, its obligation, incident revision and one timeline entry change')
+  assert.deepEqual(after,{...before,revision:before.revision+1,incidents:before.incidents.map(row=>row.id===saved.id?expected:row)})
+
+  // Read the permanent audit directly because exporting it creates an audit row.
+  const audit=worker.sql(`SELECT a.kind,a.outcome,actor.entity_id AS actor,subject.entity_id AS subject,
+   a.workspace_before,a.workspace_after,a.paging_before,a.paging_after,a.handoff_before=a.handoff_after AS handoff_unchanged
+   FROM oc_admin_audit a LEFT JOIN oc_audit_identities actor ON actor.label=a.actor AND actor.kind='member'
+   LEFT JOIN oc_audit_identities subject ON subject.label=a.subject AND subject.kind='entity'
+   WHERE a.ordinal>${auditOrdinal} ORDER BY a.ordinal`)
+  assert.deepEqual(audit,[{kind:'command.cancel-request',outcome:'accepted',actor:ownerMember.id,subject:incident.id,
+   workspace_before:before.revision,workspace_after:after.revision,paging_before:beforePaging.revision,
+   paging_after:beforePaging.revision,handoff_unchanged:1}])
+  assert.equal(beforePaging.paging,'OFF')
+  assert.deepEqual(ok(await call(owner.page,'/api/paging/state')),{...beforePaging,workspaceRevision:after.revision})
+  assert.deepEqual(readEffects(),beforeEffects,'cancellation creates no paging work, receipt, deadline or outbox record')
+  assert.deepEqual(await worker.outboundRequests(),outboundBefore,'cancellation and reopen create no Worker outbound requests')
+  assert.deepEqual(outbound,[],'the requester and named responder browsers attempt no outbound requests')
+ }finally{
+  for(const context of [owner.context,rosa.context])context.off('request',observeRequest)
+ }
+ console.log('PROBE OC-068 5: signed-in manual incident on a public-team service; named responder saw two pending requests and no Cancel control. Requester cancelled one, reopened at 1440 and 390, and retained one attributed timeline entry and one permanent audit row. Only the target obligation stopped; sibling and primary acknowledgment and obligation stayed unchanged. Zero outbound or paging effects.')
+
  await openIncident(vic.page,manual68.id);await vic.page.reload()
  await openIncidentAction(vic.page,'Request responders')
  await vic.page.getByText('Only responders and admins may create manual pages or request responders.',{exact:true}).waitFor()

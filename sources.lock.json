@@ -6724,7 +6724,7 @@
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
-      "sha256": "f0c51bcc21f7fe46e642883d53235157e36092fff972820f3158adbe504af8d7",
+      "sha256": "8fb8324b9fd90c0f4f38f67708bf99a273c860bf546b39ea2f5f39f7e233bdd5",
       "executable": false
     },
     "tests/missed-ack-flow.mjs": {
