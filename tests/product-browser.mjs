@@ -178,7 +178,6 @@ async function incompleteIntakeBrowser(page,context) {
  assert.ok(declaredState.incidents.some(incident=>incident.service==='payments'&&incident.alerts.includes(queued.id)),'explicit scoped choice declares from the owner queue')
 }
 
-// OC-056: publish response rules, recover a native alert, and keep human incidents open.
 async function staleMergeTargetBrowser(context, req, target, source, proof) {
  const origin = worker.origin;
  const viewport = {width:1440,height:1000};
@@ -285,10 +284,16 @@ async function staleMergeTargetBrowser(context, req, target, source, proof) {
    if (!auditTables.includes(table)) assert.ok(isDeepStrictEqual(afterRefusal[table],rows),'refusal preserves ' + table);
   }
   const priorAudit = new Set(afterNote.oc_admin_audit.map(row=>row.id));
+  const retainedAudit = afterRefusal.oc_admin_audit.filter(row=>priorAudit.has(row.id));
+  assert.ok(isDeepStrictEqual(retainedAudit,afterNote.oc_admin_audit),'the refusal leaves existing audit history intact');
   const refusals = afterRefusal.oc_admin_audit.filter(row=>!priorAudit.has(row.id));
   assert.equal(refusals.length,1);
   const [refusal] = refusals;
-  const label = (kind,id) => afterRefusal.oc_audit_identities.find(row=>row.kind===kind&&row.entity_id===id).label;
+  const label = (kind,id) => {
+   const identity = afterRefusal.oc_audit_identities.find(row=>row.kind===kind&&row.entity_id===id);
+   assert.ok(identity?.label,'the refusal has a retained '+kind+' audit identity');
+   return identity.label;
+  };
   assert.deepEqual([refusal.kind,refusal.outcome,refusal.actor,refusal.subject],
    ['command.merge-incidents','refused',label('member',reviewer.member.id),label('entity',target.id)]);
   assert.equal(refusal.before_revision,refusal.after_revision);
@@ -307,6 +312,8 @@ async function staleMergeTargetBrowser(context, req, target, source, proof) {
    await conflict.scrollIntoViewIfNeeded();
    await reviewer.page.screenshot({path:directory + '/oc050-stale-merge-target-' + width + '.png'});
   }
+  await editor.page.reload();
+  await expect(editor.page.locator('.timeline .event').filter({hasText:note})).toBeVisible();
   await open(editor.page,source);
   assert.equal(editor.page.url(),incidentPath(source.id),'the refused source remains independently navigable');
   assert.deepEqual(offOrigin,[],'neither browser session makes an outbound request');
@@ -315,8 +322,9 @@ async function staleMergeTargetBrowser(context, req, target, source, proof) {
    reviewedTargetRevision:reviewedTarget.revision,committedTargetRevision:updated.revision,
    submittedTargetRevision:rejected.request().postDataJSON().revision,
    reviewedSourceRevision:reviewedSource.revision,submittedSourceRevision:rejected.request().postDataJSON().sources[0].revision,
-   visibleConflict:true,successClaim:false,onlyIndependentNote:true,sourceRemainsSeparate:true,
-   refusalCount:refusals.length,refusalActorRole:reviewer.member.role,paging:pagingAfter.paging,pagingUnchanged:true,outboundRequests:outboundBefore.length,browserOutboundRequests:offOrigin.length,
+   visibleConflict:true,successClaim:false,onlyIndependentNote:true,noteVisibleAfterReload:true,sourceRemainsSeparate:true,
+   refusalCount:refusals.length,refusalActorRole:reviewer.member.role,priorAuditUnchanged:true,
+   paging:pagingAfter.paging,pagingUnchanged:true,outboundRequests:outboundBefore.length,browserOutboundRequests:offOrigin.length,
   },null,2)+'\n');
   console.log('PROBE OC-050 acceptance 2 stale merge target: independent responder note 200, original reviewed merge 409, visible conflict without success, only the note persists, one responder-attributed refusal, paging OFF and zero outbound requests');
  } finally {
@@ -324,6 +332,7 @@ async function staleMergeTargetBrowser(context, req, target, source, proof) {
  }
 }
 
+// OC-056: publish response rules, recover a native alert, and keep human incidents open.
 async function responsePolicyBrowser(page,context) {
  const origin=new URL(page.url()).origin
  const request=async(path,data,status=200)=>{
