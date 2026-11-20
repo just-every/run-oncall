@@ -842,6 +842,16 @@ try{
  // this check refuses dangling, wrong-tool and wrong-class fixture references.
  execFileSync(process.execPath,['scripts/write-agent-surface.mjs','--check'],{stdio:'inherit'});
  const surface=scopedSurface(runtime.context.surface),guide=await readFile('docs/agents.md','utf8');
+ const updateName='oncall.incidents.update';
+ const updateContractRow=lexer(await readFile('CONTRACT.md','utf8'))
+  .filter(token=>token.type==='table'&&token.header.map(cell=>cell.text).join('|')==='Tool|Does|Core clauses|Risk class|Today')
+  .flatMap(table=>table.rows)
+  .find(([tool])=>tool.text==='`'+updateName+'`');
+ assert.ok(updateContractRow,'The incident update must have a contract row');
+ const updateClauses=updateContractRow[2].text.split(', ');
+ const updateClasses=updateContractRow[3].text.match(/[a-z]+/g);
+ const updateManifest=surface.tools.find(tool=>tool.name===updateName);
+ assert.ok(updateManifest,'The incident update must be in the scoped manifest');
  const codes=text=>[...text.matchAll(/`([^`]+)`/g)].map(match=>match[1]);
  const inventory=lexer(guide).filter(token=>token.type==='table'&&token.header.map(cell=>cell.text).join('|')==='Tool|Scope|Possible risk classes|Computed class checks');
  assert.ok(inventory.length>0,'The guide must contain its generated tool inventory');
@@ -862,12 +872,18 @@ try{
  for(const [label,document] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
   assert.equal((await adopt(document)).status,200);
   const before=await inventoryState(),edge=await runtime.outboundRequests();
+  const beforeRead=await agentReadSnapshot(runtime);
   const discovered=await mcp('server/discover'),listed=await mcp('tools/list'),templates=await mcp('resources/templates/list');
   assert.equal(discovered.status,200);assert.equal(listed.status,200);assert.equal(templates.status,200);
   assert.deepEqual(discovered.result._meta['com.runeditrun/capabilities'].declared,runtime.context.surface.capabilities);
   assert.deepEqual(discovered.result.capabilities.resources,{subscribe:false,listChanged:false});
   assert.equal(listed.result.nextCursor,undefined);
   assert.deepEqual(documented.map(({checks,...row})=>row),listed.result.tools.map(row=>({name:row.name,scope:row._meta['com.runeditrun/scope'],classes:row._meta['com.runeditrun/classes']})));
+  const update=listed.result.tools.find(tool=>tool.name===updateName);
+  assert.ok(update,'MCP must list the incident update under '+label+' policy');
+  assert.deepEqual(update._meta['com.runeditrun/classes'],updateClasses);
+  assert.deepEqual(update._meta['com.runeditrun/clauses'],updateClauses);
+  assert.equal(update._meta['com.runeditrun/scope'],updateManifest.scope);
   assert.deepEqual(templates.result.resourceTemplates.map(row=>row.uriTemplate),[...surface.resources].sort());
   assert.ok(surface.resources.length>0);
   // MCP retains its required protocol bookkeeping; the public guide itself
@@ -879,7 +895,9 @@ try{
   assert.deepEqual(served,documented.map(row=>[[row.name],[row.scope],row.classes,row.checks.flat()]));
   assert.deepEqual(await permanentAudit(),beforeGuideAudit,'The public guide writes no permanent audit');
   assert.deepEqual(await inventoryState(),before,'Guide and discovery reads preserve native data and paging');
+  assertAgentReadUnchanged(beforeRead,await agentReadSnapshot(runtime));
   assert.deepEqual(await runtime.outboundRequests(),edge);
+  console.log(`PROBE SURFACE-001 1 ${label}: emitted MCP list and served guide -> ${updateName}, ${updateManifest.scope}, ${updateClasses.join(', ')}, ${updateClauses.join(', ')}; native records, mutation audit and paging unchanged; zero outbound requests`);
   console.log(`PROBE BASE-AGENT-013 1 ${label}: GET /docs/agents and MCP discovery -> ${documented.length} exact tools, scopes and class sets; ${surface.resources.length} scoped resource templates; event target withheld; native and paging unchanged; zero outbound requests`);
   console.log(`PROBE BASE-AGENT-013 2 ${label}: generated class references -> every documented class names tests/agent-door.mjs and all matching maintained fixture IDs`);
  }
