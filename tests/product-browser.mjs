@@ -438,7 +438,7 @@ async function staleSplitConfirmation(page,context,req,proof,{source,selected,se
   const choices=workflow.getByRole('group',{name:'Alert groups',exact:true});
   assert.equal(await choices.getByRole('checkbox').count(),2);
   await choices.locator('label').filter({hasText:selectedTitle}).getByRole('checkbox').check();
-  const draft={title:'Stale split must create no incident',summary:'Investigate the separate queue signal.',reason:'The queue signal has a different cause.'};
+  const draft={title:'Receipt queue backlog investigation',summary:'Investigate the separate queue signal.',reason:'The queue signal has a different cause.'};
   await workflow.getByLabel('New incident title',{exact:true}).fill(draft.title);
   await workflow.getByLabel('New incident impact summary',{exact:true}).fill(draft.summary);
   await workflow.getByLabel('Reason for splitting',{exact:true}).fill(draft.reason);
