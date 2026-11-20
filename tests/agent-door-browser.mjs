@@ -19,7 +19,7 @@ import {accessToken,autonomousPolicy,heldPolicy} from '../src/modules/agent-door
 import {openIncidentAction} from './keyboard.mjs';
 import {standardServiceRunbookUpdate} from './oncall-agent-service-replay.mjs';
 import {declareIncidentFromAlert,savedServiceRunbookBrowser} from './product-browser-journey.mjs';
-import {staleOverrideRevision} from './oncall-agent-schedule-replay.mjs';
+import {agedScheduleCreateRetention, staleOverrideRevision} from './oncall-agent-schedule-replay.mjs';
 
 const weekStart=Date.parse('2026-11-02T00:00:00.000Z'),weekNow=Date.parse('2026-11-04T12:00:00.000Z');
 const runtime=await agentRuntime({clock:null}),directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';
@@ -195,6 +195,38 @@ try{
   });
   assert.deepEqual(await agentEffectSnapshot(runtime),before,'Viewing the saved reassignment changes no durable records');
   assert.deepEqual(await runtime.outboundRequests(),[]);
+ }});
+ await agedScheduleCreateRetention({async observe({runtime: rotaRuntime, mode, schedule, people}){
+  const rotaContext = await browser.newContext({baseURL: rotaRuntime.origin, viewport: {width:1440, height:1000}});
+  try {
+   await rotaContext.addCookies(rotaRuntime.cookie.split('; ').map(pair=>{
+    const at=pair.indexOf('=');
+    return {name:pair.slice(0,at),value:pair.slice(at+1),url:rotaRuntime.origin,httpOnly:true,sameSite:'Lax'};
+   }));
+   const rotaPage = await rotaContext.newPage(), outbound = [];
+   rotaPage.on('request', request => {
+    if(new URL(request.url()).origin !== rotaRuntime.origin) outbound.push(request.url());
+   });
+   await rotaPage.clock.setFixedTime(new Date(rotaRuntime.context.now()));
+   const backup = people.find(person=>person.id===schedule.backup.members[0]);
+   assert.ok(backup);
+   await capture('create-retained-'+mode, '/on-call/'+schedule.id, async()=>{
+    await rotaPage.getByRole('heading',{name:schedule.name,exact:true}).waitFor();
+    const coverage = rotaPage.locator('.scheduling-now-role');
+    const backupRole = coverage.filter({has:rotaPage.getByRole('heading',{name:'backup',exact:true})});
+    await backupRole.locator('.now').waitFor();
+    if(rotaPage.viewportSize().width===1440){
+     assert.equal(await backupRole.locator('.now').textContent(), 'Now: '+backup.name);
+     const primaryRole = coverage.filter({has:rotaPage.getByRole('heading',{name:'primary',exact:true})});
+     const primaryNames = people.filter(person=>schedule.primary.members.includes(person.id)).map(person=>'Now: '+person.name);
+     assert.ok(primaryNames.includes(await primaryRole.locator('.now').textContent()));
+     assert.equal(await rotaPage.getByText('Paging is off',{exact:true}).count(),1);
+    }
+   }, rotaRuntime, rotaPage);
+   assert.deepEqual(outbound,[],'Viewing the retained rota makes no outbound browser requests');
+  } finally {
+   await rotaContext.close();
+  }
  }});
  const retainedRotas=await staleOverrideRevision(runtime,{optionalExpectedRevision:true});
  const beforeRotaReads=await agentEffectSnapshot(runtime),rotaOutbound=[];
