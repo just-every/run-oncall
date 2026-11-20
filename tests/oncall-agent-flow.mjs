@@ -688,7 +688,8 @@ async function agedResolutionReplay(mode,policy){
   assert.deepEqual(resolved.timeline.slice(0,-1),incident.timeline);
   const entry=resolved.timeline.at(-1);
   assert.equal(entry.at,new Date(started).toISOString());
-  assert.equal(entry.lifecycle.to,'resolved');
+  assert.deepEqual(entry.lifecycle,{from:'recovered',to:'resolved'});
+  assert.equal(entry.actor,context.agentId);
   assert.ok(entry.text.includes(args.summary));
   assert.equal(entry.metadata.agent.agent.id,context.agentId);
   assert.equal(entry.metadata.agent.for.id,owner.id);
@@ -715,6 +716,10 @@ async function agedResolutionReplay(mode,policy){
   assert.equal(stored.decision.id,first.decision.id);
   assert.equal(stored.review,undefined);
   if(approved){
+   const terminalApproval=once.records.agent_door_approvals.find(row=>row.id===handle.id);
+   assert.equal(terminalApproval.state,'executed');
+   assert.deepEqual(JSON.parse(terminalApproval.result),stored,'The approval and original call retain the same completed outcome');
+   assert.equal(stored.approval.id,handle.id);
    assert.ok(stored.receipt.id);
    assert.equal(stored.receipt.approval_id,handle.id);
    assert.equal(stored.receipt.decision_id,first.decision.id);
@@ -723,11 +728,18 @@ async function agedResolutionReplay(mode,policy){
    assert.deepEqual(first.result.structuredContent,stored.result);
    assert.equal(stored.receipt,undefined);
   }
-  const originalAudit=(await audits()).find(row=>row.id===call.decision_id);
+  const completedAudit=await audits();
+  const originalAudit=completedAudit.find(row=>row.id===call.decision_id);
   const original=JSON.parse(originalAudit.row);
   assert.equal(original.outcome,approved?'pending':'done');
   assert.deepEqual(original.resource,{kind:'incident',id:incident.id});
   assert.ok(original.operation_id);
+  if(approved){
+   const execution=JSON.parse(completedAudit.find(row=>row.id===stored.execution_id).row);
+   assert.equal(execution.outcome,'done');
+   assert.equal(execution.operation_id,original.operation_id);
+   assert.deepEqual(execution.approval,{id:handle.id,by:[owner.id]});
+  }
   const originalPolicy=await policyEnvelope(),rpcIds=new Set([first.body.id]);
 
   for(const elapsed of [day,day+1000]){
@@ -757,6 +769,7 @@ async function agedResolutionReplay(mode,policy){
    assert.ok(!rpcIds.has(retry.body.id));rpcIds.add(retry.body.id);
    assert.deepEqual(retry.result.structuredContent,stored.result);
    assert.deepEqual(JSON.parse(retry.result.content[0].text),stored.result);
+   assert.deepEqual(retry.decision.classes,stored.decision.classes);
    assert.deepEqual(retry.result._meta['com.runeditrun/receipt'],stored.receipt?{...stored.receipt,decision:stored.decision}:undefined);
    assert.equal(retry.result._meta['com.runeditrun/review'],stored.review);
    assert.equal(retry.result._meta['com.runeditrun/approval'],undefined);
