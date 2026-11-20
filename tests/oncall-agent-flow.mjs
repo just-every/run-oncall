@@ -621,6 +621,187 @@ async function staleResolutionRevision(runtime){
  assert.equal((await adopt()).status,200);
 }
 
+/** Completed resolutions keep their original outcome across policy and token renewal. */
+async function agedResolutionReplay(mode,policy){
+ // Native sign-in also uses the wall clock. Age the platform clock only after setup.
+ const started=Math.floor(Date.now()/3600000)*3600000,day=86400000;
+ const runtime=await agentRuntime({clock:started});
+ try{
+  const {db,http,tool,context}=runtime,name='oncall.incidents.resolve';
+  const rows=async sql=>(await db.prepare(sql).all()).results;
+  const read=async(path,input)=>{
+   const response=await http(path,input);
+   assert.equal(response.status,200,path);
+   return response.json();
+  };
+  const snapshot=()=>agentEffectSnapshot(runtime);
+  const audits=()=>rows('SELECT * FROM agent_door_audit ORDER BY sequence');
+  const relay=()=>rows('SELECT * FROM agent_door_relay ORDER BY sequence');
+  const permanent=()=>rows('SELECT * FROM oc_admin_audit ORDER BY ordinal');
+  const policyEnvelope=async()=>JSON.parse((await rows('SELECT envelope FROM agent_door_state WHERE id=1'))[0].envelope);
+  const policyAuthority=({iat,exp,...authority})=>authority;
+  const tokenIdentity=({iat,exp,jti,...identity})=>identity;
+  const tokenClaims=value=>JSON.parse(Buffer.from(value.split('.')[1],'base64url').toString());
+  const token=()=>accessToken(context,{act:{sub:context.agentId,name:'Responder assistant',specialist:'oncall-responder'}});
+  const owner=(await read('/api/workspace')).member;
+  assert.equal((await runtime.adopt(policy)).status,200);
+  const incident=await recoveredResolutionTarget(runtime,'Synthetic retained resolution '+mode);
+  const args={incident:incident.id,revision:incident.revision,summary:'Resolve with retained recovery evidence',idempotency_key:randomUUID()};
+  const bearer=await token(),originalClaims=tokenClaims(bearer),tokenIds=new Set([originalClaims.jti]);
+  assert.equal(originalClaims.iat,started/1000);
+  assert.equal(originalClaims.exp-originalClaims.iat,300);
+  const before=await snapshot(),pagingBefore=await read('/api/paging/state');
+  assert.equal(pagingBefore.paging,'OFF');
+  const first=await tool(name,args,{},bearer);
+  assert.equal(first.status,200);assert.equal(first.body.error,undefined);
+  const handle=first.result._meta['com.runeditrun/approval'];
+  const approvalPath=handle&&'/agents/api/approvals/'+handle.id;
+  let approved;
+  if(mode==='held'){
+   assert.equal(first.result.resultType,'input_required');
+   assert.equal(first.decision.disposition,'approval');
+   assert.equal(first.result.structuredContent,undefined);
+   const {approval}=await read(approvalPath);
+   assert.equal(approval.state,'pending');
+   assert.equal(approval.decision_id,first.decision.id);
+   assert.deepEqual(approval.approvals,[]);
+   assert.deepEqual(approval.summary.nativeTarget,{kind:'incident',id:incident.id});
+   assert.ok(approval.summary.items.includes('Revision '+args.revision));
+   const pending=await snapshot();
+   assert.deepEqual(pending.application,before.application);
+   assert.deepEqual(pending.records.oc_admin_audit,before.records.oc_admin_audit);
+   ({approval:approved}=await read(approvalPath+'/approve',{revision:approval.revision,summary_sha256:approval.summary_sha256}));
+   assert.equal(approved.state,'executed');
+   assert.equal(approved.revision,approval.revision);
+   assert.equal(approved.summary_sha256,approval.summary_sha256);
+   assert.deepEqual(approved.approvals.map(mark=>mark.person),[owner.id]);
+  }else{
+   assert.equal(first.result.isError,false);
+   assert.equal(first.decision.disposition,'autonomous');
+   assert.equal(handle,undefined);
+  }
+
+  const once=await snapshot(),resolved=once.application.incidents.find(row=>row.id===incident.id);
+  assert.equal(resolved.state,'resolved');assert.equal(resolved.recovery,incident.recovery);
+  assert.equal(resolved.revision,incident.revision+1);
+  assert.equal(once.application.revision,before.application.revision+1);
+  assert.deepEqual(resolved.timeline.slice(0,-1),incident.timeline);
+  const entry=resolved.timeline.at(-1);
+  assert.equal(entry.at,new Date(started).toISOString());
+  assert.deepEqual(entry.lifecycle,{from:'recovered',to:'resolved'});
+  assert.equal(entry.actor,context.agentId);
+  assert.ok(entry.text.includes(args.summary));
+  assert.equal(entry.metadata.agent.agent.id,context.agentId);
+  assert.equal(entry.metadata.agent.for.id,owner.id);
+  assert.deepEqual(entry.metadata.agent.approvers??[],approved?[{id:owner.id,name:owner.name}]:[]);
+  assert.deepEqual(JSON.parse(once.records.oc_incidents.find(row=>row.id===incident.id).data),resolved);
+  const mutations=once.records.oc_admin_audit.filter(row=>!before.records.oc_admin_audit.some(prior=>prior.id===row.id));
+  assert.equal(mutations.length,1);assert.equal(mutations[0].kind,'incidents.resolve');
+  assert.equal(mutations[0].outcome,'accepted');
+  assert.equal(once.records.agent_door_calls.length,before.records.agent_door_calls.length+1);
+  assert.equal(once.records.agent_door_approvals.length,before.records.agent_door_approvals.length+Number(Boolean(approved)));
+  assert.deepEqual(once.records.agent_door_reviews,before.records.agent_door_reviews);
+  for(const table of Object.keys(before.records).filter(name=>name.startsWith('paging_'))){
+   assert.deepEqual(once.records[table],before.records[table],table);
+  }
+  const pagingOnce=await read('/api/paging/state');
+  assert.deepEqual(pagingOnce,{...pagingBefore,workspaceRevision:once.application.revision});
+  const retainedCalls=state=>state.records.agent_door_calls.filter(row=>row.agent===context.agentId&&row.key===args.idempotency_key);
+  const retained=retainedCalls(once);
+  assert.equal(retained.length,1);
+  const [call]=retained,stored=JSON.parse(call.outcome);
+  assert.equal(call.state,'done');assert.equal(call.decision_id,first.decision.id);
+  assert.equal(call.created_at,started);assert.ok(call.expires_at>started+day+1000);
+  assert.equal(stored.outcome,'done');assert.deepEqual(stored.result,resolved);
+  assert.equal(stored.decision.id,first.decision.id);
+  assert.equal(stored.review,undefined);
+  if(approved){
+   const terminalApproval=once.records.agent_door_approvals.find(row=>row.id===handle.id);
+   assert.equal(terminalApproval.state,'executed');
+   assert.deepEqual(JSON.parse(terminalApproval.result),stored,'The approval and original call retain the same completed outcome');
+   assert.equal(stored.approval.id,handle.id);
+   assert.ok(stored.receipt.id);
+   assert.equal(stored.receipt.approval_id,handle.id);
+   assert.equal(stored.receipt.decision_id,first.decision.id);
+   assert.deepEqual(stored.receipt.approved_by,[owner.id]);
+  }else{
+   assert.deepEqual(first.result.structuredContent,stored.result);
+   assert.equal(stored.receipt,undefined);
+  }
+  const completedAudit=await audits();
+  const originalAudit=completedAudit.find(row=>row.id===call.decision_id);
+  const original=JSON.parse(originalAudit.row);
+  assert.equal(original.outcome,approved?'pending':'done');
+  assert.deepEqual(original.resource,{kind:'incident',id:incident.id});
+  assert.ok(original.operation_id);
+  if(approved){
+   const execution=JSON.parse(completedAudit.find(row=>row.id===stored.execution_id).row);
+   assert.equal(execution.outcome,'done');
+   assert.equal(execution.operation_id,original.operation_id);
+   assert.deepEqual(execution.approval,{id:handle.id,by:[owner.id]});
+  }
+  const originalPolicy=await policyEnvelope(),rpcIds=new Set([first.body.id]);
+
+  for(const elapsed of [day,day+1000]){
+   await runtime.time(started+elapsed);
+   assert.ok(originalClaims.exp<seconds(context.now));
+   const previousPolicy=await policyEnvelope();
+   assert.equal((await runtime.renewPolicy()).status,200);
+   const renewed=await policyEnvelope();
+   assert.deepEqual(policyAuthority(renewed),policyAuthority(originalPolicy));
+   assert.ok(renewed.iat>previousPolicy.iat);
+   assert.equal(renewed.iat,(started+elapsed)/1000);
+   assert.equal(renewed.exp-renewed.iat,300);
+   const fresh=await token(),claims=tokenClaims(fresh);
+   assert.ok(!tokenIds.has(claims.jti));tokenIds.add(claims.jti);
+   assert.deepEqual(tokenIdentity(claims),tokenIdentity(originalClaims));
+   assert.equal(claims.iat,renewed.iat);assert.equal(claims.exp-claims.iat,300);
+
+   // Compare the replay after renewal so the signed policy event is outside its write set.
+   const renewedState=await snapshot();
+   assert.deepEqual(renewedState.application,once.application);
+   for(const [table,records] of Object.entries(once.records)){
+    if(table!=='agent_door_state'&&table!=='agent_door_events')assert.deepEqual(renewedState.records[table],records,table);
+   }
+   const auditBefore=await audits(),relayBefore=await relay(),permanentBefore=await permanent();
+   const retry=await tool(name,args,{},fresh);
+   assert.equal(retry.status,200);assert.equal(retry.body.error,undefined);assert.equal(retry.result.isError,false);
+   assert.ok(!rpcIds.has(retry.body.id));rpcIds.add(retry.body.id);
+   assert.deepEqual(retry.result.structuredContent,stored.result);
+   assert.deepEqual(JSON.parse(retry.result.content[0].text),stored.result);
+   assert.deepEqual(retry.decision.classes,stored.decision.classes);
+   assert.deepEqual(retry.result._meta['com.runeditrun/receipt'],stored.receipt?{...stored.receipt,decision:stored.decision}:undefined);
+   assert.equal(retry.result._meta['com.runeditrun/review'],stored.review);
+   assert.equal(retry.result._meta['com.runeditrun/approval'],undefined);
+   if(approved)assert.deepEqual((await read(approvalPath)).approval,approved,'The signed-in person sees the same executed approval');
+   assert.deepEqual(await read('/api/paging/state'),pagingOnce);
+   const after=await snapshot();
+   assert.deepEqual(retainedCalls(after),retained,'Replay preserves the terminal row, outcome and expiry');
+   assert.deepEqual(after,renewedState,'Replay preserves native records, revisions, timeline, mutation audit, approvals, reviews and paging');
+
+   const auditAfter=await audits();
+   assert.deepEqual(auditAfter.slice(0,-1),auditBefore);assert.equal(auditAfter.length,auditBefore.length+1);
+   assert.deepEqual(auditAfter.find(row=>row.id===call.decision_id),originalAudit);
+   const attempt=JSON.parse(auditAfter.at(-1).row);
+   assert.equal(attempt.id,retry.decision.id);assert.equal(attempt.outcome,'replayed');
+   assert.equal(attempt.tool,name);assert.equal(attempt.idempotency_key,args.idempotency_key);
+   assert.equal(attempt.replay_of,call.decision_id);assert.equal(attempt.operation_id,original.operation_id);
+   assert.equal(attempt.agent.id,context.agentId);assert.equal(attempt.sponsor.id,owner.id);
+   const relayAfter=await relay();
+   assert.deepEqual(relayAfter.slice(0,relayBefore.length),relayBefore);
+   assert.deepEqual(relayAfter.slice(relayBefore.length).map(row=>row.decision_id),[attempt.id]);
+   const permanentAfter=await permanent();
+   assert.deepEqual(permanentAfter.slice(0,permanentBefore.length),permanentBefore);
+   for(const row of permanentAfter.slice(permanentBefore.length)){
+    assert.equal(row.kind,'agent-door.persistence');
+    for(const family of ['workspace','paging','handoff'])assert.equal(row[family+'_before'],row[family+'_after']);
+   }
+   assert.deepEqual(await runtime.outboundRequests(),[]);
+   console.log('PROBE BASE-AGENT-012 acceptance 1 '+mode+' '+name+' T+'+elapsed+'ms: renewed equivalent policy and same-scope token; original key and arguments with new RPC id return the exact stored resolution and original receipt when held; terminal expiry and native custody unchanged, one linked replay attempt and zero outbound requests');
+  }
+ }finally{await runtime.close()}
+}
+
 async function readCreatedFollowUp(runtime,{mode,first,before}){
  const {db,http,completeResource,context}=runtime;
  const links=first.result.content.filter(item=>item.type==='resource_link');
@@ -820,6 +1001,8 @@ await (await import('./oncall-agent-analytics.mjs')).analyticsReads();
 await (await import('./oncall-agent-triage.mjs')).triageReads();
 await agedReplayRetention();
 await agedActionSubmitRetention();
+await agedResolutionReplay('autonomous',autonomousPolicy());
+await agedResolutionReplay('held',heldPolicy());
 
 const runtime=await agentRuntime({clock:null});
 const code=answer=>answer.result?._meta?.['com.runeditrun/error']?.code??answer.body?.error?.data?.code;
