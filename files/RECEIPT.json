@@ -1,0 +1,454 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f309-pc1",
+  "head": "66708782276f46de975edabf272d79cfdf6721c1",
+  "mergedMain": "8b30370587527f91331d9fc84deb82688dbfa67a",
+  "qualification": "BLOCKED",
+  "publishedVerify": {
+    "conclusion": "failure",
+    "event": "push",
+    "head_sha": "66708782276f46de975edabf272d79cfdf6721c1",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44642143874",
+    "id": 44642143874,
+    "status": "completed"
+  },
+  "publishedVerifyJobs": [
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135975617658,
+      "name": "plan",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Check the generated contract documents"
+      ],
+      "id": 135975754018,
+      "name": "contract-docs",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135975754088,
+      "name": "build",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "id": 135975755472,
+      "name": "light",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135976799508,
+      "name": "shards (transfer)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135976799526,
+      "name": "shards (hosted)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135976799531,
+      "name": "shards (triage)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135976799535,
+      "name": "shards (runtime)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135976799596,
+      "name": "shards (intake)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135976799623,
+      "name": "shards (agents)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135976799647,
+      "name": "shards (changes)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 135976799654,
+      "name": "shards (activation)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Run this shard"
+      ],
+      "id": 135976799676,
+      "name": "shards (browser)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Require the selected coverage and its proof"
+      ],
+      "id": 135982988834,
+      "name": "verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "id": 135982990723,
+      "name": "full-push-proof",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "id": 135982991035,
+      "name": "nightly-proof",
+      "status": "completed"
+    }
+  ],
+  "outstandingLanderChecks": [
+    "full-history publication scan",
+    "main equality",
+    "exact-main Run site"
+  ],
+  "inheritedVerify": {
+    "id": 44624425448,
+    "head": "308c610d2edaebae3a9397e515bf2e6db2fdfb56",
+    "cancelledChangesJob": 135916392172,
+    "contractDocsJob": 135914547236,
+    "aggregateJob": 135925221090,
+    "localShardCommand": "node scripts/verify-oncall.mjs changes",
+    "localShardExit": 0,
+    "localShardJourneys": [
+      "Journey completed: tests/changes.mjs (28.9s)",
+      "Journey completed: tests/activation.mjs (246.8s)",
+      "Oncall verification passed: changes",
+      "Journey completed: tests/import-door.mjs (515.0s)",
+      "Journey completed: tests/oncall-agent-erase-subjects.mjs (5.5s)",
+      "Journey completed: tests/oncall-agent-erase-roster.mjs (5.2s)",
+      "Journey completed: tests/triage.mjs {\"ONCALL_TRIAGE_PART\":\"reports\"} (51.6s)",
+      "Oncall verification passed: imports"
+    ]
+  },
+  "localChecksOnMergedCandidate": {
+    "node scripts/verify-oncall-build.mjs": 0,
+    "node scripts/verify-oncall.mjs agents": 0,
+    "node tests/agent-door-browser.mjs": 0,
+    "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check": 0,
+    "node src/base/contract-docs.mjs write then check with regenerated views": 0
+  },
+  "exactShaBrowserFailure": {
+    "id": 135976799676,
+    "command": "node scripts/verify-oncall.mjs browser",
+    "case": "opsgenieReadiness",
+    "source": "tests/product-browser-journey.mjs:255",
+    "remoteExit": 1,
+    "remoteError": "apiRequestContext.get: socket hang up (ECONNRESET)",
+    "door": "GET /api/state through loopback",
+    "node": "22.20.0",
+    "candidateLocalExit": 0,
+    "mainLocalExit": 0,
+    "chromiumLocal": "154.0.8037.57",
+    "chromiumActions": "156.0.8078.4"
+  },
+  "localRuntimeSignals": [
+    "PROBE BASE-AGENT-013 1 autonomous: GET /docs/agents and MCP discovery -> 42 exact tools, scopes and class sets; 17 scoped resource templates; event target withheld; native and paging unchanged; zero outbound requests",
+    "PROBE BASE-AGENT-013 2 autonomous: generated class references -> every documented class names tests/agent-door.mjs and all matching maintained fixture IDs",
+    "PROBE BASE-AGENT-013 1 held: GET /docs/agents and MCP discovery -> 42 exact tools, scopes and class sets; 17 scoped resource templates; event target withheld; native and paging unchanged; zero outbound requests",
+    "PROBE BASE-AGENT-013 2 held: generated class references -> every documented class names tests/agent-door.mjs and all matching maintained fixture IDs",
+    "Oncall verification passed: agents"
+  ],
+  "localBrowserSignals": [
+    "PROBE BASE-AGENT-013 rendered autonomous: /docs/agents -> complete 42-tool class, scope and fixture inventory agrees with MCP; 17 resource templates; native and paging unchanged; zero outbound requests",
+    "PROBE BASE-AGENT-013 rendered held: /docs/agents -> complete 42-tool class, scope and fixture inventory agrees with MCP; 17 resource templates; native and paging unchanged; zero outbound requests",
+    "PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements"
+  ],
+  "observedOnSavedHead": [
+    {
+      "head": "308c610d2edaebae3a9397e515bf2e6db2fdfb56",
+      "contractBefore": {
+        "tool": "oncall.changes.read",
+        "purpose": "List recent changes for a service, alert or incident",
+        "clause": "OC-065",
+        "classes": "standard",
+        "status": "Shipped"
+      },
+      "contractAfter": {
+        "tool": "oncall.changes.read",
+        "purpose": "List recent changes for a service, alert or incident",
+        "clause": "OC-065",
+        "classes": "standard (+ sensitive)",
+        "status": "Shipped"
+      }
+    },
+    {
+      "policy": "autonomous",
+      "transport": {
+        "name": "oncall.changes.read",
+        "clauses": [
+          "OC-065"
+        ],
+        "classes": [
+          "standard",
+          "sensitive"
+        ],
+        "scope": "services:read",
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        }
+      },
+      "guide": {
+        "tool": [
+          "oncall.changes.read"
+        ],
+        "scope": [
+          "services:read"
+        ],
+        "classes": [
+          "standard",
+          "sensitive"
+        ],
+        "checks": [
+          "standard",
+          "tests/agent-door.mjs",
+          "changes",
+          "sensitive",
+          "tests/agent-door.mjs",
+          "changes"
+        ]
+      },
+      "nativeRecords": "unchanged",
+      "permanentMutationAudit": "unchanged",
+      "discoveryAuditAdded": 2,
+      "paging": "OFF",
+      "workerOutbound": 0,
+      "browserOutbound": 0
+    },
+    {
+      "policy": "held",
+      "transport": {
+        "name": "oncall.changes.read",
+        "clauses": [
+          "OC-065"
+        ],
+        "classes": [
+          "standard",
+          "sensitive"
+        ],
+        "scope": "services:read",
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        }
+      },
+      "guide": {
+        "tool": [
+          "oncall.changes.read"
+        ],
+        "scope": [
+          "services:read"
+        ],
+        "classes": [
+          "standard",
+          "sensitive"
+        ],
+        "checks": [
+          "standard",
+          "tests/agent-door.mjs",
+          "changes",
+          "sensitive",
+          "tests/agent-door.mjs",
+          "changes"
+        ]
+      },
+      "nativeRecords": "unchanged",
+      "permanentMutationAudit": "unchanged",
+      "discoveryAuditAdded": 2,
+      "paging": "OFF",
+      "workerOutbound": 0,
+      "browserOutbound": 0
+    },
+    {
+      "guideViewport": 1440,
+      "route": "/docs/agents",
+      "rendered": [
+        "oncall.changes.read",
+        "services:read",
+        "standard, sensitive",
+        "standard: tests/agent-door.mjs (changes); sensitive: tests/agent-door.mjs (changes)"
+      ]
+    },
+    {
+      "guideViewport": 390,
+      "route": "/docs/agents",
+      "rendered": [
+        "oncall.changes.read",
+        "services:read",
+        "standard, sensitive",
+        "standard: tests/agent-door.mjs (changes); sensitive: tests/agent-door.mjs (changes)"
+      ]
+    }
+  ],
+  "observedOnCandidateHead": [
+    {
+      "head": "66708782276f46de975edabf272d79cfdf6721c1",
+      "contractBefore": {
+        "tool": "oncall.changes.read",
+        "purpose": "List recent changes for a service, alert or incident",
+        "clause": "OC-065",
+        "classes": "standard",
+        "status": "Shipped"
+      },
+      "contractAfter": {
+        "tool": "oncall.changes.read",
+        "purpose": "List recent changes for a service, alert or incident",
+        "clause": "OC-065",
+        "classes": "standard (+ sensitive)",
+        "status": "Shipped"
+      }
+    },
+    {
+      "policy": "autonomous",
+      "transport": {
+        "name": "oncall.changes.read",
+        "clauses": [
+          "OC-065"
+        ],
+        "classes": [
+          "standard",
+          "sensitive"
+        ],
+        "scope": "services:read",
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        }
+      },
+      "guide": {
+        "tool": [
+          "oncall.changes.read"
+        ],
+        "scope": [
+          "services:read"
+        ],
+        "classes": [
+          "standard",
+          "sensitive"
+        ],
+        "checks": [
+          "standard",
+          "tests/agent-door.mjs",
+          "changes",
+          "sensitive",
+          "tests/agent-door.mjs",
+          "changes"
+        ]
+      },
+      "nativeRecords": "unchanged",
+      "permanentMutationAudit": "unchanged",
+      "discoveryAuditAdded": 2,
+      "paging": "OFF",
+      "workerOutbound": 0,
+      "browserOutbound": 0
+    },
+    {
+      "policy": "held",
+      "transport": {
+        "name": "oncall.changes.read",
+        "clauses": [
+          "OC-065"
+        ],
+        "classes": [
+          "standard",
+          "sensitive"
+        ],
+        "scope": "services:read",
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        }
+      },
+      "guide": {
+        "tool": [
+          "oncall.changes.read"
+        ],
+        "scope": [
+          "services:read"
+        ],
+        "classes": [
+          "standard",
+          "sensitive"
+        ],
+        "checks": [
+          "standard",
+          "tests/agent-door.mjs",
+          "changes",
+          "sensitive",
+          "tests/agent-door.mjs",
+          "changes"
+        ]
+      },
+      "nativeRecords": "unchanged",
+      "permanentMutationAudit": "unchanged",
+      "discoveryAuditAdded": 2,
+      "paging": "OFF",
+      "workerOutbound": 0,
+      "browserOutbound": 0
+    },
+    {
+      "guideViewport": 1440,
+      "route": "/docs/agents",
+      "rendered": [
+        "oncall.changes.read",
+        "services:read",
+        "standard, sensitive",
+        "standard: tests/agent-door.mjs (changes); sensitive: tests/agent-door.mjs (changes)"
+      ]
+    },
+    {
+      "guideViewport": 390,
+      "route": "/docs/agents",
+      "rendered": [
+        "oncall.changes.read",
+        "services:read",
+        "standard, sensitive",
+        "standard: tests/agent-door.mjs (changes); sensitive: tests/agent-door.mjs (changes)"
+      ]
+    }
+  ],
+  "screenshots": [
+    "changes-guide-1440.png",
+    "changes-guide-390.png"
+  ]
+}

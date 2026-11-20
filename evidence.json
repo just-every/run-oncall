@@ -1,0 +1,34 @@
+{
+  "files": [
+    {
+      "blob": "09206e61a41b51c1f0392f9036cbc5a585ccbf09",
+      "bytes": 12852,
+      "path": "RECEIPT.json",
+      "sha256": "c55c4008c259c5c6df4b965fecc5f111b9536bbd7de57a370630a57c07ebbb2a"
+    },
+    {
+      "blob": "bc953c992593c4933792b58e9d17f2693901f9dd",
+      "bytes": 12286,
+      "path": "REPORT.md",
+      "sha256": "25b819ab6d399d4d93ec0e476af3ffd21056a96943bd766f666160a26c07c5ec"
+    },
+    {
+      "blob": "b1480dca421540a113593ece75dc7c4a50570a0c",
+      "bytes": 405136,
+      "path": "changes-guide-1440.png",
+      "sha256": "a7fb22e7bd2c57ae56b1c879750078888088acd4d0c18cd629cedb63643fa161"
+    },
+    {
+      "blob": "bf18837e518833ef833d25084dba0366c228d47e",
+      "bytes": 100915,
+      "path": "changes-guide-390.png",
+      "sha256": "226edc6d954ddaf7a733a87b5447695ede79e119d31e864335da2e0b1e7ec221"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f309-pc1",
+  "product_head": "66708782276f46de975edabf272d79cfdf6721c1",
+  "ref": "refs/heads/evidence/sd-oncall-c-f309-pc1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f309-pc1"
+}
