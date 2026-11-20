@@ -1,0 +1,58 @@
+{
+  "files": [
+    {
+      "blob": "270b45930985b905249fba311cd1ad7421e01983",
+      "bytes": 2627,
+      "path": "CHECKS.json",
+      "sha256": "18a1acd7bac8b3c6d5189ee23957d4857b8c945d95ea4ba74b194c88bc556fd6"
+    },
+    {
+      "blob": "760f15b63a7d4a69b4d36cf83b946043eb134914",
+      "bytes": 3086,
+      "path": "PROBES.txt",
+      "sha256": "fea5cf0dbe7df51cae95ea2fb8e366c6eec26ae5ee772c506279601b5ef16590"
+    },
+    {
+      "blob": "4402aebedfa240cb99e1a140a3351fbd75b3f738",
+      "bytes": 7240,
+      "path": "REPORT.md",
+      "sha256": "4432a2919dcf06358750c53617f0493ff510979e8893e862d6183d3f76f3d7f4"
+    },
+    {
+      "blob": "df6d3df7cfc246752dd22ab15a0b67fe8e636c16",
+      "bytes": 203605,
+      "path": "oc050-stale-split-refused-1440.png",
+      "sha256": "97f8b0e19d575cf1d5fa68dfc8c577ce9435a4990f50cf4e8fa9b53529aa5af5"
+    },
+    {
+      "blob": "39750d2a54e70c21669fc9454594b9e61bc3f8f5",
+      "bytes": 64441,
+      "path": "oc050-stale-split-refused-390.png",
+      "sha256": "cdf6d47bc0b03a7fe24ed3177f443215bb615ba92a918d03321b6f84dea8b126"
+    },
+    {
+      "blob": "2c9eb2af0924c651773f289628e01e02caf7424a",
+      "bytes": 184303,
+      "path": "oc050-stale-split-review-1440.png",
+      "sha256": "96319d01389d6b536dd35a7a77a666b283a9d731423bdf625c0bb6d14512964e"
+    },
+    {
+      "blob": "771290ff3f63d3265ebc6d368a256df289ee2059",
+      "bytes": 66421,
+      "path": "oc050-stale-split-review-390.png",
+      "sha256": "90b22bef9ebb072a09b8777d477438945215b18bea835620ebc1fc6fe32f7120"
+    },
+    {
+      "blob": "0315a645e825937073188475132efb39eef2ec81",
+      "bytes": 536,
+      "path": "oc050-stale-split.json",
+      "sha256": "aa47631b8ca220da6908502bbe957f634bb805ab834b2a4af7cfad8fcb9e6cf9"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f314",
+  "product_head": "00f9dd0288f07139f9be1f7387489ed828c6ef7f",
+  "ref": "refs/heads/evidence/sd-oncall-c-f314",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f314"
+}

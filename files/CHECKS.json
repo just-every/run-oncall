@@ -1,0 +1,90 @@
+{
+  "base": "e13220ee432bc9ac531627b20a92790a0024433f",
+  "base_ci": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "e13220ee432bc9ac531627b20a92790a0024433f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44696528969",
+      "id": 44696528969,
+      "name": "Run site",
+      "run_attempt": 1,
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "e13220ee432bc9ac531627b20a92790a0024433f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44696528833",
+      "id": 44696528833,
+      "name": "Verify",
+      "run_attempt": 1,
+      "status": "completed"
+    }
+  ],
+  "branch": "cloud/sd-oncall-c-f314",
+  "candidate_publication_scan": "guarded lander pending",
+  "candidate_run_site": "guarded main landing pending",
+  "counts_before_and_after": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41
+  },
+  "head": "00f9dd0288f07139f9be1f7387489ed828c6ef7f",
+  "local": {
+    "browser": {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_PRODUCT_PART=core node tests/product-browser.mjs",
+      "exit": 0
+    },
+    "build": {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    "first-party": {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    "triage": {
+      "command": "ONCALL_TRIAGE_PART=storm node tests/triage.mjs",
+      "exit": 0
+    },
+    "typecheck": {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    }
+  },
+  "mechanical": {
+    "contract_views": {
+      "commands": [
+        "node src/base/contract-docs.mjs write",
+        "node src/base/contract-docs.mjs check"
+      ],
+      "exit": 0,
+      "restored_main_view_check": [
+        "Contract prose: 0 errors, 0 warnings.",
+        "ACCEPTANCE.md: generated content differs; run contract-docs write."
+      ],
+      "restored_main_view_check_exit": 1
+    },
+    "lock": {
+      "commands": [
+        "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+        "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check"
+      ],
+      "exit": 0
+    },
+    "migration_ledger": null
+  },
+  "pushed_branch_verified": true,
+  "save": "35cb938e844e2cc56aad934861d0fdba2e43e255",
+  "verify": {
+    "conclusion": null,
+    "created_at": "2026-11-20T08:11:44Z",
+    "event": "push",
+    "head_sha": "00f9dd0288f07139f9be1f7387489ed828c6ef7f",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44700604079",
+    "id": 44700604079,
+    "run_attempt": 1,
+    "status": "in_progress"
+  }
+}
