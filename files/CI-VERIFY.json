@@ -1,0 +1,50 @@
+{
+  "branch": "cloud/sd-oncall-union-merge-3",
+  "conclusion": "success",
+  "head_sha": "e13220ee432bc9ac531627b20a92790a0024433f",
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/44683394137",
+  "observations": [
+    {
+      "conclusion": null,
+      "created_at": "2026-11-20T05:47:47Z",
+      "event": "push",
+      "head_branch": "cloud/sd-oncall-union-merge-3",
+      "head_sha": "e13220ee432bc9ac531627b20a92790a0024433f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44683394137",
+      "id": 44683394137,
+      "name": "Verify",
+      "observed_at": "2026-11-20T05:48:02Z",
+      "run_attempt": 1,
+      "source": "exact SHA discovery",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "e13220ee432bc9ac531627b20a92790a0024433f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44683394137",
+      "observed_at": "2026-11-20T05:53:03Z",
+      "source": "run status",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "e13220ee432bc9ac531627b20a92790a0024433f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44683394137",
+      "observed_at": "2026-11-20T05:58:03Z",
+      "source": "run status",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "e13220ee432bc9ac531627b20a92790a0024433f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44683394137",
+      "observed_at": "2026-11-20T06:03:03Z",
+      "source": "run status",
+      "status": "completed"
+    }
+  ],
+  "repository": "just-every/run-oncall",
+  "run_id": 44683394137,
+  "status": "completed",
+  "workflow": "Verify"
+}

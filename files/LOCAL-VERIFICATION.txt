@@ -1,0 +1,45 @@
+Oncall append-only merge local verification
+Candidate e13220ee432bc9ac531627b20a92790a0024433f
+Parent 33cafdc7750103f51ac4173c7b52c8dbcf1efbe0
+Product ref refs/heads/cloud/sd-oncall-union-merge-3
+Advertised at 2026-11-20T05:47:45Z
+Toolchain Node 22.20.0, pnpm 10.12.4
+
+Changed paths
+A	.gitattributes
+M	scripts/verify-oncall-plan.mjs
+M	scripts/verify-shards.json
+M	sources.lock.json
+A	tests/append-only-merge.mjs
+
+Local checks
+pnpm install --frozen-lockfile: passed
+pnpm run deps: passed
+Prior clean replay attributes and test match byte for byte.
+Git resolves merge=union for all five declared paths.
+node --check tests/append-only-merge.mjs: passed
+Registered Changes command: Append-only browser assertions survive merge and rebase exactly once and parse successfully
+Elapsed 0m0.314s
+Mutation without union rules: exit 1 (expected)
+Error: git merge --no-edit second failed: Auto-merging tests/agent-door-browser.mjs
+CONFLICT (content): Merge conflict in tests/agent-door-browser.mjs
+Automatic merge failed; fix conflicts and then commit the result.
+node scripts/verify-oncall.mjs --plan: nine push shards selected
+Plan registrations 21 -> 22, Activation preserved as a distinct shard
+node src/base/contract-docs.mjs write and check: passed
+pnpm run typecheck before build list: passed
+Exact-head Verify build steps in repository order:
+> pnpm exec rer check --profile first-party (passed)
+> pnpm run build (passed)
+> pnpm run typecheck (passed)
+The shared build receipt matches the full candidate SHA.
+Pinned edition-authoring lock and check: passed
+git diff --check origin/main..HEAD: passed
+git log --merges origin/main..HEAD output: empty
+Candidate commits: 1, fleet author and committer, no trailers
+
+git diff origin/main..HEAD added-line address scan output: empty
+git log origin/main..HEAD --format=%B | grep -c at-sign output:
+0
+
+Exact-head local pass completed 2026-11-20T05:48:38Z
