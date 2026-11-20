@@ -6944,7 +6944,7 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "7bbd11c6e2591118c54bdb951dc3673264bdcb5066f17cfed7e6aa279bf728db",
+      "sha256": "e48198562c514381c3a541b6ecaf48953a2c15feb18022c1a4e999c70504405a",
       "executable": false
     },
     "tests/readable-names-browser.mjs": {
