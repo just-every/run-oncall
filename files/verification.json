@@ -1,0 +1,321 @@
+{
+  "repository": "just-every/run-oncall",
+  "tag": "sd-oncall-c-f320",
+  "date": "2026-11-20",
+  "base": "406ab473a22034b09d09a5c9e70595e78064c834",
+  "save": "3a7cc619ca22f5d9f26efb647a899c6c3fcb2db6",
+  "branch": "cloud/sd-oncall-c-f320",
+  "head": "f1990cc0bac8219c01998614609cd5275f3c1dde",
+  "remoteAdvertisesExactHead": true,
+  "countsBefore": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "countsAfter": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "clause": {
+    "id": "BASE-AGENT-012",
+    "before": "MISSING",
+    "after": "MISSING",
+    "selectedAcceptance": 1,
+    "selectedTool": "oncall.schedules.create",
+    "observedRetries": [
+      "T+24h",
+      "T+24h+1s"
+    ]
+  },
+  "verification": {
+    "local": {
+      "runtime": {
+        "entryPoint": "node tests/runtime.mjs",
+        "shard": "agents",
+        "exit": 0
+      },
+      "browser": {
+        "entryPoint": "node tests/product-browser.mjs",
+        "shard": "core",
+        "browser": "Chromium",
+        "exit": 0
+      },
+      "build": {
+        "command": "npx -y @runeditrun/rer build",
+        "exit": 0
+      },
+      "typecheck": {
+        "command": "pnpm typecheck",
+        "exit": 0
+      },
+      "firstParty": {
+        "command": "pnpm exec rer check --profile first-party",
+        "exit": 0
+      },
+      "contractViews": {
+        "command": "node src/base/contract-docs.mjs check",
+        "exit": 0
+      },
+      "sourceLock": {
+        "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+        "exit": 0
+      },
+      "initialRuntimeExit": 124,
+      "initialBrowserExit": 124
+    },
+    "agentRuntimeObservations": [
+      "PROBE BASE-AGENT-012 acceptance 1 autonomous schedule creation T+86400000ms: original result and approval receipt when held; one revision-1 rota, native audit and unchanged notices; linked replay only; zero outbound requests",
+      "PROBE BASE-AGENT-012 acceptance 1 autonomous schedule creation T+86401000ms: original result and approval receipt when held; one revision-1 rota, native audit and unchanged notices; linked replay only; zero outbound requests",
+      "PROBE BASE-AGENT-012 acceptance 1 held schedule creation T+86400000ms: original result and approval receipt when held; one revision-1 rota, native audit and unchanged notices; linked replay only; zero outbound requests",
+      "PROBE BASE-AGENT-012 acceptance 1 held schedule creation T+86401000ms: original result and approval receipt when held; one revision-1 rota, native audit and unchanged notices; linked replay only; zero outbound requests"
+    ],
+    "browserObservations": [
+      "Browser proof create-retained-autonomous 1440: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof create-retained-autonomous 390: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof create-retained-held 1440: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof create-retained-held 390: fits=true serious/critical=0 undersized-controls=0"
+    ],
+    "browserTestBlob": "83daf96d5644d242c8037bcc86be217d5140bc83",
+    "browserWorkingBlob": "83daf96d5644d242c8037bcc86be217d5140bc83",
+    "exactHeadVerify": {
+      "conclusion": "success",
+      "head_sha": "f1990cc0bac8219c01998614609cd5275f3c1dde",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44762915901",
+      "status": "completed",
+      "id": 44762915901,
+      "name": "Verify",
+      "event": "push"
+    },
+    "priorVerify": {
+      "conclusion": "cancelled",
+      "head_sha": "75915723547e9117fed96e3abe2cea081bed7648",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44752763658",
+      "status": "completed",
+      "id": 44752763658,
+      "name": "Verify",
+      "event": "push"
+    },
+    "priorVerifyJobs": [
+      {
+        "completed_at": "2026-11-20T14:22:24Z",
+        "conclusion": "success",
+        "head_sha": "75915723547e9117fed96e3abe2cea081bed7648",
+        "id": 136344586504,
+        "name": "plan",
+        "started_at": "2026-11-20T14:22:09Z",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "completed_at": "2026-11-20T14:25:42Z",
+        "conclusion": "success",
+        "head_sha": "75915723547e9117fed96e3abe2cea081bed7648",
+        "id": 136344750448,
+        "name": "build",
+        "started_at": "2026-11-20T14:22:26Z",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "completed_at": "2026-11-20T14:22:49Z",
+        "conclusion": "success",
+        "head_sha": "75915723547e9117fed96e3abe2cea081bed7648",
+        "id": 136344750457,
+        "name": "contract-docs",
+        "started_at": "2026-11-20T14:22:26Z",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "completed_at": "2026-11-20T14:22:24Z",
+        "conclusion": "skipped",
+        "head_sha": "75915723547e9117fed96e3abe2cea081bed7648",
+        "id": 136344753352,
+        "name": "light",
+        "started_at": "2026-11-20T14:22:25Z",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "completed_at": "2026-11-20T14:37:02Z",
+        "conclusion": "success",
+        "head_sha": "75915723547e9117fed96e3abe2cea081bed7648",
+        "id": 136346587745,
+        "name": "shards (transfer)",
+        "started_at": "2026-11-20T14:25:44Z",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "completed_at": "2026-11-20T14:33:22Z",
+        "conclusion": "success",
+        "head_sha": "75915723547e9117fed96e3abe2cea081bed7648",
+        "id": 136346587768,
+        "name": "shards (intake)",
+        "started_at": "2026-11-20T14:25:44Z",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "completed_at": "2026-11-20T14:41:07Z",
+        "conclusion": "cancelled",
+        "head_sha": "75915723547e9117fed96e3abe2cea081bed7648",
+        "id": 136346587769,
+        "name": "shards (hosted)",
+        "started_at": "2026-11-20T14:25:45Z",
+        "status": "completed",
+        "steps": [
+          {
+            "conclusion": "cancelled",
+            "name": "Run this shard"
+          }
+        ]
+      },
+      {
+        "completed_at": "2026-11-20T14:35:34Z",
+        "conclusion": "success",
+        "head_sha": "75915723547e9117fed96e3abe2cea081bed7648",
+        "id": 136346587778,
+        "name": "shards (triage)",
+        "started_at": "2026-11-20T14:25:44Z",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "completed_at": "2026-11-20T14:37:53Z",
+        "conclusion": "success",
+        "head_sha": "75915723547e9117fed96e3abe2cea081bed7648",
+        "id": 136346587822,
+        "name": "shards (agents)",
+        "started_at": "2026-11-20T14:25:44Z",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "completed_at": "2026-11-20T14:34:27Z",
+        "conclusion": "success",
+        "head_sha": "75915723547e9117fed96e3abe2cea081bed7648",
+        "id": 136346587858,
+        "name": "shards (browser)",
+        "started_at": "2026-11-20T14:25:44Z",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "completed_at": "2026-11-20T14:35:40Z",
+        "conclusion": "success",
+        "head_sha": "75915723547e9117fed96e3abe2cea081bed7648",
+        "id": 136346587885,
+        "name": "shards (runtime)",
+        "started_at": "2026-11-20T14:25:45Z",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "completed_at": "2026-11-20T14:35:00Z",
+        "conclusion": "success",
+        "head_sha": "75915723547e9117fed96e3abe2cea081bed7648",
+        "id": 136346587903,
+        "name": "shards (changes)",
+        "started_at": "2026-11-20T14:25:45Z",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "completed_at": "2026-11-20T14:31:34Z",
+        "conclusion": "success",
+        "head_sha": "75915723547e9117fed96e3abe2cea081bed7648",
+        "id": 136346588141,
+        "name": "shards (activation)",
+        "started_at": "2026-11-20T14:25:44Z",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "completed_at": "2026-11-20T14:41:12Z",
+        "conclusion": "failure",
+        "head_sha": "75915723547e9117fed96e3abe2cea081bed7648",
+        "id": 136355148138,
+        "name": "verify",
+        "started_at": "2026-11-20T14:41:09Z",
+        "status": "completed",
+        "steps": [
+          {
+            "conclusion": "failure",
+            "name": "Require the selected coverage and its proof"
+          }
+        ]
+      },
+      {
+        "completed_at": "2026-11-20T14:41:07Z",
+        "conclusion": "skipped",
+        "head_sha": "75915723547e9117fed96e3abe2cea081bed7648",
+        "id": 136355149098,
+        "name": "full-push-proof",
+        "started_at": "2026-11-20T14:41:08Z",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "completed_at": "2026-11-20T14:41:07Z",
+        "conclusion": "skipped",
+        "head_sha": "75915723547e9117fed96e3abe2cea081bed7648",
+        "id": 136355150474,
+        "name": "nightly-proof",
+        "started_at": "2026-11-20T14:41:08Z",
+        "status": "completed",
+        "steps": []
+      }
+    ],
+    "verifyReproduced": {
+      "head": "75915723547e9117fed96e3abe2cea081bed7648",
+      "job": 136355148138,
+      "command": "bash -x /tmp/f320-verify-guard-step.sh",
+      "test": "Require the selected coverage and its proof",
+      "exit": 1,
+      "failure": "test \"$SHARDS\" = success received cancelled"
+    },
+    "localHostedReproduction": {
+      "command": "node scripts/verify-oncall.mjs hosted",
+      "jobLimitSeconds": 900,
+      "exit": 124
+    },
+    "localHostedOnMain": {
+      "command": "node scripts/verify-oncall.mjs hosted",
+      "head": "406ab473a22034b09d09a5c9e70595e78064c834",
+      "jobLimitSeconds": 900,
+      "exit": 124
+    },
+    "runSite": "pending guarded landing",
+    "publicationScan": "pending fleet lander"
+  },
+  "screens": [
+    {
+      "mode": "autonomous",
+      "width": 1440,
+      "path": "agent-door-create-retained-autonomous-1440.png",
+      "sha256": "55da5b7dc357d61ed5a050030524e400e0a90f6fbf0f0587aeae208f7995de50"
+    },
+    {
+      "mode": "autonomous",
+      "width": 390,
+      "path": "agent-door-create-retained-autonomous-390.png",
+      "sha256": "972ae9cef56c50f09a8c01bb02c89cc5cb0ae7d15bdfdfd4273488d10eda743c"
+    },
+    {
+      "mode": "held",
+      "width": 1440,
+      "path": "agent-door-create-retained-held-1440.png",
+      "sha256": "b6486b6f2dfaed4487647278ef6cf8ff5f875b274e02eca45631b4222abf34ff"
+    },
+    {
+      "mode": "held",
+      "width": 390,
+      "path": "agent-door-create-retained-held-390.png",
+      "sha256": "0d75e3ebf0e850595308534cfde6f587b5f9dbc584f2f319793394130d119c94"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "d22c507ed21b407cb072c1257652a429523b3829",
+      "bytes": 8138,
+      "path": "REPORT.md",
+      "sha256": "616480f282ed4eb35037e778338e37f751f0333b8a11ab86f7033eeb29c81d81"
+    },
+    {
+      "blob": "5ee489439ce6ff219d78d24e6560c2d639ca8740",
+      "bytes": 327378,
+      "path": "agent-door-create-retained-autonomous-1440.png",
+      "sha256": "55da5b7dc357d61ed5a050030524e400e0a90f6fbf0f0587aeae208f7995de50"
+    },
+    {
+      "blob": "408fd30db42ddbb65d8e6fd55aef95d770dc982f",
+      "bytes": 270336,
+      "path": "agent-door-create-retained-autonomous-390.png",
+      "sha256": "972ae9cef56c50f09a8c01bb02c89cc5cb0ae7d15bdfdfd4273488d10eda743c"
+    },
+    {
+      "blob": "d9578cef335c6fc6effbb8957ca77d10a43625d9",
+      "bytes": 323840,
+      "path": "agent-door-create-retained-held-1440.png",
+      "sha256": "b6486b6f2dfaed4487647278ef6cf8ff5f875b274e02eca45631b4222abf34ff"
+    },
+    {
+      "blob": "52b17e77989495044abaea2535e07bcdfe866417",
+      "bytes": 267949,
+      "path": "agent-door-create-retained-held-390.png",
+      "sha256": "0d75e3ebf0e850595308534cfde6f587b5f9dbc584f2f319793394130d119c94"
+    },
+    {
+      "blob": "2b0b2e6a51613b0a4f0903e45867ec18c89b16bf",
+      "bytes": 10839,
+      "path": "verification.json",
+      "sha256": "90dc97d8ba6dc00c5c7719ed34f5f81a0ba296881387dd685750e073ece13223"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f320",
+  "product_head": "f1990cc0bac8219c01998614609cd5275f3c1dde",
+  "ref": "refs/heads/evidence/sd-oncall-c-f320",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f320"
+}
