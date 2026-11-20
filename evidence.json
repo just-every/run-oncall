@@ -1,0 +1,58 @@
+{
+  "files": [
+    {
+      "blob": "d78a332da2fdb044aff56707f4f39309af031e51",
+      "bytes": 6153,
+      "path": "RECEIPT.json",
+      "sha256": "9be1431893e515e1ee9f909290ba35d3c0d41e081a74aabfb577bee68187e85f"
+    },
+    {
+      "blob": "acbb854d9bd433f89ef8538f608ff23e86791943",
+      "bytes": 8852,
+      "path": "REPORT.md",
+      "sha256": "41ef54591b73a42222722d3d8574d18ca2d812e871c47d654184423d8015e2d4"
+    },
+    {
+      "blob": "7514b82c41a3739dc3cf04d821be24d5566093ce",
+      "bytes": 44836,
+      "path": "agent-door-resolution-executed-1440.png",
+      "sha256": "2ef60ca9c480b140d6dcfbc5e8d79e6a0e71d97eac4dca1cd3f0fdcb0ba07203"
+    },
+    {
+      "blob": "99ce16b27735f9d85834fe41bd1d64ce9fa341f4",
+      "bytes": 37269,
+      "path": "agent-door-resolution-executed-390.png",
+      "sha256": "4d2759f6ff43c559f4cca347646afcb02b9a12805456f248bf39f27f08ad2690"
+    },
+    {
+      "blob": "4f4983880b99229c615fc97ee27c111346775519",
+      "bytes": 46585,
+      "path": "agent-door-resolution-pending-1440.png",
+      "sha256": "a3262f3e5eecdaec81edd2cb3072910fcea402174348f45373772b7a58acc4ab"
+    },
+    {
+      "blob": "183fd49cdfac2444f9791b408a0b56bb87f5700c",
+      "bytes": 39121,
+      "path": "agent-door-resolution-pending-390.png",
+      "sha256": "07413d8bef90fa6c3f82152169b736e71cfd6f5376c0109bd19447095a197bf0"
+    },
+    {
+      "blob": "bb590660bcc3902d5b6fdc6c200cb02ca0b2be44",
+      "bytes": 560199,
+      "path": "agent-door-resolution-timeline-1440.png",
+      "sha256": "01d557b4f63ec1fc4a01c5466cf0f4a632291f8289cc5e256dd8b45e09fbadaf"
+    },
+    {
+      "blob": "c826072bc2fc6d8a96e96f9144cac035a8c3eec7",
+      "bytes": 110945,
+      "path": "agent-door-resolution-timeline-390.png",
+      "sha256": "76787ed022af163a1813a9a7c9d906c236559535a33e9a8435721bd00efd5a5a"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f316",
+  "product_head": "2feb5a944513fee024215e606aedb0c312c1b761",
+  "ref": "refs/heads/evidence/sd-oncall-c-f316",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f316"
+}

@@ -1,0 +1,154 @@
+{
+  "agentRuntimeSummary": "Runtime agents completed (585.3s)",
+  "base": "e13220ee432bc9ac531627b20a92790a0024433f",
+  "branch": "cloud/sd-oncall-c-f316",
+  "candidateRunSite": {
+    "status": "pending landing"
+  },
+  "clause": {
+    "claim": "PARTIAL",
+    "id": "BASE-AGENT-012",
+    "scope": "acceptance 1, completed incident resolution at T+24h and T+24h+1s",
+    "statusAfter": "MISSING",
+    "statusBefore": "MISSING"
+  },
+  "countsAfter": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "countsBefore": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "head": "2feb5a944513fee024215e606aedb0c312c1b761",
+  "localChecks": {
+    "agents": {
+      "command": "ONCALL_RUNTIME_PART=agents ONCALL_VERIFY_PREBUILT=true node tests/runtime.mjs",
+      "exit": 0
+    },
+    "appendOnlyMerge": {
+      "command": "node tests/append-only-merge.mjs",
+      "exit": 0
+    },
+    "browser": {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/agent-door-browser.mjs",
+      "exit": 0
+    },
+    "build": {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    "contractCheck": {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    "contractWrite": {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    "firstParty": {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    "setup": {
+      "command": "cloud_run npx -y @runeditrun/rer@0.2.118 setup --non-interactive",
+      "exit": 0
+    },
+    "sourceLock": {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    "sourceLockCheck": {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    "typecheck": {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    }
+  },
+  "localToolchain": {
+    "chromiumExecutable": "/usr/bin/chromium",
+    "node": "24.19.0",
+    "pnpm": "10.12.4"
+  },
+  "mainRunsObserved": {
+    "conclusion": "success",
+    "head": "e13220ee432bc9ac531627b20a92790a0024433f",
+    "runSite": 44696528969,
+    "verify": 44696528833
+  },
+  "probeOutput": [
+    "PROBE BASE-AGENT-012 acceptance 1 autonomous oncall.incidents.resolve T+86400000ms: renewed equivalent policy and same-scope token; original key and arguments with new RPC id return the exact stored resolution and original receipt when held; terminal expiry and native custody unchanged, one linked replay attempt and zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 1 autonomous oncall.incidents.resolve T+86401000ms: renewed equivalent policy and same-scope token; original key and arguments with new RPC id return the exact stored resolution and original receipt when held; terminal expiry and native custody unchanged, one linked replay attempt and zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 1 held oncall.incidents.resolve T+86400000ms: renewed equivalent policy and same-scope token; original key and arguments with new RPC id return the exact stored resolution and original receipt when held; terminal expiry and native custody unchanged, one linked replay attempt and zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 1 held oncall.incidents.resolve T+86401000ms: renewed equivalent policy and same-scope token; original key and arguments with new RPC id return the exact stored resolution and original receipt when held; terminal expiry and native custody unchanged, one linked replay attempt and zero outbound requests"
+  ],
+  "publicationScan": {
+    "requiredAtLanding": true,
+    "status": "not run in cloud"
+  },
+  "publishedSave": "c471bdab478e64a6ba524896b2796714534f31ee",
+  "repository": "just-every/run-oncall",
+  "resolutionBrowserOutput": [
+    "Browser proof resolution-pending 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof resolution-pending 390: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof resolution-executed 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof resolution-executed 390: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof resolution-timeline 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof resolution-timeline 390: fits=true serious/critical=0 undersized-controls=0",
+    "PASS incident resolution browser: commitment-only approval, exact saved revision, native human approver and agent preparer, one attributed resolution and effect-free retry"
+  ],
+  "screens": [
+    {
+      "file": "agent-door-resolution-pending-1440.png",
+      "height": 1000,
+      "sha256": "a3262f3e5eecdaec81edd2cb3072910fcea402174348f45373772b7a58acc4ab",
+      "width": 1440
+    },
+    {
+      "file": "agent-door-resolution-pending-390.png",
+      "height": 1000,
+      "sha256": "07413d8bef90fa6c3f82152169b736e71cfd6f5376c0109bd19447095a197bf0",
+      "width": 390
+    },
+    {
+      "file": "agent-door-resolution-executed-1440.png",
+      "height": 1000,
+      "sha256": "2ef60ca9c480b140d6dcfbc5e8d79e6a0e71d97eac4dca1cd3f0fdcb0ba07203",
+      "width": 1440
+    },
+    {
+      "file": "agent-door-resolution-executed-390.png",
+      "height": 1000,
+      "sha256": "4d2759f6ff43c559f4cca347646afcb02b9a12805456f248bf39f27f08ad2690",
+      "width": 390
+    },
+    {
+      "file": "agent-door-resolution-timeline-1440.png",
+      "height": 4148,
+      "sha256": "01d557b4f63ec1fc4a01c5466cf0f4a632291f8289cc5e256dd8b45e09fbadaf",
+      "width": 1440
+    },
+    {
+      "file": "agent-door-resolution-timeline-390.png",
+      "height": 1566,
+      "sha256": "76787ed022af163a1813a9a7c9d906c236559535a33e9a8435721bd00efd5a5a",
+      "width": 390
+    }
+  ],
+  "tag": "sd-oncall-c-f316",
+  "verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_branch": "cloud/sd-oncall-c-f316",
+    "head_sha": "2feb5a944513fee024215e606aedb0c312c1b761",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44701429964",
+    "id": 44701429964,
+    "status": "completed"
+  }
+}
