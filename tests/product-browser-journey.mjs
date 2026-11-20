@@ -1,6 +1,7 @@
 import {readableErasure,coveredSwap,nextCoverageBrowser} from './stranger-trip-steps.mjs'
 import {localPart,mail,recoveryRules,savedEmailBundle} from './email-fixtures.mjs'
 import {durableSnapshot,ruleDeclarationAuditFault} from './worker.mjs'
+import {agedScheduleCreateRetention} from './oncall-agent-schedule-replay.mjs'
 import {alertTriageTimeFixture} from './triage-time-fixture.mjs'
 import {pathToFileURL} from 'node:url'
 import {resolve} from 'node:path'
@@ -612,6 +613,53 @@ async function accessibleState(page,name,width,focus) {
 }
 
 const keyboardInstant=Date.parse('2026-10-30T12:00:00.000Z')
+async function retainedScheduleCreationBrowser(browser) {
+ const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';
+ await mkdir(directory,{recursive:true});
+ await agedScheduleCreateRetention({async observe({runtime,mode,schedule,people}){
+  const context=await browser.newContext({baseURL:runtime.origin,viewport:{width:1440,height:1000}});
+  try{
+   await context.addCookies(runtime.cookie.split('; ').map(pair=>{
+    const at=pair.indexOf('=');
+    return {name:pair.slice(0,at),value:pair.slice(at+1),url:runtime.origin,httpOnly:true,sameSite:'Lax'};
+   }));
+   const page=await context.newPage(),outbound=[];
+   page.on('request',request=>{if(new URL(request.url()).origin!==runtime.origin)outbound.push(request.url());});
+   await page.clock.setFixedTime(new Date(runtime.context.now()));
+   const backup=people.find(person=>person.id===schedule.backup.members[0]);
+   assert.ok(backup);
+   for(const width of [1440,390]){
+    await page.setViewportSize({width,height:1000});
+    await page.goto('/on-call/'+schedule.id);
+    await page.getByRole('heading',{name:schedule.name,exact:true}).waitFor();
+    const coverage=page.locator('.scheduling-now-role');
+    const backupRole=coverage.filter({has:page.getByRole('heading',{name:'backup',exact:true})});
+    await backupRole.locator('.now').waitFor();
+    const fits=await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth);
+    const findings=(await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations
+     .filter(row=>['serious','critical'].includes(row.impact));
+    const controls=await page.locator('button,input:not([type=hidden]),select,textarea').evaluateAll(nodes=>
+     nodes.filter(node=>node.getClientRects().length).filter(node=>
+      (node.matches('input[type=checkbox],input[type=radio]')?node.labels?.[0]??node:node).getBoundingClientRect().height<44
+     ).map(node=>node.getAttribute('aria-label')??node.textContent?.trim()??node.name));
+    if(width===1440){
+     assert.equal(await backupRole.locator('.now').textContent(),'Now: '+backup.name);
+     const primaryRole=coverage.filter({has:page.getByRole('heading',{name:'primary',exact:true})});
+     const primaryNames=people.filter(person=>schedule.primary.members.includes(person.id)).map(person=>'Now: '+person.name);
+     assert.ok(primaryNames.includes(await primaryRole.locator('.now').textContent()));
+     assert.equal(await page.getByText('Paging is off',{exact:true}).count(),1);
+     assert.ok(fits,'The retained rota fits at desktop width');
+     assert.deepEqual(findings,[]);
+     assert.deepEqual(controls,[]);
+    }
+    console.log('Browser proof create-retained-'+mode+' '+width+': fits='+fits+' serious/critical='+findings.length+' undersized-controls='+controls.length);
+    await page.screenshot({path:directory+'/agent-door-create-retained-'+mode+'-'+width+'.png',fullPage:true});
+   }
+   assert.deepEqual(outbound,[],'Viewing the retained rota makes no outbound browser requests');
+  }finally{await context.close();}
+ }});
+}
+
 export async function productSchedule(page,context,width,session,{ownerLink,openSession,selectedOnly=false,observePhoneStaleCover=false,setTime,worker}) {
  await setTime(keyboardInstant);
  const now=keyboardInstant;
@@ -2474,6 +2522,7 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession,
   }
   return;
  }
+ await retainedScheduleCreationBrowser(context.browser());
  for(const width of [1440]) {
   await page.setViewportSize({width,height:1000})
   await setTime(keyboardInstant)
