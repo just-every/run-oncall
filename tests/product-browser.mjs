@@ -179,6 +179,151 @@ async function incompleteIntakeBrowser(page,context) {
 }
 
 // OC-056: publish response rules, recover a native alert, and keep human incidents open.
+async function staleMergeTargetBrowser(context, req, target, source, proof) {
+ const origin = worker.origin;
+ const viewport = {width:1440,height:1000};
+ const contexts = [];
+ const offOrigin = [];
+ const observeRequest = request => {
+  const url = new URL(request.url());
+  if (['http:','https:'].includes(url.protocol) && url.origin !== origin) offOrigin.push(url.origin);
+ };
+ const commandResponse = (page, type) => page.waitForResponse(response =>
+  new URL(response.url()).pathname === '/api/command' && response.request().method() === 'POST' &&
+  response.request().postDataJSON()?.type === type);
+ const incidentPath = id => origin + '/incidents/' + encodeURIComponent(id);
+ const open = async (page, incident) => {
+  await page.goto(incidentPath(incident.id));
+  await page.locator('.detail').getByRole('heading',{name:incident.title,exact:true}).waitFor();
+ };
+ const signIn = async name => {
+  const password = randomBytes(24).toString('hex');
+  const member = await req('/api/members',{name,role:'responder',password},201);
+  const session = await context.browser().newContext({baseURL:origin,viewport,extraHTTPHeaders:{connection:'close'}});
+  contexts.push(session);
+  session.on('request',observeRequest);
+  const page = await session.newPage();
+  await page.goto(origin + '/signin/local');
+  await page.getByLabel('Name',{exact:true}).fill(name);
+  await page.getByLabel('Password',{exact:true}).fill(password);
+  await page.getByRole('button',{name:'Sign in',exact:true}).click();
+  await page.waitForURL(url=>url.pathname==='/on-call');
+  const reply = await session.request.get('/api/session');
+  assert.equal(reply.status(),200);
+  const {member: signedIn} = await reply.json();
+  assert.deepEqual([signedIn.id,signedIn.role],[member.id,'responder']);
+  return {page,member};
+ };
+ const {workspaceRevision: ignored, ...pagingBefore} = await req('/api/paging/state');
+ assert.equal(pagingBefore.paging,'OFF');
+ try {
+  const reviewer = await signIn('Synthetic merge reviewer');
+  const editor = await signIn('Synthetic target note author');
+  await open(editor.page,target);
+  await open(reviewer.page,target);
+  await reviewer.page.getByRole('button',{name:'Incident actions',exact:true}).focus();
+  await expect(reviewer.page.getByRole('tooltip',{name:'Incident actions',exact:true})).toBeVisible();
+  const dialog = await openIncidentAction(reviewer.page,'Merge related incidents');
+  await dialog.getByRole('button',{name:'Close',exact:true}).focus();
+  await expect(dialog.getByRole('tooltip',{name:'Close dialog',exact:true})).toBeVisible();
+  const workflow = dialog.getByRole('region',{name:'Incident workflows',exact:true});
+  const reason = 'The replica investigation explains the same checkout impact.';
+  await workflow.getByRole('checkbox',{name:new RegExp(source.title)}).check();
+  await workflow.getByLabel('Reason for merging',{exact:true}).fill(reason);
+  const reviewed = await req('/api/state');
+  const reviewedTarget = reviewed.incidents.find(row=>row.id===target.id);
+  const reviewedSource = reviewed.incidents.find(row=>row.id===source.id);
+  assert.equal(reviewedSource.revision,source.revision);
+  await workflow.getByRole('button',{name:'Review merge',exact:true}).click();
+  const confirm = workflow.getByRole('button',{name:'Merge selected incidents',exact:true});
+  await expect(confirm).toBeVisible();
+
+  const outboundBefore = await proof.outbound();
+  assert.deepEqual(outboundBefore,[]);
+  const note = 'Separate responder confirmed continuing customer impact.';
+  await editor.page.getByLabel('Observation, decision or evidence',{exact:true}).fill(note);
+  const [accepted] = await Promise.all([
+   commandResponse(editor.page,'note'),
+   editor.page.getByRole('button',{name:'Add note',exact:true}).click(),
+  ]);
+  assert.equal(accepted.status(),200);
+  const updated = await accepted.json();
+  const entry = updated.timeline.at(-1);
+  assert.deepEqual([entry.kind,entry.text,entry.actor],['note',note,editor.member.id]);
+  assert.deepEqual(updated,{
+   ...reviewedTarget,revision:reviewedTarget.revision+1,timeline:[...reviewedTarget.timeline,entry],
+  },'the independent note is the only incident update');
+  const expectedState = {
+   ...reviewed,revision:reviewed.revision+1,
+   incidents:reviewed.incidents.map(row=>row.id===target.id?updated:row),
+  };
+  // Let the original sheet receive current workspace data without reopening the review.
+  await focusWorkspace(reviewer.page);
+  await expect(reviewer.page.locator('.timeline .event').filter({hasText:note})).toHaveCount(1);
+  const afterNote = proof.snapshot();
+
+  const [rejected] = await Promise.all([commandResponse(reviewer.page,'merge-incidents'),confirm.click()]);
+  assert.deepEqual(rejected.request().postDataJSON(),{
+   type:'merge-incidents',incident:target.id,revision:reviewedTarget.revision,
+   sources:[{id:source.id,revision:reviewedSource.revision}],reason,
+  },'confirm sends the reviewed target and source revisions after the target changes');
+  assert.equal(rejected.status(),409);
+  const conflict = dialog.getByRole('alert').filter({hasText:/Incident changed/});
+  await expect(conflict).toBeVisible();
+  await expect(dialog.getByRole('status').filter({hasText:/Merged|Saved/})).toHaveCount(0);
+  await expect(reviewer.page.locator('.notice[role="status"]')).not.toContainText('Saved');
+  assert.equal(new URL(reviewer.page.url()).pathname,new URL(incidentPath(target.id)).pathname);
+  assert.deepEqual(await req('/api/state'),expectedState,'the refusal adds no alias, link, role, timeline or revision change');
+  const {workspaceRevision, ...pagingAfter} = await req('/api/paging/state');
+  assert.equal(workspaceRevision,expectedState.revision);
+  assert.deepEqual(pagingAfter,pagingBefore);
+  assert.deepEqual(await proof.outbound(),outboundBefore);
+
+  const afterRefusal = proof.snapshot();
+  const auditTables = ['oc_admin_audit','oc_audit_clock','oc_audit_identities'];
+  for (const [table, rows] of Object.entries(afterNote)) {
+   if (!auditTables.includes(table)) assert.ok(isDeepStrictEqual(afterRefusal[table],rows),'refusal preserves ' + table);
+  }
+  const priorAudit = new Set(afterNote.oc_admin_audit.map(row=>row.id));
+  const refusals = afterRefusal.oc_admin_audit.filter(row=>!priorAudit.has(row.id));
+  assert.equal(refusals.length,1);
+  const [refusal] = refusals;
+  const label = (kind,id) => afterRefusal.oc_audit_identities.find(row=>row.kind===kind&&row.entity_id===id).label;
+  assert.deepEqual([refusal.kind,refusal.outcome,refusal.actor,refusal.subject],
+   ['command.merge-incidents','refused',label('member',reviewer.member.id),label('entity',target.id)]);
+  assert.equal(refusal.before_revision,refusal.after_revision);
+  assert.equal(refusal.workspace_before,expectedState.revision);
+  assert.equal(refusal.workspace_after,expectedState.revision);
+  assert.equal(refusal.paging_before,refusal.paging_after);
+  assert.equal(refusal.handoff_before,refusal.handoff_after);
+
+  const directory = process.env.ONCALL_BROWSER_EVIDENCE ?? './evidence/browser';
+  await mkdir(directory,{recursive:true});
+  const violations = (await new AxeBuilder({page:reviewer.page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations;
+  assert.deepEqual(violations.filter(item=>['serious','critical'].includes(item.impact)),[]);
+  assert.ok(await reviewer.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  for (const width of [1440,390]) {
+   await reviewer.page.setViewportSize({...viewport,width});
+   await conflict.scrollIntoViewIfNeeded();
+   await reviewer.page.screenshot({path:directory + '/oc050-stale-merge-target-' + width + '.png'});
+  }
+  await open(editor.page,source);
+  assert.equal(editor.page.url(),incidentPath(source.id),'the refused source remains independently navigable');
+  assert.deepEqual(offOrigin,[],'neither browser session makes an outbound request');
+  await writeFile(directory + '/oc050-stale-merge-target.json',JSON.stringify({
+   assertionWidth:viewport.width,screenshotWidths:[1440,390],noteStatus:accepted.status(),mergeStatus:rejected.status(),
+   reviewedTargetRevision:reviewedTarget.revision,committedTargetRevision:updated.revision,
+   submittedTargetRevision:rejected.request().postDataJSON().revision,
+   reviewedSourceRevision:reviewedSource.revision,submittedSourceRevision:rejected.request().postDataJSON().sources[0].revision,
+   visibleConflict:true,successClaim:false,onlyIndependentNote:true,sourceRemainsSeparate:true,
+   refusalCount:refusals.length,refusalActorRole:reviewer.member.role,paging:pagingAfter.paging,pagingUnchanged:true,outboundRequests:outboundBefore.length,browserOutboundRequests:offOrigin.length,
+  },null,2)+'\n');
+  console.log('PROBE OC-050 acceptance 2 stale merge target: independent responder note 200, original reviewed merge 409, visible conflict without success, only the note persists, one responder-attributed refusal, paging OFF and zero outbound requests');
+ } finally {
+  await Promise.all(contexts.map(session=>session.close()));
+ }
+}
+
 async function responsePolicyBrowser(page,context) {
  const origin=new URL(page.url()).origin
  const request=async(path,data,status=200)=>{
@@ -357,140 +502,6 @@ async function responsePolicyBrowser(page,context) {
  }
 }
 
-async function staleMergeTargetBrowser(context, req, target, source, proof) {
- const origin = worker.origin;
- const viewport = {width:1440,height:1000};
- const contexts = [];
- const commandResponse = (page, type) => page.waitForResponse(response =>
-  new URL(response.url()).pathname === '/api/command' && response.request().method() === 'POST' &&
-  response.request().postDataJSON()?.type === type);
- const incidentPath = id => origin + '/incidents/' + encodeURIComponent(id);
- const open = async (page, incident) => {
-  await page.goto(incidentPath(incident.id));
-  await page.locator('.detail').getByRole('heading',{name:incident.title,exact:true}).waitFor();
- };
- const signIn = async name => {
-  const password = randomBytes(24).toString('hex');
-  const member = await req('/api/members',{name,role:'responder',password},201);
-  const session = await context.browser().newContext({baseURL:origin,viewport,extraHTTPHeaders:{connection:'close'}});
-  contexts.push(session);
-  const page = await session.newPage();
-  await page.goto(origin + '/signin/local');
-  await page.getByLabel('Name',{exact:true}).fill(name);
-  await page.getByLabel('Password',{exact:true}).fill(password);
-  await page.getByRole('button',{name:'Sign in',exact:true}).click();
-  await page.waitForURL(url=>url.pathname==='/on-call');
-  const reply = await session.request.get('/api/session');
-  assert.equal(reply.status(),200);
-  const {member: signedIn} = await reply.json();
-  assert.deepEqual([signedIn.id,signedIn.role],[member.id,'responder']);
-  return {page,member};
- };
- const {workspaceRevision: ignored, ...pagingBefore} = await req('/api/paging/state');
- assert.equal(pagingBefore.paging,'OFF');
- try {
-  const reviewer = await signIn('Synthetic merge reviewer');
-  const editor = await signIn('Synthetic target note author');
-  await open(editor.page,target);
-  await open(reviewer.page,target);
-  const dialog = await openIncidentAction(reviewer.page,'Merge related incidents');
-  const workflow = dialog.getByRole('region',{name:'Incident workflows',exact:true});
-  const reason = 'The replica investigation explains the same checkout impact.';
-  await workflow.getByRole('checkbox',{name:new RegExp(source.title)}).check();
-  await workflow.getByLabel('Reason for merging',{exact:true}).fill(reason);
-  const reviewed = await req('/api/state');
-  const reviewedTarget = reviewed.incidents.find(row=>row.id===target.id);
-  const reviewedSource = reviewed.incidents.find(row=>row.id===source.id);
-  assert.equal(reviewedSource.revision,source.revision);
-  await workflow.getByRole('button',{name:'Review merge',exact:true}).click();
-  const confirm = workflow.getByRole('button',{name:'Merge selected incidents',exact:true});
-  await expect(confirm).toBeVisible();
-
-  const outboundBefore = await proof.outbound();
-  assert.deepEqual(outboundBefore,[]);
-  const note = 'Separate responder confirmed continuing customer impact.';
-  await editor.page.getByLabel('Observation, decision or evidence',{exact:true}).fill(note);
-  const [accepted] = await Promise.all([
-   commandResponse(editor.page,'note'),
-   editor.page.getByRole('button',{name:'Add note',exact:true}).click(),
-  ]);
-  assert.equal(accepted.status(),200);
-  const updated = await accepted.json();
-  const entry = updated.timeline.at(-1);
-  assert.deepEqual([entry.kind,entry.text,entry.actor],['note',note,editor.member.id]);
-  assert.deepEqual(updated,{
-   ...reviewedTarget,revision:reviewedTarget.revision+1,timeline:[...reviewedTarget.timeline,entry],
-  },'the independent note is the only incident update');
-  const expectedState = {
-   ...reviewed,revision:reviewed.revision+1,
-   incidents:reviewed.incidents.map(row=>row.id===target.id?updated:row),
-  };
-  // Let the original sheet receive current workspace data without reopening the review.
-  await focusWorkspace(reviewer.page);
-  await expect(reviewer.page.locator('.timeline .event').filter({hasText:note})).toHaveCount(1);
-  const afterNote = proof.snapshot();
-
-  const [rejected] = await Promise.all([commandResponse(reviewer.page,'merge-incidents'),confirm.click()]);
-  assert.deepEqual(rejected.request().postDataJSON(),{
-   type:'merge-incidents',incident:target.id,revision:reviewedTarget.revision,
-   sources:[{id:source.id,revision:reviewedSource.revision}],reason,
-  },'confirm sends the reviewed target and source revisions after the target changes');
-  assert.equal(rejected.status(),409);
-  const conflict = dialog.getByRole('alert').filter({hasText:/Incident changed/});
-  await expect(conflict).toBeVisible();
-  await expect(dialog.getByRole('status').filter({hasText:/Merged|Saved/})).toHaveCount(0);
-  await expect(reviewer.page.locator('.notice[role="status"]')).not.toContainText('Saved');
-  assert.equal(new URL(reviewer.page.url()).pathname,new URL(incidentPath(target.id)).pathname);
-  assert.deepEqual(await req('/api/state'),expectedState,'the refusal adds no alias, link, role, timeline or revision change');
-  const {workspaceRevision, ...pagingAfter} = await req('/api/paging/state');
-  assert.equal(workspaceRevision,expectedState.revision);
-  assert.deepEqual(pagingAfter,pagingBefore);
-  assert.deepEqual(await proof.outbound(),outboundBefore);
-
-  const afterRefusal = proof.snapshot();
-  const auditTables = ['oc_admin_audit','oc_audit_clock','oc_audit_identities'];
-  for (const [table, rows] of Object.entries(afterNote)) {
-   if (!auditTables.includes(table)) assert.ok(isDeepStrictEqual(afterRefusal[table],rows),'refusal preserves ' + table);
-  }
-  const priorAudit = new Set(afterNote.oc_admin_audit.map(row=>row.id));
-  const refusals = afterRefusal.oc_admin_audit.filter(row=>!priorAudit.has(row.id));
-  assert.equal(refusals.length,1);
-  const [refusal] = refusals;
-  const label = (kind,id) => afterRefusal.oc_audit_identities.find(row=>row.kind===kind&&row.entity_id===id).label;
-  assert.deepEqual([refusal.kind,refusal.outcome,refusal.actor,refusal.subject],
-   ['command.merge-incidents','refused',label('member',reviewer.member.id),label('entity',target.id)]);
-  assert.equal(refusal.before_revision,refusal.after_revision);
-  assert.equal(refusal.workspace_before,expectedState.revision);
-  assert.equal(refusal.workspace_after,expectedState.revision);
-  assert.equal(refusal.paging_before,refusal.paging_after);
-  assert.equal(refusal.handoff_before,refusal.handoff_after);
-
-  const directory = process.env.ONCALL_BROWSER_EVIDENCE ?? './evidence/browser';
-  await mkdir(directory,{recursive:true});
-  const violations = (await new AxeBuilder({page:reviewer.page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations;
-  assert.deepEqual(violations.filter(item=>['serious','critical'].includes(item.impact)),[]);
-  assert.ok(await reviewer.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
-  for (const width of [1440,390]) {
-   await reviewer.page.setViewportSize({...viewport,width});
-   await conflict.scrollIntoViewIfNeeded();
-   await reviewer.page.screenshot({path:directory + '/oc050-stale-merge-target-' + width + '.png'});
-  }
-  await open(editor.page,source);
-  assert.equal(editor.page.url(),incidentPath(source.id),'the refused source remains independently navigable');
-  await writeFile(directory + '/oc050-stale-merge-target.json',JSON.stringify({
-   assertionWidth:viewport.width,screenshotWidths:[1440,390],noteStatus:accepted.status(),mergeStatus:rejected.status(),
-   reviewedTargetRevision:reviewedTarget.revision,committedTargetRevision:updated.revision,
-   submittedTargetRevision:rejected.request().postDataJSON().revision,
-   reviewedSourceRevision:reviewedSource.revision,submittedSourceRevision:rejected.request().postDataJSON().sources[0].revision,
-   visibleConflict:true,successClaim:false,onlyIndependentNote:true,sourceRemainsSeparate:true,
-   refusalCount:refusals.length,refusalActorRole:reviewer.member.role,paging:pagingAfter.paging,pagingUnchanged:true,outboundRequests:outboundBefore.length,
-  },null,2)+'\n');
-  console.log('PROBE OC-050 acceptance 2 stale merge target: independent responder note 200, original reviewed merge 409, visible conflict without success, only the note persists, one responder-attributed refusal, paging OFF and zero outbound requests');
- } finally {
-  await Promise.all(contexts.map(session=>session.close()));
- }
-}
-
 async function incidentWorkflowBrowser(page,context,proof) {
  const origin=new URL(page.url()).origin;
  const req=async(path,data,status=200)=>{const r=data===undefined?await context.request.get(path):await context.request.post(path,{headers:{origin},data});assert.equal(r.status(),status,`OC-050 ${path}`);return r.json()};
@@ -526,9 +537,9 @@ async function incidentWorkflowBrowser(page,context,proof) {
   const providerAlert=(await req('/api/state')).alerts.find(alert=>alert.source==='intake:'+monitoringId);assert.match(providerAlert.key,/^alertmanager:[a-f0-9]{64}$/);alerts.push(providerAlert.id);
   const sourceTitle='Replica and batch investigation '+width;let source=await req('/api/command',{type:'declare',service:serviceId,severity:'warning',title:sourceTitle,summary:'Investigate related source alerts before separating the batch group.',alerts});source=await req('/api/command',{type:'note',incident:source.id,revision:source.revision,text:'Replica lag was observed before customer impact.'});source=await req('/api/command',{type:'action',incident:source.id,revision:source.revision,title:'Replica capacity follow-up',owner:member.id,escalationRecipient:member.id,due:'2026-12-01',completionPolicy:'human-review',priority:'P2'});
   await focusWorkspace(page);const workflow=page.getByRole('region',{name:'Incident workflows',exact:true});
-  const checklist=page.getByRole('region',{name:'Runbook',exact:true}).getByRole('checkbox',{name:'Confirm customer checkout recovery',exact:false});const [tick]=await Promise.all([page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().method()==='POST'),checklist.check()]);assert.equal(tick.status(),200);await page.getByRole('region',{name:'Runbook',exact:true}).getByText(/Last changed by/).waitFor();await capture('checklist',width,page.getByRole('region',{name:'Runbook',exact:true}));
   await staleMergeTargetBrowser(context,req,target,source,proof);
   await focusWorkspace(page);
+  const checklist=page.getByRole('region',{name:'Runbook',exact:true}).getByRole('checkbox',{name:'Confirm customer checkout recovery',exact:false});const [tick]=await Promise.all([page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().method()==='POST'),checklist.check()]);assert.equal(tick.status(),200);await page.getByRole('region',{name:'Runbook',exact:true}).getByText(/Last changed by/).waitFor();await capture('checklist',width,page.getByRole('region',{name:'Runbook',exact:true}));
   await openIncidentAction(page,'Merge related incidents');await workflow.locator('label').filter({hasText:sourceTitle}).getByRole('checkbox').check();await workflow.getByLabel('Reason for merging',{exact:true}).fill('The replica investigation explains the same checkout impact.');await workflow.getByRole('button',{name:'Review merge',exact:true}).click();await submit(workflow.getByRole('button',{name:'Merge selected incidents',exact:true}));await page.getByRole('button',{name:'Close',exact:true}).click();await openIncidentAction(page,'Service context');
   await workflow.getByText('Retained source incidents',{exact:true}).waitFor();await workflow.locator('summary').filter({hasText:sourceTitle}).click();await workflow.getByText('Replica lag was observed before customer impact.',{exact:true}).waitFor();await workflow.getByLabel('Completion evidence for Replica capacity follow-up',{exact:true}).fill('https://example.test/replica-capacity');await submit(workflow.getByRole('button',{name:'Submit evidence for Replica capacity follow-up',exact:true}));await workflow.getByLabel('Acceptance reason for Replica capacity follow-up',{exact:true}).fill('The commander reviewed the retained dependency evidence.');await submit(workflow.getByRole('button',{name:'Accept completion of Replica capacity follow-up',exact:true}));assert.equal((await req('/api/state')).incidents.find(i=>i.id===source.id).actions[0].done,true);await capture('merge',width,workflow);
   await page.goto(origin+'/incidents/'+encodeURIComponent(source.id));await page.locator('.detail').getByRole('heading',{name:targetTitle,exact:true}).waitFor();await page.waitForURL(url=>url.pathname==='/incidents/'+encodeURIComponent(target.id));await capture('alias',width,page.locator('.detail'));
