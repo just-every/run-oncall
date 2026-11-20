@@ -75,6 +75,10 @@
     }
   ],
   "files": {
+    ".gitattributes": {
+      "sha256": "12ee97350b94fc3816c5b5d487db352352587bef33fd04e3f57c26bbb19b73b9",
+      "executable": false
+    },
     ".github/assets/banner-dark.webp": {
       "sha256": "53b21a5879f32562a3722ccd52b007050f42366c88257293c9949a206b6bcf60",
       "executable": false
@@ -1656,7 +1660,7 @@
       "executable": false
     },
     "scripts/verify-oncall-plan.mjs": {
-      "sha256": "c18066708abf006593ee42d431148a49c11dc993e153a52b778526cf13390919",
+      "sha256": "602a33f65aa79b36fdb30529875db0106298360094a2b79d4c115f3670fcef65",
       "executable": false
     },
     "scripts/verify-oncall.mjs": {
@@ -1668,7 +1672,7 @@
       "executable": false
     },
     "scripts/verify-shards.json": {
-      "sha256": "c1889ba241a5067dceaa8f277cd48ab4c497be9c4f20f57e90ee9ca75d7a2da3",
+      "sha256": "f047b8b430ccfe07c9d2ad5617717a5ff26449e3b2d7c9b1eafcbf46e64160b4",
       "executable": false
     },
     "scripts/write-agent-surface.mjs": {
@@ -6549,6 +6553,10 @@
     },
     "tests/alert-notification-run-browser.mjs": {
       "sha256": "b406a1e802a9af7f1ae1ae0a678cd53f24bf5368f252f5adec12eb3895ecdd8f",
+      "executable": false
+    },
+    "tests/append-only-merge.mjs": {
+      "sha256": "66c2b4804604eda6f38e6c5492a598d23e4887c0e3ed3af9419bee3f8ea5d7f8",
       "executable": false
     },
     "tests/changes.mjs": {

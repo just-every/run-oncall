@@ -41,6 +41,7 @@
       "tests/transfer.mjs"
     ],
     "changes": [
+      "tests/append-only-merge.mjs",
       "tests/changes.mjs"
     ],
     "activation": [

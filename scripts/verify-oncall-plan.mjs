@@ -34,6 +34,7 @@ export function verificationPlan() {
 // built output. Browser evidence is written, never used as test input. Unknown
 // journeys deliberately retain full coverage until their inputs are reviewed.
 const reviewed = new Set([
+ 'tests/append-only-merge.mjs',
  'tests/runtime.mjs', 'tests/changes.mjs', 'tests/triage.mjs', 'tests/activation.mjs',
  'tests/intake.mjs', 'tests/routing.mjs', 'tests/import-door.mjs',
  'tests/member-coordination-browser.mjs', 'tests/product-browser.mjs', 'tests/agent-door-browser.mjs', 'tests/transfer.mjs',
