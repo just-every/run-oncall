@@ -1,0 +1,94 @@
+{
+  "branch": "cloud/sd-oncall-c-f313",
+  "candidate_run_site": "pending guarded landing",
+  "candidate_verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "e885cc4958942a4f0c292dd35a1e2b8983eae3f1",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44700165399",
+    "id": 44700165399,
+    "status": "completed"
+  },
+  "checks": [
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party --json --non-interactive",
+      "exit": 0,
+      "ok": true
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "assertion_width": 1440,
+      "browser": "system Chromium",
+      "capture_widths": [
+        1440,
+        390
+      ],
+      "command": "node tests/member-coordination-browser.mjs",
+      "exit": 0,
+      "node": "22.20.0",
+      "observation": "PROBE OC-068 5: on a signed-in manual incident for a public-team service, the named responder saw two pending requests and no Cancel control. The requester cancelled one and reopened at 1440 and 390. One attributed timeline entry and one permanent audit row persisted. Only the target obligation stopped. The sibling and primary acknowledgment and obligation stayed unchanged. Zero outbound or paging effects."
+    },
+    {
+      "command": "node tests/activation.mjs",
+      "exit": 0,
+      "node": "22.20.0",
+      "observations": [
+        "OC-068 manual pages: creator, urgency default/override, optional priority/description, real policy snapshot, per-user obligations, versioned assignment setting and repeated/conflicting operation keys",
+        "OC-068 atomic custody: failed permanent audit rolls back incident, obligations and creator state",
+        "OC-068 responder requests: independent accept/decline and timeline acknowledgment; accepted responder never acknowledges primary; primary acknowledgment preserves pending requests; requester notice, cancellation and resolution stop only their own work",
+        "OC-068 permissions: viewer and stakeholder create/request attempts explain refusal and create nothing; paging remains OFF"
+      ]
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "files_written": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    }
+  ],
+  "counts": {
+    "done": 26,
+    "missing": 34,
+    "partial": 41,
+    "total": 101
+  },
+  "head": "e885cc4958942a4f0c292dd35a1e2b8983eae3f1",
+  "main_at_push": "e13220ee432bc9ac531627b20a92790a0024433f",
+  "main_ci": {
+    "conclusion": "success",
+    "run_site": 44696528969,
+    "verify": 44696528833
+  },
+  "publication_scan": "pending fleet lander",
+  "published_save": "fefab8bc78f92beda36a9f6f9090198f25807f06",
+  "screenshots": {
+    "oc068-cancel-non-requester-1440.png": "af9529ba6994463c4f737050080709e1516893db63914db0fa760cd23f4e60f8",
+    "oc068-cancel-non-requester-390.png": "ba9d7a59af4d07f4820d0faedbf06014a695cd8ea23c96ae7df928e349cf1f71",
+    "oc068-cancel-reopened-1440.png": "70694a6a012263d69015ee70ac1a25cfa927b3af1c788988055e325f196ec106",
+    "oc068-cancel-reopened-390.png": "81f32aa3996af056628a83604050fc7702c248b3c5d15814b5116b526e151751"
+  },
+  "source_sha256": {
+    "sources.lock.json": "ea8bf335a28956efbd05cb59cd5e311f67697857202b8f619ae934f34fdd325c",
+    "tests/member-coordination-browser.mjs": "fe6bbbde57c93e2f682cb0b81b34f0604588223bfcad43c6ea1c459f07e6d071"
+  },
+  "status": "PARTIAL",
+  "tag": "sd-oncall-c-f313"
+}
