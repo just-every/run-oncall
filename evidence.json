@@ -1,0 +1,52 @@
+{
+  "files": [
+    {
+      "blob": "836e8cf9d06aa5f6d1671d6ed2c593a3ee6f6aa7",
+      "bytes": 8967,
+      "path": "REPORT.md",
+      "sha256": "80b21e13701f61c68fdec2e0ca176107f52263b9d230a5bd9becbe246a804451"
+    },
+    {
+      "blob": "c1f6ae6bf871cc50958cb077e626d1b51a97d690",
+      "bytes": 4153,
+      "path": "candidate-receipt.json",
+      "sha256": "b57106cb058f2168ba7b1c32f70674634382915017f6165619882b4378de3348"
+    },
+    {
+      "blob": "040a26bb3052cdfb926cbbe24bfb6d30f06c496a",
+      "bytes": 203200,
+      "path": "oc050-stale-split-refused-1440.png",
+      "sha256": "b63900eae0d154bb34a59bb3b79f7cf9135b2373dde8c6755ab9c42a2fb7a922"
+    },
+    {
+      "blob": "39750d2a54e70c21669fc9454594b9e61bc3f8f5",
+      "bytes": 64441,
+      "path": "oc050-stale-split-refused-390.png",
+      "sha256": "cdf6d47bc0b03a7fe24ed3177f443215bb615ba92a918d03321b6f84dea8b126"
+    },
+    {
+      "blob": "955107273aacdd7f576415df29b1dd59a320126b",
+      "bytes": 184136,
+      "path": "oc050-stale-split-review-1440.png",
+      "sha256": "e62b2bdf18e3e1d7997cea9e8d1036e7219811fcda7491ddbdd7ba43b46c80dc"
+    },
+    {
+      "blob": "771290ff3f63d3265ebc6d368a256df289ee2059",
+      "bytes": 66421,
+      "path": "oc050-stale-split-review-390.png",
+      "sha256": "90b22bef9ebb072a09b8777d477438945215b18bea835620ebc1fc6fe32f7120"
+    },
+    {
+      "blob": "0315a645e825937073188475132efb39eef2ec81",
+      "bytes": 536,
+      "path": "oc050-stale-split.json",
+      "sha256": "aa47631b8ca220da6908502bbe957f634bb805ab834b2a4af7cfad8fcb9e6cf9"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f314-pc1",
+  "product_head": "00f9dd0288f07139f9be1f7387489ed828c6ef7f",
+  "ref": "refs/heads/evidence/sd-oncall-c-f314-pc1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f314-pc1"
+}

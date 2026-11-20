@@ -1,0 +1,21 @@
+{
+  "assertionWidth": 1440,
+  "captureWidths": [
+    1440,
+    390
+  ],
+  "reviewedRevision": 1,
+  "revisionAfterNote": 2,
+  "revisionAfterConfirmation": 2,
+  "status": 409,
+  "visibleConflict": "Incident changed. Reload before applying your edit.",
+  "childrenCreated": 0,
+  "retainedAlertLinks": 2,
+  "noteActor": "Synthetic split note author",
+  "refusalActor": "Product browser owner",
+  "refusalKind": "command.split-incident",
+  "refusalRows": 1,
+  "paging": "OFF",
+  "workerOutboundRequests": 0,
+  "browserOutboundRequests": 0
+}

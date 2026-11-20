@@ -1,0 +1,144 @@
+{
+  "product_head": "00f9dd0288f07139f9be1f7387489ed828c6ef7f",
+  "product_branch": "cloud/sd-oncall-c-f314-pc1",
+  "main_observed": "e13220ee432bc9ac531627b20a92790a0024433f",
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_PRODUCT_PART=core ONCALL_CHROMIUM_PATH=/usr/bin/chromium WRANGLER_SEND_METRICS=false node tests/product-browser.mjs",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_TRIAGE_PART=storm WRANGLER_SEND_METRICS=false node tests/triage.mjs",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_TRIAGE_PART=bulk WRANGLER_SEND_METRICS=false node tests/triage.mjs",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "generated_views": "restored to main after check"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "reproduced_committed_lock": true
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check origin/main...HEAD",
+      "exit": 0
+    }
+  ],
+  "verify": [
+    {
+      "run": 44700604079,
+      "event": "push",
+      "result": "failure",
+      "head": "00f9dd0288f07139f9be1f7387489ed828c6ef7f",
+      "browser_job": 136169565572,
+      "browser_result": "success",
+      "triage_job": 136169565614,
+      "triage_result": "success",
+      "generated_view_exception": true
+    },
+    {
+      "run": 44707484113,
+      "event": "push",
+      "result": "cancelled",
+      "head": "00f9dd0288f07139f9be1f7387489ed828c6ef7f",
+      "plan_job": 136190583800,
+      "aggregate_job": 136191085515,
+      "product_shards_executed": false
+    }
+  ],
+  "verify_reproduced": [
+    {
+      "head": "00f9dd0288f07139f9be1f7387489ed828c6ef7f",
+      "job": 136167928359,
+      "command": "node src/base/contract-docs.mjs check",
+      "node": "22.20.0",
+      "test": "Check the generated contract documents",
+      "exit": 1,
+      "failure": "ACCEPTANCE.md: generated content differs; run contract-docs write."
+    },
+    {
+      "head": "00f9dd0288f07139f9be1f7387489ed828c6ef7f",
+      "job": 136175422067,
+      "command": "bash -e verify-coverage-step.sh",
+      "test": "Require the selected coverage and its proof",
+      "exit": 1,
+      "failure": "CONTRACT_DOCS=failure with SKIP=false",
+      "exit_with_fresh_views_signal": 0
+    },
+    {
+      "head": "00f9dd0288f07139f9be1f7387489ed828c6ef7f",
+      "job": 136191085515,
+      "command": "bash -e verify-coverage-step.sh",
+      "test": "Require the selected coverage and its proof",
+      "exit": 1,
+      "failure": "PLAN=cancelled during checkout"
+    }
+  ],
+  "local_browser_node": "24.19.0",
+  "browser_receipt": "oc050-stale-split.json",
+  "capture_files": [
+    {
+      "filename": "oc050-stale-split-review-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "e62b2bdf18e3e1d7997cea9e8d1036e7219811fcda7491ddbdd7ba43b46c80dc"
+    },
+    {
+      "filename": "oc050-stale-split-review-390.png",
+      "width": 390,
+      "height": 1000,
+      "sha256": "90b22bef9ebb072a09b8777d477438945215b18bea835620ebc1fc6fe32f7120"
+    },
+    {
+      "filename": "oc050-stale-split-refused-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "b63900eae0d154bb34a59bb3b79f7cf9135b2373dde8c6755ab9c42a2fb7a922"
+    },
+    {
+      "filename": "oc050-stale-split-refused-390.png",
+      "width": 390,
+      "height": 1000,
+      "sha256": "cdf6d47bc0b03a7fe24ed3177f443215bb615ba92a918d03321b6f84dea8b126"
+    }
+  ],
+  "publication_scan": "pending Mac lander",
+  "run_site": "pending main landing",
+  "status": "PARTIAL",
+  "counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  }
+}
