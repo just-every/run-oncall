@@ -3,7 +3,7 @@ import {randomBytes,randomUUID} from 'node:crypto';
 import {mkdir} from 'node:fs/promises';
 import {chromium} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import {agentRuntime,agentEffectSnapshot,pauseMatrix} from './agent-door-runtime.mjs';
+import {agentRuntime,agentEffectSnapshot,agentReadSnapshot,assertAgentReadUnchanged,pauseMatrix} from './agent-door-runtime.mjs';
 import {declareFromAlertParity,acknowledgeParity,recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy,deadlineTarget} from './oncall-agent-fixtures.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-revisions.mjs';
@@ -949,6 +949,7 @@ try{
  for(const [label,document] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
   assert.equal((await runtime.adopt(document)).status,200);
   const before=await native(),paging=await (await http('/api/paging/state')).json(),edge=await runtime.outboundRequests();
+  const beforeRead=await agentReadSnapshot(runtime);
   await page.goto(runtime.origin+'/docs/agents');await page.locator('.docs-article').waitFor();
   const rows=await page.locator('.docs-article table').evaluateAll(tables=>tables.filter(table=>[...table.querySelectorAll('th')].some(th=>th.textContent==='Computed class checks')).flatMap(table=>[...table.querySelectorAll('tbody tr')].map(row=>[...row.querySelectorAll('td')].map(cell=>[...cell.querySelectorAll('code')].map(code=>code.textContent)))));
   const listing=await runtime.mcp('tools/list'),discovery=await runtime.mcp('server/discover'),templates=await runtime.mcp('resources/templates/list');
@@ -972,6 +973,7 @@ try{
   await page.waitForFunction(region=>region.scrollLeft>0,await inventoryRegion.elementHandle());
   assert.ok(await inventoryRegion.evaluate(region=>region.contains(document.activeElement)||region===document.activeElement),'The complete inventory remains keyboard scrollable');
   assert.deepEqual(await native(),before);assert.deepEqual(await (await http('/api/paging/state')).json(),paging);
+  assertAgentReadUnchanged(beforeRead,await agentReadSnapshot(runtime));
   assert.deepEqual(await runtime.outboundRequests(),edge);
   console.log(`PROBE BASE-AGENT-013 rendered ${label}: /docs/agents -> complete ${rows.length}-tool class, scope and fixture inventory agrees with MCP; ${templates.result.resourceTemplates.length} resource templates; native and paging unchanged; zero outbound requests`);
  }
