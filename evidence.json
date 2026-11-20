@@ -1,0 +1,34 @@
+{
+  "files": [
+    {
+      "blob": "8510bc8ed17eea2b9803299a7a57f89f11ad8878",
+      "bytes": 2197,
+      "path": "ARCHIVE-RECEIPT.md",
+      "sha256": "b87e031efbd2485238feeec4d6db1cb1b94998479c1b520e9ab8e53b0ce3e44e"
+    },
+    {
+      "blob": "b8587ac3a368ce45b32cca41e22995d202f070aa",
+      "bytes": 2325,
+      "path": "CI-RECEIPT.json",
+      "sha256": "f9c343e44f6d78fe9198788baaa59d5e3f7c31b6043f1f0b2d2964c8e32fe42b"
+    },
+    {
+      "blob": "3b3af80f76dbd15dd9fc180ce30c6a4bef7b429e",
+      "bytes": 4356,
+      "path": "LOCAL-CHECKS.md",
+      "sha256": "fb9cd3349ad446baa832a275116a27bfcac97b6ab3183cca50062381adb55b98"
+    },
+    {
+      "blob": "d7eda58e83a39a0319d58f8561135b3c5cef1ca9",
+      "bytes": 4288,
+      "path": "REPORT.md",
+      "sha256": "1e11a01917aa9a6f1f1ab448539e8f09470e67f85d921a07f2e2beeda375e1e9"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-rer-pin-125-1",
+  "product_head": "2557e66e8980ab23f15bed77d63b2124229c56c5",
+  "ref": "refs/heads/evidence/sd-oncall-rer-pin-125-1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-rer-pin-125-1"
+}

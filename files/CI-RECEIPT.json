@@ -1,0 +1,67 @@
+{
+  "branch": "cloud/sd-oncall-rer-pin-125-1",
+  "guarded_push": "success",
+  "observations": [
+    {
+      "api_call": 1,
+      "conclusion": null,
+      "event": "push",
+      "head_branch": "cloud/sd-oncall-rer-pin-125-1",
+      "head_sha": "2557e66e8980ab23f15bed77d63b2124229c56c5",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44772095111",
+      "id": 44772095111,
+      "name": "Verify",
+      "observed_at_utc": "2026-11-20T16:19:06+00:00",
+      "run_id": 44772095111,
+      "status": "queued"
+    },
+    {
+      "api_call": 2,
+      "conclusion": null,
+      "head_sha": "2557e66e8980ab23f15bed77d63b2124229c56c5",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44772095111",
+      "observed_at_utc": "2026-11-20T16:24:08+00:00",
+      "run_id": 44772095111,
+      "status": "in_progress"
+    },
+    {
+      "api_call": 3,
+      "conclusion": null,
+      "head_sha": "2557e66e8980ab23f15bed77d63b2124229c56c5",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44772095111",
+      "observed_at_utc": "2026-11-20T16:29:09+00:00",
+      "run_id": 44772095111,
+      "status": "in_progress"
+    },
+    {
+      "api_call": 4,
+      "conclusion": null,
+      "head_sha": "2557e66e8980ab23f15bed77d63b2124229c56c5",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44772095111",
+      "observed_at_utc": "2026-11-20T16:34:11+00:00",
+      "run_id": 44772095111,
+      "status": "in_progress"
+    },
+    {
+      "api_call": 5,
+      "conclusion": "success",
+      "head_sha": "2557e66e8980ab23f15bed77d63b2124229c56c5",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44772095111",
+      "observed_at_utc": "2026-11-20T16:39:13+00:00",
+      "run_id": 44772095111,
+      "status": "completed"
+    }
+  ],
+  "product_head": "2557e66e8980ab23f15bed77d63b2124229c56c5",
+  "product_ref_readback": "2557e66e8980ab23f15bed77d63b2124229c56c5",
+  "repository": "just-every/run-oncall",
+  "verify": {
+    "api_call": 5,
+    "conclusion": "success",
+    "head_sha": "2557e66e8980ab23f15bed77d63b2124229c56c5",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44772095111",
+    "observed_at_utc": "2026-11-20T16:39:13+00:00",
+    "run_id": 44772095111,
+    "status": "completed"
+  }
+}
