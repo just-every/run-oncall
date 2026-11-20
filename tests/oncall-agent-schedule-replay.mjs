@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {randomBytes,randomUUID} from 'node:crypto';
-import {autonomousPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
-import {agentEffectSnapshot} from './agent-door-runtime.mjs';
+import {accessToken, autonomousPolicy, heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
+import {agentEffectSnapshot, agentRuntime} from './agent-door-runtime.mjs';
 
 /** Same production MCP and native approval doors as the specialist journey. */
 export async function scheduleReplay(runtime) {
@@ -252,4 +252,239 @@ export async function staleOverrideRevision(runtime, {optionalExpectedRevision =
   }
   assert.equal((await adopt()).status, 200);
   return retained;
+}
+
+export function scheduleCreateArgs(rota, name) {
+  return {schedule: {...rota, id: randomUUID(), name, revision: 0}, idempotency_key: randomUUID()};
+}
+
+/** A completed native rota creation is returned intact across a full day. */
+export async function agedScheduleCreateRetention({observe = async () => {}} = {}) {
+  // Native sessions also check SQLite's clock. Age the platform clock once
+  // the real owner session exists, then renew the signed policy at each retry.
+  const started = Math.floor(Date.now() / 1000) * 1000;
+  const day = 86_400_000;
+  for (const [mode, policy] of [['autonomous', autonomousPolicy()], ['held', heldPolicy()]]) {
+    const runtime = await agentRuntime({clock: started});
+    try {
+      const {db, http, tool, context} = runtime;
+      const name = 'oncall.schedules.create';
+      const rows = async (sql, ...values) => (await db.prepare(sql).bind(...values).all()).results;
+      const read = async (path, input) => {
+        const response = await http(path, input);
+        assert.equal(response.status, 200, path);
+        return response.json();
+      };
+      const snapshot = () => agentEffectSnapshot(runtime);
+      const audits = () => rows('SELECT * FROM agent_door_audit ORDER BY sequence');
+      const relay = () => rows('SELECT * FROM agent_door_relay ORDER BY sequence');
+      const permanent = () => rows('SELECT * FROM oc_admin_audit ORDER BY ordinal');
+      const envelope = async () => JSON.parse((await db.prepare('SELECT envelope FROM agent_door_state WHERE id=1').first()).envelope);
+      const policyAuthority = ({iat, exp, ...authority}) => authority;
+      const token = () => accessToken(context, {scope: 'schedules:read schedules:write',
+        act: {sub: context.agentId, name: 'Responder assistant', specialist: 'oncall-responder'}});
+      const tokenClaims = value => JSON.parse(Buffer.from(value.split('.')[1], 'base64url').toString());
+      const tokenAuthority = ({iat, exp, jti, ...authority}) => authority;
+      const approvalPath = '/agents/api/approvals/';
+
+      assert.equal((await runtime.adopt(policy)).status, 200);
+      const signedPolicy = await envelope();
+      const owner = (await read('/api/workspace')).member;
+      const initialPaging = await read('/api/paging/state');
+      const source = initialPaging.schedules.find(row => row.id === 'agent-schedule' && row.service === 'agent-service');
+      assert.ok(source);
+      const args = scheduleCreateArgs(source, 'Payments retained ' + mode + ' rota');
+      const bearer = await token();
+      const originalClaims = tokenClaims(bearer);
+      assert.equal(originalClaims.iat, started / 1000);
+      assert.equal(originalClaims.exp - originalClaims.iat, 300);
+
+      const before = await snapshot();
+      const first = await tool(name, args, {}, bearer);
+      assert.equal(first.status, 200);
+      assert.equal(first.body.error, undefined);
+      assert.deepEqual(first.decision.classes.map(row => row.class), ['standard', 'sensitive', 'live']);
+      assert.equal(first.decision.disposition, mode === 'held' ? 'approval' : 'autonomous');
+
+      let handle, approved;
+      if (mode === 'held') {
+        assert.equal(first.result.resultType, 'input_required');
+        assert.equal(first.result.structuredContent, undefined);
+        handle = first.result._meta['com.runeditrun/approval'];
+        assert.ok(handle);
+        assert.equal(handle.url, runtime.origin + '/agents/approvals/' + handle.id);
+        const {approval} = await read(approvalPath + handle.id);
+        assert.equal(approval.state, 'pending');
+        assert.equal(approval.decision_id, first.decision.id);
+        assert.equal(approval.revision, context.revision);
+        assert.match(approval.summary_sha256, /^[a-f0-9]{64}$/);
+        assert.deepEqual(approval.approvers, ['sponsor']);
+        assert.deepEqual(approval.summary.target, {id: args.schedule.id, name: args.schedule.name});
+        assert.equal(approval.prepared_by.for.id, owner.id);
+        const pending = await snapshot();
+        assert.deepEqual(pending.application, before.application);
+        for (const [table, records] of Object.entries(before.records)) {
+          if (/^(?:oc_|paging_|workspace_)/.test(table)) assert.deepEqual(pending.records[table], records, table);
+        }
+        const execution = await read(approvalPath + handle.id + '/approve', {
+          revision: approval.revision, summary_sha256: approval.summary_sha256,
+        });
+        assert.equal(execution.approval.state, 'executed');
+        ({approval: approved} = await read(approvalPath + handle.id));
+        assert.equal(approved.state, 'executed');
+      } else {
+        assert.equal(first.result.isError, false);
+      }
+
+      const once = await snapshot();
+      const retained = once.records.agent_door_calls.filter(row => row.agent === context.agentId && row.key === args.idempotency_key);
+      assert.equal(retained.length, 1);
+      const [call] = retained;
+      const saved = JSON.parse(call.outcome);
+      const schedule = {...args.schedule, revision: 1};
+      assert.equal(call.state, 'done');
+      assert.equal(call.decision_id, first.decision.id);
+      assert.equal(call.created_at, started);
+      assert.ok(call.expires_at >= started + day + 1000);
+      assert.equal(saved.outcome, 'done');
+      assert.deepEqual(saved.decision, first.decision);
+      assert.deepEqual(saved.result.schedule, schedule);
+      assert.equal(saved.result.paging, 'OFF');
+      const scheduleRows = once.records.paging_schedules.filter(row => row.id === schedule.id);
+      assert.equal(once.records.paging_schedules.length, before.records.paging_schedules.length + 1);
+      assert.equal(scheduleRows.length, 1);
+      assert.equal(scheduleRows[0].revision, 1);
+      assert.deepEqual(JSON.parse(scheduleRows[0].data), schedule);
+      assert.deepEqual((await read('/api/paging/state')).schedules.filter(row => row.id === schedule.id), [schedule]);
+
+      const notices = once.application.scheduleRecords.filter(row => row.kind === 'notice' && row.data.schedule === schedule.id);
+      const recipients = [...new Set([owner.id, ...schedule.primary.members, ...schedule.backup.members])].sort();
+      assert.deepEqual(notices.map(row => row.member).sort(), recipients);
+      assert.deepEqual(notices.map(row => row.id), saved.result.notices);
+      for (const notice of notices) {
+        assert.equal(notice.data.service, schedule.service);
+        assert.equal(notice.data.key, schedule.id + ':1:' + notice.member);
+        assert.equal(notice.data.obligation.state, 'recorded');
+        assert.equal(notice.data.obligation.paging, 'off');
+        assert.equal(notice.data.obligation.automatic, false);
+        assert.equal(notice.data.obligation.label, 'no sender');
+      }
+      const nativeAudit = (once.application.audit ?? []).filter(row => row.kind === 'schedule-change' && row.text.includes(schedule.name));
+      assert.equal(nativeAudit.length, 1);
+      assert.equal(nativeAudit[0].actor, context.agentId);
+      assert.equal(nativeAudit[0].metadata.agent.for.id, owner.id);
+      assert.deepEqual(nativeAudit[0].metadata.agent.approvers, handle ? [{id: owner.id, name: owner.name}] : []);
+      const commits = once.records.oc_admin_audit.filter(row => !before.records.oc_admin_audit.some(prior => prior.id === row.id));
+      assert.equal(commits.length, 1);
+      const [commit] = commits;
+      assert.equal(commit.kind, 'agent-schedule-create');
+      assert.equal(commit.outcome, 'accepted');
+      for (const [family, table] of [['workspace', 'workspace_control'], ['paging', 'paging_control']]) {
+        assert.equal(commit[family + '_before'], before.records[table][0].revision);
+        assert.equal(commit[family + '_after'], commit[family + '_before'] + 1);
+        assert.equal(once.records[table][0].revision, commit[family + '_after']);
+      }
+      assert.equal(commit.handoff_before, commit.handoff_after);
+      for (const [table, records] of Object.entries(before.records)) {
+        if (table.startsWith('paging_') && !['paging_control', 'paging_schedules'].includes(table)) {
+          assert.deepEqual(once.records[table], records, table);
+        }
+      }
+      assert.equal(once.records.agent_door_approvals.length, before.records.agent_door_approvals.length + Number(Boolean(handle)));
+      assert.deepEqual(once.records.agent_door_reviews, before.records.agent_door_reviews);
+
+      const committedAudit = await audits();
+      const originalRow = committedAudit.find(row => row.id === call.decision_id);
+      const original = JSON.parse(originalRow.row);
+      assert.equal(original.tool, name);
+      assert.equal(original.outcome, handle ? 'pending' : 'done');
+      assert.equal(original.replay_of, null);
+      assert.equal(original.idempotency_key, args.idempotency_key);
+      if (handle) {
+        const storedApproval = once.records.agent_door_approvals.find(row => row.id === handle.id);
+        assert.equal(storedApproval.state, 'executed');
+        assert.deepEqual(JSON.parse(storedApproval.result), saved);
+        assert.deepEqual(JSON.parse(storedApproval.approvals).map(({person, ref}) => ({person, ref})), [{person: owner.id, ref: 'sponsor'}]);
+        assert.equal(saved.receipt.approval_id, handle.id);
+        assert.equal(saved.receipt.decision_id, call.decision_id);
+        assert.deepEqual(saved.receipt.approved_by, [owner.id]);
+        const execution = JSON.parse(committedAudit.find(row => row.id === saved.execution_id).row);
+        assert.equal(execution.outcome, 'done');
+        assert.deepEqual(execution.approval, {id: handle.id, by: [owner.id]});
+      } else {
+        assert.deepEqual(first.result.structuredContent, saved.result);
+        assert.equal(saved.receipt, undefined);
+      }
+
+      const rpcIds = new Set([first.body.id]);
+      const tokenIds = new Set([originalClaims.jti]);
+      for (const elapsed of [day, day + 1000]) {
+        await runtime.time(started + elapsed);
+        const priorPolicy = await envelope();
+        assert.equal((await runtime.renewPolicy()).status, 200);
+        const renewed = await envelope();
+        assert.deepEqual(policyAuthority(renewed), policyAuthority(signedPolicy));
+        assert.ok(renewed.iat > priorPolicy.iat);
+        assert.equal(renewed.exp - renewed.iat, 300);
+        const fresh = await token();
+        const claims = tokenClaims(fresh);
+        assert.equal(claims.iat, (started + elapsed) / 1000);
+        assert.ok(originalClaims.exp < claims.iat);
+        assert.equal(claims.exp - claims.iat, 300);
+        assert.deepEqual(tokenAuthority(claims), tokenAuthority(originalClaims));
+        assert.ok(!tokenIds.has(claims.jti));
+        tokenIds.add(claims.jti);
+
+        const baseline = await snapshot();
+        assert.deepEqual(baseline.application, once.application);
+        for (const [table, records] of Object.entries(once.records)) {
+          if (!['agent_door_state', 'agent_door_events'].includes(table)) {
+            assert.deepEqual(baseline.records[table], records, 'Policy renewal preserves ' + table);
+          }
+        }
+        const auditBefore = await audits(), relayBefore = await relay(), permanentBefore = await permanent();
+        const retry = await tool(name, args, {}, fresh);
+        assert.equal(retry.status, 200);
+        assert.equal(retry.body.error, undefined);
+        assert.equal(retry.result.isError, false);
+        assert.ok(!rpcIds.has(retry.body.id));
+        rpcIds.add(retry.body.id);
+        assert.deepEqual(retry.result.structuredContent, saved.result);
+        assert.deepEqual(JSON.parse(retry.result.content[0].text), saved.result);
+        assert.deepEqual(retry.result._meta['com.runeditrun/receipt'], saved.receipt ? {...saved.receipt, decision: saved.decision} : undefined);
+        assert.deepEqual(retry.result._meta['com.runeditrun/review'], saved.review);
+        assert.deepEqual(retry.decision.classes, saved.decision.classes);
+
+        const auditAfter = await audits();
+        assert.deepEqual(auditAfter.slice(0, -1), auditBefore);
+        const attempt = JSON.parse(auditAfter.at(-1).row);
+        assert.equal(attempt.id, retry.decision.id);
+        assert.equal(attempt.tool, name);
+        assert.equal(attempt.outcome, 'replayed');
+        assert.equal(attempt.replay_of, call.decision_id);
+        assert.equal(attempt.operation_id, original.operation_id);
+        assert.equal(attempt.idempotency_key, args.idempotency_key);
+        assert.equal(attempt.agent.id, context.agentId);
+        assert.equal(attempt.sponsor.id, owner.id);
+        const relayAfter = await relay();
+        assert.deepEqual(relayAfter.slice(0, relayBefore.length), relayBefore);
+        assert.deepEqual(relayAfter.slice(relayBefore.length).map(row => row.decision_id), [attempt.id]);
+        const permanentAfter = await permanent();
+        assert.deepEqual(permanentAfter.slice(0, permanentBefore.length), permanentBefore);
+        for (const row of permanentAfter.slice(permanentBefore.length)) {
+          assert.equal(row.kind, 'agent-door.persistence');
+          assert.ok(['accepted', 'refused'].includes(row.outcome));
+          for (const family of ['workspace', 'paging', 'handoff']) assert.equal(row[family + '_before'], row[family + '_after']);
+        }
+        if (handle) assert.deepEqual((await read(approvalPath + handle.id)).approval, approved);
+        if (elapsed === day + 1000) await observe({runtime, mode, schedule, people: saved.result.people});
+        assert.deepEqual(await snapshot(), baseline, 'Retry and readback preserve the original call, expiry, schedule, notices, approvals and paging');
+        assert.deepEqual(await runtime.outboundRequests(), []);
+        console.log('PROBE BASE-AGENT-012 acceptance 1 ' + mode + ' schedule creation T+' + elapsed +
+          'ms: original result and approval receipt when held; one revision-1 rota, native audit and unchanged notices; linked replay only; zero outbound requests');
+      }
+    } finally {
+      await runtime.close();
+    }
+  }
 }

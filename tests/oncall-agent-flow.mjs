@@ -10,7 +10,7 @@ import {declareFromAlertParity,acknowledgeParity,recoveredResolutionTarget} from
 import {manualPageClassification,deadlineClassification} from './oncall-agent-live.mjs';
 import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
-import {scheduleReplay, staleOverrideRevision} from './oncall-agent-schedule-replay.mjs';
+import {agedScheduleCreateRetention, scheduleCreateArgs, scheduleReplay, staleOverrideRevision} from './oncall-agent-schedule-replay.mjs';
 import {teamReplay} from './oncall-agent-team-replay.mjs';
 import {staleReassignmentNativeRevision} from './oncall-agent-incident-revisions.mjs';
 import {staleScribeExpectedRevision} from './oncall-agent-role-revisions.mjs';
@@ -820,6 +820,7 @@ await (await import('./oncall-agent-analytics.mjs')).analyticsReads();
 await (await import('./oncall-agent-triage.mjs')).triageReads();
 await agedReplayRetention();
 await agedActionSubmitRetention();
+await agedScheduleCreateRetention();
 
 const runtime=await agentRuntime({clock:null});
 const code=answer=>answer.result?._meta?.['com.runeditrun/error']?.code??answer.body?.error?.data?.code;
@@ -1270,7 +1271,7 @@ try{
  // An approval creates the schedule once; the same key must then return the
  // cached outcome after current policy and native authority are rechecked.
  const rota=(await tool('oncall.schedules.read',{id:'agent-schedule'})).result.structuredContent.schedules[0];
- const createRota={schedule:{...rota,id:randomUUID(),name:'Payments coordination backup',revision:0},idempotency_key:randomUUID()};
+ const createRota=scheduleCreateArgs(rota,'Payments coordination backup');
  const heldRota=autonomousPolicy();heldRota.rules.unshift({id:'coverage-review',class:'live',do:'approval',approver:['sponsor'],wait:'PT1H'});
  assert.equal((await adopt(heldRota)).status,200);
  const heldCreate=await tool('oncall.schedules.create',createRota);
