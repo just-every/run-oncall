@@ -675,12 +675,59 @@ try{
   await page.getByText(/Created by Responder assistant for Alex Chen/).waitFor();
  });
  // The actual signed-in browser approves the exact saved native resolution.
+ const resolutionBrowserRequests=[];
+ const trackResolutionRequest=request=>{
+  const url=new URL(request.url());
+  if(['http:','https:'].includes(url.protocol)&&url.origin!==runtime.origin)resolutionBrowserRequests.push(url.origin);
+ };
+ context.on('request',trackResolutionRequest);
+ async function captureResolvedIncident(mode,completed,bearer,summary,refusedSummary){
+  const links=completed.result.content.filter(item=>item.type==='resource_link');
+  assert.equal(links.length,1,'The completed resolution supplies the incident link');
+  const saved=completed.result.structuredContent;
+  const {value}=await runtime.completeResource(links[0].uri,{bearer});
+  assert.deepEqual(value,saved);
+  const before=await agentEffectSnapshot(runtime);
+  assert.deepEqual(before.application.incidents.find(row=>row.id===saved.id),saved);
+  const entry=saved.timeline.find(row=>row.lifecycle?.to==='resolved');
+  const attribution=entry.metadata.agent;
+  await capture(mode==='held'?'resolution-timeline':'resolution-link-autonomous','/incidents/'+saved.id,async()=>{
+   const detail=page.getByRole('region',{name:'Incident',exact:true});
+   await detail.getByRole('heading',{name:saved.title,exact:true}).waitFor();
+   const timeline=detail.getByRole('region',{name:'Timeline',exact:true});
+   const lines=timeline.getByRole('listitem').filter({hasText:summary});
+   await lines.first().waitFor();
+   const evidence=detail.getByRole('link',{name:'Recovery evidence',exact:true});
+   await evidence.waitFor();
+   if(mode==='held'){
+    const earlier=timeline.getByRole('button',{name:/^Earlier entries/});
+    if(await earlier.count())await earlier.click();
+    await timeline.getByText('Responder assistant for Alex Chen',{exact:true}).first().waitFor();
+   }
+   if(page.viewportSize().width===1440){
+    if(mode==='held'){
+     const headings=await timeline.locator('.event-line strong').allTextContents();
+     for(const raw of ['transition','complete','incident deadline'])assert.ok(!headings.includes(raw),'timeline headings describe activity');
+     assert.ok(!(await timeline.innerText()).includes(refusedSummary),'The refused summary never enters the timeline');
+    }
+    assert.equal(await detail.locator('.incident-state').innerText(),'Resolved');
+    assert.equal(await evidence.getAttribute('href'),saved.recovery);
+    assert.equal(await lines.count(),1,'The resolution appears exactly once on the timeline');
+    assert.equal(await lines.locator('small').innerText(),attribution.label);
+    const approver=lines.getByText(/^Approved by:/);
+    if(mode==='held')assert.equal(await approver.innerText(),'Approved by: '+attribution.for.name);
+    else assert.equal(await approver.count(),0);
+   }
+  });
+  assert.deepEqual(await agentEffectSnapshot(runtime),before,'Signed-in incident readback preserves native state and custody');
+ }
  const resolutionTarget=await recoveredResolutionTarget(runtime,'Resolution held for the sponsoring human');
  const resolvePolicy=autonomousPolicy();resolvePolicy.rules.unshift({id:'resolve-commitment',class:'commitment',do:'approval',approver:['sponsor'],wait:'PT1H'});
  assert.equal((await runtime.adopt(resolvePolicy)).status,200);
  const resolveArgs={incident:resolutionTarget.id,revision:resolutionTarget.revision,summary:'Human approves the retained incident resolution',idempotency_key:randomUUID()};
  const resolutionBefore=await native(),resolutionEdge=await runtime.outboundRequests();
- const heldResolution=await tool('oncall.incidents.resolve',resolveArgs);
+ const resolutionBearer=await accessToken(runtime.context,{act:{sub:runtime.context.agentId,name:'Responder assistant',specialist:'oncall-responder'}});
+ const heldResolution=await tool('oncall.incidents.resolve',resolveArgs,{},resolutionBearer);
  assert.equal(heldResolution.result?.resultType,'input_required');
  assert.equal(heldResolution.decision.disposition,'approval');
  assert.equal(heldResolution.decision.classes.find(row=>row.class==='commitment').do,'approval');
@@ -749,7 +796,7 @@ try{
  assert.equal(resolveConflict.result?.isError,true);
  assert.equal(resolveConflict.result._meta['com.runeditrun/error'].code,'idempotency_conflict');
  assert.equal(resolveConflict.result.structuredContent,undefined);
- const resolveRetry=await tool('oncall.incidents.resolve',resolveArgs);
+ const resolveRetry=await tool('oncall.incidents.resolve',resolveArgs,{},resolutionBearer);
  assert.equal(resolveRetry.result?.isError,false,JSON.stringify(resolveRetry.body));
  assert.equal(resolveRetry.result.structuredContent.state,'resolved');
  assert.deepEqual(await native(),resolutionAfter,'Approved resolution retry creates no second effect');
@@ -759,19 +806,20 @@ try{
  assert.equal(executionRow.outcome,'done');assert.ok(executionRow.approval.by.includes(resolutionOwner.id));
  assert.deepEqual(executionRow.classes,savedApproval.classes);
  await capture('resolution-executed',approvalPath,async()=>{await page.locator('[data-approval-state="executed"]').waitFor()});
- await capture('resolution-timeline','/incidents/'+resolutionTarget.id,async()=>{
-  await page.getByRole('region',{name:'Timeline',exact:true}).waitFor();
-  if(await page.getByRole('button',{name:/^Earlier entries/}).count())await page.getByRole('button',{name:/^Earlier entries/}).click();
-  if((await page.viewportSize()).width===1440){
-   const headings=await page.locator('.event-line strong').allTextContents();
-   for(const raw of ['transition','complete','incident deadline'])assert.ok(!headings.includes(raw),'timeline headings describe activity');
-   const timeline=await page.getByRole('region',{name:'Timeline',exact:true}).innerText();
-   assert.ok(timeline.includes(resolveArgs.summary),'The original summary remains visible after the conflict and retry');
-   assert.ok(!timeline.includes(changedSummary),'The refused summary never enters the timeline');
-  }
-  await page.getByText('Responder assistant for Alex Chen',{exact:true}).first().waitFor();
- });
+ await captureResolvedIncident('held',resolveRetry,resolutionBearer,resolveArgs.summary,changedSummary);
  assert.equal((await runtime.adopt()).status,200);
+ const autonomousTarget=await recoveredResolutionTarget(runtime,'Synthetic autonomous resolution readback');
+ const autonomousSummary='Resolve with the saved recovery evidence';
+ const autonomousBearer=await accessToken(runtime.context,{act:{sub:runtime.context.agentId,name:'Responder assistant',specialist:'oncall-responder'}});
+ const autonomousResolution=await tool('oncall.incidents.resolve',{incident:autonomousTarget.id,revision:autonomousTarget.revision,
+  summary:autonomousSummary,idempotency_key:randomUUID()},{},autonomousBearer);
+ assert.equal(autonomousResolution.result?.isError,false,JSON.stringify(autonomousResolution.body));
+ assert.equal(autonomousResolution.decision.disposition,'autonomous');
+ await captureResolvedIncident('autonomous',autonomousResolution,autonomousBearer,autonomousSummary);
+ context.off('request',trackResolutionRequest);
+ assert.deepEqual(resolutionBrowserRequests,[],'Signed-in resolution readback does not follow the recovery URL');
+ assert.deepEqual(await runtime.outboundRequests(),resolutionEdge,'Resolution readback attempts no outbound requests');
+ console.log('PROBE BASE-AGENT-003 4 resolution browser: sponsor-approved and autonomous incidents show the saved resolution, summary, recovery and attribution at 1440 and 390; no outbound requests');
  console.log('PASS incident resolution browser: commitment-only approval, exact saved revision, native human approver and agent preparer, one attributed resolution and effect-free retry');
  // The real signed-in URL holds each recorded deadline effect for its sponsor.
  for(const change of ['snooze','cancel-deadline','expire-deadline']){
