@@ -1251,7 +1251,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 | `oncall.schedules.review` | Compute the coverage diff and review digest of a schedule change without writing | OC-003, OC-011, OC-014, OC-024 | standard (+ sensitive) | Shipped |
 | `oncall.schedules.receipt` | Read the receipt of an earlier schedule call by its idempotency key | OC-053 | standard | Shipped |
 | `oncall.swaps.respond` | Request, accept or decline a swap | OC-025 | live | Not yet shipped |
-| `oncall.schedules.coverage` | Read now/next, coverage previews and route counts | OC-014, OC-020, OC-076 | standard | Shipped |
+| `oncall.schedules.coverage` | Read now/next, coverage previews and route counts | OC-014, OC-020, OC-076 | standard (+ sensitive) | Shipped |
 | `oncall.calendar.subscribe` | Issue or revoke a private calendar feed | OC-020, OC-025 | external · security | Not yet shipped |
 | `oncall.policies.update` | Publish escalation, urgency, response, timeout and user-assignment rules | OC-027, OC-056, OC-057, OC-058, OC-068 | live | Not yet shipped |
 | `oncall.routing.publish` | Publish routing rule sets, catch-alls and orchestration rules, and re-admit unrouted events | OC-043, OC-072, OC-083 | live | Not yet shipped |
