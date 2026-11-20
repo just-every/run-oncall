@@ -1000,6 +1000,7 @@ try {
  await responseRegion.getByText('Primary acknowledgment: Unacknowledged',{exact:true}).waitFor()
  for(const width of [1440])await statusCapture(rosa.page,'oc068-requests-and-obligations',width)
 
+ // OC-068 local responder-request cancellation through the signed-in web door.
  const readWorkspace=async page=>ok(await call(page,'/api/state'))
  const readManual=state=>state.incidents.find(incident=>incident.id===manual68.id)
  const requestCard=(page,region,message)=>region.getByRole('article').filter({has:page.getByText(message,{exact:true})})
@@ -1007,7 +1008,16 @@ try {
  const cancelButton={name:'Cancel request',exact:true}
  const openRequests=async page=>{
   await openIncident(page,manual68.id)
-  await openIncidentAction(page,'Request responders')
+  return openIncidentAction(page,'Request responders')
+ }
+ const captureRequests=async(page,region,screen)=>{
+  for(const width of [1440,390]){
+   await page.setViewportSize({width,height:1000})
+   await openRequests(page)
+   await requestCard(page,region,siblingMessage).scrollIntoViewIfNeeded()
+   await page.screenshot({path:`${captureDirectory}/oc068-cancel-${screen}-${width}.png`})
+  }
+  await page.setViewportSize({width:1440,height:1000})
  }
  const outboundBefore=await worker.outboundRequests()
  for(const context of [owner.context,rosa.context])context.on('request',observeRequest)
@@ -1039,8 +1049,11 @@ try {
   const readEffects=()=>Object.fromEntries(Object.entries(durableSnapshot(worker))
    .filter(([table])=>table.startsWith('paging_')||table.includes('outbox')||table.endsWith('_deadlines')))
   const beforeEffects=readEffects()
-  const auditOrdinal=worker.sql('SELECT MAX(ordinal) AS ordinal FROM oc_admin_audit')[0].ordinal
-  await openRequests(rosa.page)
+  const beforeAudit=worker.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal')
+  const auditOrdinal=beforeAudit.at(-1).ordinal
+  const responderDialog=await openRequests(rosa.page)
+  await responderDialog.getByRole('button',{name:'Close',exact:true}).focus()
+  await expect(responderDialog.getByRole('tooltip',{name:'Close dialog',exact:true})).toBeVisible()
   for(const message of [cancelMessage,siblingMessage]){
    const card=requestCard(rosa.page,responseRegion,message)
    await expect(card.getByText(/^pending · requested/)).toBeVisible()
@@ -1048,12 +1061,7 @@ try {
    await expect(card.getByRole('button',cancelButton)).toHaveCount(0)
   }
   assert.deepEqual(await readWorkspace(owner.page),before,'opening as the named responder preserves protected state')
-  for(const width of [1440,390]){
-   await rosa.page.setViewportSize({width,height:1000})
-   await openRequests(rosa.page)
-   await responseRegion.screenshot({path:`${captureDirectory}/oc068-cancel-non-requester-${width}.png`})
-  }
-  await rosa.page.setViewportSize({width:1440,height:1000})
+  await captureRequests(rosa.page,responseRegion,'non-requester')
 
   await owner.page.setViewportSize({width:1440,height:1000})
   await openRequests(owner.page)
@@ -1063,19 +1071,18 @@ try {
   const response=await cancelled
   assert.equal(response.status(),200)
   assert.deepEqual(response.request().postDataJSON(),{type:'cancel-request',incident:incident.id,revision:incident.revision,request:target.id})
-  await openRequests(owner.page)
+  await openIncident(owner.page,manual68.id)
+  const cancellationEntry=entry(owner.page,'Responder request cancelled')
+  await expect(cancellationEntry).toHaveCount(1)
+  await expect(cancellationEntry.locator('small')).toHaveText(ownerMember.name)
+  await openIncidentAction(owner.page,'Request responders')
   const targetCard=requestCard(owner.page,requests68,cancelMessage),siblingCard=requestCard(owner.page,requests68,siblingMessage)
   await expect(targetCard.getByText(/^cancelled · requested/)).toContainText('response by '+ownerMember.name)
   await expect(targetCard.getByRole('button',cancelButton)).toHaveCount(0)
   await expect(siblingCard.getByText(/^pending · requested/)).toBeVisible()
   await expect(siblingCard.getByRole('button',cancelButton)).toBeEnabled()
   await expect(requests68.getByText('Primary acknowledgment: '+responder.name,{exact:true})).toBeVisible()
-  for(const width of [1440,390]){
-   await owner.page.setViewportSize({width,height:1000})
-   await openRequests(owner.page)
-   await requests68.screenshot({path:`${captureDirectory}/oc068-cancel-reopened-${width}.png`})
-  }
-  await owner.page.setViewportSize({width:1440,height:1000})
+  await captureRequests(owner.page,requests68,'reopened')
 
   const after=await readWorkspace(owner.page),saved=readManual(after)
   const cancellation=saved.timeline.at(-1)
@@ -1090,6 +1097,8 @@ try {
   assert.deepEqual(after,{...before,revision:before.revision+1,incidents:before.incidents.map(row=>row.id===saved.id?expected:row)})
 
   // Read the permanent audit directly because exporting it creates an audit row.
+  assert.deepEqual(worker.sql(`SELECT * FROM oc_admin_audit WHERE ordinal<=${auditOrdinal} ORDER BY ordinal`),
+   beforeAudit,'existing permanent audit history is unchanged')
   const audit=worker.sql(`SELECT a.kind,a.outcome,actor.entity_id AS actor,subject.entity_id AS subject,
    a.workspace_before,a.workspace_after,a.paging_before,a.paging_after,a.handoff_before=a.handoff_after AS handoff_unchanged
    FROM oc_admin_audit a LEFT JOIN oc_audit_identities actor ON actor.label=a.actor AND actor.kind='member'
@@ -1106,7 +1115,7 @@ try {
  }finally{
   for(const context of [owner.context,rosa.context])context.off('request',observeRequest)
  }
- console.log('PROBE OC-068 5: signed-in manual incident on a public-team service; named responder saw two pending requests and no Cancel control. Requester cancelled one, reopened at 1440 and 390, and retained one attributed timeline entry and one permanent audit row. Only the target obligation stopped; sibling and primary acknowledgment and obligation stayed unchanged. Zero outbound or paging effects.')
+ console.log('PROBE OC-068 5: on a signed-in manual incident for a public-team service, the named responder saw two pending requests and no Cancel control. The requester cancelled one and reopened at 1440 and 390. One attributed timeline entry and one permanent audit row persisted. Only the target obligation stopped. The sibling and primary acknowledgment and obligation stayed unchanged. Zero outbound or paging effects.')
 
  await openIncident(vic.page,manual68.id);await vic.page.reload()
  await openIncidentAction(vic.page,'Request responders')
