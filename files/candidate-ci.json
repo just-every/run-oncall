@@ -1,0 +1,181 @@
+{
+  "observations": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_branch": "cloud/sd-oncall-c-f318-pc1",
+      "head_sha": "3dbaf8b5de16688db467d475436065478928b5e6",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44764236697",
+      "id": 44764236697,
+      "name": "Verify",
+      "run_attempt": 1,
+      "status": "in_progress",
+      "observed": "2026-11-20T15:33:12.497946+00:00"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "3dbaf8b5de16688db467d475436065478928b5e6",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44764236697",
+      "status": "in_progress",
+      "id": 44764236697,
+      "observed": "2026-11-20T15:38:13.177528+00:00"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "3dbaf8b5de16688db467d475436065478928b5e6",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44764236697",
+      "status": "in_progress",
+      "id": 44764236697,
+      "observed": "2026-11-20T15:43:13.903724+00:00"
+    },
+    {
+      "conclusion": "failure",
+      "head_sha": "3dbaf8b5de16688db467d475436065478928b5e6",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44764236697",
+      "status": "completed",
+      "id": 44764236697,
+      "observed": "2026-11-20T15:53:14.640754+00:00"
+    }
+  ],
+  "run": {
+    "conclusion": "failure",
+    "head_sha": "3dbaf8b5de16688db467d475436065478928b5e6",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44764236697",
+    "status": "completed",
+    "id": 44764236697,
+    "observed": "2026-11-20T15:53:14.640754+00:00"
+  },
+  "jobs": [
+    {
+      "conclusion": "success",
+      "failed": [],
+      "id": 136384482139,
+      "name": "plan"
+    },
+    {
+      "conclusion": "failure",
+      "failed": [
+        "Check the generated contract documents"
+      ],
+      "id": 136384668846,
+      "name": "contract-docs"
+    },
+    {
+      "conclusion": "success",
+      "failed": [],
+      "id": 136384668874,
+      "name": "build"
+    },
+    {
+      "conclusion": "skipped",
+      "failed": [],
+      "id": 136384672156,
+      "name": "light"
+    },
+    {
+      "conclusion": "success",
+      "failed": [],
+      "id": 136385807037,
+      "name": "shards (transfer)"
+    },
+    {
+      "conclusion": "success",
+      "failed": [],
+      "id": 136385807041,
+      "name": "shards (runtime)"
+    },
+    {
+      "conclusion": "success",
+      "failed": [],
+      "id": 136385807071,
+      "name": "shards (activation)"
+    },
+    {
+      "conclusion": "success",
+      "failed": [],
+      "id": 136385807075,
+      "name": "shards (changes)"
+    },
+    {
+      "conclusion": "success",
+      "failed": [],
+      "id": 136385807097,
+      "name": "shards (browser)"
+    },
+    {
+      "conclusion": "success",
+      "failed": [],
+      "id": 136385807147,
+      "name": "shards (hosted)"
+    },
+    {
+      "conclusion": "success",
+      "failed": [],
+      "id": 136385807228,
+      "name": "shards (triage)"
+    },
+    {
+      "conclusion": "success",
+      "failed": [],
+      "id": 136385807283,
+      "name": "shards (agents)"
+    },
+    {
+      "conclusion": "success",
+      "failed": [],
+      "id": 136385807611,
+      "name": "shards (intake)"
+    },
+    {
+      "conclusion": "success",
+      "failed": [],
+      "id": 136393017832,
+      "name": "full-push-proof"
+    },
+    {
+      "conclusion": "skipped",
+      "failed": [],
+      "id": 136393021138,
+      "name": "nightly-proof"
+    },
+    {
+      "conclusion": "failure",
+      "failed": [
+        "Require the selected coverage and its proof"
+      ],
+      "id": 136393074689,
+      "name": "verify"
+    }
+  ],
+  "failedJobArchives": [
+    {
+      "id": 136384668846,
+      "name": "contract-docs",
+      "command": "gh run view 44764236697 --repo just-every/run-oncall --job 136384668846 --log-failed",
+      "exit": 0,
+      "diagnostic": [
+        "2026-11-20T15:32:50.5211944Z ACCEPTANCE.md: generated content differs; run contract-docs write.",
+        "2026-11-20T15:32:50.5324024Z ##[error]Process completed with exit code 1."
+      ]
+    },
+    {
+      "id": 136393074689,
+      "name": "verify",
+      "command": "gh run view 44764236697 --repo just-every/run-oncall --job 136393074689 --log-failed",
+      "exit": 0,
+      "diagnostic": [
+        "2026-11-20T15:46:52.8969003Z case \"$CONTRACT_DOCS:$SKIP\" in",
+        "2026-11-20T15:46:52.8971367Z case \"$PUSH_PROOF:$NIGHTLY_PROOF\" in",
+        "2026-11-20T15:46:52.9219191Z   PLAN: success",
+        "2026-11-20T15:46:52.9219751Z   CONTRACT_DOCS: failure",
+        "2026-11-20T15:46:52.9220289Z   BUILD: success",
+        "2026-11-20T15:46:52.9220775Z   SHARDS: success",
+        "2026-11-20T15:46:52.9221311Z   LIGHT: skipped",
+        "2026-11-20T15:46:52.9221829Z   PUSH_PROOF: success",
+        "2026-11-20T15:46:52.9222883Z   COVERAGE: full",
+        "2026-11-20T15:46:52.9223506Z   HAS_SHARDS: true",
+        "2026-11-20T15:46:52.9653991Z ##[error]Process completed with exit code 1."
+      ]
+    }
+  ]
+}

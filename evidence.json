@@ -1,0 +1,52 @@
+{
+  "files": [
+    {
+      "blob": "b045301527769f8a0df5a795e21c9849b0f69e71",
+      "bytes": 9625,
+      "path": "REPORT.md",
+      "sha256": "7bcf3da41592974d8bcfd71b35bf6c7fc8afb7e8b044f14b8995b7bc7f5a591d"
+    },
+    {
+      "blob": "bce2709400b3e5858d4672d0db677433657db3a4",
+      "bytes": 5045,
+      "path": "candidate-ci.json",
+      "sha256": "6245c83fa4e8a5fce375d8d0c05abc719dca2c0b9dde5032cf22fc9ff7e14b64"
+    },
+    {
+      "blob": "5ca0d29763504541bc874545a148cdb005cf67ca",
+      "bytes": 3748,
+      "path": "local-checks.json",
+      "sha256": "5a91fc4cc14a8cd400e6f9da7f0e41c2b82a8e5dffbed7159ccda37ff4e7b4f7"
+    },
+    {
+      "blob": "3cd840a27ad0d4fdd5ab55c609d772ab27356463",
+      "bytes": 211224,
+      "path": "oc050-stale-merge-target-1440.png",
+      "sha256": "1e7c533c465290068fd1da2a25046d423203cd11bdd4e11a0f5518515d6e4d7b"
+    },
+    {
+      "blob": "d9b13714a403a5602b47ae4c506d5214adaae37d",
+      "bytes": 66737,
+      "path": "oc050-stale-merge-target-390.png",
+      "sha256": "9c69e3f39c3962f0c241733fe3cf60fbbd442713fefe481c630d89a85bcef96b"
+    },
+    {
+      "blob": "39a71f2791099869a5759d5298c279b641ff624b",
+      "bytes": 617,
+      "path": "oc050-stale-merge-target.json",
+      "sha256": "b61de356901911f70d2c2acae6133b854e61ac0e67017a16cd424bc0464a53b9"
+    },
+    {
+      "blob": "effe83fbb8d6dbf6c3e559468cf3816c8661f595",
+      "bytes": 1916,
+      "path": "verify-reproduction.json",
+      "sha256": "93207ba6f44f85a0d9273b7b7b04f607b2d4e603a36b7ac85a4ffe4e7aa761db"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f318-pc1",
+  "product_head": "3dbaf8b5de16688db467d475436065478928b5e6",
+  "ref": "refs/heads/evidence/sd-oncall-c-f318-pc1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f318-pc1"
+}

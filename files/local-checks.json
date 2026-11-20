@@ -1,0 +1,80 @@
+{
+  "exactProductHead": "3dbaf8b5de16688db467d475436065478928b5e6",
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "checkoutBuild": {
+    "command": "node scripts/verify-oncall-build.mjs",
+    "exit": 0,
+    "buildReceipt": {
+      "sha": "3dbaf8b5de16688db467d475436065478928b5e6"
+    },
+    "checks": [
+      "rer check --profile first-party",
+      "rer build",
+      "tsc --noEmit"
+    ]
+  },
+  "coreBrowser": {
+    "command": "node scripts/verify-oncall.mjs browser",
+    "exit": 0,
+    "milestone": [
+      "PASS OC-050 native role controls: Lead transfer, Scribe and Communications assignment and transfer, exact revisions and attributed history after reload at 1440; selected controls captured at 1440 and 390 with labels, tooltips, overflow, hydration and serious or critical axe checks",
+      "PROBE OC-050 acceptance 2 stale merge target: independent responder note 200, original reviewed merge 409, visible conflict without success, only the note persists, one responder-attributed refusal, paging OFF and zero outbound requests",
+      "PASS OC-050 incident workflows browser: service template publication and typed declaration, commander checklist, merge/source history, alias redirect and split without lifecycle change at 1440; overflow, axe and hydration checked",
+      "Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390"
+    ]
+  },
+  "storm": {
+    "command": "ONCALL_TRIAGE_PART=storm node tests/triage.mjs",
+    "exit": 0,
+    "milestone": [
+      "PROBE OC-050 acceptance 2: viewer Communications transfer -> 403, one refusal attributed to the viewer and incident, unchanged role, timeline, revisions and paging, zero outbound requests. The same command succeeded for the responder.",
+      "PASS OC-050: versioned service templates freeze complete declaration snapshots; commander-only checklist history survives role transfer, decisions retain authors, merges preserve source timelines/roles/actions and aliases, splits move selected alerts without lifecycle changes, concurrent merge/split commit once, stale/viewer/anonymous/machine/expired/revoked/state refusals and audit-failure rollback preserve exact state, malformed provenance refuses restore, and archive/restore/restart retain workflow custody. Paging remains OFF.",
+      "OC-041 triage accepted and refused items retain their own atomic audit outcomes; triage storm: 50 incidents, 49 independent commits plus stale failure, replay, roles, queries, viewer denial, confirmed matching and archive/restart passed"
+    ]
+  },
+  "contractViews": {
+    "branchCheck": {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 1,
+      "output": [
+        "Contract prose: 0 errors, 0 warnings.",
+        "ACCEPTANCE.md: generated content differs; run contract-docs write."
+      ]
+    },
+    "generatedCheck": {
+      "commands": [
+        "node src/base/contract-docs.mjs write",
+        "node src/base/contract-docs.mjs check"
+      ],
+      "exit": 0,
+      "output": [
+        "Wrote 1 contract documents.",
+        "Contract prose: 0 errors, 0 warnings.",
+        "Contract documents are current."
+      ]
+    },
+    "generatedViewsRestoredFromMain": true
+  },
+  "lock": {
+    "commands": [
+      "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check"
+    ],
+    "exit": 0,
+    "ok": true
+  },
+  "migrationLedger": "not applicable because no migration changed",
+  "filesChanged": [
+    "CONTRACT.md",
+    "sources.lock.json",
+    "tests/product-browser.mjs"
+  ],
+  "contractCounts": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "publicationScan": "guarded Mac lander pending"
+}

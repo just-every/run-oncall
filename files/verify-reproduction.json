@@ -1,0 +1,26 @@
+[
+  {
+    "head": "98c506d29a49b174d7d258c7f4442dae2682860c",
+    "run": 44751694791,
+    "attempt": 2,
+    "job": "contract-docs",
+    "jobId": 136354756616,
+    "command": "node src/base/contract-docs.mjs check",
+    "test": "Check the generated contract documents",
+    "exit": 1,
+    "failure": "ACCEPTANCE.md: generated content differs; run contract-docs write.",
+    "archive": "The single failed-job archive command returned no log rows. Local reproduction on the pinned Node version supplied the failing line."
+  },
+  {
+    "head": "98c506d29a49b174d7d258c7f4442dae2682860c",
+    "run": 44751694791,
+    "attempt": 2,
+    "job": "verify",
+    "jobId": 136362130907,
+    "command": "env PLAN=success CONTRACT_DOCS=failure BUILD=success SHARDS=success LIGHT=skipped PUSH_PROOF=success NIGHTLY_PROOF=skipped COVERAGE=full HAS_SHARDS=true SKIP=false bash -eu -o pipefail -c 'set -euo pipefail\ntest \"$PLAN\" = success\ncase \"$CONTRACT_DOCS:$SKIP\" in\n  success:false|skipped:true) ;;\n  *) exit 1 ;;\nesac\ncase \"$PUSH_PROOF:$NIGHTLY_PROOF\" in\n  *failure*|*cancelled*) exit 1 ;;\nesac\ncase \"$COVERAGE\" in\n  reuse) test \"$SKIP\" = true && test \"$BUILD\" = skipped && test \"$SHARDS\" = skipped && test \"$LIGHT\" = skipped ;;\n  light) test \"$SKIP\" = false && test \"$LIGHT\" = success && test \"$BUILD\" = skipped && test \"$SHARDS\" = skipped ;;\n  full) test \"$LIGHT\" = skipped && { { test \"$BUILD\" = success && test \"$SHARDS\" = success; } || { test \"$HAS_SHARDS\" = false && test \"$BUILD\" = skipped && test \"$SHARDS\" = skipped; }; } ;;\n  *) exit 1 ;;\nesac'",
+    "test": "Require the selected coverage and its proof",
+    "exit": 1,
+    "failure": "CONTRACT_DOCS: failure. Process completed with exit code 1.",
+    "archive": "The single failed-job archive read returned the aggregate shell and recorded environment. The build, all nine shards and full-push-proof succeeded."
+  }
+]

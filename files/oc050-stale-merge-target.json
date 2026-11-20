@@ -1,0 +1,26 @@
+{
+  "assertionWidth": 1440,
+  "screenshotWidths": [
+    1440,
+    390
+  ],
+  "noteStatus": 200,
+  "mergeStatus": 409,
+  "reviewedTargetRevision": 8,
+  "committedTargetRevision": 9,
+  "submittedTargetRevision": 8,
+  "reviewedSourceRevision": 3,
+  "submittedSourceRevision": 3,
+  "visibleConflict": true,
+  "successClaim": false,
+  "onlyIndependentNote": true,
+  "noteVisibleAfterReload": true,
+  "sourceRemainsSeparate": true,
+  "refusalCount": 1,
+  "refusalActorRole": "responder",
+  "priorAuditUnchanged": true,
+  "paging": "OFF",
+  "pagingUnchanged": true,
+  "outboundRequests": 0,
+  "browserOutboundRequests": 0
+}
