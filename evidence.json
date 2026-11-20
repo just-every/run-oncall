@@ -1,0 +1,40 @@
+{
+  "files": [
+    {
+      "blob": "40c25fd9b3262852c2e1b01ad0fb28c6a87e55cc",
+      "bytes": 5526,
+      "path": "CUSTODY.json",
+      "sha256": "19999291cf5807403aa898f2c366174c1e974f3292dffb37e6a0bce0af65426c"
+    },
+    {
+      "blob": "2273746f18d5c495ac63cb327776366075c1d40f",
+      "bytes": 7883,
+      "path": "REPORT.md",
+      "sha256": "4ad9a575f6bb01dbd8df04d4406cfb85bf9c2b1883b0fc532c917dd86df1be31"
+    },
+    {
+      "blob": "bab862af79f9d68a151bba26dcfd7958cf9a4aca",
+      "bytes": 192874,
+      "path": "oc050-stale-merge-target-1440.png",
+      "sha256": "184f0f4d598d1fd8ec4fca71349e86f67fa69dd063397c98600d5d3fa3500d6a"
+    },
+    {
+      "blob": "73900433358dded0d7a5f5fb6be4d876fcce8467",
+      "bytes": 51605,
+      "path": "oc050-stale-merge-target-390.png",
+      "sha256": "0feeada987d6c5331c3c1ca45a098cbaba0f3029371cdbf35805815d3b8fc413"
+    },
+    {
+      "blob": "3798f696a4f443c6da7c2efe4b2a52b88f70db3c",
+      "bytes": 552,
+      "path": "oc050-stale-merge-target.json",
+      "sha256": "3cb572aa4aecfe15e1335d131b4c5a0cf048063c7b5caa12588a80531c6eb615"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f318",
+  "product_head": "98c506d29a49b174d7d258c7f4442dae2682860c",
+  "ref": "refs/heads/evidence/sd-oncall-c-f318",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f318"
+}
