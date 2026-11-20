@@ -1,0 +1,120 @@
+{
+  "tag": "sd-oncall-c-f317",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f317",
+  "head": "04e14484692f09913db8a7b45f4e3f18eee305bd",
+  "base": "e885cc4958942a4f0c292dd35a1e2b8983eae3f1",
+  "save": "200568b74d02693889b65b3a1e0a1cd308d24484",
+  "node": "24.19.0",
+  "pnpm": "10.12.4",
+  "clause": {
+    "id": "SURFACE-001",
+    "statusBefore": "MISSING",
+    "statusAfter": "MISSING",
+    "countsBefore": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "countsAfter": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "build": {
+    "command": "npx -y @runeditrun/rer build",
+    "exit": 0
+  },
+  "checks": [
+    {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/agent-door-browser.mjs",
+      "exit": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    }
+  ],
+  "mechanical": {
+    "views": [
+      {
+        "command": "node src/base/contract-docs.mjs write",
+        "exit": 0
+      },
+      {
+        "command": "node src/base/contract-docs.mjs check",
+        "exit": 0
+      }
+    ],
+    "lock": [
+      {
+        "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+        "exit": 0
+      },
+      {
+        "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+        "exit": 0
+      }
+    ],
+    "generatedViewsCommitted": false,
+    "migrationLedger": "no migration changed"
+  },
+  "runtime": [
+    "PROBE SURFACE-001 1 autonomous: emitted MCP list and served guide -> oncall.incidents.update, incidents:write, standard, sensitive, live, OC-004, OC-027, OC-050, OC-058; native records, mutation audit and paging unchanged; zero outbound requests",
+    "PROBE SURFACE-001 1 held: emitted MCP list and served guide -> oncall.incidents.update, incidents:write, standard, sensitive, live, OC-004, OC-027, OC-050, OC-058; native records, mutation audit and paging unchanged; zero outbound requests",
+    "Runtime agents completed (758.2s)"
+  ],
+  "rendered": [
+    "PROBE BASE-AGENT-013 rendered autonomous: /docs/agents -> complete 42-tool class, scope and fixture inventory agrees with MCP; 17 resource templates; native and paging unchanged; zero outbound requests",
+    "PROBE BASE-AGENT-013 rendered held: /docs/agents -> complete 42-tool class, scope and fixture inventory agrees with MCP; 17 resource templates; native and paging unchanged; zero outbound requests",
+    "Browser proof guide 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof guide 390: fits=true serious/critical=0 undersized-controls=0"
+  ],
+  "captures": [
+    {
+      "file": "agent-door-guide-1440.png",
+      "width": 1440,
+      "height": 15747,
+      "bytes": 6507648,
+      "sha256": "cd0052900f47d9033c89c3720447a301d3ac1a2db20e2ea6590c40b231e791e6"
+    },
+    {
+      "file": "agent-door-guide-390.png",
+      "width": 390,
+      "height": 21421,
+      "bytes": 3702697,
+      "sha256": "37ffa0dd997638aedbda8338770f4599b2b1eb3f70ce9d3dfba75950da4629fe"
+    }
+  ],
+  "verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "04e14484692f09913db8a7b45f4e3f18eee305bd",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44753618632",
+    "id": 44753618632,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "baseVerify": {
+    "id": 44747659462,
+    "conclusion": "success"
+  },
+  "baseRunSite": {
+    "id": 44747659117,
+    "conclusion": "success"
+  },
+  "publicationScan": {
+    "status": "fleet landing gate pending"
+  }
+}
