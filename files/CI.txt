@@ -1,0 +1,10 @@
+2026-11-20T00:39:09Z
+[{"conclusion":null,"event":"push","head_sha":"33cafdc7750103f51ac4173c7b52c8dbcf1efbe0","html_url":"https://github.com/just-every/run-oncall/actions/runs/44647513882","id":44647513882,"name":"Verify","path":".github/workflows/verify.yml","status":"in_progress"}]
+2026-11-20T00:44:11Z
+{"conclusion":null,"head_sha":"33cafdc7750103f51ac4173c7b52c8dbcf1efbe0","html_url":"https://github.com/just-every/run-oncall/actions/runs/44647513882","status":"in_progress"}
+2026-11-20T00:49:13Z
+{"conclusion":null,"head_sha":"33cafdc7750103f51ac4173c7b52c8dbcf1efbe0","html_url":"https://github.com/just-every/run-oncall/actions/runs/44647513882","status":"in_progress"}
+2026-11-20T00:54:15Z
+{"conclusion":null,"head_sha":"33cafdc7750103f51ac4173c7b52c8dbcf1efbe0","html_url":"https://github.com/just-every/run-oncall/actions/runs/44647513882","status":"in_progress"}
+2026-11-20T00:59:17Z
+{"conclusion":"success","head_sha":"33cafdc7750103f51ac4173c7b52c8dbcf1efbe0","html_url":"https://github.com/just-every/run-oncall/actions/runs/44647513882","status":"completed"}

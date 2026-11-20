@@ -1,0 +1,34 @@
+{
+  "files": [
+    {
+      "blob": "873a56b46e08fe14fce24ebbd8ed0852117f9912",
+      "bytes": 1076,
+      "path": "CI.txt",
+      "sha256": "faffa0471319a65920cf9070904cdd95137844839a27d73c74f4140ee585bc46"
+    },
+    {
+      "blob": "aa89b4dea4e68963ea4333206cfa76bde9c984e4",
+      "bytes": 998,
+      "path": "LOCAL-CHECKS.txt",
+      "sha256": "625b072d4519f8664dee7a96fb85f1caca622c5ec55c3055e02589573fde5b9a"
+    },
+    {
+      "blob": "13d201c21a0d659032d9954d3a0e01de1b025a2e",
+      "bytes": 544,
+      "path": "PUSH-AND-HASHES.txt",
+      "sha256": "7473fb4c83ad12c3a7d4e4df59e1500e95b53d9d1f13cd712f50d14b4cfe7c4d"
+    },
+    {
+      "blob": "da9d7867712f860a56657b17deff87479bebd1b2",
+      "bytes": 4523,
+      "path": "REPORT.md",
+      "sha256": "9ffc73cc947613a04aef7125dc7bab0dbef90323548f3e791d4efe45c060c53c"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-release-0-5-21",
+  "product_head": "33cafdc7750103f51ac4173c7b52c8dbcf1efbe0",
+  "ref": "refs/heads/evidence/sd-oncall-release-0-5-21",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-release-0-5-21"
+}

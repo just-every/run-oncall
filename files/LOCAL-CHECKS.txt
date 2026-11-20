@@ -1,0 +1,19 @@
+2026-11-20T00:38:25Z
+Candidate 33cafdc7750103f51ac4173c7b52c8dbcf1efbe0
+PASS git diff --check
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+PASS pinned edition-authoring check
+Edition authoring toolchain runeditrun/edition-authoring 1.1.0
+Source manifest hashes and modes checked: 1722
+PASS pnpm run typecheck (tsc --noEmit)
+Dependency setup and local typecheck used Node 24.19.0 and pnpm 10.12.4. CI uses the repository's Node pin.
+PASS release version and predecessor, identical changelog and public notes, backup and upgrade instructions, unchanged rer pin
+PASS migration inventory: 68 before, 68 after, identical tracked blobs and modes, added=[]
+PASS contract and generated views, pnpm lock and project/setup declarations unchanged
+PASS all candidate author, committer, and trailer checks. One commit and no trailers.
+
+2026-11-20T00:44:37Z
+Pinned Node typecheck for 33cafdc7750103f51ac4173c7b52c8dbcf1efbe0
+v22.20.0
+PASS typecheck at the repository-pinned Node 22.20.0

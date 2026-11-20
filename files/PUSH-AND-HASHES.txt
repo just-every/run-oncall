@@ -1,0 +1,7 @@
+2026-11-20T00:39:05Z
+Advertised product head: 33cafdc7750103f51ac4173c7b52c8dbcf1efbe0	refs/heads/cloud/sd-oncall-release-0-5-21
+7296a21b69f52706bb0043c0f82321b54c2d3dc3a0eeb788cd2de65815092f5a  -
+setup.sha256 path=rer-setup.json declared=7296a21b69f52706bb0043c0f82321b54c2d3dc3a0eeb788cd2de65815092f5a actual=7296a21b69f52706bb0043c0f82321b54c2d3dc3a0eeb788cd2de65815092f5a
+PASS all project-declared own-file SHA-256 values
+2345c090f5ffaf13c455d10cfa9780c266c6dd4f	refs/tags/v0.5.19
+91ca76b40a673cb40b8ede306ea4d8ab367614c1	refs/tags/v0.5.20
