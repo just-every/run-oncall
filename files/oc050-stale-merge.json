@@ -1,0 +1,38 @@
+{
+  "journey": "incidentWorkflowBrowser",
+  "assertionWidth": 1440,
+  "response": 409,
+  "conflict": "Incident changed. Reload before applying your edit.",
+  "commandCount": 1,
+  "reviewedRevisions": {
+    "target": 9,
+    "firstSource": 3,
+    "secondSource": 1
+  },
+  "note": {
+    "actor": "Checkout note responder",
+    "beforeRevision": 1,
+    "afterRevision": 2
+  },
+  "refusal": {
+    "kind": "command.merge-incidents",
+    "outcome": "refused",
+    "actor": "Checkout merge responder",
+    "subject": "Checkout customer impact 1440"
+  },
+  "unchangedRevisions": {
+    "audit": 38,
+    "workspace": 24,
+    "paging": 0,
+    "handoff": 0
+  },
+  "unchangedProtectedState": true,
+  "unchangedDurableRecords": true,
+  "firstSourceStillOpens": true,
+  "pagingMode": "OFF",
+  "outboundRequests": 0,
+  "screenshots": [
+    1440,
+    390
+  ]
+}

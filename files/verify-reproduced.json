@@ -1,0 +1,18 @@
+{
+  "head": "2a0944f2448904b1dce542315058c95d9a8029a0",
+  "job": "shards (changes)",
+  "run": 44622973540,
+  "jobId": 135910907370,
+  "command": "timeout 900 node scripts/verify-oncall.mjs changes",
+  "test": "tests/import-door.mjs, synthetic Business account import",
+  "exit": 124,
+  "failure": "The shard reached the 900-second deadline. Its last progress line was Synthetic account applied: business. No assertion error was emitted.",
+  "node": "22.20.0",
+  "precedingLane": "Changes and activation both passed.",
+  "mainControl": {
+    "head": "e4123dded5d6a9f058880669ca10213bcfbe2646",
+    "command": "timeout 900 node scripts/verify-oncall.mjs changes",
+    "exit": 124,
+    "lastProgress": "Synthetic account catch-up and undo: business"
+  }
+}

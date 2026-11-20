@@ -1,0 +1,220 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f311-pc1",
+  "head": "bf446d4fbc19251bb4ca5e28ff940da626ea99ab",
+  "mergedMain": "8b30370587527f91331d9fc84deb82688dbfa67a",
+  "counts": {
+    "before": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34
+    },
+    "after": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34
+    }
+  },
+  "clause": {
+    "id": "OC-050",
+    "status": "PARTIAL",
+    "selectedSlice": "acceptance 2 stale second-source confirmation"
+  },
+  "local": {
+    "node": "22.20.0",
+    "build": 0,
+    "typecheck": 0,
+    "firstPartyCheck": 0,
+    "focusedBrowser": 0,
+    "triageStorm": 0,
+    "contractWrite": 0,
+    "contractCheckAfterWrite": 0,
+    "contractCheckWithMainViews": 1,
+    "sourceLockWrite": 0,
+    "sourceLockCheck": 0,
+    "activationShard": 0,
+    "changesShardTimeoutExit": 124
+  },
+  "browser": {
+    "assertionWidth": 1440,
+    "receipt": "oc050-stale-merge.json",
+    "screenshots": {
+      "1440": {
+        "file": "oc050-stale-merge-1440.png",
+        "sha256": "e9272050f1cd4779a6d05a67d8807f1a027e0c15d8b5185b5ce7a71a5854b809"
+      },
+      "390": {
+        "file": "oc050-stale-merge-390.png",
+        "sha256": "074ce7ff9f1872dbc70cb809381c0edd04293a44db82ed1572b198231ba0f9e1"
+      }
+    }
+  },
+  "verify": {
+    "conclusion": "failure",
+    "created_at": "2026-11-19T23:34:13Z",
+    "event": "push",
+    "head_sha": "bf446d4fbc19251bb4ca5e28ff940da626ea99ab",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44638761623",
+    "id": 44638761623,
+    "run_attempt": 1,
+    "status": "completed",
+    "updated_at": "2026-11-19T23:51:38Z"
+  },
+  "jobs": [
+    {
+      "completed_at": "2026-11-19T23:34:31Z",
+      "conclusion": "success",
+      "failed": [],
+      "id": 135964026776,
+      "name": "plan",
+      "started_at": "2026-11-19T23:34:16Z"
+    },
+    {
+      "completed_at": "2026-11-19T23:37:29Z",
+      "conclusion": "success",
+      "failed": [],
+      "id": 135964163911,
+      "name": "build",
+      "started_at": "2026-11-19T23:34:33Z"
+    },
+    {
+      "completed_at": "2026-11-19T23:34:53Z",
+      "conclusion": "failure",
+      "failed": [
+        {
+          "conclusion": "failure",
+          "name": "Check the generated contract documents"
+        }
+      ],
+      "id": 135964163935,
+      "name": "contract-docs",
+      "started_at": "2026-11-19T23:34:33Z"
+    },
+    {
+      "completed_at": "2026-11-19T23:34:31Z",
+      "conclusion": "skipped",
+      "failed": [],
+      "id": 135964166927,
+      "name": "light",
+      "started_at": "2026-11-19T23:34:32Z"
+    },
+    {
+      "completed_at": "2026-11-19T23:45:56Z",
+      "conclusion": "success",
+      "failed": [],
+      "id": 135965606655,
+      "name": "shards (runtime)",
+      "started_at": "2026-11-19T23:37:33Z"
+    },
+    {
+      "completed_at": "2026-11-19T23:50:46Z",
+      "conclusion": "success",
+      "failed": [],
+      "id": 135965606724,
+      "name": "shards (agents)",
+      "started_at": "2026-11-19T23:37:32Z"
+    },
+    {
+      "completed_at": "2026-11-19T23:46:10Z",
+      "conclusion": "success",
+      "failed": [],
+      "id": 135965606734,
+      "name": "shards (intake)",
+      "started_at": "2026-11-19T23:37:32Z"
+    },
+    {
+      "completed_at": "2026-11-19T23:46:09Z",
+      "conclusion": "success",
+      "failed": [],
+      "id": 135965606770,
+      "name": "shards (browser)",
+      "started_at": "2026-11-19T23:37:32Z"
+    },
+    {
+      "completed_at": "2026-11-19T23:42:39Z",
+      "conclusion": "success",
+      "failed": [],
+      "id": 135965606789,
+      "name": "shards (activation)",
+      "started_at": "2026-11-19T23:37:32Z"
+    },
+    {
+      "completed_at": "2026-11-19T23:49:46Z",
+      "conclusion": "success",
+      "failed": [],
+      "id": 135965606798,
+      "name": "shards (transfer)",
+      "started_at": "2026-11-19T23:37:32Z"
+    },
+    {
+      "completed_at": "2026-11-19T23:51:26Z",
+      "conclusion": "success",
+      "failed": [],
+      "id": 135965606801,
+      "name": "shards (changes)",
+      "started_at": "2026-11-19T23:37:33Z"
+    },
+    {
+      "completed_at": "2026-11-19T23:49:33Z",
+      "conclusion": "success",
+      "failed": [],
+      "id": 135965606805,
+      "name": "shards (hosted)",
+      "started_at": "2026-11-19T23:37:32Z"
+    },
+    {
+      "completed_at": "2026-11-19T23:47:42Z",
+      "conclusion": "success",
+      "failed": [],
+      "id": 135965606834,
+      "name": "shards (triage)",
+      "started_at": "2026-11-19T23:37:33Z"
+    },
+    {
+      "completed_at": "2026-11-19T23:51:31Z",
+      "conclusion": "success",
+      "failed": [],
+      "id": 135972051644,
+      "name": "full-push-proof",
+      "started_at": "2026-11-19T23:51:28Z"
+    },
+    {
+      "completed_at": "2026-11-19T23:51:26Z",
+      "conclusion": "skipped",
+      "failed": [],
+      "id": 135972053506,
+      "name": "nightly-proof",
+      "started_at": "2026-11-19T23:51:26Z"
+    },
+    {
+      "completed_at": "2026-11-19T23:51:38Z",
+      "conclusion": "failure",
+      "failed": [
+        {
+          "conclusion": "failure",
+          "name": "Require the selected coverage and its proof"
+        }
+      ],
+      "id": 135972092787,
+      "name": "verify",
+      "started_at": "2026-11-19T23:51:34Z"
+    }
+  ],
+  "generatedViewException": "ACCEPTANCE.md and dependent aggregate guard",
+  "supersededVerify": {
+    "id": 44635621937,
+    "conclusion": "failure",
+    "head_sha": "497ff1684e738869c8c689c85c40ba001db45c52",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44635621937",
+    "status": "completed"
+  },
+  "savedVerify": {
+    "id": 44622973540,
+    "head": "2a0944f2448904b1dce542315058c95d9a8029a0",
+    "conclusion": "failure",
+    "changesJobId": 135910907370,
+    "changesConclusion": "cancelled"
+  },
+  "publicationScan": "pending guarded landing",
+  "runSite": "pending guarded landing"
+}

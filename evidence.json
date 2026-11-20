@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "074d45b51450cdf32481f04c4a61d12af447aab4",
+      "bytes": 12887,
+      "path": "REPORT.md",
+      "sha256": "1ed5eac0ca44aac633a11eb67ea62670e127b0cb2f59044bf9cb4c1d5495ff99"
+    },
+    {
+      "blob": "6a844e36b92a4aad2ad2a09b67f3fb48b03fa7df",
+      "bytes": 5904,
+      "path": "candidate-checks.json",
+      "sha256": "d649031c56fd026352dab489cfbf9d4eb2260d5d4ec71ddc7c9c7fa61b55f934"
+    },
+    {
+      "blob": "744b5165e0d99237c5adb1207884d797df7ae575",
+      "bytes": 210860,
+      "path": "oc050-stale-merge-1440.png",
+      "sha256": "e9272050f1cd4779a6d05a67d8807f1a027e0c15d8b5185b5ce7a71a5854b809"
+    },
+    {
+      "blob": "76534108bd41e23a8978b7f2b61bb9d3defa91cf",
+      "bytes": 62778,
+      "path": "oc050-stale-merge-390.png",
+      "sha256": "074ce7ff9f1872dbc70cb809381c0edd04293a44db82ed1572b198231ba0f9e1"
+    },
+    {
+      "blob": "d445a5de20f322b689bb046cf47a092982ec165d",
+      "bytes": 843,
+      "path": "oc050-stale-merge.json",
+      "sha256": "19bf1f62b14bb6e109f1518c8007d1e213037f06fae44c4393d4bd470d3c48c8"
+    },
+    {
+      "blob": "d49a4ded8596ada657b2c4416e3a577949dc7cbd",
+      "bytes": 753,
+      "path": "verify-reproduced.json",
+      "sha256": "f5b0c344b8a3caf8a6d6cdb4570f8d4b1d1637f68d8c35e8bbd66e8f35b5eabd"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f311-pc1",
+  "product_head": "bf446d4fbc19251bb4ca5e28ff940da626ea99ab",
+  "ref": "refs/heads/evidence/sd-oncall-c-f311-pc1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f311-pc1"
+}
