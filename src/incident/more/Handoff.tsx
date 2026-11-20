@@ -1,12 +1,20 @@
 import {useEffect, useRef, useState} from 'react';
 import {HttpFailure, InterruptedTransport, request} from '../../useWorkspace';
-import type {HandoffEligibility, HandoffPayload, HandoffRecord, HandoffSource} from '../../family/response-operations/handoffs';
+import type {exportHandoff, HandoffEligibility, HandoffPayload, HandoffRecord, HandoffSource} from '../../family/response-operations/handoffs';
 import type {IncidentProps} from '../types';
 import './handoff.css';
 
 type Context = {incidentRevision: number; serviceHash: string; source: HandoffSource; unavailable?: boolean};
 type View = {record: HandoffRecord; eligibility: HandoffEligibility; context: Context | null};
 type Pending = {path: string; data: unknown; message: string};
+type ExportPacket = Awaited<ReturnType<typeof exportHandoff>>;
+
+function handoffText({title, summary, evidenceLinks, impactLinks}: HandoffPayload) {
+  const sections = [title, summary];
+  if (evidenceLinks.length) sections.push(['Evidence links', ...evidenceLinks].join('\n'));
+  if (impactLinks.length) sections.push(['Impact links', ...impactLinks].join('\n'));
+  return sections.join('\n\n');
+}
 
 export function Handoff({incident, state, actor}: IncidentProps) {
   const permitted = actor.active && ['admin', 'responder', 'viewer'].includes(actor.role);
@@ -76,20 +84,43 @@ export function Handoff({incident, state, actor}: IncidentProps) {
     } finally {setBusy(false);}
   }
 
-  async function download() {
-    if (!view || busy) return;
+  async function exportCopy(destination: 'download' | 'clipboard') {
+    if (!canAct || !view?.eligibility.eligible || busy) return;
+    const {record} = view;
+    const copying = destination === 'clipboard';
+    if (copying && record.payload.audience !== 'internal') return;
     setBusy(true); setError(''); setNotice('');
     try {
-      const packet = await request('/api/handoffs/' + encodeURIComponent(view.record.id) + '/export');
+      const exported: Promise<ExportPacket> = request('/api/handoffs/' + encodeURIComponent(record.id) + '/export');
+      if (copying) {
+        const text = exported.then(({record: reviewed}) => {
+          if (reviewed.payload.audience !== 'internal' || reviewed.payloadHash !== record.payloadHash || reviewed.sourceHash !== record.sourceHash)
+            throw new HttpFailure(409, 'Reviewed copy changed');
+          return new Blob([handoffText(reviewed.payload)], {type: 'text/plain'});
+        });
+        // Start the clipboard write during the click. Its data must await the authenticated export.
+        const write = async () => navigator.clipboard.write([new ClipboardItem({'text/plain': text})]);
+        const [source, clipboard] = await Promise.allSettled([text, write()]);
+        if (source.status === 'rejected') throw source.reason;
+        if (clipboard.status === 'rejected') {
+          setError('Could not write to the clipboard. Check your browser permissions and try again.');
+          return;
+        }
+        setNotice('Handoff copied to clipboard.');
+        return;
+      }
+      const packet = await exported;
       const url = URL.createObjectURL(new Blob([JSON.stringify(packet, null, 2) + '\n'], {type: 'application/json'}));
       const link = document.createElement('a'); link.href = url; link.download = 'oncall-reviewed-handoff.json'; link.click();
       window.setTimeout(() => URL.revokeObjectURL(url), 1000);
       setNotice('Exported the exact reviewed copy as JSON. Nothing was sent.');
     } catch (failure) {
       setError(failure instanceof HttpFailure && failure.status === 409
-        ? 'This reviewed copy is no longer eligible for export. Inspect the current source and prepare it again.'
+        ? copying ? 'This reviewed copy is no longer eligible. Check the current handoff before copying.'
+          : 'This reviewed copy is no longer eligible for export. Inspect the current source and prepare it again.'
         : failure instanceof HttpFailure && [401, 403].includes(failure.status)
-          ? 'Your current role or session does not permit this handoff export.' : 'Export could not be completed. Try again.');
+          ? 'Your current role or session does not permit this handoff export.'
+          : copying ? 'The handoff could not be copied. Try again.' : 'Export could not be completed. Try again.');
       await load();
     } finally {setBusy(false);}
   }
@@ -124,7 +155,8 @@ export function Handoff({incident, state, actor}: IncidentProps) {
       {record.status === 'withdrawn' && <p>This copy was withdrawn and cannot be reviewed or exported.</p>}
       {canAct && !editing && <div className="handoff-actions">
         {!stale && record.status !== 'withdrawn' && (!approval || record.held) && <button type="button" disabled={busy || retry} onClick={() => void perform({path: '/api/handoffs/' + encodeURIComponent(record.id) + '/review', data: {actionId: crypto.randomUUID(), revision: record.revision, payloadHash: record.payloadHash, sourceHash: record.sourceHash, reason: ''}, message: 'Reviewed this exact copy. Nothing was sent.'})}>Review exact copy</button>}
-        {view?.eligibility.eligible && <button type="button" disabled={busy} onClick={() => void download()}>Export reviewed copy</button>}
+        {view?.eligibility.eligible && <button type="button" disabled={busy} onClick={() => void exportCopy('download')}>Export reviewed copy</button>}
+        {view?.eligibility.eligible && record.payload.audience === 'internal' && <button type="button" disabled={busy} onClick={() => void exportCopy('clipboard')}>Copy as plain text</button>}
         <button type="button" disabled={busy || retry || !context} onClick={prepareAgain}>Prepare again</button>
       </div>}
     </article>}

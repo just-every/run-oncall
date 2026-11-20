@@ -287,6 +287,7 @@ async function incidentHandoff(ownerPage) {
  const approval=record.history.at(-1);assert.equal(record.history.length,2,'lost review response retry appends one review');assert.equal(approval.type,'reviewed');assert.equal(approval.actor.id,responderRecord.id);
  await expect(saved.getByText(/Reviewed by/)).toContainText(responderRecord.name);
  assert.equal(await saved.locator('time').last().getAttribute('datetime'),new Date(approval.at).toISOString());
+ await expect(panel.getByRole('button',{name:'Copy as plain text',exact:true})).toHaveCount(0);
  await capture('reviewed');
  const download=page.waitForEvent('download');await panel.getByRole('button',{name:'Export reviewed copy',exact:true}).click();
  const file=await download,packet=JSON.parse(await readFile(await file.path(),'utf8'));
@@ -327,10 +328,54 @@ async function incidentHandoff(ownerPage) {
  await adminPanel.getByRole('button',{name:'Review exact copy',exact:true}).click();await expect(adminPanel.getByRole('button',{name:'Export reviewed copy',exact:true})).toBeVisible();
  assert.equal((await req('/api/handoffs/'+records[1].id)).record.history.at(-1).actor.role,'admin');
  await adminPanel.getByRole('button',{name:'Close',exact:true}).click();
+ // Review a saved internal handoff with links from both sections, then copy through authenticated export.
+ const internal={audience:'internal',title:'Checkout responder handoff',
+  summary:'Confirm the queue keeps draining.\n  Next: compare failed confirmations with the incident timeline.',
+  evidenceLinks:['https://example.test/checkout/timeline','https://example.test/checkout/queue'],
+  impactLinks:['https://example.test/checkout/impact']};
+ const {serviceHash}=await req('/api/handoffs/context/'+incident.id);
+ const {record:internalRecord}=ok(await call(ownerPage,'/api/handoffs/prepare',{
+  id:'synthetic-oncall-internal-handoff',incident:incident.id,incidentRevision:incident.revision,serviceHash,payload:internal}),201);
+ await openIncidentAction(ownerPage,'Handoff draft');
+ const copyButton=adminPanel.getByRole('button',{name:'Copy as plain text',exact:true});
+ const reviewButton=adminPanel.getByRole('button',{name:'Review exact copy',exact:true});
+ await expect(reviewButton).toBeVisible();
+ await expect(copyButton).toHaveCount(0);
+ await reviewButton.click();
+ await ownerPage.bringToFront();
+ await ownerPage.context().grantPermissions(['clipboard-read','clipboard-write']);
+ const copyThroughExport=async status=>{
+  const response=ownerPage.waitForResponse(r=>new URL(r.url()).pathname==='/api/handoffs/'+internalRecord.id+'/export');
+  await copyButton.click();
+  assert.equal((await response).status(),status);
+ };
+ const readClipboard=()=>ownerPage.evaluate(()=>navigator.clipboard.readText());
+ await copyThroughExport(200);
+ await expect(adminPanel.getByRole('status')).toContainText('copied to clipboard');
+ assert.equal(await readClipboard(),[internal.title,internal.summary,
+  ['Evidence links',...internal.evidenceLinks].join('\n'),['Impact links',...internal.impactLinks].join('\n')].join('\n\n'));
+ await capture('copied',ownerPage);
+ const sentinel='Previous clipboard contents';
+ await ownerPage.evaluate(value=>navigator.clipboard.writeText(value),sentinel);
+ const expectRefusedCopy=async()=>{
+  await copyThroughExport(409);
+  await expect(adminPanel.getByRole('alert')).toBeVisible();
+  await expect(copyButton).toHaveCount(0);
+  assert.equal(await readClipboard(),sentinel);
+ };
+ await req('/api/handoffs/restore',{mode:'replace',archive:await req('/api/handoffs/archive')});
+ await expectRefusedCopy();
+ await capture('copy-held',ownerPage);
+ await reviewButton.click();
+ await expect(copyButton).toBeEnabled();
+ await req('/api/command',{type:'note',incident:incident.id,revision:incident.revision,text:'Checkout confirmations are back within targets.'});
+ await expectRefusedCopy();
+ await capture('copy-stale',ownerPage);
+ await adminPanel.getByRole('button',{name:'Close',exact:true}).click();
  assert.deepEqual((await new AxeBuilder({page}).include('.incident-sheet').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations.filter(row=>['serious','critical'].includes(row.impact)),[]);
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
  await member.context.close();
- console.log('PASS incident handoff: responder prepares, reviews and downloads exact unsent JSON; lost-response retry commits once; viewer inspects without actions; current-role refusal, source-drift export conflict and replacement; admin reviews; screens captured at 1440 and 390');
+ console.log('PASS incident handoff: responder prepares, reviews and downloads exact unsent JSON; lost-response retry commits once; viewer inspects without actions; current-role refusal, source-drift export conflict and replacement; admin reviews and copies exact internal text; held and stale exports leave the clipboard intact; screens captured at 1440 and 390');
 }
 try {
  if(!focusedClients){

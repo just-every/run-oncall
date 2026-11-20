@@ -2596,7 +2596,7 @@
       "executable": false
     },
     "src/incident/more/Handoff.tsx": {
-      "sha256": "9b70b6027e762ec8c08d04a4e21d3fd3c8629720595291b1cd28e11b87ca909a",
+      "sha256": "7eed0c1462f178eba19edeb5b28ed45df8f180c543eef39e151d2c6af543607f",
       "executable": false
     },
     "src/incident/more/Merge.tsx": {
@@ -6724,7 +6724,7 @@
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
-      "sha256": "fe6bbbde57c93e2f682cb0b81b34f0604588223bfcad43c6ea1c459f07e6d071",
+      "sha256": "2062ea4ca636e37ef32714fe000d64ea1c056dbfb0ccdd997f86fddc914789f6",
       "executable": false
     },
     "tests/missed-ack-flow.mjs": {
