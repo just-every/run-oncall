@@ -1,0 +1,347 @@
+{
+  "base_main": "e885cc4958942a4f0c292dd35a1e2b8983eae3f1",
+  "base_main_runs": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "e885cc4958942a4f0c292dd35a1e2b8983eae3f1",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44747659462",
+      "id": 44747659462,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "dynamic",
+      "head_sha": "e885cc4958942a4f0c292dd35a1e2b8983eae3f1",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44747658556",
+      "id": 44747658556,
+      "name": "Push on main",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "event": "push",
+      "head_sha": "e885cc4958942a4f0c292dd35a1e2b8983eae3f1",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44747659053",
+      "id": 44747659053,
+      "name": "Run demo",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "e885cc4958942a4f0c292dd35a1e2b8983eae3f1",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44747659117",
+      "id": 44747659117,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "e885cc4958942a4f0c292dd35a1e2b8983eae3f1",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44700165399",
+      "id": 44700165399,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "branch": "cloud/sd-oncall-c-f319",
+  "browser_observations": [
+    "Browser proof resolution-timeline 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof resolution-timeline 390: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof resolution-link-autonomous 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof resolution-link-autonomous 390: fits=true serious/critical=0 undersized-controls=0",
+    "PROBE BASE-AGENT-003 4 resolution browser: sponsor-approved and autonomous incidents show the saved resolution, summary, recovery and attribution at 1440 and 390; no outbound requests"
+  ],
+  "clause": "BASE-AGENT-003",
+  "counts": {
+    "after": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41,
+      "total": 101
+    },
+    "before": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41,
+      "total": 101
+    }
+  },
+  "exact_sha_verify": {
+    "conclusion": null,
+    "disposition": "All executable shards completed successfully. The generated document check and its dependent final guard failed as expected after restoration of the main acceptance view.",
+    "effective_result": "expected_generated_view_failure",
+    "event": "push",
+    "head_branch": "cloud/sd-oncall-c-f319",
+    "head_sha": "10e112d2dd869ed4c0e384552e97cf9d7b41e688",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44752789275",
+    "id": 44752789275,
+    "jobs": [
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "10e112d2dd869ed4c0e384552e97cf9d7b41e688",
+        "id": 136344673514,
+        "name": "plan",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "10e112d2dd869ed4c0e384552e97cf9d7b41e688",
+        "id": 136344867381,
+        "name": "build",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          "Check the generated contract documents"
+        ],
+        "head_sha": "10e112d2dd869ed4c0e384552e97cf9d7b41e688",
+        "id": 136344867510,
+        "name": "contract-docs",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "head_sha": "10e112d2dd869ed4c0e384552e97cf9d7b41e688",
+        "id": 136344869774,
+        "name": "light",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "10e112d2dd869ed4c0e384552e97cf9d7b41e688",
+        "id": 136346376570,
+        "name": "shards (hosted)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "10e112d2dd869ed4c0e384552e97cf9d7b41e688",
+        "id": 136346376634,
+        "name": "shards (browser)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "10e112d2dd869ed4c0e384552e97cf9d7b41e688",
+        "id": 136346376676,
+        "name": "shards (changes)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "10e112d2dd869ed4c0e384552e97cf9d7b41e688",
+        "id": 136346376685,
+        "name": "shards (runtime)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "10e112d2dd869ed4c0e384552e97cf9d7b41e688",
+        "id": 136346376723,
+        "name": "shards (triage)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "10e112d2dd869ed4c0e384552e97cf9d7b41e688",
+        "id": 136346376733,
+        "name": "shards (activation)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "10e112d2dd869ed4c0e384552e97cf9d7b41e688",
+        "id": 136346376769,
+        "name": "shards (intake)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "10e112d2dd869ed4c0e384552e97cf9d7b41e688",
+        "id": 136346376841,
+        "name": "shards (agents)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "10e112d2dd869ed4c0e384552e97cf9d7b41e688",
+        "id": 136346377098,
+        "name": "shards (transfer)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "10e112d2dd869ed4c0e384552e97cf9d7b41e688",
+        "id": 136353791554,
+        "name": "full-push-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "head_sha": "10e112d2dd869ed4c0e384552e97cf9d7b41e688",
+        "id": 136353793914,
+        "name": "nightly-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          "Require the selected coverage and its proof"
+        ],
+        "head_sha": "10e112d2dd869ed4c0e384552e97cf9d7b41e688",
+        "id": 136353829768,
+        "name": "verify",
+        "status": "completed"
+      }
+    ],
+    "name": "Verify",
+    "status": "queued"
+  },
+  "full_history_clone": true,
+  "judgment": {
+    "after": "MISSING",
+    "before": "MISSING"
+  },
+  "local_checks": [
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "exit": 0
+    },
+    {
+      "command": "node tests/agent-door-browser.mjs with system Chromium",
+      "exit": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check before restoring the views",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    }
+  ],
+  "local_toolchain": {
+    "chromium": "system Chromium",
+    "node": "24.19.0",
+    "pnpm": "10.12.4"
+  },
+  "predecessors": {
+    "f315": {
+      "ancestor_of_main": false,
+      "conclusion": "failure",
+      "event": "push",
+      "head_sha": "af13461de86da3018e1cc2f2119c73d62d0a6614",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44700177222",
+      "id": 44700177222,
+      "name": "Verify",
+      "status": "completed"
+    },
+    "f316": {
+      "ancestor_of_main": false,
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "2feb5a944513fee024215e606aedb0c312c1b761",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44701429964",
+      "id": 44701429964,
+      "name": "Verify",
+      "status": "completed"
+    }
+  },
+  "product_head": "10e112d2dd869ed4c0e384552e97cf9d7b41e688",
+  "proof_locations": {
+    "browser_call_sites": "tests/agent-door-browser.mjs:809",
+    "browser_fixture": "tests/agent-door-browser.mjs:684",
+    "contract_observation": "CONTRACT.md:1058",
+    "inherited_surface": "CONTRACT.md:1313",
+    "native_fixture": "tests/oncall-agent-flow.mjs:459",
+    "native_link_and_approval": "tests/oncall-agent-flow.mjs:627"
+  },
+  "publication_scan": {
+    "commit": "10e112d2dd869ed4c0e384552e97cf9d7b41e688",
+    "complete": false,
+    "disposition": "Runs on the fleet lander",
+    "findings": null,
+    "historyScanned": false
+  },
+  "repository": "just-every/run-oncall",
+  "restored_view_check": {
+    "differing_view": "ACCEPTANCE.md",
+    "exit": 1
+  },
+  "runtime_observations": [
+    "PROBE BASE-AGENT-003 authority: revoked scoped bearer -> 401; erased incident and handoff links -> Resource unavailable; captured note -> not_found; native and paging unchanged; zero outbound requests",
+    "PROBE BASE-AGENT-003 4 autonomous resolution: first completed incident link returns the entire resolved incident at revision 5; direct sensitive read; one attributed resolution, recovery evidence and original summary retained, write custody, revisions, mutation audit and paging unchanged, zero outbound requests",
+    "PROBE BASE-AGENT-003 4 held resolution: first completed incident link returns the entire resolved incident at revision 5; separate exact sponsor approval before disclosure; one attributed resolution, recovery evidence and original summary retained, write custody, revisions, mutation audit and paging unchanged, zero outbound requests"
+  ],
+  "save": "79154a793553a68324a16f6b6b1974948d316612",
+  "screenshots": [
+    {
+      "file": "resolution-held-1440.png",
+      "height": 4148,
+      "sha256": "c0e1cc80fbb19cb0c1126a1d695809d9efc6dd653baa76039fe42975d55283df",
+      "width": 1440
+    },
+    {
+      "file": "resolution-held-390.png",
+      "height": 1566,
+      "sha256": "c9860314c1455bf125a55ccd5629367bf882a68c3598206ecd629ac43257d697",
+      "width": 390
+    },
+    {
+      "file": "resolution-autonomous-1440.png",
+      "height": 4148,
+      "sha256": "9cae63548c7f9ea8883fdb9b0a1ede24bf9c5161b118b62fd23c76dbd9d43b0d",
+      "width": 1440
+    },
+    {
+      "file": "resolution-autonomous-390.png",
+      "height": 1418,
+      "sha256": "40fd0b40fde6ecb3046eb7284b54459af86d8d116789dff854d692222cadd8b5",
+      "width": 390
+    }
+  ],
+  "source_lock_blob": "a15e4ff065c4722f60c75ce30da9f05dc7864fc3",
+  "touched_test_blobs": {
+    "tests/agent-door-browser.mjs": "d704f57e0cc3bbb748cb05dbfcc8903ecd8af198",
+    "tests/oncall-agent-flow.mjs": "b0251647057a5e01ba03d15e2ec5c3f0eb487115"
+  }
+}

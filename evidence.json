@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "23d7a47bc229111f17edf09defae544bdc42b7b6",
+      "bytes": 11326,
+      "path": "REPORT.md",
+      "sha256": "644a41567da98a354568a3ac772e436c9a62a48bd2d46b54d3bdc6a9c23c6c4b"
+    },
+    {
+      "blob": "ce99e2c44372d57369c08f31b327cc8da30182f0",
+      "bytes": 11451,
+      "path": "receipt.json",
+      "sha256": "d8b6541af8ef76ea44e15ee0196a84177d9bdc6b45c00ab46fdb8bbef3e30a6c"
+    },
+    {
+      "blob": "d3e870fa33a65e5360f8f28e355890d3ffcf6f2c",
+      "bytes": 538796,
+      "path": "resolution-autonomous-1440.png",
+      "sha256": "9cae63548c7f9ea8883fdb9b0a1ede24bf9c5161b118b62fd23c76dbd9d43b0d"
+    },
+    {
+      "blob": "fb2bc9cc007c4e7b09d7132d150dcbb4e8866aa8",
+      "bytes": 96321,
+      "path": "resolution-autonomous-390.png",
+      "sha256": "40fd0b40fde6ecb3046eb7284b54459af86d8d116789dff854d692222cadd8b5"
+    },
+    {
+      "blob": "da5cef521c5fdc7b457a4943f7b25e353bc37d86",
+      "bytes": 555377,
+      "path": "resolution-held-1440.png",
+      "sha256": "c0e1cc80fbb19cb0c1126a1d695809d9efc6dd653baa76039fe42975d55283df"
+    },
+    {
+      "blob": "5e8e347d1c36e97299d7e8544505e79fd92aad67",
+      "bytes": 110546,
+      "path": "resolution-held-390.png",
+      "sha256": "c9860314c1455bf125a55ccd5629367bf882a68c3598206ecd629ac43257d697"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f319",
+  "product_head": "10e112d2dd869ed4c0e384552e97cf9d7b41e688",
+  "ref": "refs/heads/evidence/sd-oncall-c-f319",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f319"
+}
