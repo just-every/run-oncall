@@ -596,6 +596,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 **Observed (18 November 2026, Run Edit Run fleet).** In the emitted Worker storm journey in `tests/triage.mjs`, a signed-in viewer used the current revision of an acknowledged incident to request a transfer of its Communications role to a different active responder. The native command returned 403 and recorded exactly one `command.assign-role` refusal attributed to the viewer and the incident. The role, timeline, workspace and incident revisions and paging records stayed unchanged, and the Worker made zero outbound requests. The same command succeeded for the signed-in responder.
 
+**Observed (20 November 2026, Run Edit Run fleet).** In the emitted Worker browser journey in `tests/product-browser.mjs`, a responder saved a note on a public-service incident after a second user reviewed splitting one of its two alerts. Confirmation sent the reviewed source revision, received 409 and showed the conflict without claiming success or creating a child. Both alert links and their source and generation custody stayed intact. The note was the only incident change. The refusal recorded one audit row attributed to the confirming user and source incident. Paging stayed OFF with unchanged records and zero outbound requests. The journey asserts at 1440 and captures the review and refusal at 1440 and 390.
+
 #### OC-051 — Reviewed Lamp and Statuspage communication
 
 *Tier:* Core · *Rules:* D-1, D-3, D-4 · *Register:* R-12
