@@ -1,0 +1,352 @@
+{
+  "repository": "just-every/run-oncall",
+  "tag": "sd-oncall-c-f315",
+  "product_branch": "cloud/sd-oncall-c-f315",
+  "product_head": "af13461de86da3018e1cc2f2119c73d62d0a6614",
+  "published_save": "60f913b00109380e2289414caa146f3744791454",
+  "main_head_at_candidate_push": "e13220ee432bc9ac531627b20a92790a0024433f",
+  "main_equals_candidate": false,
+  "main_ci": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "e13220ee432bc9ac531627b20a92790a0024433f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44696528969",
+      "id": 44696528969,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "e13220ee432bc9ac531627b20a92790a0024433f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44696528833",
+      "id": 44696528833,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "e13220ee432bc9ac531627b20a92790a0024433f",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44683394137",
+      "id": 44683394137,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "verify": {
+    "conclusion": "failure",
+    "head_sha": "af13461de86da3018e1cc2f2119c73d62d0a6614",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44700177222",
+    "status": "completed",
+    "id": 44700177222,
+    "event": "push",
+    "jobs": [
+      {
+        "completed_at": "2026-11-20T08:08:45Z",
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "af13461de86da3018e1cc2f2119c73d62d0a6614",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44700177222/job/136166350684",
+        "id": 136166350684,
+        "name": "plan",
+        "started_at": "2026-11-20T08:08:28Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-20T08:09:10Z",
+        "conclusion": "failure",
+        "failed_steps": [
+          "Check the generated contract documents"
+        ],
+        "head_sha": "af13461de86da3018e1cc2f2119c73d62d0a6614",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44700177222/job/136166483609",
+        "id": 136166483609,
+        "name": "contract-docs",
+        "started_at": "2026-11-20T08:08:47Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-20T08:11:47Z",
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "af13461de86da3018e1cc2f2119c73d62d0a6614",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44700177222/job/136166483682",
+        "id": 136166483682,
+        "name": "build",
+        "started_at": "2026-11-20T08:08:47Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-20T08:08:45Z",
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "head_sha": "af13461de86da3018e1cc2f2119c73d62d0a6614",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44700177222/job/136166485820",
+        "id": 136166485820,
+        "name": "light",
+        "started_at": "2026-11-20T08:08:45Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-20T08:20:25Z",
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "af13461de86da3018e1cc2f2119c73d62d0a6614",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44700177222/job/136167789418",
+        "id": 136167789418,
+        "name": "shards (browser)",
+        "started_at": "2026-11-20T08:11:49Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-20T08:18:08Z",
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "af13461de86da3018e1cc2f2119c73d62d0a6614",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44700177222/job/136167789431",
+        "id": 136167789431,
+        "name": "shards (runtime)",
+        "started_at": "2026-11-20T08:11:49Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-20T08:24:21Z",
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "af13461de86da3018e1cc2f2119c73d62d0a6614",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44700177222/job/136167789439",
+        "id": 136167789439,
+        "name": "shards (transfer)",
+        "started_at": "2026-11-20T08:11:49Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-20T08:24:30Z",
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "af13461de86da3018e1cc2f2119c73d62d0a6614",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44700177222/job/136167789442",
+        "id": 136167789442,
+        "name": "shards (changes)",
+        "started_at": "2026-11-20T08:11:49Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-20T08:21:50Z",
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "af13461de86da3018e1cc2f2119c73d62d0a6614",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44700177222/job/136167789467",
+        "id": 136167789467,
+        "name": "shards (agents)",
+        "started_at": "2026-11-20T08:11:49Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-20T08:21:26Z",
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "af13461de86da3018e1cc2f2119c73d62d0a6614",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44700177222/job/136167789515",
+        "id": 136167789515,
+        "name": "shards (triage)",
+        "started_at": "2026-11-20T08:11:49Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-20T08:18:03Z",
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "af13461de86da3018e1cc2f2119c73d62d0a6614",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44700177222/job/136167789526",
+        "id": 136167789526,
+        "name": "shards (activation)",
+        "started_at": "2026-11-20T08:11:50Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-20T08:21:28Z",
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "af13461de86da3018e1cc2f2119c73d62d0a6614",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44700177222/job/136167789586",
+        "id": 136167789586,
+        "name": "shards (intake)",
+        "started_at": "2026-11-20T08:11:49Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-20T08:23:07Z",
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "af13461de86da3018e1cc2f2119c73d62d0a6614",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44700177222/job/136167789650",
+        "id": 136167789650,
+        "name": "shards (hosted)",
+        "started_at": "2026-11-20T08:11:49Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-20T08:24:34Z",
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "af13461de86da3018e1cc2f2119c73d62d0a6614",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44700177222/job/136173301876",
+        "id": 136173301876,
+        "name": "full-push-proof",
+        "started_at": "2026-11-20T08:24:32Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-20T08:24:30Z",
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "head_sha": "af13461de86da3018e1cc2f2119c73d62d0a6614",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44700177222/job/136173303890",
+        "id": 136173303890,
+        "name": "nightly-proof",
+        "started_at": "2026-11-20T08:24:30Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-20T08:24:38Z",
+        "conclusion": "failure",
+        "failed_steps": [
+          "Require the selected coverage and its proof"
+        ],
+        "head_sha": "af13461de86da3018e1cc2f2119c73d62d0a6614",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44700177222/job/136173330722",
+        "id": 136173330722,
+        "name": "verify",
+        "started_at": "2026-11-20T08:24:36Z",
+        "status": "completed"
+      }
+    ],
+    "failed_job_log_excerpts": [
+      "gh run view 44700177222 --repo just-every/run-oncall --job 136166483609 --log-failed (exit 0)",
+      "contract-docs\tCheck the generated contract documents\t2026-11-20T08:09:08.7976229Z Contract prose: 0 errors, 0 warnings.",
+      "contract-docs\tCheck the generated contract documents\t2026-11-20T08:09:08.8585208Z ACCEPTANCE.md: generated content differs; run contract-docs write.",
+      "contract-docs\tCheck the generated contract documents\t2026-11-20T08:09:08.8680810Z ##[error]Process completed with exit code 1.",
+      "",
+      "gh run view 44700177222 --repo just-every/run-oncall --job 136173330722 --log-failed (exit 0)",
+      "verify\tRequire the selected coverage and its proof\t2026-11-20T08:24:37.1162587Z case \"$CONTRACT_DOCS:$SKIP\" in",
+      "verify\tRequire the selected coverage and its proof\t2026-11-20T08:24:37.1165684Z case \"$PUSH_PROOF:$NIGHTLY_PROOF\" in",
+      "verify\tRequire the selected coverage and its proof\t2026-11-20T08:24:37.1395427Z   PLAN: success",
+      "verify\tRequire the selected coverage and its proof\t2026-11-20T08:24:37.1396102Z   CONTRACT_DOCS: failure",
+      "verify\tRequire the selected coverage and its proof\t2026-11-20T08:24:37.1396755Z   BUILD: success",
+      "verify\tRequire the selected coverage and its proof\t2026-11-20T08:24:37.1397380Z   SHARDS: success",
+      "verify\tRequire the selected coverage and its proof\t2026-11-20T08:24:37.1398583Z   PUSH_PROOF: success",
+      "verify\tRequire the selected coverage and its proof\t2026-11-20T08:24:37.1400616Z   HAS_SHARDS: true",
+      "verify\tRequire the selected coverage and its proof\t2026-11-20T08:24:37.1686804Z ##[error]Process completed with exit code 1."
+    ],
+    "disposition": "Generated ACCEPTANCE.md freshness only. All shards and full-push-proof succeeded. Ready under the generated-view landing rule."
+  },
+  "publication_scan": {
+    "commit": "af13461de86da3018e1cc2f2119c73d62d0a6614",
+    "status": "pending guarded lander",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  },
+  "run_site_candidate": "main-only, pending guarded lander",
+  "recorded_at_utc": "2026-11-20T08:35:04+00:00",
+  "checks": {
+    "build": {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    "typecheck": {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "node": "22.20.0"
+    },
+    "first_party": {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    "focused": {
+      "command": "focusedActionSubmitNativeRevision and focusedActionEvidenceReplay through emitted Worker",
+      "exit": 0,
+      "observations": [
+        "PROBE BASE-AGENT-003 4 autonomous: completed P1 human-review submission link returns full protected incident at revision 3 with evidence, agent attribution and acceptance still open; direct read; original write, mutation audit and paging preserved; zero outbound requests",
+        "PROBE BASE-AGENT-003 4 held: completed P1 human-review submission link returns full protected incident at revision 3 with evidence, agent attribution and acceptance still open; distinct saved read approval and receipt; original write, mutation audit and paging preserved; zero outbound requests",
+        "PROBE BASE-AGENT-003 4 autonomous: first completed P2 evidence submission link -> full incident matches completed MCP write and protected native state; autonomous read without approval; original write outcome and receipt, native records, revisions, mutation audit and paging preserved; zero outbound requests",
+        "PROBE BASE-AGENT-003 4 held: first completed P2 evidence submission link -> full incident matches completed MCP write and protected native state; separate sponsor approval withholds content until exact authorization; original write outcome and receipt, native records, revisions, mutation audit and paging preserved; zero outbound requests"
+      ]
+    },
+    "browser": {
+      "command": "node tests/agent-door-browser.mjs",
+      "exit": 0,
+      "chromium": "/usr/bin/chromium",
+      "observations": [
+        "P1 submission review autonomous 1440: Synthetic human review follow-up \u00b7 Mira Patel \u00b7 P1 \u00b7 due Apr 12, end of day UTC \u00b7 Awaiting acceptance \u00b7 Human review Evidence \u2197 | Responder assistant for Alex Chen \u00b7 agent coordination record | evidence matches=true",
+        "Browser proof follow-up-submit-autonomous 1440: fits=true serious/critical=0 undersized-controls=0",
+        "P1 submission review autonomous 390: Synthetic human review follow-up \u00b7 Mira Patel \u00b7 P1 \u00b7 due Apr 12, end of day UTC \u00b7 Awaiting acceptance \u00b7 Human review Evidence \u2197 | Responder assistant for Alex Chen \u00b7 agent coordination record | evidence matches=true",
+        "Browser proof follow-up-submit-autonomous 390: fits=true serious/critical=0 undersized-controls=0",
+        "P1 submission review held 1440: Synthetic human review follow-up \u00b7 Mira Patel \u00b7 P1 \u00b7 due Apr 12, end of day UTC \u00b7 Awaiting acceptance \u00b7 Human review Evidence \u2197 | Responder assistant for Alex Chen \u00b7 agent coordination record | evidence matches=true",
+        "Browser proof follow-up-submit-held 1440: fits=true serious/critical=0 undersized-controls=0",
+        "P1 submission review held 390: Synthetic human review follow-up \u00b7 Mira Patel \u00b7 P1 \u00b7 due Apr 12, end of day UTC \u00b7 Awaiting acceptance \u00b7 Human review Evidence \u2197 | Responder assistant for Alex Chen \u00b7 agent coordination record | evidence matches=true",
+        "Browser proof follow-up-submit-held 390: fits=true serious/critical=0 undersized-controls=0",
+        "PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements"
+      ]
+    },
+    "agents": {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "exit": 0,
+      "observations": [
+        "PROBE BASE-AGENT-003 4 autonomous follow-up creation: first returned link matches the complete protected parent, revision 2, open owned and due-dated P1 human-review follow-up and attributed creation; autonomous read without review; native records, revisions, mutation audit, original write custody and paging unchanged; zero outbound requests",
+        "PROBE BASE-AGENT-003 4 held follow-up creation: first returned link matches the complete protected parent, revision 2, open owned and due-dated P1 human-review follow-up and attributed creation; separate open standard read review; native records, revisions, mutation audit, original write custody and paging unchanged; zero outbound requests",
+        "PROBE BASE-AGENT-003 4 autonomous: completed P1 human-review submission link returns full protected incident at revision 3 with evidence, agent attribution and acceptance still open; direct read; original write, mutation audit and paging preserved; zero outbound requests",
+        "PROBE BASE-AGENT-003 4 held: completed P1 human-review submission link returns full protected incident at revision 3 with evidence, agent attribution and acceptance still open; distinct saved read approval and receipt; original write, mutation audit and paging preserved; zero outbound requests",
+        "Runtime agents completed (555.9s)"
+      ]
+    },
+    "append_only_merge": {
+      "command": "node tests/append-only-merge.mjs",
+      "exit": 0
+    },
+    "contract_generate": {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "output": "Wrote 1 contract documents."
+    },
+    "contract_check_after_generate": {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "output": "Contract prose: 0 errors, 0 warnings.\nContract documents are current."
+    },
+    "contract_check_as_pushed": {
+      "exit": 1,
+      "output": "Contract prose: 0 errors, 0 warnings.\nACCEPTANCE.md: generated content differs; run contract-docs write."
+    },
+    "edition_lock": {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    "edition_lock_check": {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    "migration_ledger": "no migration changed",
+    "candidate_identity": {
+      "commits_checked": 2,
+      "approved_identity": true,
+      "trailers": 0
+    }
+  },
+  "screens": {
+    "agent-door-follow-up-submit-autonomous-1440.png": "6b62cf3f62f7118cdb0994ed191ddb053b02c5058dc090a6a6fa72923f4d67cf",
+    "agent-door-follow-up-submit-autonomous-390.png": "a0b0bd3f1e94fc13b647b74e7d59c73bedb765f465e00f52e1332d84510da964",
+    "agent-door-follow-up-submit-held-1440.png": "50ec525024c373ea5f997a26ce8da7ef58f847f9f356617de6e1384883a95c5c",
+    "agent-door-follow-up-submit-held-390.png": "29407530921781b92b87c8ca3e5546635667e2b0306bfbd74d63e6da7e16ab2d"
+  },
+  "proof_locations": {
+    "P1_native_submission": "tests/oncall-agent-action-submit-replay.mjs:76-103",
+    "P1_actual_link_and_open_acceptance": "tests/oncall-agent-action-submit-replay.mjs:143-155",
+    "resource_link_authority_and_custody": "tests/oncall-agent-action-evidence-replay.mjs:231-301",
+    "separate_saved_read_approval": "tests/agent-door-runtime.mjs:119-140",
+    "browser_protected_material_and_rendering": "tests/agent-door-browser.mjs:302-344"
+  }
+}

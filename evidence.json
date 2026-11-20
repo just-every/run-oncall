@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "ccfde50a8757aa4757d72bbc1e2c56b2ecc87799",
+      "bytes": 8969,
+      "path": "REPORT.md",
+      "sha256": "ae09a568d127f9bbff768b9adb4d4a1552e918348729f34c33dc594744c79731"
+    },
+    {
+      "blob": "6d557e4dc01dfc4c139271bdc58efee2d9d97def",
+      "bytes": 195158,
+      "path": "agent-door-follow-up-submit-autonomous-1440.png",
+      "sha256": "6b62cf3f62f7118cdb0994ed191ddb053b02c5058dc090a6a6fa72923f4d67cf"
+    },
+    {
+      "blob": "88ba666a9de4e94a83c83034388d0492ac0e851b",
+      "bytes": 105535,
+      "path": "agent-door-follow-up-submit-autonomous-390.png",
+      "sha256": "a0b0bd3f1e94fc13b647b74e7d59c73bedb765f465e00f52e1332d84510da964"
+    },
+    {
+      "blob": "f75b4b6bb78206a5255527d3aea4e66f5e9a072f",
+      "bytes": 218783,
+      "path": "agent-door-follow-up-submit-held-1440.png",
+      "sha256": "50ec525024c373ea5f997a26ce8da7ef58f847f9f356617de6e1384883a95c5c"
+    },
+    {
+      "blob": "6839aa42507a0caeed3363a1f8c6cc2b52c49c8d",
+      "bytes": 127089,
+      "path": "agent-door-follow-up-submit-held-390.png",
+      "sha256": "29407530921781b92b87c8ca3e5546635667e2b0306bfbd74d63e6da7e16ab2d"
+    },
+    {
+      "blob": "5cbfa7624cbfad8ae2f54b84d9241630e56da552",
+      "bytes": 18094,
+      "path": "candidate-receipt.json",
+      "sha256": "8ba7882502a9e1917ee58d9ed325751ef60bbb9dfa0f2c0b6d29093d1833a315"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f315",
+  "product_head": "af13461de86da3018e1cc2f2119c73d62d0a6614",
+  "ref": "refs/heads/evidence/sd-oncall-c-f315",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f315"
+}
