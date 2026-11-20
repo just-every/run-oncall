@@ -42,7 +42,9 @@
     ],
     "changes": [
       "tests/append-only-merge.mjs",
-      "tests/changes.mjs",
+      "tests/changes.mjs"
+    ],
+    "activation": [
       "tests/activation.mjs"
     ],
     "triage": [
@@ -155,6 +157,15 @@
       "lanes": [
         "changes",
         "imports"
+      ],
+      "browser": false,
+      "hosted": false,
+      "timeout": 15
+    },
+    {
+      "name": "activation",
+      "lanes": [
+        "activation"
       ],
       "browser": false,
       "hosted": false,

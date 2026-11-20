@@ -132,7 +132,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "ef1ede9253cdb1006bbed8eee3e7b6ca71de28e3b53a57dc9bb357f388bc1b2e",
+      "sha256": "b1daba3154f1f9eb23371ef5eeed842e66a8b294cfa7bf5ad163891610805877",
       "executable": false
     },
     ".gitignore": {
@@ -168,7 +168,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "b3a553ad78d36e26f190559eaa0f375769736aaf78e1588de0fbf137c5591a8d",
+      "sha256": "3274d932b480e86dbb2b6b7ad2dc05801fd572d4f2525bc7c87779a56745635a",
       "executable": false
     },
     "CLAUDE.md": {
@@ -740,7 +740,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "e2dfd032e274c870d1e54cec44746a3f58a4b5b661e353999b9447c34790f9e1",
+      "sha256": "e1acefd3bc115d0cf9186ddb3f6544a7b438e28523e01b0d05a9868aa63b113b",
       "executable": false
     },
     "pnpm-lock.yaml": {
@@ -836,11 +836,11 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "61532d3569a14da3796968e445a6978cce766fb19cb0e4ec70f869f73fad274b",
+      "sha256": "e2a056743869d184ac2eba0392e2d4d062ecfee1fa48dffdc0b32026f162c7ff",
       "executable": false
     },
     "RELEASE.md": {
-      "sha256": "e878bcc32aa8f9d12acc8f7ec9c12c4d156e3526be0ab38437d958f8adcb7f73",
+      "sha256": "2d6e8d1a49311273fa47997a4cc0294991fee813dbcce4dc44aaa0adec23f390",
       "executable": false
     },
     "rer-project.json": {
@@ -1660,7 +1660,7 @@
       "executable": false
     },
     "scripts/verify-oncall-plan.mjs": {
-      "sha256": "63ebf68444d35256c509b93f25f595e013a77debbbb2a494ff36e6e17e2bcfe9",
+      "sha256": "602a33f65aa79b36fdb30529875db0106298360094a2b79d4c115f3670fcef65",
       "executable": false
     },
     "scripts/verify-oncall.mjs": {
@@ -1672,7 +1672,7 @@
       "executable": false
     },
     "scripts/verify-shards.json": {
-      "sha256": "d00d415c87316651a739f0b40e0208c1b5bc243f10b11b9aac6cad5d8898b31f",
+      "sha256": "f047b8b430ccfe07c9d2ad5617717a5ff26449e3b2d7c9b1eafcbf46e64160b4",
       "executable": false
     },
     "scripts/write-agent-surface.mjs": {
@@ -1684,7 +1684,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "df53cfd63a83d25eddbd6f42b6fc9a3c9cfbdc3cebf3bdbeeeb91d7530e59779",
+      "sha256": "c7510d2baa3cf6cd2d6352a10a55029f365e69800472a91046868b927b092258",
       "executable": false
     },
     "src/agent-door/alert-tools.ts": {
