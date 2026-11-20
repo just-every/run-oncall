@@ -358,7 +358,7 @@ async function responsePolicyBrowser(page,context) {
 
 async function incidentWorkflowBrowser(page,context,proof) {
  const origin=new URL(page.url()).origin;
- const req=async(path,data,status=200)=>{const r=data===undefined?await context.request.get(path):await context.request.post(path,{headers:{origin},data});assert.equal(r.status(),status,`OC-050 ${path}`);return r.json()};
+ const req=async(path,data,status=200,session=context)=>{const r=data===undefined?await session.request.get(path):await session.request.post(path,{headers:{origin},data});assert.equal(r.status(),status,`OC-050 ${path}`);return r.json()};
  const {member}=await req('/api/session');
  const capture=async(name,width,focus)=>{
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`OC-050 ${name} fits ${width}`);
@@ -402,8 +402,150 @@ async function incidentWorkflowBrowser(page,context,proof) {
   await page.setViewportSize({width:1440,height:1000});await choice.getByRole('checkbox').check();await workflow.locator('label').filter({hasText:'unrelated-batch'}).getByRole('checkbox').check();await workflow.getByLabel('New incident title',{exact:true}).fill('Independent batch delay '+width);await workflow.getByLabel('New incident impact summary',{exact:true}).fill('Batch processing is separate from checkout customer impact.');await workflow.getByLabel('Reason for splitting',{exact:true}).fill('The batch alert is unrelated to the replica incident.');await workflow.getByRole('button',{name:'Review split',exact:true}).click();await submit(workflow.getByRole('button',{name:'Split selected alerts',exact:true}));await page.getByRole('button',{name:'Close',exact:true}).click();
   state=await req('/api/state');const child=state.incidents.find(i=>i.title==='Independent batch delay '+width);assert.equal(child.state,'acknowledged');assert.ok(child.alerts.includes(providerAlert.id),'the selected readable provider alert moves to the new incident');assert.ok(!state.incidents.find(i=>i.id===target.id).alerts.includes(providerAlert.id));assert.equal(state.incidents.find(i=>i.id===target.id).state,'acknowledged');assert.equal(child.splitFrom.incident,target.id);assert.equal(child.template.version,1);assert.equal((await req('/api/handoffs/context/'+child.id)).source.incident.declaration.kind,'split','a split origin remains usable by the existing reviewed handoff door');
   await page.goto(origin+'/incidents/'+encodeURIComponent(child.id));await page.locator('.detail').getByRole('heading',{name:child.title,exact:true}).waitFor();await openIncidentAction(page,'Service context');await capture('split',width,workflow);await page.getByRole('button',{name:'Close',exact:true}).click();
+
+  await staleSplitConfirmation(page,context,req,proof,{source:child,selected:providerAlert.id,selectedTitle:alertTitle,retained:alerts[1]});
  }
  console.log('PASS OC-050 incident workflows browser: service template publication and typed declaration, commander checklist, merge/source history, alias redirect and split without lifecycle change at 1440; overflow, axe and hydration checked');
+}
+
+async function staleSplitConfirmation(page,context,req,proof,{source,selected,selectedTitle,retained}) {
+ const origin=new URL(page.url()).origin;
+ const directory=process.env.ONCALL_BROWSER_EVIDENCE??'./evidence/browser';
+ await mkdir(directory,{recursive:true});
+ const password=randomBytes(24).toString('hex');
+ const editor=await req('/api/members',{name:'Synthetic split note author',role:'responder',password},201);
+ const otherSession=await context.browser().newContext({baseURL:origin,extraHTTPHeaders:{connection:'close'}});
+ const outbound=[];
+ const recordExternal=request=>{
+  if(/^https?:/.test(request.url())&&new URL(request.url()).origin!==origin)outbound.push(request.url());
+ };
+ context.on('request',recordExternal);
+ otherSession.on('request',recordExternal);
+ try {
+  await req('/api/login',{name:editor.name,password},200,otherSession);
+  assert.equal((await req('/api/session',undefined,200,otherSession)).member.id,editor.id);
+  const {member:reviewer}=await req('/api/session');
+  assert.notEqual(reviewer.id,editor.id);
+
+  const reviewed=await req('/api/state');
+  const incident=reviewed.incidents.find(row=>row.id===source.id);
+  assert.deepEqual(new Set(incident.alerts),new Set([selected,retained]));
+  assert.equal(incident.alerts.length,2);
+  const service=reviewed.services.find(row=>row.id===incident.service);
+  assert.ok(!service.team||reviewed.teams.some(team=>team.id===service.team&&team.visibility==='public'));
+  const dialog=await openIncidentAction(page,'Split alerts into a new incident');
+  const workflow=dialog.getByRole('region',{name:'Incident workflows',exact:true});
+  const choices=workflow.getByRole('group',{name:'Alert groups',exact:true});
+  assert.equal(await choices.getByRole('checkbox').count(),2);
+  await choices.locator('label').filter({hasText:selectedTitle}).getByRole('checkbox').check();
+  const draft={title:'Stale split must create no incident',summary:'Investigate the separate queue signal.',reason:'The queue signal has a different cause.'};
+  await workflow.getByLabel('New incident title',{exact:true}).fill(draft.title);
+  await workflow.getByLabel('New incident impact summary',{exact:true}).fill(draft.summary);
+  await workflow.getByLabel('Reason for splitting',{exact:true}).fill(draft.reason);
+  await workflow.getByRole('button',{name:'Review split',exact:true}).click();
+  const confirm=workflow.getByRole('button',{name:'Split selected alerts',exact:true});
+  await confirm.waitFor();
+
+  const capture=async(stage,focus)=>{
+   for(const width of [1440,390]){
+    await page.setViewportSize({width,height:1000});
+    await focus.scrollIntoViewIfNeeded();
+    await page.screenshot({path:`${directory}/oc050-stale-split-${stage}-${width}.png`});
+   }
+   await page.setViewportSize({width:1440,height:1000});
+  };
+  await capture('review',confirm);
+  const pagingRecords=({workspaceRevision,...records})=>records;
+  const pagingBefore=await req('/api/paging/state');
+  assert.equal(pagingBefore.paging,'OFF');
+  const before=proof.snapshot();
+  const note='Independent responder confirmed the batch backlog while the split was under review.';
+  const update=await req('/api/command',{type:'note',incident:incident.id,revision:incident.revision,text:note},200,otherSession);
+  const entry=update.timeline.at(-1);
+  assert.deepEqual({kind:entry.kind,actor:entry.actor,text:entry.text},{kind:'note',actor:editor.id,text:note});
+  assert.deepEqual(update,{...incident,revision:incident.revision+1,timeline:[...incident.timeline,entry]});
+  const afterNote=await req('/api/state');
+  assert.deepEqual(afterNote,{
+   ...reviewed,revision:reviewed.revision+1,
+   incidents:reviewed.incidents.map(row=>row.id===incident.id?update:row),
+  },'the attributed note and its revisions are the only protected state change');
+  const pagingAfterNote=await req('/api/paging/state');
+  assert.deepEqual(pagingRecords(pagingAfterNote),pagingRecords(pagingBefore),'the note creates no paging work');
+  const noteRecords=proof.snapshot();
+  const auditTables=new Set(['oc_admin_audit','oc_audit_clock','oc_audit_identities']);
+  const unchangedExcept=(previous,current,allowed,message)=>{
+   const custody=snapshot=>Object.fromEntries(Object.entries(snapshot).filter(([table])=>!allowed.has(table))
+    .map(([table,rows])=>[table,createHash('sha256').update(JSON.stringify(rows)).digest('hex')]));
+   assert.deepEqual(custody(current),custody(previous),message);
+  };
+  unchangedExcept(before,noteRecords,new Set([...auditTables,'oc_incidents','workspace_control','agent_door_events']),
+   'only the note and its bookkeeping write durable rows');
+  const previousEvents=before.agent_door_events;
+  const addedEvents=noteRecords.agent_door_events.filter(row=>!previousEvents.some(previous=>previous.id===row.id));
+  assert.equal(addedEvents.length,1);
+  assert.deepEqual(noteRecords.agent_door_events.filter(row=>row.id!==addedEvents[0].id),previousEvents);
+  const {type,uri,actor,native_revision}=JSON.parse(addedEvents[0].event);
+  assert.deepEqual({type,uri,actor,native_revision},{
+   type:'incidents.updated',uri:'oncall://incidents/'+incident.id,
+   actor:{kind:'person',person:{id:editor.id,name:editor.name}},native_revision:update.revision,
+  });
+
+  const [refused]=await Promise.all([
+   page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().method()==='POST'),
+   confirm.click(),
+  ]);
+  assert.deepEqual(refused.request().postDataJSON(),{
+   type:'split-incident',incident:incident.id,revision:incident.revision,alerts:[selected],...draft,
+  },'confirmation sends the reviewed source revision and selected alert');
+  assert.equal(refused.status(),409);
+  const failure=workflow.getByRole('alert');
+  await expect(failure).toBeVisible();
+  await expect(failure).toHaveText(/[Ii]ncident changed.*[Rr]eload/);
+  const visibleConflict=await failure.innerText();
+  await expect(workflow.getByRole('status')).toHaveCount(0);
+  await expect(workflow.getByRole('link',{name:draft.title,exact:true})).toHaveCount(0);
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'the split refusal fits at 1440');
+  const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();
+  assert.deepEqual(axe.violations.filter(row=>['serious','critical'].includes(row.impact)),[]);
+  await capture('refused',failure);
+
+  const after=await req('/api/state');
+  assert.ok(!after.incidents.some(row=>row.title===draft.title),'no child incident is created');
+  assert.deepEqual(after,afterNote,'the split refusal preserves the incident, both alert links and exact alert source and generation custody');
+  assert.deepEqual(await req('/api/paging/state'),pagingAfterNote);
+  const refusedRecords=proof.snapshot();
+  unchangedExcept(noteRecords,refusedRecords,auditTables,'the split refusal only writes audit custody');
+  const priorAudit=noteRecords.oc_admin_audit;
+  const refusals=refusedRecords.oc_admin_audit.filter(row=>row.ordinal>Math.max(...priorAudit.map(record=>record.ordinal)));
+  assert.equal(refusals.length,1);
+  assert.deepEqual(refusedRecords.oc_admin_audit.filter(row=>row.ordinal!==refusals[0].ordinal),priorAudit);
+  const [audit]=refusals;
+  const label=(kind,id)=>refusedRecords.oc_audit_identities.find(row=>row.kind===kind&&row.entity_id===id).label;
+  assert.deepEqual([audit.kind,audit.outcome,audit.actor,audit.subject],[
+   'command.split-incident','refused',label('member',reviewer.id),label('entity',incident.id),
+  ]);
+  assert.equal(audit.before_revision,audit.after_revision);
+  assert.deepEqual([audit.workspace_before,audit.workspace_after],[afterNote.revision,afterNote.revision]);
+  assert.equal(audit.paging_before,audit.paging_after);
+  assert.equal(audit.handoff_before,audit.handoff_after);
+  assert.deepEqual(await proof.outbound(),[]);
+  assert.deepEqual(outbound,[]);
+  const close=dialog.getByRole('button',{name:'Close',exact:true});
+  await close.focus();
+  await page.getByRole('tooltip',{name:'Close dialog',exact:true}).waitFor();
+  await close.click();
+  await writeFile(directory+'/oc050-stale-split.json',JSON.stringify({
+   assertionWidth:1440,captureWidths:[1440,390],reviewedRevision:incident.revision,
+   revisionAfterNote:update.revision,revisionAfterConfirmation:after.incidents.find(row=>row.id===incident.id).revision,
+   status:refused.status(),visibleConflict,childrenCreated:0,retainedAlertLinks:incident.alerts.length,
+   noteActor:editor.name,refusalActor:reviewer.name,refusalKind:audit.kind,refusalRows:refusals.length,
+   paging:pagingBefore.paging,workerOutboundRequests:0,browserOutboundRequests:outbound.length,
+  },null,2)+'\n');
+  console.log('PROBE OC-050 acceptance 2 stale split: reviewed one of two alert groups; a separate responder note advanced the source; the frozen confirmation returned 409 with a visible conflict and no child or success. Both links and source and generation custody remained intact, with one attributed refusal, unchanged paging and zero outbound requests.');
+ } finally {
+  context.off('request',recordExternal);
+  await otherSession.close();
+ }
 }
 
 // Read the emitted public guidance against the installed release observations.
