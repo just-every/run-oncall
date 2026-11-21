@@ -828,7 +828,7 @@ export async function productSchedule(page,context,width,session,{ownerLink,open
  const times=(await calendar.text()).split('\r\n').filter(line=>/^DT(STAMP|START|END):/.test(line));assert.ok(times.length>0);assert.ok(times.every(line=>/^DT(STAMP|START|END):[0-9]{8}T[0-9]{6}Z$/.test(line)),'calendar uses whole-second UTC times');
  await page.screenshot({path:`${directory}/rota-page-${width}.png`,fullPage:true});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
  await setTime(null);
- if(!selectedOnly){await coverageRulesBrowser(page,context,width,session,{ownerLink,setTime});await scheduleCoordinationBrowser(page,context,width,session,{ownerLink});}
+ if(!selectedOnly){await coverageRulesBrowser(page,context,width,session,{ownerLink,setTime});await scheduleCoordinationBrowser(page,context,width,session,{ownerLink,setTime});}
  console.log(`PROBE OC-009 schedules, overrides and preview ${width}: native keyboard create, narrow disclosure, cover preparation, review, Escape and confirmation -> protected saved assignments and preview agree; focus, dialog containment, labels, overflow and axe passed`);
 }
 // The existing schedule journey carries the one phone smoke, including both timeline doors.
@@ -956,11 +956,19 @@ export async function coverageRulesBrowser(page,context,width,session,{ownerLink
 
 
 // schedule-coordination-browser: part of this public journey.
-export async function scheduleCoordinationBrowser(page,context,width,session,{ownerLink}={}){
+export async function scheduleCoordinationBrowser(page,context,width,session,{ownerLink,setTime}={}){
  const origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
  const api=async(path,input)=>{const response=await(input===undefined?context.request.get(origin+path):context.request.post(origin+path,{headers:{origin},data:input}));assert.equal(response.status(),200);return response.json();};
  const fixture=2500+width,name='synthetic-oncall-'+fixture,password='synthetic-oncall-'+fixture+'-password';
  const created=await context.request.post(origin+'/api/members',{headers:{origin},data:{name,role:'responder',password}});assert.equal(created.status(),201);const substitute=await created.json();
+ const signIn=async(memberContext,credentials)=>{
+  if(ownerLink){
+   const local=new URL(ownerLink);assert.equal(local.origin,origin);const key=new URLSearchParams(local.hash.slice(1)).get('rer-dev');assert.ok(key);
+   const admitted=await memberContext.request.post(origin+'/__dev/key',{headers:{origin},data:{key}});assert.equal(admitted.status(),204);const anonymous=await memberContext.request.get(origin+'/api/session');assert.equal(anonymous.status(),200);assert.equal((await anonymous.json()).member,null,'dev admission grants no member authority');
+  }
+  const login=await memberContext.request.post(origin+'/api/login',{headers:{origin},data:credentials});assert.equal(login.status(),200);
+  const current=await memberContext.request.get(origin+'/api/session');assert.equal(current.status(),200);return (await current.json()).member;
+ };
  const browserZone=await page.evaluate(()=>Intl.DateTimeFormat().resolvedOptions().timeZone),zone='America/New_York';
  assert.notEqual(browserZone,zone,'the browser and rota use different clocks');
  const capture=async name=>{for(const proofWidth of [1440,390]){await page.setViewportSize({width:proofWidth,height:1000});await page.screenshot({path:`${directory}/readable-times-${name}-${proofWidth}.png`,fullPage:true});}await page.setViewportSize({width,height:1000});};
@@ -1007,17 +1015,15 @@ export async function scheduleCoordinationBrowser(page,context,width,session,{ow
  await coordination.getByRole('button',{name:'Approve swap',exact:true}).click();await coordination.getByText(/approval recorded/).waitFor();
  const relief=await context.browser().newContext({baseURL:origin,viewport:{width,height:900},timezoneId:'Australia/Brisbane'});
  try{
-  if(ownerLink){
-   const local=new URL(ownerLink);assert.equal(local.origin,origin);const key=new URLSearchParams(local.hash.slice(1)).get('rer-dev');assert.ok(key);
-   const admitted=await relief.request.post(origin+'/__dev/key',{headers:{origin},data:{key}});assert.equal(admitted.status(),204);const anonymous=await relief.request.get(origin+'/api/session');assert.equal(anonymous.status(),200);assert.equal((await anonymous.json()).member,null,'dev admission grants no member authority');
-  }
-  const login=await relief.request.post(origin+'/api/login',{headers:{origin},data:{name,password}});assert.equal(login.status(),200);const current=await relief.request.get(origin+'/api/session');assert.equal(current.status(),200);const member=(await current.json()).member;
+  const member=await signIn(relief,{name,password});
   assert.equal(member.id,substitute.id,'the substitute uses its own password session');assert.equal(member.role,'responder');assert.notEqual(member.id,session.member.id);assert.equal((await relief.cookies()).some(cookie=>/^(?:__Host-operator_session|operator_session_local(?:_\d+)?)$/.test(cookie.name)),false,'no owner session is copied');
   const reliefPage=await relief.newPage(),errors=[];reliefPage.on('pageerror',error=>errors.push(error.message));const document=await reliefPage.goto(origin+'/on-call/'+schedule.id);assert.equal(document.status(),200);
   const substituteView=reliefPage.getByRole('region',{name:'Shift coordination',exact:true});await substituteView.getByRole('button',{name:'Accept swap',exact:true}).click();await substituteView.getByText(/accepted/).waitFor();
   assert.ok(await reliefPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));assert.equal(await reliefPage.evaluate(()=>window.__rerHydration?.count??0),0);assert.deepEqual(errors,[]);
   assert.deepEqual((await new AxeBuilder({page:reliefPage}).include('.oc-rota-page').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations,[]);
   await substituteView.screenshot({path:`${directory}/OC-025-substitute-${width}.png`});await reliefPage.screenshot({path:`${directory}/OC-025-substitute-rota-${width}.png`,fullPage:true});
+  await overdueSwapBrowser(page,reliefPage,{api,signIn,substitute,service:schedule.service,directory,width,setTime});
+  await page.goto(origin+'/on-call/'+schedule.id);
  }finally{await relief.close();}
  await focusWorkspace(page);await coordination.getByText(/accepted/).waitFor();await coordination.getByText('Reminders and swaps',{exact:true}).click();
  await coordination.getByLabel('Swap approval',{exact:true}).selectOption('none');
@@ -1040,6 +1046,61 @@ export async function scheduleCoordinationBrowser(page,context,width,session,{ow
  await page.reload();await page.getByText('Reminders and swaps',{exact:true}).click();assert.equal(await page.getByLabel('Swap approval',{exact:true}).inputValue(),'none');assert.equal(await page.getByLabel('Reminder lead minutes',{exact:true}).inputValue(),'30','a number left in the field remains saved after reload');
  await coveredSwap(page,context,session,substitute,directory,capture);
  console.log(`PASS OC-025 browser ${width}: band-selected swap, independent substitute acceptance after approval, effective override, autosaved approval/reminder, no-timer label, one-time feed dismissal, immediate revoke, recorded obligations, axe and overflow`);
+}
+
+async function overdueSwapBrowser(adminPage,substitutePage,{api,signIn,substitute,service,directory,width,setTime}){
+ const origin=new URL(adminPage.url()).origin;
+ const requesterContext=await adminPage.context().browser().newContext({baseURL:origin,viewport:{width,height:1000},timezoneId:'UTC',extraHTTPHeaders:{connection:'close'}});
+ try{
+  const credentials={name:'Synthetic swap requester',password:'synthetic-oncall-2525-password'};
+  const created=await adminPage.context().request.post('/api/members',{headers:{origin},data:{...credentials,role:'responder'}});
+  assert.equal(created.status(),201);
+  const requester=await signIn(requesterContext,credentials);
+  assert.equal(requester.id,(await created.json()).id);assert.equal(requester.role,'responder');
+  const requesterPage=await requesterContext.newPage();
+  const startsAt=Math.ceil(Date.now()/60000)*60000+3600000,start=new Date(startsAt).toISOString(),end=new Date(startsAt+3600000).toISOString();
+  const rotation={anchorLocal:start.slice(0,10)+'T00:00',periodDays:7,members:[requester.id],ambiguity:'earlier'};
+  const rota=await api('/api/paging/schedules',{id:'synthetic-oncall-2525',name:'Swap boundary rota',service,revision:0,timezone:'UTC',validFrom:new Date(startsAt-7200000).toISOString(),validUntil:null,primary:rotation,backup:{...rotation,members:[]},overrides:[]});
+  const path='/api/schedule-coordination';
+  const request=await requesterContext.request.post(path,{headers:{origin},data:{action:'request',schedule:rota.id,scheduleRevision:rota.revision,substitute:substitute.id,role:'primary',start,end}});
+  assert.equal(request.status(),200);
+  const {record:swap}=await request.json();
+  const rotaPath='/on-call/'+rota.id;
+  const views=[
+   {role:'requester',page:requesterPage,pending:['Cancel swap'],overdue:['Cancel swap']},
+   {role:'substitute',page:substitutePage,pending:['Accept swap','Decline swap'],overdue:[]},
+   {role:'admin',page:adminPage,pending:['Approve swap'],overdue:[]}
+  ].map(view=>{
+   const panel=view.page.getByRole('region',{name:'Shift coordination',exact:true});
+   return {...view,panel,card:panel.getByRole('article').filter({hasText:requester.name+' → '+substitute.name})};
+  });
+  const observe=async(view,status)=>{
+   await expect(view.card.locator('p')).toContainText(' · '+status+' · ');
+   const controls=view.card.getByRole('button');
+   await expect(controls).toHaveCount(view[status].length);
+   for(const label of view[status])await expect(view.card.getByRole('button',{name:label,exact:true})).toBeEnabled();
+   const response=await view.page.context().request.get(path);assert.equal(response.status(),200);
+   const row=(await response.json()).records.find(row=>row.id===swap.id);
+   assert.deepEqual(row,{...swap,status},`${view.role} sees the effective status and the unchanged request`);
+  };
+  for(const view of views){await view.page.goto(rotaPath);await observe(view,'pending');}
+  await setTime(startsAt);
+  await requesterPage.clock.setFixedTime(startsAt);await substitutePage.clock.setFixedTime(startsAt);
+  for(const view of views){
+   await view.page.reload();await observe(view,'overdue');
+   await view.panel.screenshot({path:`${directory}/OC-025-overdue-${view.role}-1440.png`});
+   await view.page.setViewportSize({width:390,height:1000});await view.page.reload();
+   await view.card.locator('p').filter({hasText:'· overdue ·'}).waitFor();
+   await view.panel.screenshot({path:`${directory}/OC-025-overdue-${view.role}-390.png`});
+   await view.page.setViewportSize({width,height:1000});
+  }
+  const requesterCard=views[0].card;
+  const [cancel]=await Promise.all([requesterPage.waitForResponse(response=>new URL(response.url()).pathname===path&&response.request().method()==='POST'),requesterCard.getByRole('button',{name:'Cancel swap',exact:true}).click()]);
+  assert.equal(cancel.status(),200);
+  await expect(requesterCard.locator('p')).toContainText(' · cancelled · ');
+  await expect(requesterCard.getByRole('button')).toHaveCount(0);
+  console.log('PASS OC-025 overdue browser: pending actions observed for requester, substitute and admin; exact-start reload shows overdue and durable pending, only requester can cancel, cancelled state visible; 1440 assertions and 1440 and 390 captures');
+ }finally{await requesterContext.close();await setTime(null);}
 }
 
 

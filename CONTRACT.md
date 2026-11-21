@@ -320,6 +320,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 **Observed (18 November 2026, Run Edit Run fleet).** In `tests/activation.mjs`, a responder issued a service-scoped subscription for the second service linked to a shared rota. The bearer feed matched 31 days of protected UTC coverage for both roles before and after a reviewed override. It omitted unrelated rotas, raw member names and IDs, and the bearer token. A different responder could not revoke it. Revocation by the subscriber made the same URL return 404 immediately. Saved assignments, protected coverage and paging records were unchanged by revocation, and the Worker made zero outbound requests.
 
+**Observed (21 November 2026, Run Edit Run fleet).** In `tests/product-browser-journey.mjs`, the requester, named substitute and administrator reloaded the same public service rota at the requested start. The request remained visible as overdue and only the requester could still cancel it. In `tests/activation.mjs`, the stored request remained pending until cancellation. Late approval, acceptance and decline returned 409. The requester cancelled exactly once, with attributed audit, unchanged rota and paging records, and zero outbound requests. The same local own-shifts subscriptions reflected the accepted primary interval for the original holder and the substitute.
+
 #### OC-026 — Native US phone, SMS, push and email paging
 
 *Tier:* Core · *Cites:* BASE-MAIL-001 · *Rules:* D-1, D-3, D-4 · *Register:* R-5, R-6

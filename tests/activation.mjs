@@ -128,7 +128,7 @@ export async function scheduleCoordination(){
   const service=ok(await req('/api/command',{type:'service',id:'synthetic-oncall-250',name:'Synthetic shift service',environment:'test',owner:owner.value.member.id,runbook:[],pager:''}));
   const start=new Date(Math.ceil((Date.now()+2*3600000)/3600000)*3600000).toISOString(),end=new Date(Date.parse(start)+3600000).toISOString();
   let schedule=ok(await req('/api/paging/schedules',{id:'synthetic-oncall-250',name:'Synthetic coordination rota',service:service.id,revision:0,timezone:'UTC',validFrom:start,validUntil:null,primary:{anchorLocal:start.slice(0,16),periodDays:1,members:[owner.value.member.id,outsider.id],ambiguity:'earlier'},backup:{anchorLocal:start.slice(0,16),periodDays:1,members:[],ambiguity:'earlier'},overrides:[]}));
-  const overlap=ok(await req('/api/paging/schedules',{...schedule,id:'synthetic-oncall-255',revision:0,backup:{...schedule.backup,members:[substitute.id]}}));
+  const overlap=ok(await req('/api/paging/schedules',{...schedule,id:'synthetic-oncall-255',name:'Synthetic overlap rota',revision:0,backup:{...schedule.backup,members:[substitute.id]}}));
   // OC-020 / OC-014: one aggregate read agrees with each rota's existing resolver and never commits.
   {
    const at=Date.parse(start),schedules=ok(await req('/api/paging/state')).schedules;
@@ -178,10 +178,25 @@ export async function scheduleCoordination(){
   ok(await as(outsiderCookie,{action:'approve',id:swap.id,revision:swap.revision}),403);
   swap=ok(await coord({action:'approve',id:swap.id,revision:swap.revision})).record;
   let racing=ok(await coord(request)).record;racing=ok(await coord({action:'approve',id:racing.id,revision:racing.revision})).record;
+  const ownFeed=ok(await coord({action:'subscribe',scope:'own'}));
+  const otherFeed=ok(await as(substituteCookie,{action:'subscribe',scope:'own'}));
+  const ownPrimaryWindows=async subscription=>{
+   await w.time(Date.parse(start));
+   try{
+    const feed=await w.send(new URL(subscription.url).pathname,undefined,{},'GET');assert.equal(feed.status,200);
+    return calendarEvents(feed.value).filter(event=>event.SUMMARY===schedule.name+' / primary: Responder').map(event=>[event.DTSTART,event.DTEND]);
+   }finally{await w.time(null);}
+  };
+  const startStamp=calendarDate(Date.parse(start)),endStamp=calendarDate(Date.parse(end));
+  assert.equal((await ownPrimaryWindows(ownFeed))[0][0],startStamp);
+  assert.deepEqual(await ownPrimaryWindows(otherFeed),[]);
   const raced=await Promise.all([swap,racing].map(row=>as(substituteCookie,{action:'accept',id:row.id,revision:row.revision})));
   assert.equal(raced.filter(r=>r.status===200).length,1);assert.equal(raced.filter(r=>r.status===409).length,1);
   schedule=ok(await req('/api/paging/state')).schedules.find(s=>s.id===schedule.id);assert.equal(schedule.overrides.length,1);
   const coverage=ok(await req('/api/schedules/'+schedule.id+'/now-next?at='+encodeURIComponent(start)));assert.equal(coverage.now.primary,substitute.id);assert.equal(coverage.now.backup,null);
+  assert.equal((await ownPrimaryWindows(ownFeed))[0][0],endStamp);
+  assert.deepEqual(await ownPrimaryWindows(otherFeed),[[startStamp,endStamp]],'the same own-shifts feeds reflect only the accepted transfer for this rota');
+  console.log('PASS OC-025 own-shifts feeds: the same two feeds transfer exactly the accepted primary interval');
   const pending=(await rows()).find(r=>r.kind==='swap'&&r.data.status==='pending');ok(await coord({action:'cancel',id:pending.id,revision:pending.revision}));
   const notices=ok(await req('/api/state')).scheduleRecords.filter(r=>r.kind==='notice'&&r.data.schedule===schedule.id&&r.data.key.includes(':2:'));
   assert.deepEqual(new Set(notices.map(r=>r.member)),new Set([owner.value.member.id,substitute.id,outsider.id]));
@@ -199,7 +214,7 @@ export async function scheduleCoordination(){
   assert.equal(reminder.data.leadMinutes,30);const due=(await rows()).find(r=>r.id===reminder.id);assert.ok(Number.isFinite(Date.parse(due.dueAt)));assert.equal(due.label,'not sent (no timer)');
   const subscriptions=[];
   for(const scope of ['schedule','service','own']){
-   const created=ok(await coord({action:'subscribe',scope,target:scope==='service'?service.id:schedule.id}));subscriptions.push(created);
+   const created=scope==='own'?ownFeed:ok(await coord({action:'subscribe',scope,target:scope==='service'?service.id:schedule.id}));subscriptions.push(created);
    const feed=await w.send(new URL(created.url).pathname,undefined,{},'GET');assert.equal(feed.status,200);assert.match(feed.value,/BEGIN:VCALENDAR/);assert.match(feed.value,/BEGIN:VEVENT/);
    if(scope==='service')assert.ok(calendarEvents(feed.value).some(event=>event.SUMMARY.startsWith(schedule.name+' / ')),'legacy single-service rota appears in its service feed');
    for(const forbidden of ['CONTACT','ATTENDEE','mailto:',owner.value.member.name,substitute.name,'synthetic-oncall-250-password',created.url])assert.ok(!feed.value.includes(forbidden),'capability feed contains schedule windows only');
@@ -283,12 +298,62 @@ export async function scheduleCoordination(){
    assert.deepEqual(await w.outboundRequests(),outbound,'subscription, override, reads and revocation make zero outbound requests');
    console.log('PASS OC-025 secondary service feed: bounded UTC coverage before and after reviewed override, unrelated rota and member data excluded, immediate 404 after revocation, assignments and paging retained, zero outbound requests');
   }
-  const otherFeed=ok(await as(substituteCookie,{action:'subscribe',scope:'own'}));ok(await coord({action:'revoke',id:otherFeed.record.id,revision:otherFeed.record.revision}));assert.equal((await w.send(new URL(otherFeed.url).pathname,undefined,{},'GET')).status,404,'admin revocation takes effect immediately for another member');
+  ok(await coord({action:'revoke',id:otherFeed.record.id,revision:otherFeed.record.revision}));assert.equal((await w.send(new URL(otherFeed.url).pathname,undefined,{},'GET')).status,404,'admin revocation takes effect immediately for another member');
   const revoked=subscriptions[0],history=ok(await req('/api/paging/state')).schedules;
   ok(await as(outsiderCookie,{action:'revoke',id:revoked.record.id,revision:revoked.record.revision}),403);
   ok(await coord({action:'revoke',id:revoked.record.id,revision:revoked.record.revision}));assert.equal((await w.send(new URL(revoked.url).pathname,undefined,{},'GET')).status,404);
   assert.deepEqual(ok(await req('/api/paging/state')).schedules,history,'revoking access never changes assignment history');
   for(let n=3;n<20;n++)ok(await coord({action:'subscribe',scope:'own'}));ok(await coord({action:'subscribe',scope:'own'}),429);
+  const overdue=ok(await coord({...request,scheduleRevision:schedule.revision,start:laterStart,end:laterEnd})).record;
+  const startsAt=Date.parse(laterStart),originalCookie=cookie;
+  // Renew both sessions near the boundary so their authority survives the clock advance.
+  await w.time(startsAt-1);
+  cookie=await login(owner.value.member,250);
+  const renewedSubstitute=await login(substitute,251);
+  const projected=async()=>(await rows()).find(row=>row.id===overdue.id);
+  const workspace=async()=>ok(await req('/api/state'));
+  const paging=async()=>ok(await req('/api/paging/state'));
+  const coverageAtStart=async()=>ok(await req('/api/schedules/'+schedule.id+'/now-next?at='+encodeURIComponent(laterStart)));
+  const beforeWorkspace=await workspace(),beforePaging=await paging(),beforeCoverage=await coverageAtStart();
+  const audit=async()=>ok(await req('/api/audit/export')).rows;
+  const beforeAudit=new Set((await audit()).map(row=>row.id));
+  const durable=()=>w.sql("SELECT data FROM oc_schedule_records WHERE id='"+overdue.id+"'")[0];
+  const stored=durable();
+  assert.equal((await projected()).status,'pending');
+  assert.equal(JSON.parse(stored.data).data.status,'pending');
+  await w.time(startsAt);
+  assert.deepEqual(await projected(),{...overdue,status:'overdue'});
+  assert.deepEqual(durable(),stored,'the overdue projection never auto-resolves the stored request');
+
+  const decision={id:overdue.id,revision:overdue.revision};
+  for(const [action,memberCookie] of [['approve',cookie],['accept',renewedSubstitute],['decline',renewedSubstitute]]){
+   const refusal=await as(memberCookie,{...decision,action});
+   ok(refusal,409);assert.match(refusal.value.error,/overdue/);
+  }
+  ok(await as(renewedSubstitute,{...decision,action:'cancel'}),403);
+  assert.deepEqual(await workspace(),beforeWorkspace,'late decisions and substitute cancellation preserve workspace records and revision');
+  assert.deepEqual(await paging(),beforePaging,'late decisions create no override and preserve paging custody');
+  assert.deepEqual(await coverageAtStart(),beforeCoverage,'effective coverage is unchanged');
+
+  const cancel={...decision,action:'cancel'};
+  const cancelled=ok(await coord(cancel)).record;
+  assert.deepEqual(cancelled,{...overdue,revision:overdue.revision+1,data:{...overdue.data,status:'cancelled'}});
+  ok(await coord(cancel),409);
+  const afterWorkspace=await workspace(),afterPaging=await paging();
+  assert.deepEqual(afterWorkspace,{...beforeWorkspace,revision:beforeWorkspace.revision+1,scheduleRecords:beforeWorkspace.scheduleRecords.map(row=>row.id===overdue.id?cancelled:row)});
+  assert.deepEqual(afterPaging,{...beforePaging,revision:beforePaging.revision+1,workspaceRevision:afterWorkspace.revision},'cancellation records one change with rota and paging records intact');
+  assert.deepEqual(await coverageAtStart(),beforeCoverage);
+  assert.deepEqual(await projected(),{...cancelled,status:'cancelled'});
+  const cancellations=(await audit()).filter(row=>!beforeAudit.has(row.id)&&row.kind==='schedule.cancel'&&row.outcome==='accepted');
+  assert.equal(cancellations.length,1);
+  const [entry]=cancellations;
+  const [{label:requesterLabel}]=w.sql("SELECT label FROM oc_audit_identities WHERE entity_id='"+overdue.member+"' AND kind='member'");
+  assert.equal(entry.actor,requesterLabel,'the accepted cancellation identifies the requester');
+  assert.equal(entry.at,laterStart);
+  assert.deepEqual([entry.workspaceBefore,entry.workspaceAfter,entry.pagingBefore,entry.pagingAfter],[beforeWorkspace.revision,afterWorkspace.revision,beforePaging.revision,afterPaging.revision]);
+  assert.deepEqual(await w.outboundRequests(),[],'coordination attempted zero outbound requests');
+  console.log('PROBE OC-025 1: pending to overdue at the requested start with durable pending; late approve, accept and decline return 409, substitute cannot cancel, requester cancellation commits once with attributed audit, coverage and paging records unchanged, zero outbound');
+  await w.time(null);cookie=originalCookie;
   const checkpoint=ok(await req('/api/recovery/checkpoint')),before=ok(await req('/api/state')),invalid=structuredClone(checkpoint);invalid.coordination.scheduleRecords[0].kind='invalid';
   ok(await req('/api/recovery/restore',{mode:'replace',checkpoint:invalid}),400);assert.deepEqual(ok(await req('/api/state')),before);
   const jsonArchive=ok(await req('/api/archive')),nativeRestore=await req('/api/restore',{mode:'replace',archive:jsonArchive});ok(nativeRestore);cookie=nativeRestore.cookie;
@@ -298,12 +363,6 @@ export async function scheduleCoordination(){
   const restored=ok(await req('/api/state')).scheduleRecords;assert.ok(restored.every(r=>!r.active));assert.ok(restored.filter(r=>r.kind==='subscription').every(r=>r.data.hash===null));
   assert.equal((await w.send(new URL(subscriptions[1].url).pathname,undefined,{},'GET')).status,404,'restored historical subscription cannot authorize a feed');
   const inactiveSwap=restored.find(r=>r.kind==='swap'&&r.data.status==='pending');ok(await coord({action:'accept',id:inactiveSwap.id,revision:inactiveSwap.revision}),409);
-  const overdue=ok(await coord({...request,scheduleRevision:schedule.revision,start:laterStart,end:laterEnd})).record;
-  await w.time(Date.parse(laterStart)+1);
-  // Reading the durable request needs a currently valid session after the clock advance.
-  const renewed=await w.request('/api/login',{name:'synthetic-oncall-250',password:'synthetic-oncall-250-password'});ok(renewed);cookie=renewed.cookie;
-  assert.equal((await rows()).find(r=>r.id===overdue.id).status,'overdue');assert.equal(w.sql("SELECT data FROM oc_schedule_records WHERE id='"+overdue.id+"'").map(r=>JSON.parse(r.data))[0].data.status,'pending','overdue never auto-resolves');
-  ok(await coord({action:'cancel',id:overdue.id,revision:overdue.revision}));
   console.log('PASS OC-025 public schedule coordination: holder/substitute authority, default admin and none approval, racing acceptance, one effective override, audit rollback, recorded not-deliverable notices, durable reminder settings/due label, three digest-only feed scopes, 20 cap, immediate revocation and unchanged history, strict inactive recovery and overdue cancellation. Paging OFF.');
  }finally{await w.close();}
 }
