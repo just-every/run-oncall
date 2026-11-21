@@ -6,7 +6,7 @@ import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance
 async function assertServiceCommit({db,context},before,after,serviceId,ownerId){
  const commits=after.records.oc_admin_audit.filter(row=>!before.records.oc_admin_audit.some(prior=>prior.id===row.id));
  assert.equal(commits.length,1,'Exactly one native state-changing audit commit');
- const commit=commits[0];assert.equal(commit.kind,'service.update');assert.equal(commit.outcome,'accepted');
+ const commit=commits[0];assert.equal(commit.kind,'command.service');assert.equal(commit.outcome,'accepted');
  assert.equal(commit.workspace_before,before.application.revision);assert.equal(commit.workspace_after,after.application.revision);
  for(const [field,kind,id] of [['actor','agent',context.agentId],['subject','entity',serviceId],['source','member',ownerId]]){
   const identity=await db.prepare('SELECT label FROM oc_audit_identities WHERE kind=? AND entity_id=?').bind(kind,id).first();

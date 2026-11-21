@@ -1776,7 +1776,7 @@
       "executable": false
     },
     "src/agent-door/service-tools.ts": {
-      "sha256": "fa123cb0ae899d6c365bafe1cb95c63785899788ba75a342f7948b2b5cb1d18a",
+      "sha256": "720b1d55988599a1eb1c58718a18e3e53f00b8916919e35adaaf419845b72864",
       "executable": false
     },
     "src/agent-door/team-receipts.ts": {
@@ -6904,7 +6904,7 @@
       "executable": false
     },
     "tests/oncall-agent-service-replay.mjs": {
-      "sha256": "ebbad0aa32d9373c5858f3aeb28ac41e975c66800ff76910dc3ad0d5c0eae139",
+      "sha256": "20ea851ef767130d4361bf4c9a6bf27f2625855ad73ffc844fb7d0137b8aec0c",
       "executable": false
     },
     "tests/oncall-agent-team-replay.mjs": {
