@@ -1,0 +1,13 @@
+{
+  "conclusion": "success",
+  "discovery": "Exact-SHA REST query",
+  "event": "push",
+  "head_sha": "9cbcf975224f7171dcd3813e6f54d4b29a0791ca",
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/44847940384",
+  "id": 44847940384,
+  "observed_at": "2026-11-21T01:25:32Z",
+  "pr": null,
+  "product_branch": "cloud/sd-oncall-release-0-5-22",
+  "status": "completed",
+  "workflow": "Verify"
+}

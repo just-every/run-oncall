@@ -1,0 +1,9 @@
+Migration tree comparison
+Method: git ls-tree -r -z <ref> migrations, comparing the complete byte stream including modes, blob IDs, and paths.
+Previous release 33cafdc7750103f51ac4173c7b52c8dbcf1efbe0, 68 entries, inventory sha256=cd9701c88303a30ee2dce825fc19c87be1b4b587ec33a305194d4bb17b98bdbb
+Frozen main f0b093cc21691556860dc622a8932ab098cb0e72, 68 entries, inventory sha256=cd9701c88303a30ee2dce825fc19c87be1b4b587ec33a305194d4bb17b98bdbb
+Published candidate 9cbcf975224f7171dcd3813e6f54d4b29a0791ca, 68 entries, inventory sha256=cd9701c88303a30ee2dce825fc19c87be1b4b587ec33a305194d4bb17b98bdbb
+Added migrations: []
+Removed migrations: []
+Modified migrations: []
+All 68 v0.5.21 migration files are byte-identical.

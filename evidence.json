@@ -1,0 +1,40 @@
+{
+  "files": [
+    {
+      "blob": "a021a4d38c0bfd42499e19e246d235368a3901d5",
+      "bytes": 408,
+      "path": "CI-VERIFY.json",
+      "sha256": "efeb5eebe1aca2adf5e502d85cbe4ee4aa6eebe1a561b51a5a5ca1b5095adc39"
+    },
+    {
+      "blob": "1f7c11608bcc55dd09d670de80c8c80f9e37de3e",
+      "bytes": 228,
+      "path": "DECLARED-HASHES.txt",
+      "sha256": "96a6a2097a714a295f5a2aefc7070deabe09be76087643e0ee15a6d1219af8d9"
+    },
+    {
+      "blob": "f3fec633397d8c9b3c6a34fb112381b083bff6f3",
+      "bytes": 1418,
+      "path": "LOCAL-CHECKS.txt",
+      "sha256": "9e4dbfb3a0bd6424be63ff92bbef6446fdafbed1e189585f1ddf675e963f0158"
+    },
+    {
+      "blob": "6bf97717b34d6ac54c3cd82ee341d4defa7c6757",
+      "bytes": 719,
+      "path": "MIGRATIONS.txt",
+      "sha256": "6a076372a2314d74ce95f696153ba4834f41dbd25b09f800f1081023d32023f0"
+    },
+    {
+      "blob": "50c6022980c1763b5e94810bd650cf63ea0bd5e9",
+      "bytes": 3918,
+      "path": "REPORT.md",
+      "sha256": "c7c432017153040794955b1ff8f72e71b0ae10be1ffd35b10316f3a959b42048"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-release-0-5-22",
+  "product_head": "9cbcf975224f7171dcd3813e6f54d4b29a0791ca",
+  "ref": "refs/heads/evidence/sd-oncall-release-0-5-22",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-release-0-5-22"
+}

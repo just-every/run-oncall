@@ -1,0 +1,25 @@
+Repository just-every/run-oncall
+Branch cloud/sd-oncall-release-0-5-22
+Product HEAD 9cbcf975224f7171dcd3813e6f54d4b29a0791ca
+Sole parent f0b093cc21691556860dc622a8932ab098cb0e72
+Commit time 2026-11-21T01:03:55Z
+Immutable prior release tag object d64013191039b85d20579f3699aaa2c2a0e22c28
+Immutable prior release commit 33cafdc7750103f51ac4173c7b52c8dbcf1efbe0
+Product push on first guard attempt 2026-11-21T01:04:38Z
+Candidate author and committer audit PASS, one commit, no trailers
+Candidate scope and diff credential-pattern check PASS
+Git diff whitespace check PASS
+Node 22.20.0, pnpm 10.12.4, rer 0.2.126
+node src/base/contract-docs.mjs write PASS, zero files written
+node src/base/contract-docs.mjs check PASS, zero errors, zero warnings
+node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock PASS
+node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check PASS
+pnpm install --frozen-lockfile PASS
+pnpm run typecheck PASS
+pnpm exec rer check --profile first-party PASS
+Release metadata versions, previousVersion, prior instructions, known limits and exact notes comparison PASS
+Migration inventory PASS, 68 before, 68 after, added=[], changed=[], removed=[]
+Test tree PASS, 106 tracked test files in both parent and candidate
+Declared hash verification PASS, see DECLARED-HASHES.txt
+Browser verification outside scope for this metadata-only change
+Full publication scan pending on the Mac lander
