@@ -2,6 +2,8 @@ import {emailSettings} from './email-settings'
 import {addressRanges} from './address-match'
 import {pagerdutyContacts,pagerdutyEvidence} from './pagerduty-mapping'
 import {mappingPayload,importedContacts,opsFamily} from './vendor-formats'
+import {grafanaSchedule} from './grafana-rotation'
+import {grafanaShiftRows} from './grafana-source'
 import { compare, crossesOffsetChange } from './equivalence';
 import type { ImportMapping, SourceRecord, MappingResult } from '../modules/import-kit/src/types'
 import { validateSchedule } from '../family/response-operations/schedules'
@@ -12,6 +14,7 @@ import {pagerdutyLeaves} from './pagerduty-source'
 // Existing saved records keep their mapping version when review details change.
 export const MOVE_IN_MAPPING_VERSION='oncall-move-in-3'
 type MappingRecord=Pick<SourceRecord,'kind'|'sourceId'|'payload'|'location'>
+const userEmail=(vendor:Vendor,user:any)=>mailbox(vendor==='grafana'?user.email:user.email??user.username)
 // Parser bindings are private working metadata, never extra provider fields or
 // rotation rules. The original record and field pointers remain in custody.
 const withoutBindings=(value:any):any=>Array.isArray(value)?value.map(withoutBindings):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).filter(([key])=>!key.startsWith('_pd')).map(([key,child])=>[key,withoutBindings(child)])):value
@@ -101,21 +104,29 @@ export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:numbe
  const emails=new Map<string,string>()
  for(const row of source.records.filter(r=>r.kind==='users')) {
   const user=row.payload as any
-  try {const email=mailbox(user.email??user.username);emails.set(String(user.id),email);emails.set(email,email)}catch{}
+  try {
+   const email=userEmail(vendor,user)
+   if(vendor!=='grafana'||typeof user.id==='string')emails.set(String(user.id),email)
+   if(vendor!=='grafana')emails.set(email,email)
+  }catch{}
  }
  const scheduleRows=source.records.filter(r=>r.kind==='schedules')
+ const grafanaShifts=vendor==='grafana'?source.records.filter(row=>row.kind==='on_call_shifts'):[]
  const schedules=new Map<string,Mapped>(),errors=new Map<string,string>()
  // A schedule keeps every reason it is refused: an override's own refusal is added beside the schedule's, never in its place.
  const refuse=(id:string,why:string)=>errors.set(id,errors.has(id)?`${errors.get(id)}; ${why}`:why)
  for(const row of scheduleRows) {
-  try {schedules.set(row.sourceId,mapSchedule(vendor,row.payload,emails,now))}catch(e){refuse(row.sourceId,(e as Error).message)}
+  try {
+   const original=(row.payload as any)?.original
+   schedules.set(row.sourceId,vendor==='grafana'?grafanaSchedule(original,grafanaShiftRows(original,grafanaShifts).map(shift=>shift.payload),emails):mapSchedule(vendor,row.payload,emails,now))
+  }catch(e){refuse(row.sourceId,(e as Error).message)}
  }
  const rawRotation=new Map<string,any>(scheduleRows.map(r=>[r.sourceId,((r.payload as any).rotations??[])[0]]))
  const scheduleName=(id:string)=>(scheduleRows.find(r=>r.sourceId===id)?.payload as any)?.name??id
  // A saved override list names no schedule unless the file adds it beside the list; then it belongs to the bundle's only schedule, and with several it is unknown.
  const parentOf=(input:any)=>{const id=input.scheduleId??input.schedule_id??input._parent?.id;return id!==undefined?String(id):scheduleRows.length===1?scheduleRows[0].sourceId:undefined}
  const overrideErrors=new Map<string,string>(),place=(record:MappingRecord)=>record.location.pointer??record.sourceId
- for(const row of source.records.filter(r=>r.kind==='overrides')) {
+ for(const row of source.records.filter(r=>r.kind==='overrides'&&vendor!=='grafana')) {
   const input=row.payload as any,alias=input.alias??input.id,id=parentOf(input)
   if(id===undefined) {
    overrideErrors.set(place(row),`it names no schedule and the export holds ${scheduleRows.length} schedules; save the overrides list with ${opsFamily(vendor)?'scheduleId':'schedule_id'} beside it`)
@@ -142,7 +153,7 @@ export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:numbe
  }
  const equivalence=new Map<string,any>()
  for(const row of source.records.filter(r=>r.kind==='schedules')) {
-  if(errors.has(row.sourceId))continue
+  if(vendor==='grafana'||errors.has(row.sourceId))continue
   const raw=row.payload as any, timeline=opsFamily(vendor)?source.records.find(r=>r.kind==='timelines'&&String((r.payload as any)._parent?.id)===row.sourceId)?.payload:raw.final_schedule
   try {
    const mapped=schedules.get(row.sourceId)!,result=compare(mapped.schedule,vendor,timeline,emails)
@@ -160,12 +171,26 @@ export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:numbe
   const value=payload(vendor,record.kind,record.payload),label=value?.fullName??value?.name??value?.summary??value?.username??value?.email??record.sourceId
   try {
    if(record.kind==='users') {
-    const email=mailbox(value.email??value.username)
+    if(vendor==='grafana'&&(typeof value?.id!=='string'||!value.id))throw Error('missing exported user ID')
+    const email=userEmail(vendor,value)
     const result=effect('user',email,{id:email,name:value.fullName??value.name??email,email,sourceId:record.sourceId,...(vendor==='pagerduty'?{contacts:pagerdutyContacts(value).contacts}:['splunk','jsm','betterstack'].includes(vendor)?{contacts:importedContacts(value)}:{})})
     result.unmapped=Object.keys(value).filter(k=>!['id','email','username','name','fullName'].includes(k)).flatMap(field=>Array.isArray(value[field])?value[field].map((rule:any,i:number)=>({field:field+'.'+i,reason:`User ${label} rule ${rule.name??rule.id??i}: retained only; no delivery or access is activated`})): [{field,reason:`User ${label}: profile/contact/notification rule is retained only; no delivery or access is activated`}])
     if(['splunk','jsm','betterstack'].includes(vendor))for(const contact of importedContacts(value))result.unmapped!.push({field:'phone_numbers',reason:`Contact ${contact.number}: E.164 retained, unverified; number is unlisted for paging until a maintained country list and verification establish coverage; does not meet two-route coverage. No paging route is created.`})
     if(vendor==='pagerduty')result.unmapped!.push(...pagerdutyContacts(value).unmapped)
     return result
+   }
+   if(vendor==='grafana'&&record.kind!=='schedules') {
+    if(record.kind==='on_call_shifts') {
+     const parents=scheduleRows.filter(row=>schedules.has(row.sourceId)&&!errors.has(row.sourceId)&&(row.payload as any).original.shifts.includes(record.sourceId))
+     if(parents.length)return {effects:[],unmapped:[{field:'shift',reason:`Shift ${label} defines the paused rotation for ${parents.map(row=>scheduleName(row.sourceId)).join(', ')}. The original is kept in the journal.`}]}
+     throw Error('shift has no supported schedule in this file; original retained')
+    }
+    if(record.kind==='escalation_chains')throw Error('saved Grafana escalation chains are retained as source history; recreate this chain after review')
+    if(record.kind==='escalation_policies') {
+     const chain=source.records.find(row=>row.kind==='escalation_chains'&&row.sourceId===value?.escalation_chain_id)
+     throw Error(`step ${value?.type??'unknown'} in ${((chain?.payload as any)?.name??value?.escalation_chain_id) || 'an unknown chain'} is unsupported; original retained`)
+    }
+    throw Error('unsupported Grafana object; original retained')
    }
    if(record.kind==='integrations') {
     // Keep personal labels in erasable journal custody, not in a new native identity.
@@ -184,7 +209,8 @@ export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:numbe
    if(record.kind==='schedules') {
     if(errors.has(record.sourceId))throw Error(errors.get(record.sourceId))
     const mapped=schedules.get(record.sourceId);if(!mapped)throw Error('missing rotation definitions')
-    return {...effect('schedule',mapped.schedule.id,{schedule:mapped.schedule,sourceId:record.sourceId,equivalence:equivalence.get(record.sourceId),...mapped.history.length?{history:mapped.history}:{}}),unmapped:[...mapped.unmapped]}
+    const comparison=equivalence.get(record.sourceId)
+    return {...effect('schedule',mapped.schedule.id,{schedule:mapped.schedule,sourceId:record.sourceId,...(comparison?{equivalence:comparison}:{}),...mapped.history.length?{history:mapped.history}:{}}),unmapped:[...mapped.unmapped]}
    }
    if(record.kind==='timelines')return {effects:[],unmapped:[{field:'timeline',reason:'Retained final timeline is compared with every model/source boundary; no delivery is inferred.'}]}
    if(record.kind==='overrides') {
@@ -225,7 +251,7 @@ export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:numbe
  // Related foreign user references remain erasable even when the object itself cannot be converted.
  return {version:adapter.version,map(record){
   const result=adapter.map(record)
-  if(['pagerduty','splunk','jsm','betterstack'].includes(vendor)) {
+  if(['pagerduty','splunk','jsm','betterstack','grafana'].includes(vendor)) {
    const related=new Set<string>()
    const visit=(value:unknown):void=>{if(typeof value==='string'){if(emails.has(value))related.add(emails.get(value)!);if(vendor==='pagerduty'&&value.includes('@'))for(const email of new Set(emails.values()))if(addressRanges(value,email).length)related.add(email)}else if(Array.isArray(value))value.forEach(visit);else if(value&&typeof value==='object')Object.values(value).forEach(visit)}
    visit(record.payload)

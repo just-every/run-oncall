@@ -636,15 +636,15 @@ try {
   },
   assertUndone:async(before,after)=>assert.deepEqual(after,before)})
  console.log('Business import door: ADOPTING.md public HTTP conformance passed')
- // OC-038 the three additional namespaces obey the same signed-grant public door contract.
- for(const vendor of ['pagerduty','splunk','jsm','betterstack'])await checkDoor({request:async(action,body,review)=>response(await call(action,vendor,body,review)),bytes:await readFile(vendor==='pagerduty'?'tests/fixtures/pagerduty-account.json':`tests/fixtures/synthetic-oncall-${vendor}.json`),name:`synthetic-oncall-${vendor}.json`,
+ // OC-038 saved-response namespaces obey the same signed-grant public door contract.
+ for(const vendor of ['pagerduty','splunk','jsm','betterstack','grafana'])await checkDoor({request:async(action,body,review)=>response(await call(action,vendor,body,review)),bytes:await readFile(vendor==='pagerduty'?'tests/fixtures/pagerduty-account.json':`tests/fixtures/synthetic-oncall-${vendor}.json`),name:`synthetic-oncall-${vendor}.json`,
   nativeSnapshot:async()=>ok(await req('/api/move-in/objects')),
   assertApplied:async(before,after,report)=>{
    assert.ok(after.length>before.length);assert.ok(report.counts.explained>0)
    assert.ok(after.filter(row=>row.targetKind==='integration').every(row=>row.value.active===false&&(row.value.provider==='email'?row.value.emailSettings.draft.rules.length>0:row.value.incumbentKey==='not supplied')))
    assert.ok(after.every(row=>row.value.paused&&row.value.paging===false&&row.value.login===false))
   },assertUndone:async(before,after)=>assert.deepEqual(after,before)})
- console.log('OC-038 signed import door: PagerDuty account/Splunk/JSM/Better Stack reviewed grants, source reconciliation, inactive integration inventory and undo passed')
+ console.log('OC-038 signed import door: PagerDuty account, Splunk, JSM, Better Stack and Grafana reviewed grants, source reconciliation, paused import and undo passed')
 
  // OC-038 whole-account catch-up uses the real signed door and the owner's existing journal.
  {
@@ -970,6 +970,57 @@ try {
   assert.ok(!held.includes(user.value.sourceId),'erasure retires opaque foreign user references as well as email')
   assert.ok(!held.includes('synthetic-oncall-credential-must-not-persist'),'credential-bearing file never persists')
   console.log(`OC-038 ${vendor}: credential refusal, named unsupported objects, inactive integrations, no login/send authority, preview/apply/restart/reconcile/undo and related-person erasure passed`)
+ }
+ // A Grafana calendar depends on separately saved shift definitions and users.
+ {
+  const vendor='grafana',raw=await readFile('tests/fixtures/synthetic-oncall-grafana.json','utf8'),bundle=JSON.parse(raw)
+  const preview=value=>door.preview(vendor,JSON.stringify(value))
+  const before=await imported(),native=ok(await req('/api/state')),paging=ok(await req('/api/paging/state'))
+  const requests=await w.outboundRequests()
+  const [daily,weekly,snapshot]=bundle.schedules.results,[dailyShift,weeklyShift]=bundle.on_call_shifts
+  const [maya,eli]=bundle.users.map(page=>page.results[0].email.toLowerCase())
+  const incomplete=ok(await preview({...bundle,users:bundle.users.slice(0,1)}),400)
+  assert.match(incomplete.error,/users.*save all list pages/)
+  const calendarLink=structuredClone(bundle);calendarLink.schedules.results[0].ical_url_overrides='https://grafana.example.test/calendar.ics'
+  const credential=ok(await preview(calendarLink),400)
+  assert.match(credential.error,/Credential-bearing field "ical_url_overrides"/);assert.doesNotMatch(credential.error,/calendar\.ics/)
+  const mismatch=structuredClone(bundle);mismatch.on_call_shifts[0].rolling_users=[[bundle.users[0].results[0].id,bundle.users[1].results[0].id]]
+  mismatch.on_call_shifts=mismatch.on_call_shifts.slice(0,1)
+  const refused=ok(await preview(mismatch))
+  assert.match(refused.items.find(item=>item.id===daily.id).rejection,/Payments daily handover.*exactly one person/)
+  assert.match(refused.items.find(item=>item.id===weekly.id).rejection,/Infrastructure primary.*missing saved detail/)
+  const review=ok(await door.preview(vendor,raw))
+  assert.deepEqual(await imported(),before,'Grafana preview writes no paused or native objects')
+  for(const [source,shift,people] of [[daily,dailyShift,[maya,eli]],[weekly,weeklyShift,[eli,maya]]]) {
+   const item=review.items.find(item=>item.id===source.id)
+   const schedule=item.effects[0].value.schedule
+   assert.deepEqual(schedule.primary.members,people,'rotation order comes from the shift including its starting index')
+   assert.equal(schedule.primary.periodDays,shift.duration/86400)
+   assert.deepEqual(schedule.backup.members,[])
+   assert.ok(item.unmapped.some(note=>note.field==='on_call_now'),'current assignment remains a snapshot')
+  }
+  assert.match(review.items.find(item=>item.id===snapshot.id).rejection,/Weekend standby.*schedule type web/)
+  const chain=bundle.escalation_chains.results[0]
+  assert.match(review.items.find(item=>item.id===chain.id).rejection,/Payments escalation.*source history/)
+  assert.match(review.items.find(item=>item.id===bundle.escalation_policies.results[0].id).rejection,/notify_persons in Payments escalation/)
+  assert.equal(ok(await door.apply(vendor,review)).job.state,'completed')
+  const applied=await imported(),added=applied.filter(row=>!before.some(old=>old.targetId===row.targetId))
+  assert.deepEqual(added.map(row=>row.targetKind).sort(),['schedule','schedule','user','user'])
+  assert.ok(added.every(row=>row.value.paused&&row.value.paging===false&&row.value.login===false))
+  assert.deepEqual(ok(await req('/api/state')).members,native.members)
+  assert.deepEqual(ok(await req('/api/paging/state')),paging)
+  const updated=structuredClone(bundle);updated.on_call_shifts[0].start_rotation_from_user_index=1
+  await w.stop();await w.start()
+  assert.equal(ok(await door.call(vendor,'reconcile',{planId:review.planId})).ok,true)
+  const catchup=ok(await preview(updated))
+  assert.deepEqual(catchup.items.find(item=>item.id===daily.id).effects[0].value.schedule.primary.members,[eli,maya],'a changed shift reopens review even when the schedule record is unchanged')
+  assert.equal(ok(await door.apply(vendor,catchup)).job.state,'completed')
+  assert.equal(ok(await door.undo(vendor,catchup.planId)).job.state,'undone')
+  assert.deepEqual((await imported()).find(row=>row.targetId===`grafana:${daily.id}`).value.schedule.primary.members,[maya,eli])
+  assert.equal(ok(await door.undo(vendor,review.planId)).job.state,'undone')
+  assert.deepEqual(await imported(),before)
+  assert.deepEqual(await w.outboundRequests(),requests,'saved files require no Grafana connection')
+  console.log('Grafana Move-in: complete saved pages, named refusals, paused rotations, restart/reconciliation, shift-only catch-up and layered undo passed')
  }
  // OC-038 PagerDuty whole-account saved responses: one classification per source object.
  {

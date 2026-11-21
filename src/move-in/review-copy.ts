@@ -1,5 +1,5 @@
 /** Presentation only: the saved plan, its differences and fingerprint stay untouched. */
-const kinds:Record<string,string>={users:'Person',schedules:'Schedule',services:'Service',integrations:'Integration',escalations:'Escalation policy',escalation_policies:'Escalation policy',overrides:'Override',timelines:'Coverage comparison',teams:'Team',business_services:'Business service',maintenance_windows:'Maintenance window',event_orchestrations:'Event routing',incidents:'Incident'}
+const kinds:Record<string,string>={users:'Person',schedules:'Schedule',services:'Service',integrations:'Integration',escalations:'Escalation policy',escalation_policies:'Escalation policy',escalation_chains:'Escalation chain',on_call_shifts:'Shift',overrides:'Override',timelines:'Coverage comparison',teams:'Team',business_services:'Business service',maintenance_windows:'Maintenance window',event_orchestrations:'Event routing',incidents:'Incident'}
 const fields:Record<string,string>={
  related_users:'people referenced by the source',backup:'backup coverage',final_schedule:'final coverage list',schedule_layers:'schedule rotations',rendered_schedule_entries:'coverage periods',
  contact_methods:'contact methods',notification_rules:'notification rules',country_code:'country calling code',phone_contact_method:'phone contact',sms_contact_method:'SMS contact',email_contact_method:'email contact',push_notification_contact_method:'push contact',
@@ -55,6 +55,7 @@ export function reviewCopy(items:any[]) {
    return sentence(readable(difference.reason))
   },
   comparison:(item:any,equivalence:any):string[]=>{
+   if(!equivalence)return []
    if(equivalence.status==='not-supplied')return [equivalence.differences?.some((text:string)=>text.includes('outside'))
     ?`The source’s coverage list does not overlap the rotation imported for ${item.name}. Export coverage for this rotation’s dates and preview again, or continue without a coverage comparison. The schedule stays paused.`
     :`The file does not include the source’s final coverage list for ${item.name}. Oncall cannot compare who is on call. Export that list and preview again, or continue without this comparison. The schedule stays paused.`]

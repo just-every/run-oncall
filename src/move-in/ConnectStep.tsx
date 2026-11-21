@@ -20,7 +20,7 @@ export function ConnectStep({ waiting, source, vendor, choose, fileVendor, conne
   {source === 'file' ? <>
    <label className="scheduling-field"><span id="move-in-file-source">File source</span><select aria-labelledby="move-in-file-source" value={vendor} disabled={busy} onChange={event => fileVendor(event.target.value)}>{Object.entries(vendorNames).map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label>
    {upload}
-   <details className="move-in-fallback"><summary>No key? Use the exporter on your computer</summary><ExportHelp vendor={vendor} /></details>
+   {vendor==='grafana'?<ExportHelp vendor={vendor} />:<details className="move-in-fallback"><summary>No key? Use the exporter on your computer</summary><ExportHelp vendor={vendor} /></details>}
   </> : <>
    <label className="scheduling-field"><span id="move-in-region">Region</span><select aria-labelledby="move-in-region" value={region} disabled={busy} onChange={event => setRegion(event.target.value as Region)}><option value="us">United States</option><option value="eu">Europe</option></select></label>
    {keyPath ? <form onSubmit={event => { event.preventDefault(); const credential = key; void read(source as Provider, region, credential).finally(() => setKey('')) }}>
