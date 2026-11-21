@@ -1065,6 +1065,7 @@ export async function scheduleCoordinationBrowser(page,context,width,session,{ow
   await reliefPage.reload();
   await expect(card.locator('p')).toContainText('pending · approval recorded');
   await expect(accept).toBeEnabled();
+  await captureDecision('approval-recorded');
   const [decision]=await Promise.all([
    reliefPage.waitForResponse(response=>new URL(response.url()).pathname===path&&response.request().method()==='POST'),
    accept.click()
