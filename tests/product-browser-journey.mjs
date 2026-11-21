@@ -2413,6 +2413,13 @@ export async function keyboardCoordination(page,context,width,{ownerLink,openSes
 }
 
 
+export async function chooseIncidentRole(page,role,member,reason){
+ const people=await openIncidentAction(page,'People and priority');
+ const label=role==='scribe'?'Scribe':'Communications';
+ if(reason)await people.getByLabel('Reason for '+label.toLowerCase()+' (optional)',{exact:true}).fill(reason);
+ await people.getByLabel(label,{exact:true}).selectOption(member);
+}
+
 // OC-050: extend the existing template journey with native role controls.
 export async function incidentRolesBrowser(page,context,incident,{proof}={}) {
  const origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';
@@ -2487,10 +2494,7 @@ export async function incidentRolesBrowser(page,context,incident,{proof}={}) {
  console.log('PROBE OC-004 acknowledgment: choose another responder as lead, acknowledge as owner, reload -> selected lead retained and acknowledger shown separately as Assignee, one attributed transition and exact HTTP readback');
  for(const role of ['scribe','communications']) {
   assert.equal((await stored())[role]??null,null,'the selected role starts unassigned');
-  for(const person of [actor,responder])await checkChoice(role,person,async()=>{
-   const people=await openIncidentAction(page,'People and priority');
-   await people.getByLabel(role==='scribe'?'Scribe':'Communications',{exact:true}).selectOption(person.id);
-  });
+  for(const person of [actor,responder])await checkChoice(role,person,()=>chooseIncidentRole(page,role,person.id));
  }
  const delegated=await page.context().browser().newContext({baseURL:origin,extraHTTPHeaders:{connection:'close'}});
  try {
