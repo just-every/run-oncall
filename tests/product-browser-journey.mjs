@@ -2847,13 +2847,35 @@ async function savedMailDraftBrowser(page,context,worker,{api,directory,service,
  console.log('PROBE OC-070 7: savedMailDraftBrowser compared three saved decisions through the admin preview; matched trigger and resolve agreed with the archive; unmatched trigger became proposed quarantine; zero writes and outbound requests; captures at 1440 and 390');
 }
 
-// Read the actual MCP-saved service after reloading its Settings route.
-export async function savedServiceRunbookBrowser(page,origin,service){
- const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';
- await mkdir(directory,{recursive:true});
+function serviceRunbookSettings(page,service){
  const path='/settings/services/'+encodeURIComponent(service.id);
  const panel=page.locator('.service-page-head');
  const runbook=panel.getByRole('textbox',{name:'Runbook steps (one per line)',exact:true});
+ return {path,panel,runbook};
+}
+
+export async function saveSettingsRunbook(page,origin,service,steps){
+ const {path,panel,runbook}=serviceRunbookSettings(page,service);
+ await page.goto(origin+path);
+ await expect(runbook).toHaveValue(service.runbook.join('\n'));
+ const saved=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&
+  response.request().method()==='POST'&&response.request().postDataJSON()?.id===service.id);
+ await runbook.fill(steps.join('\n'));
+ await runbook.blur();
+ const response=await saved;
+ assert.equal(response.status(),200);
+ assert.deepEqual(response.request().postDataJSON(),{
+  type:'service',id:service.id,field:'runbook',from:service.runbook,to:steps,
+ });
+ await expect(panel.getByRole('status').filter({hasText:/^Saved$/})).toBeVisible();
+ return response.json();
+}
+
+// Read the saved service from the built Settings page after a fresh reload.
+export async function savedServiceRunbookBrowser(page,origin,service,label){
+ const directory=process.env.ONCALL_BROWSER_EVIDENCE??'./evidence/browser';
+ await mkdir(directory,{recursive:true});
+ const {path,panel,runbook}=serviceRunbookSettings(page,service);
  await page.goto(origin+path);
  await runbook.waitFor();
  for(const width of [1440,390]){
@@ -2865,10 +2887,15 @@ export async function savedServiceRunbookBrowser(page,origin,service){
    assert.equal(new URL(page.url()).pathname,path);
    await expect(panel.getByRole('heading',{name:service.name,exact:true})).toBeVisible();
    await expect(runbook).toHaveValue(service.runbook.join('\n'));
+   await expect(panel.getByRole('textbox',{name:'Name',exact:true})).toHaveValue(service.name);
+   await expect(panel.getByRole('combobox',{name:'Owner',exact:true})).toHaveValue(service.owner);
+   await expect(panel.getByRole('combobox',{name:'Team',exact:true})).toHaveValue(service.team);
+   await expect(panel.getByRole('textbox',{name:'Existing pager link',exact:true})).toHaveValue(service.pager);
+   assert.ok(await runbook.evaluate(node=>parseFloat(getComputedStyle(node).fontSize)>=13));
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
   }
   await runbook.scrollIntoViewIfNeeded();
-  await page.screenshot({path:directory+'/surface-002-saved-runbook-'+width+'.png'});
+  await page.screenshot({path:directory+'/'+label+'-'+width+'.png'});
  }
- console.log('PASS savedServiceRunbookBrowser: service settings reload displayed the MCP-saved literal steps at 1440, with reload captures at 1440 and 390');
+ console.log('PASS savedServiceRunbookBrowser: '+label+' displayed the saved literal steps at 1440, with reload captures at 1440 and 390');
 }

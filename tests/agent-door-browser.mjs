@@ -18,7 +18,7 @@ import {readClearedAssignee} from './oncall-agent-assignee-clear-replay.mjs';
 import {accessToken,autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {openIncidentAction} from './keyboard.mjs';
 import {standardServiceRunbookUpdate} from './oncall-agent-service-replay.mjs';
-import {declareIncidentFromAlert,savedServiceRunbookBrowser} from './product-browser-journey.mjs';
+import {declareIncidentFromAlert,saveSettingsRunbook,savedServiceRunbookBrowser} from './product-browser-journey.mjs';
 import {staleOverrideRevision,staleReviewedScheduleRevision} from './oncall-agent-schedule-replay.mjs';
 
 const weekStart=Date.parse('2026-11-02T00:00:00.000Z'),weekNow=Date.parse('2026-11-04T12:00:00.000Z');
@@ -183,7 +183,7 @@ try{
  console.log('PROBE BASE-AGENT-003 4 declaration browser: returned incidents under both policies -> saved declaration, copied runbook and agent attribution shown at 1440 and 390; zero outbound requests');
  await acknowledgmentBrowser(runtime,browser,capture);
  await resolutionBrowser(runtime,browser,page,capture);
- await savedServiceRunbookBrowser(page,runtime.origin,await standardServiceRunbookUpdate(runtime));
+ await serviceRunbookBrowser(runtime,page);
  await page.setViewportSize({width:1440,height:1000});
  await changedReassignmentReasonConflict(runtime,{async observe({mode,saved,assignee,responder,reason,agentLabel}){
   const before=await agentEffectSnapshot(runtime);
@@ -1173,5 +1173,33 @@ async function resolutionBrowser(runtime, browser, sponsorPage, capture) {
  }finally{
   sponsorPage.off('request',recordOutbound);
   await context.close();
+ }
+}
+
+async function serviceRunbookBrowser(runtime,page){
+ const outbound=[];
+ const record=request=>{
+  const url=new URL(request.url());
+  if(['http:','https:'].includes(url.protocol)&&url.origin!==runtime.origin)outbound.push(url.origin);
+ };
+ const context=page.context();
+ context.on('request',record);
+ try{
+  await standardServiceRunbookUpdate(runtime,{
+   saveAsPerson:(service,steps)=>saveSettingsRunbook(page,runtime.origin,service,steps),
+   async observe({mode,human,agent}){
+    const saved=await agentEffectSnapshot(runtime);
+    for(const [door,service] of [['settings',human],['mcp',agent]]){
+     await savedServiceRunbookBrowser(page,runtime.origin,service,'service-runbook-'+mode+'-'+door);
+    }
+    await page.setViewportSize({width:1440,height:1000});
+    assert.deepEqual(await agentEffectSnapshot(runtime),saved,'Settings reloads preserve the saved state, audit and paging custody');
+   },
+  });
+  assert.deepEqual(outbound,[],'Service Settings attempted no external requests');
+  assert.deepEqual(await runtime.outboundRequests(),[],'Runbook edits and reloads attempted no Worker egress');
+  console.log('PROBE BASE-AGENT-002 5 browser: Settings autosave and MCP saved the same runbook under both policies; both settings reloaded at 1440 and 390; zero browser and Worker outbound requests');
+ }finally{
+  context.off('request',record);
  }
 }

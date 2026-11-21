@@ -3,15 +3,29 @@ import {randomUUID} from 'node:crypto';
 import {agentEffectSnapshot} from './agent-door-runtime.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 
-async function assertServiceCommit({db,context},before,after,serviceId,ownerId){
- const commits=after.records.oc_admin_audit.filter(row=>!before.records.oc_admin_audit.some(prior=>prior.id===row.id));
+async function assertServiceCommit({db,context},before,after,serviceId,ownerId,door='agent'){
+ const priorRows=new Map(before.records.oc_admin_audit.map(row=>[row.id,row]));
+ const commits=after.records.oc_admin_audit.filter(row=>!priorRows.has(row.id));
  assert.equal(commits.length,1,'Exactly one native state-changing audit commit');
- const commit=commits[0];assert.equal(commit.kind,'command.service');assert.equal(commit.outcome,'accepted');
- assert.equal(commit.workspace_before,before.application.revision);assert.equal(commit.workspace_after,after.application.revision);
- for(const [field,kind,id] of [['actor','agent',context.agentId],['subject','entity',serviceId],['source','member',ownerId]]){
+ assert.deepEqual(after.records.oc_admin_audit.filter(row=>priorRows.has(row.id)),before.records.oc_admin_audit,
+  'The service save keeps prior permanent write history intact');
+ const [commit]=commits;
+ assert.equal(commit.kind,'command.service');
+ assert.equal(commit.outcome,'accepted');
+ assert.equal(commit.workspace_before,before.application.revision);
+ assert.equal(commit.workspace_after,after.application.revision);
+ const actor=door==='agent'?['agent',context.agentId]:['member',ownerId];
+ const source=door==='agent'?['member',ownerId]:['door','command'];
+ for(const [field,[kind,id]] of [['actor',actor],['subject',['entity',serviceId]],['source',source]]){
   const identity=await db.prepare('SELECT label FROM oc_audit_identities WHERE kind=? AND entity_id=?').bind(kind,id).first();
+  assert.ok(identity,'The service commit has a native '+field+' identity');
   assert.equal(commit[field],identity.label,'The service commit retains its native '+field+' attribution');
  }
+ const events=await db.prepare("SELECT id FROM oc_admin_audit WHERE subject=? "+
+   "AND kind IN ('command.service','service.update') AND workspace_before IN (?,?)")
+  .bind(commit.subject,commit.workspace_before,commit.workspace_after).all();
+ assert.deepEqual(events.results,[{id:commit.id}],'No duplicate or legacy service event accompanies the native commit');
+ return commit;
 }
 
 /** A completed service edit keeps its outcome when its old ETag is retried. */
@@ -103,8 +117,8 @@ export async function changedServiceNameReplay(runtime){
  assert.equal((await adopt()).status,200);
 }
 
-/** A standard runbook edit reads back through its returned service link under either policy. */
-export async function standardServiceRunbookUpdate(runtime){
+/** Compare the native service command with the MCP edit, then read its returned link. */
+export async function standardServiceRunbookUpdate(runtime,{saveAsPerson,observe}={}){
  const {db,http,tool,adopt,completeResource,context}=runtime;
  const audit=async()=>(await db.prepare('SELECT * FROM agent_door_audit ORDER BY sequence').all()).results;
  const read=async(path,input)=>{
@@ -114,18 +128,27 @@ export async function standardServiceRunbookUpdate(runtime){
  };
  const {member:owner}=await read('/api/workspace');
  assert.equal(owner.role,'admin');
- const id='synthetic-oncall-runbook',originalSteps=['Check the rollout dashboard','Record the recovery decision'];
- const serviceInput={type:'service',id,name:'Synthetic checkout runbook',environment:'production',
-  owner:owner.id,runbook:originalSteps,pager:'https://pager.example.invalid/checkout',dependencies:['agent-service']};
- await read('/api/command',serviceInput);
- const team=await read('/api/teams',{id:id,name:'Synthetic checkout team',visibility:'public',active:true,
-  revision:0,members:[owner.id],managers:[owner.id]});
- await read('/api/teams/ownership',{service:id,team:team.id,workspaceRevision:(await read('/api/state')).revision});
- const incident=await read('/api/command',{type:'declare',service:id,title:'Synthetic checkout investigation',
-  summary:'Check the retained rollout',severity:'warning'});
+ const id='synthetic-oncall-runbook',humanId='synthetic-oncall-settings-runbook';
+ const originalSteps=['Check the rollout dashboard','Record the recovery decision'];
  const originalRunbook=originalSteps.map(step=>({text:step,done:false}));
- assert.deepEqual(incident.runbook,originalRunbook);
+ const serviceInput={type:'service',name:'Synthetic checkout runbook',environment:'production',
+  owner:owner.id,runbook:originalSteps,pager:'https://pager.example.invalid/checkout',dependencies:['agent-service']};
+ const team=await read('/api/teams',{id,name:'Synthetic checkout team',visibility:'public',active:true,
+  revision:0,members:[owner.id],managers:[owner.id]});
+ const incidents=[];
+ for(const service of [id,humanId]){
+  await read('/api/command',{...serviceInput,id:service});
+  await read('/api/teams/ownership',{service,team:team.id,workspaceRevision:(await read('/api/state')).revision});
+  const incident=await read('/api/command',{type:'declare',service,title:'Synthetic checkout investigation',
+   summary:'Check the retained rollout',severity:'warning'});
+  assert.deepEqual(incident.runbook,originalRunbook);
+  incidents.push(incident);
+ }
+ const saveHuman=saveAsPerson??((service,runbook)=>read('/api/command',{
+  type:'service',id:service.id,field:'runbook',from:service.runbook,to:runbook,
+ }));
  const {name:serviceName,environment:serviceEnvironment,owner:ownerId,pager:servicePager,dependencies:serviceDependencies}=serviceInput;
+ const serviceFields=({id,...fields})=>fields;
  let savedService;
  for(const [mode,policy,disposition] of [['autonomous',autonomousPolicy(),'autonomous'],['held',heldPolicy(),'review']]){
   assert.equal((await adopt(policy)).status,200);
@@ -138,11 +161,26 @@ export async function standardServiceRunbookUpdate(runtime){
   assert.deepEqual(runbook,savedService?.runbook??originalSteps);
   assert.deepEqual({id:projected.id,name,environment,owner:serviceOwner,pager,dependencies,team:projected.team},
    {id,name:serviceName,environment:serviceEnvironment,owner:ownerId,pager:servicePager,dependencies:serviceDependencies,team:team.id},'The projected service retains the seeded fields');
+  const beforeHuman=await agentEffectSnapshot(runtime),initialPaging=await read('/api/paging/state');
+  assert.equal(initialPaging.paging,'OFF');
+  const priorHuman=beforeHuman.application.services.find(row=>row.id===humanId);
+  assert.deepEqual(serviceFields(priorHuman),serviceFields(beforeHuman.application.services.find(row=>row.id===id)),
+   'The two doors start with equivalent service records');
+  const replacement=['<check> Confirm healthy checkout after '+mode+' rollout',originalSteps[1]];
+
+  const human=await saveHuman(priorHuman,replacement);
+  assert.deepEqual(human,{...priorHuman,runbook:replacement});
   const before=await agentEffectSnapshot(runtime),pagingBefore=await read('/api/paging/state');
-  assert.equal(pagingBefore.paging,'OFF');
+  assert.equal(before.application.revision,beforeHuman.application.revision+1);
+  assert.deepEqual(before.application.services,beforeHuman.application.services.map(row=>row.id===humanId?human:row));
+  assert.deepEqual(before.application.incidents,beforeHuman.application.incidents,'Settings preserves both copied incident runbooks');
+  assert.deepEqual(before.application.teams,beforeHuman.application.teams);
+  assert.deepEqual(pagingBefore,{...initialPaging,workspaceRevision:before.application.revision});
+  assert.deepEqual(before.records.agent_door_reviews,beforeHuman.records.agent_door_reviews,'Settings opens no agent review');
+  assert.deepEqual(before.records.agent_door_approvals,beforeHuman.records.agent_door_approvals);
+  const humanCommit=await assertServiceCommit(runtime,beforeHuman,before,humanId,owner.id,'person');
   const priorService=before.application.services.find(row=>row.id===id);
 
-  const replacement=['<check> Confirm healthy checkout after '+mode+' rollout',originalSteps[1]];
   const key=randomUUID();
   const result=await tool('oncall.services.update',{id,etag,name,environment,owner:serviceOwner,pager,dependencies,
    runbook:replacement,idempotency_key:key});
@@ -159,6 +197,7 @@ export async function standardServiceRunbookUpdate(runtime){
   const after=await agentEffectSnapshot(runtime);
   savedService=after.application.services.find(row=>row.id===id);
   assert.deepEqual(savedService,{...priorService,runbook:replacement},'Only one runbook step changes in protected state');
+  assert.deepEqual(serviceFields(savedService),serviceFields(human),'Both doors save identical literal steps and service fields');
   const saved=result.result.structuredContent;
   const {etag:writeETag,...writeService}=saved;
   assert.match(writeETag,/^[a-f0-9]{64}$/);
@@ -168,10 +207,21 @@ export async function standardServiceRunbookUpdate(runtime){
   assert.deepEqual(after.application.services,before.application.services.map(row=>row.id===id?savedService:row));
   assert.deepEqual(after.application.teams,before.application.teams);
   assert.deepEqual(after.application.incidents,before.application.incidents,'Declared incidents retain their copied steps and history');
-  assert.deepEqual(after.application.incidents.find(row=>row.id===incident.id).runbook,originalRunbook);
+  for(const incident of incidents){
+   assert.deepEqual(after.application.incidents.find(row=>row.id===incident.id).runbook,originalRunbook);
+  }
   const pagingAfter=await read('/api/paging/state');
   assert.deepEqual(pagingAfter,{...pagingBefore,workspaceRevision:after.application.revision});
-  await assertServiceCommit(runtime,before,after,id,owner.id);
+  const agentCommit=await assertServiceCommit(runtime,before,after,id,owner.id);
+  assert.equal(agentCommit.kind,humanCommit.kind);
+  assert.notEqual(agentCommit.actor,humanCommit.actor);
+
+  const priorEvents=new Set(before.records.agent_door_events.map(row=>row.id));
+  const serviceEvents=after.records.agent_door_events.filter(row=>!priorEvents.has(row.id)).map(row=>JSON.parse(row.event))
+   .filter(event=>event.type==='service.changed');
+  assert.deepEqual(serviceEvents.map(({uri,actor})=>({uri,kind:actor.kind,agent:actor.agent.id,sponsor:actor.for.id})),[
+   {uri:'oncall://services/'+id,kind:'agent',agent:context.agentId,sponsor:owner.id},
+  ],'MCP retains one separately attributed service change notification');
 
   const review=result.result._meta['com.runeditrun/review'],stored=JSON.parse(call.outcome);
   assert.equal(stored.outcome,'done');
@@ -245,6 +295,10 @@ export async function standardServiceRunbookUpdate(runtime){
    '; original write outcome and receipt, copied incident runbook, native records and revisions, mutation audit and paging unchanged; zero outbound requests');
   console.log('PROBE SURFACE-002 1 '+mode+': current service ETag and one literal step replacement -> standard only, '+disposition+
    ', one workspace revision and one attributed service commit; protected service, original incident copy, paging OFF and zero outbound confirmed');
+  console.log('PROBE BASE-AGENT-002 5 service runbook '+mode+': signed-in native command and MCP -> identical saved service fields and literal steps; '+
+   'copied runbooks preserved, one attributed command.service and one workspace increment per door; '+
+   (mode==='held'?'one open standard review for the MCP save':'no write review')+'; paging OFF and zero outbound requests');
+  await observe?.({mode,human,agent:savedService});
  }
  assert.equal((await adopt()).status,200);
  return savedService;

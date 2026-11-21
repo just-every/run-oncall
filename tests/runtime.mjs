@@ -1780,7 +1780,15 @@ try {
  const storedService=await api('services/'+service.id);ok(storedService);
  const etag=storedService.headers.get('etag').replaceAll('"','');
  ok(await api('services',{...service,type:'service',etag,dependencies:[foreign.id]}),404);
- ok(await api('services',{...service,type:'service',etag,name:'Updated service'}),201);ok(await api('services',{...service,type:'service',etag}),409);
+ const serviceRevision=(await state()).revision;
+ ok(await api('services',{...service,type:'service',etag,name:'Updated service'}),201);
+ const serviceFacts=ok(await owner('/api/audit/export')).rows
+  .filter(row=>row.workspaceBefore>=serviceRevision&&row.workspaceAfter>row.workspaceBefore);
+ assert.deepEqual(serviceFacts.map(({kind,outcome})=>({kind,outcome})),[
+  {kind:'automation.request',outcome:'accepted'},
+  {kind:'automation.services',outcome:'accepted'},
+ ],'Versioned REST retains request bookkeeping and its separate service audit kind');
+ ok(await api('services',{...service,type:'service',etag}),409);
  const schedule={id:'synthetic-oncall-schedule',name:'Synthetic rota',service:service.id,revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:[admin.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:[],ambiguity:'earlier'},overrides:[]};
  const beforeScheduleNotices=await state();
  await sql("CREATE TRIGGER synthetic_schedule_notice BEFORE INSERT ON oc_schedule_records BEGIN SELECT RAISE(ABORT,'synthetic-oncall-notice'); END");
