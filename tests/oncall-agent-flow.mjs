@@ -10,7 +10,7 @@ import {declareFromAlertParity,acknowledgeParity,resolutionParity,recoveredResol
 import {manualPageClassification,deadlineClassification} from './oncall-agent-live.mjs';
 import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
-import {scheduleReplay, staleOverrideRevision} from './oncall-agent-schedule-replay.mjs';
+import {droppedScheduleCreateReplay, scheduleReplay, staleOverrideRevision} from './oncall-agent-schedule-replay.mjs';
 import {teamReplay} from './oncall-agent-team-replay.mjs';
 import {staleReassignmentNativeRevision} from './oncall-agent-incident-revisions.mjs';
 import {staleScribeExpectedRevision} from './oncall-agent-role-revisions.mjs';
@@ -1481,25 +1481,7 @@ try{
  const changedEnvironment=await tool('oncall.services.update',{...serviceInput,etag:savedService.etag,environment:'verification',idempotency_key:randomUUID()});
  assert.equal(code(changedEnvironment),'native_request_invalid');
  assert.deepEqual((await (await http('/api/state')).json()).services,beforeEnvironment.services);
- // An approval creates the schedule once; the same key must then return the
- // cached outcome after current policy and native authority are rechecked.
- const rota=(await tool('oncall.schedules.read',{id:'agent-schedule'})).result.structuredContent.schedules[0];
- const createRota={schedule:{...rota,id:randomUUID(),name:'Payments coordination backup',revision:0},idempotency_key:randomUUID()};
- const heldRota=autonomousPolicy();heldRota.rules.unshift({id:'coverage-review',class:'live',do:'approval',approver:['sponsor'],wait:'PT1H'});
- assert.equal((await adopt(heldRota)).status,200);
- const heldCreate=await tool('oncall.schedules.create',createRota);
- const rotaApproval=heldCreate.result._meta['com.runeditrun/approval'];assert.ok(rotaApproval);
- const rotaView=(await (await http('/agents/api/approvals/'+rotaApproval.id)).json()).approval;
- const rotaDecision=await http('/agents/api/approvals/'+rotaApproval.id+'/approve',{revision:rotaView.revision,summary_sha256:rotaView.summary_sha256});
- assert.equal((await rotaDecision.json()).approval.state,'executed');
- const rotaReplay=await tool('oncall.schedules.create',createRota);assert.equal(rotaReplay.result.isError,false);
- const rotaRepeated=await tool('oncall.schedules.create',createRota);assert.deepEqual(rotaRepeated.result.structuredContent,rotaReplay.result.structuredContent);
- const rotaRead=await tool('oncall.schedules.read',{id:createRota.schedule.id});
- assert.equal(rotaRead.result.structuredContent.schedules.length,1);assert.equal(rotaRead.result.structuredContent.schedules[0].revision,1);
- assert.equal(code(await tool('oncall.schedules.create',{...createRota,idempotency_key:randomUUID()})),'revision_conflict','A new key cannot create an existing native schedule');
- assert.equal(code(await tool('oncall.schedules.create',{...createRota,schedule:{...createRota.schedule,name:'Changed key content'}})),'idempotency_conflict');
- assert.equal((await adopt()).status,200);
- console.log('PASS native service immutable environment and approved schedule creation replay: allowed edit, no-effect environment refusal, one schedule, fresh-key conflict and changed-argument conflict');
+ await droppedScheduleCreateReplay(runtime);
  await nativeTransport(runtime);
  await teamReplay(runtime);
  await scheduleReplay(runtime);

@@ -1,8 +1,167 @@
 import assert from 'node:assert/strict';
 import {randomBytes,randomUUID} from 'node:crypto';
-import {autonomousPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
+import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {agentEffectSnapshot,agentReadSnapshot,assertAgentReadUnchanged} from './agent-door-runtime.mjs';
 import {nativeCoverageRecord} from './oncall-agent-coverage-parity.mjs';
+
+/** Recover a lost completed create result from the existing native schedule door. */
+export async function droppedScheduleCreateReplay(runtime) {
+  const {http,tool,adopt,discardToolResponse,context}=runtime;
+  const name='oncall.schedules.create', scope={scope:'schedules:read schedules:write'};
+  const code=answer=>answer.result?._meta?.['com.runeditrun/error']?.code??answer.body?.error?.data?.code;
+  const read=async (path,input)=>{
+    const response=await http(path,input);
+    assert.equal(response.status,200);
+    return response.json();
+  };
+  const snapshot=()=>agentEffectSnapshot(runtime);
+  const assertLost=lost=>{
+    assert.equal(lost.status,200);
+    assert.equal(lost.discarded,true);
+    assert.equal(lost.aborted,true);
+    assert.equal(lost.bodyRead,false);
+  };
+
+  assert.equal((await adopt()).status,200);
+  const sponsor=(await read('/api/workspace')).member;
+  const source=await tool('oncall.schedules.read',{id:'agent-schedule'},scope);
+  assert.equal(source.result.isError,false);
+  const [rota]=source.result.structuredContent.schedules;
+  assert.equal(rota.service,'agent-service');
+  const backup=rota.backup.members[0];
+  assert.ok(backup);
+  assert.notEqual(backup,sponsor.id);
+
+  for (const [mode,policy] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]) {
+    assert.equal((await adopt(policy)).status,200);
+    const args={
+      schedule:{...rota,id:randomUUID(),name:'Synthetic lost rota result '+mode,revision:0,
+        primary:{...rota.primary,members:[sponsor.id]}},
+      idempotency_key:randomUUID(),
+    };
+    const before=await snapshot();
+    const service=before.application.services.find(row=>row.id===rota.service);
+    assert.equal(service.owner,sponsor.id);
+    assert.ok(before.application.members.some(row=>row.id===backup&&row.active));
+    assert.deepEqual(await runtime.outboundRequests(),[]);
+    let pending, approval, lost;
+    if (mode==='held') {
+      pending=await tool(name,args,scope);
+      assert.equal(pending.status,200);
+      assert.equal(pending.result.resultType,'input_required');
+      assert.equal(pending.result.structuredContent,undefined);
+      assert.equal(pending.decision.disposition,'approval');
+      const handle=pending.result._meta['com.runeditrun/approval'];
+      assert.equal(handle.url,runtime.origin+'/agents/approvals/'+handle.id);
+      const path='/agents/api/approvals/'+handle.id;
+      approval=(await read(path)).approval;
+      assert.equal(approval.state,'pending');
+      assert.equal(approval.decision_id,pending.decision.id);
+      assert.equal(approval.revision,context.revision);
+      assert.match(approval.summary_sha256,/^[a-f0-9]{64}$/);
+      assert.deepEqual(approval.approvers,['sponsor']);
+      assert.equal(approval.prepared_by.for.id,sponsor.id);
+      assert.deepEqual(approval.summary.target,{id:args.schedule.id,name:args.schedule.name});
+      const held=await snapshot();
+      assert.deepEqual(held.application,before.application);
+      for (const table of Object.keys(before.records).filter(table=>/^(oc_|paging_|workspace_)/.test(table))) {
+        assert.deepEqual(held.records[table],before.records[table],'Pending create preserves '+table);
+      }
+      assert.deepEqual(held.records.agent_door_reviews,before.records.agent_door_reviews);
+      assert.deepEqual(await runtime.outboundRequests(),[]);
+      const approved=(await read(path+'/approve',{
+        revision:approval.revision,summary_sha256:approval.summary_sha256,
+      })).approval;
+      assert.equal(approved.state,'executed');
+      assert.equal(approved.revision,approval.revision);
+      assert.equal(approved.summary_sha256,approval.summary_sha256);
+      assert.deepEqual(approved.approvals.map(row=>row.person),[sponsor.id]);
+    } else {
+      lost=await discardToolResponse(name,args,scope);
+      assertLost(lost);
+    }
+
+    const once=await snapshot();
+    const calls=once.records.agent_door_calls.filter(row=>row.agent===context.agentId&&row.key===args.idempotency_key);
+    assert.equal(calls.length,1);
+    const [call]=calls, saved=JSON.parse(call.outcome);
+    assert.equal(call.state,'done');
+    assert.equal(saved.outcome,'done');
+    assert.equal(saved.decision.id,call.decision_id);
+    assert.equal(saved.decision.disposition,mode==='held'?'approval':'autonomous');
+    assert.deepEqual(saved.decision.classes.map(row=>row.class),['standard','sensitive','live']);
+    const expected={...args.schedule,revision:1};
+    const schedules=once.records.paging_schedules.filter(row=>row.id===expected.id);
+    assert.equal(schedules.length,1);
+    assert.equal(schedules[0].revision,1);
+    assert.deepEqual(JSON.parse(schedules[0].data),expected);
+    assert.deepEqual(saved.result.schedule,expected);
+    assert.equal(saved.result.coverage.primary,sponsor.id);
+    assert.equal(saved.result.coverage.backup,backup);
+    assert.equal(saved.result.paging,'OFF');
+    assert.equal(once.application.revision,before.application.revision+1);
+    for (const table of ['workspace_control','paging_control']) {
+      assert.equal(once.records[table][0].revision,before.records[table][0].revision+1);
+    }
+    const addedCommit=once.records.oc_admin_audit.filter(row=>!before.records.oc_admin_audit.some(prior=>prior.id===row.id));
+    assert.equal(addedCommit.length,1);
+    const [commit]=addedCommit;
+    assert.equal(commit.kind,'agent-schedule-create');
+    assert.equal(commit.outcome,'accepted');
+    for (const family of ['workspace','paging']) assert.equal(commit[family+'_after'],commit[family+'_before']+1);
+    const notices=once.records.oc_schedule_records.map(row=>JSON.parse(row.data))
+      .filter(row=>row.kind==='notice'&&row.data.schedule===expected.id);
+    assert.deepEqual(notices.map(row=>row.member).sort(),[sponsor.id,backup].sort());
+    assert.deepEqual(saved.result.notices.toSorted(),notices.map(row=>row.id).sort());
+    for (const {data:{obligation}} of notices) {
+      assert.equal(obligation.paging,'off');
+      assert.equal(obligation.automatic,false);
+    }
+    if (pending) {
+      const original=once.records.agent_door_approvals.find(row=>row.id===approval.id);
+      assert.equal(original.state,'executed');
+      assert.deepEqual(JSON.parse(original.result),saved);
+      assert.equal(call.decision_id,pending.decision.id);
+      assert.equal(saved.receipt.approval_id,approval.id);
+      assert.equal(saved.receipt.decision_id,call.decision_id);
+      assert.deepEqual(saved.receipt.approved_by,[sponsor.id]);
+      // The approval POST was consumed. Drop the first completed MCP retrieval.
+      lost=await discardToolResponse(name,args,scope);
+      assertLost(lost);
+      assert.notEqual(lost.id,pending.body.id);
+      assert.deepEqual(await snapshot(),once,'Losing the held response preserves the original effect and receipt');
+    } else {
+      assert.equal(saved.approval,undefined);
+      assert.equal(saved.receipt,undefined);
+    }
+
+    const retry=await tool(name,args,scope);
+    assert.equal(retry.status,200);
+    assert.equal(retry.body.error,undefined);
+    assert.notEqual(retry.body.id,lost.id);
+    if (pending) assert.notEqual(retry.body.id,pending.body.id);
+    assert.equal(retry.result.isError,false);
+    assert.equal(retry.result.resultType,'complete');
+    assert.deepEqual(retry.result.structuredContent,saved.result);
+    assert.deepEqual(JSON.parse(retry.result.content[0].text),saved.result);
+    assert.deepEqual(retry.result._meta['com.runeditrun/receipt'],
+      saved.receipt?{...saved.receipt,decision:saved.decision}:undefined);
+    assert.deepEqual(await snapshot(),once,'Retry preserves calls, outcomes, approvals, reviews, native state and mutation audit');
+
+    // Keep the existing repeated result, native read and conflict checks.
+    const again=await tool(name,args,scope);
+    assert.deepEqual(again.result.structuredContent,retry.result.structuredContent);
+    assert.deepEqual(again.result._meta['com.runeditrun/receipt'],retry.result._meta['com.runeditrun/receipt']);
+    assert.equal((await adopt()).status,200);
+    const readback=await tool('oncall.schedules.read',{id:expected.id},scope);
+    assert.deepEqual(readback.result.structuredContent.schedules,[expected]);
+    assert.equal(code(await tool(name,{...args,idempotency_key:randomUUID()},scope)),'revision_conflict',
+      'A new key cannot create an existing native schedule');
+    assert.equal(code(await tool(name,{...args,schedule:{...args.schedule,name:'Changed key content'}},scope)),'idempotency_conflict');
+    assert.deepEqual(await runtime.outboundRequests(),[]);
+  }
+  console.log('PASS droppedScheduleCreateReplay: autonomous and sponsor-approved rota creation recover the original outcome after HTTP response loss');
+}
 
 /** Same production MCP and native approval doors as the specialist journey. */
 export async function scheduleReplay(runtime) {
