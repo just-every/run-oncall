@@ -1,0 +1,66 @@
+{
+  "manifest": {
+    "name": "oncall.events.list",
+    "scope": "events:read",
+    "readOnly": true,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "BASE-AGENT-010"
+    ]
+  },
+  "guide": {
+    "path": "/docs/agents",
+    "signedIn": true,
+    "assertionWidth": 1440,
+    "captureWidths": [
+      1440,
+      390
+    ]
+  },
+  "policies": [
+    {
+      "policy": "autonomous",
+      "declared": [
+        "tools",
+        "resources",
+        "policy",
+        "pause",
+        "audit",
+        "idempotency"
+      ],
+      "listedTools": 42,
+      "eventListed": false,
+      "transportStatus": 200,
+      "refusal": "capability_not_declared",
+      "structuredResult": false,
+      "toolDecision": false,
+      "nativeUnchanged": true,
+      "paging": "OFF",
+      "pagingUnchanged": true,
+      "outboundRequests": 0
+    },
+    {
+      "policy": "held",
+      "declared": [
+        "tools",
+        "resources",
+        "policy",
+        "pause",
+        "audit",
+        "idempotency"
+      ],
+      "listedTools": 42,
+      "eventListed": false,
+      "transportStatus": 200,
+      "refusal": "capability_not_declared",
+      "structuredResult": false,
+      "toolDecision": false,
+      "nativeUnchanged": true,
+      "paging": "OFF",
+      "pagingUnchanged": true,
+      "outboundRequests": 0
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "files": [
+    {
+      "blob": "a8b3b97eeb41e66d5c294cb6b260e9cbecc6eb30",
+      "bytes": 8536,
+      "path": "REPORT.md",
+      "sha256": "5f11f768625d9d898d019c17169168b144b5c7c6247d6159ee0f4d3e9502ca6b"
+    },
+    {
+      "blob": "7fc0fc5ad8c996003ac463d522fc8e59d9c72973",
+      "bytes": 476320,
+      "path": "agent-events-target-1440.png",
+      "sha256": "bfcb6175660ccf85e7ffbd1d64d7071d42aeb372af7c86b2aa1bab7c7d94a183"
+    },
+    {
+      "blob": "969e6928a7c73008e58c11a2a223deec7adec24f",
+      "bytes": 179083,
+      "path": "agent-events-target-390.png",
+      "sha256": "96920af3b4189bfc754ee48887bd8032d010f914b3e931ece2af34bcfb02151b"
+    },
+    {
+      "blob": "3032521f02eea3ceb3b136bd6001407947f85353",
+      "bytes": 1328,
+      "path": "events-observation.json",
+      "sha256": "e17060e5ea22f8b4fabb9761534f390a7ff22d1344a8fd4f3f3d921caca709a7"
+    },
+    {
+      "blob": "a466e3078476c259b3c360a2bbe8c1b3f5b94d44",
+      "bytes": 3732,
+      "path": "verification-receipt.json",
+      "sha256": "da9680f7d9c0151f63fddbf033adb02d382334a85f067bc9cfc3520380e646eb"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f333",
+  "product_head": "57235651d67d8b7459bc5ae6d2a4322629041e74",
+  "ref": "refs/heads/evidence/sd-oncall-c-f333",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f333"
+}

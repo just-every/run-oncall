@@ -1,0 +1,134 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f333",
+  "productHead": "57235651d67d8b7459bc5ae6d2a4322629041e74",
+  "advertised": true,
+  "plannerBasePrefix": "79f83759",
+  "checkedMainBeforePush": "9e7d7cdc9a4b1fa53cbcd01ba4d0047b18cf523d",
+  "mainAtHandoff": "9e7d7cdc9a4b1fa53cbcd01ba4d0047b18cf523d",
+  "statusBefore": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101,
+    "SURFACE_001": "MISSING"
+  },
+  "statusAfter": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101,
+    "SURFACE_001": "MISSING"
+  },
+  "verify": {
+    "id": 44960020551,
+    "name": "Verify",
+    "event": "push",
+    "head_sha": "57235651d67d8b7459bc5ae6d2a4322629041e74",
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44960020551",
+    "observed_at": "2026-11-21T23:22:04+00:00"
+  },
+  "landed": false,
+  "candidateRunSite": "pending guarded landing",
+  "publicationScan": "pending fleet full-history scan",
+  "baseRuns": [
+    {
+      "name": "Verify",
+      "id": 44953278792,
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "9e7d7cdc9a4b1fa53cbcd01ba4d0047b18cf523d"
+    },
+    {
+      "name": "Run site",
+      "id": 44953278752,
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "9e7d7cdc9a4b1fa53cbcd01ba4d0047b18cf523d"
+    }
+  ],
+  "localChecks": [
+    {
+      "command": "rer setup --non-interactive",
+      "exit": 0,
+      "result": "Local synthetic owner, 68 migrations"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "result": "Emitted Worker and browser application built"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "result": "No type errors"
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "exit": 0,
+      "result": "Emitted agent runtime completed in 508.0 seconds"
+    },
+    {
+      "command": "node tests/agent-door-browser.mjs",
+      "exit": 0,
+      "result": "Signed-in inventory agrees with the live MCP registry under both policies"
+    },
+    {
+      "command": "Focused emitted Worker and Playwright probe",
+      "exit": 0,
+      "result": "See events-observation.json and both screenshots"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "result": "First-party check passed"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "result": "Wrote 0 contract documents"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "result": "0 errors and 0 warnings on the exact candidate"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "result": "Only the CONTRACT.md hash changed"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "result": "Fresh on the exact candidate"
+    },
+    {
+      "command": "git diff --cached --check",
+      "exit": 0,
+      "result": "Staged change clean"
+    },
+    {
+      "command": "Candidate identity and trailer check",
+      "exit": 0,
+      "result": "All candidate commits, including side parents, passed. Candidate has one commit and no trailers."
+    }
+  ],
+  "migrationLedger": "not applicable",
+  "captures": [
+    {
+      "width": 1440,
+      "file": "agent-events-target-1440.png",
+      "withheldNoteVisible": true
+    },
+    {
+      "width": 390,
+      "file": "agent-events-target-390.png",
+      "withheldNoteVisible": true
+    }
+  ]
+}
