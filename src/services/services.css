@@ -5,6 +5,10 @@
 .services-workspace :is(h2,h3,p) {overflow-wrap:anywhere;}
 .services-title {display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;}
 .services-title h2 {margin:0;}
+.service-search {display:flex; align-items:flex-end; gap:8px; margin-top:16px;}
+.service-search .field {flex:1; min-width:0; margin:0;}
+.service-search input::-webkit-search-cancel-button {display:none;}
+.service-search button {flex:none; min-height:42px;}
 .service-list-rows {display:grid; gap:8px; margin-top:16px;}
 .service-list-row {display:grid; gap:4px; border:1px solid transparent; border-radius:10px; padding:12px; color:var(--oc-ink); text-decoration:none; overflow-wrap:anywhere;}
 .service-list-row:hover, .service-list-row:focus-visible, .service-list-row.selected {background:var(--oc-paper-deep); border-color:var(--oc-line);}
