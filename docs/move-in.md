@@ -259,6 +259,99 @@ The five-source shared file door is implemented within documented mapping limits
 
 ## PagerDuty account saved responses
 
+### Reproducible documented account
+
+Author: Run Edit Run fleet, **17 November 2026 UTC**.
+
+The [generated account](../tests/fixtures/pagerduty-synthetic/account.json) has
+498 source objects across 17 categories. Its [manifest](../tests/fixtures/pagerduty-synthetic/manifest.json)
+records counts, byte size, content digest, endpoint names and the SHA-256 of the
+public [PagerDuty OpenAPI schema](https://github.com/PagerDuty/api-schema/blob/main/reference/REST/openapiv3.json)
+read on that date. Generate it without credentials or network access:
+
+```sh
+node scripts/generate-pagerduty-fixture.mjs
+node scripts/generate-pagerduty-fixture.mjs exports/pagerduty-repeat
+cmp tests/fixtures/pagerduty-synthetic/account.json exports/pagerduty-repeat/account.json
+cmp tests/fixtures/pagerduty-synthetic/manifest.json exports/pagerduty-repeat/manifest.json
+```
+
+An optional third argument is a locally saved public schema; its bytes must
+match the recorded digest before generation proceeds. This is synthetic
+documented-format evidence, not a live account or customer-export receipt.
+The original 75-object account and all previous saved-file fixtures remain
+regressions. The shipped exporter and OAuth/read scopes remain unchanged.
+
+Save responses whole under their category. Parent-scoped responses do not
+invent a parent field inside a provider object. Supply an outer `_bindings`
+array that points to each response object and names its exported parent:
+
+```json
+{
+  "users": [{"users": [{"id": "synthetic-oncall-user-1", "name": "Synthetic responder", "email": "synthetic-oncall-1@example.test"}], "limit": 25, "offset": 0, "more": false, "total": null}],
+  "contact_methods": [{"contact_methods": [{"id": "synthetic-oncall-contact-1", "type": "phone_contact_method", "label": "Voice", "country_code": 1, "address": "2025550100"}]}],
+  "_bindings": [{"pointer": "/contact_methods/0/contact_methods/0", "parentKind": "users", "parentId": "synthetic-oncall-user-1"}]
+}
+```
+
+| Category | Saved response wrapper | Separate parent |
+| --- | --- | --- |
+| Users, teams, policies, services, incidents, business services, maintenance | Original named list wrapper and offset pagination | None |
+| Schedules | `schedule` detail | None |
+| Contact methods; notification rules | `contact_methods`; `notification_rules` | `users` |
+| Overrides | `overrides` | `schedules` |
+| Integration details | `integration`, from `GET /services/{id}/integrations/{integration_id}` | `services` |
+| Incident timeline entries | `log_entries` with pagination | `incidents` |
+| Business service subscribers | `subscribers` with pagination; `subscriber_id` and `subscriber_type` are preserved | `business_services` |
+| Event orchestration metadata | `orchestrations` with pagination | None |
+| Orchestration routers | `orchestration_path` | `event_orchestrations` |
+| Automation Actions | `actions`, `limit`, `next_cursor` | None |
+
+The manifest names the official GET endpoint for every row. There is no GET
+list-integrations endpoint: save each integration detail named by the service's
+references. In this binding format, references require matching details;
+missing, duplicate, contradictory or dangling bindings refuse the entire file.
+For a parent-scoped paginated endpoint, an outer binding can point to the
+whole response, for example `/subscribers/0`, and name its business service.
+Every page with that parent is validated in the same sequence. A response
+binding covers its children, and any individual child bindings must agree.
+A complete standalone empty response is also valid with older bundles that
+only bind individual objects.
+Offset pages must start at zero, be contiguous and end with `more: false`;
+cursor pages must end with `next_cursor: null`. Never claim a partial page as
+the whole account. Legacy embedded details still use their existing parser.
+Both formats keep the same 500-object and 512 KiB bounds.
+
+Every original source leaf, including nulls, empty containers, wrapper fields
+and bindings, receives one field decision: **mapped**, **lossy**,
+**retained-only** or **refused**. The saved plan includes its source kind/ID,
+RFC 6901 JSON pointer in `field`, original value, reason and intended receiving place.
+Unknown fields remain explicit retained gaps; unknown rotation/rule fields
+still refuse the whole rotation or policy. Converted E.164 contacts remain
+unverified, and immediate escalation timing remains an explicit lossy change.
+Contact details bind to the correct person without replacing the original
+reference response. A bound override is represented inside its paused schedule.
+
+The existing review shows object counts and disjoint field totals. Large
+object lists open through **Source object decisions**. **Copy details** and
+**Download details** contain the entire review without a row or field cap;
+clipboard failure exposes the selectable JSON. Signed Business plans carry
+the same complete field pointers and decision/receiving-place explanations
+in their diagnostics. Their existing reconcile door still accounts for every
+source object as present or explained. Identical-byte replay reuses the saved
+review; a changed catch-up lists changed-source field decisions and retains
+unchanged objects' preceding reviewed details in the prior import.
+Changes to a separately saved override also re-review and replace its paused
+receiving schedule, even if that schedule endpoint's own bytes did not change.
+
+Timeline entries, subscribers and Automation Actions are individually refused
+as native conversions, with their originals retained. They create no history,
+subscriptions or executable action. PTO, reviews, action items and any account
+capability absent from these endpoint responses remain missing evidence.
+Saved-file migration does not prove key activation, live account pull, live
+delivery, DST cutover, standby or a real-phone drill; OC-038/040/042 retain
+their broader gaps and OC-074 remains unproved by this fixture.
+
 The synthetic [account fixture](../tests/fixtures/pagerduty-account.json) uses
 invented people at example.test and saved REST list/detail responses, including
 pagination fields. The outer bundle and enrichment of users' contact methods,

@@ -190,3 +190,19 @@ person-erasure use the existing doors. See [the field-by-field behavior and
 dated format references](docs/move-in.md#pagerduty-account-saved-responses).
 The 75-record synthetic account is documented-shape proof, **unverified against
 a live account**. OC-038 remains PARTIAL; paging stays OFF.
+
+The additional [deterministic documented account](tests/fixtures/pagerduty-synthetic/manifest.json)
+contains 498 objects within the unchanged 500-object / 512 KiB limits. Generate
+it with `node scripts/generate-pagerduty-fixture.mjs`. Its endpoint wrappers,
+separate parent bindings, pagination, public-schema digest and complete field
+dispositions are documented in [Reproducible documented account](docs/move-in.md#reproducible-documented-account).
+The existing review summarizes every original source leaf and offers complete
+copy/download details. Contacts bind to their exported person; integration
+details and overrides bind to their exported service/schedule. Timeline entries,
+subscribers and Automation Actions remain named source-only refusals. Unknown
+fields remain gaps; no native service, history, login, executable action or
+paging authority is created. The older fixtures remain regressions.
+
+Author: Run Edit Run fleet, 17 November 2026 UTC. This synthetic saved-file proof
+does not supply a real account, live API pull, keys, live delivery, standby or
+cutover evidence. The incumbent pager remains authoritative.
