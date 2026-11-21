@@ -6,7 +6,7 @@ import {nativeCoverageRecord} from './oncall-agent-coverage-parity.mjs';
 
 /** Recover a lost completed create result from the existing native schedule door. */
 export async function droppedScheduleCreateReplay(runtime) {
-  const {http,tool,adopt,discardToolResponse,context}=runtime;
+  const {db,http,tool,adopt,discardToolResponse,context}=runtime;
   const name='oncall.schedules.create', scope={scope:'schedules:read schedules:write'};
   const code=answer=>answer.result?._meta?.['com.runeditrun/error']?.code??answer.body?.error?.data?.code;
   const read=async (path,input)=>{
@@ -15,6 +15,14 @@ export async function droppedScheduleCreateReplay(runtime) {
     return response.json();
   };
   const snapshot=()=>agentEffectSnapshot(runtime);
+  const ledger=async()=> {
+    const [audit,relay,permanent]=await db.batch([
+      db.prepare('SELECT * FROM agent_door_audit ORDER BY sequence'),
+      db.prepare('SELECT * FROM agent_door_relay ORDER BY sequence'),
+      db.prepare('SELECT * FROM oc_admin_audit ORDER BY ordinal'),
+    ]);
+    return {audit:audit.results,relay:relay.results,permanent:permanent.results};
+  };
   const assertLost=lost=>{
     assert.equal(lost.status,200);
     assert.equal(lost.discarded,true);
@@ -67,6 +75,10 @@ export async function droppedScheduleCreateReplay(runtime) {
       for (const table of Object.keys(before.records).filter(table=>/^(oc_|paging_|workspace_)/.test(table))) {
         assert.deepEqual(held.records[table],before.records[table],'Pending create preserves '+table);
       }
+      assert.equal(held.records.agent_door_approvals.length,before.records.agent_door_approvals.length+1);
+      const waiting=held.records.agent_door_calls.find(row=>row.agent===context.agentId&&row.key===args.idempotency_key);
+      assert.equal(waiting.state,'pending');
+      assert.equal(waiting.decision_id,pending.decision.id);
       assert.deepEqual(held.records.agent_door_reviews,before.records.agent_door_reviews);
       assert.deepEqual(await runtime.outboundRequests(),[]);
       const approved=(await read(path+'/approve',{
@@ -82,6 +94,7 @@ export async function droppedScheduleCreateReplay(runtime) {
     }
 
     const once=await snapshot();
+    const originalLedger=await ledger();
     const calls=once.records.agent_door_calls.filter(row=>row.agent===context.agentId&&row.key===args.idempotency_key);
     assert.equal(calls.length,1);
     const [call]=calls, saved=JSON.parse(call.outcome);
@@ -90,9 +103,18 @@ export async function droppedScheduleCreateReplay(runtime) {
     assert.equal(saved.decision.id,call.decision_id);
     assert.equal(saved.decision.disposition,mode==='held'?'approval':'autonomous');
     assert.deepEqual(saved.decision.classes.map(row=>row.class),['standard','sensitive','live']);
+    assert.ok(call.expires_at>context.now());
+    assert.deepEqual(once.records.agent_door_reviews,before.records.agent_door_reviews);
+    assert.equal(once.records.agent_door_approvals.length,before.records.agent_door_approvals.length+Number(Boolean(pending)));
+    const originalDecision=JSON.parse(originalLedger.audit.find(row=>row.id===call.decision_id).row);
+    assert.equal(originalDecision.tool,name);
+    assert.equal(originalDecision.outcome,pending?'pending':'done');
+    assert.equal(originalDecision.replay_of,null);
+    assert.equal(originalDecision.idempotency_key,args.idempotency_key);
     const expected={...args.schedule,revision:1};
     const schedules=once.records.paging_schedules.filter(row=>row.id===expected.id);
     assert.equal(schedules.length,1);
+    assert.deepEqual(once.records.paging_schedules.filter(row=>row.id!==expected.id),before.records.paging_schedules);
     assert.equal(schedules[0].revision,1);
     assert.deepEqual(JSON.parse(schedules[0].data),expected);
     assert.deepEqual(saved.result.schedule,expected);
@@ -117,10 +139,44 @@ export async function droppedScheduleCreateReplay(runtime) {
       assert.equal(obligation.paging,'off');
       assert.equal(obligation.automatic,false);
     }
+    async function assertReplay(prior,decisionId) {
+      assert.deepEqual(await snapshot(),once,
+        'Replay preserves the original calls, outcomes, approvals, reviews, rota, notices and native commits');
+      const after=await ledger();
+      assert.deepEqual(after.audit.slice(0,-1),prior.audit);
+      assert.equal(after.audit.length,prior.audit.length+1);
+      const attempt=JSON.parse(after.audit.at(-1).row);
+      if (decisionId) assert.equal(attempt.id,decisionId);
+      assert.notEqual(attempt.id,call.decision_id);
+      assert.equal(attempt.outcome,'replayed');
+      assert.equal(attempt.replay_of,call.decision_id);
+      assert.equal(attempt.operation_id,originalDecision.operation_id);
+      assert.equal(attempt.tool,name);
+      assert.equal(attempt.agent.id,context.agentId);
+      assert.equal(attempt.sponsor.id,sponsor.id);
+      assert.equal(attempt.idempotency_key,args.idempotency_key);
+      assert.deepEqual(after.relay.slice(0,-1),prior.relay);
+      assert.equal(after.relay.length,prior.relay.length+1);
+      assert.equal(after.relay.at(-1).decision_id,attempt.id);
+      assert.deepEqual(after.permanent.slice(0,prior.permanent.length),prior.permanent);
+      for (const row of after.permanent.slice(prior.permanent.length)) {
+        assert.equal(row.kind,'agent-door.persistence');
+        assert.ok(['accepted','refused'].includes(row.outcome));
+        for (const family of ['workspace','paging','handoff']) assert.equal(row[family+'_before'],row[family+'_after']);
+      }
+      assert.deepEqual(await runtime.outboundRequests(),[]);
+      return after;
+    }
+
+    let priorRetry=originalLedger;
     if (pending) {
       const original=once.records.agent_door_approvals.find(row=>row.id===approval.id);
       assert.equal(original.state,'executed');
       assert.deepEqual(JSON.parse(original.result),saved);
+      assert.deepEqual(JSON.parse(original.approvals).map(({person,ref})=>({person,ref})),[{person:sponsor.id,ref:'sponsor'}]);
+      const execution=JSON.parse(originalLedger.audit.find(row=>row.id===saved.execution_id).row);
+      assert.equal(execution.outcome,'done');
+      assert.deepEqual(execution.approval,{id:approval.id,by:[sponsor.id]});
       assert.equal(call.decision_id,pending.decision.id);
       assert.equal(saved.receipt.approval_id,approval.id);
       assert.equal(saved.receipt.decision_id,call.decision_id);
@@ -129,7 +185,7 @@ export async function droppedScheduleCreateReplay(runtime) {
       lost=await discardToolResponse(name,args,scope);
       assertLost(lost);
       assert.notEqual(lost.id,pending.body.id);
-      assert.deepEqual(await snapshot(),once,'Losing the held response preserves the original effect and receipt');
+      priorRetry=await assertReplay(originalLedger);
     } else {
       assert.equal(saved.approval,undefined);
       assert.equal(saved.receipt,undefined);
@@ -146,12 +202,15 @@ export async function droppedScheduleCreateReplay(runtime) {
     assert.deepEqual(JSON.parse(retry.result.content[0].text),saved.result);
     assert.deepEqual(retry.result._meta['com.runeditrun/receipt'],
       saved.receipt?{...saved.receipt,decision:saved.decision}:undefined);
-    assert.deepEqual(await snapshot(),once,'Retry preserves calls, outcomes, approvals, reviews, native state and mutation audit');
+    assert.deepEqual(retry.result._meta['com.runeditrun/review'],saved.review);
+    const afterRetry=await assertReplay(priorRetry,retry.decision.id);
 
     // Keep the existing repeated result, native read and conflict checks.
     const again=await tool(name,args,scope);
+    assert.notEqual(again.body.id,retry.body.id);
     assert.deepEqual(again.result.structuredContent,retry.result.structuredContent);
     assert.deepEqual(again.result._meta['com.runeditrun/receipt'],retry.result._meta['com.runeditrun/receipt']);
+    await assertReplay(afterRetry,again.decision.id);
     assert.equal((await adopt()).status,200);
     const readback=await tool('oncall.schedules.read',{id:expected.id},scope);
     assert.deepEqual(readback.result.structuredContent.schedules,[expected]);
@@ -159,8 +218,8 @@ export async function droppedScheduleCreateReplay(runtime) {
       'A new key cannot create an existing native schedule');
     assert.equal(code(await tool(name,{...args,schedule:{...args.schedule,name:'Changed key content'}},scope)),'idempotency_conflict');
     assert.deepEqual(await runtime.outboundRequests(),[]);
+    console.log('PROBE BASE-AGENT-012 acceptance 2 '+mode+' oncall.schedules.create: real HTTP response discarded at headers with its body unread; terminal D1 result and one revision-1 rota with distinct primary and backup, recorded notices and one native audit commit; new RPC id returns the stored result and original sponsor receipt when held; replay changes only linked audit and capacity bookkeeping; zero outbound requests');
   }
-  console.log('PASS droppedScheduleCreateReplay: autonomous and sponsor-approved rota creation recover the original outcome after HTTP response loss');
 }
 
 /** Same production MCP and native approval doors as the specialist journey. */
