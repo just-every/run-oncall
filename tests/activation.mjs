@@ -721,6 +721,8 @@ try {
  record('OC-024 reviewed schedule changes: New York/London/Los Angeles DST, new gap, retained slots, denied viewer/anonymous, confirmation and stale-digest refusal, audit rollback, race and exact apply/preview equality passed')
  record('OC-011/014/020: calendar-day DST hand-off, overrides, now/next, protected ICS and escalation data passed')
  // OC-068: public manual page and independent responder-request lifecycle, with no sender.
+ const publicTeam68=ok(await req('/api/teams',{id:'synthetic-oncall-68-team',name:'Checkout responders',visibility:'public',active:true,revision:0,members:[a.id,b.id],managers:[]}))
+ ok(await req('/api/teams/ownership',{service:'checkout',team:publicTeam68.id,workspaceRevision:ok(await req('/api/state')).revision}))
  const pageInput={type:'manual-page',operationId:'synthetic-oncall-68-page',service:'checkout',title:'Manual checkout impact',severity:'warning',description:'Investigate payment failures',users:[a.id,b.id],priority:'P2'}
  let manual=ok(await req('/api/command',pageInput));assert.equal(manual.urgency,'high');assert.equal(manual.manualPage.creator,admin.id);assert.equal(manual.manualPage.assignment.minutes,10);assert.equal(manual.manualPage.assignment.policy,'checkout');assert.equal(manual.manualPage.obligations.length,2)
  assert.ok(manual.manualPage.obligations.every(o=>o.paging==='off'&&o.automatic===false&&o.label==='no sender'))
@@ -742,9 +744,67 @@ try {
  manual=ok(await req('/api/command',{type:'request-responders',incident:manual.id,revision:manual.revision,users:[a.id,b.id],message:'Follow-up request'}));const cancel=manual.responderRequests.at(-2)
  ok(await w.request('/api/command',{type:'cancel-request',incident:manual.id,revision:manual.revision,request:cancel.id},sessionA),403)
  manual=ok(await req('/api/command',{type:'cancel-request',incident:manual.id,revision:manual.revision,request:cancel.id}));assert.equal(manual.responderRequests.find(r=>r.id===cancel.id).status,'cancelled')
- manual=ok(await req('/api/command',{type:'bulk-resolve',incident:manual.id,revision:manual.revision,reason:'Human verification completed',evidence:'https://example.test/manual-recovery'}));assert.ok(manual.responderRequests.every(r=>r.status!=='pending'&&r.obligation.state==='stopped'));assert.ok(manual.manualPage.obligations.every(o=>o.state==='stopped'))
- assert.ok(manual.timeline.some(e=>e.kind==='respond-request'&&e.actor===a.id));assert.ok(manual.timeline.some(e=>e.kind==='respond-request'&&e.actor===b.id))
- record('OC-068 responder requests: independent accept/decline and timeline acknowledgment; accepted responder never acknowledges primary; primary acknowledgment preserves pending requests; requester notice, cancellation and resolution stop only their own work')
+ const workspaceBeforeResolution=ok(await req('/api/state'))
+ const beforeResolution=workspaceBeforeResolution.incidents.find(row=>row.id===manual.id)
+ const manualService=workspaceBeforeResolution.services.find(row=>row.id===beforeResolution.service)
+ assert.equal(workspaceBeforeResolution.teams.find(row=>row.id===manualService.team)?.visibility,'public')
+ const expectedRequests=[
+  ['accepted',a.id,a.id,'respond-request'],
+  ['declined',b.id,b.id,'respond-request'],
+  ['cancelled',a.id,admin.id,'cancel-request'],
+  ['pending',b.id,null,null],
+ ]
+ assert.equal(beforeResolution.responderRequests.length,expectedRequests.length)
+ for(const [index,[status,target,actor,kind]] of expectedRequests.entries()){
+  const row=beforeResolution.responderRequests[index]
+  assert.equal(row.status,status)
+  assert.deepEqual(row.obligation.target,{kind:'user',id:target})
+  if(kind){
+   const entries=beforeResolution.timeline.filter(event=>event.kind===kind&&event.text.includes(row.id))
+   assert.equal(entries.length,1)
+   assert.equal(entries[0].actor,actor)
+   assert.ok(Number.isFinite(Date.parse(entries[0].at)))
+   assert.deepEqual(row.response,{by:actor,at:entries[0].at})
+   assert.deepEqual([row.obligation.state,row.obligation.outcome],['stopped',status])
+  }else{
+   assert.equal(row.response,null)
+   assert.equal(row.obligation.state,'recorded')
+  }
+ }
+ const pagingBeforeResolution=ok(await req('/api/paging/state'))
+ const auditBeforeResolution=w.sql('SELECT MAX(ordinal) AS ordinal FROM oc_admin_audit')[0].ordinal
+ const resolutionEvidence='https://example.test/manual-recovery'
+ manual=ok(await req('/api/command',{type:'bulk-resolve',incident:manual.id,revision:beforeResolution.revision,reason:'Human verification completed',evidence:resolutionEvidence}))
+ const workspaceAfterResolution=ok(await req('/api/state'))
+ const afterResolution=workspaceAfterResolution.incidents.find(row=>row.id===manual.id)
+ assert.deepEqual(afterResolution,manual)
+ assert.equal(afterResolution.state,'resolved')
+ assert.equal(afterResolution.revision,beforeResolution.revision+1)
+ assert.deepEqual(afterResolution.timeline.slice(0,-1),beforeResolution.timeline)
+ const resolution=afterResolution.timeline.at(-1)
+ assert.deepEqual([resolution.kind,resolution.actor,resolution.lifecycle],
+  ['bulk-resolve',admin.id,{from:'acknowledged',to:'resolved',evidence:resolutionEvidence}])
+ assert.ok(Number.isFinite(Date.parse(resolution.at)))
+ assert.deepEqual(afterResolution.responderRequests,beforeResolution.responderRequests.map(row=>({
+  ...row,
+  ...(row.status==='pending'?{status:'ended',obligation:{...row.obligation,state:'stopped',outcome:'Incident resolved'}}:{}),
+  ...(row.notice?{notice:{...row.notice,state:'stopped'}}:{}),
+ })), 'resolution ends the pending obligation and closes the recorded notice while preserving terminal requests')
+ assert.deepEqual(afterResolution.manualPage,{...beforeResolution.manualPage,
+  obligations:beforeResolution.manualPage.obligations.map(row=>({...row,state:'stopped',outcome:'Incident resolved'}))})
+ const resolutionAudit=w.sql(`SELECT a.kind,a.outcome,actor.entity_id AS actor,subject.entity_id AS subject,
+  a.workspace_before,a.workspace_after,a.paging_before,a.paging_after
+  FROM oc_admin_audit a LEFT JOIN oc_audit_identities actor ON actor.label=a.actor AND actor.kind='member'
+  LEFT JOIN oc_audit_identities subject ON subject.label=a.subject AND subject.kind='entity'
+  WHERE a.ordinal>${auditBeforeResolution} ORDER BY a.ordinal`)
+ assert.deepEqual(resolutionAudit,[{kind:'command.bulk-resolve',outcome:'accepted',actor:admin.id,subject:manual.id,
+  workspace_before:workspaceBeforeResolution.revision,workspace_after:workspaceAfterResolution.revision,
+  paging_before:pagingBeforeResolution.revision,paging_after:pagingBeforeResolution.revision}])
+ assert.equal(pagingBeforeResolution.paging,'OFF')
+ assert.deepEqual(ok(await req('/api/paging/state')),{...pagingBeforeResolution,workspaceRevision:workspaceAfterResolution.revision})
+ assert.deepEqual(await w.outboundRequests(),[])
+ record('OC-068 responder requests: accept and decline remain independent of primary acknowledgment; the requester alone can cancel; resolution ends one pending obligation and preserves three terminal outcomes, targets and actors')
+ record('PROBE OC-068 5: protected public-service resolution kept the three terminal response records and prior timeline, stopped one pending obligation and the recorded requester notice, and wrote one attributed resolution audit. Paging stayed OFF and no outbound requests were made.')
  const stakeholder68=ok(await req('/api/members',{name:'synthetic-oncall-68-stakeholder',password:'synthetic-local-testing-password',role:'stakeholder'}),201)
  for(const name of ['Viewer',stakeholder68.name]){const deniedSession=(await w.request('/api/login',{name,password:'synthetic-local-testing-password'})).cookie,before=ok(await req('/api/state'));ok(await w.request('/api/command',{...pageInput,operationId:'synthetic-oncall-68-refused'},deniedSession),403);ok(await w.request('/api/command',{type:'request-responders',incident:policyPage.id,revision:policyPage.revision,users:[a.id],message:'Refused'},deniedSession),403);assert.deepEqual(ok(await req('/api/state')),before)}
  record('OC-068 permissions: viewer and stakeholder create/request attempts explain refusal and create nothing; paging remains OFF')

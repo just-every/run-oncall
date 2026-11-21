@@ -1255,6 +1255,75 @@ try {
  }
  console.log('PROBE OC-068 5: on a signed-in manual incident for a public-team service, the named responder saw two pending requests and no Cancel control. The requester cancelled one and reopened at 1440 and 390. One attributed timeline entry and one permanent audit row persisted. Only the target obligation stopped. The sibling and primary acknowledgment and obligation stayed unchanged. Zero outbound or paging effects.')
 
+ // Resolve the same incident only after the separate cancellation proof.
+ const resolutionPage=owner.page
+ const resolutionSummary='Checkout recovered after payment verification'
+ const recoveryEvidence='https://monitoring.example.test/checkout/recovery'
+ await openIncident(resolutionPage,manual68.id)
+ const nextStep=resolutionPage.getByRole('region',{name:'Next step',exact:true})
+ await nextStep.getByRole('button',{name:'Other steps ▾',exact:true}).click()
+ await nextStep.getByRole('button',{name:'Mark recovered',exact:true}).click()
+ await nextStep.getByLabel('Recovery evidence URL',{exact:true}).fill(recoveryEvidence)
+ await nextStep.getByRole('button',{name:'Mark recovered',exact:true}).click()
+ await resolutionPage.locator('.incident-state.state-recovered').waitFor()
+ const beforeResolution=readManual(await readWorkspace(resolutionPage))
+ const pagingBeforeResolution=ok(await call(resolutionPage,'/api/paging/state'))
+ assert.deepEqual(beforeResolution.responderRequests.map(row=>row.status),['accepted','declined','cancelled','pending'])
+ resolutionPage.context().on('request',observeRequest)
+ try{
+  await nextStep.getByRole('button',{name:'Resolve',exact:true}).click()
+  await nextStep.getByLabel('Resolution summary',{exact:true}).fill(resolutionSummary)
+  const resolved=resolutionPage.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'
+   &&response.request().method()==='POST'&&response.request().postDataJSON()?.state==='resolved')
+  await nextStep.getByRole('button',{name:'Resolve',exact:true}).click()
+  assert.equal((await resolved).status(),200)
+  await openIncident(resolutionPage,manual68.id)
+  await resolutionPage.locator('.incident-state.state-resolved').waitFor()
+  const afterResolution=await readWorkspace(resolutionPage),saved=readManual(afterResolution)
+  assert.deepEqual(saved.timeline.slice(0,-1),beforeResolution.timeline)
+  const event=saved.timeline.at(-1)
+  assert.deepEqual([event.kind,event.actor,event.lifecycle.to],['transition',ownerMember.id,'resolved'])
+  const resolutionEntry=entry(resolutionPage,resolutionSummary)
+  await expect(resolutionEntry).toHaveCount(1)
+  await expect(resolutionEntry.locator('small')).toHaveText(ownerMember.name)
+  await expect(resolutionEntry.locator('time')).toHaveAttribute('datetime',event.at)
+  assert.deepEqual(saved.responderRequests,beforeResolution.responderRequests.map(row=>({
+   ...row,
+   ...(row.status==='pending'?{status:'ended',obligation:{...row.obligation,state:'stopped',outcome:'Incident resolved'}}:{}),
+   ...(row.notice?{notice:{...row.notice,state:'stopped'}}:{}),
+  })))
+  assert.deepEqual(ok(await call(resolutionPage,'/api/paging/state')),{...pagingBeforeResolution,workspaceRevision:afterResolution.revision})
+
+  const dialog=await openIncidentAction(resolutionPage,'Request responders')
+  const cards=[
+   ['Inspect payment provider','accepted',responder.name],
+   ['Inspect payment network','declined',responder.name],
+   [cancelMessage,'cancelled',ownerMember.name],
+   [siblingMessage,'ended',null],
+  ]
+  for(const [message,status,actor] of cards){
+   const card=requestCard(resolutionPage,requests68,message)
+   await expect(card.getByRole('heading',{name:'Request to '+responder.name,exact:true})).toBeVisible()
+   const attribution=[status,'requested by '+ownerMember.name,...(actor?['response by '+actor]:[]),'no sender','paging OFF'].join(' · ')
+   await expect(card.getByText(attribution,{exact:true})).toBeVisible()
+  }
+  await expect(requests68.getByText(/^Requester notice: .* · stopped · non-automatic$/)).toBeVisible()
+  await expect(requests68.getByRole('button')).toHaveCount(0)
+  await dialog.getByRole('button',{name:'Close',exact:true}).focus()
+  await expect(dialog.getByRole('tooltip',{name:'Close dialog',exact:true})).toBeVisible()
+  await resolutionPage.screenshot({path:`${captureDirectory}/oc068-resolved-requests-1440.png`})
+  await resolutionPage.setViewportSize({width:390,height:1000})
+  await openRequests(resolutionPage)
+  await requests68.getByText(/^ended · requested/).waitFor()
+  await resolutionPage.screenshot({path:`${captureDirectory}/oc068-resolved-requests-390.png`})
+  await resolutionPage.setViewportSize({width:1440,height:1000})
+  assert.deepEqual(await worker.outboundRequests(),outboundBefore)
+  assert.deepEqual(outbound,[])
+ }finally{
+  resolutionPage.context().off('request',observeRequest)
+ }
+ console.log('PROBE OC-068 5: signed-in Resolve and reopened request history show accepted, declined, cancelled and ended with the original attribution. Protected state and timeline agree, and paging and outbound activity are unchanged. Captured desktop and mobile.')
+
  await openIncident(vic.page,manual68.id);await vic.page.reload()
  await openIncidentAction(vic.page,'Request responders')
  await vic.page.getByText('Only responders and admins may create manual pages or request responders.',{exact:true}).waitFor()

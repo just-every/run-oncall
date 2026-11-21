@@ -2952,7 +2952,7 @@
       "executable": false
     },
     "src/manual-pages/model.ts": {
-      "sha256": "d5dcdefd6d26d3658dc3c1b0788c746995f2e4519d1642966f52673642e58718",
+      "sha256": "e474fd609b5bf0978f0b4ae1da36dc7dbe255bae5757eee0ecf3733553e9d840",
       "executable": false
     },
     "src/manual-pages/types.ts": {
@@ -6572,7 +6572,7 @@
       "executable": false
     },
     "tests/activation.mjs": {
-      "sha256": "99e452106fb2251701acba0510b6a9938ce01ec38526480fc0cdac1dc3176531",
+      "sha256": "81eb754bb951e2421e80207fe1715ac1bf245ec0a0dab5b90e7adcd632c747a1",
       "executable": false
     },
     "tests/agent-door-browser.mjs": {
@@ -6764,7 +6764,7 @@
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
-      "sha256": "831bfe689addf249960a14ac3aa1478e9a4d511b657bdb76d1893b3ff1b4b9ea",
+      "sha256": "8601d3c14ce763249875a17380f4172c33f121b4d4c84302446216915ddf6a6d",
       "executable": false
     },
     "tests/missed-ack-flow.mjs": {
