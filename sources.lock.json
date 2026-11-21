@@ -5572,7 +5572,7 @@
       "executable": false
     },
     "src/move-in/ConnectStep.tsx": {
-      "sha256": "8ae3d41d64117edf37fc7d5c65d7314d95a5b0b19f8ed55dcd59049bc95ca302",
+      "sha256": "312691b6632b829bd7f18201c448fefd7fc1780ef1f025fad44f2b8eb3e18168",
       "executable": false
     },
     "src/move-in/CopyDetails.tsx": {
@@ -5612,7 +5612,7 @@
       "executable": false
     },
     "src/move-in/ExportHelp.tsx": {
-      "sha256": "9b9f434eec3b14a1db70c53243d45fa464093b9c60149172b5534e0c49f53200",
+      "sha256": "1bd34860222bdf5df328a311447e73b0e7d88b95da1e84afb57b01e1892d2cf6",
       "executable": false
     },
     "src/move-in/import-lifecycle-sql.d.mts": {
@@ -6940,7 +6940,7 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "7e5f889918046a34e4aab44c47035909958a721ffb0411f173be69e10ebbc3ad",
+      "sha256": "58c834b1eebfe2b24c6c33f2b62ffe54fab8fbbb0aa157880cb7897392b50e91",
       "executable": false
     },
     "tests/product-browser.mjs": {
