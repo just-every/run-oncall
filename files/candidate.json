@@ -1,0 +1,147 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f325",
+  "head": "c910b2213fab0f9edb03daba38ee379bab9b2b0e",
+  "staged_save": "bb80c33e903532806f18e9e829ca28a8e0fce3de",
+  "origin_main": "3802b68ae4bf448528b49eb1aa9e03ebd80a21a6",
+  "main_equals_candidate": false,
+  "publication_scan": {
+    "state": "NOT_RUN",
+    "historyScanned": null,
+    "findings": null,
+    "commit": "c910b2213fab0f9edb03daba38ee379bab9b2b0e",
+    "owner": "fleet lander"
+  },
+  "ci": {
+    "candidate_verify": {
+      "conclusion": "success",
+      "event": "push",
+      "head_branch": "cloud/sd-oncall-c-f325",
+      "head_sha": "c910b2213fab0f9edb03daba38ee379bab9b2b0e",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44934472590",
+      "id": 44934472590,
+      "name": "Verify",
+      "status": "completed"
+    },
+    "observed_at": "2026-11-21T18:35:15+00:00",
+    "candidate_run_site": null,
+    "base_verify": 44934277015,
+    "base_run_site": 44934277016
+  },
+  "contract": {
+    "id": "BASE-AGENT-003",
+    "status_before": "MISSING",
+    "status_after": "MISSING",
+    "selected_point": 4,
+    "proof_slice": "first completed schedule-create coverage link",
+    "counts_before": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "counts_after": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "changed_files": {
+    "sources.lock.json": "36dcc77dea23669735efd5fdec52379234ba7753",
+    "tests/agent-door-browser.mjs": "f0af1ad78c57c860fcc6b19d46cd389c82d7c815",
+    "tests/oncall-agent-coverage-parity.mjs": "c88bb36516251b95fb5ae66bde5fcdec6d904314",
+    "tests/oncall-agent-flow.mjs": "c0a362a12f4a92f3c39e00920b20765981653dcf"
+  },
+  "predecessors": {
+    "sd-oncall-c-f320": {
+      "head": "f1990cc0bac8219c01998614609cd5275f3c1dde",
+      "ancestor": false
+    },
+    "sd-oncall-c-f322": {
+      "head": "5259c6675deda0281eca57aa894f53e0a35ba066",
+      "ancestor": true
+    }
+  },
+  "local_checks": {
+    "rer_build": {
+      "exit": 0
+    },
+    "typecheck": {
+      "command": "pnpm run typecheck",
+      "node": "22.20.0",
+      "exit": 0
+    },
+    "first_party": {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    "views": {
+      "write": "node src/base/contract-docs.mjs write",
+      "check": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "generated_changes": 0
+    },
+    "source_lock": {
+      "lock": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "check": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    "runtime": {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "exit": 0,
+      "run_started_from": "d0a94b025d5ef864b77485a56c1474ae805c569e",
+      "selected_proof": [
+        "PROBE BASE-AGENT-003 4 autonomous rota creation: first completed link matched the full protected rota at revision 1, current coverage and two participants at 2026-11-21T12:00:00.000Z; autonomous read; native records, revisions, mutation audit, original write custody and paging unchanged; zero outbound requests",
+        "PROBE BASE-AGENT-003 4 held rota creation: first completed link matched the full protected rota at revision 1, current coverage and two participants at 2026-11-21T12:00:00.000Z; separate sponsor approval for the sensitive read; native records, revisions, mutation audit, original write custody and paging unchanged; zero outbound requests",
+        "Runtime agents completed (678.8s)"
+      ],
+      "reconciled_emitted_worker_probe": [
+        "PROBE BASE-AGENT-003 4 autonomous rota creation: first completed link matched the full protected rota at revision 1, current coverage and two participants at 2026-11-21T12:00:00.000Z; autonomous read; native records, revisions, mutation audit, original write custody and paging unchanged; zero outbound requests",
+        "PROBE BASE-AGENT-003 4 held rota creation: first completed link matched the full protected rota at revision 1, current coverage and two participants at 2026-11-21T12:00:00.000Z; separate sponsor approval for the sensitive read; native records, revisions, mutation audit, original write custody and paging unchanged; zero outbound requests"
+      ]
+    },
+    "browser": {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/agent-door-browser.mjs",
+      "exit": 0,
+      "base_with_communications_predecessor": "82c51561770c1a67ba6e1a3b41752bbabf707007",
+      "selected_proof": [
+        "Browser proof created-rota-autonomous 1440: fits=true serious or critical=0 undersized-controls=0",
+        "Browser proof created-rota-autonomous 390: fits=true serious or critical=0 undersized-controls=0",
+        "Browser proof created-rota-held 1440: fits=true serious or critical=0 undersized-controls=0",
+        "Browser proof created-rota-held 390: fits=true serious or critical=0 undersized-controls=0",
+        "PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements"
+      ],
+      "screens": [
+        {
+          "file": "agent-door-created-rota-autonomous-1440.png",
+          "mode": "autonomous",
+          "width": 1440,
+          "height": 3859,
+          "sha256": "d81bff3d783549e494cf743af1cb1780762ece3ab3edd954dd3c769db0fa6d8d"
+        },
+        {
+          "file": "agent-door-created-rota-autonomous-390.png",
+          "mode": "autonomous",
+          "width": 390,
+          "height": 4307,
+          "sha256": "81e18c89722f7e5e8e73c1cf86a1d16c2b5fad2b83748acad688e095545a9bc0"
+        },
+        {
+          "file": "agent-door-created-rota-held-1440.png",
+          "mode": "held",
+          "width": 1440,
+          "height": 3859,
+          "sha256": "efa60b384e40557278cb737a0e6b9c7852920c1f4b3b1931ebc9a060c9038001"
+        },
+        {
+          "file": "agent-door-created-rota-held-390.png",
+          "mode": "held",
+          "width": 390,
+          "height": 4307,
+          "sha256": "c075d51a491b382541682929c717614d63afddeeb9a8ce77055fa8528df7dd5a"
+        }
+      ]
+    }
+  }
+}

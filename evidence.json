@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "4b134b79dd21d157d57396cced85eacb07f6aa2b",
+      "bytes": 9366,
+      "path": "REPORT.md",
+      "sha256": "a7b9aadee14bb3536d8920fe4c8926df9b115661db31ba072d11f3d0cf920a4b"
+    },
+    {
+      "blob": "da870e48e29e9e4e911f79026c19e1ac9ad9bdbb",
+      "bytes": 375843,
+      "path": "agent-door-created-rota-autonomous-1440.png",
+      "sha256": "d81bff3d783549e494cf743af1cb1780762ece3ab3edd954dd3c769db0fa6d8d"
+    },
+    {
+      "blob": "6a66b58965a37d4ad10b0a932c3d9cb23d6a03eb",
+      "bytes": 296337,
+      "path": "agent-door-created-rota-autonomous-390.png",
+      "sha256": "81e18c89722f7e5e8e73c1cf86a1d16c2b5fad2b83748acad688e095545a9bc0"
+    },
+    {
+      "blob": "e2aefbe864592aa625b3ee917dafb7bb171e0e97",
+      "bytes": 380914,
+      "path": "agent-door-created-rota-held-1440.png",
+      "sha256": "efa60b384e40557278cb737a0e6b9c7852920c1f4b3b1931ebc9a060c9038001"
+    },
+    {
+      "blob": "fbde699bed63c26ab79634f768634c4d4fecaff2",
+      "bytes": 294681,
+      "path": "agent-door-created-rota-held-390.png",
+      "sha256": "c075d51a491b382541682929c717614d63afddeeb9a8ce77055fa8528df7dd5a"
+    },
+    {
+      "blob": "d37de7d55595d1bb191c30d56b8173b5112796fa",
+      "bytes": 6292,
+      "path": "candidate.json",
+      "sha256": "96b035eb289691d72231698d811f66929d8cf3848e782987d217faa18dc6a4c8"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f325",
+  "product_head": "c910b2213fab0f9edb03daba38ee379bab9b2b0e",
+  "ref": "refs/heads/evidence/sd-oncall-c-f325",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f325"
+}
