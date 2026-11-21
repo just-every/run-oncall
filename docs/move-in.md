@@ -13,6 +13,27 @@ limits; no real customer export, complete account migration or live cutover is
 certified. [Business imports and bounded catch-up](../MOVE-IN.md#optional-business-imports)
 use the same door and source allow-list.
 
+## Moving from Grafana OnCall OSS
+
+Run Oncall does not read Grafana OnCall OSS exports. Re-create the schedules by
+hand while your self-hosted instance is still available. Grafana archived the
+OSS project on 24 March 2026. [Grafana OnCall OSS archive](https://github.com/grafana-cold-storage/oncall)
+
+1. On your OSS instance, use a token with schedules read access to save the results
+   from `GET /api/v1/schedules/`. Follow pagination and record the shift rules
+   for each schedule using `GET /api/v1/on_call_shifts/?schedule_id=<id>`. For
+   iCal schedules, check the source calendar and any override calendar. Save
+   the schedule's final shifts for the period you want to compare after setup.
+   [Grafana schedules API](https://github.com/grafana-cold-storage/oncall/blob/dev/docs/sources/oncall-api-reference/schedules.md) · [Grafana shifts API](https://github.com/grafana-cold-storage/oncall/blob/dev/docs/sources/oncall-api-reference/on_call_shifts.md)
+2. Set up the corresponding services and responders in Run Oncall. Use **On call
+   → New rota** to enter the people in order, time zone and hand-over cadence.
+   Add backup coverage and any upcoming overrides by hand.
+   [Set the rotation](schedules.md#set-the-rotation) · [Swaps and cover](schedules.md#swaps-and-cover)
+3. Compare the coverage preview with the saved final shifts. Check who's on call
+   now and next, hand-over times and gaps, including any clock change in the
+   comparison period. Keep your existing pager in charge. Paging stays off in
+   Run Oncall.
+
 ## Opsgenie migration readiness checklist
 
 **Execution date for this public-documentation review: 31 October 2026 (UTC).**
