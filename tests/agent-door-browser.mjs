@@ -20,6 +20,7 @@ import {openIncidentAction} from './keyboard.mjs';
 import {standardServiceRunbookUpdate} from './oncall-agent-service-replay.mjs';
 import {declareIncidentFromAlert,savedServiceRunbookBrowser} from './product-browser-journey.mjs';
 import {staleOverrideRevision} from './oncall-agent-schedule-replay.mjs';
+import {createdRotaReadback} from './oncall-agent-coverage-parity.mjs';
 
 const weekStart=Date.parse('2026-11-02T00:00:00.000Z'),weekNow=Date.parse('2026-11-04T12:00:00.000Z');
 const runtime=await agentRuntime({clock:null}),directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';
@@ -202,7 +203,7 @@ try{
  page.on('request',recordRotaOutbound);
  for(const {mode,schedule,holder} of retainedRotas){
   await capture('override-revision-retained-'+mode,'/on-call/'+schedule.id,async()=>{
-   await page.getByRole('heading',{name:schedule.name,exact:true}).waitFor();
+   await page.getByRole('heading',{name:schedule.name,exact:true,level:1}).waitFor();
    const cover=page.locator('.oc-cover-list').getByRole('listitem');
    await cover.getByText(holder,{exact:true}).waitFor();
    if(page.viewportSize().width===1440){
@@ -216,6 +217,29 @@ try{
  assert.deepEqual(await agentEffectSnapshot(runtime),beforeRotaReads,'Viewing saved rota cover changes no durable records');
  assert.deepEqual(rotaOutbound,[]);
  assert.deepEqual(await runtime.outboundRequests(),[]);
+ const rotaPage=await context.newPage();
+ rotaPage.on('request',recordRotaOutbound);
+ try{
+  await createdRotaReadback(runtime,{observe:async({mode,at,schedule,path,nowNext,people})=>{
+   const before=await agentEffectSnapshot(runtime);
+   await rotaPage.clock.setFixedTime(at);
+   const nativeRead=rotaPage.waitForResponse(response=>new URL(response.url()).pathname===path&&response.status()===200);
+   await capture('created-rota-'+mode,'/on-call/'+schedule.id,async()=>{
+    await rotaPage.getByRole('heading',{name:schedule.name,exact:true,level:1}).waitFor();
+    const panel=rotaPage.locator('.scheduling-now-next');
+    await panel.locator('.now').last().waitFor();
+    if(rotaPage.viewportSize().width===1440){
+     const expected=role=>'Now: '+people.find(person=>person.id===nowNext.now[role]).name;
+     assert.deepEqual(await panel.locator('.now').allTextContents(),['primary','backup'].map(expected));
+     assert.deepEqual(await (await nativeRead).json(),nowNext,'The signed-in rota loads the same fixed-time native coverage');
+     assert.ok(await panel.locator('h2,h3,p').evaluateAll(nodes=>nodes.every(node=>parseFloat(getComputedStyle(node).fontSize)>=13)));
+    }
+   },runtime,rotaPage);
+   assert.deepEqual(await agentEffectSnapshot(runtime),before,'Viewing the created rota preserves saved state');
+   assert.deepEqual(rotaOutbound,[]);
+   assert.deepEqual(await runtime.outboundRequests(),[]);
+  }});
+ }finally{await rotaPage.close()}
  assert.equal((await runtime.adopt(heldPolicy())).status,200);
  const followUpFixture=runtime.context.surface.journey.find(row=>row.id==='follow-up');
  const parentResponse=await http('/api/command',{type:'declare',service:'agent-service',
