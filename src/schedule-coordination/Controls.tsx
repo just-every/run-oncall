@@ -21,7 +21,21 @@ export function ScheduleCoordination({schedule,state,actor,onChanged,rotaPage=fa
  if(!ready)return <section className="scheduling-panel" aria-label="Shift coordination"><h2>Shift coordination</h2><FailureLine failure={failures.failure}/>{!failures.failure&&<p role="status">Loading shift coordination…</p>}</section>;
  return <section className="scheduling-panel" aria-label="Shift coordination"><h2>Shift coordination</h2><FailureLine failure={failures.failure}/>
  {!rotaPage&&<p>Substitutes decide swaps explicitly. Overdue requests remain undecided. Paging OFF.</p>}
- {rows.filter(r=>r.kind==='swap'&&r.data.schedule===schedule.id).map(row=><article key={row.id}><h3>{name(row.member)} → {name(row.data.substitute)}</h3><p>{row.data.role} · {rotaPage?shortTime(row.data.start,schedule.timezone):row.data.start} → {rotaPage?shortTime(row.data.end,schedule.timezone):row.data.end} · {row.active?row.status:'restored inactive'} · {row.data.approved?'approval recorded':'admin approval required'}</p>{row.active&&row.data.status==='pending'&&<div className="routing-actions">{actor.role==='admin'&&!row.data.approved&&<button disabled={busy} onClick={()=>send({action:'approve',id:row.id,revision:row.revision})}>Approve swap</button>}{actor.id===row.data.substitute&&<><button disabled={busy} onClick={()=>send({action:'accept',id:row.id,revision:row.revision})}>Accept swap</button><button disabled={busy} onClick={()=>send({action:'decline',id:row.id,revision:row.revision})}>Decline swap</button></>}{actor.id===row.member&&<button disabled={busy} onClick={()=>send({action:'cancel',id:row.id,revision:row.revision})}>Cancel swap</button>}</div>}</article>)}
+ {rows.filter(r=>r.kind==='swap'&&r.data.schedule===schedule.id).map(row=>{
+  const pending=row.active&&row.status==='pending';
+  const canApprove=pending&&actor.role==='admin'&&!row.data.approved;
+  const canRespond=pending&&actor.id===row.data.substitute;
+  const canCancel=row.active&&row.data.status==='pending'&&actor.id===row.member;
+  return <article key={row.id}>
+   <h3>{name(row.member)} → {name(row.data.substitute)}</h3>
+   <p>{row.data.role} · {rotaPage?shortTime(row.data.start,schedule.timezone):row.data.start} → {rotaPage?shortTime(row.data.end,schedule.timezone):row.data.end} · {row.active?row.status:'restored inactive'} · {row.data.approved?'approval recorded':'admin approval required'}</p>
+   {(canApprove||canRespond||canCancel)&&<div className="routing-actions">
+    {canApprove&&<button disabled={busy} onClick={()=>send({action:'approve',id:row.id,revision:row.revision})}>Approve swap</button>}
+    {canRespond&&<><button disabled={busy} onClick={()=>send({action:'accept',id:row.id,revision:row.revision})}>Accept swap</button><button disabled={busy} onClick={()=>send({action:'decline',id:row.id,revision:row.revision})}>Decline swap</button></>}
+    {canCancel&&<button disabled={busy} onClick={()=>send({action:'cancel',id:row.id,revision:row.revision})}>Cancel swap</button>}
+   </div>}
+  </article>;
+ })}
  {editable&&!onRequestSwap&&<details><summary>Request a swap</summary><Form busy={busy} label="Request substitute" onSubmit={data=>send({...data,action:'request',schedule:schedule.id,scheduleRevision:schedule.revision,start:new Date(data.start+'Z').toISOString(),end:new Date(data.end+'Z').toISOString()})}>
  <Field name="substitute" label="Swap substitute">{state.members.filter(m=>m.active&&m.id!==actor.id&&['admin','responder'].includes(m.role)).map(m=><option key={m.id} value={m.id}>{m.name}</option>)}</Field>
  <Field name="role" label="Swap role"><option>primary</option><option>backup</option></Field><Field name="start" label="Swap start (UTC)" type="datetime-local"/><Field name="end" label="Swap end (UTC)" type="datetime-local"/>

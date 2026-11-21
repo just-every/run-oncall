@@ -1458,7 +1458,7 @@ try {
   const session=await (await context.request.get('/api/session')).json();
   await context.request.post('/api/command',{headers:{origin:worker.origin},data:{type:'service',id:'synthetic-oncall-1',name:'Checkout',environment:'test',owner:session.member.id,runbook:[],pager:''}});
   await keyboardCoordination(page,context,1440,{openSession,worker});
-  await scheduleCoordinationBrowser(page,context,1440,session);
+  await scheduleCoordinationBrowser(page,context,1440,session,{setTime});
   await coverageRulesBrowser(page,context,1440,session,{setTime});
   await readinessBrowser(page,context);
  }
