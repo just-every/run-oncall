@@ -274,17 +274,27 @@ try{
    await page.getByLabel('Type REPLACE to confirm').fill('REPLACE')
    const restored=page.waitForResponse(r=>r.url().endsWith('/api/restore')&&r.request().method()==='POST')
    await page.getByRole('button',{name:'Replace workspace with this archive',exact:true}).click();assert.equal((await restored).status(),200)
+   await page.locator('.archive-restore').getByRole('status').waitFor()
    assert.ok((await context.cookies()).some(row=>row.name.startsWith('oncall_session_')),'native restore issued a workspace session')
+   // Keep the browser's restore cookie while retiring the dev document and its
+   // live connections before preview takes over the same origin.
+   await page.close()
    await m.close();await m.command(['build','--non-interactive']);await m.preview()
-   await page.goto(m.openLink);await page.locator('.oncall-frame').waitFor()
-   await signedInInstallation(page,m.origin,{capture:true});
-   await compiledHealth(path=>m.request(path));
+   const previewPage=await context.newPage(),entry=new URL(m.openLink)
+   const [exchange]=await Promise.all([
+    previewPage.waitForResponse(response=>response.request().method()==='POST'&&response.url()===entry.origin+entry.pathname),
+    previewPage.goto(m.openLink,{waitUntil:'domcontentloaded'}),
+   ])
+   assert.equal(exchange.status(),204,'preview accepts the native owner link')
+   await previewPage.locator('.oncall-frame').waitFor()
    const session=await context.request.get(m.origin+'/api/session');assert.equal(session.status(),200)
    assert.equal((await session.json()).member.id,member.id,'preview owner opens the linked native archive identity')
-   assert.equal(await page.locator('.oc-door-restore').count(),0,'an already linked owner needs no mapping')
+   assert.equal(await previewPage.locator('.oc-door-restore').count(),0,'an already linked owner needs no mapping')
    assert.equal((await context.cookies()).some(row=>row.name.startsWith('oncall_session_')),false,'native owner sign-in retires the prior restore cookie')
+   await signedInInstallation(previewPage,m.origin,{capture:true});
+   await compiledHealth(path=>m.request(path));
    const proof=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(proof,{recursive:true})
-   for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:proof+'/native-restored-preview-'+width+'.png',fullPage:true})}
+   for(const width of [1440,390]){await previewPage.setViewportSize({width,height:1000});await previewPage.screenshot({path:proof+'/native-restored-preview-'+width+'.png',fullPage:true})}
    await context.close()
   }finally{await browser.close();await m.close()}
  }
