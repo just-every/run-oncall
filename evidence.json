@@ -1,0 +1,52 @@
+{
+  "files": [
+    {
+      "blob": "84d10fcb58a6f756a75e63f5fc60f6ab7471cb6c",
+      "bytes": 10355,
+      "path": "REPORT.md",
+      "sha256": "3001e73a8c15d1da92771748bc2493f7854e60b737d686d6bdbe3957576880c1"
+    },
+    {
+      "blob": "4408af4b2370e47c8d7784f8b755f652c44ea4f9",
+      "bytes": 7357,
+      "path": "candidate-receipt.json",
+      "sha256": "25136e8a384b2b8196cf056f05c925628ca0a9b926fb414f02c088e472e25e83"
+    },
+    {
+      "blob": "19895c67936723b5d2319ab1f101151bc75a8285",
+      "bytes": 1486,
+      "path": "runtime-receipt.json",
+      "sha256": "3ba8bd720f84d3cee8b6f3794be9a3387ae79a3bd5aaead2d468bfbd1f32b676"
+    },
+    {
+      "blob": "dd2b0f56e038767a76b705fc2a9756b9190ea0ba",
+      "bytes": 379086,
+      "path": "screens/agent-door-reviewed-revision-retained-autonomous-1440.png",
+      "sha256": "83f99abdd357056656213ea217f5abfce61c45475c5a91ad2887717ba6a8da8e"
+    },
+    {
+      "blob": "e4578b30159047df32be1147e78025ccf3871455",
+      "bytes": 274548,
+      "path": "screens/agent-door-reviewed-revision-retained-autonomous-390.png",
+      "sha256": "8b0decf3fe5fcd0ee08964d8832ee8fb132c5092c7b550d2f117bd341c1b8bbd"
+    },
+    {
+      "blob": "020c28ad17bfdc94d39990419706a57d2e2033e7",
+      "bytes": 377182,
+      "path": "screens/agent-door-reviewed-revision-retained-held-1440.png",
+      "sha256": "01f5733b966f781813eac78f92d7aa35b7077211cda6b5fc6b56abf319325b09"
+    },
+    {
+      "blob": "5d51dc04623958b00f0d00148928ad0cb08b8507",
+      "bytes": 272694,
+      "path": "screens/agent-door-reviewed-revision-retained-held-390.png",
+      "sha256": "2c6c54da39c9970b609ce0dd6193bb8a3ae8be15ba62e63e900e06cf873fa8e0"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f336",
+  "product_head": "b1c2c9339d533f66729c5b37e50eb5d8e2f773a6",
+  "ref": "refs/heads/evidence/sd-oncall-c-f336",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f336"
+}

@@ -1,0 +1,24 @@
+{
+  "save": {
+    "head": "b25d0bdd4beca42ec85337d3121856e6082e7e22",
+    "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+    "node": "24.19.0",
+    "exit": 0,
+    "summary": "Runtime agents completed (498.7s)",
+    "observations": [
+      "PROBE BASE-AGENT-003 4 update autonomous: completed resource link matches native rota revision 3, unchanged primary and backup rotations with two current holders, direct read, zero native changes or outbound requests",
+      "PROBE BASE-AGENT-003 4 update held: completed resource link matches native rota revision 3, unchanged primary and backup rotations with two current holders, separate saved read approval, zero native changes or outbound requests"
+    ]
+  },
+  "candidate": {
+    "head": "b1c2c9339d533f66729c5b37e50eb5d8e2f773a6",
+    "command": "CI=true WRANGLER_SEND_METRICS=false ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+    "node": "22.20.0",
+    "exit": 0,
+    "summary": "Runtime agents completed (484.0s)",
+    "observations": [
+      "PROBE BASE-AGENT-003 4 update autonomous: completed resource link matches native rota revision 3, unchanged primary and backup rotations with two current holders, direct read, zero native changes or outbound requests",
+      "PROBE BASE-AGENT-003 4 update held: completed resource link matches native rota revision 3, unchanged primary and backup rotations with two current holders, separate saved read approval, zero native changes or outbound requests"
+    ]
+  }
+}

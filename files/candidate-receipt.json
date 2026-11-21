@@ -1,0 +1,241 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f336",
+  "head": "b1c2c9339d533f66729c5b37e50eb5d8e2f773a6",
+  "save": "b25d0bdd4beca42ec85337d3121856e6082e7e22",
+  "base": "9e7d7cdc9a4b1fa53cbcd01ba4d0047b18cf523d",
+  "base_verify_id": 44953278792,
+  "base_run_site_id": 44953278752,
+  "scope": "BASE-AGENT-003 acceptance 4, reviewed name-only schedule update",
+  "publication_scan": {
+    "owner": "guarded lander",
+    "status": "pending"
+  },
+  "candidate_run_site": "pending guarded landing",
+  "verify": {
+    "conclusion": "failure",
+    "event": "push",
+    "head_branch": "cloud/sd-oncall-c-f336",
+    "head_sha": "b1c2c9339d533f66729c5b37e50eb5d8e2f773a6",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44960161568",
+    "id": 44960161568,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "verify_jobs": [
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "b1c2c9339d533f66729c5b37e50eb5d8e2f773a6",
+      "id": 137016983655,
+      "name": "plan",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Check the generated contract documents"
+      ],
+      "head_sha": "b1c2c9339d533f66729c5b37e50eb5d8e2f773a6",
+      "id": 137017073315,
+      "name": "contract-docs",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "b1c2c9339d533f66729c5b37e50eb5d8e2f773a6",
+      "id": 137017073342,
+      "name": "build",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "head_sha": "b1c2c9339d533f66729c5b37e50eb5d8e2f773a6",
+      "id": 137017074947,
+      "name": "light",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "b1c2c9339d533f66729c5b37e50eb5d8e2f773a6",
+      "id": 137017735279,
+      "name": "shards (activation)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "b1c2c9339d533f66729c5b37e50eb5d8e2f773a6",
+      "id": 137017735296,
+      "name": "shards (transfer)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "b1c2c9339d533f66729c5b37e50eb5d8e2f773a6",
+      "id": 137017735302,
+      "name": "shards (runtime)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "b1c2c9339d533f66729c5b37e50eb5d8e2f773a6",
+      "id": 137017735303,
+      "name": "shards (triage)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "b1c2c9339d533f66729c5b37e50eb5d8e2f773a6",
+      "id": 137017735305,
+      "name": "shards (intake)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "b1c2c9339d533f66729c5b37e50eb5d8e2f773a6",
+      "id": 137017735316,
+      "name": "shards (browser)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "b1c2c9339d533f66729c5b37e50eb5d8e2f773a6",
+      "id": 137017735328,
+      "name": "shards (changes)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "b1c2c9339d533f66729c5b37e50eb5d8e2f773a6",
+      "id": 137017735331,
+      "name": "shards (agents)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "b1c2c9339d533f66729c5b37e50eb5d8e2f773a6",
+      "id": 137017735356,
+      "name": "shards (hosted)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "b1c2c9339d533f66729c5b37e50eb5d8e2f773a6",
+      "id": 137020776317,
+      "name": "full-push-proof",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "head_sha": "b1c2c9339d533f66729c5b37e50eb5d8e2f773a6",
+      "id": 137020777490,
+      "name": "nightly-proof",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Require the selected coverage and its proof"
+      ],
+      "head_sha": "b1c2c9339d533f66729c5b37e50eb5d8e2f773a6",
+      "id": 137020796724,
+      "name": "verify",
+      "status": "completed"
+    }
+  ],
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/verify-ci.mjs --check-workflows",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "after_regeneration": true
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    }
+  ],
+  "browser": {
+    "command": "perl -e 'alarm 1200; exec @ARGV' -- node tests/agent-door-browser.mjs",
+    "node": "22.20.0",
+    "exit": 0,
+    "stdout": [
+      "PROBE BASE-AGENT-003 4 update autonomous: completed resource link matches native rota revision 3, unchanged primary and backup rotations with two current holders, direct read, zero native changes or outbound requests",
+      "PROBE BASE-AGENT-003 4 update held: completed resource link matches native rota revision 3, unchanged primary and backup rotations with two current holders, separate saved read approval, zero native changes or outbound requests",
+      "Browser proof reviewed-revision-retained-autonomous 1440: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof reviewed-revision-retained-autonomous 390: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof reviewed-revision-retained-held 1440: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof reviewed-revision-retained-held 390: fits=true serious/critical=0 undersized-controls=0"
+    ],
+    "screens": [
+      {
+        "file": "screens/agent-door-reviewed-revision-retained-autonomous-1440.png",
+        "dimensions": [
+          1440,
+          3571
+        ],
+        "sha256": "83f99abdd357056656213ea217f5abfce61c45475c5a91ad2887717ba6a8da8e"
+      },
+      {
+        "file": "screens/agent-door-reviewed-revision-retained-autonomous-390.png",
+        "dimensions": [
+          390,
+          3948
+        ],
+        "sha256": "8b0decf3fe5fcd0ee08964d8832ee8fb132c5092c7b550d2f117bd341c1b8bbd"
+      },
+      {
+        "file": "screens/agent-door-reviewed-revision-retained-held-1440.png",
+        "dimensions": [
+          1440,
+          3571
+        ],
+        "sha256": "01f5733b966f781813eac78f92d7aa35b7077211cda6b5fc6b56abf319325b09"
+      },
+      {
+        "file": "screens/agent-door-reviewed-revision-retained-held-390.png",
+        "dimensions": [
+          390,
+          3948
+        ],
+        "sha256": "2c6c54da39c9970b609ce0dd6193bb8a3ae8be15ba62e63e900e06cf873fa8e0"
+      }
+    ]
+  }
+}
