@@ -4,6 +4,7 @@ import assert from 'node:assert/strict'
 import {randomBytes,createHash} from 'node:crypto'
 import {localWorker,ownerDoor,durableSnapshot} from './worker.mjs'
 import {localPart,mail,recoveryRules} from './email-fixtures.mjs'
+import {alertTriageTimeFixture} from './triage-time-fixture.mjs'
 // Select whole independent journeys; the default still runs every group in order.
 const triagePart=process.env.ONCALL_TRIAGE_PART??'all';
 if(!['all','bulk','bounds','storm','reports'].includes(triagePart))throw Error(`Unknown triage journey: ${triagePart}`);
@@ -226,6 +227,45 @@ export async function triageBulkCompletion(){
   assert.deepEqual(pagingRecords(ok(await req('/api/paging/state'))),pagingBeforeClear);
   assert.deepEqual(await w.outboundRequests(),[]);
   console.log('PROBE OC-060 acceptance 1 HTTP: two alert-only records routed to the signed-in responder, then one cleared by bulk reassignment. Mine and the explicit responder filter keep one; Unassigned returns the cleared active item with null assignee and attributed history. Admission and paging custody unchanged, zero outbound requests.');
+  try {
+   const {query,times,recovered,coordinated,untouched}=await alertTriageTimeFixture({
+    call:async(path,data)=>ok(await req(path,data)),
+    admit:async(path,input,key,status)=>ok(await w.request(path,input,undefined,{authorization:'Bearer '+key}),status),
+    setTime:w.time,service,actor:setup.value.member,
+   });
+   const read=async filters=>ok(await w.request('/api/triage?'+new URLSearchParams({...query,...filters}),undefined,assignmentLogin.cookie));
+   const beforeReads=durableSnapshot(w),pagingBeforeReads=ok(await req('/api/paging/state'));
+   const workspaceRevision=(await state()).revision;
+   const check=async(filters,expected)=>{
+    const result=await read(filters);
+    assert.equal(result.total,expected.length);
+    assert.deepEqual(result.items.map(row=>row.id),expected.map(alert=>alert.id));
+    assert.equal(result.workspaceRevision,workspaceRevision);
+    return result;
+   };
+   const created=await check({sort:'created'},[untouched,coordinated,recovered]);
+   assert.deepEqual(created.items.map(row=>row.createdAt),[times.untouchedOpened,times.humanOpened,times.opened]);
+   await check({createdAfter:times.opened,createdBefore:times.untouchedOpened},[coordinated,recovered]);
+   await check({sort:'updated'},[coordinated,recovered,untouched]);
+   await check({sort:'updated',updatedAfter:times.recovered,updatedBefore:times.laterHuman},[recovered]);
+   await check({sort:'updated',updatedAfter:times.untouchedOpened,updatedBefore:times.recovered},[untouched]);
+   await check({sort:'updated',updatedAfter:times.laterHuman,updatedBefore:times.duplicate},[coordinated]);
+   await check({sort:'updated',updatedAfter:times.duplicate},[]);
+   let cursor;
+   for(const alert of [coordinated,recovered,untouched]){
+    const result=await read({sort:'updated',limit:'1',...(cursor?{cursor}:{})});
+    assert.equal(result.total,3);
+    assert.equal(result.workspaceRevision,workspaceRevision);
+    assert.deepEqual(result.items.map(row=>[row.id,row.revision]),[[alert.id,alert.revision??1]]);
+    cursor=result.nextCursor;
+    if(alert!==untouched)assert.ok(cursor);
+   }
+   assert.equal(cursor,null);
+   assert.deepEqual(ok(await req('/api/paging/state')),pagingBeforeReads);
+   assert.deepEqual(durableSnapshot(w),beforeReads,'chronology filters and cursors preserve all durable records and permanent audit');
+   assert.deepEqual(await w.outboundRequests(),[]);
+   console.log('PROBE OC-060 acceptance 1 HTTP chronology: protected responder triage returns later human action, older recovered generation, then untouched newer generation. Exact replay does not move the cutoff; inclusive lower and exclusive upper bounds, creation order, cursors and revisions pass. Durable records, audit and paging unchanged; zero outbound requests.');
+  } finally {await w.time(null);}
   const archive=ok(await req('/api/archive'));assert.ok(archive.triage.some(r=>r.id===merge.operationId));
   const checkpoint=ok(await req('/api/recovery/checkpoint'));
   const restored=await req('/api/recovery/restore',{mode:'replace',checkpoint});ok(restored);cookie=restored.cookie;assert.deepEqual((await state()).alerts,archive.alerts,'native restore retains every closed state, assignee, snooze record, revision and shared operation history');
@@ -714,6 +754,37 @@ try {
   ok(await req('/api/status',{action:'override',id:status.id,revision:status.revision,value:'major outage',reason:'This must roll back'}),503);
   w.sql('DROP TRIGGER injected_status_audit_failure');
   assert.deepEqual(ok(await req('/api/state')),priorStatus,'failed audit rolls back the complete override transaction');
+  const managerOverride={
+    action:'override',id:status.id,revision:status.revision,value:'major outage',reason:'Alternate gateway is unavailable',
+  };
+  ok(await w.request('/api/status',managerOverride,statusManagerCookie));
+  status=await business();
+  assert.deepEqual(
+    [status.revision,status.derived,status.override.value,status.override.reason,status.override.by],
+    [managerOverride.revision+1,'degraded',managerOverride.value,managerOverride.reason,statusManager.id],
+    'one override revision preserves derived status and retains the responder as its author',
+  );
+  const demoted=ok(await req('/api/command',{type:'member',id:statusManager.id,field:'role',from:'responder',to:'viewer'}));
+  assert.deepEqual([demoted.role,demoted.active],['viewer',true]);
+  const managerRead=async()=>ok(await w.request('/api/status',undefined,statusManagerCookie)).services.find(row=>row.id===status.id);
+  const viewerStatus=await managerRead();
+  assert.deepEqual([viewerStatus.communicationsOwner,viewerStatus.revision,viewerStatus.derived,viewerStatus.override],
+    [statusManager.id,status.revision,status.derived,status.override]);
+  const beforeStatusDenial=ok(await req('/api/state'));
+  const beforePagingDenial=ok(await req('/api/paging/state'));
+  const beforeRefusalAudit=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal');
+  ok(await w.request('/api/status',{...managerOverride,revision:status.revision,value:'operational',reason:'Attempt after demotion'},statusManagerCookie),403);
+  assert.deepEqual(await managerRead(),viewerStatus,'denial preserves the saved override and service revision');
+  assert.deepEqual(ok(await req('/api/state')),beforeStatusDenial);
+  assert.deepEqual(ok(await req('/api/paging/state')),beforePagingDenial);
+  const afterRefusalAudit=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal');
+  assert.deepEqual(afterRefusalAudit.slice(0,-1),beforeRefusalAudit);
+  const refusal=afterRefusalAudit.at(-1);
+  assert.equal(refusal.outcome,'refused');
+  assert.equal(refusal.detail,null);
+  for(const scope of ['workspace','paging','handoff'])assert.equal(refusal[scope+'_before'],refusal[scope+'_after']);
+  assert.deepEqual(await w.outboundRequests(),[],'status coordination attempts no outbound requests');
+  console.log('PASS OC-061 communications owner override: one attributed revision with derived status preserved; demotion keeps reads and refuses a valid override with unchanged status and paging custody');
   ok(await req('/api/status',{action:'override',id:status.id,revision:status.revision,value:null}));
   status=await business();assert.equal(status.override,null);
   console.log('OC-061 attributed override: derived value retained, explicit clear, permanent audit and audit-failure rollback');

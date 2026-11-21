@@ -9,13 +9,98 @@ import type { ImportMapping, SourceRecord, MappingResult } from '../modules/impo
 import { validateSchedule } from '../family/response-operations/schedules'
 import { mailbox, mapSchedule, type Mapped } from './rotations'
 import type { Vendor } from './source'
+import {pagerdutyLeaves} from './pagerduty-source'
 
-// A semantic adapter change must re-review unchanged saved source on catch-up.
+// Existing saved records keep their mapping version when review details change.
 export const MOVE_IN_MAPPING_VERSION='oncall-move-in-3'
 type MappingRecord=Pick<SourceRecord,'kind'|'sourceId'|'payload'|'location'>
 const userEmail=(vendor:Vendor,user:any)=>mailbox(vendor==='grafana'?user.email:user.email??user.username)
+// Parser bindings are private working metadata, never extra provider fields or
+// rotation rules. The original record and field pointers remain in custody.
+const withoutBindings=(value:any):any=>Array.isArray(value)?value.map(withoutBindings):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).filter(([key])=>!key.startsWith('_pd')).map(([key,child])=>[key,withoutBindings(child)])):value
+function payload(vendor:Vendor,kind:string,raw:any) {
+ const value=vendor==='pagerduty'?withoutBindings(raw):raw
+ if(vendor==='pagerduty'&&kind==='users') {
+  if(raw._pdContacts)value.contact_methods=raw._pdContacts.map(withoutBindings)
+  if(raw._pdNotifications)value.notification_rules=raw._pdNotifications.map(withoutBindings)
+ }
+ return mappingPayload(vendor,kind,value)
+}
+
+/** Field decisions live in the ordinary saved plan, alongside object decisions.
+ * Extra properties survive the shared kit unchanged; Business diagnostics also
+ * carry the full pointer and the disposition/reason/receiving-place sentence. */
+function fieldDecisions(record:MappingRecord,result:MappingResult,emails:Map<string,string>,schedule?:Mapped) {
+ const raw=record.payload as any,clean=withoutBindings(raw)
+ const base=record.location.pointer??''
+ const leaves=raw._pdFields?[...raw._pdFields.map((pointer:string)=>{
+  const suffix=pointer.slice(base.length),path=suffix?suffix.slice(1).split('/').map(part=>part.replaceAll('~1','/').replaceAll('~0','~')):[]
+  const original=path.length?path.reduce((value:any,key:string)=>value[key],raw):raw._pdRootEmpty?{}:clean
+  return {pointer,path,original}
+ }),...(raw._pdEnvelope??[]).map(([pointer,original]:any[])=>({pointer,path:null,original}))]:pagerdutyLeaves(clean,base)
+ const target=result.effects[0],held='Import journal',parent=raw._pdParent
+ // Use the selected rotation's native validity to find its original layer.
+ // A converted historical layer has a finite end, while the primary in a
+ // multi-layer conversion is open. A single converted layer may be finite.
+ const validity=schedule?.schedule
+ const primary=validity&&target&&Array.isArray(clean.schedule_layers)?clean.schedule_layers.findIndex((layer:any)=>
+  Date.parse(layer.start)===Date.parse(validity.validFrom)&&
+  (layer.end?Date.parse(layer.end):null)===(validity.validUntil?Date.parse(validity.validUntil):null)):undefined
+ return leaves.map((leaf:any)=>{
+  const path=leaf.path as string[]|null,field=path?.join('.')??'',first=path?.[0]
+  let disposition='retained-only',reason='No native mapping.',receiving=held
+  const mapped=(place:string,why='Paused; no access or send authority.')=>{disposition='mapped';receiving=place;reason=why}
+  if(path===null){reason='Export provenance only.'}
+  else if(result.rejection){disposition='refused';reason='Whole object refused; see its rejection.'}
+  else if(record.kind==='users'&&target) {
+   if(['id','name','email'].includes(first!))mapped(`Paused user.${first==='id'?'sourceId':first}`)
+  } else if(record.kind==='contact_methods'&&parent) {
+   const contact=pagerdutyContacts({contact_methods:[clean]}),number=contact.contacts[0]?.number
+   if(number&&['country_code','address'].includes(first!)){disposition='lossy';receiving=`Paused user ${emails.get(parent.id)??parent.id}.contacts`;reason='Country code and national digits form unverified E.164; incumbent verification, enabled state and two-route coverage do not transfer.'}
+   else reason=number?'Contact metadata/verification does not transfer.':'Contact cannot convert; see its parent person’s contact difference.'
+  } else if(record.kind==='overrides') {
+   if(['id','start','end'].includes(first!)||field==='user.id')mapped(`Paused schedule ${parent?.id??clean.schedule_id??clean._parent?.id??'named in the export'}.overrides`)
+  } else if(record.kind==='schedules'&&target) {
+   if(['id','name','time_zone'].includes(first!))mapped(`Paused schedule.${({id:'id',name:'name',time_zone:'timezone'} as Record<string,string>)[first!]}`)
+   else if(first==='schedule_layers'&&path) {
+    const [,index]=path,layerField=path.slice(2).join('.')
+    if(Number(index)===primary) {
+     if(['start','end','rotation_virtual_start','rotation_turn_length_seconds'].includes(layerField)||/^users\.\d+\.user\.id$/.test(layerField))
+      mapped('Paused schedule.primary / validity','The complete accepted layer is converted; no partial rotation or backup coverage is inferred.')
+    } else if(index!==undefined&&schedule?.history.length) {
+     const layer=clean.schedule_layers[Number(index)]
+     const historyReason='Ended layer history only. No rotation or member coverage is carried forward.'
+     const historyLabel=layer.name!=null?'name':layer.id!=null?'id':undefined
+     if(['start','end'].includes(layerField)||layerField===historyLabel)
+      mapped('Paused schedule history',historyReason)
+     else reason=historyReason
+    }
+   }
+   else if(first==='final_schedule')reason='Saved coverage comparison evidence, scoped only to the supplied window; no live delivery proof.'
+  } else if(record.kind==='escalation_policies'&&target) {
+   if(first==='id'||first==='name')mapped(`Paused policy.${first==='id'?'sourceId':'name'}`)
+   else if(/^escalation_rules\.\d+\.(?:escalation_delay_in_minutes|targets\.\d+\.id)$/.test(field)) {
+    mapped('Paused policy.steps')
+    if(leaf.original===0&&field.endsWith('escalation_delay_in_minutes')){disposition='lossy';reason='Immediate first notification becomes one minute in the paused policy; this is not equivalent.'}
+   }
+  } else if(record.kind==='integrations'&&target) {
+   if(['id','type'].includes(first!))mapped(`Inactive integration.${first==='id'?'sourceId':'kind'}`)
+   else if(field==='service.id')mapped('Inactive integration.serviceSource')
+   else if(target.value&&typeof target.value==='object'&&!Array.isArray(target.value)&&(target.value as any).emailSettings&&['email_incident_creation','email_filter_mode','email_parsing_fallback','email_parsers','email_filters'].includes(first!)) {
+    mapped('Inactive integration.emailSettings')
+    const difference=(result.unmapped??[]).find(note=>note.field===field||note.field===first||field.startsWith(note.field+'.'))
+    if(difference){disposition='lossy';reason=difference.reason}
+   }
+  }
+  if(disposition==='retained-only'&&path!==null) {
+   const difference=(result.unmapped??[]).find(note=>note.field===field||note.field===first||field.startsWith(note.field+'.'))
+   if(difference)reason=`Not converted; see “${difference.field}” difference.`
+  }
+  return {field:leaf.pointer,sourceId:record.sourceId,kind:record.kind,disposition,receiving,original:leaf.original,reason:`${disposition}: ${reason} Receiving place: ${receiving}.`}
+ })
+}
 export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:number):ImportMapping {
- source={records:source.records.map(row=>({...row,payload:mappingPayload(vendor,row.kind,row.payload)}))}
+ source={records:source.records.map(row=>({...row,payload:payload(vendor,row.kind,row.payload)}))}
  const emails=new Map<string,string>()
  for(const row of source.records.filter(r=>r.kind==='users')) {
   const user=row.payload as any
@@ -83,7 +168,7 @@ export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:numbe
  }
  const effect=(kind:string,id:string,value:any):MappingResult=>({effects:[{targetKind:kind,targetId:id,value:{...value,paused:true,paging:false,login:false}}]})
  const adapter:ImportMapping={version:MOVE_IN_MAPPING_VERSION,map(record){
-  const value=mappingPayload(vendor,record.kind,record.payload),label=value?.fullName??value?.name??value?.summary??value?.username??value?.email??record.sourceId
+  const value=payload(vendor,record.kind,record.payload),label=value?.fullName??value?.name??value?.summary??value?.username??value?.email??record.sourceId
   try {
    if(record.kind==='users') {
     if(vendor==='grafana'&&(typeof value?.id!=='string'||!value.id))throw Error('missing exported user ID')
@@ -120,11 +205,12 @@ export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:numbe
     return {...effect('integration',`${vendor}:${id}`,{sourceId:id,vendor,kind,provider,active:false,incumbentKey:'not supplied',...(vendor==='pagerduty'&&value._service?{serviceSource:{namespace:vendor,kind:'services',sourceId:String(value._service.id)}}:{})}),unmapped:[{field:'integration',reason:`Inactive ${kind} integration ${id}; incumbent key: not supplied. No endpoint or send authority is activated. Original settings and labels remain in the journal.`}]}
    }
    if(record.kind==='integration_actions'&&vendor==='opsgenie')return {effects:[],unmapped:[{field:'integration_actions',reason:'Saved actions are reviewed with their parent email integration; originals remain in import custody.'}]}
+   if(vendor==='pagerduty'&&['contact_methods','notification_rules'].includes(record.kind))return {effects:[],unmapped:[{field:record.kind,reason:record.kind==='contact_methods'?'Separate contact details are reviewed with their exported parent person. Only supported E.164 values become unverified paused contacts; no verification or delivery authority transfers.':'Notification rules stay source evidence only; recreate high/low urgency rules after verifying native destinations. No delivery is activated.'}]}
    if(record.kind==='schedules') {
     if(errors.has(record.sourceId))throw Error(errors.get(record.sourceId))
     const mapped=schedules.get(record.sourceId);if(!mapped)throw Error('missing rotation definitions')
     const comparison=equivalence.get(record.sourceId)
-    return {...effect('schedule',mapped.schedule.id,{schedule:mapped.schedule,sourceId:record.sourceId,...(comparison?{equivalence:comparison}:{}),...mapped.history.length?{history:mapped.history}:{}}),unmapped:mapped.unmapped}
+    return {...effect('schedule',mapped.schedule.id,{schedule:mapped.schedule,sourceId:record.sourceId,...(comparison?{equivalence:comparison}:{}),...mapped.history.length?{history:mapped.history}:{}}),unmapped:[...mapped.unmapped]}
    }
    if(record.kind==='timelines')return {effects:[],unmapped:[{field:'timeline',reason:'Retained final timeline is compared with every model/source boundary; no delivery is inferred.'}]}
    if(record.kind==='overrides') {
@@ -167,10 +253,11 @@ export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:numbe
   const result=adapter.map(record)
   if(['pagerduty','splunk','jsm','betterstack','grafana'].includes(vendor)) {
    const related=new Set<string>()
-   const visit=(value:unknown):void=>{if(typeof value==='string'){if(emails.has(value))related.add(emails.get(value)!);if(vendor==='pagerduty')for(const email of new Set(emails.values()))if(addressRanges(value,email).length)related.add(email)}else if(Array.isArray(value))value.forEach(visit);else if(value&&typeof value==='object')Object.values(value).forEach(visit)}
+   const visit=(value:unknown):void=>{if(typeof value==='string'){if(emails.has(value))related.add(emails.get(value)!);if(vendor==='pagerduty'&&value.includes('@'))for(const email of new Set(emails.values()))if(addressRanges(value,email).length)related.add(email)}else if(Array.isArray(value))value.forEach(visit);else if(value&&typeof value==='object')Object.values(value).forEach(visit)}
    visit(record.payload)
    if(related.size)(result.unmapped??=[]).push({field:'related-users',reason:`Retained source references: ${[...related].join(', ')}. No login or paging authority is granted.`})
   }
+  if(vendor==='pagerduty')(result.unmapped??=[]).push(...fieldDecisions(record,result,emails,record.kind==='schedules'?schedules.get(record.sourceId):undefined))
   return result
  }}
 }
