@@ -1,0 +1,2 @@
+PROBE OC-023 browser: Backstage dependency review, conflict choice, apply, lost-response Retry and reload -> rendered and HTTP state agree; screens captured at 1440 and 390
+PROBE OC-023 1: signed-in service directory matched protected names, links, environments and owners, including an Unassigned dependent service. Mixed-case name and environment queries, no match and clear passed at 1440. Tab and Enter opened the correct service at 1440 and 390. Records, revisions, permanent audit and paging matched before and after, with zero outbound requests.

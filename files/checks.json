@@ -1,0 +1,93 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f324",
+  "head_sha": "096838e61207530644e2a990296d218db4315f5c",
+  "base_sha": "d0a94b025d5ef864b77485a56c1474ae805c569e",
+  "observed_at_utc": "2026-11-21T16:04:00.868366+00:00",
+  "contract": {
+    "clause": "OC-023",
+    "before": "PARTIAL",
+    "after": "PARTIAL",
+    "advanced": "Searchable signed-in service names and environments supporting acceptance 1",
+    "counts": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "views_written": 0
+  },
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "node tests/member-coordination-browser.mjs",
+      "exit": 0,
+      "node": "22.20.0",
+      "browser": "system Chromium",
+      "assertions": "1440",
+      "keyboard_and_capture": [
+        1440,
+        390
+      ]
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git diff origin/main...HEAD --check",
+      "exit": 0
+    }
+  ],
+  "baseline_ci": {
+    "verify": 44916181661,
+    "run_site": 44916181647,
+    "conclusion": "success"
+  },
+  "candidate_ci": {
+    "conclusion": "success",
+    "head_sha": "096838e61207530644e2a990296d218db4315f5c",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44920531001",
+    "status": "completed",
+    "id": 44920531001,
+    "event": "push",
+    "name": "Verify",
+    "head_branch": "cloud/sd-oncall-c-f324"
+  },
+  "candidate_commits_checked": 1,
+  "coauthor_trailers": 0,
+  "guards_pending": [
+    "guarded landing",
+    "full-history publication scan",
+    "Run site on the landed SHA"
+  ],
+  "files": {
+    "REPORT.md": "b9351c4cc1474d219dcfc81500ff4b87674ab7c4b1aa75ad7acec6c59cca5db6",
+    "browser-proof.txt": "da275b84302a14ab1b97f83103a07ce1edef61c990629faf2e3fde94e88e8ce5",
+    "oc023-service-search-1440.png": "84abc82f5cace7273519e337f8c3dd08efab7e9cc6364334f54789c317ac8076",
+    "oc023-service-search-390.png": "832de3605517f8d20295ae28e547f6b5994a9626499ce5a0b852e404e97e6645"
+  }
+}
