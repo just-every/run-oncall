@@ -4,9 +4,11 @@ import { sourceRefusal, withdrawUpload } from './saved-file-refusals'
 import { Refusal } from './refusals'
 import { createImportDoorHandler, type ImportDoorSource } from '../modules/import-kit/src/door/index'
 import type { ImportMapping, ParsedRecord } from '../modules/import-kit/src/types'
+import type { CatchupMapping } from '../modules/import-kit/src/door/planning'
 import { ownerClaimConfig, type Bindings } from '../auth.server'
 import { mapping, MOVE_IN_MAPPING_VERSION } from './mapping'
 import { savedExportRecords, type Vendor } from './source'
+import { pagerdutyCatchupContent } from './pagerduty-source'
 import { targets } from './target'
 import { IMPORT_DOOR_KEY } from './door-key'
 import { auditIdentity } from '../audit-store'
@@ -25,16 +27,21 @@ export function importSource(name: string): ImportDoorSource | null {
  if (!Object.hasOwn(sources, name)) return null
  const vendor = name as Vendor, parsed: ParsedRecord[] = [], now = Date.now()
  let prepared: ImportMapping | undefined
+ const adapter: CatchupMapping = {
+  version: MOVE_IN_MAPPING_VERSION,
+  ...(vendor === 'pagerduty' ? { catchupContent: pagerdutyCatchupContent } : {}),
+  map(record) {
+   prepared ??= mapping(vendor, { records: parsed.map(item => ({ ...item, location: { artifact: 'saved-export', pointer: item.pointer } })) }, now)
+   return prepared.map(record)
+  },
+ }
  return {
   parse(value) {
    const records = savedExportRecords(vendor, value)
    parsed.push(...records)
    return records
   },
-  mapping: { version: MOVE_IN_MAPPING_VERSION, map(record) {
-   prepared ??= mapping(vendor, { records: parsed.map(item => ({ ...item, location: { artifact: 'saved-export', pointer: item.pointer } })) }, now)
-   return prepared.map(record)
-  } },
+  mapping: adapter,
  }
 }
 

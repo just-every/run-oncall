@@ -118,6 +118,8 @@ jobs:
     runs-on: ubuntu-24.04
     # Runtime: green Verify 42331781621 took 14m46s; 42215652178 and
     # 42198236844 hit 15m18s. Its 22m matrix budget leaves about 30% headroom.
+    # Run Activation independently of the Changes and Imports lanes so
+    # they no longer share one 15-minute job budget.
     timeout-minutes: ${{ matrix.timeout }}
     strategy:
       fail-fast: false
