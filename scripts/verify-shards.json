@@ -99,10 +99,11 @@
       "name": "runtime",
       "lanes": [
         "runtime",
-        "member-browser"
+        "member-browser",
+        "hosted"
       ],
       "browser": true,
-      "hosted": false,
+      "hosted": true,
       "timeout": 22
     },
     {
@@ -135,12 +136,11 @@
     {
       "name": "hosted",
       "lanes": [
-        "hosted",
         "browser-settings",
         "agent-browser"
       ],
       "browser": true,
-      "hosted": true,
+      "hosted": false,
       "timeout": 15
     },
     {

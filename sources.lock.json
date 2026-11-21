@@ -156,7 +156,7 @@
       "executable": false
     },
     "AGENTS.md": {
-      "sha256": "7c81e343168ae196006d89b509ba7d464de84e19030bc73eebf4ff4222378584",
+      "sha256": "9a40aa0a8e739f5095281a9b39e246c853b8759f5d6d50418f4dbc6f7ef25ab3",
       "executable": false
     },
     "base-copies.json": {
@@ -1672,7 +1672,7 @@
       "executable": false
     },
     "scripts/verify-shards.json": {
-      "sha256": "f047b8b430ccfe07c9d2ad5617717a5ff26449e3b2d7c9b1eafcbf46e64160b4",
+      "sha256": "26e03c113974af3d7a255807a9a35fddc8ab3d9bb8fa488e573bf88798b9ec32",
       "executable": false
     },
     "scripts/write-agent-surface.mjs": {
