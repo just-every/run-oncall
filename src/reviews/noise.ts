@@ -32,4 +32,5 @@ export function alertNoise(state: State, report: ResponseReport) {
   return {...noise, noisy: noise.noisy.map(({alertIds, ...row}) => row)};
 }
 
+export type AlertNoiseSummary = ReturnType<typeof alertNoise>;
 export type AlertNoise = ReturnType<typeof alertNoiseWithIds>;

@@ -1,7 +1,7 @@
 import type { State } from '../family/response-operations/domain.ts';
 import { coverageSpans, type Schedule } from '../family/response-operations/schedules.ts';
 import { firstAcknowledgement, type ResponseReport } from './report.ts';
-import type { AlertNoise } from './noise.ts';
+import type { AlertNoise, AlertNoiseSummary } from './noise.ts';
 
 export type Scheduling = {revision: number; schedules: Schedule[]};
 type Interval = [number, number];
@@ -78,4 +78,5 @@ export function coverageLoad(state: State, scheduling: Scheduling, report: Respo
     ]};
 }
 export type CoverageLoad = ReturnType<typeof coverageLoad>;
-export type ProjectedReport = ResponseReport & {load: CoverageLoad; noise: AlertNoise};
+export type ProjectedReport = ResponseReport & {load: CoverageLoad; noise: AlertNoiseSummary};
+export type ProjectedReportWithAlertIds = ProjectedReport & {noise: AlertNoise};

@@ -1271,12 +1271,14 @@ try{
 
  const nightWorker=await localWorker({}, {clock:true});
  try{
- const night=await nightResponseScenario(nightWorker),req=(path,data)=>nightWorker.request(path,data,night.cookie),nightReport=ok(await req('/api/reports/response?'+night.query));
+ const night=await nightResponseScenario(nightWorker),req=(path,data)=>nightWorker.request(path,data,night.cookie);
+ const alertReportUrl=params=>'/api/reports/response?'+params+'&include=alertIds';
+ const reportPath=alertReportUrl(night.query),nightReport=ok(await req(reportPath));
  assertNightResponse(nightReport,night);
  const shorter=new URLSearchParams(night.query);shorter.set('to',night.repeatAt);
- assert.deepEqual(ok(await req('/api/reports/response?'+shorter)).noise.noisy.flatMap(row=>row.alertIds),[night.alertIds[0]],'the generation triggered exactly at the end is excluded');
+ assert.deepEqual(ok(await req(alertReportUrl(shorter))).noise.noisy.flatMap(row=>row.alertIds),[night.alertIds[0]],'the generation triggered exactly at the end is excluded');
  const allServices=new URLSearchParams(night.query);allServices.delete('service');
- const allNoise=ok(await req('/api/reports/response?'+allServices)).noise;
+ const allNoise=ok(await req(alertReportUrl(allServices))).noise;
  assert.deepEqual(allNoise.noisy.find(row=>row.service!==night.service).alertIds,[night.otherAlertId],'the same key in another service has its own group');
  const coverageAt=async at=>ok(await req('/api/schedules/'+night.service+'/now-next?at='+at)).now;
  const nightCoverage=await coverageAt('2030-10-29T04:05:00.000Z'),reliefCoverage=await coverageAt('2030-10-29T08:05:00.000Z'),outsideCoverage=await coverageAt('2030-10-29T10:15:00.000Z');
@@ -1285,13 +1287,12 @@ try{
  assert.deepEqual([reliefCoverage.primary,reliefCoverage.windows[0].start,reliefCoverage.windows[0].end],[night.relief.id,'2030-10-29T08:00:00.000Z','2030-10-29T10:00:00.000Z']);
  assert.deepEqual([outsideCoverage.primary,outsideCoverage.backup],[null,null]);
  const frozenNight=new URLSearchParams(night.query);frozenNight.set('revision',String(nightReport.revision));frozenNight.set('schedulingRevision',String(nightReport.load.schedulingRevision));
- assert.deepEqual(ok(await req('/api/reports/response?'+frozenNight)),nightReport,'API preserves the exact frozen observation and both revisions');
+ assert.deepEqual(ok(await req(alertReportUrl(frozenNight))),nightReport,'API preserves the exact frozen observation and both revisions');
  const nightCsv=responseCsvRows(ok(await req('/api/reports/response.csv?'+frozenNight))),nightColumn=name=>nightCsv[0].indexOf(name);
  const lateCsv=nightCsv.find(row=>row[nightColumn('incidentId')]===night.late.id);
  assert.deepEqual(['mtta.seconds','mtta.sourceAt','mtta.sourceEntryId','cohortCount','cohortFrom','cohortTo'].map(name=>lateCsv[nightColumn(name)]),['5700',night.acknowledgement.at,night.acknowledgement.id,'5','2030-10-29T02:00:00.000Z',night.observed]);
  const nightLoad=nightCsv.find(row=>row[0]==='responder-load'&&row[nightColumn('loadSubjectId')]===night.night.id);
  assert.deepEqual(['scheduledPrimarySeconds','loadAcknowledgements','acknowledgementsOutsideCoverage','acknowledgementShare','primaryHourShare','loadToCoverage'].map(name=>nightLoad[nightColumn(name)]),['21600','2','1',String(2/3),'0.75',String((2/3)/(3/4))]);
- const reportPath='/api/reports/response?'+night.query;
  assert.deepEqual(ok(await nightWorker.request(reportPath,undefined,night.night.cookie)),nightReport);
  await night.req('/api/command',{type:'member',id:night.night.id,role:'responder',active:false});
  for(const path of [reportPath,'/api/state']){
