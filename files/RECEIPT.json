@@ -1,0 +1,145 @@
+{
+  "tag": "sd-oncall-c-f334",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f334",
+  "main_at_integration": "9e7d7cdc9a4b1fa53cbcd01ba4d0047b18cf523d",
+  "save_head": "e2c8477eb270546b6535f4a1154dacad19102d40",
+  "product_head": "c7ef42ce5737a736503872d5ce98ff16ddb93211",
+  "product_push_at": "2026-11-21T23:01:10+00:00",
+  "counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "clause": {
+    "id": "OC-025",
+    "status": "PARTIAL",
+    "scope": "Acceptance 1 web boundary for named substitute with required administrator approval"
+  },
+  "local": {
+    "node": "v24.19.0",
+    "pnpm": "10.12.4",
+    "chromium": "Chromium 154.0.8037.57 built on Debian GNU/Linux 13 (trixie)",
+    "assertion_width": 1440,
+    "capture_widths": [
+      1440,
+      390
+    ],
+    "checks": [
+      {
+        "name": "Worker build",
+        "command": "cloud_run npx -y @runeditrun/rer build",
+        "exit": 0
+      },
+      {
+        "name": "Typecheck",
+        "command": "pnpm typecheck",
+        "exit": 0
+      },
+      {
+        "name": "First-party check",
+        "command": "pnpm exec rer check --profile first-party",
+        "exit": 0
+      },
+      {
+        "name": "Core browser shard",
+        "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_PRODUCT_PART=core node tests/product-browser.mjs",
+        "exit": 0
+      },
+      {
+        "name": "Activation",
+        "command": "node tests/activation.mjs",
+        "exit": 0
+      },
+      {
+        "name": "Contract views write",
+        "command": "node src/base/contract-docs.mjs write",
+        "exit": 0
+      },
+      {
+        "name": "Contract views check",
+        "command": "node src/base/contract-docs.mjs check",
+        "exit": 0
+      },
+      {
+        "name": "Source lock write",
+        "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+        "exit": 0
+      },
+      {
+        "name": "Source lock check",
+        "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+        "exit": 0
+      }
+    ],
+    "views_generated": 0,
+    "migration_ledger": "No migration changed",
+    "screenshots": [
+      {
+        "file": "OC-025-approval-accepted-1440.png",
+        "sha256": "0171322725245287361467cfe2983f26afcaa0287a12d6bfab64e9697377c2cb"
+      },
+      {
+        "file": "OC-025-approval-accepted-390.png",
+        "sha256": "f01bddead3ad197d168ed3a2d2f72967e8e5834d674fb0adb78f14b5338ea29d"
+      },
+      {
+        "file": "OC-025-approval-recorded-1440.png",
+        "sha256": "24baf097f19e9dcafaaefb549508098efa7591df93ffad17ac9826364042dcd5"
+      },
+      {
+        "file": "OC-025-approval-recorded-390.png",
+        "sha256": "e0e0c309e83a9d50eef85a8537088f92ca05c24af65a81dec844f4400bfd0902"
+      },
+      {
+        "file": "OC-025-approval-required-1440.png",
+        "sha256": "7b710bbce74a93afeadc42495d9262d356be66caf026718d712f120e3cd054aa"
+      },
+      {
+        "file": "OC-025-approval-required-390.png",
+        "sha256": "4707c00a1927742c8fbd2e197b6ce02445f114d888454668def66d7b97374603"
+      },
+      {
+        "file": "OC-025-overdue-substitute-1440.png",
+        "sha256": "6b2b19d3fd7fd944fe21d7cee54bbf9d5582569b89d52e0c4d99a41f7cfd237b"
+      },
+      {
+        "file": "OC-025-overdue-substitute-390.png",
+        "sha256": "47f10f3e29da76953e546fca0ed0d64a703b0f6eb8e16922488276b3e52df7cd"
+      }
+    ],
+    "observed_output": [
+      "PROBE OC-025 1: named substitute sees Decline before approval; early acceptance returns 403 with request, assignments and paging unchanged; administrator approval enables acceptance after reload, with one attributed decision, one effective primary override, distinct backup and zero outbound requests.",
+      "PASS OC-025 overdue browser: pending actions observed for requester, substitute and admin; exact-start reload shows overdue and durable pending, only requester can cancel, cancelled state visible; 1440 assertions and 1440 and 390 captures",
+      "PASS OC-025 browser 1440: band-selected swap, independent substitute acceptance after approval, effective override, autosaved approval/reminder, no-timer label, one-time feed dismissal, immediate revoke, recorded obligations, axe and overflow",
+      "Product browser part completed: core",
+      "PASS OC-025 own-shifts feeds: the same two feeds transfer exactly the accepted primary interval",
+      "PASS OC-025 secondary service feed: bounded UTC coverage before and after reviewed override, unrelated rota and member data excluded, immediate 404 after revocation, assignments and paging retained, zero outbound requests",
+      "PROBE OC-025 1: pending to overdue at the requested start with durable pending; late approve, accept and decline return 409, substitute cannot cancel, requester cancellation commits once with attributed audit, coverage and paging records unchanged, zero outbound",
+      "PASS OC-025 public schedule coordination: holder/substitute authority, default admin and none approval, racing acceptance, one effective override, audit rollback, recorded not-deliverable notices, durable reminder settings/due label, three digest-only feed scopes, 20 cap, immediate revocation and unchanged history, strict inactive recovery and overdue cancellation. Paging OFF.",
+      "Activation passed: 41 requirement flow groups"
+    ]
+  },
+  "verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "c7ef42ce5737a736503872d5ce98ff16ddb93211",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44959674886",
+    "id": 44959674886,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "main_site": {
+    "head_sha": "9e7d7cdc9a4b1fa53cbcd01ba4d0047b18cf523d",
+    "id": 44953278752,
+    "event": "push",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "landing": "Pending fleet publication scan, guarded landing and candidate main Run site"
+}
