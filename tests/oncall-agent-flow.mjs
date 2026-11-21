@@ -10,7 +10,7 @@ import {declareFromAlertParity,acknowledgeParity,resolutionParity,recoveredResol
 import {manualPageClassification,deadlineClassification} from './oncall-agent-live.mjs';
 import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
-import {scheduleReplay, staleOverrideRevision} from './oncall-agent-schedule-replay.mjs';
+import {scheduleReplay, staleOverrideRevision, staleReviewedScheduleRevision} from './oncall-agent-schedule-replay.mjs';
 import {teamReplay} from './oncall-agent-team-replay.mjs';
 import {staleReassignmentNativeRevision} from './oncall-agent-incident-revisions.mjs';
 import {staleScribeExpectedRevision} from './oncall-agent-role-revisions.mjs';
@@ -1505,7 +1505,8 @@ try{
  await scheduleReplay(runtime);
  await staleOverrideRevision(runtime);
  await staleOverrideRevision(runtime, {optionalExpectedRevision: true});
- await (await import('./oncall-agent-schedule-replay.mjs')).staleReviewedScheduleRevision(runtime);
+ await staleReviewedScheduleRevision(runtime);
+ await staleReviewedScheduleRevision(runtime, {optionalExpectedRevision: true});
  await eraseReplay(runtime);
  await eraseClasses(runtime);
  await staleReassignmentNativeRevision(runtime);

@@ -65,9 +65,9 @@ export function staleOverrideRevision(runtime, {optionalExpectedRevision = false
   return staleScheduleRevision(runtime, 'override', optionalExpectedRevision);
 }
 
-/** A real review becomes stale after an independent person edits the same rota. */
-export function staleReviewedScheduleRevision(runtime) {
-  return staleScheduleRevision(runtime, 'update', false);
+/** A signed-in rota edit makes either the original review or only the optional revision stale. */
+export function staleReviewedScheduleRevision(runtime, {optionalExpectedRevision = false} = {}) {
+  return staleScheduleRevision(runtime, 'update', optionalExpectedRevision);
 }
 
 async function staleScheduleRevision(runtime, operation, optionalExpectedRevision) {
@@ -79,7 +79,7 @@ async function staleScheduleRevision(runtime, operation, optionalExpectedRevisio
     return response.json();
   };
   const name = 'oncall.schedules.' + operation;
-  const fixture = reviewed ? ' reviewed' : optionalExpectedRevision ? ' optional' : '';
+  const fixture = (reviewed ? ' reviewed' : '') + (optionalExpectedRevision ? ' optional' : '');
   const credential = 'synthetic-oncall-' + randomUUID();
   const client = await read('/api/automation/clients', {
     name: 'Scoped rota revision client' + fixture, key: credential, services: ['agent-service'],
@@ -113,7 +113,9 @@ async function staleScheduleRevision(runtime, operation, optionalExpectedRevisio
     return details;
   };
 
-  const editor = reviewed ? await runtime.memberSession('Independent rota editor', 'admin') : null;
+  const editor = reviewed
+    ? await runtime.memberSession(optionalExpectedRevision ? 'Optional revision rota editor' : 'Independent rota editor', 'admin')
+    : null;
   const reviewWithAgent = async (rota, schedule, from, to) => {
     const answer = await tool('oncall.schedules.review', {id: rota.id, revision: rota.revision, schedule, from, to}, {}, credential);
     assert.equal(answer.status, 200);
@@ -129,17 +131,20 @@ async function staleScheduleRevision(runtime, operation, optionalExpectedRevisio
     return review;
   };
 
+  const adoptPolicy = async policy => {
+    const response = await adopt(policy);
+    assert.equal(response.status, 200);
+    await response.body?.cancel();
+  };
+
   const retained = [];
   for (const mode of ['autonomous', 'held']) {
     const policy = autonomousPolicy();
     if (mode === 'held') {
       policy.rules.unshift({id: 'rota-participant-approval', class: 'sensitive', do: 'approval', approver: ['sponsor'], wait: 'PT1H'});
     }
-    // Let the client obtain the original read-only digest before the held
-    // policy requires approval for any result with participant details.
-    const adoption = await adopt(reviewed && mode === 'held' ? autonomousPolicy() : policy);
-    assert.equal(adoption.status, 200);
-    await adoption.body?.cancel();
+    // Obtain the digest before the held policy requires approval for participant details.
+    await adoptPolicy(reviewed && mode === 'held' ? autonomousPolicy() : policy);
 
     const rota = await read('/api/paging/schedules', {
       ...source, id: randomUUID(), name: 'Payments coordination rota ' + mode + fixture, revision: 0,
@@ -155,23 +160,22 @@ async function staleScheduleRevision(runtime, operation, optionalExpectedRevisio
     };
     const path = '/api/schedules/' + rota.id;
     const proposedName = 'Payments re-reviewed rota ' + mode;
-    const proposal = reviewed ? {...rota, name: proposedName} : null;
-    const originalReview = reviewed ? await reviewWithAgent(rota, proposal, from, to) : null;
-    if (originalReview && mode === 'held') {
-      const hold = await adopt(policy);
-      assert.equal(hold.status, 200);
-      await hold.body?.cancel();
-    }
+    const staleProposal = reviewed && !optionalExpectedRevision ? {...rota, name: proposedName} : null;
+    const originalReview = staleProposal ? await reviewWithAgent(rota, staleProposal, from, to) : null;
+    if (originalReview && mode === 'held') await adoptPolicy(policy);
     const edit = {schedule: {...rota, name: 'Payments retained rota ' + mode + fixture}, from, to};
     const native = (url, input) => read(url, input, 200, editor?.http ?? http);
     const review = await native(path + '/review', edit);
     const edited = (await native(path + '/apply', {...edit, digest: review.digest, confirmed: true})).schedule;
     assert.equal(edited.name, edit.schedule.name);
     assert.equal(edited.revision, rota.revision + 1);
+    const proposal = staleProposal ?? (reviewed ? {...edited, name: proposedName} : null);
+    const proposalReview = originalReview ?? (proposal ? await reviewWithAgent(edited, proposal, from, to) : null);
+    if (proposalReview && optionalExpectedRevision && mode === 'held') await adoptPolicy(policy);
     const input = {
       id: rota.id, revision: optionalExpectedRevision ? edited.revision : rota.revision,
       idempotency_key: randomUUID(),
-      ...(originalReview ? {schedule: proposal, from, to, digest: originalReview.digest} : {override}),
+      ...(proposalReview ? {schedule: proposal, from, to, digest: proposalReview.digest} : {override}),
       ...(optionalExpectedRevision ? {expected_revision: rota.revision} : {}),
     };
     assert.deepEqual(edited.overrides, []);
@@ -181,6 +185,9 @@ async function staleScheduleRevision(runtime, operation, optionalExpectedRevisio
     const before = await snapshot();
     assert.ok(before.records.agent_door_calls.some(row => row.outcome), 'Compare populated original call and outcome custody');
     assert.ok(before.records.agent_door_approvals.length, 'Compare populated approval custody');
+    if (reviewed && optionalExpectedRevision) {
+      assert.ok(before.records.agent_door_reviews.length, 'Compare populated review custody');
+    }
     assert.ok(before.records.oc_schedule_records.some(row => JSON.parse(row.data).kind === 'notice'), 'Compare retained schedule notices');
     const beforeAudit = await audit();
 
@@ -190,7 +197,11 @@ async function staleScheduleRevision(runtime, operation, optionalExpectedRevisio
     const hiddenInput = optionalExpectedRevision
       ? {...input, revision: foreign.revision, expected_revision: foreign.revision - 1}
       : {...input, revision: 0};
-    if (reviewed) hiddenInput.schedule = {...proposal, id: foreign.id, service: foreign.service, revision: 0};
+    if (reviewed) {
+      hiddenInput.schedule = optionalExpectedRevision
+        ? {...foreign, name: proposedName}
+        : {...proposal, id: foreign.id, service: foreign.service, revision: 0};
+    }
     const scopedOut = await call({...hiddenInput, id: foreign.id, idempotency_key: randomUUID()});
     const absentId = randomUUID();
     const absent = await call({...hiddenInput, id: absentId, idempotency_key: randomUUID(),
@@ -211,7 +222,7 @@ async function staleScheduleRevision(runtime, operation, optionalExpectedRevisio
 
     const correctedRevision = optionalExpectedRevision ? 'expected_revision' : 'revision';
     const fresh = {...input, [correctedRevision]: stale.current_revision, idempotency_key: randomUUID()};
-    if (reviewed) {
+    if (originalReview) {
       const schedule = {...edited, revision: stale.current_revision, name: proposedName};
       const freshReview = await native(path + '/review', {schedule, from, to});
       assert.equal(freshReview.revision, stale.current_revision);
@@ -323,6 +334,7 @@ async function staleScheduleRevision(runtime, operation, optionalExpectedRevisio
     assert.deepEqual(await snapshot(), once, 'Completed retrieval creates no additional effect, approval, review or call');
     assert.deepEqual(await runtime.outboundRequests(), []);
     console.log('PROBE BASE-AGENT-012 4 ' + mode + ': ' + operation + ' native revision ' + input.revision +
+      (reviewed && optionalExpectedRevision ? ', current proposal revision ' + input.schedule.revision : '') +
       (optionalExpectedRevision ? ', stale expected_revision ' + input.expected_revision : ', no expected_revision') +
       ' -> revision_conflict, current_revision ' + stale.current_revision + ' in metadata and text; scoped-out and absent indistinguishable; fresh revision -> one native ' + operation + ' and audit, ' +
       (mode === 'held' ? 'one exact sponsor approval' : 'autonomous') + '; replay unchanged; zero outbound requests');
