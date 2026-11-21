@@ -53,6 +53,7 @@ export function AppShell() {
   const stakeholder = actor.role === 'stakeholder';
   if (!s && !stakeholder) return <main className="access"><h1>Oncall</h1><p role="alert">{w.error || 'Workspace could not be loaded'}</p><button onClick={() => w.refresh().catch(error => w.setError(error.message))}>Retry</button></main>;
   const daily = dailyNavigation(s, stakeholder);
+  const settingsLinks = settingsNavigation.filter(item => actor.role !== 'viewer' || !['team', 'routing', 'move-in', 'archive'].includes(item.id));
   const signOut = async () => {
     setSigningOut(true); w.setError('');
     try {
@@ -74,7 +75,7 @@ export function AppShell() {
     <aside className="sidebar shell-rail">
       <div className="installation-brand">{brand}{installation && <span className="installation-name">{installation}</span>}</div>
       {settings && !stakeholder && <a className="nav settings-back" href="/on-call">‹ Oncall</a>}
-      <nav className="navigation" aria-label={settings && !stakeholder ? 'Settings' : 'Workspace'}>{links(settings && !stakeholder ? settingsNavigation : daily)}</nav>
+      <nav className="navigation" aria-label={settings && !stakeholder ? 'Settings' : 'Workspace'}>{links(settings && !stakeholder ? settingsLinks : daily)}</nav>
       <div className="rail-foot">{!settings && !stakeholder && links([settingsItem])}{owner()}</div>
     </aside>
     <div className="mobile-bar">
@@ -85,7 +86,7 @@ export function AppShell() {
       <div className="sheet-heading"><span>{sheetSettings ? 'Settings' : 'Menu'}</span><button onClick={closeSheet}>Close menu</button></div>
       {sheetSettings ? <>
         <button className="nav settings-back" onClick={() => setSheetSettings(false)}>‹ Oncall</button>
-        <nav className="navigation" aria-label="Settings">{links(settingsNavigation, true)}</nav>
+        <nav className="navigation" aria-label="Settings">{links(settingsLinks, true)}</nav>
       </> : <>
         {owner()}
         <nav className="navigation" aria-label="Workspace">{links(daily, true)}</nav>

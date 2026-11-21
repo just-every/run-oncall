@@ -241,13 +241,14 @@ export async function scheduleCoordination(){
      ...[owner.value.member,substitute,outsider,viewer].flatMap(member=>[member.id,member.name])
     ])assert.ok(!unfolded.includes(forbidden),'service feed exposes neither unrelated rotas nor raw member or capability data');
     const events=calendarEvents(feed.value);
-    const expected=windows.flatMap((window,index)=>['primary','backup'].map(role=>({
-     DTSTART:calendarDate(window.at),DTEND:calendarDate(windows[index+1]?.at??to),
-     SUMMARY:shared.name+' / '+role+': '+(window[role]?'Responder':'Coverage gap')
-    })));
-    assert.deepEqual(events.map(({DTSTART,DTEND,SUMMARY})=>({DTSTART,DTEND,SUMMARY})),expected,'only the shared rota matches the protected UTC coverage intervals');
-    assert.equal(events[0].DTSTART,calendarDate(from));
-    assert.equal(events.at(-1).DTEND,calendarDate(to));
+    for(const [index,window] of windows.entries())for(const role of ['primary','backup']){
+     const start=calendarDate(window.at),end=calendarDate(windows[index+1]?.at??to);
+     const active=events.filter(event=>event.SUMMARY.startsWith(shared.name+' / '+role+':')&&event.DTSTART<end&&event.DTEND>start);
+     assert.equal(active.length,1,'exactly one calendar slot covers each resolved role interval');
+     assert.ok(active[0].DTSTART<=start&&active[0].DTEND>=end,'complete slots contain the resolved UTC interval');
+     assert.equal(active[0].SUMMARY,shared.name+' / '+role+': '+(window[role]?'Responder':'Coverage gap'));
+    }
+    assert.ok(events.every(event=>event.SUMMARY.startsWith(shared.name+' / ')&&event.DTSTART<calendarDate(to)&&event.DTEND>calendarDate(from)),'only the shared rota slots intersecting the query are exported');
     assert.deepEqual(await paging(),before,'a feed read preserves the paging snapshot');
     return {windows,events};
    };
@@ -630,14 +631,16 @@ try {
  const checkCalendar=async(response,from,to)=>{
   ok(response);assert.equal(response.headers.get('cache-control'),'private, no-store')
   const events=calendarEvents(response.value),windows=ok(await req('/api/paging/preview',{scheduleId:'daily',from,to})),members=ok(await req('/api/state')).members
-  const expected=windows.flatMap((window,index)=>['primary','backup'].map(role=>({
-   DTSTART:calendarDate(window.at),DTEND:calendarDate(windows[index+1]?.at??to),
-   SUMMARY:'Daily hand-off / '+role+': '+(window[role]?members.find(member=>member.id===window[role]).name:'Coverage gap')
-  })))
-  assert.deepEqual(events.map(({DTSTART,DTEND,SUMMARY})=>({DTSTART,DTEND,SUMMARY})),expected,'both roles, overrides and gaps use the resolved UTC intervals')
+  for(const [index,window] of windows.entries())for(const role of ['primary','backup']){
+   const start=calendarDate(window.at),end=calendarDate(windows[index+1]?.at??to)
+   const active=events.filter(event=>event.SUMMARY.startsWith('Daily hand-off / '+role+':')&&event.DTSTART<end&&event.DTEND>start)
+   assert.equal(active.length,1,'exactly one calendar slot covers each resolved role interval')
+   assert.ok(active[0].DTSTART<=start&&active[0].DTEND>=end,'complete slots contain the resolved UTC interval')
+   assert.equal(active[0].SUMMARY,'Daily hand-off / '+role+': '+(window[role]?members.find(member=>member.id===window[role]).name:'Coverage gap'))
+  }
+  assert.ok(events.every(event=>event.DTSTART<calendarDate(to)&&event.DTEND>calendarDate(from)),'only slots intersecting the query are exported')
   assert.equal(new Set(events.map(event=>event.UID)).size,events.length,'primary and backup remain distinct calendar events')
   assert.ok(events.every(event=>event.DTSTAMP===calendarDate(from)))
-  assert.equal(events[0].DTSTART,calendarDate(from));assert.equal(events.at(-1).DTEND,calendarDate(to))
   return events
  }
  const calendarRecords=durableSnapshot(w)
@@ -645,6 +648,10 @@ try {
  const defaultEvents=await checkCalendar(await req(calendarPath),calendarFrom,calendarFrom+7*86400000)
  assert.deepEqual(defaultEvents.slice(0,2).map(event=>event.SUMMARY),['Daily hand-off / primary: Alice','Daily hand-off / backup: Bob'])
  const overrideEvents=await checkCalendar(ics,calendarFrom,calendarTo)
+ const pollFrom=calendarFrom+37*60000,pollTo=calendarTo-53*60000
+ const polled=await checkCalendar(await req(calendarPath+'?from='+new Date(pollFrom).toISOString()+'&to='+new Date(pollTo).toISOString()),pollFrom,pollTo)
+ const slots=events=>events.map(({UID,DTSTART,DTEND,SUMMARY})=>({UID,DTSTART,DTEND,SUMMARY}))
+ assert.deepEqual(slots(polled),slots(overrideEvents),'polling partway through the same slots preserves their UID and full UTC boundaries')
  assert.ok(overrideEvents.some(event=>event.SUMMARY==='Daily hand-off / primary: Alice'&&event.DTSTART==='20260308T130000Z'&&event.DTEND==='20260308T150000Z'))
  assert.ok(overrideEvents.some(event=>event.SUMMARY==='Daily hand-off / backup: Coverage gap'&&event.DTSTART==='20260308T130000Z'&&event.DESCRIPTION.includes('same member')))
  assert.ok(overrideEvents.some(event=>event.SUMMARY==='Daily hand-off / backup: Alice'&&event.DTSTART==='20260308T150000Z'))

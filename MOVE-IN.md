@@ -2,6 +2,10 @@
 
 Oncall reads saved files only. Keep your existing pager authoritative. These test fixtures follow documented response shapes and contain invented test people; they are not customer exports.
 
+To try Review without a provider account, download the [Opsgenie sample export](public/move-in/opsgenie-sample.json) or [PagerDuty sample export](public/move-in/pagerduty-sample.json). The same downloads are available under **How to export from…** in Move in. Choose **Other: from a file**, select the matching **File source**, and upload the sample under **Export JSON**. Both include supported daily coverage and unsupported settings to inspect. Review contacts no provider and creates no live coverage; importing and making a schedule live remain separate, explicit actions. These files are published from the existing synthetic import fixtures by `scripts/build-exporter.mjs`.
+
+Sample download guidance: Codex, 18 November 2026.
+
 ## Obtain the input
 
 In **Settings → Move in**, choose **PagerDuty** or **Opsgenie** to read schedules in the app. PagerDuty uses the installation’s optional OAuth app or a read-only key; Opsgenie uses a read-only key. Review writes no imported objects, and Import paused asks once. The app and generated exporter share `src/move-in/collect/` and read the same pages. The private fallback is under **No key? Use the exporter on your computer**, then **How to export from…**. Download **oncall-export.mjs** and save it in Downloads with that exact name, without a `.txt` suffix. The panel explains how to create a read-only provider key and run the tool; the same steps and official references are in [Save your export with the downloadable tool](docs/move-in.md#save-your-export-with-the-downloadable-tool). Use the Oncall installer’s `rer` command in a macOS, Linux or WSL terminal with internet access to your provider. It supplies its own Node.js runtime; no separate Node installation is needed. No npm packages, API client or manual JSON assembly are needed. Calendar and CSV downloads do not contain the required rotation settings.
