@@ -8,6 +8,7 @@ import {useEffect,useMemo, useRef, useState} from 'react';
 import {FailureLine, useActionFailure} from '../../app/FailureLine';
 import {request, HttpFailure, InterruptedTransport} from '../../useWorkspace';
 import {ReviewedChange} from '../../schedule-coverage/ReviewedChange';
+import {RotaStartTime} from '../time';
 import type {ScheduleReview} from '../../schedule-coverage/review';
 import type {Schedule} from '../../family/response-operations/schedules';
 import type {Member, State} from '../../family/response-operations/domain';
@@ -89,6 +90,7 @@ export function RotaSteps({state, actor, schedule, service = '', refresh}: {stat
     {canEdit ? <div className="oc-step-layout"><div>{!ptoOnly&&<nav className="oc-step-nav" aria-label="Rota steps">{steps.map((label, index) => <button type="button" key={label} aria-current={step === index ? 'step' : undefined} disabled={index > step} onClick={() => {setStep(index);setReview(null);}}><span>{index + 1}</span>{label}</button>)}</nav>}
       <ValidationForm ref={form} className="oc-card oc-step-card" onSubmit={event => {event.preventDefault();if(step < 3) setStep(step + 1);else void finish();}}>
         {!ptoOnly&&(step === 0 ? <StepService {...content}/> : step === 1 ? <StepPeople {...content}/> : step === 2 ? <StepHandover {...content}/> : <StepCheck {...content} endError={validation.error?.field === 'ends' ? validation.error.message : undefined}/>)}
+        {step===3&&!ptoOnly&&proposed&&openedAt<Date.parse(proposed.validFrom)&&<p>This rota starts <RotaStartTime at={proposed.validFrom} zone={proposed.timezone} asOf={openedAt}/>.</p>}
         {step===3&&<><RotaField label={<>Coverage review from (UTC)</>}><input type="datetime-local" required value={Number.isFinite(evaluatedFrom)?new Date(evaluatedFrom).toISOString().slice(0,16):''} onChange={e=>{setRangeFrom(e.target.value);setReview(null);setICSInput(null);}}/></RotaField><RotaField label={<>Coverage review elapsed days</>}><input type="number" min={1} max={366} value={days} onChange={e=>{setDays(Number(e.target.value));setReview(null);}}/></RotaField><CoverageRules draft={draft} update={update} state={state} admin={actor.role==='admin'} actor={actor} ptoOnly={ptoOnly} days={days} from={evaluatedFrom} onICSReview={(value,input)=>{setReview(value);setICSInput(input);}}/></>}
         {schedule && schedule.revision !== draft.revision && <div className="oc-draft-conflict"><p>A newer rota is available: {schedule.name}. Your draft is kept.</p><button type="button" onClick={() => update({revision:schedule.revision, original:schedule})}>Use mine</button></div>}
         {step >= 2 && validation.error?.field === 'handover' && draft.starts && draft.time && <p role="alert">{validation.error.message}</p>}

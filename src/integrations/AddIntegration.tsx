@@ -3,7 +3,7 @@ import { Form } from '../forms';
 import { request } from '../useWorkspace';
 import { RequestExample } from './RequestExample';
 import { OneTimeSecret } from './OneTimeSecret';
-import { addPath, integrationKinds, newIdentity, privateKey, sourcePath, type IntegrationKind, type IntegrationProps } from './catalog';
+import { addPath, integrationKinds, nativeName, newIdentity, privateKey, sourcePath, type IntegrationKind, type IntegrationProps } from './catalog';
 import './integrations.css';
 
 export function AddIntegration(props: IntegrationProps & { kind?: string }) {
@@ -20,18 +20,18 @@ export function IntegrationCreate({ state, admin, busy, run, kind }: Integration
   const readEmail = () => { setReadError(false); request('/api/email').then(value => setDomain(value.domain)).catch(() => setReadError(true)); };
   useEffect(() => { if (admin && kind === 'email') readEmail(); }, [admin, kind]);
   if (!admin) return <section className="panel padded integrations"><h2>{integrationKinds[kind]}</h2><p>An administrator can add integrations.</p></section>;
-  if (created) return <section className="panel padded integrations"><h2>{name}</h2><OneTimeSecret value={created.value} readable={kind!=='email'} label={kind === 'email' ? 'Private address' : 'Private key'} />{kind === 'events' && <RequestExample source={created.source} service={state.services.find(s => s.id === service)!} mode={mode} defaultOpen />}<a className="integration-link" href={created.path}>Open source</a></section>;
+  if (created) return <section className="panel padded integrations"><h2>{kind === 'events' ? nativeName(created.source) : name}</h2><OneTimeSecret value={created.value} readable={kind!=='email'} label={kind === 'email' ? 'Private address' : 'Private key'} />{kind === 'events' && <RequestExample source={created.source} service={state.services.find(s => s.id === service)!} mode={mode} defaultOpen singleService />}<a className="integration-link" href={created.path}>Open source</a></section>;
   return <section className="panel padded integrations" aria-label="Create integration">
     <a className="integration-link" href="/settings/integrations">‹ Integrations</a><h2>{integrationKinds[kind]}</h2>
     {!state.services.length ? <p><a href="/settings/services">Add a service first</a></p> : kind === 'email' && domain === undefined ? <p role="status">{readError ? <>Email settings could not be read. <button onClick={readEmail}>Retry</button></> : 'Reading email settings…'}</p> : kind === 'email' && !domain ? <p>Inbound email needs a receiving domain. <a href="/docs/compatible-intake#integration-email">Set up email routing</a></p> : <Form busy={busy} label={kind === 'email' ? 'Create address' : 'Create source'} onSubmit={async () => {
-      const id = newIdentity(kind === 'events' ? name.trim().slice(0, 80) || 'Events' : kind);
+      const id = kind === 'events' ? '' : newIdentity(kind);
       let key = privateKey(kind === 'changes' && provider === 'pagerduty' ? 16 : 32);
       let path: string, data: Record<string, unknown>, namespace: string;
       if (kind === 'email') {
         key = 'oncall-' + privateKey(20); path = '/api/email/addresses'; namespace = 'email:';
         data = { id, name, service, owner: state.members.find(m => m.active && m.role === 'admin')?.id, localPart: key, mode: 'subject', fallback: 'subject', rules: [] };
       } else if (kind === 'events') {
-        path = '/api/sources'; namespace = 'native:'; data = { id, key, mode, scopes: [service] };
+        path = '/api/sources'; namespace = 'native:'; data = { name, key, mode, scopes: [service] };
       } else if (kind === 'changes') {
         if (provider === 'gitlab') key = 'whsec_' + btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))));
         path = '/api/changes/sources'; namespace = 'change:'; data = { id, name, provider, service, repository, mode, key, revision: 0 };
@@ -39,7 +39,10 @@ export function IntegrationCreate({ state, admin, busy, run, kind }: Integration
         path = '/api/intake/sources'; namespace = 'intake:'; data = { id, name, provider: kind, service, key, revision: 0 };
       }
       const result = await run(path, data, 'Integration created');
-      if (result) setCreated({ value: kind === 'email' ? key + '@' + domain : key, path: sourcePath(namespace + id), source: id });
+      if (result) {
+        const source = kind === 'events' ? result.id : id;
+        setCreated({ value: kind === 'email' ? key + '@' + domain : key, path: sourcePath(namespace + source), source });
+      }
       return false;
     }}>
       <label className="field">Name<input aria-label="Name" autoFocus required maxLength={kind === 'events' ? 80 : kind === 'email' ? 100 : 200} value={name} onChange={e => setName(e.target.value)} /></label>

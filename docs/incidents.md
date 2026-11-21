@@ -34,7 +34,7 @@ Signals are kept as they arrive, and repeats of the same alert are grouped. An a
 
 ## Send an alert event
 
-This release accepts scoped alert intake on the local app or your hosted HTTPS app. Intake records signals for coordination and never pages anyone. Open **Settings → Integrations** as an administrator. Choose **Add integration** when sources already exist, then **Events API**. Enter **Name**, choose **Service** when there is more than one, select **Authentication** (**Bearer token** or **HMAC signature**) and press **Create source**. Oncall assigns the Source ID and generates the **Private key**; copy it from the confirmation before leaving, then choose **Open source**. The source’s **Sample request** shows its ingress URL and identity. On the source page, **Show key** lets a current administrator view and copy the same key again; each view is audited before it is returned. Other roles cannot reveal it. Key values stay out of audit, ordinary reads and archives. Older digest-only keys require one explicit rotation before readback is available. The source’s **Source actions → Rotate key → Rotate key now** replaces the credential; copy the replacement when shown. **Revoke key → Revoke key now** ends admission. Source credentials are excluded from archives and cannot read workspace data or act as a person.
+This release accepts scoped alert intake on the local app or your hosted HTTPS app. Intake records signals for coordination and never pages anyone. Open **Settings → Integrations** as an administrator. Choose **Add integration** when sources already exist, then **Events API**. Enter **Name**, choose **Service** when there is more than one, select **Authentication** (**Bearer token** or **HMAC signature**) and press **Create source**. The confirmation has the **Private key**, ingress URL and a runnable sample request. Oncall makes the last part of the URL from the name, for example `Checkout-monitoring`, and adds a number when the name is already in use. On the source page, **Show key** lets a current administrator view and copy the same key again; each view is audited before it is returned. Other roles cannot reveal it. Key values stay out of audit, ordinary reads and archives. Older digest-only keys require one explicit rotation before readback is available. The source’s **Source actions → Rotate key → Rotate key now** replaces the credential; copy the replacement when shown. **Revoke key → Revoke key now** ends admission. Source credentials are excluded from archives and cannot read workspace data or act as a person.
 
 Send `POST /api/ingress/SOURCE` with a JSON object, at most 65,536 bytes (64 KiB). Replace `SOURCE` with the URL-encoded Source ID. The exact body keys are:
 
@@ -42,7 +42,7 @@ Send `POST /api/ingress/SOURCE` with a JSON object, at most 65,536 bytes (64 KiB
 | --- | --- |
 | `source` | Source ID or the displayed name on that source’s Settings → Integrations page; nonblank string, max 100 characters. Names are accepted only for the source in the URL and stored under its existing ID, so old senders and retries keep working. |
 | `eventId` | Unique event identity within this source; nonblank string, max 200 characters. Use a new ID for each observation, including recovery. |
-| `service` | The allowed service's internal UUID, max 100 characters; a display name such as `Checkout` will not work. |
+| `service` | Omit this field for a source linked to one service, as in the sample below. To select a service for a credential scoped to several services, provide its authorized internal ID (up to 100 characters). |
 | `environment` | Exact environment recorded on that service, such as `production`; nonblank string, max 100 characters. |
 | `key` | Deduplication key for the alert, scoped to source/service/environment; nonblank string, max 200 characters. The field is exactly `key`. |
 | `generation` | Lifecycle identity, shared by a trigger and its recovery; nonblank string, max 100 characters. Use a new generation when the alert fires again after recovery. |
@@ -54,9 +54,9 @@ Send `POST /api/ingress/SOURCE` with a JSON object, at most 65,536 bytes (64 KiB
 
 Text values are trimmed; their limits apply before trimming. Unknown fields are discarded, so include all context you need in these supported fields.
 
-The source page's **Sample request** already holds this source's URL and the service ID: copy them from there. The page does not show a service's ID in its list; it is the last part of the address of **Settings → Services → the service**, and also appears as `id` under `services` in `/api/state` in that signed-in browser. The **Allowed service** selector uses that ID automatically; an external sender must supply it explicitly.
+For credentials scoped to several services, find the service ID at the end of the address of **Settings → Services → the service**, or in the `services` list returned by `/api/state` in a signed-in browser.
 
-For a source configured as **Bearer token**, set `ONCALL_ORIGIN` to your hosted HTTPS app origin or the local app's printed origin, `ONCALL_SOURCE_ID` to the Source ID at the end of the sample request's URL (Oncall generates it from the name, for example `monitoring-a815be2e8fcd`), `ONCALL_SERVICE_ID` to the service's ID and `ONCALL_SOURCE_KEY` to the private credential in your shell. With a source authorized for that service in `production`:
+For a source configured as **Bearer token**, set `ONCALL_ORIGIN` to your hosted HTTPS app origin or the local app's printed origin, `ONCALL_SOURCE_ID` to the last part of the sample URL, `ONCALL_SOURCE_NAME` to the name on the source page and `ONCALL_SOURCE_KEY` to the private credential in your shell. For a source linked to one service in `production`:
 
 ```sh
 curl --fail-with-body "${ONCALL_ORIGIN}/api/ingress/${ONCALL_SOURCE_ID}" \
@@ -64,9 +64,8 @@ curl --fail-with-body "${ONCALL_ORIGIN}/api/ingress/${ONCALL_SOURCE_ID}" \
   -H "Authorization: Bearer ${ONCALL_SOURCE_KEY}" \
   --data-binary @- <<JSON
 {
-  "source": "${ONCALL_SOURCE_ID}",
+  "source": "${ONCALL_SOURCE_NAME}",
   "eventId": "checkout-latency-001-trigger",
-  "service": "${ONCALL_SERVICE_ID}",
   "environment": "production",
   "key": "checkout-latency",
   "generation": "checkout-latency-001",
@@ -79,7 +78,7 @@ curl --fail-with-body "${ONCALL_ORIGIN}/api/ingress/${ONCALL_SOURCE_ID}" \
 JSON
 ```
 
-Use the actual observation time for your own signal. To recover it, send the same `source`, `service`, `environment`, `key` and `generation` with `intent: "recover"`, a new `eventId` and the recovery observation time. Recovery closes only that lifecycle and never resolves an incident. Recovery arriving before its trigger keeps that generation recovered; reopening requires a new generation.
+Use the actual observation time for your own signal. To recover it, send the same `source`, `environment`, `key` and `generation` with `intent: "recover"`, a new `eventId` and the recovery observation time. Keep the same `service` if you supplied one. Recovery closes only that lifecycle and never resolves an incident. Recovery arriving before its trigger keeps that generation recovered; reopening requires a new generation.
 
 For **HMAC signature** mode, replace the bearer header with `x-oncall-timestamp` (decimal Unix seconds within five minutes of the server's clock) and `x-oncall-signature` (lowercase hexadecimal HMAC-SHA256 using the source key over `timestamp + "." + exact request body`). Sign the same UTF-8 bytes you send, including any whitespace or trailing newline. A bearer token does not authenticate a source configured for HMAC.
 

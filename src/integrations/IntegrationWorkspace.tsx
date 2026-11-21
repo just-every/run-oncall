@@ -3,7 +3,7 @@ import { request } from '../useWorkspace';
 import { AddIntegration } from './AddIntegration';
 import { IntegrationsHome } from './IntegrationsHome';
 import { SourcePage } from './SourcePage';
-import { integrationKinds, sourcePath, sourcesFrom, type IntegrationProps, type NativeDefinition, type SourceRecord } from './catalog';
+import { integrationKinds, sourceIdFromPath, sourcePath, sourcesFrom, type IntegrationProps, type NativeDefinition, type SourceRecord } from './catalog';
 
 export function IntegrationWorkspace(props: IntegrationProps & { path: string; panels?: ReactNode; emailPage?: (source: SourceRecord) => ReactNode }) {
   const [native, setNative] = useState<NativeDefinition[]>([]), [failed, setFailed] = useState(false), [loaded, setLoaded] = useState(!props.admin);
@@ -22,7 +22,7 @@ export function IntegrationWorkspace(props: IntegrationProps & { path: string; p
   const readFailure = failed ? <p role="alert">Some sources could not be read. <button type="button" onClick={read}>Retry</button></p> : undefined;
   if (!tail) return <IntegrationsHome {...props} native={native} readFailure={readFailure} />;
   let id: string;
-  try { id = decodeURIComponent(tail); } catch { id = ''; }
+  try { id = sourceIdFromPath(tail); } catch { id = ''; }
   const sources = sourcesFrom(props.state, native, props.admin), source = sources.find(s => s.id === id);
   if (!loaded && id.startsWith('native:')) return <section className="panel padded integrations"><p role="status">Reading source…</p></section>;
   return <div className="integration-detail-layout">

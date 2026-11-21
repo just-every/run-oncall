@@ -9,11 +9,12 @@ import { refuseKeyEcho, type NativeSource } from './native-sources';
 const maximum = 65536;
 
 /** Oversized native prefixes are evidence only, never structured routing input. */
-export function parseNativeRequest(body:NativeRequest): {input:any; signal:ReturnType<typeof signalInput>} | undefined {
+export function parseNativeRequest(body:NativeRequest, boundService?:string): {input:any; signal:ReturnType<typeof signalInput>} | undefined {
   if(body.bytes>maximum||!body.validUtf8)return;
   const raw=body.raw;
   let input:any;
   try {input=JSON.parse(raw);} catch {return;}
+  if (boundService && input && typeof input === 'object' && !Array.isArray(input) && !Object.hasOwn(input, 'service')) input.service = boundService;
   try {return {input,signal:signalInput(input)};}
   catch(error) {if(error instanceof Fault&&error.status===400)return;throw error;}
 }
