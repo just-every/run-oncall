@@ -1,10 +1,11 @@
+import {missedAcknowledgmentFlow} from './missed-ack-flow.mjs'
 import {readinessHealth} from './readiness.mjs'
 import {healthBuildIdentity,recordHealthOutcome,recordHealthFieldOutcomes} from './health-outcomes.mjs'
 import {fileURLToPath} from 'node:url'
 import http from 'node:http'
 import {fixtureDatabase} from './fixture-database.mjs'
 import assert from 'node:assert/strict'
-import {heldWorkspace} from './worker.mjs'
+import {heldWorkspace,ruleDeclarationAuditFault} from './worker.mjs'
 import {spawn,spawnSync,execFileSync} from 'node:child_process'
 import {mkdtemp,rm,mkdir,readdir,copyFile,writeFile,readFile} from 'node:fs/promises'
 import {tmpdir} from 'node:os'
@@ -93,8 +94,8 @@ await automationJourney();
   const resume='/api/triage/workflows/'+run.id+'/resume',clear='/api/triage/workflows/'+run.id+'/clear-expired';
   assert.equal((await call(resume,{approve:true,revision:run.rule.revision},'')).status,401);assert.equal((await call(resume,{approve:true,revision:run.rule.revision},viewerSession)).status,403);await value(resume,{approve:false,revision:run.rule.revision},403);await value('/api/triage/bulk',{operationId:run.id,action:'orchestrate',...run.workflow,confirmedCount:1,durable:true},409);
   await value('/api/command',{...template,baseVersion:1,checklist:[{id:'synthetic-oncall-450',text:'Synthetic later checklist'}]});
-  await runtime.db.prepare("CREATE TRIGGER synthetic_oncall_450_step BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='triage.workflow-declare' AND NEW.workspace_after>NEW.workspace_before BEGIN SELECT RAISE(ABORT,'synthetic-oncall-450'); END").run();
-  try{await value(resume,{approve:true,revision:run.rule.revision},503);}finally{await runtime.db.prepare('DROP TRIGGER synthetic_oncall_450_step').run();}
+  await runtime.db.prepare(ruleDeclarationAuditFault.install).run();
+  try{await value(resume,{approve:true,revision:run.rule.revision},503);}finally{await runtime.db.prepare(ruleDeclarationAuditFault.remove).run();}
   state=await value('/api/state');run=state.triage.find(row=>row.rule);assert.equal(run.rule.state,'running');assert.equal(run.rule.outcome,'uncertain');assert.equal(run.results.length,1);assert.equal(state.incidents.length,0,'declaration and progress roll back with the step audit');assert.ok((await value('/api/audit/export')).rows.some(row=>row.kind==='triage.workflow-reserve'&&row.outcome==='accepted'));
   await runtime.restart();assert.deepEqual(await value('/api/state'),state,'restart never resumes a saved lease');await value(clear,{approve:true,revision:run.rule.revision},409);
   for(const [kind,id] of [['member',target.id],['native',source]]){await value('/api/erasure/'+kind+'/'+id,{workspaceRevision:state.revision,confirmation:'erase '+id,identitiesReviewed:true,importedPeople:[]},409);assert.deepEqual(await value('/api/state'),state,'an active or uncertain workflow lease prevents partial subject erasure');}
@@ -2072,8 +2073,9 @@ try {
  console.log('OC-058 cancellation and gaps: resolution and explicit cancellation stop deadlines; missing current on-call is a retained operator-visible failure, never silence');
  const recoveryKey58=randomBytes(32).toString('hex');ok(await req('/api/sources',{id:'synthetic-oncall-58-source',key:recoveryKey58,scopes:['synthetic-oncall-58']}));const sourceSignal58={source:'synthetic-oncall-58-source',eventId:'synthetic-oncall-58-trigger',service:'synthetic-oncall-58',environment:'test',key:'synthetic-oncall-58-key',generation:'synthetic-oncall-58-generation',intent:'trigger',severity:'warning',title:'Source recovery during snooze',observedAt:new Date().toISOString(),evidence:''};const sourceHeaders58={authorization:'Bearer '+recoveryKey58};const sourceReceipt58=ok(await w.request('/api/ingress/synthetic-oncall-58-source',sourceSignal58,'',sourceHeaders58),201),sourceAlert58=(await read()).alerts.find(a=>a.events.includes(sourceReceipt58.id));let recovering58=ok(await req('/api/command',{type:'declare',service:'synthetic-oncall-58',title:'Source-linked deadline',severity:'warning',summary:'Verify recovery',alerts:[sourceAlert58.id]}));recovering58=await ack(recovering58);recovering58=ok(await req('/api/command',{type:'snooze',incident:recovering58.id,revision:recovering58.revision,minutes:1}));const recoveringDue58=Date.parse(recovering58.deadlines.at(-1).dueAt);ok(await w.request('/api/ingress/synthetic-oncall-58-source',{...sourceSignal58,eventId:'synthetic-oncall-58-recovery',intent:'recover'},'',sourceHeaders58),201);await w.time(recoveringDue58);await tick();recovering58=await find(recovering58.id);assert.equal(recovering58.state,'acknowledged');assert.equal(recovering58.deadlines.at(-1).state,'cancelled');assert.equal(recovering58.deadlines.at(-1).obligation,null);console.log('OC-058 scheduled source recovery: a source recovered mid-snooze remains acknowledged after the deadline with no re-trigger obligation');
  let rollback=await ack(await make());const before=await read();w.sql("CREATE TRIGGER synthetic_oncall_58_audit BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'synthetic audit failure'); END");try{ok(await req('/api/command',{type:'snooze',incident:rollback.id,revision:rollback.revision,minutes:1}),503);}finally{w.sql('DROP TRIGGER synthetic_oncall_58_audit');}assert.deepEqual(await read(),before);
- await w.time(Date.parse(rollback.deadlines.at(-1).dueAt));const beforeSweep=await read();w.sql("CREATE TRIGGER synthetic_oncall_58_sweep_audit BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'synthetic audit failure'); END");try{const failed=await w.send('/cdn-cgi/local/scheduled',undefined,{},'GET');assert.equal(failed.status,500);}finally{w.sql('DROP TRIGGER synthetic_oncall_58_sweep_audit');}assert.deepEqual(await read(),beforeSweep);await tick();assert.equal((await find(rollback.id)).deadlines.at(-1).state,'fired');
+ const sweepAt=Date.parse(rollback.deadlines.at(-1).dueAt);await w.time(sweepAt);const beforeSweep=await read();w.sql("CREATE TRIGGER synthetic_oncall_58_sweep_audit BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'synthetic audit failure'); END");try{const failed=await w.send('/cdn-cgi/local/scheduled',undefined,{},'GET');assert.equal(failed.status,500);}finally{w.sql('DROP TRIGGER synthetic_oncall_58_sweep_audit');}assert.deepEqual(await read(),beforeSweep);await tick();assert.equal((await find(rollback.id)).deadlines.at(-1).state,'fired');
  console.log('OC-058 atomic deadline custody: failed permanent audit rolls back snooze and scheduled expiry together; the durable pending item remains visible and a later sweep commits exactly once');
+ await missedAcknowledgmentFlow({w,req,ok,admin,start:sweepAt});
 } finally {await deadlines58.close();}
 
 // OC-040 integration erasure owns the same OC-053 lease boundary as dispatch.

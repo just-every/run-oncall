@@ -1,3 +1,74 @@
+# 0.5.22 · 2026-11-21
+
+- Oncall now uses rer 0.2.126. Local archive transfers preserve the recorded order of applied owner migrations, and compatible archives from Run Edit Run Platform can be restored into a native checkout.
+- `rer dev --as PERSONA` now prints a sign-in link for the selected local account that expires after 15 minutes. Local sign-in guidance explains how to find the rer command when it isn't on your PATH.
+
+### Upgrade from 0.5.21
+
+Back up first. For local data, run `rer export --output exports/before-0.5.22.rer`. For hosted data, export the D1 database with the original deploying Cloudflare credentials. Keep the backup private and verify it before updating.
+
+Stop the local app with Ctrl-C, update the checkout with `git pull --ff-only` and run `rer dev`. From a detached release tag, run `git fetch --tags && git checkout v0.5.22` once the release is published. For a hosted installation, update the original deploying checkout and run `rer deploy --environment ENVIRONMENT` with the same credentials. Restore only into an empty destination.
+
+This update adds no migrations. All 68 migration files from 0.5.21 are byte-identical. Keep them unchanged. The checkout keeps rer pinned to 0.2.126.
+
+## Known limits
+
+Paging stays OFF. Keep your existing pager active. Release 2 paging and independent standby are still unavailable. Live AWS delivery and live PagerDuty account migration or cutover remain unverified.
+
+# 0.5.21 · 2026-11-20
+
+This release includes the changes since 0.5.19. The 0.5.20 tag was unpublished.
+
+- Service calendar subscriptions now include a shared rota for every service it covers.
+- Clearing an alert's assignee keeps it Unassigned in triage. Recently updated sorting and date filters include retained alert activity, such as recoveries, alongside responder actions.
+- In Alerts, filter by Unmatched service alerts to find active, unassigned, unsuppressed service alerts admitted without a matching route. Event context shows why each alert was unmatched.
+- When a newer change prevents a cover apply or incident note from saving, keyboard focus returns to the cover sheet or the incident's Add note button. You can revise the retained draft. A stale agent request to resolve an incident returns the current revision before creating an approval.
+- Loading more incidents keeps the results scoped to the current triage filters.
+- Test draft against saved mail compares the recorded decision and the draft decision side by side, with their rule versions. Saved mail and alerts stay intact.
+- Move in reviews separately saved PagerDuty details alongside their exported parent records, including contacts and overrides. Copy or download the field-by-field review to see what maps, what is kept for reference and what is refused.
+- Internal business status shows management controls to active administrators and active responders assigned as communications owner.
+
+### Upgrade from 0.5.19 or 0.5.20
+
+Back up first. For local data, run `rer export --output exports/before-0.5.21.rer`. For hosted data, export the D1 database with the original deploying Cloudflare credentials. Keep the backup private and verify it before updating.
+
+Stop the local app with Ctrl-C, update the checkout with `git pull --ff-only` and run `rer dev`. From a detached release tag, run `git fetch --tags && git checkout v0.5.21` once the release is published. For a hosted installation, update the original deploying checkout and run `rer deploy --environment ENVIRONMENT` with the same credentials. Restore only into an empty destination.
+
+This update adds no migrations. Keep all 68 applied migration files unchanged. The checkout keeps rer pinned to 0.2.118.
+
+## Known limits
+
+Paging stays OFF. Keep your existing pager active. Release 2 paging and independent standby are still unavailable. Live AWS delivery and live PagerDuty account migration or cutover remain unverified.
+
+# 0.5.20 · 2026-11-19 · unpublished
+
+- Service calendar subscriptions now include a shared rota for every service it covers.
+- Clearing an alert's assignee keeps it Unassigned in triage. Recently updated sorting and filters now include retained events, such as a recovery, as well as responder actions.
+- In Alerts, choose Unmatched service alerts to find active, unassigned, unsuppressed alerts that entered without a matching route. Event context shows why each alert was unmatched.
+- If a newer change prevents a cover apply or note from saving, keyboard focus returns to the cover sheet or the incident's Add note button. You can revise the retained draft. Agent clients that try to resolve an incident from a stale revision receive the current revision before an approval is created.
+- Loading more incidents no longer mixes in results from a previous set of triage filters.
+- Test draft against saved mail compares historical and draft decisions side by side, including the rule versions, without changing any saved mail or alerts.
+- Move in reviews separately saved PagerDuty details with their exported parents, including contacts and overrides. Copy or download the full field-by-field review to see what maps, what is kept for reference and what is refused.
+- Internal business status shows management controls only to active administrators and active responders assigned as communications owner.
+
+Back up before upgrading and keep all 68 applied migration files unchanged. This update adds no migrations and keeps rer pinned to 0.2.118.
+
+## Known limits
+
+Paging stays OFF. Keep your existing pager active. Release 2 paging and independent standby are still unavailable. Live AWS delivery and live PagerDuty account migration or cutover remain unverified.
+
+# 0.5.19 · 2026-11-18
+
+The install description's declared hash matched an older file: approving Oncall on the platform said it could not be installed yet; fixed.
+
+Name your installation during setup or in Settings → General. The name appears in the header, tab and sign-in pages. Local setup explains which mail option works without sending email. Settings → Team opens Add member at the name field, lets the owner edit their own name, and explains why the only active admin cannot change their own role or revoke their access.
+
+Alert details show the assigned responder, current rota backup and recorded notification steps, including wait times and outcomes. When a service has an acknowledgment timeout, an incident opened by its response policy shows a missed deadline even after a late acknowledgment. Settings → Services saves response settings as you change them, shows what is in effect and keeps the change history.
+
+Administrators can route Amazon CloudWatch alarms through an Amazon SNS routed key and see its subscription status. Live AWS delivery has yet to be verified. Agent clients submitting an approved follow-up or a schedule update against an older revision get a conflict with the current revision so they can reload and review.
+
+This update keeps rer pinned to 0.2.118 and adds no migrations. Back up before upgrading and keep all 68 migration files. Paging stays OFF. Keep your existing pager active.
+
 # 0.5.18 · 2026-11-17
 
 Move in now offers to continue or discard an unconfirmed review after a reload. Import reviews show existing-import conflicts before confirmation, name the earlier provider and file where available, and explain when a live schedule prevents undo. Making an imported schedule live warns when its service already has a rota and asks you to keep both explicitly. Coverage summaries show the next hand-over to a different person, or say when none is scheduled within 90 days; continuous coverage by the same person appears as one timeline bar. Shift swaps confirm where the request is waiting and explain when the substitute is on PTO. Schedule history names the person who made the change, and responder requests show Accept and Decline only to the eligible responder. Restoring and confirming the archived owner no longer repeats first-run setup. Demo pages are explicitly labelled simulated, with nothing delivered. Import, incident, team and readiness guidance is clearer. This patch keeps rer pinned to 0.2.118 and adds no migrations; all 68 applied migration files stay unchanged. Back up before upgrading and keep the existing pager authoritative: paging stays OFF.

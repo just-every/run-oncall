@@ -12,6 +12,7 @@ export function dailyNavigation(state: State | null, stakeholder = false): NavIt
   ];
 }
 export const settingsNavigation: NavItem[] = [
+  {id: 'general', label: 'General', path: '/settings/general'},
   {id: 'services', label: 'Services', path: '/settings/services'},
   {id: 'integrations', label: 'Integrations', path: '/settings/integrations'},
   {id: 'routing', label: 'Routing', path: '/settings/routing'},

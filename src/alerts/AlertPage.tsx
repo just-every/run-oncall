@@ -1,3 +1,4 @@
+import {AcknowledgmentStatus} from '../incident-deadlines/Status';
 import {useState} from 'react';
 import type {Alert, State} from '../family/response-operations/domain';
 import type {IntakeRun} from '../intake/CompatibleTest';
@@ -7,8 +8,10 @@ import {RecentChanges} from '../changes/RecentChanges';
 import {EvidenceLink} from '../reviews/display';
 import {shortTime} from '../reviews/time';
 import {alertDisplay} from './alert-display';
-export function AlertPage({alert, state, canEdit, busy, run, name, onDeclare, onOpenIncident,onSaved,draftScope}: {alert: Alert; state: State; canEdit: boolean; busy: boolean; run: IntakeRun; name: (id: string | null) => string; onDeclare: (data: unknown) => Promise<void>; onOpenIncident: (id: string) => void;onSaved:(alert:Alert)=>void;draftScope:string}) {
-  const {events, triggers, severity, title, service, incidents} = alertDisplay(alert, state);
+import {AlertNotificationRun} from './AlertNotificationRun';
+import type {OnCall} from '../on-call/read';
+export function AlertPage({alert, state, canEdit, busy, run, name, onDeclare, onOpenIncident,onSaved,draftScope,onCall}: {alert: Alert; state: State; canEdit: boolean; busy: boolean; run: IntakeRun; name: (id: string | null) => string; onDeclare: (data: unknown) => Promise<void>; onOpenIncident: (id: string) => void;onSaved:(alert:Alert)=>void;draftScope:string;onCall:OnCall|null}) {
+  const {events, triggers, severity, title, service, incidents, unmatchedReason} = alertDisplay(alert, state);
   const [chosenService, setChosenService] = useState('');
   const source = state.intakeSources?.find(source => alert.source === 'intake:' + source.id);
   const scopedServices = state.services.filter(service => source?.routing?.scope.includes(service.id));
@@ -17,7 +20,8 @@ export function AlertPage({alert, state, canEdit, busy, run, name, onDeclare, on
   return <article className="panel padded alert-page" aria-label="Alert details">
     <a className="alert-back" href="/alerts">‹ Alerts</a>
     <h2>{title}</h2><p className="alert-meta"><span className={'priority sev-' + severity}>{severity}</span> · {service?.name ?? 'Integration unrouted queue'} · {alert.environment} · {alert.state}</p>
-    {incidents.map(incident => <p key={incident.id}><a href={'/incidents/' + encodeURIComponent(incident.id)} onClick={event => {event.preventDefault(); onOpenIncident(incident.id);}}>In incident {incident.title}</a></p>)}
+    {incidents.map(incident => <div key={incident.id}><AcknowledgmentStatus incident={incident} state={state}/><p><a href={'/incidents/' + encodeURIComponent(incident.id)} onClick={event => {event.preventDefault(); onOpenIncident(incident.id);}}>In incident {incident.title}</a></p></div>)}
+    <AlertNotificationRun alert={alert} state={state} onCall={onCall} />
     <AlertUrgency storageKey={'alert-urgency:'+draftScope+':'+alert.id} onSaved={onSaved} alert={alert} state={state} canEdit={canEdit && alert.service !== null} busy={busy} run={run} />
     <section className="alert-runbook"><h3>Runbook</h3>{service?.runbook.length ? <ol>{service.runbook.map((step, index) => <li key={index}>{step}</li>)}</ol> : <p>No service runbook is configured.</p>}</section>
     {canEdit && !incidents.length && <>
@@ -26,6 +30,7 @@ export function AlertPage({alert, state, canEdit, busy, run, name, onDeclare, on
     </>}
     {alert.service !== null && <RecentChanges service={alert.service} at={triggers[0]?.observedAt ?? events[0]?.observedAt} revision={state.revision} windowChoices />}
     <details><summary>Event context</summary><p>{events.length} retained events · {alert.suppressed ? 'Suppressed · Owner: '+name(alert.owner) : name(alert.owner)}{alert.priority ? ' · Priority: ' + alert.priority : ''}</p>
+      {unmatchedReason !== null && <><p><strong>Unmatched at admission</strong></p><p>{unmatchedReason}</p></>}
       <CorrelationExplanation decision={events.at(-1)?.decision} ownerView />
       {!!held.length&&<><p>{held.length} held active {held.length===1?'generation':'generations'} · paging OFF.</p><details><summary>Retained generations and evidence</summary>{held.flatMap(a=>a.events.map(id=>state.events.find(e=>e.id===id))).filter(e=>e!==undefined).map(event=><article key={event.id}><strong>{event.title}</strong><p>{event.intent==='trigger'?'Triggered':'Recovered'} · {shortTime(event.observedAt)}</p><EvidenceLink url={event.evidence}>Source evidence</EvidenceLink></article>)}</details></>}
 

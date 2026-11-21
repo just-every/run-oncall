@@ -1,3 +1,4 @@
+import { GeneralSection } from '../GeneralSection';
 import {ReadinessSection} from '../../readiness/ReadinessPage';
 import {useEffect, useRef, useState} from 'react';
 import {useLocation} from '@tanstack/react-router';
@@ -98,7 +99,7 @@ export function AppShell() {
       <FailureLine failure={w.failure} />
       {stakeholder ? <StatusPanel actor={actor} /> : <>
         {page === 'not-found' && <WorkspaceNotFound />}
-        <StatusSection /><MoveInSection /><OnCallSection /><IncidentsSection /><ServicesSection /><RoutingSection /><AlertsSection /><IntegrationsSection /><ReviewsSection /><TeamSection /><ArchiveSection /><ReadinessSection />
+        <GeneralSection /><StatusSection /><MoveInSection /><OnCallSection /><IncidentsSection /><ServicesSection /><RoutingSection /><AlertsSection /><IntegrationsSection /><ReviewsSection /><TeamSection /><ArchiveSection /><ReadinessSection />
       </>}
     </main>
   </div></WorkspaceContext.Provider>;

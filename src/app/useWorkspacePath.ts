@@ -9,8 +9,11 @@ export function useWorkspacePath({ready = true, stakeholder = false} = {}) {
     if (!ready) return;
     const canonical = stakeholder ? (location.pathname !== "/status" ? "/status" : null) : legacyWorkspacePath(new URL(window.location.href));
     if (canonical) {
-      if (workspaceAddress(new URL(canonical, window.location.origin).pathname).page === "not-found") window.location.replace(canonical);
-      else void go(canonical, true);
+      const target = new URL(canonical, window.location.origin);
+      if (target.origin !== window.location.origin || target.pathname.startsWith('//') || !isWorkspacePath(target.pathname)) return;
+      const destination = target.pathname + target.search + target.hash;
+      if (workspaceAddress(target.pathname).page === "not-found") window.location.replace(destination);
+      else void go(destination, true);
     }
   }, [location.pathname, location.searchStr, location.hash, ready, stakeholder]);
   useEffect(() => {

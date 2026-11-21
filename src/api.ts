@@ -1,3 +1,4 @@
+import { checkedInstallationName, savedInstallationName } from './brand/installation';
 import { nativeName } from './integrations/native-name';
 import {installReadiness} from './readiness/api';
 import {installTeams} from './teams/api';
@@ -457,6 +458,22 @@ installResponsePolicy(api, changeDeps);
 installOnCallNotifications(api, changeDeps);
 installReviews(api, authorizedState);
 installTriage(api, {body, state: authorizedState, save: (c, state, revision, extra) => {const guard=sessionGuard(c);return save(c.env.DB,state,revision,extra?{sql:'('+guard.sql+') AND ('+extra.sql+')',values:[...guard.values,...extra.values]}:guard)}, saveItem: (c, state, revision, operationId, incidentId) => saveTriageItem(c.env.DB, state, revision, operationId, incidentId, sessionGuard(c))});
+api.get('/api/installation', async c => c.json({name: await savedInstallationName(c.env)}));
+api.post('/api/installation', async c => {
+  await authorizedState(c, true);
+  const name = checkedInstallationName((await body(c)).name);
+  if (!name) fail('Enter an installation name of 1 to 80 characters.');
+  const guard = sessionGuard(c), actor = c.get('actor');
+  const allowed = `(${guard.sql}) AND EXISTS(SELECT 1 FROM oc_members WHERE id=? AND json_extract(data,'$.active')=1 AND json_extract(data,'$.role')='admin')`;
+  const args = [...guard.values, actor.id], now = new Date().toISOString();
+  await c.env.DB.batch([
+    c.env.DB.prepare(`INSERT INTO bs_overrides(field,value,actor,changed_at) SELECT 'display_name',?,?,? WHERE ${allowed} ON CONFLICT(field) DO UPDATE SET value=excluded.value,actor=excluded.actor,changed_at=excluded.changed_at`).bind(JSON.stringify(name), actor.id, now, ...args),
+    c.env.DB.prepare(`INSERT INTO bs_audit(actor,action,field,changed_at) SELECT ?,'override','display_name',? WHERE ${allowed}`).bind(actor.id, now, ...args),
+    c.env.DB.prepare(`INSERT INTO bs_assert(value) VALUES(CASE WHEN ${allowed} THEN 1 ELSE NULL END)`).bind(...args),
+    c.env.DB.prepare('DELETE FROM bs_assert'),
+  ]);
+  return c.json({name});
+});
 api.get("/api/state", async (c) => c.json(memberWorkspace(await authorizedState(c), c.get("actor"))));
 api.post("/api/command", async (c) => {
   const input = await body(c);

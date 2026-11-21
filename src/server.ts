@@ -1,3 +1,4 @@
+import { installationDocument } from './brand/installation';
 import {sweepOnCall} from './family/response-operations/on-call-notifications/sweep';
 import { sweepMoveInConsent } from './move-in/pagerduty-oauth';
 import {lobbyPaths} from './app/lobbyPaths';
@@ -50,7 +51,7 @@ export default withDemo({
    // Keep refusals and read failures inside the audited boundary after transport is consumed.
    let received:Request|Response=request,bodyFailure:{error:unknown}|undefined;
    try {received=await receivedRequest(request)} catch(error){bodyFailure={error}}
-   return auditedRequest(request,original,async env => {
+   const result = await auditedRequest(request,original,async env => {
     if(bodyFailure)throw bodyFailure.error;
     if(received instanceof Response)return received;
     if (new URL(request.url).pathname === '/favicon.ico' && ['GET', 'HEAD'].includes(request.method))
@@ -120,5 +121,6 @@ export default withDemo({
     }
     return response;
    });
+   return installationDocument(result, runtimeBindings(original), new URL(request.url).pathname);
   },
 } satisfies ExportedHandler<Env>, { seed: seedDemo })

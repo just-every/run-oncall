@@ -1,9 +1,11 @@
 import {readableErasure,coveredSwap,nextCoverageBrowser} from './stranger-trip-steps.mjs'
-import {savedEmailBundle} from './email-fixtures.mjs'
+import {localPart,mail,recoveryRules,savedEmailBundle} from './email-fixtures.mjs'
+import {durableSnapshot,ruleDeclarationAuditFault} from './worker.mjs'
+import {alertTriageTimeFixture} from './triage-time-fixture.mjs'
 import {pathToFileURL} from 'node:url'
 import {resolve} from 'node:path'
 import {isDeepStrictEqual} from 'node:util'
-import {readFile,mkdir} from 'node:fs/promises'
+import {readFile,mkdir,writeFile} from 'node:fs/promises'
 import {selectRoutedSource,openIncidentAction,focusWorkspace,openWorkspaceSection,routingBrowser,openHistoryComparison,keyboardUser} from './keyboard.mjs'
 import {randomBytes,randomUUID} from 'node:crypto'
 import AxeBuilder from '@axe-core/playwright'
@@ -85,6 +87,49 @@ export async function productImport(page,context,width,session,proof) {
   await incumbentActivation(page,context,width)
   await reconciliationJourney(page,context,session)
   await plainMoveInReview(page,context,session)
+  await documentedPagerDutyReview(page,context)
+}
+
+// Same move-in journey and screen: assert once at 1440, capture the reviewed
+// 498-object summary at desktop and phone widths, and compare complete bytes.
+async function documentedPagerDutyReview(page,context) {
+ const viewport=page.viewportSize(),directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser',origin=new URL(page.url()).origin
+ await page.setViewportSize({width:1440,height:1000})
+ const raw=await readFile('tests/fixtures/pagerduty-synthetic/account.json'),manifest=JSON.parse(await readFile('tests/fixtures/pagerduty-synthetic/manifest.json','utf8'))
+ const before=await (await context.request.get('/api/move-in/objects')).json(),paging=await (await context.request.get('/api/paging/state')).json()
+ await fileSource(page,'pagerduty')
+ const [response]=await Promise.all([page.waitForResponse(response=>new URL(response.url()).pathname==='/api/operator/import/plan'),page.getByLabel('Export JSON',{exact:true}).setInputFiles({name:'synthetic-oncall-account.json',mimeType:'application/json',buffer:raw})])
+ assert.equal(response.status(),200);const plan=await response.json()
+ assert.equal(plan.summary.sourceRecords,manifest.objects)
+ const panel=page.locator('.move-in-step'),fields=plan.items.flatMap(item=>item.unmapped.filter(note=>note.disposition))
+ const leaves=(value,pointer='')=>value&&typeof value==='object'&&Object.keys(value).length?Object.entries(value).flatMap(([key,child])=>leaves(child,pointer+'/'+key.replaceAll('~','~0').replaceAll('/','~1'))):[pointer]
+ assert.deepEqual(fields.map(field=>field.field).sort(),leaves(JSON.parse(raw)).sort(),'catch-up review accounts for each original leaf exactly once, even when planning screens the same bundle repeatedly')
+ const summary=panel.getByLabel('Source field accounting',{exact:true})
+ await summary.waitFor();assert.ok((await summary.innerText()).includes(String(fields.length)))
+ await context.grantPermissions(['clipboard-read','clipboard-write'])
+ await panel.getByRole('button',{name:'Copy details',exact:true}).click();await panel.getByText('Details copied',{exact:true}).waitFor()
+ const copied=await page.evaluate(()=>navigator.clipboard.readText());assert.deepEqual(JSON.parse(copied),plan)
+ const [download]=await Promise.all([page.waitForEvent('download'),panel.getByRole('button',{name:'Download details',exact:true}).click()])
+ const path=await download.path();assert.deepEqual(JSON.parse(await readFile(path,'utf8')),plan,'download includes all object and field decisions without a presentation cap')
+ await panel.getByText(`Source object decisions (${manifest.objects})`,{exact:true}).click()
+ await panel.locator('.move-in-review > li').first().waitFor({state:'visible'})
+ assert.equal(await panel.locator('.move-in-review > li').count(),manifest.objects)
+ await panel.getByText(`Source object decisions (${manifest.objects})`,{exact:true}).click()
+ assert.deepEqual(await (await context.request.get('/api/move-in/objects')).json(),before)
+ assert.deepEqual(await (await context.request.get('/api/paging/state')).json(),paging)
+ for(const width of [1440,390]) {
+  await page.setViewportSize({width,height:1000})
+  await panel.getByRole('heading',{name:'Compatibility review',exact:true}).scrollIntoViewIfNeeded()
+  await panel.screenshot({path:`${directory}/pagerduty-account-review-${width}.png`})
+ }
+ await page.setViewportSize({width:1440,height:1000})
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))
+ const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()
+ assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[])
+ await writeFile(`${directory}/pagerduty-account-review-receipt.json`,JSON.stringify({objects:manifest.objects,fields:fields.length,copyBytes:Buffer.byteLength(copied),copyExact:true,downloadExact:true,zeroNativeEffects:true,assertionWidth:1440,screenshots:[1440,390],seriousCriticalAccessibilityFindings:0},null,2)+'\n')
+ await panel.getByRole('button',{name:'Back to connection',exact:true}).click()
+ await page.setViewportSize(viewport)
+ console.log('PASS documentedPagerDutyReview: all source fields copied/downloaded exactly, zero native effects, summary and disclosure, 1440 assertions with 1440/390 screenshots')
 }
 
 async function incumbentActivation(page,context,width) {
@@ -567,7 +612,7 @@ async function accessibleState(page,name,width,focus) {
 }
 
 const keyboardInstant=Date.parse('2026-10-30T12:00:00.000Z')
-export async function productSchedule(page,context,width,session,{ownerLink,selectedOnly=false,setTime=async()=>{}}={}) {
+export async function productSchedule(page,context,width,session,{ownerLink,openSession,selectedOnly=false,observePhoneStaleCover=false,setTime,worker}) {
  await setTime(keyboardInstant);
  const now=keyboardInstant;
  const key=keyboardUser(page),origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
@@ -679,12 +724,69 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  }
  await key.dialog(cover);await accessibleState(page,'cover-review',width,cover.getByRole('checkbox',{name:'I reviewed these assignments and gaps'}));
  await key.dismiss(cover,coverOpener);assert.deepEqual(await api('/api/paging/state'),coverBefore,'Escape from the review writes nothing');
- await key.activate(coverOpener);await key.activate(cover.getByRole('button',{name:'Review change',exact:true}));await cover.getByText('New coverage gap',{exact:true}).first().waitFor();
+ const schedulePath='/api/schedules/'+id;
+ const reviewCover=async()=>{
+  await key.activate(coverOpener);
+  const response=page.waitForResponse(r=>new URL(r.url()).pathname===schedulePath+'/review'&&r.request().method()==='POST');
+  await key.activate(cover.getByRole('button',{name:'Review change',exact:true}));
+  await cover.getByText('New coverage gap',{exact:true}).first().waitFor();
+  const reply=await response;assert.equal(reply.status(),200);
+  return reply.json();
+ };
+ let coverBaseRevision=created.revision;
+ if(width===1440||observePhoneStaleCover){
+  const outboundBefore=await worker.outboundRequests(),staleReview=await reviewCover();
+  // Keep the winner outside the reviewed window so the later successful
+  // retry can still compare every assignment from the original review.
+  const winnerStart=staleReview.to+3600000;
+  const winner={id:'synthetic-oncall-7303',role:'primary',member:relief.id,start:new Date(winnerStart).toISOString(),end:new Date(winnerStart+3600000).toISOString()};
+  assert.ok(winnerStart>=Date.parse(future.overrideEnd+'Z'),'the winning cover starts after the losing cover ends');
+  const secondContext=await context.browser().newContext({baseURL:origin,extraHTTPHeaders:{connection:'close'}});
+  try {
+   await openSession(secondContext);
+   const secondSession=await secondContext.request.get('/api/session');assert.equal(secondSession.status(),200);
+   assert.equal((await secondSession.json()).member.role,'admin');
+   assert.notDeepEqual(await secondContext.cookies(),await context.cookies(),'the competing request has its own authenticated session');
+   const winningReply=await secondContext.request.post(origin+schedulePath+'/overrides',{headers:{origin},data:{revision:created.revision,override:winner}});
+   assert.equal(winningReply.status(),200,'the separate session commits the non-overlapping cover');
+   const winningSchedule=await winningReply.json();
+   assert.equal(winningSchedule.revision,created.revision+1);
+   assert.deepEqual(winningSchedule.overrides,[winner]);
+  } finally {await secondContext.close();}
+  const afterWinner=await api('/api/paging/state');
+  coverBaseRevision=created.revision+1;
+  const rejected=page.waitForResponse(r=>new URL(r.url()).pathname===schedulePath+'/apply'&&r.request().method()==='POST');
+  await key.activate(cover.getByRole('checkbox',{name:'I reviewed these assignments and gaps'}),'Space');
+  await key.activate(cover.getByRole('button',{name:'Apply reviewed change',exact:true}));
+  const staleReply=await rejected;assert.equal(staleReply.status(),409,'the real schedule door refuses the stale keyboard apply');
+  const attempted=staleReply.request().postDataJSON();
+  assert.equal(attempted.digest,staleReview.digest);assert.equal(attempted.confirmed,true);
+  assert.equal(attempted.schedule.revision,created.revision);
+  assert.deepEqual(attempted.schedule.overrides,staleReview.schedule.overrides);
+  const staleAlert=cover.getByRole('alert');
+  await expect(staleAlert).toHaveText(/schedule changed.*review again/i);
+  await expect(staleAlert).toBeInViewport();
+  await expect(page.getByRole('status').filter({hasText:/\bsaved\b/i})).toHaveCount(0);
+  await key.dialog(cover);
+  for(const [label,value] of [['Who',''],['Role','primary'],['From',future.overrideStart],['To',future.overrideEnd]]){
+   const field=cover.getByLabel(label,{exact:true});
+   await expect(field).toBeEditable();
+   await expect(field).toHaveValue(value);
+  }
+  await accessibleState(page,'cover-stale',width,cover.getByRole('button',{name:'Review change',exact:true}));
+  await key.dismiss(cover,coverOpener);
+  const afterEscape=await api('/api/paging/state');
+  assert.deepEqual(afterEscape.schedules.find(schedule=>schedule.id===id).overrides,[winner],'protected readback contains only the winning override');
+  assert.deepEqual(afterEscape,afterWinner,'the rejected apply and Escape leave all paging records and revisions unchanged');
+  assert.deepEqual(await worker.outboundRequests(),outboundBefore,'the review, competing commit and stale refusal make no outbound request');
+  console.log(`PROBE OC-009 2 at ${width}: independently authenticated cover wins, keyboard apply returns 409, visible alert, no saved claim, retained editable fields, contained focus and Escape return; protected readback has only the winner and no additional scheduling write or outbound request`);
+ }
+ await reviewCover();
  await key.activate(cover.getByRole('checkbox',{name:'I reviewed these assignments and gaps'}),'Space');await key.activate(cover.getByRole('button',{name:'Apply reviewed change',exact:true}));await cover.waitFor({state:'detached'});
  await key.visibleFocus(coverOpener);
  const covered=(await api('/api/paging/state')).schedules.find(schedule=>schedule.id===id),override=covered.overrides.at(-1);
  assert.deepEqual({member:override.member,role:override.role,start:override.start,end:override.end},{member:null,role:'primary',start:future.overrideStart+':00.000Z',end:future.overrideEnd+':00.000Z'},'protected readback retains the exact keyboard cover interval and assignment');
- assert.equal(covered.revision,created.revision+1,'only confirmation saves the cover');
+ assert.equal(covered.revision,coverBaseRevision+1,'only confirmation saves the cover');
  const reviewedCoverage=await api('/api/paging/preview',{scheduleId:id,from:coverReview.from,to:coverReview.to});
  for(const interval of coverReview.intervals){const actual=reviewedCoverage.findLast(window=>window.at<=interval.start);assert.ok(actual);assert.equal(actual[interval.role],interval.after,'saved coverage matches each reviewed role assignment');}
  await accessibleState(page,'cover-saved',width,coverOpener);
@@ -930,14 +1032,15 @@ export async function scheduleCoordinationBrowser(page,context,width,session,{ow
 
 
 // OC-060 extends the product journey with one populated storm and two low alerts.
-export async function triageFiltersBrowser(page,context,{setTime=async()=>{},proof}={}) {
+export async function triageFiltersBrowser(page,context,{setTime=async()=>{},proof,stormWidth=1440}={}) {
  const origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
  const call=async(path,data,status=200)=>{const response=data===undefined?await context.request.get(origin+path):await context.request.post(origin+path,{headers:{origin},data});assert.equal(response.status(),status,path);return response.json();};
  const actor=(await call('/api/session')).member,prefix='Synthetic triage storm';
  const pagingRecords=({workspaceRevision,...records})=>records;
  const services=[];
  for(const [n,name] of ['Triage payments','Triage queue'].entries())services.push(await call('/api/command',{type:'service',id:'synthetic-oncall-6060-'+n,name,environment:'test',owner:actor.id,runbook:[],pager:''}));
- const other=await call('/api/members',{name:'synthetic-oncall-6060-responder',role:'responder',password:randomBytes(24).toString('hex')},201),storm=[];
+ const otherCredentials={name:'synthetic-oncall-6060-responder',password:randomBytes(24).toString('hex')};
+ const other=await call('/api/members',{...otherCredentials,role:'responder'},201),storm=[];
  for(let n=0;n<50;n++) {
   let incident=await call('/api/command',{type:'declare',service:services[n<30?0:1].id,severity:n<20?'critical':'warning',title:prefix+' '+n,summary:'Customer requests need a human response'});
   if(n>=10)incident=await call('/api/command',{type:'transition',incident:incident.id,revision:incident.revision,state:'acknowledged',summary:'Take responsibility'});
@@ -955,29 +1058,145 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
  await page.setViewportSize({width:1440,height:1000});
  const triage=page.getByRole('region',{name:'Incident triage',exact:true});
  const ids=rows=>rows.map(row=>row.id).sort();
- const compare=async(query,expected,{navigate=true}={})=>{
+ const compare=async(query,expected,{navigate=true,ordered=false}={})=>{
+  const rowIds=rows=>ordered?rows.map(row=>row.id):ids(rows);
   const api=await call('/api/triage?'+new URLSearchParams({...query,limit:'100'}));
-  assert.equal(api.total,expected.length);assert.deepEqual(ids(api.items),ids(expected));
+  assert.equal(api.total,expected.length);assert.deepEqual(rowIds(api.items),rowIds(expected));
   if(navigate)await page.goto(origin+'/incidents?'+new URLSearchParams(Object.entries(query).map(([key,value])=>['triage_'+key,value])));
   await triage.locator('.triage-count').getByText(`${expected.length} matching ${query.kind==='alerts'?'alert-only items':'incidents'}`,{exact:true}).waitFor();
   for(let loaded=25;loaded<expected.length;loaded+=25){
    await triage.getByRole('button',{name:'Load more incidents',exact:true}).click();
    await page.waitForFunction(count=>document.querySelectorAll('[data-triage-id]').length>=count,Math.min(expected.length,loaded+25));
   }
-  await page.waitForFunction(expected=>{
-   const actual=[...document.querySelectorAll('[data-triage-id]')].map(row=>row.dataset.triageId).sort();
+  await page.waitForFunction(({expected,ordered})=>{
+   const actual=[...document.querySelectorAll('[data-triage-id]')].map(row=>row.dataset.triageId);
+   if(!ordered)actual.sort();
    return JSON.stringify(actual)===JSON.stringify(expected);
-  },ids(expected));
-  assert.deepEqual(await triage.locator('[data-triage-id]').evaluateAll(rows=>rows.map(row=>row.dataset.triageId).sort()),ids(api.items));
+  },{expected:rowIds(expected),ordered});
+  const displayed=await triage.locator('[data-triage-id]').evaluateAll(rows=>rows.map(row=>({id:row.dataset.triageId})));
+  assert.deepEqual(rowIds(displayed),rowIds(api.items));
   return api;
  };
- const capture=async name=>{
+ const capture=async (name,reloadRow,showFilters=false)=>{
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'triage fits the desktop viewport');
   const axe=await new AxeBuilder({page}).include('[aria-label="Incident triage"]').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();
   assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
-  for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await triage.screenshot({path:`${directory}/OC-060-${name}-${width}.png`});}
+  for(const width of [1440,390]){
+   await page.setViewportSize({width,height:1000});
+   if(width===390&&reloadRow){
+    await page.reload();
+    await triage.locator(`[data-triage-id="${reloadRow}"]`).waitFor();
+    if(showFilters)await triage.getByText('Filter and sort incidents',{exact:true}).click();
+   }
+   await triage.screenshot({path:`${directory}/OC-060-${name}-${width}.png`});
+  }
   await page.setViewportSize({width:1440,height:1000});
  };
+ const checkLateContinuation=async()=>{
+  await page.setViewportSize({width:stormWidth,height:1000});
+  const allQuery=new URLSearchParams({q:prefix});
+  const first=await call('/api/triage?'+allQuery);
+  assert.equal(first.total,50);
+  assert.ok(first.nextCursor,'the initial storm has a second page');
+  const queueQuery=new URLSearchParams({q:prefix,service:services[1].id});
+  const queue=await call('/api/triage?'+queueQuery);
+  assert.equal(queue.total,20);
+  assert.deepEqual(ids(queue.items),ids(storm.slice(30)));
+  assert.equal(queue.nextCursor,null);
+  const more=triage.getByRole('button',{name:'Load more incidents',exact:true});
+  const rowIds=()=>triage.locator('[data-triage-id]').evaluateAll(rows=>rows.map(row=>row.dataset.triageId));
+  const count=triage.locator('.triage-count');
+  const chips=triage.getByRole('list',{name:'Applied filters',exact:true}).getByRole('listitem');
+  const protectedView=async()=>({
+   rows:await rowIds(),
+   count:await count.innerText(),
+   chips:await chips.allTextContents(),
+   url:new URL(page.url()).pathname+new URL(page.url()).search,
+   hasContinuation:await more.isVisible(),
+  });
+  const expectedQueue={
+   rows:queue.items.map(row=>row.id),
+   count:queue.total+' matching incidents',
+   chips:['Service: '+services[1].name+' ×'],
+   url:'/incidents?'+new URLSearchParams({triage_q:prefix,triage_service:services[1].id}),
+   hasContinuation:Boolean(queue.nextCursor),
+  };
+  const oldUrl=origin+'/api/triage?'+allQuery+'&cursor='+encodeURIComponent(first.nextCursor);
+  const held=Promise.withResolvers(),release=Promise.withResolvers();
+  const hold=async route=>{
+   try {
+    assert.equal(route.request().method(),'GET');
+    const response=await route.fetch({timeout:15000});
+    assert.equal(response.status(),200);
+    held.resolve(await response.json());
+    await release.promise;
+    await route.fulfill({response});
+   } catch(error) {
+    held.reject(error);
+    throw error;
+   }
+  };
+  const externalRequests=[];
+  const recordExternal=request=>{
+   if(/^https?:/.test(request.url())&&new URL(request.url()).origin!==origin)externalRequests.push(request.url());
+  };
+  page.on('request',recordExternal);
+  try {
+   await page.goto(origin+'/incidents?'+new URLSearchParams({triage_q:prefix}));
+   await expect(count).toHaveText(first.total+' matching incidents');
+   assert.deepEqual(await rowIds(),first.items.map(row=>row.id));
+   await triage.getByText('Filter and sort incidents',{exact:true}).click();
+   await page.route(url=>url.href===oldUrl,hold,{times:1});
+   try {
+    const [,oldPage]=await Promise.all([
+     page.waitForRequest(request=>request.url()===oldUrl),
+     held.promise,
+     more.click(),
+    ]);
+    assert.equal(oldPage.workspaceRevision,first.workspaceRevision);
+    assert.deepEqual(ids([...first.items,...oldPage.items]),ids(storm));
+    await expect(count).toHaveText('Loading incidents…');
+    await triage.getByLabel('Filter service',{exact:true}).selectOption(services[1].id);
+    await expect(count).toHaveText(expectedQueue.count);
+    assert.deepEqual(await protectedView(),expectedQueue,'the new first page renders before releasing the previous response');
+
+    const late=page.waitForResponse(response=>response.url()===oldUrl);
+    release.resolve();
+    const response=await late;
+    assert.equal(response.status(),200);
+    await response.body();
+    // Give the page a paint after delivery and the application promise handlers.
+    await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+    assert.deepEqual(await protectedView(),expectedQueue,'a late continuation must leave the exact filtered page intact');
+    assert.equal(await triage.locator('.failure-line').count(),0);
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'filtered triage fits the viewport');
+    await triage.screenshot({path:`${directory}/OC-060-late-continuation-${stormWidth}.png`});
+   } finally {
+    release.resolve();
+    await page.unroute(url=>url.href===oldUrl,hold);
+   }
+
+   const paymentQuery=new URLSearchParams({q:prefix,service:services[0].id});
+   const payment=await call('/api/triage?'+paymentQuery);
+   assert.ok(payment.nextCursor,'the current service filter also has a continuation');
+   const paymentTail=await call('/api/triage?'+paymentQuery+'&cursor='+encodeURIComponent(payment.nextCursor));
+   const paymentIds=[...payment.items,...paymentTail.items].map(row=>row.id);
+   await triage.getByLabel('Filter service',{exact:true}).selectOption(services[0].id);
+   await expect(count).toHaveText(payment.total+' matching incidents');
+   assert.deepEqual(await rowIds(),payment.items.map(row=>row.id));
+   await more.click();
+   await expect(triage.locator('[data-triage-id]')).toHaveCount(paymentIds.length);
+   assert.deepEqual(await rowIds(),paymentIds,'the current-query continuation still appends the exact next rows');
+   await expect(count).toHaveText(payment.total+' matching incidents');
+   assert.equal(await more.isVisible(),Boolean(paymentTail.nextCursor));
+   assert.deepEqual(externalRequests,[],'the browser makes zero outbound requests during the read sequence');
+   console.log(`PROBE OC-060 late continuation ${stormWidth}: 50 unfiltered incidents -> 20 exact ordered queue rows retained after the held GET, filter chip and URL retained, no continuation; the payments filter appended its current next page in order.`);
+  } finally {
+   page.off('request',recordExternal);
+   await page.setViewportSize({width:1440,height:1000});
+  }
+ };
+ await checkLateContinuation();
  await compare({q:prefix},storm);
  await compare({q:prefix,service:services[0].id},storm.slice(0,30));
  await compare({q:prefix,service:services[1].id,urgency:'low'},storm.slice(30));
@@ -991,7 +1210,9 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
  await triage.locator('.incident-meta').getByText('Snoozed',{exact:true}).first().waitFor();await capture('snoozed');
  await page.reload();await compare({q:prefix,status:'snoozed'},storm.slice(30,35),{navigate:false});
  await compare({q:prefix,mine:'true'},storm.slice(10,40));
- await compare({q:prefix,mine:'true',service:services[1].id,urgency:'low',status:'snoozed'},storm.slice(30,35));
+ const personalQuery={q:prefix,mine:'true',service:services[1].id,urgency:'low',status:'snoozed'};
+ const snoozedMine=storm.slice(30,35);
+ await compare(personalQuery,snoozedMine);
  // Exercise the same combination through actual controls, including URL state.
  await page.goto(origin+'/incidents');
  await triage.getByLabel('Search incidents',{exact:true}).fill(prefix);
@@ -1000,11 +1221,85 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
  await triage.getByLabel('Filter urgency',{exact:true}).selectOption('low');
  await triage.getByLabel('Incident status',{exact:true}).selectOption('snoozed');
  await triage.getByLabel('Assigned to me',{exact:true}).check();
- await compare({q:prefix,mine:'true',service:services[1].id,urgency:'low',status:'snoozed'},storm.slice(30,35),{navigate:false});
+ await compare(personalQuery,snoozedMine,{navigate:false});
  assert.equal(new URL(page.url()).searchParams.get('triage_status'),'snoozed');
  assert.deepEqual(snapshot(),before,'filtering, pagination and reloads preserve all durable rows and permanent audit');
  assert.deepEqual(await call('/api/paging/state'),paging);assert.deepEqual((await outbound()).slice(beforeOutbound.length),[]);
  console.log('PROBE OC-060 acceptance 1 web: 50 incidents -> rendered IDs and counts equal protected HTTP for service, urgency, triggered, declared, acknowledged, snoozed, resolved and mine; controls and URL agree; all durable rows, audit and paging unchanged, zero outbound requests');
+ const savedViews=triage.locator('.saved-views'),viewName='My snoozed queue';
+ // Issue the second session before saving so recall can be checked from the write boundary.
+ const otherSession=await context.browser().newContext({baseURL:origin,extraHTTPHeaders:{connection:'close'}});
+ try {
+  const login=await otherSession.request.post('/api/login',{headers:{origin},data:otherCredentials});
+  assert.equal(login.status(),200,'the other responder signs in');
+  const session=await otherSession.request.get('/api/session');
+  assert.equal(session.status(),200);
+  assert.equal((await session.json()).member.id,other.id);
+
+  await savedViews.getByText('Saved views',{exact:true}).click();
+  await savedViews.getByLabel('View name',{exact:true}).fill(viewName);
+  const preferenceWrite=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/triage/views'&&response.request().method()==='POST');
+  await savedViews.getByRole('button',{name:'Save current view',exact:true}).click();
+  assert.equal((await preferenceWrite).status(),200);
+  const afterSave=snapshot(),pagingAfterSave=await call('/api/paging/state');
+  assert.deepEqual(await outbound(),[],'saving a personal view makes no outbound request');
+
+  const {views}=await call('/api/triage/views');
+  assert.equal(views.length,1);
+  const [view]=views;
+  assert.ok(view.id);
+  assert.deepEqual(view,{id:view.id,kind:'view',actor:actor.id,name:viewName,query:personalQuery});
+  const foreignViews=await otherSession.request.get('/api/triage/views');
+  assert.equal(foreignViews.status(),200);
+  assert.deepEqual(await foreignViews.json(),{views:[]},'a signed-in responder cannot list another member’s saved view');
+
+  const checkControls=async (query={})=>{
+   await expect(triage.getByLabel('Search incidents',{exact:true})).toHaveValue(query.q??'');
+   await expect(triage.getByLabel('Filter service',{exact:true})).toHaveValue(query.service??'');
+   await expect(triage.getByLabel('Filter urgency',{exact:true})).toHaveValue(query.urgency??'');
+   await expect(triage.getByLabel('Incident status',{exact:true})).toHaveValue(query.status??'');
+   await expect(triage.getByLabel('Assigned to me',{exact:true})).toBeChecked({checked:query.mine==='true'});
+  };
+  const queryEntries=Object.entries(personalQuery).sort();
+  const externalRequests=[];
+  const recordExternal=request=>{if(/^https?:/.test(request.url())&&new URL(request.url()).origin!==origin)externalRequests.push(request.url());};
+  page.on('request',recordExternal);
+  try {
+   for(const width of [1440,390]){
+    await page.setViewportSize({width,height:1000});
+    await page.goto(origin+'/incidents');
+    assert.equal(new URL(page.url()).search,'','recall starts on a clean Incidents URL');
+    await triage.getByText('Filter and sort incidents',{exact:true}).click();
+    await checkControls();
+    await savedViews.getByText('Saved views',{exact:true}).click();
+    const recalledRead=page.waitForResponse(response=>{
+     const url=new URL(response.url());
+     return url.origin===origin&&url.pathname==='/api/triage'&&response.request().method()==='GET'&&url.searchParams.get('q')===prefix;
+    });
+    await savedViews.getByRole('button',{name:viewName,exact:true}).click();
+    const response=await recalledRead;
+    assert.equal(response.status(),200);
+    assert.deepEqual([...new URL(response.url()).searchParams].sort(),queryEntries);
+    await checkControls(personalQuery);
+    const recalled=new URL(page.url());
+    assert.equal(recalled.pathname,'/incidents');
+    assert.deepEqual([...recalled.searchParams].sort(),queryEntries.map(([key,value])=>['triage_'+key,value]));
+    await compare(personalQuery,snoozedMine,{navigate:false});
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'saved triage view fits the viewport');
+    await triage.screenshot({path:`${directory}/OC-060-personal-saved-view-${width}.png`});
+   }
+  } finally {
+   page.off('request',recordExternal);
+   await page.setViewportSize({width:1440,height:1000});
+  }
+  assert.deepEqual(await call('/api/paging/state'),pagingAfterSave);
+  assert.deepEqual(snapshot(),afterSave,'listing and recall preserve durable rows, revisions and permanent audit after the preference write');
+  assert.deepEqual(await outbound(),[],'listing and recall make no Worker outbound requests');
+  assert.deepEqual(externalRequests,[],'recall makes no browser outbound requests');
+ } finally {
+  await otherSession.close();
+ }
+ console.log('PROBE OC-060 acceptance 1 personal saved view: exact member-scoped query saved; another signed-in responder sees no view; clean Incidents URL recalls five exact protected IDs and count at 1440 and 390, with unchanged durable rows, revisions, audit and paging after save, and zero outbound requests.');
  await setTime(null);
  const source='synthetic-oncall-6060',key=randomBytes(32).toString('hex');await call('/api/sources',{id:source,key,scopes:[services[0].id]});
  const lowInputs=[];
@@ -1045,11 +1340,120 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
  assert.deepEqual(pagingRecords(await call('/api/paging/state')),pagingRecords(lowPaging));assert.deepEqual((await outbound()).slice(lowOutbound.length),[]);
  const afterActions=snapshot();await page.reload();await compare({...query,status:'resolved'},[low[1]],{navigate:false});await compare({...query,status:'acknowledged'},[low[0]]);await compare(query,[]);assert.deepEqual(snapshot(),afterActions);
  console.log('PROBE OC-060 acceptance 3 web: two native low alerts -> retained explicit low urgency across reloads, separate attributed acknowledgment and close, retained acknowledged and resolved history despite duplicate intake and source revocation, active source state, unchanged paging and zero outbound requests; changed screens captured once at 1440 and 390');
+ const assignmentSource='synthetic-oncall-6060-assignment',assignmentTitle='Synthetic alert assignment';
+ await call('/api/command',{type:'policy',service:services[1].id,severity:'warning',action:'route',owner:actor.id,reason:'Route to the current responder'});
+ await call('/api/sources',{id:assignmentSource,key,scopes:[services[1].id]});
+ for(let n=0;n<2;n++){
+  const identity=assignmentSource+'-'+n;
+  const input={source:assignmentSource,eventId:identity,service:services[1].id,environment:'test',key:identity,generation:identity,intent:'trigger',severity:'warning',title:assignmentTitle+' '+n,observedAt:new Date().toISOString(),evidence:''};
+  const response=await context.request.post(origin+'/api/ingress/'+assignmentSource,{headers:{authorization:'Bearer '+key},data:input});
+  assert.equal(response.status(),201);
+ }
+ const assignmentQuery={kind:'alerts',q:assignmentTitle};
+ const beforeAssignment=await call('/api/state');
+ const pair=beforeAssignment.alerts.filter(alert=>alert.source===assignmentSource);
+ const clearedAlert=pair.find(alert=>alert.key===assignmentSource+'-0'),keptAlert=pair.find(alert=>alert.key===assignmentSource+'-1');
+ assert.equal(pair.length,2);
+ assert.ok(pair.every(alert=>alert.owner===actor.id&&alert.coordination===undefined));
+ const assignmentPaging=pagingRecords(await call('/api/paging/state')),assignmentOutbound=await outbound();
+ assert.deepEqual(assignmentOutbound,[]);
+ await compare({...assignmentQuery,mine:'true'},pair);
+ await triage.getByLabel('Select '+assignmentTitle+' 0',{exact:true}).check();
+ const bulk=triage.getByRole('region',{name:'Bulk incident actions',exact:true});
+ await bulk.getByLabel('Bulk action',{exact:true}).selectOption('reassign');
+ await bulk.getByLabel('Bulk assignee',{exact:true}).selectOption({label:'Unassigned'});
+ await bulk.getByLabel('Bulk action reason',{exact:true}).fill('Return the alert to the unassigned queue');
+ const committing=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/triage/bulk'&&response.request().method()==='POST');
+ await bulk.getByRole('button',{name:'Apply to 1 alert-only items',exact:true}).click();
+ const response=await committing;assert.equal(response.status(),200);
+ const result=await response.json();
+ assert.deepEqual(result.results,[{id:clearedAlert.id,kind:'alert',ok:true,revision:(clearedAlert.revision??1)+1}]);
+ assert.equal(result.remaining,0);
+ const afterAssignment=await call('/api/state');
+ const committed=afterAssignment.alerts.find(alert=>alert.id===clearedAlert.id);
+ assert.equal(committed.coordination.assignee,null);assert.equal(committed.coordination.history.length,1);
+ const entry=committed.coordination.history[0];
+ assert.deepEqual([entry.kind,entry.actor,entry.operationId],['bulk-reassign',actor.id,result.operationId]);
+ assert.equal(committed.owner,clearedAlert.owner);assert.deepEqual(committed.obligation,clearedAlert.obligation);
+ assert.deepEqual(afterAssignment.alerts.find(alert=>alert.id===keptAlert.id),keptAlert);
+ assert.deepEqual(afterAssignment.events,beforeAssignment.events);
+ assert.deepEqual(afterAssignment.intakeReceipts,beforeAssignment.intakeReceipts);
+ const afterReassignment=snapshot();
+ await page.reload();
+ const mine=await compare({...assignmentQuery,mine:'true'},[keptAlert],{navigate:false});
+ assert.equal(mine.items[0].assignee,actor.id);
+ await capture('assignment-mine',keptAlert.id);
+ await triage.getByText('Filter and sort incidents',{exact:true}).click();
+ await triage.getByLabel('Assigned to me',{exact:true}).uncheck();
+ await triage.getByLabel('Filter assignee',{exact:true}).selectOption({label:'Unassigned'});
+ await page.reload();
+ const unassigned=await compare({...assignmentQuery,assignee:'unassigned'},[clearedAlert],{navigate:false});
+ assert.equal(unassigned.items[0].assignee,null);assert.equal(unassigned.items[0].triageStatus,'triggered');
+ assert.deepEqual(unassigned.items[0].timeline,[entry]);
+ await capture('assignment-unassigned',clearedAlert.id);
+ assert.deepEqual(snapshot(),afterReassignment);
+ assert.deepEqual(pagingRecords(await call('/api/paging/state')),assignmentPaging);
+ assert.deepEqual(await outbound(),assignmentOutbound);
+ console.log('PROBE OC-060 acceptance 1 web: bulk Reassign to Unassigned cleared one of two owned alert-only items. Reloaded Assigned to me and Unassigned rows and counts agree with protected HTTP and retain the attributed clear. Paging custody unchanged, zero outbound requests, reloaded screens captured at 1440 and 390.');
+ try {
+  const chronology=await alertTriageTimeFixture({
+   call, setTime, service:services[0], actor,
+   admit:async(path,input,key,status)=>{
+    const response=await context.request.post(origin+path,{headers:{authorization:'Bearer '+key},data:input});
+    assert.equal(response.status(),status,path);
+    return response.json();
+   },
+  });
+  const {query,times,recovered,coordinated,untouched}=chronology;
+  const beforeReads=snapshot(),pagingBeforeReads=await call('/api/paging/state');
+  const applicationRequests=[];
+  const recordExternal=request=>{if(/^https?:/.test(request.url())&&new URL(request.url()).origin!==origin)applicationRequests.push(request.url());};
+  page.on('request',recordExternal);
+  try {
+   const compareOrder=(filters,expected)=>compare({...query,...filters},expected,{navigate:false,ordered:true});
+   await page.goto(origin+'/incidents');
+   await triage.getByLabel('Triage items',{exact:true}).selectOption('alerts');
+   await triage.getByLabel('Search incidents',{exact:true}).fill(query.q);
+   const filterPanel=triage.getByText('Filter and sort incidents',{exact:true});
+   await filterPanel.click();
+   await triage.getByLabel('Filter service',{exact:true}).selectOption(query.service);
+   await compareOrder({},[untouched,coordinated,recovered]);
+   const sort=triage.getByLabel('Sort incidents',{exact:true});
+   await sort.selectOption({label:'Recently updated'});
+   await compareOrder({sort:'updated'},[coordinated,recovered,untouched]);
+   const from=triage.getByLabel('Updated from',{exact:true}),before=triage.getByLabel('Updated before',{exact:true});
+   const minute=instant=>instant.slice(0,16);
+   await from.fill(minute(times.recovered));
+   await before.fill(minute(times.laterHuman));
+   await compareOrder({sort:'updated',updatedAfter:times.recovered,updatedBefore:times.laterHuman},[recovered]);
+   await from.fill(minute(times.untouchedOpened));
+   await before.fill(minute(times.recovered));
+   await compareOrder({sort:'updated',updatedAfter:times.untouchedOpened,updatedBefore:times.recovered},[untouched]);
+   await before.fill(minute(times.duplicate));
+   await from.fill(minute(times.recovered));
+   const filters={sort:'updated',updatedAfter:times.recovered,updatedBefore:times.duplicate};
+   await compareOrder(filters,[coordinated,recovered]);
+   const shared=new URL(page.url());
+   for(const [key,value] of Object.entries({...query,...filters}))assert.equal(shared.searchParams.get('triage_'+key),value);
+   await page.goto(shared.href);
+   await compareOrder(filters,[coordinated,recovered]);
+   await filterPanel.click();
+   await expect(sort).toHaveValue('updated');
+   await expect(from).toHaveValue(minute(times.recovered));
+   await expect(before).toHaveValue(minute(times.duplicate));
+   await capture('updated-range',coordinated.id,true);
+   assert.deepEqual(await call('/api/paging/state'),pagingBeforeReads);
+   assert.deepEqual(snapshot(),beforeReads,'chronology controls and shared URL preserve durable records, revisions and permanent audit');
+   assert.deepEqual(await outbound(),[]);
+   assert.deepEqual(applicationRequests,[]);
+  } finally {page.off('request',recordExternal);}
+  console.log('PROBE OC-060 acceptance 1 web chronology: alert-only controls and shared URL return exact protected HTTP order and time cohorts. Created sorting, both updated boundaries, replay cutoff, durable records, revisions, audit, paging and zero outbound pass. Changed filter view captured at 1440 and 390.');
+ } finally {await setTime(null);}
  await page.goto(origin+'/incidents');
 }
 
 // triage-bulk-browser: part of this public journey.
-export async function triageBulkBrowser(page,context,width){
+export async function triageBulkBrowser(page,context,width,worker){
  const origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
  const call=async(path,data,status=200)=>{const response=data===undefined?await context.request.get(origin+path):await context.request.post(origin+path,{headers:{origin},data});assert.equal(response.status(),status,path);return response.json();};
  // A changed and an already-acknowledged item leave a usable selection. The
@@ -1209,7 +1613,8 @@ export async function triageBulkBrowser(page,context,width){
  // Versioned declaration/notification steps reuse the same saved workflow and progress area.
  const coordinator=(await call('/api/session')).member,newServiceId='synthetic-oncall-443-'+width;
  await call('/api/command',{type:'service',id:newServiceId,name:'Synthetic coordination '+width,environment:'test',owner:coordinator.id,runbook:['Synthetic frozen runbook'],pager:''});
- await call('/api/command',{type:'service-template',service:newServiceId,baseVersion:0,severityWording:{critical:'Synthetic blocked',warning:'Synthetic delayed',info:'Synthetic investigation'},impactPrompt:'Synthetic impact',incidentTypes:[],checklist:[{id:'synthetic-oncall-443',text:'Synthetic frozen checklist'}],reason:'Synthetic reviewed template'});
+ const template={type:'service-template',service:newServiceId,baseVersion:0,severityWording:{critical:'Synthetic blocked',warning:'Synthetic delayed',info:'Synthetic investigation'},impactPrompt:'Synthetic impact',incidentTypes:[],checklist:[{id:'synthetic-oncall-443',text:'Synthetic frozen checklist'}],reason:'Synthetic reviewed template'};
+ await call('/api/command',template);
  const newSource='synthetic-oncall-444-'+width,newKey=randomBytes(32).toString('hex'),newTitle='Synthetic declaration workflow '+width;await call('/api/sources',{id:newSource,key:newKey,scopes:[newServiceId]});
  for(let n=0;n<2;n++){const identity='synthetic-oncall-444-'+width+'-'+n;const response=await context.request.post(origin+'/api/ingress/'+newSource,{headers:{origin,authorization:'Bearer '+newKey},data:{source:newSource,eventId:identity,service:newServiceId,environment:'test',key:identity,generation:identity,intent:'trigger',severity:'warning',title:newTitle+' '+n,observedAt:new Date().toISOString(),evidence:''}});assert.equal(response.status(),201);}
  await page.goto(origin+'/incidents?triage_kind=alerts&triage_q='+encodeURIComponent(newTitle));await page.getByText('2 matching alert-only items',{exact:true}).waitFor();
@@ -1258,14 +1663,171 @@ export async function triageBulkBrowser(page,context,width){
  const approvedState=await call('/api/state'),approvedPolicy=approvedState.policies.find(p=>p.service===newServiceId&&p.severity==='*'),ruleIdentity='synthetic-oncall-446-'+width;
  const ruleSignal={source:newSource,eventId:ruleIdentity,service:newServiceId,environment:'test',key:ruleIdentity,generation:ruleIdentity,intent:'trigger',severity:'warning',title:'Synthetic approved launch '+width,observedAt:new Date().toISOString(),evidence:''};
  await openWorkspaceSection(page,'routing');await openHistoryComparison(page);await page.getByLabel('Event JSON',{exact:true}).fill(JSON.stringify([ruleSignal]));await page.getByRole('button',{name:'Compare pasted events',exact:true}).click();const ruleReplay=page.getByRole('region',{name:'Replay comparison',exact:true});await ruleReplay.getByText(/^Proposed workflow: reassign → declare → notify\. Recorded obligation only; no effects\.$/).waitFor();await ruleReplay.scrollIntoViewIfNeeded();await workflowCheck('rule-replay');await page.getByRole('button',{name:'Close comparison',exact:true}).click();
- const admitted=await context.request.post(origin+'/api/ingress/'+newSource,{headers:{origin,authorization:'Bearer '+newKey},data:ruleSignal});assert.equal(admitted.status(),201);
- const launched=(await call('/api/state')).triage.find(r=>r.kind==='bulk'&&r.rule?.policy===approvedPolicy.id);assert.equal(launched.results.length,1);assert.equal(launched.results[0].step,'reassign');
- await page.goto(origin+'/incidents');await page.getByText('Recorded coordination workflows',{exact:true}).click();
- const launchedProgress=page.locator('details.triage-bulk > ul > li').filter({hasText:'Operation '+launched.id});await launchedProgress.getByText('1 of 3 processed · 0 refused',{exact:true}).waitFor();await launchedProgress.scrollIntoViewIfNeeded();await workflowCheck('rule-launched');
- await page.reload();await page.getByText('Recorded coordination workflows',{exact:true}).click();await launchedProgress.getByRole('button',{name:'Resume recorded workflow',exact:true}).click();await launchedProgress.getByText('2 of 3 processed · 0 refused',{exact:true}).waitFor();await workflowCheck('rule-declared');
- await launchedProgress.getByRole('button',{name:'Resume recorded workflow',exact:true}).click();await launchedProgress.getByText('3 of 3 processed · 0 refused',{exact:true}).waitFor();await workflowCheck('rule-complete');
- assert.equal((await call('/api/state')).triage.find(r=>r.id===launched.id).rule.state,'complete');
- console.log(`OC-043 approved rule browser ${width}: Settings approval, launch versions, saved progress across reload, explicit declaration/notification, axe, overflow and hydration passed`);
+ const auditRows=async()=>(await call('/api/audit/export')).rows.filter(row=>row.kind!=='audit.export');
+ const pagingRecords=async()=>{const {workspaceRevision,...records}=await call('/api/paging/state');return records;};
+ const auditBefore=await auditRows(),pagingBefore=await pagingRecords(),outboundBefore=await worker.outboundRequests();
+ const auditIds=new Set(auditBefore.map(row=>row.id));
+ const newAudit=async()=> (await auditRows()).filter(row=>!auditIds.has(row.id));
+ const approvingAudit=auditBefore.findLast(row=>row.kind==='command.policy'&&row.outcome==='accepted');
+ assert.equal(approvedPolicy.workflow.by,coordinator.id);
+ const admitted=await context.request.post(origin+'/api/ingress/'+newSource,{headers:{origin,authorization:'Bearer '+newKey},data:ruleSignal});
+ assert.equal(admitted.status(),201);
+ const admittedState=await call('/api/state');
+ const launchedRuns=admittedState.triage.filter(r=>r.kind==='bulk'&&r.rule?.policy===approvedPolicy.id);
+ assert.equal(launchedRuns.length,1);
+ const [launched]=launchedRuns;
+ const alert=admittedState.alerts.find(row=>row.id===launched.rule.alert);
+ const originals=admittedState.events.filter(event=>alert.events.includes(event.id));
+ assert.equal(originals.length,1);
+ assert.equal(originals[0].eventId,ruleSignal.eventId);
+ assert.equal(originals[0].title,ruleSignal.title);
+ assert.equal(launched.actor,coordinator.id);
+ assert.equal(launched.rule.workflowVersion,approvedPolicy.workflow.version);
+ assert.deepEqual(launched.results.map(({step,ok})=>[step,ok]),[['reassign',true]]);
+ assert.deepEqual(alert.coordination.history.map(({kind,actor,operationId})=>[kind,actor,operationId]),[['bulk-reassign',coordinator.id,launched.id]]);
+ const linkedIncidents=state=>state.incidents.filter(incident=>incident.alerts.includes(alert.id));
+ const readRun=state=>state.triage.find(row=>row.id===launched.id);
+ const workflowSummary=page.getByText('Recorded coordination workflows',{exact:true});
+ const incidentHeading=page.getByRole('region',{name:'Incident triage'}).getByRole('heading',{name:ruleSignal.title,exact:true});
+ const launchedProgress=page.getByRole('list',{name:'Recorded workflow progress'}).locator(':scope > li').filter({has:page.getByText('Operation '+launched.id,{exact:true})});
+ const resume=launchedProgress.getByRole('button',{name:'Resume recorded workflow',exact:true});
+ const clear=launchedProgress.getByRole('button',{name:'Clear expired workflow',exact:true});
+ const workflowPath='/api/triage/workflows/'+encodeURIComponent(launched.id);
+ const clickWorkflow=async(button,action)=>{
+  const [response]=await Promise.all([
+   page.waitForResponse(r=>new URL(r.url()).pathname===workflowPath+'/'+action&&r.request().method()==='POST'),
+   button.click(),
+  ]);
+  return response;
+ };
+ const reloadProgress=async()=>{await page.reload();await workflowSummary.click();};
+ const showProgress=async(run,stateLabel)=>{
+  await launchedProgress.getByText(run.results.length+' of 3 processed · 0 refused',{exact:true}).waitFor();
+  await launchedProgress.getByText('Rule v'+run.rule.policyVersion+' · approved workflow v'+run.rule.workflowVersion+' · '+stateLabel+' · non-automatic · paging OFF',{exact:true}).waitFor();
+ };
+ const captureProgress=async(label,widths)=>{
+  for(const proofWidth of widths){
+   await page.setViewportSize({width:proofWidth,height:1000});
+   await launchedProgress.evaluate(row=>row.scrollIntoView({block:'center'}));
+   await page.screenshot({path:directory+'/oc043-rule-'+label+'-'+proofWidth+'.png'});
+  }
+  await page.setViewportSize({width,height:1000});
+ };
+
+ await page.goto(origin+'/incidents');await workflowSummary.click();
+ await showProgress(launched,'ready');await launchedProgress.scrollIntoViewIfNeeded();await workflowCheck('rule-launched');
+ await call('/api/command',{...template,baseVersion:1,checklist:[{id:template.checklist[0].id,text:'Synthetic later checklist'}]});
+ await reloadProgress();
+ worker.sql(ruleDeclarationAuditFault.install);
+ try{assert.equal((await clickWorkflow(resume,'resume')).status(),503);}
+ finally{worker.sql(ruleDeclarationAuditFault.remove);}
+ await reloadProgress();
+ const uncertainState=await call('/api/state'),uncertain=readRun(uncertainState);
+ assert.equal(uncertain.rule.state,'running');
+ assert.equal(uncertain.rule.outcome,'uncertain');
+ assert.ok(uncertain.rule.lease&&Number.isFinite(Date.parse(uncertain.rule.leaseUntil)));
+ assert.deepEqual(uncertain.results,launched.results);
+ assert.deepEqual(uncertainState.alerts.find(row=>row.id===alert.id),alert);
+ assert.deepEqual(linkedIncidents(uncertainState),[]);
+ await showProgress(uncertain,'Execution uncertain until its lease is cleared');
+ const interruptedAudit=await newAudit();
+ assert.equal(interruptedAudit.filter(row=>row.feature==='ingest'&&row.outcome==='accepted'&&row.workspaceBefore===admittedState.revision-1&&row.workspaceAfter===admittedState.revision).length,1,'admission and reassignment share one permanent audit commit');
+ const reservations=interruptedAudit.filter(row=>row.kind==='triage.workflow-reserve'&&row.outcome==='accepted');
+ assert.equal(reservations.length,1);
+ const [reservation]=reservations;
+ assert.equal(reservation.actor,approvingAudit.actor);
+ assert.equal(reservation.workspaceAfter,uncertainState.revision);
+ assert.equal(interruptedAudit.filter(row=>row.kind==='triage.workflow-declare'&&row.outcome==='accepted').length,0);
+
+ const premature=await clickWorkflow(clear,'clear-expired');
+ assert.equal(premature.status(),409);
+ await page.getByRole('alert').getByText('Only an expired workflow lease can be explicitly cleared.',{exact:true}).waitFor();
+ assert.deepEqual(await call('/api/state'),uncertainState,'premature clearance preserves the lease and leaves declaration absent');
+ const [refusal]=(await newAudit()).filter(row=>row.feature==='triage'&&row.outcome==='refused');
+ assert.equal(refusal.actor,reservation.actor);
+ assert.equal(refusal.workspaceBefore,uncertainState.revision);
+ assert.equal(refusal.workspaceAfter,uncertainState.revision);
+ await reloadProgress();
+ await showProgress(uncertain,'Execution uncertain until its lease is cleared');
+ await expect(incidentHeading).toHaveCount(0);
+ await captureProgress('uncertain',[1440,390]);
+
+ // Backdate only the stored lease. The real clearance command and SQL guard still run.
+ worker.sql("UPDATE oc_triage SET data=json_set(data,'$.rule.leaseUntil',strftime('%Y-%m-%dT%H:%M:%fZ','now','-1 second')) WHERE id='"+launched.id.replaceAll("'","''")+"'");
+ assert.equal((await clickWorkflow(clear,'clear-expired')).status(),200);
+ await reloadProgress();
+ const clearedState=await call('/api/state'),cleared=readRun(clearedState);
+ assert.deepEqual(cleared.rule,{...uncertain.rule,state:'interrupted',outcome:'interrupted',lease:null,leaseUntil:null,revision:uncertain.rule.revision+1});
+ assert.deepEqual(cleared.results,launched.results);
+ assert.deepEqual(linkedIncidents(clearedState),[]);
+ await showProgress(cleared,'interrupted');
+ await launchedProgress.getByText('Pending · recorded declaration and notification',{exact:true}).waitFor();
+ await expect(clear).toHaveCount(0);
+ await expect(resume).toBeEnabled();
+ await expect(incidentHeading).toHaveCount(0);
+ const clearedAudit=await newAudit(),[clearance]=clearedAudit.filter(row=>row.kind==='triage.workflow-clear-expired');
+ assert.equal(clearance.outcome,'interrupted');
+ assert.equal(clearance.actor,reservation.actor);
+ assert.equal(clearance.workspaceBefore,uncertainState.revision);
+ assert.equal(clearance.workspaceAfter,clearedState.revision);
+ assert.equal(clearedAudit.filter(row=>['triage.workflow-declare','triage.workflow-notify'].includes(row.kind)&&row.outcome==='accepted').length,0,'clearance and reload do not run either pending step');
+ await captureProgress('cleared',[1440,390]);
+
+ assert.equal((await clickWorkflow(resume,'resume')).status(),200);
+ await launchedProgress.getByText('2 of 3 processed · 0 refused',{exact:true}).waitFor();await workflowCheck('rule-declared');
+ await reloadProgress();
+ const declaredState=await call('/api/state'),declaredRun=readRun(declaredState);
+ await showProgress(declaredRun,'ready');
+ assert.deepEqual(declaredRun.results.map(({step,ok})=>[step,ok]),[['reassign',true],['declare',true]]);
+ const incidents=linkedIncidents(declaredState);
+ assert.equal(incidents.length,1);
+ const [incident]=incidents;
+ assert.equal(incident.id,declaredRun.results[1].incident);
+ assert.equal(incident.template.version,launched.rule.templateVersion);
+ assert.deepEqual(incident.template.checklist,template.checklist.map(item=>({...item,done:false,history:[]})));
+ assert.deepEqual(incident.timeline.filter(entry=>entry.kind==='declared').map(({actor,operationId})=>[actor,operationId]),[[coordinator.id,launched.id]]);
+ assert.deepEqual(incident.responderRequests??[],[],'declaration and reload do not run notification');
+
+ assert.equal((await clickWorkflow(resume,'resume')).status(),200);
+ await launchedProgress.getByText('3 of 3 processed · 0 refused',{exact:true}).waitFor();await workflowCheck('rule-complete');
+ await reloadProgress();
+ const completedState=await call('/api/state'),completedRuleRun=readRun(completedState);
+ assert.equal(completedRuleRun.rule.state,'complete');
+ assert.deepEqual(completedRuleRun.results.slice(0,2),declaredRun.results);
+ assert.deepEqual(completedRuleRun.results.map(({step,ok})=>[step,ok]),[['reassign',true],['declare',true],['notify',true]]);
+ assert.equal(completedRuleRun.results[2].incident,incident.id);
+ await showProgress(completedRuleRun,'complete');
+ await expect(resume).toHaveCount(0);
+ await expect(incidentHeading).toBeVisible();
+ const completedIncidents=linkedIncidents(completedState);
+ assert.equal(completedIncidents.length,1);
+ const [completedIncident]=completedIncidents;
+ assert.deepEqual(completedIncident.template,incident.template);
+ assert.equal(completedIncident.responderRequests.length,1);
+ const [notification]=completedIncident.responderRequests;
+ assert.equal(notification.requester,coordinator.id);
+ assert.equal(notification.obligation.creator,coordinator.id);
+ assert.equal(notification.obligation.target.id,approvedPolicy.workflow.member);
+ assert.equal(notification.obligation.label,'no sender');
+ assert.equal(notification.obligation.state,'recorded');
+ assert.equal(notification.obligation.paging,'off');
+ assert.equal(notification.obligation.automatic,false);
+ assert.deepEqual(completedIncident.timeline.slice(0,-1),incident.timeline);
+ assert.equal(completedIncident.timeline.at(-1).kind,'request-responders');
+ assert.equal(completedIncident.timeline.at(-1).actor,coordinator.id);
+ assert.equal(completedIncident.timeline.at(-1).operationId,launched.id);
+ const completedAudit=await newAudit(),stepAudit=completedAudit.filter(row=>['triage.workflow-declare','triage.workflow-notify'].includes(row.kind)&&row.outcome==='accepted');
+ assert.equal(completedAudit.filter(row=>row.kind==='triage.workflow-reserve'&&row.outcome==='accepted').length,3,'each explicit resume reserves exactly one lease');
+ assert.deepEqual(stepAudit.map(row=>row.kind),['triage.workflow-declare','triage.workflow-notify']);
+ assert.deepEqual(stepAudit.map(row=>row.workspaceAfter),[declaredState.revision,completedState.revision]);
+ for(const row of stepAudit){assert.equal(row.actor,reservation.actor);assert.equal(row.workspaceAfter,row.workspaceBefore+1);}
+ const completedById=new Map(completedAudit.map(row=>[row.id,row]));
+ for(const row of clearedAudit)assert.deepEqual(completedById.get(row.id),row);
+ assert.equal(pagingBefore.paging,'OFF');
+ assert.deepEqual(await pagingRecords(),pagingBefore,'the full workflow creates no paging jobs or receipts');
+ assert.deepEqual((await worker.outboundRequests()).slice(outboundBefore.length),[],'the full workflow makes no provider requests');
+ await captureProgress('completed',[390]);
+ console.log('PASS OC-043 approved rule browser: one admitted original and attributed reassignment, audit fault and uncertain lease, premature clear refused, expired clear retained interrupted progress after reload, separate explicit declaration and unsent notification, frozen checklist, permanent audit, paging OFF and zero outbound; screens at 1440 and 390');
 
 }
 
@@ -1365,8 +1927,163 @@ export async function supportStartBrowser(page,context,{setTime,proof}) {
  } finally {page.off('request',trackSample);page.off('requestfinished',settleSample);page.off('requestfailed',settleSample);await setTime(null);await page.setViewportSize({width:1440,height:1000});}
 }
 
+export async function declareIncidentFromAlert(page,title) {
+ const card=page.getByRole('article',{name:'Alert details',exact:true})
+ await card.getByRole('button',{name:'Declare incident from alert',exact:true}).click()
+ await page.locator('.detail').getByRole('heading',{name:title,exact:true}).waitFor()
+}
+
 // alert-severity-browser: part of this public journey.
 // One core flow: admitted monitoring events -> visible severity -> declared incident -> stored severity.
+export async function unmatchedAlertQueue(page, context, proof, width = 1440) {
+ const origin = new URL(page.url()).origin;
+ const call = async (path, data, status = 200, headers = {}) => {
+  const response = data === undefined
+   ? await context.request.get(path)
+   : await context.request.post(path, {headers: {origin, ...headers}, data});
+  assert.equal(response.status(), status, path);
+  return response.json();
+ };
+ const {member} = await call('/api/session');
+ const responder = await call('/api/members', {name: 'Synthetic queue responder', role: 'responder', password: 'synthetic-oncall-43-password'}, 201);
+ const command = data => call('/api/command', data);
+ const services = {};
+ for (const [kind, name] of Object.entries({missing: 'Warehouse', unavailable: 'Fulfillment', routed: 'Dispatch', suppressed: 'Inventory'})) {
+  const runbook = kind === 'missing' ? ['Check the inventory feed', 'Compare the last successful import', 'Record the missing updates'] : [];
+  services[kind] = await command({type: 'service', id: 'synthetic-oncall-43-'+kind, name, environment: 'test', owner: member.id, runbook, pager: ''});
+ }
+ const policy = (kind, severity, action, owner, extra = {}) => command({
+  type: 'policy', service: services[kind].id, severity, action, owner, reason: 'Synthetic service policy', ...extra,
+ });
+ await policy('unavailable', '*', 'route', responder.id);
+ await command({type: 'member', id: responder.id, role: 'responder', active: false});
+ await policy('routed', 'critical', 'route', member.id);
+ await policy('suppressed', '*', 'suppress', null);
+
+ const source = 'synthetic-oncall-43-queue', key = randomBytes(32).toString('hex');
+ await call('/api/routing/keys', {
+  id: source, name: 'Queue check: Regional intake', provider: 'native', authentication: 'bearer',
+  scope: Object.values(services).map(service => service.id), owner: member.id, key, revision: 0,
+  rules: [{id: 'pick-service', match: 'all', conditions: [{field: 'details.destination', op: 'exists'}], target: {field: 'details.destination'}}],
+  catchAll: null,
+ }, 201);
+ const ingress = '/api/ingress/intake:' + source;
+ const admit = (id, title, destination, extra = {}) => call(ingress, {
+  source: 'intake:' + source, service: 'sender-hint', environment: 'sender-hint', eventId: id,
+  key: id, generation: id, intent: 'trigger', severity: 'warning', title: 'Queue check: ' + title,
+  observedAt: '2026-10-22T05:00:00.000Z', details: {destination}, ...extra,
+ }, 201, {authorization: 'Bearer ' + key});
+ const missing = await admit('missing', 'Warehouse stock feed delayed', services.missing.id);
+ const unavailable = await admit('unavailable', 'Fulfillment processor stalled', services.unavailable.id);
+ const routed = await admit('routed', 'Dispatch latency', services.routed.id, {severity: 'critical'});
+ const suppressed = await admit('suppressed', 'Inventory maintenance', services.suppressed.id);
+ const unrouted = await call(ingress, '{"source":', 202, {authorization: 'Bearer ' + key, 'content-type': 'application/json'});
+ const recovered = await admit('recovered', 'Recovered warehouse alert', services.missing.id);
+ await admit('recovery', 'Recovered warehouse alert', services.missing.id, {intent: 'recover', key: 'recovered', generation: 'recovered'});
+ const nowOwned = await admit('now-owned', 'Dispatch responder assigned', services.routed.id);
+ await policy('routed', 'warning', 'route', member.id, {
+  baseVersion: 0, correlation: {field: 'key', windowSeconds: 60, includeDependencies: false, flappingCount: 0},
+ });
+ await admit('owned-update', 'Dispatch responder assigned', services.routed.id, {key: 'now-owned', generation: 'now-owned'});
+ // A policy published after admission must neither hide the original alert nor replace its reason.
+ await policy('missing', '*', 'route', member.id);
+ const laterTrigger = await admit('missing-update', 'Warehouse stock feed delayed', services.missing.id, {key: 'missing', generation: 'missing'});
+
+ const native = await call('/api/state');
+ const forEvent = receipt => ({
+  alert: native.alerts.find(alert => alert.events.includes(receipt.id)),
+  event: native.events.find(event => event.id === receipt.id),
+ });
+ const unmatched = [forEvent(missing), forEvent(unavailable)];
+ for (const {alert, event} of unmatched) {
+  assert.ok(alert.service);
+  assert.equal(alert.state, 'active');
+  assert.equal(alert.owner, null);
+  assert.equal(event.decision.action, 'unmatched');
+ }
+ assert.equal(unmatched[0].event.decision.policy, null);
+ assert.ok(unmatched[1].event.decision.policy);
+ assert.notEqual(unmatched[0].event.decision.reason, unmatched[1].event.decision.reason);
+ assert.equal(forEvent(laterTrigger).alert.id, unmatched[0].alert.id);
+ assert.equal(forEvent(laterTrigger).event.decision.action, 'route');
+ assert.equal(forEvent(routed).event.decision.action, 'route');
+ assert.equal(forEvent(suppressed).alert.suppressed, true);
+ assert.equal(forEvent(suppressed).alert.owner, null);
+ assert.equal(forEvent(recovered).alert.state, 'recovered');
+ assert.equal(forEvent(nowOwned).event.decision.action, 'unmatched');
+ assert.equal(forEvent(nowOwned).alert.owner, member.id);
+ const parked = native.intakeReceipts.find(receipt => receipt.id === unrouted.id);
+ assert.equal(parked.outcome, 'unrouted');
+ const parkedAlert = native.alerts.find(alert => alert.id === parked.alert);
+ assert.equal(parkedAlert.service, null);
+
+ const before = proof.snapshot();
+ const paging = await call('/api/paging/state');
+ const outbound = await proof.outbound();
+ const directory = process.env.ONCALL_BROWSER_EVIDENCE ?? 'evidence/browser';
+ await mkdir(directory, {recursive: true});
+ const capture = async name => {
+  for (const proofWidth of [1440, 390]) {
+   await page.setViewportSize({width: proofWidth, height: 1000});
+   await page.screenshot({path: directory + '/oc043-unmatched-' + name + '-' + proofWidth + '.png', fullPage: true});
+  }
+  await page.setViewportSize({width, height: 1000});
+ };
+ const list = page.getByRole('region', {name: 'Alerts list', exact: true});
+ const rows = list.locator('.alert-row');
+ const urlFor = alert => '/alerts/' + encodeURIComponent(alert.id);
+ const compare = async alerts => {
+  await expect(rows).toHaveCount(alerts.length);
+  assert.deepEqual((await rows.evaluateAll(links => links.map(link => link.getAttribute('href')))).sort(), alerts.map(urlFor).sort());
+ };
+ const filter = list.getByText('Filter', {exact: true});
+ const clear = list.getByRole('button', {name: 'Clear unmatched service alerts filter', exact: true});
+ await page.setViewportSize({width, height: 1000});
+ await page.goto(origin + '/alerts');
+ await focusWorkspace(page);
+ await compare(native.alerts);
+ const search = list.getByRole('searchbox', {name: 'Search alerts', exact: true});
+ await search.fill('Queue check:');
+ const normalCohort = [missing, unavailable, routed, suppressed, recovered, nowOwned].map(receipt => forEvent(receipt).alert);
+ normalCohort.push(parkedAlert);
+ await compare(normalCohort);
+ await filter.click();
+ await list.getByLabel('Filter queue', {exact: true}).selectOption({label: 'Unmatched service alerts'});
+ await capture('filter');
+ if (width === 390) await list.getByRole('button', {name: 'Done', exact: true}).click();
+ else await filter.click();
+ const cohort = unmatched.map(({alert}) => alert);
+ await compare(cohort);
+ await capture('queue');
+ for (const {alert, event} of unmatched) {
+  await rows.filter({has: page.getByText(event.title, {exact: true})}).click();
+  await page.waitForURL(url => url.pathname === urlFor(alert));
+  const detail = page.getByRole('article', {name: 'Alert details', exact: true});
+  if (alert.service === services.missing.id) {
+   const service = native.services.find(service => service.id === alert.service);
+   assert.ok(!native.incidents.some(incident => incident.alerts.includes(alert.id)));
+   await expect(detail.locator('.alert-runbook').getByRole('listitem')).toHaveText(service.runbook);
+   await expect(detail.getByRole('button', {name: 'Declare incident from alert', exact: true})).toBeEnabled();
+  }
+  await detail.getByText('Event context', {exact: true}).click();
+  await expect(detail.getByText(event.decision.reason, {exact: true})).toBeVisible();
+  await capture(event.eventId);
+  await detail.getByRole('link', {name: '‹ Alerts', exact: true}).click();
+  await expect(clear).toBeVisible();
+  await compare(cohort);
+ }
+ await clear.click();
+ await compare(normalCohort);
+ await search.clear();
+ await compare(native.alerts);
+ assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+ assert.deepEqual(await call('/api/state'), native, 'protected records and revision are unchanged by the reads');
+ assert.deepEqual(await call('/api/paging/state'), paging);
+ assert.deepEqual(await proof.outbound(), outbound);
+ assert.deepEqual(proof.snapshot(), before, 'the browser reads change no durable rows or permanent audit');
+ console.log(`PROBE OC-043 2 Alerts at ${width}: two native unmatched admissions and five controls -> exact protected cohort and reasons, cleared filter restores all alerts, durable records, revision, audit, paging and outbound state unchanged. Screens captured at 1440 and 390.`);
+}
+
 export async function alertSeverity(page,context,width) {
  const origin=new URL(page.url()).origin
  const state=await (await context.request.get('/api/state')).json()
@@ -1393,9 +2110,7 @@ export async function alertSeverity(page,context,width) {
  for(const severity of ['critical','warning','info']) {
   const title=`Checkout ${severity} ${width}`
   await page.locator('.alert-row').filter({hasText:title}).click()
-  const card=page.getByRole('article',{name:'Alert details',exact:true})
-  await card.getByRole('button',{name:'Declare incident from alert',exact:true}).click()
-  await page.locator('.detail').getByRole('heading',{name:title,exact:true}).waitFor()
+  await declareIncidentFromAlert(page,title)
   const stored=await (await context.request.get('/api/state')).json()
   const incident=stored.incidents.find(incident=>incident.title===title)
   assert.equal(incident.severity,severity,'declaring from alert preserves its severity')
@@ -1438,7 +2153,7 @@ async function singleIncidentPerAlert(page,context,width,service,source,key) {
 
 
 // keyboard-coordination: part of this public journey.
-export async function keyboardCoordination(page,context,width,ownerLink,openSession) {
+export async function keyboardCoordination(page,context,width,{ownerLink,openSession,worker}) {
  const key=keyboardUser(page),directory=process.env.ONCALL_BROWSER_EVIDENCE??'./evidence/browser'
  await mkdir(directory,{recursive:true})
  const hostile=`<img data-hostile="oncall-probe" src="https://hostile.invalid/probe" onerror="window.__oncallHostile=true"><script data-hostile="oncall-probe">window.__oncallHostile=true</script>`
@@ -1523,51 +2238,105 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
  assert.ok(acknowledged.timeline.some(entry=>entry.text===hostile&&entry.actor===actor),'protected readback retains the literal keyboard note and its actor')
  await accessibleState(page,'acknowledged',width,page.getByRole('button',{name:'Add note',exact:true}))
  console.log(`PROBE OC-009 declaration, acknowledgment and notes ${width}: native keyboard incident and action dialog -> protected incident, commander and literal attributed note retained; focus, Tab containment, Escape return, labels, overflow and axe passed`)
- // The existing desktop conflict is the acceptance-2 proof. The phone leg
- // adds the selected coordination screens, without duplicating the transport race.
- if(width!==1440)return
- // A separately authenticated HTTP context advances the real stored revision.
- // Delay this browser's real workspace reads while the second session wins,
- // so a live-update clock cannot make this stale-write transport case disappear.
- await focusWorkspace(page)
- let releaseWorkspace
- const workspaceGate=new Promise(resolve=>{releaseWorkspace=resolve})
- const heldReads=new Set()
- const holdWorkspace=route=>{
-  const read=workspaceGate.then(()=>route.continue())
-  heldReads.add(read)
-  return read.finally(()=>heldReads.delete(read))
- }
- const releaseReads=async()=>{releaseWorkspace();await Promise.all([...heldReads]);await page.unroute('**/api/workspace',holdWorkspace)}
- await page.route('**/api/workspace',holdWorkspace)
- const second=await context.browser().newContext({baseURL:new URL(page.url()).origin})
+ if(width!==390)return
+ const origin=new URL(page.url()).origin
+ const second=await context.browser().newContext({baseURL:origin,extraHTTPHeaders:{connection:'close'}})
  try {
   const secondPage=await second.newPage()
   if(openSession) await openSession(second,secondPage)
   else await secondPage.goto(ownerLink)
   await secondPage.waitForURL(url=>url.pathname==='/on-call'&&!url.hash,{timeout:60000})
   await secondPage.locator('.oncall-frame').waitFor({timeout:60000})
-  const secondSession=await second.request.get('/api/session');assert.equal(secondSession.status(),200)
-  assert.equal((await secondSession.json()).member.role,'admin','second session authenticates independently')
-  assert.notDeepEqual(await second.cookies(),await context.cookies(),'second owner-open establishes independent session cookies')
-  const current=await (await second.request.get('/api/state')).json(),incident=current.incidents.find(item=>item.title===`Keyboard incident ${width}`)
-  const winner=await second.request.post('/api/command',{data:{type:'note',incident:incident.id,revision:incident.revision,text:'Second HTTP session wins'},headers:{origin:new URL(page.url()).origin}})
-  assert.equal(winner.status(),200,'second session publishes the winning note')
-  const before=await (await second.request.get('/api/state')).json()
-  await key.text(page.getByLabel('Observation, decision or evidence',{exact:true}),'Losing browser note must not save')
-  const rejected=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().method()==='POST')
-  await key.activate(page.getByRole('button',{name:'Add note',exact:true}))
-  assert.equal((await rejected).status(),409,'real stale browser write rejected by server')
-  await releaseReads()
-  await page.locator('.failure-line[role="alert"]').waitFor()
-  assert.ok((await page.locator('.failure-line[role="alert"]').innerText()).length>0,'failed write is announced by an alert live region')
-  await page.waitForFunction(()=>document.querySelector('.notice[role="status"]')?.textContent==='')
-  assert.equal(await page.locator('.notice[role="status"]').innerText(),'','failed write never claims saved')
-  assert.equal(await page.getByLabel('Observation, decision or evidence',{exact:true}).inputValue(),'Losing browser note must not save','failed draft remains editable')
-  assert.deepEqual(await (await second.request.get('/api/state')).json(),before,'rejected write leaves the winning server data unchanged')
-  await accessibleState(page,'rejected-write',width,page.getByRole('button',{name:'Add note',exact:true}))
-  console.log('PROBE OC-009 stale write 1440: second authenticated HTTP session wins -> real 409, alert announcement, editable losing draft and no saved claim; winning data unchanged')
- } finally { await releaseReads();await second.close() }
+  const read=async path=>{
+   const response=await second.request.get(path)
+   assert.equal(response.status(),200)
+   return response.json()
+  }
+  const {member:secondMember}=await read('/api/session')
+  assert.equal(secondMember.role,'admin','second session authenticates independently')
+  assert.ok(!isDeepStrictEqual(await second.cookies(),await context.cookies()),'second sign-in establishes independent session cookies')
+
+  await focusWorkspace(page)
+  const draft=page.getByLabel('Observation, decision or evidence',{exact:true})
+  const submit=page.getByRole('button',{name:'Add note',exact:true})
+  const losingText='Losing browser note must not save',winningText='Second HTTP session wins'
+  await key.text(draft,losingText)
+  await key.reach(submit)
+  await key.visibleFocus(submit)
+  const stateBefore=await read('/api/state')
+  const incident=stateBefore.incidents.find(item=>item.id===manual.id)
+  const {workspaceRevision,...pagingBefore}=await read('/api/paging/state')
+  assert.equal(pagingBefore.paging,'OFF')
+  const outboundBefore=await worker.outboundRequests()
+
+  // Hold only the first browser's ordinary workspace GET. The winning and
+  // losing POSTs both reach the real Worker, with no response substitution.
+  let releaseWorkspace
+  const workspaceGate=new Promise(resolve=>{releaseWorkspace=resolve})
+  const heldReads=new Set()
+  const holdWorkspace=route=>{
+   if(route.request().method()!=='GET')return route.continue()
+   const read=workspaceGate.then(()=>route.continue())
+   heldReads.add(read)
+   return read.finally(()=>heldReads.delete(read))
+  }
+  const command={type:'note',incident:incident.id,revision:incident.revision}
+  await page.route('**/api/workspace',holdWorkspace)
+  let winner
+  try {
+   const winningReply=await second.request.post('/api/command',{data:{...command,text:winningText},headers:{origin}})
+   assert.equal(winningReply.status(),200,'second session publishes the winning note')
+   winner=await winningReply.json()
+   await Promise.all([
+    page.waitForRequest(request=>new URL(request.url()).pathname==='/api/workspace'&&request.method()==='GET'),
+    page.evaluate(()=>window.dispatchEvent(new Event('focus'))),
+   ])
+   const [rejected]=await Promise.all([
+    page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().method()==='POST'),
+    page.keyboard.press('Enter'),
+   ])
+   assert.equal(rejected.status(),409,'real stale browser write rejected by server')
+   const {type,incident:attemptedId,revision,text}=rejected.request().postDataJSON()
+   assert.deepEqual({type,incident:attemptedId,revision,text},{...command,text:losingText})
+  } finally {
+   releaseWorkspace()
+   await Promise.all([...heldReads])
+   await page.unroute('**/api/workspace',holdWorkspace)
+  }
+
+  const alert=page.locator('.failure-line[role="alert"]')
+  await expect(alert).toContainText('Incident changed')
+  await expect(alert).toBeInViewport()
+  await expect(alert).toContainText(winningText)
+  await expect(alert).not.toContainText(losingText)
+  await expect(page.locator('.notice[role="status"]')).toHaveText('')
+  await expect(draft).toBeEditable()
+  await expect(draft).toHaveValue(losingText)
+  await expect(page.locator('.timeline').getByText(winningText,{exact:true})).toBeVisible()
+  await expect(page.locator('.timeline').getByText(losingText,{exact:true})).toHaveCount(0)
+  await key.visibleFocus(submit)
+  await expect(submit).toBeInViewport()
+  await accessibleState(page,'rejected-write',width,submit)
+  // Capture the same failure on desktop without repeating the stale-write race.
+  const viewport=page.viewportSize()
+  try {
+   await page.setViewportSize({...viewport,width:1440})
+   await alert.scrollIntoViewIfNeeded()
+   await page.screenshot({path:`${directory}/oc009-rejected-write-1440.png`,fullPage:true})
+  } finally {await page.setViewportSize(viewport)}
+
+  const winningEntry=winner.timeline.at(-1)
+  assert.equal(winningEntry.kind,'note')
+  assert.equal(winningEntry.text,winningText)
+  assert.equal(winningEntry.actor,secondMember.id)
+  assert.deepEqual(winner,{...incident,revision:incident.revision+1,timeline:[...incident.timeline,winningEntry]})
+  assert.deepEqual(await read('/api/state'),{...stateBefore,revision:stateBefore.revision+1,incidents:stateBefore.incidents.map(item=>item.id===incident.id?winner:item)},'protected workspace includes only the exact winning incident update')
+  const {workspaceRevision:afterRevision,...pagingAfter}=await read('/api/paging/state')
+  assert.equal(afterRevision,workspaceRevision+1,'only the winning note advances the protected workspace revision')
+  assert.deepEqual(pagingAfter,pagingBefore,'neither note changes paging state')
+  assert.deepEqual(await worker.outboundRequests(),outboundBefore,'neither note creates outbound work')
+  console.log(`PROBE OC-009 2 note at ${width}: independent session 200, keyboard stale note 409, visible alert and submit focus, no saved claim, editable draft, exact winning note and one revision, paging OFF unchanged, zero new outbound requests, no overflow or serious or critical axe findings`)
+ } finally {await second.close()}
 }
 
 
@@ -1692,7 +2461,7 @@ export async function incidentRolesBrowser(page,context,incident,{proof}={}) {
 }
 
 // One desktop journey through the emitted production Worker and its browser UI.
-export async function productBrowserJourney(page,context,{ownerLink,openSession,accessibilityOnly=false,setTime=async()=>{},triageProof}={}) {
+export async function productBrowserJourney(page,context,{ownerLink,openSession,accessibilityOnly=false,setTime=async()=>{},triageProof,worker}={}) {
  const key=keyboardUser(page)
  const session=await page.evaluate(async()=>await (await fetch('/api/session')).json())
  assert.equal(session.member.role,'admin');assert.ok(!page.url().includes('rer-dev'))
@@ -1700,22 +2469,22 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession,
  if(accessibilityOnly){
   for(const width of [1440,390]){
    await page.setViewportSize({width,height:1000});await setTime(keyboardInstant);
-   await keyboardCoordination(page,context,width,ownerLink,openSession);
-   await productSchedule(page,context,width,session,{ownerLink,selectedOnly:true,setTime});
+   await keyboardCoordination(page,context,width,{ownerLink,openSession,worker});
+   await productSchedule(page,context,width,session,{ownerLink,openSession,selectedOnly:true,observePhoneStaleCover:true,setTime,worker});
   }
   return;
  }
  for(const width of [1440]) {
   await page.setViewportSize({width,height:1000})
   await setTime(keyboardInstant)
-  await keyboardCoordination(page,context,width,ownerLink,openSession)
+  await keyboardCoordination(page,context,width,{ownerLink,openSession,worker})
   await setTime(null)
   if(width===1440)await sharedIncidentLinks(page,context)
   await alertSeverity(page,context,width)
   await supportStartBrowser(page,context,{setTime,proof:triageProof})
-  if(width===1440)await productSchedule(page,context,width,session,{ownerLink,setTime})
+  if(width===1440)await productSchedule(page,context,width,session,{ownerLink,openSession,setTime,worker})
   await triageFiltersBrowser(page,context,{setTime,proof:triageProof})
-  await triageBulkBrowser(page,context,width)
+  await triageBulkBrowser(page,context,width,worker)
   await productImport(page,context,width,session,triageProof)
   await routingBrowser(page,context,width)
   await openWorkspaceSection(page,'routing');await openHistoryComparison(page);await page.getByLabel('Event JSON',{exact:true}).fill(JSON.stringify([{source:'browser',eventId:'replay-'+width,service:'checkout',environment:'production',key:'browser',generation:'g1',intent:'trigger',severity:'critical',title:'Replay '+width,observedAt:'2026-10-12T00:00:00.000Z'}]))
@@ -1725,18 +2494,20 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession,
   const [replay]=await Promise.all([page.waitForResponse(r=>new URL(r.url()).pathname==='/api/replay',{timeout:15000}),page.mouse.click(box.x+box.width/2,box.y+box.height/2)]);assert.equal(replay.status(),200)
   await page.getByLabel('Replay comparison',{exact:true}).waitFor();await page.getByRole('button',{name:'Close comparison',exact:true}).click()
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'routing viewport has no horizontal overflow')
-  console.log(`Product browser journey ${width}: keyboard incident coordination, stale-write alert, hostile text, schedules, overrides, coverage/ICS, provider export, reviewed import/adoption/erasure, pointer replay and responsive layout passed`)
+  console.log(`Product browser journey ${width}: keyboard incident coordination, hostile text, schedules, overrides, coverage/ICS, provider export, reviewed import/adoption/erasure, pointer replay and responsive layout passed`)
  }
  // OC-009's bounded phone leg reuses the selected flow; unrelated desktop
  // imports, routing, bulk actions and provider journeys keep their single width.
  await page.setViewportSize({width:390,height:1000})
  await setTime(keyboardInstant)
- await keyboardCoordination(page,context,390,ownerLink,openSession)
- await productSchedule(page,context,390,session,{ownerLink,selectedOnly:true,setTime})
+ await keyboardCoordination(page,context,390,{ownerLink,openSession,worker})
+ await productSchedule(page,context,390,session,{ownerLink,openSession,selectedOnly:true,setTime,worker})
  await page.setViewportSize({width:1440,height:1000})
+ await setTime(null)
+ await unmatchedAlertQueue(page,context,triageProof)
 }
 
-async function sharedIncidentLinks(page,context) {
+export async function sharedIncidentLinks(page,context) {
  const origin=new URL(page.url()).origin
  const state=await (await context.request.get('/api/state')).json(),incident=state.incidents.find(incident=>!incident.mergedInto)
  assert.ok(incident,'the existing coordination journey provides an incident to share')
@@ -1785,11 +2556,55 @@ async function sharedIncidentLinks(page,context) {
  assert.equal(await page.locator('.detail').count(),0,'a missing shared incident never opens a different incident')
  await back.click()
  await page.waitForURL(url=>url.pathname==='/on-call')
+ await unknownWorkspaceLinks(page,context)
+}
+
+async function unknownWorkspaceLinks(page,context) {
+ const origin=new URL(page.url()).origin,externalDocuments=[]
+ const guard=async route=>{
+  const request=route.request()
+  if(request.isNavigationRequest()&&request.resourceType()==='document'&&new URL(request.url()).origin!==origin){
+   externalDocuments.push(request.url())
+   await route.abort()
+  }else await route.continue()
+ }
+ await context.route('**/*',guard)
+ try{
+  await page.setViewportSize({width:1440,height:1000})
+  const fragments=['https://outside.invalid/path','//outside.invalid/path','\\\\outside.invalid/path','../signin','/api/state']
+  for(const fragment of fragments){
+   const path='/'+encodeURIComponent(fragment)
+   await page.goto(origin+'/#'+fragment)
+   await page.waitForURL(url=>url.origin===origin&&url.pathname===path)
+   await page.locator('.workspace-not-found').waitFor()
+   assert.equal(new URL(page.url()).origin,origin,'a URL-like legacy fragment stays on the installation origin')
+   assert.equal(new URL(page.url()).pathname,path,'a URL-like legacy fragment becomes an encoded local unknown workspace')
+   const response=await page.reload()
+   assert.equal(response.status(),404,'the encoded unknown workspace returns a document-level HTTP 404')
+   await page.locator('.workspace-not-found a[href="/on-call"]').waitFor()
+   assert.equal(new URL(page.url()).origin,origin,'reloading an unknown workspace stays on the installation origin')
+   assert.equal(new URL(page.url()).pathname,path,'reloading preserves the encoded unknown workspace path')
+   assert.equal(await page.locator('.detail').count(),0,'an unknown workspace never opens incident data')
+   assert.deepEqual(externalDocuments,[],'URL-like legacy fragments attempt no external document navigation')
+  }
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'unknown workspace fits the desktop viewport')
+  assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0,'unknown workspace has no hydration mismatch')
+  const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser'
+  await mkdir(directory,{recursive:true})
+  for(const width of [1440,390]){
+   await page.setViewportSize({width,height:1000})
+   await page.screenshot({path:`${directory}/workspace-links-unknown-${width}.png`,fullPage:true})
+  }
+  await page.setViewportSize({width:1440,height:1000})
+  await page.locator('.workspace-not-found a[href="/on-call"]').click()
+  await page.waitForURL(url=>url.pathname==='/on-call')
+  console.log('PASS workspace links: 19 canonical section and incident entries, guest lobby and retained shell; five URL-like fragments stay encoded on the installation origin, show unknown workspace and reload with HTTP 404, with zero external document navigation attempts; assertions at 1440 and unknown workspace captures at 1440/390')
+ }finally{await context.unroute('**/*',guard)}
 }
 
 
 // Saved email import is exercised at one width; 390 is visual evidence only.
-export async function importedEmailBrowser(page,context) {
+export async function importedEmailBrowser(page,context,worker) {
  const directory=process.env.ONCALL_BROWSER_EVIDENCE??'./evidence/browser',origin=new URL(page.url()).origin;
  await mkdir(directory,{recursive:true});await page.setViewportSize({width:1440,height:1000});
  const api=async(path,data)=>{
@@ -1847,4 +2662,140 @@ export async function importedEmailBrowser(page,context) {
   assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0);
  }
  console.log('PASS OC-070 email import browser: mapping reports and original unsupported action, inactive custody, explicit administrator activation and one-time address; assertions at 1440; changed screens captured once at 1440 and 390');
+ await savedMailDraftBrowser(page,context,worker,{api,directory,service,owner:session.member.id});
+}
+
+async function savedMailDraftBrowser(page,context,worker,{api,directory,service,owner}) {
+ const id='synthetic-oncall-mail-draft',part=localPart();
+ const address=await api('/api/email/addresses',{
+  id,name:'Saved mail comparison',service,owner,localPart:part,mode:'custom',fallback:'subject',rules:recoveryRules(),
+ });
+ const cases=[
+  {subject:'FAILED: synthetic-oncall-db',rule:'failed',key:'synthetic-oncall-db',action:'trigger',outcome:'opened'},
+  {subject:'OK: synthetic-oncall-db',rule:'ok',key:'synthetic-oncall-db',action:'resolve',outcome:'recovered'},
+  {subject:'Unmatched observation',rule:null,key:'Unmatched observation',action:'trigger',outcome:'opened'},
+ ];
+ for(const {subject} of cases) {
+  assert.equal((await mail(worker,part,subject)).status,200,'emitted email door admitted '+subject);
+ }
+ const saved=await api('/api/email'),samples=saved.samples.filter(sample=>sample.address===id);
+ const published=saved.versions.find(version=>version.address===id);
+ assert.deepEqual(samples.map(sample=>sample.subject),cases.map(row=>row.subject));
+ assert.equal(published.fallback,'subject');
+ const previewPath='/api/email/addresses/'+id+'/preview';
+ const draft={revision:address.revision,mode:published.mode,fallback:'quarantine',rules:published.rules,samples:samples.map(s=>s.id)};
+ assert.equal((await worker.request(previewPath,draft)).status,401,'anonymous callers cannot compare saved mail');
+ await page.goto('/settings/integrations/'+encodeURIComponent('email:'+id));
+ await page.getByText('Rules · version '+published.version,{exact:true}).click();
+ const comparison=page.getByText('Test draft against saved mail',{exact:true});
+ await comparison.click();
+ const panel=comparison.locator('..'),test=panel.getByRole('button',{name:'Test draft rules',exact:true});
+ const beforeArchive=await api('/api/archive'),beforePaging=await api('/api/paging/state');
+ const beforeDurable=durableSnapshot(worker),beforeOutbound=await worker.outboundRequests();
+ const browserOutbound=[],browserMutations=[];
+ const record=request=>{
+  const url=new URL(request.url());
+  if(url.origin!==worker.origin)browserOutbound.push(url.origin);
+  else if(request.method()!=='GET')browserMutations.push({method:request.method(),path:url.pathname});
+ };
+ context.on('request',record);
+ try {
+  await expect(page.getByLabel('Unmatched mail',{exact:true})).toHaveValue('subject');
+  await page.getByLabel('Unmatched mail',{exact:true}).selectOption('quarantine');
+  const preview=page.waitForResponse(response=>new URL(response.url()).pathname===previewPath&&response.request().method()==='POST');
+  await test.click();
+  const response=await preview;
+  assert.equal(response.status(),200);
+  assert.deepEqual(response.request().postDataJSON(),draft,'the control sends only the draft fallback change and the current saved samples');
+  const result=await response.json();
+  assert.equal(result.sideEffects,false);
+  assert.deepEqual(result.decisions.map(row=>row.sample),samples.map(s=>s.id));
+  await expect(panel.getByRole('status')).toContainText(cases.length+' saved messages compared');
+  const list=panel.getByRole('list',{name:'Saved mail decisions'});
+  await expect(list.getByRole('listitem')).toHaveCount(cases.length);
+  const actions={trigger:'Trigger an alert',resolve:'Recover the matching alert',quarantine:'Held for review'};
+  const fields=decision=>({mode:decision.mode,version:decision.version,rule:decision.rule,key:decision.key,action:decision.action});
+  const observed=[];
+  for(const expected of cases) {
+   const sample=samples.find(s=>s.subject===expected.subject);
+   const archived=beforeArchive.emailReceipts.find(r=>r.sample===sample.id);
+   const {historical,proposed}=result.decisions.find(row=>row.sample===sample.id);
+   assert.equal(archived.outcome,expected.outcome);
+   assert.deepEqual(historical,archived.decision);
+   const retained={mode:'custom',version:published.version,rule:expected.rule,key:expected.key,action:expected.action};
+   assert.deepEqual(fields(historical),retained);
+   assert.deepEqual(fields(proposed),{
+    ...retained,version:published.version+1,key:expected.rule?expected.key:null,action:expected.rule?expected.action:'quarantine',
+   });
+   const row=list.getByRole('listitem').filter({has:page.getByText(sample.subject,{exact:true})});
+   for(const [label,decision] of [['Historical decision',historical],['Tested draft decision',proposed]]) {
+    const side=row.getByRole('group',{name:label,exact:true});
+    for(const text of [actions[decision.action],'Mode: Custom rules','Rules version: '+decision.version,
+     'Matched rule: '+(decision.rule??'None'),'Key: '+(decision.key??'None')]) {
+     await expect(side.getByText(text,{exact:true})).toBeVisible();
+    }
+   }
+   observed.push({subject:sample.subject,outcome:archived.outcome,historical:fields(historical),proposed:fields(proposed)});
+  }
+  assert.deepEqual(await api('/api/email'),saved,'published rules, address revision, samples, receipts and quarantine are unchanged');
+  assert.deepEqual(await api('/api/paging/state'),beforePaging,'paging state and custody are unchanged');
+  assert.ok(isDeepStrictEqual(durableSnapshot(worker),beforeDurable),'the preview changes no durable records or audit rows');
+  assert.ok(isDeepStrictEqual(await api('/api/archive'),beforeArchive),'alerts, revisions and archived decisions are unchanged');
+  assert.deepEqual(await worker.outboundRequests(),beforeOutbound);
+  assert.deepEqual(beforeOutbound,[],'the Worker makes zero outbound requests');
+  const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();
+  assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
+  const layouts=[];
+  for(const width of [1440,390]) {
+   await page.setViewportSize({width,height:1000});
+   const layout=await panel.evaluate(node=>({
+    width:innerWidth,documentWidth:document.documentElement.scrollWidth,
+    minimumTextSize:Math.min(...[...node.querySelectorAll('summary,button,p,strong')].map(element=>parseFloat(getComputedStyle(element).fontSize))),
+   }));
+   if(width===1440) {
+    assert.ok(layout.documentWidth<=width,'saved mail comparison fits desktop');
+    assert.ok(layout.minimumTextSize>=13,'saved mail comparison text is readable');
+   }
+   layouts.push(layout);
+   await panel.screenshot({path:directory+'/email-draft-comparison-'+width+'.png'});
+  }
+  assert.deepEqual(browserMutations,[{method:'POST',path:previewPath}],'the browser only posts to the read-only preview door');
+  assert.deepEqual(browserOutbound,[],'the browser makes zero outbound requests');
+  await writeFile(directory+'/email-draft-receipt.json',JSON.stringify({
+   assertionWidth:1440,layouts,previewStatus:response.status(),anonymousStatus:401,publishedVersion:published.version,
+   publishedFallback:published.fallback,draftFallback:draft.fallback,samples:observed,unchangedDurableRows:true,
+   unchangedAudit:true,unchangedPaging:true,unchangedArchive:true,workerOutboundRequests:0,browserOutboundRequests:0,
+   seriousCriticalAccessibilityFindings:0,
+  },null,2)+'\n');
+ } finally {
+  context.off('request',record);
+  await page.setViewportSize({width:1440,height:1000});
+ }
+ console.log('PROBE OC-070 7: savedMailDraftBrowser compared three saved decisions through the admin preview; matched trigger and resolve agreed with the archive; unmatched trigger became proposed quarantine; zero writes and outbound requests; captures at 1440 and 390');
+}
+
+// Read the actual MCP-saved service after reloading its Settings route.
+export async function savedServiceRunbookBrowser(page,origin,service){
+ const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';
+ await mkdir(directory,{recursive:true});
+ const path='/settings/services/'+encodeURIComponent(service.id);
+ const panel=page.locator('.service-page-head');
+ const runbook=panel.getByRole('textbox',{name:'Runbook steps (one per line)',exact:true});
+ await page.goto(origin+path);
+ await runbook.waitFor();
+ for(const width of [1440,390]){
+  await page.setViewportSize({width,height:1000});
+  const response=await page.reload();
+  await runbook.waitFor();
+  if(width===1440){
+   assert.equal(response.status(),200);
+   assert.equal(new URL(page.url()).pathname,path);
+   await expect(panel.getByRole('heading',{name:service.name,exact:true})).toBeVisible();
+   await expect(runbook).toHaveValue(service.runbook.join('\n'));
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  }
+  await runbook.scrollIntoViewIfNeeded();
+  await page.screenshot({path:directory+'/surface-002-saved-runbook-'+width+'.png'});
+ }
+ console.log('PASS savedServiceRunbookBrowser: service settings reload displayed the MCP-saved literal steps at 1440, with reload captures at 1440 and 390');
 }
