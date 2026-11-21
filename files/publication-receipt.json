@@ -1,0 +1,22 @@
+{
+  "productHead": "f0b093cc21691556860dc622a8932ab098cb0e72",
+  "scanner": {
+    "name": "gitleaks",
+    "version": "8.30.1"
+  },
+  "reportStatus": "FAIL",
+  "complete": true,
+  "history": {
+    "commits": 1342,
+    "trees": 1296,
+    "blobs": 7830,
+    "commitMessages": 1342
+  },
+  "publishedMainHistoryFindings": {
+    "SEC-3": 3,
+    "hygiene.email": 1
+  },
+  "candidateFindings": 0,
+  "initialUnscopedAttempt": "INCOMPLETE: unrelated remote branch history could not hydrate",
+  "candidateRangeGitleaks": "no leaks found"
+}

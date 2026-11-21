@@ -1,0 +1,33 @@
+{
+  "productHead": "f0b093cc21691556860dc622a8932ab098cb0e72",
+  "baselineHead": "59d5f6f953fce251546465881d0d32c3486904ba",
+  "browser": "Chromium 154.0.8037.57 built on Debian GNU/Linux 13 (trixie)",
+  "recordedAt": "2026-11-21T00:35:19Z",
+  "candidateLocalFullVerify": {
+    "command": "ONCALL_VERIFY_PREBUILT=1 pnpm exec rer verify",
+    "exit": 1,
+    "failedAssertion": "tests/product-browser-journey.mjs:2291:10",
+    "message": "page.waitForRequest: Timeout 30000ms exceeded while waiting for event \"request\"",
+    "completedBeforeFailure": [
+      "Journey completed: tests/native-export.mjs (0.1s)",
+      "Journey completed: tests/portability-cli.mjs (0.7s)",
+      "Journey completed: tests/runtime.mjs {\"ONCALL_RUNTIME_PART\":\"core\"} (173.5s)",
+      "Journey completed: tests/triage.mjs {\"ONCALL_TRIAGE_PART\":\"bulk\"} (26.3s)",
+      "Journey completed: tests/triage.mjs {\"ONCALL_TRIAGE_PART\":\"storm\"} (37.2s)",
+      "Journey completed: tests/runtime.mjs {\"ONCALL_RUNTIME_PART\":\"machines\"} (206.2s)",
+      "Journey completed: tests/intake.mjs (79.9s)",
+      "Journey completed: tests/routing.mjs (122.4s)"
+    ],
+    "migrationResult": "PASS additive audit migration upgrade: 121 prior application tables and 31 held rows unchanged before Worker writes."
+  },
+  "baselineBrowser": {
+    "command": "ONCALL_PRODUCT_PART=core node tests/product-browser.mjs",
+    "exit": 0,
+    "observed": "PROBE OC-009 2 note at 390: independent session 200, keyboard stale note 409, visible alert and submit focus, no saved claim, editable draft, exact winning note and one revision, paging OFF unchanged, zero new outbound requests, no overflow or serious or critical axe findings"
+  },
+  "candidateBrowserRetry": {
+    "command": "ONCALL_PRODUCT_JOURNEY=accessibility node tests/product-browser.mjs",
+    "exit": 0,
+    "observed": "PROBE OC-009 2 note at 390: independent session 200, keyboard stale note 409, visible alert and submit focus, no saved claim, editable draft, exact winning note and one revision, paging OFF unchanged, zero new outbound requests, no overflow or serious or critical axe findings"
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "files": [
+    {
+      "blob": "01570ed1288ded1013371c585f874b82d5ba516a",
+      "bytes": 6612,
+      "path": "REPORT.md",
+      "sha256": "7c48383ba60131f528ff18418b1f57ffb5495fcc9b28a24c54ad2852e9873208"
+    },
+    {
+      "blob": "618ec5743b0113f2df8e6ec705e16829d69a0a98",
+      "bytes": 371,
+      "path": "ci-receipt.json",
+      "sha256": "f81b337d6c9a6948ea3b49a6c23784a2e4295b8dae04a2aa8ee25d650f63f7e9"
+    },
+    {
+      "blob": "f744e353cd6026b92109096f9fdcf90d1c442346",
+      "bytes": 2136,
+      "path": "local-verify-receipt.json",
+      "sha256": "0369f5f8531ab8572af6108f0b929d0ba2484b9839347741a997a76da522f4fe"
+    },
+    {
+      "blob": "4a15eb0371c7d69cae036bda7b4fbdf39a46d0e1",
+      "bytes": 52560,
+      "path": "native-restored-preview-1440.png",
+      "sha256": "1aef7f9a0762629ed00973cd0b5c054381114c34c7c5258737e8e22d312bc0ef"
+    },
+    {
+      "blob": "658c7143c39ac036d23af744f3bb404feeec6899",
+      "bytes": 34346,
+      "path": "native-restored-preview-390.png",
+      "sha256": "956385758ee296f8d8e46fe0c35fa490d43805976fc1a1142558211e961c2eea"
+    },
+    {
+      "blob": "36ad38c4a6cde52528c9be3bea6de5b1ec4bca94",
+      "bytes": 529,
+      "path": "publication-receipt.json",
+      "sha256": "d73ca44848ad2e71557beb75add5a2347d26e48f80b5eb6ee2e52c091f7212e5"
+    },
+    {
+      "blob": "440fe2128692801644c94fa07e70b82cbc68438b",
+      "bytes": 2984,
+      "path": "transfer-receipt.json",
+      "sha256": "4bd1e8a9ab03346daf5b4dae8e9f41bdfd3fc15f50de8f901df157c459bf41c8"
+    },
+    {
+      "blob": "e78da4a73cd035748156fa0683522c240db82b53",
+      "bytes": 2029,
+      "path": "transfer-results.txt",
+      "sha256": "366b2b7907218e36a4a85272c9e03ff601c1fdfbc892b00db27da99cd41863e4"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-rer-pin-126-1",
+  "product_head": "f0b093cc21691556860dc622a8932ab098cb0e72",
+  "ref": "refs/heads/evidence/sd-oncall-rer-pin-126-1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-rer-pin-126-1"
+}

@@ -1,0 +1,12 @@
+{
+  "conclusion": "success",
+  "head_sha": "f0b093cc21691556860dc622a8932ab098cb0e72",
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/44841901212",
+  "status": "completed",
+  "workflow": "Verify",
+  "runId": 44841901212,
+  "branch": "cloud/sd-oncall-rer-pin-126-1",
+  "event": "push",
+  "observedAt": "2026-11-21T00:29:45Z",
+  "githubApiCalls": 5
+}
