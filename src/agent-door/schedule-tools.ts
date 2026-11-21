@@ -85,13 +85,15 @@ async function readSchedules(env: Bindings, ctx: ToolContext, args: Record<strin
   return { access, schedules }
 }
 
-function matchingRevision(schedule: Schedule, value: unknown) {
-  if (!Number.isSafeInteger(value) || value !== schedule.revision) throw new ToolRefusal('revision_conflict', 'Schedule changed; reload and review again')
+function matchingRevision(schedule: Schedule, value: unknown, includeCurrentRevision = false) {
+  if (!Number.isSafeInteger(value) || value !== schedule.revision) {
+    throw new ToolRefusal('revision_conflict', 'Schedule changed; reload and review again', includeCurrentRevision ? { current_revision: schedule.revision } : undefined)
+  }
 }
 
 async function reviewed(env: Bindings, ctx: ToolContext, args: Record<string, unknown>, apply: boolean): Promise<Proposal> {
   const saved = await savedSchedule(env, ctx, args, true)
-  matchingRevision(saved.schedule, args.revision)
+  matchingRevision(saved.schedule, args.revision, apply)
   const supplied = validateSchedule(args.schedule, saved.access.state)
   matchingRevision(saved.schedule, supplied.revision)
   if (saved.access.member.role !== 'admin') {

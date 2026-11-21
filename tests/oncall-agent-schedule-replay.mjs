@@ -61,15 +61,25 @@ export async function scheduleReplay(runtime) {
 }
 
 /** A scoped override reports the current rota revision before claiming approval or write custody. */
-export async function staleOverrideRevision(runtime, {optionalExpectedRevision = false} = {}) {
+export function staleOverrideRevision(runtime, {optionalExpectedRevision = false} = {}) {
+  return staleScheduleRevision(runtime, 'override', optionalExpectedRevision);
+}
+
+/** A real review becomes stale after an independent person edits the same rota. */
+export function staleReviewedScheduleRevision(runtime) {
+  return staleScheduleRevision(runtime, 'update', false);
+}
+
+async function staleScheduleRevision(runtime, operation, optionalExpectedRevision) {
+  const reviewed = operation === 'update';
   const {db, http, tool, adopt, context} = runtime;
-  const read = async (path, input, status = 200) => {
-    const response = await http(path, input);
+  const read = async (path, input, status = 200, request = http) => {
+    const response = await request(path, input);
     assert.equal(response.status, status, path);
     return response.json();
   };
-  const name = 'oncall.schedules.override';
-  const fixture = optionalExpectedRevision ? ' optional' : '';
+  const name = 'oncall.schedules.' + operation;
+  const fixture = reviewed ? ' reviewed' : optionalExpectedRevision ? ' optional' : '';
   const credential = 'synthetic-oncall-' + randomUUID();
   const client = await read('/api/automation/clients', {
     name: 'Scoped rota revision client' + fixture, key: credential, services: ['agent-service'],
@@ -95,11 +105,28 @@ export async function staleOverrideRevision(runtime, {optionalExpectedRevision =
     assert.equal(result.isError, true);
     assert.equal(result.structuredContent, undefined);
     assert.equal(result._meta['com.runeditrun/approval'], undefined);
+    assert.equal(result._meta['com.runeditrun/receipt'], undefined);
     assert.equal(result.content.length, 1);
     assert.equal(result.content[0].type, 'text');
     const details = result._meta['com.runeditrun/error'];
     assert.deepEqual(JSON.parse(result.content[0].text), details);
     return details;
+  };
+
+  const editor = reviewed ? await runtime.memberSession('Independent rota editor', 'admin') : null;
+  const reviewWithAgent = async (rota, schedule, from, to) => {
+    const answer = await tool('oncall.schedules.review', {id: rota.id, revision: rota.revision, schedule, from, to}, {}, credential);
+    assert.equal(answer.status, 200);
+    assert.equal(answer.result.isError, false);
+    assert.equal(answer.result._meta['com.runeditrun/approval'], undefined);
+    const review = answer.result.structuredContent;
+    assert.equal(review.revision, rota.revision);
+    assert.deepEqual(review.schedule, {...schedule, revision: rota.revision + 1});
+    assert.ok(review.intervals.length > 0 && review.intervals.every(row => row.before === row.after));
+    assert.ok(review.members.length > 0);
+    for (const member of review.members) assert.deepEqual(Object.keys(member).sort(), ['id', 'name']);
+    assert.match(review.digest, /^[0-9a-f]{64}$/);
+    return review;
   };
 
   const retained = [];
@@ -108,7 +135,9 @@ export async function staleOverrideRevision(runtime, {optionalExpectedRevision =
     if (mode === 'held') {
       policy.rules.unshift({id: 'rota-participant-approval', class: 'sensitive', do: 'approval', approver: ['sponsor'], wait: 'PT1H'});
     }
-    const adoption = await adopt(policy);
+    // Let the client obtain the original read-only digest before the held
+    // policy requires approval for any result with participant details.
+    const adoption = await adopt(reviewed && mode === 'held' ? autonomousPolicy() : policy);
     assert.equal(adoption.status, 200);
     await adoption.body?.cancel();
 
@@ -117,22 +146,32 @@ export async function staleOverrideRevision(runtime, {optionalExpectedRevision =
     });
     const from = Math.floor(context.now() / 60000) * 60000 + 86400000;
     const to = from + 3600000;
-    const holder = await read('/api/members', {
+    const holder = reviewed ? null : await read('/api/members', {
       name: 'Rota relief ' + mode + fixture, role: 'responder', password: 'synthetic-oncall-' + randomUUID(),
     }, 201);
-    const override = {
+    const override = holder && {
       id: randomUUID(), role: 'primary', member: holder.id,
       start: new Date(from).toISOString(), end: new Date(to).toISOString(),
     };
-    const edit = {schedule: {...rota, name: 'Payments retained rota ' + mode + fixture}, from, to};
     const path = '/api/schedules/' + rota.id;
-    const review = await read(path + '/review', edit);
-    const edited = (await read(path + '/apply', {...edit, digest: review.digest, confirmed: true})).schedule;
+    const proposedName = 'Payments re-reviewed rota ' + mode;
+    const proposal = reviewed ? {...rota, name: proposedName} : null;
+    const originalReview = reviewed ? await reviewWithAgent(rota, proposal, from, to) : null;
+    if (originalReview && mode === 'held') {
+      const hold = await adopt(policy);
+      assert.equal(hold.status, 200);
+      await hold.body?.cancel();
+    }
+    const edit = {schedule: {...rota, name: 'Payments retained rota ' + mode + fixture}, from, to};
+    const native = (url, input) => read(url, input, 200, editor?.http ?? http);
+    const review = await native(path + '/review', edit);
+    const edited = (await native(path + '/apply', {...edit, digest: review.digest, confirmed: true})).schedule;
     assert.equal(edited.name, edit.schedule.name);
     assert.equal(edited.revision, rota.revision + 1);
     const input = {
       id: rota.id, revision: optionalExpectedRevision ? edited.revision : rota.revision,
-      override, idempotency_key: randomUUID(),
+      idempotency_key: randomUUID(),
+      ...(originalReview ? {schedule: proposal, from, to, digest: originalReview.digest} : {override}),
       ...(optionalExpectedRevision ? {expected_revision: rota.revision} : {}),
     };
     assert.deepEqual(edited.overrides, []);
@@ -146,12 +185,16 @@ export async function staleOverrideRevision(runtime, {optionalExpectedRevision =
     const beforeAudit = await audit();
 
     const stale = refusalDetails(await call(input));
-    assert.deepEqual(stale, {code: 'revision_conflict', current_revision: edited.revision});
+    assert.deepEqual(stale, {code: 'revision_conflict', current_revision: edited.revision},
+      'MCP names the authorized native rota revision');
     const hiddenInput = optionalExpectedRevision
       ? {...input, revision: foreign.revision, expected_revision: foreign.revision - 1}
       : {...input, revision: 0};
+    if (reviewed) hiddenInput.schedule = {...proposal, id: foreign.id, service: foreign.service, revision: 0};
     const scopedOut = await call({...hiddenInput, id: foreign.id, idempotency_key: randomUUID()});
-    const absent = await call({...hiddenInput, id: randomUUID(), idempotency_key: randomUUID()});
+    const absentId = randomUUID();
+    const absent = await call({...hiddenInput, id: absentId, idempotency_key: randomUUID(),
+      ...(reviewed ? {schedule: {...hiddenInput.schedule, id: absentId}} : {})});
     assert.deepEqual(refusalDetails(scopedOut), {code: 'not_found'});
     assert.deepEqual(refusalDetails(absent), {code: 'not_found'});
     assert.deepEqual(absent.result, scopedOut.result);
@@ -168,6 +211,14 @@ export async function staleOverrideRevision(runtime, {optionalExpectedRevision =
 
     const correctedRevision = optionalExpectedRevision ? 'expected_revision' : 'revision';
     const fresh = {...input, [correctedRevision]: stale.current_revision, idempotency_key: randomUUID()};
+    if (reviewed) {
+      const schedule = {...edited, revision: stale.current_revision, name: proposedName};
+      const freshReview = await native(path + '/review', {schedule, from, to});
+      assert.equal(freshReview.revision, stale.current_revision);
+      assert.notEqual(freshReview.digest, input.digest);
+      Object.assign(fresh, {schedule, digest: freshReview.digest});
+      assert.deepEqual(await snapshot(), before, 'A fresh digest does not save or approve the edit');
+    }
     const first = await call(fresh);
     assert.equal(first.status, 200);
     assert.equal(first.body.error, undefined);
@@ -181,6 +232,13 @@ export async function staleOverrideRevision(runtime, {optionalExpectedRevision =
       const saved = (await read(approvalPath)).approval;
       assert.equal(saved.prepared_by.for.id, sponsor.id);
       assert.equal(saved.state, 'pending');
+      if (reviewed) {
+        assert.deepEqual(saved.summary.target, {id: rota.id, name: edited.name});
+        assert.ok(saved.summary.items.includes('Native revision ' + edited.revision + ' → ' + (edited.revision + 1)));
+        const range = new Date(from).toISOString() + ' to ' + new Date(to).toISOString();
+        assert.ok(saved.summary.items.includes('Review SHA-256 ' + fresh.digest + '; range ' + range));
+        assert.equal(first.result.structuredContent, undefined);
+      }
       const pending = await snapshot();
       assert.deepEqual(pending.application, before.application);
       for (const table of ['workspace_control', 'paging_control', 'paging_schedules', 'oc_schedule_records', 'oc_admin_audit', 'agent_door_reviews']) {
@@ -194,11 +252,12 @@ export async function staleOverrideRevision(runtime, {optionalExpectedRevision =
       assert.equal(first.result.isError, false);
     }
     const once = await snapshot();
-    const saved = {...edited, revision: edited.revision + 1, overrides: [override]};
+    const saved = {...edited, revision: edited.revision + 1,
+      ...(reviewed ? {name: proposedName} : {overrides: [override]})};
     assert.deepEqual(await paging(), {
       ...pagingBefore, revision: pagingBefore.revision + 1, workspaceRevision: pagingBefore.workspaceRevision + 1,
       schedules: pagingBefore.schedules.map(row => row.id === rota.id ? saved : row),
-    }, 'A single primary override changes just its rota and the two control revisions');
+    }, 'One schedule edit changes just its rota and the two control revisions');
     const priorCommits = before.records.oc_admin_audit;
     const commits = once.records.oc_admin_audit;
     for (const record of priorCommits) assert.deepEqual(commits.find(row => row.id === record.id), record);
@@ -206,7 +265,7 @@ export async function staleOverrideRevision(runtime, {optionalExpectedRevision =
     const addedCommits = commits.filter(row => !oldCommitIds.has(row.id));
     assert.equal(addedCommits.length, 1);
     const [commit] = addedCommits;
-    assert.equal(commit.kind, 'agent-schedule-override');
+    assert.equal(commit.kind, 'agent-schedule-' + operation);
     assert.equal(commit.outcome, 'accepted');
     assert.equal(commit.workspace_after, commit.workspace_before + 1);
     assert.equal(commit.paging_after, commit.paging_before + 1);
@@ -229,6 +288,25 @@ export async function staleOverrideRevision(runtime, {optionalExpectedRevision =
     assert.equal(stored.outcome, 'done');
     assert.deepEqual(stored.result, completed.result.structuredContent);
     assert.equal(stored.receipt?.approval_id, approvalId);
+    if (reviewed) {
+      assert.equal(stored.result.digest, fresh.digest);
+      if (approvalId) {
+        assert.deepEqual(stored.receipt.approved_by, [sponsor.id]);
+        assert.deepEqual(completed.result._meta['com.runeditrun/receipt'], {...stored.receipt, decision: stored.decision});
+      }
+      const priorReceipts = before.records.oc_agent_schedule_receipts;
+      const receipts = once.records.oc_agent_schedule_receipts;
+      assert.equal(receipts.length, priorReceipts.length + 1);
+      for (const prior of priorReceipts) assert.deepEqual(receipts.find(row => row.agent === prior.agent && row.key === prior.key), prior);
+      const receipt = receipts.find(row => row.agent === agent && row.key === fresh.idempotency_key);
+      assert.equal(receipt.tool, name);
+      assert.equal(receipt.person, sponsor.id);
+      assert.equal(receipt.client, client.id);
+      assert.equal(receipt.schedule_revision, saved.revision);
+      assert.deepEqual(JSON.parse(receipt.before_schedule), edited);
+      assert.deepEqual(JSON.parse(receipt.after_schedule), saved);
+      assert.ok(once.application.audit.some(row => row.kind === 'schedule-change' && row.text.includes(fresh.digest)));
+    }
     const notices = once.records.oc_schedule_records.map(row => JSON.parse(row.data)).filter(row =>
       row.kind === 'notice' && row.data.key.startsWith(rota.id + ':' + saved.revision + ':'));
     assert.ok(notices.length > 0);
@@ -244,11 +322,11 @@ export async function staleOverrideRevision(runtime, {optionalExpectedRevision =
     assert.deepEqual(replay.result._meta['com.runeditrun/receipt'], completed.result._meta['com.runeditrun/receipt']);
     assert.deepEqual(await snapshot(), once, 'Completed retrieval creates no additional effect, approval, review or call');
     assert.deepEqual(await runtime.outboundRequests(), []);
-    console.log('PROBE BASE-AGENT-012 4 ' + mode + ': override native revision ' + input.revision +
+    console.log('PROBE BASE-AGENT-012 4 ' + mode + ': ' + operation + ' native revision ' + input.revision +
       (optionalExpectedRevision ? ', stale expected_revision ' + input.expected_revision : ', no expected_revision') +
-      ' -> revision_conflict, current_revision ' + stale.current_revision + ' in metadata and text; scoped-out and absent indistinguishable; fresh revision -> one native override and audit, ' +
+      ' -> revision_conflict, current_revision ' + stale.current_revision + ' in metadata and text; scoped-out and absent indistinguishable; fresh revision -> one native ' + operation + ' and audit, ' +
       (mode === 'held' ? 'one exact sponsor approval' : 'autonomous') + '; replay unchanged; zero outbound requests');
-    retained.push({mode, schedule: saved, holder: holder.name});
+    retained.push({mode, schedule: saved, holder: holder?.name});
   }
   assert.equal((await adopt()).status, 200);
   return retained;
