@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {randomBytes,randomUUID} from 'node:crypto';
-import {agentReadSnapshot,assertAgentReadUnchanged} from './agent-door-runtime.mjs';
+import {isDeepStrictEqual} from 'node:util';
+import {agentEffectSnapshot,agentReadSnapshot,assertAgentReadUnchanged} from './agent-door-runtime.mjs';
 import {accessToken,autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 
 const start=Date.parse('2026-11-04T12:01:00.000Z'),end=start+60000;
@@ -8,6 +9,153 @@ const scopes=['incidents:read','services:read','schedules:read','analytics:read'
 const json=async(http,path,input,status=200)=>{
  const response=await http(path,input);assert.equal(response.status,status,path);return response.json();
 };
+
+// Use only protected native HTTP to project the participant fields. Preserve
+// native member order and include only holders in the current coverage.
+async function protectedCoverage(http,id,at){
+ const native=await json(http,'/api/state'),paging=await json(http,'/api/paging/state');
+ assert.equal(paging.workspaceRevision,native.revision);
+ const saved=paging.schedules.find(row=>row.id===id);assert.ok(saved);
+ const path='/api/schedules/'+id+'/now-next';
+ const nowNext=await json(http,path+'?'+new URLSearchParams({at:new Date(at).toISOString()}));
+ assert.equal(nowNext.now.at,at);
+ const references=new Set([nowNext.now.primary,nowNext.now.backup,...nowNext.now.windows.map(row=>row.member)]);
+ const people=native.members.filter(row=>references.has(row.id)).map(({id,name,active,role})=>({id,name,active,role}));
+ const expected={paging:paging.paging,service:saved.service,schedule:saved,now:nowNext.now,people};
+ return {native,paging,saved,path,nowNext,expected};
+}
+
+/** Follow the first completed creation response under each company policy. */
+export async function createdRotaReadback(runtime,{observe=async()=>{}}={}){
+ const {http,db,tool,adopt,context,completeResource}=runtime;
+ // Pin both policy cases to the same UTC noon, within the fixture's
+ // session and replay lifetimes when the caller restores its real clock.
+ const day=new Date(context.now()).toISOString().slice(0,10);
+ const at=Date.parse(day+'T12:00:00.000Z'),anchor=day+'T00:00';
+ const name='oncall.schedules.create',approvalKey='com.runeditrun/approval';
+ const code=answer=>answer.result?._meta?.['com.runeditrun/error']?.code??answer.body?.error?.data?.code;
+ const audit=async()=>(await db.prepare('SELECT * FROM agent_door_audit ORDER BY sequence').all()).results;
+ await runtime.time(at);
+ try{
+  assert.equal((await adopt()).status,200);
+  const rota=(await tool('oncall.schedules.read',{id:'agent-schedule'})).result.structuredContent.schedules[0];
+  const [rotationPrimary,primary]=rota.primary.members,[backup]=rota.backup.members;
+  assert.equal(new Set([rotationPrimary,primary,backup]).size,3,'The current projection omits a real off-duty participant');
+  const owner=(await json(http,'/api/workspace')).member;
+  assert.deepEqual(await runtime.outboundRequests(),[]);
+  for(const [mode,policy] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
+   assert.equal((await adopt(policy)).status,200);
+   const bearer=await accessToken(context,{act:{sub:context.agentId,name:'Responder assistant',specialist:'oncall-responder'}});
+   const createRota={schedule:{...rota,id:randomUUID(),name:'Payments coordination backup '+mode,revision:0,
+    validFrom:anchor+':00.000Z',primary:{...rota.primary,anchorLocal:anchor},backup:{...rota.backup,anchorLocal:anchor},
+    overrides:[{id:randomUUID(),role:'primary',member:primary,start:new Date(at-3600000).toISOString(),end:new Date(at+3600000).toISOString()}]},
+   idempotency_key:randomUUID()};
+   const call=(args=createRota)=>tool(name,args,{},bearer);
+   const beforeWrite=await json(http,'/api/paging/state');
+   const initial=await call();
+   assert.equal(initial.status,200);
+   assert.equal(initial.decision.disposition,mode==='held'?'approval':'autonomous');
+   let first=initial,writeApproval;
+   if(mode==='held'){
+    assert.equal(initial.result.resultType,'input_required');
+    assert.equal(initial.result.structuredContent,undefined);
+    assert.equal(initial.result.content,undefined);
+    assert.deepEqual(await json(http,'/api/paging/state'),beforeWrite,'Pending creation does not save a rota');
+    const handle=initial.result._meta[approvalKey];assert.ok(handle);
+    const approvalPath='/agents/api/approvals/'+handle.id;
+    const {approval:saved}=await json(http,approvalPath);
+    assert.equal(saved.state,'pending');assert.equal(saved.decision_id,initial.decision.id);
+    assert.equal(saved.revision,context.revision);assert.match(saved.summary_sha256,/^[a-f0-9]{64}$/);
+    assert.equal(saved.prepared_by.for.id,owner.id);assert.equal(saved.prepared_by.agent.id,context.agentId);
+    ({approval:writeApproval}=await json(http,approvalPath+'/approve',{revision:saved.revision,summary_sha256:saved.summary_sha256}));
+    assert.equal(writeApproval.state,'executed');
+    assert.deepEqual(writeApproval.approvals.map(row=>row.person),[owner.id]);
+    first=await call();
+   }
+   assert.equal(first.status,200);assert.equal(first.result.isError,false);
+   const links=first.result.content.filter(item=>item.type==='resource_link');
+   assert.equal(links.length,1,'The first completed creation returns one coverage link');
+   const [link]=links;
+   const written=first.result.structuredContent;
+   const {paging,saved,path,nowNext,expected}=await protectedCoverage(http,createRota.schedule.id,at);
+   assert.deepEqual(saved,{...createRota.schedule,revision:1});
+   assert.equal(paging.schedules.length,beforeWrite.schedules.length+1);
+   assert.deepEqual(saved.services??[saved.service],['agent-service']);
+   assert.equal(paging.paging,'OFF');assert.equal(nowNext.paging,paging.paging);
+   assert.equal(nowNext.now.scheduleRevision,1);assert.equal(nowNext.now.scheduleId,saved.id);
+   assert.equal(nowNext.now.primary,primary);assert.equal(nowNext.now.backup,backup);
+   assert.equal(nowNext.now.windows.find(window=>window.role==='primary').origin,'override');
+   assert.deepEqual(new Set(expected.people.map(row=>row.id)),new Set([primary,backup]));
+   assert.deepEqual(written.schedule,saved);assert.deepEqual(written.coverage,nowNext.now);
+
+   const before=await agentEffectSnapshot(runtime),auditBefore=await audit();
+   const write=before.records.agent_door_calls.find(row=>row.key===createRota.idempotency_key&&row.agent===context.agentId);
+   assert.equal(write?.state,'done');assert.equal(write.decision_id,initial.decision.id);
+   const writeOutcome=JSON.parse(write.outcome);
+   assert.deepEqual(writeOutcome.result,written);
+   assert.ok(auditBefore.some(row=>row.id===initial.decision.id));
+   if(writeApproval){
+    assert.equal(writeOutcome.receipt.approval_id,writeApproval.id);
+    assert.equal(writeOutcome.receipt.decision_id,write.decision_id);
+   }
+
+   // Use the wire URI and the original bearer without reconstructing either
+   // from the native schedule or using the protected session for the MCP read.
+   const read=await completeResource(link.uri,{bearer});
+   assert.equal(read.content.uri,link.uri);
+   assert.deepEqual(read.value,expected,'Returned coverage includes the complete protected rota, current windows and independently projected participants');
+   assert.notEqual(read.initial.decision.id,write.decision_id);
+   assert.deepEqual(read.initial.decision.classes.map(row=>[row.class,row.do]),
+    mode==='held'?[['standard','review'],['sensitive','approval']]:[['standard','autonomous'],['sensitive','autonomous']]);
+   assert.equal(read.initial.decision.disposition,mode==='held'?'approval':'autonomous');
+
+   const after=await agentEffectSnapshot(runtime);
+   const {agent_door_approvals:approvals,agent_door_usage:usage,agent_door_events:events,...records}=after.records;
+   const {agent_door_approvals:priorApprovals,agent_door_usage:priorUsage,agent_door_events:priorEvents,...priorRecords}=before.records;
+   assert.deepEqual(after.application,before.application);
+   for(const [table,rows] of Object.entries(priorRecords))
+    assert.ok(isDeepStrictEqual(records[table],rows),'Reading preserves all records in '+table);
+   const readDecision=read.initial.decision.id;
+   let readUsageId=readDecision;
+   const auditAfter=await audit();
+   assert.deepEqual(auditAfter.slice(0,auditBefore.length),auditBefore,'All original write receipts remain unchanged');
+   if(writeApproval){
+    assert.equal(read.initial.result,undefined);
+    const handle=read.initial.body.error.data.approval,readApprovalId=handle.id;
+    assert.notEqual(readApprovalId,writeApproval.id);
+    const readEvents=events.filter(row=>row.uri===handle.url).sort((a,b)=>a.sequence-b.sequence);
+    assert.deepEqual(readEvents.map(row=>JSON.parse(row.event).type),['approval.pending','approval.decided']);
+    assert.deepEqual(events.filter(row=>row.uri!==handle.url),priorEvents,'The resource read emits only its own approval events');
+    const {approval}=await json(http,'/agents/api/approvals/'+readApprovalId);
+    assert.equal(approval.state,'executed');assert.equal(approval.decision_id,readDecision);
+    assert.equal(approval.prepared_by.for.id,owner.id);assert.equal(approval.prepared_by.agent.id,context.agentId);
+    assert.deepEqual(approval.approvals.map(row=>row.person),[owner.id]);
+    assert.deepEqual(approvals.filter(row=>row.id!==readApprovalId),priorApprovals,'The separate read approval preserves the executed write approval and receipt');
+    readUsageId=JSON.parse(approvals.find(row=>row.id===readApprovalId).result).execution_id;
+   }else{
+    assert.equal(read.initial,read.answer);
+    assert.deepEqual(approvals,priorApprovals);
+    assert.deepEqual(events,priorEvents);
+   }
+   assert.deepEqual(usage.filter(row=>row.decision_id!==readUsageId),priorUsage);
+   assert.ok(usage.some(row=>row.decision_id===readUsageId&&row.agent===context.agentId));
+   assert.deepEqual(await json(http,'/api/paging/state'),paging);
+   assert.deepEqual(await runtime.outboundRequests(),[]);
+   console.log(`PROBE BASE-AGENT-003 4 ${mode} rota creation: first completed link matched the full protected rota at revision ${saved.revision}, current coverage and two participants at ${new Date(at).toISOString()}; ${writeApproval?'separate sponsor approval for the sensitive read':'autonomous read'}; native records, revisions, mutation audit, original write custody and paging unchanged; zero outbound requests`);
+   await observe({mode,at,schedule:saved,path,nowNext,people:expected.people});
+
+   const repeated=await call();assert.deepEqual(repeated.result.structuredContent,written);
+   assert.equal(code(await call({...createRota,idempotency_key:randomUUID()})),'revision_conflict','A new key cannot create an existing native schedule');
+   assert.equal(code(await call({...createRota,schedule:{...createRota.schedule,name:'Changed key content'}})),'idempotency_conflict');
+   // Retain the existing schedule-tool read alongside resource readback.
+   assert.equal((await adopt()).status,200);
+   const rotaRead=await tool('oncall.schedules.read',{id:saved.id},{},bearer);
+   assert.deepEqual(rotaRead.result.structuredContent.schedules,[saved]);
+  }
+ }finally{
+  await runtime.time(null);
+ }
+}
 
 /** Extend the existing matrix with native current coverage at override boundaries. */
 export async function coverageParity({runtime,people,browser,receipt}){
@@ -38,17 +186,13 @@ export async function coverageParity({runtime,people,browser,receipt}){
   for(const [boundary,at,primary] of [['before',start-1,participants.primary.id],['start',start,participants.override.id],['end',end,participants.primary.id]]){
    await runtime.time(at);
    for(const p of clients){
-    const native=await json(p.http,'/api/state'),paging=await json(p.http,'/api/paging/state');
+    const {native,paging,saved,path,nowNext,expected}=await protectedCoverage(p.http,schedule.id,at);
     const member=native.members.find(row=>row.id===p.member.id);
     assert.equal(member.active,true);assert.equal(member.role,p.member.role);
     const permitted=native.services.map(row=>row.id).sort();
     assert.deepEqual(permitted,(await json(admin.http,'/api/state')).services.map(row=>row.id).sort());
-    assert.equal(paging.workspaceRevision,native.revision);
-    const saved=paging.schedules.find(row=>row.id===schedule.id);assert.ok(saved);
     assert.deepEqual(saved.services??[saved.service],['agent-service'],'This proof is an ordinary single-service schedule');
-    const path='/api/schedules/'+schedule.id+'/now-next';
-    const nowNext=await json(p.http,path+'?'+new URLSearchParams({at:new Date(at).toISOString()}));
-    assert.equal(nowNext.now.at,at);assert.equal(nowNext.now.primary,primary);assert.equal(nowNext.now.backup,participants.backup.id);
+    assert.equal(nowNext.now.primary,primary);assert.equal(nowNext.now.backup,participants.backup.id);
     assert.deepEqual(nowNext.now.windows.map(row=>row.role),['primary','backup']);
     assert.equal(nowNext.now.windows[0].origin,boundary==='start'?'override':'rotation','The exact end excludes the override');
     assert.equal(nowNext.now.windows[0].member,primary);
@@ -59,14 +203,10 @@ export async function coverageParity({runtime,people,browser,receipt}){
      assert.equal(nowNext.now.windows[0].start,new Date(boundary==='start'?start:end).toISOString());
      if(boundary==='start')assert.equal(nowNext.now.windows[0].end,new Date(end).toISOString());
     }
-    // The oracle is protected HTTP, never the coverage evaluator, resource
-    // projector or reconstructed D1 records. Native list order is retained.
-    const references=new Set([nowNext.now.primary,nowNext.now.backup,...nowNext.now.windows.map(row=>row.member)]);
-    const expectedPeople=native.members.filter(row=>references.has(row.id)).map(({id,name,active,role})=>({id,name,active,role}));
+    const expectedPeople=expected.people;
     assert.equal(expectedPeople.length,2);
     assert.ok(!expectedPeople.some(row=>row.id===participants.unrelated.id));
     assert.deepEqual(new Set(expectedPeople.map(row=>row.id)),new Set([primary,participants.backup.id]));
-    const expected={paging:paging.paging,service:saved.service,schedule:saved,now:nowNext.now,people:expectedPeople};
     const before=await agentReadSnapshot(runtime);
     const reviews=(await runtime.db.prepare('SELECT * FROM agent_door_reviews ORDER BY id').all()).results;
     const approvals=(await runtime.db.prepare('SELECT * FROM agent_door_approvals ORDER BY id').all()).results;
