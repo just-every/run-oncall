@@ -272,7 +272,7 @@
       "executable": false
     },
     "docs/move-in.md": {
-      "sha256": "0907d7132600253a700811701fb40bc6c5f3a0f93430050d43827a28be8f7362",
+      "sha256": "73d75e6dc2e3461ba77138ae938658129a5f8dc13c1a294397599ca5d936b0bf",
       "executable": false
     },
     "docs/overview.md": {
@@ -5608,7 +5608,7 @@
       "executable": false
     },
     "src/move-in/ExportHelp.tsx": {
-      "sha256": "9b9f434eec3b14a1db70c53243d45fa464093b9c60149172b5534e0c49f53200",
+      "sha256": "c53b4ba47a093e91f8c254e73971aebfaf410d177501590e4e83c6eb2893393d",
       "executable": false
     },
     "src/move-in/import-lifecycle-sql.d.mts": {

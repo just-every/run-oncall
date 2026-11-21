@@ -4,6 +4,8 @@ import './export-help.css'
 
 const opsSetup = 'https://support.atlassian.com/opsgenie/docs/create-a-default-api-integration/'
 const opsAccess = 'https://docs.opsgenie.com/docs/api-access-management'
+const opsApiNotice = 'https://community.atlassian.com/forums/discussion/3313548/good-news-for-the-future-of-api-opsgenie-com'
+const opsMigration = 'https://www.atlassian.com/software/opsgenie/migration'
 const pdSetup = 'https://support.pagerduty.com/main/docs/api-access-keys'
 
 export function ExportHelp({vendor}:{vendor:string}) {
@@ -20,7 +22,8 @@ export function ExportHelp({vendor}:{vendor:string}) {
   <p>Use the downloadable exporter on your computer to create one ready-to-upload JSON file. It reads {name} with GET requests, handles every page, gets schedule details and joins each override to its schedule. Your existing pager stays in charge. It needs a read-only key from a real {name} account; with no account, use <strong>Other: from a file</strong> to upload an export you already have.</p>
   {ops&&<>
    <h3>Opsgenie migration readiness</h3>
-   <p>Public-documentation review executed <time dateTime="2026-10-31">31 October 2026 (UTC)</time>. Announced shutdown: <time dateTime="2027-04-05">5 April 2027</time>. Read the <a href="/docs/move-in#opsgenie-migration-readiness-checklist">Opsgenie migration readiness checklist</a> before exporting.</p>
+   <p>Save your Opsgenie configuration export before the configuration APIs retire in April 2027 or your account shuts down, whichever comes first. The US and EU Alert and integration-event APIs will continue for customers moving to or already on Jira Service Management. Schedule exports still depend on the configuration APIs to read users, schedules, overrides and escalations. <a href={opsApiNotice} target="_blank" rel="noreferrer">Atlassian API notice</a>.</p>
+   <p>Public-documentation review executed <time dateTime="2026-10-31">31 October 2026 (UTC)</time>. Standalone Opsgenie support ends <time dateTime="2027-04-05">5 April 2027</time>. Read the <a href="/docs/move-in#opsgenie-migration-readiness-checklist">Opsgenie migration readiness checklist</a> before exporting. <a href={opsMigration} target="_blank" rel="noreferrer">Opsgenie migration dates</a>.</p>
    <p>Recheck provider and export availability at execution. Authenticated account and export checks are blocked and unverified; import and cutover gates remain unchecked. Reading this guidance makes no provider request and grants no cutover authority. Keep the existing pager in charge.</p>
   </>}
   <h3>1. Get a read-only key in {name}</h3>
