@@ -1,0 +1,337 @@
+{
+  "advertised_main": "3802b68ae4bf448528b49eb1aa9e03ebd80a21a6",
+  "branch": "cloud/sd-oncall-c-f326",
+  "browser_captures": [
+    {
+      "file": "browser/OC-025-overdue-requester-1440.png",
+      "image_height": 386,
+      "image_width": 916,
+      "role": "requester",
+      "sha256": "0235b95df92d6cc3cfde48b761a99406e3d98e6d1caed65f17a8413ae3682fc2",
+      "viewport": 1440
+    },
+    {
+      "file": "browser/OC-025-overdue-requester-390.png",
+      "image_height": 444,
+      "image_width": 358,
+      "role": "requester",
+      "sha256": "253b992b1e07b6e5dab632bb9d36fcb479ebeb6e48f61e8797a29e13a3ddcd0f",
+      "viewport": 390
+    },
+    {
+      "file": "browser/OC-025-overdue-substitute-1440.png",
+      "image_height": 342,
+      "image_width": 916,
+      "role": "substitute",
+      "sha256": "f8abe036a1152679b3e4e99d0558ed582fce44d176bfc7fbf80c3f4bcbafea08",
+      "viewport": 1440
+    },
+    {
+      "file": "browser/OC-025-overdue-substitute-390.png",
+      "image_height": 400,
+      "image_width": 358,
+      "role": "substitute",
+      "sha256": "53e571e70b8add66966ec6f6165cb949382370432d243260861bccd94c7a2eb8",
+      "viewport": 390
+    },
+    {
+      "file": "browser/OC-025-overdue-admin-1440.png",
+      "image_height": 342,
+      "image_width": 916,
+      "role": "admin",
+      "sha256": "f8abe036a1152679b3e4e99d0558ed582fce44d176bfc7fbf80c3f4bcbafea08",
+      "viewport": 1440
+    },
+    {
+      "file": "browser/OC-025-overdue-admin-390.png",
+      "image_height": 400,
+      "image_width": 358,
+      "role": "admin",
+      "sha256": "53e571e70b8add66966ec6f6165cb949382370432d243260861bccd94c7a2eb8",
+      "viewport": 390
+    }
+  ],
+  "candidate_ci": {
+    "aggregate_reproduction": {
+      "observed_dependencies_exit": 1,
+      "script": "Require the selected coverage and its proof",
+      "successful_shards": 9,
+      "with_only_contract_docs_changed_to_success_exit": 0
+    },
+    "conclusion": "failure",
+    "event": "push",
+    "head_sha": "c358f4d053bd52e4108f54951c87f0f7056b3e35",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44932479079",
+    "id": 44932479079,
+    "jobs": [
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "c358f4d053bd52e4108f54951c87f0f7056b3e35",
+        "id": 136931906512,
+        "name": "plan",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          "Check the generated contract documents"
+        ],
+        "head_sha": "c358f4d053bd52e4108f54951c87f0f7056b3e35",
+        "id": 136932008215,
+        "name": "contract-docs",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "c358f4d053bd52e4108f54951c87f0f7056b3e35",
+        "id": 136932008246,
+        "name": "build",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "head_sha": "c358f4d053bd52e4108f54951c87f0f7056b3e35",
+        "id": 136932009724,
+        "name": "light",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "c358f4d053bd52e4108f54951c87f0f7056b3e35",
+        "id": 136932859086,
+        "name": "shards (changes)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "c358f4d053bd52e4108f54951c87f0f7056b3e35",
+        "id": 136932859101,
+        "name": "shards (intake)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "c358f4d053bd52e4108f54951c87f0f7056b3e35",
+        "id": 136932859108,
+        "name": "shards (transfer)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "c358f4d053bd52e4108f54951c87f0f7056b3e35",
+        "id": 136932859138,
+        "name": "shards (browser)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "c358f4d053bd52e4108f54951c87f0f7056b3e35",
+        "id": 136932859141,
+        "name": "shards (triage)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "c358f4d053bd52e4108f54951c87f0f7056b3e35",
+        "id": 136932859144,
+        "name": "shards (agents)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "c358f4d053bd52e4108f54951c87f0f7056b3e35",
+        "id": 136932859153,
+        "name": "shards (activation)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "c358f4d053bd52e4108f54951c87f0f7056b3e35",
+        "id": 136932859159,
+        "name": "shards (runtime)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "c358f4d053bd52e4108f54951c87f0f7056b3e35",
+        "id": 136932859161,
+        "name": "shards (hosted)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "head_sha": "c358f4d053bd52e4108f54951c87f0f7056b3e35",
+        "id": 136936731510,
+        "name": "full-push-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "head_sha": "c358f4d053bd52e4108f54951c87f0f7056b3e35",
+        "id": 136936732938,
+        "name": "nightly-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          "Require the selected coverage and its proof"
+        ],
+        "head_sha": "c358f4d053bd52e4108f54951c87f0f7056b3e35",
+        "id": 136936759280,
+        "name": "verify",
+        "status": "completed"
+      }
+    ],
+    "log_reads": [
+      {
+        "command": "gh run view 44932479079 --repo just-every/run-oncall --job 136932008215 --log-failed",
+        "exit": 0,
+        "job": "136932008215",
+        "output": "contract-docs\tCheck the generated contract documents\t2026-11-21T17:54:02.4675107Z ##[group]Run node src/base/contract-docs.mjs check\ncontract-docs\tCheck the generated contract documents\t2026-11-21T17:54:02.4675708Z node src/base/contract-docs.mjs check\ncontract-docs\tCheck the generated contract documents\t2026-11-21T17:54:02.4695192Z shell: /usr/bin/bash -e {0}\ncontract-docs\tCheck the generated contract documents\t2026-11-21T17:54:02.4695584Z ##[endgroup]\ncontract-docs\tCheck the generated contract documents\t2026-11-21T17:54:02.5615547Z Contract prose: 0 errors, 0 warnings.\ncontract-docs\tCheck the generated contract documents\t2026-11-21T17:54:02.6192653Z ACCEPTANCE.md: generated content differs; run contract-docs write.\ncontract-docs\tCheck the generated contract documents\t2026-11-21T17:54:02.6284809Z ##[error]Process completed with exit code 1.",
+        "run": "44932479079"
+      },
+      {
+        "command": "gh run view 44932479079 --repo just-every/run-oncall --job 136936759280 --log-failed",
+        "exit": 0,
+        "job": "136936759280",
+        "output": "verify\tRequire the selected coverage and its proof\t2026-11-21T18:10:43.3424305Z case \"$CONTRACT_DOCS:$SKIP\" in\nverify\tRequire the selected coverage and its proof\t2026-11-21T18:10:43.3914055Z   CONTRACT_DOCS: failure\nverify\tRequire the selected coverage and its proof\t2026-11-21T18:10:43.4335981Z ##[error]Process completed with exit code 1.",
+        "run": "44932479079"
+      }
+    ],
+    "name": "Verify",
+    "status": "completed"
+  },
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "head": "c358f4d053bd52e4108f54951c87f0f7056b3e35"
+    },
+    {
+      "command": "node scripts/verify-oncall-build.mjs",
+      "covers": "rer first-party check, build and typecheck",
+      "exit": 0,
+      "head": "c358f4d053bd52e4108f54951c87f0f7056b3e35"
+    },
+    {
+      "command": "node tests/activation.mjs",
+      "exit": 0,
+      "groups": 40,
+      "source": "Product and activation inputs match the exact committed head"
+    },
+    {
+      "assertions_width": 1440,
+      "capture_widths": [
+        1440,
+        390
+      ],
+      "chromium": "/usr/bin/chromium",
+      "command": "node scripts/verify-oncall.mjs browser",
+      "exit": 0,
+      "head": "c358f4d053bd52e4108f54951c87f0f7056b3e35"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write and check",
+      "exit": 0,
+      "generated_views_restored_from_main": true
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check on committed candidate",
+      "exit": 1,
+      "output": "Contract prose: 0 errors, 0 warnings.\nACCEPTANCE.md: generated content differs; run contract-docs write."
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock and check",
+      "exit": 0,
+      "head": "c358f4d053bd52e4108f54951c87f0f7056b3e35",
+      "sha256": "e3be91538d7aa7a2f9ba8eb6a472d1f637221d39e54946b5223b184c0cca617a"
+    },
+    {
+      "audited_candidate_commits": 1,
+      "command": "git diff --check and candidate identity and trailer check",
+      "exit": 0,
+      "includes_side_parents": true
+    },
+    {
+      "command": "node scripts/verify-oncall.mjs activation",
+      "exit": 0,
+      "head": "c358f4d053bd52e4108f54951c87f0f7056b3e35"
+    }
+  ],
+  "contract": {
+    "after": "PARTIAL",
+    "before": "PARTIAL",
+    "counts_after": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41,
+      "total": 101
+    },
+    "counts_before": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41,
+      "total": 101
+    },
+    "id": "OC-025",
+    "local_acceptance": 1,
+    "whole_points_proven": []
+  },
+  "head": "c358f4d053bd52e4108f54951c87f0f7056b3e35",
+  "main_ci": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "82c51561770c1a67ba6e1a3b41752bbabf707007",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44931991602",
+      "id": 44931991602,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "82c51561770c1a67ba6e1a3b41752bbabf707007",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44931991659",
+      "id": 44931991659,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "main_parent": "82c51561770c1a67ba6e1a3b41752bbabf707007",
+  "proof": [
+    "PASS OC-025 own-shifts feeds: the same two feeds transfer exactly the accepted primary interval",
+    "PASS OC-025 secondary service feed: bounded UTC coverage before and after reviewed override, unrelated rota and member data excluded, immediate 404 after revocation, assignments and paging retained, zero outbound requests",
+    "PROBE OC-025 1: pending to overdue at the requested start with durable pending; late approve, accept and decline return 409, substitute cannot cancel, requester cancellation commits once with attributed audit, coverage and paging records unchanged, zero outbound",
+    "PASS OC-025 public schedule coordination: holder/substitute authority, default admin and none approval, racing acceptance, one effective override, audit rollback, recorded not-deliverable notices, durable reminder settings/due label, three digest-only feed scopes, 20 cap, immediate revocation and unchanged history, strict inactive recovery and overdue cancellation. Paging OFF.",
+    "Activation passed: 40 requirement flow groups",
+    "PASS OC-025 overdue browser: pending actions observed for requester, substitute and admin; exact-start reload shows overdue and durable pending, only requester can cancel, cancelled state visible; 1440 assertions and 1440 and 390 captures",
+    "PASS OC-025 browser 1440: band-selected swap, independent substitute acceptance after approval, effective override, autosaved approval/reminder, no-timer label, one-time feed dismissal, immediate revoke, recorded obligations, axe and overflow"
+  ],
+  "publication_scan": {
+    "commit": "c358f4d053bd52e4108f54951c87f0f7056b3e35",
+    "complete": false,
+    "findings": null,
+    "historyScanned": null,
+    "state": "pending guarded fleet landing"
+  },
+  "push_verified": true,
+  "recorded_at": "2026-11-21T18:30:00.783257+00:00",
+  "repository": "just-every/run-oncall",
+  "tag": "sd-oncall-c-f326"
+}
