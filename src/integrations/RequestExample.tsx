@@ -23,16 +23,17 @@ curl --fail-with-body ${quote(endpoint)} \\
   -H 'Content-Type: application/json' \\
   -H "Authorization: Bearer \${ONCALL_SOURCE_KEY:?Set ONCALL_SOURCE_KEY privately first}" \\
   --data-binary ${body}`;
+  const endpointField = <label className="field">Ingress URL<input readOnly value={endpoint} onFocus={event => event.currentTarget.select()} /></label>;
   return <details className="ingress-example" open={defaultOpen}><summary>Sample request</summary>
-    <label className="field">Ingress URL<input readOnly value={endpoint} /></label>
+    {!routed && endpointField}
     <button type="button" disabled={!origin || !source} onClick={async () => {
       try { await navigator.clipboard.writeText(endpoint); setCopied('Ingress URL copied'); }
-      catch { setCopied('Select the URL above and copy it.'); }
+      catch { setCopied(routed ? 'Open Request identifiers to select and copy the URL.' : 'Select and copy the ingress URL.'); }
     }}>Copy ingress URL</button>
     <p>Set <code>ONCALL_SOURCE_KEY</code> to the private key in your sender’s environment, then paste this request into a macOS, Linux or WSL terminal. It uses curl{mode === 'signed' ? ', OpenSSL and standard shell tools' : ''}; no Node.js is needed. Check <code>curl --version</code>{mode === 'signed' && <> and <code>openssl version</code></>} first.</p>
     {routed ? <p>This sample is ready for {service.name}. The key’s published routing rules choose the service for each event.</p> : <p>This sample is ready to send events to {service.name}. Its service value is already filled in.</p>}
     <details><summary>Request identifiers</summary>
-    {routed ? <p>The source value is this key’s ID, <code>{source}</code>, the same text as the end of the URL. The service value is only a hint: this key’s published routing rules choose the allowed service, so you can keep {service.name}’s internal ID from <a href="/settings/services">Services</a> or use another allowed service’s.</p> : <p>The service value is already filled in for {service.name}. The source ID in the URL was assigned when this source was created.</p>}
+    {routed ? <>{endpointField}<p>The sample already includes this key’s source value and {service.name}’s service value. The published routing rules choose the destination.</p></> : <p>The service value is already filled in for {service.name}. The source ID in the URL was assigned when this source was created.</p>}
     </details>
     <button type="button" disabled={!origin || !source} onClick={async () => {
       try { await navigator.clipboard.writeText(example); setCopied('Copied'); }

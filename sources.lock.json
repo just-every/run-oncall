@@ -256,7 +256,7 @@
       "executable": false
     },
     "docs/incidents.md": {
-      "sha256": "fd8a067eec6657eeb92b3b36c5f6c9902dbb51bc275d3a0bee3d2d1023beb3c0",
+      "sha256": "3e42164ea779b6a76f7a481a652689365498aa0168a3a177e50438c0c0c1de62",
       "executable": false
     },
     "docs/install.md": {
@@ -2800,7 +2800,7 @@
       "executable": false
     },
     "src/integrations/RequestExample.tsx": {
-      "sha256": "433d0e231d9c17ab3580f6c7c8e7a571fac83843af41833be6bdd596dd95cacd",
+      "sha256": "92e96b42c72580d03ea4e75837f0fdf17b6e921111d6ba90ac73a0defebc7542",
       "executable": false
     },
     "src/integrations/sender.ts": {
@@ -6948,7 +6948,7 @@
       "executable": false
     },
     "tests/readable-names-browser.mjs": {
-      "sha256": "639a4b5867db330276cc255f1fb70d8a7d1060d82470d71d3a36f7948f5a8cd4",
+      "sha256": "edb63c07ab20abbc89cf5425023578380e58278acbf57a6df890ceafc40cbfc1",
       "executable": false
     },
     "tests/readiness.mjs": {

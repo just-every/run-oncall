@@ -54,7 +54,7 @@ Send `POST /api/ingress/SOURCE` with a JSON object, at most 65,536 bytes (64 KiB
 
 Text values are trimmed; their limits apply before trimming. Unknown fields are discarded, so include all context you need in these supported fields.
 
-The source page's **Sample request** already holds this source's URL and the service ID: copy them from there. The page does not show a service's ID in its list; it is the last part of the address of **Settings → Services → the service**, and also appears as `id` under `services` in `/api/state` in that signed-in browser. The **Allowed service** selector uses that ID automatically; an external sender must supply it explicitly.
+For a first send, use **Copy sample request** on the source page. It already contains the ingress URL and the values for the named service. If you are configuring a sender by hand, the same page has **Copy ingress URL** and **View request code**, where you can copy the exact `source`, `service` and `environment` values.
 
 For a source configured as **Bearer token**, set `ONCALL_ORIGIN` to your hosted HTTPS app origin or the local app's printed origin, `ONCALL_SOURCE_ID` to the Source ID at the end of the sample request's URL (Oncall generates it from the name, for example `monitoring-a815be2e8fcd`), `ONCALL_SERVICE_ID` to the service's ID and `ONCALL_SOURCE_KEY` to the private credential in your shell. With a source authorized for that service in `production`:
 

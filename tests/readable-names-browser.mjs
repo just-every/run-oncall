@@ -42,6 +42,16 @@ export async function readableNamesBrowser(page,context,{source,service,serviceN
  for(const name of [keyName,serviceName,secondName])assert.ok(setupText.includes(name),'sender setup names its key and all allowed services');
  for(const id of [routed.id,service,secondService])assert.ok(!setupText.includes(id),'default setup prose contains no internal identity');
  assert.equal(await setup.getByLabel('Key ID',{exact:true}).isVisible(),false,'raw key identity is deliberate details');
+ const ingress=setup.getByLabel('Ingress URL',{exact:true});
+ await expect(ingress).toBeHidden();
+ await setup.getByRole('button',{name:'Copy ingress URL',exact:true}).click();
+ const endpoint=await page.evaluate(()=>navigator.clipboard.readText());
+ await setup.getByText('Request identifiers',{exact:true}).click();
+ await expect(ingress).toBeVisible();
+ await expect(ingress).toHaveValue(endpoint);
+ assert.equal(decodeURIComponent(new URL(endpoint).pathname.split('/').at(-1)),'intake:'+routed.id);
+ await setup.getByText('Request identifiers',{exact:true}).click();
+ await expect(ingress).toBeHidden();
  const sample=await setup.getByLabel('Sample request',{exact:true}).inputValue();
  assert.ok(!sample.includes(privateKey),'copyable sample keeps the private credential out');
  const payload=JSON.parse(sample.match(/'({\n[\s\S]*\n})'/)[1].replaceAll("'\\''","'"));
