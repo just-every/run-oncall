@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import {randomBytes,randomUUID} from 'node:crypto';
 import {autonomousPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
-import {agentEffectSnapshot} from './agent-door-runtime.mjs';
+import {agentEffectSnapshot,agentReadSnapshot,assertAgentReadUnchanged} from './agent-door-runtime.mjs';
+import {nativeCoverageRecord} from './oncall-agent-coverage-parity.mjs';
 
 /** Same production MCP and native approval doors as the specialist journey. */
 export async function scheduleReplay(runtime) {
@@ -72,6 +73,7 @@ export function staleReviewedScheduleRevision(runtime) {
 
 async function staleScheduleRevision(runtime, operation, optionalExpectedRevision) {
   const reviewed = operation === 'update';
+  const followCoverageLink = !reviewed && !optionalExpectedRevision;
   const {db, http, tool, adopt, context} = runtime;
   const read = async (path, input, status = 200, request = http) => {
     const response = await request(path, input);
@@ -144,7 +146,7 @@ async function staleScheduleRevision(runtime, operation, optionalExpectedRevisio
     const rota = await read('/api/paging/schedules', {
       ...source, id: randomUUID(), name: 'Payments coordination rota ' + mode + fixture, revision: 0,
     });
-    const from = Math.floor(context.now() / 60000) * 60000 + 86400000;
+    const from = Math.floor(context.now() / 60000) * 60000 + (followCoverageLink ? 0 : 86400000);
     const to = from + 3600000;
     const holder = reviewed ? null : await read('/api/members', {
       name: 'Rota relief ' + mode + fixture, role: 'responder', password: 'synthetic-oncall-' + randomUUID(),
@@ -218,6 +220,12 @@ async function staleScheduleRevision(runtime, operation, optionalExpectedRevisio
       assert.notEqual(freshReview.digest, input.digest);
       Object.assign(fresh, {schedule, digest: freshReview.digest});
       assert.deepEqual(await snapshot(), before, 'A fresh digest does not save or approve the edit');
+    }
+    const at = from + 30000;
+    let previousCoverage;
+    if (followCoverageLink) {
+      await runtime.time(at);
+      previousCoverage = await native(path + '/now-next');
     }
     const first = await call(fresh);
     assert.equal(first.status, 200);
@@ -326,8 +334,103 @@ async function staleScheduleRevision(runtime, operation, optionalExpectedRevisio
       (optionalExpectedRevision ? ', stale expected_revision ' + input.expected_revision : ', no expected_revision') +
       ' -> revision_conflict, current_revision ' + stale.current_revision + ' in metadata and text; scoped-out and absent indistinguishable; fresh revision -> one native ' + operation + ' and audit, ' +
       (mode === 'held' ? 'one exact sponsor approval' : 'autonomous') + '; replay unchanged; zero outbound requests');
-    retained.push({mode, schedule: saved, holder: holder?.name});
+    const coverage = followCoverageLink && await overrideCoverageReadback(runtime, {
+      mode, bearer: credential, agent, sponsor, completed, fresh, approvalId, previousCoverage, holder, at,
+    });
+    if (followCoverageLink) await runtime.time(null);
+    retained.push({mode, schedule: saved, holder: holder?.name, coverage});
   }
   assert.equal((await adopt()).status, 200);
   return retained;
+}
+
+/** Follow the actual completed override link before changing policy or the Worker clock. */
+async function overrideCoverageReadback(runtime, {
+  mode, bearer, agent, sponsor, completed, fresh, approvalId, previousCoverage, holder, at,
+}) {
+  const {db,http}=runtime;
+  const read=async path=>{
+    const response=await http(path);
+    assert.equal(response.status,200,path);
+    return response.json();
+  };
+  const write=completed.result.structuredContent;
+  assert.equal(completed.result.resultType,'complete');
+  const links=completed.result.content.filter(row=>row.type==='resource_link');
+  assert.equal(links.length,1);
+  const [{uri}]=links;
+  const path='/api/schedules/'+encodeURIComponent(write.schedule.id)+'/now-next';
+  assert.equal(uri,'oncall://schedules/'+encodeURIComponent(write.schedule.id)+'/coverage');
+  const before=await agentReadSnapshot(runtime);
+  const paging=await read('/api/paging/state'),nowNext=await read(path);
+  const schedule=paging.schedules.find(row=>row.id===write.schedule.id);
+  const expected=nativeCoverageRecord(paging,schedule,nowNext,before.application);
+  assert.deepEqual(schedule.services??[schedule.service],['agent-service']);
+  assert.deepEqual(schedule,write.schedule);
+  assert.equal(paging.workspaceRevision,before.application.revision);
+  assert.equal(nowNext.paging,'OFF');
+  assert.equal(write.paging,paging.paging);
+  assert.deepEqual(write.coverage,nowNext.now,'Completed write coverage matches protected native now at the frozen instant');
+  assert.equal(nowNext.now.at,at);
+  assert.equal(nowNext.now.scheduleRevision,fresh.revision+1);
+  assert.deepEqual(nowNext.now.windows.map(row=>row.role),['primary','backup']);
+  const [primary,backup]=nowNext.now.windows;
+  assert.notEqual(previousCoverage.now.primary,holder.id);
+  assert.equal(nowNext.now.primary,holder.id);
+  assert.equal(primary.member,holder.id);
+  assert.equal(primary.origin,'override');
+  assert.equal(primary.start,fresh.override.start);
+  assert.equal(primary.end,fresh.override.end);
+  assert.equal(nowNext.now.backup,previousCoverage.now.backup);
+  assert.deepEqual(backup,previousCoverage.now.windows.find(row=>row.role==='backup'));
+  assert.equal(backup.origin,'rotation');
+  assert.notEqual(backup.member,primary.member);
+  const holderIds=new Set([primary.member,backup.member]);
+  assert.deepEqual(new Set(expected.people.map(row=>row.id)),holderIds);
+  assert.deepEqual(expected.people.map(({id,name})=>({id,name})),write.people.filter(row=>holderIds.has(row.id)));
+
+  const approvals=async()=>(await db.prepare('SELECT * FROM agent_door_approvals ORDER BY id').all()).results;
+  const originalCall=()=>db.prepare('SELECT * FROM agent_door_calls WHERE agent=? AND key=?').bind(agent,fresh.idempotency_key).first();
+  const call=await originalCall(),priorApprovals=await approvals();
+  assert.equal(call.state,'done');
+  assert.deepEqual(JSON.parse(call.outcome).result,write);
+  const resource=await runtime.completeResource(uri,{bearer,approve:async({handle,saved})=>{
+    assert.equal(mode,'held');
+    assert.ok(approvalId);
+    assert.notEqual(handle.id,approvalId,'Coverage has its own approval distinct from the executed override');
+    assert.equal(saved.state,'pending');
+    assert.equal(saved.prepared_by.agent.id,agent);
+    assert.equal(saved.prepared_by.for.id,sponsor.id);
+    assert.equal(saved.summary.uri,uri);
+    const response=await http('/agents/api/approvals/'+handle.id+'/approve',{
+      revision:saved.revision,summary_sha256:saved.summary_sha256,
+    });
+    assert.equal(response.status,200);
+    const {approval}=await response.json();
+    assert.equal(approval.state,'executed');
+    assert.deepEqual(approval.approvals.map(row=>row.person),[sponsor.id]);
+  }});
+  assert.equal(resource.content.uri,uri);
+  assert.equal(resource.content.mimeType,'application/json');
+  assert.deepEqual(resource.value,expected,'Actual override link returns the saved rota, native current coverage and only its current people');
+  assert.equal(resource.initial.decision.revision,completed.decision.revision);
+  assert.equal(resource.initial.decision.disposition,mode==='held'?'approval':'autonomous');
+  assert.deepEqual(resource.initial.decision.classes.map(row=>row.class),['standard','sensitive']);
+  const afterApprovals=await approvals();
+  const readApproval=resource.initial.body.error?.data?.approval?.id;
+  if(mode==='held'){
+    assert.ok(readApproval);
+    assert.equal(priorApprovals.find(row=>row.id===approvalId)?.state,'executed');
+    assert.deepEqual(afterApprovals.filter(row=>!priorApprovals.some(prior=>prior.id===row.id)).map(row=>row.id),[readApproval]);
+  }else{
+    assert.equal(resource.answer,resource.initial);
+    assert.equal(readApproval,undefined);
+  }
+  assert.deepEqual(afterApprovals.filter(row=>row.id!==readApproval),priorApprovals,'Existing approvals remain identical');
+  assert.deepEqual(await originalCall(),call,'Readback preserves the original override outcome and receipt');
+  assertAgentReadUnchanged(before,await agentReadSnapshot(runtime));
+  assert.deepEqual(await read('/api/paging/state'),paging);
+  assert.deepEqual(await runtime.outboundRequests(),[]);
+  console.log(`PROBE BASE-AGENT-003 4 override ${mode}: completed resource link matches native rota revision ${schedule.revision}, active primary override and unchanged backup with two current holders, ${mode==='held'?'separate saved read approval':'direct read'}, zero native changes or outbound requests`);
+  return {at,path,nowNext,people:expected.people};
 }

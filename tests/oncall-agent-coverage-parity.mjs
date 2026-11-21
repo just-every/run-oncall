@@ -9,6 +9,13 @@ const json=async(http,path,input,status=200)=>{
  const response=await http(path,input);assert.equal(response.status,status,path);return response.json();
 };
 
+/** Match the resource to the current native windows and their visible holders. */
+export function nativeCoverageRecord(paging,saved,nowNext,native){
+ const references=new Set([nowNext.now.primary,nowNext.now.backup,...nowNext.now.windows.map(row=>row.member)]);
+ const people=native.members.filter(row=>references.has(row.id)).map(({id,name,active,role})=>({id,name,active,role}));
+ return {paging:paging.paging,service:saved.service,schedule:saved,now:nowNext.now,people};
+}
+
 /** Extend the existing matrix with native current coverage at override boundaries. */
 export async function coverageParity({runtime,people,browser,receipt}){
  const admin=people.find(p=>p.member.role==='admin');
@@ -61,12 +68,11 @@ export async function coverageParity({runtime,people,browser,receipt}){
     }
     // The oracle is protected HTTP, never the coverage evaluator, resource
     // projector or reconstructed D1 records. Native list order is retained.
-    const references=new Set([nowNext.now.primary,nowNext.now.backup,...nowNext.now.windows.map(row=>row.member)]);
-    const expectedPeople=native.members.filter(row=>references.has(row.id)).map(({id,name,active,role})=>({id,name,active,role}));
+    const expected=nativeCoverageRecord(paging,saved,nowNext,native);
+    const {people:expectedPeople}=expected;
     assert.equal(expectedPeople.length,2);
     assert.ok(!expectedPeople.some(row=>row.id===participants.unrelated.id));
     assert.deepEqual(new Set(expectedPeople.map(row=>row.id)),new Set([primary,participants.backup.id]));
-    const expected={paging:paging.paging,service:saved.service,schedule:saved,now:nowNext.now,people:expectedPeople};
     const before=await agentReadSnapshot(runtime);
     const reviews=(await runtime.db.prepare('SELECT * FROM agent_door_reviews ORDER BY id').all()).results;
     const approvals=(await runtime.db.prepare('SELECT * FROM agent_door_approvals ORDER BY id').all()).results;
