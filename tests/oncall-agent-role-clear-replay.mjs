@@ -3,27 +3,41 @@ import {randomUUID} from 'node:crypto';
 import {agentRuntime,agentEffectSnapshot,agentReadSnapshot,assertAgentReadUnchanged} from './agent-door-runtime.mjs';
 import {accessToken,autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 
-/** Follow the original Scribe-clear link with the same admitted credential. */
-export async function scribeClearReadback(runtime,write,bearer,mode){
+/** Follow the completed role-clear response's incident link with the same admitted bearer. */
+export async function roleClearReadback(runtime,write,bearer,mode,role,label){
  const {http,db,context}=runtime;
- const [link]=write.result.content.filter(row=>row.type==='resource_link');
+ const links=write.result.content.filter(row=>row.type==='resource_link');
+ assert.equal(links.length,1);
+ const [link]=links;
  assert.ok(link?.uri,'The original write returns a resource link');
  const saved=write.result.structuredContent,writeReview=write.result._meta['com.runeditrun/review'];
  assert.equal(write.result.resultType,'complete');
- assert.equal(saved.scribe,null);
- assert.equal(saved.timeline.at(-1).kind,'assign-role');
- assert.equal(saved.timeline.at(-1).metadata.agent.agent.id,context.agentId);
+ assert.deepEqual(write.decision.classes.map(row=>row.class),['standard']);
+ assert.equal(link.uri,'oncall://incidents/'+saved.id,'The completed write links to its parent incident');
+ assert.equal(saved[role],null);
+ const entry=saved.timeline.at(-1);
+ assert.equal(entry.kind,'assign-role');
+ assert.equal(entry.actor,context.agentId);
+ assert.equal(entry.metadata.agent.agent.id,context.agentId);
  const json=async path=>{const response=await http(path);assert.equal(response.status,200);return response.json()};
  const reviews=async()=>(await db.prepare('SELECT * FROM agent_door_reviews ORDER BY id').all()).results;
+ const originalCall=()=>db.prepare('SELECT * FROM agent_door_calls WHERE agent=? AND decision_id=?')
+  .bind(context.agentId,write.decision.id).first();
  const before=await agentReadSnapshot(runtime),paging=await json('/api/paging/state'),reviewsBefore=await reviews();
+ const call=await originalCall();
+ assert.equal(call?.state,'done');
+ const outcome=JSON.parse(call.outcome);
+ assert.deepEqual(outcome.result,saved);
+ assert.deepEqual(outcome.review,writeReview);
  const outboundBefore=await runtime.outboundRequests();
- const resource=await runtime.completeResource(link.uri,{bearer});
+ const resource=await runtime.completeResource(link.uri,{bearer,approve:()=>assert.fail('A standard read must complete without approval')});
  assert.equal(resource.answer,resource.initial,'Standard read completes on the original request');
  assert.equal(resource.content.uri,link.uri);
  assert.deepEqual(resource.value,saved,'Full resource equals the original write result');
  const after=await agentReadSnapshot(runtime);
  assert.deepEqual(resource.value,after.application.incidents.find(row=>row.id===saved.id),'Full resource equals the sponsor’s protected native record');
  assertAgentReadUnchanged(before,after);
+ assert.deepEqual(await originalCall(),call,'The read leaves the original write call and outcome unchanged');
  assert.deepEqual(await json('/api/paging/state'),paging);
 
  const {decision,result}=resource.answer,readReview=result._meta['com.runeditrun/review'];
@@ -45,6 +59,9 @@ export async function scribeClearReadback(runtime,write,bearer,mode){
   assert.equal(readDecision.summary.uri,link.uri);
   assert.equal(readDecision.principal.agent.id,context.agentId);
   assert.deepEqual(reviewsAfter.filter(row=>row.id!==readReview.id),reviewsBefore,'The read appends only its own review and leaves the original write review unchanged');
+  const visible=(await json('/agents/api/reviews')).reviews;
+  assert.equal(visible.find(row=>row.id===writeReview.id)?.state,'open');
+  assert.equal(visible.find(row=>row.id===readReview.id)?.state,'open');
  }else{
   assert.equal(decision.disposition,'autonomous');
   assert.equal(writeReview,undefined);
@@ -52,7 +69,7 @@ export async function scribeClearReadback(runtime,write,bearer,mode){
   assert.deepEqual(reviewsAfter,reviewsBefore);
  }
  assert.deepEqual(await runtime.outboundRequests(),outboundBefore,'Reading the original link sends no outbound requests');
- console.log(`PROBE BASE-AGENT-003 4 ${mode} Scribe clear: original MCP resource link matches the entire saved incident and protected sponsor state at revision ${saved.revision}, with null Scribe and attributed assign-role history; ${mode==='held'?'distinct open read review, original write review unchanged':'direct read without review'}; native records, revisions, state-changing audit and paging unchanged; new outbound requests=0`);
+ console.log(`PROBE BASE-AGENT-003 4 ${mode} ${label} clear: original MCP resource link matches the entire saved incident and protected sponsor state at revision ${saved.revision}, with null ${label}, companion roles, assignee and attributed role history; ${mode==='held'?'distinct open read review, original write review unchanged':'direct read without review'}; original write outcome, native records, revisions, state-changing audit and paging unchanged; new outbound requests=0`);
 }
 
 /** Clearing a populated response role keeps its original outcome across conflicts and response loss. */
@@ -199,7 +216,8 @@ export async function roleClearReplay(runtime,role='scribe',label='Scribe',obser
   const scoped=await tool('oncall.services.read',{id:service},{},credential);
   assert.equal(scoped.result.isError,false);assert.equal(scoped.result.structuredContent.data[0].id,service);
   const incident=await target('changed reason '+mode),args=argumentsFor(incident),before=await snapshot(),prior=await audits();
-  const bearer=role==='scribe'?await accessToken(context,{act:{sub:context.agentId,name:'Responder assistant',specialist:'oncall-responder'}}):undefined;
+  const followsLink=role==='scribe'||role==='communications';
+  const bearer=followsLink?await accessToken(context,{act:{sub:context.agentId,name:'Responder assistant',specialist:'oncall-responder'}}):undefined;
   const first=await tool(name,args,{},bearer);
   assert.equal(first.status,200);assert.equal(first.body.error,undefined);assert.equal(first.result.isError,false);
   const completion=await committed(incident,args,before,prior,mode,disposition);
@@ -214,7 +232,7 @@ export async function roleClearReplay(runtime,role='scribe',label='Scribe',obser
   assert.deepEqual(await snapshot(),completion.after);assert.deepEqual(await calls(args.idempotency_key),completion.retained);
   await attempt(priorConflict,conflict,changed,'refused','idempotency_conflict');await bookkeeping(permanentBefore);
   await replay(completion,conflict.body.id);
-  if(role==='scribe')await scribeClearReadback(runtime,first,bearer,mode);
+  if(followsLink)await roleClearReadback(runtime,first,bearer,mode,role,label);
   console.log('PROBE BASE-AGENT-012 acceptance 1 and 3 '+mode+' '+label+' clear: standard-only populated role to null once, companion fields retained; new RPC id returns equal original result; original key and revision with changed reason -> isError idempotency_conflict in metadata and text without private result; original arguments still replay; zero outbound requests');
   const lostTarget=await target('lost response '+mode),lostArgs=argumentsFor(lostTarget),lostBefore=await snapshot(),lostPrior=await audits();
   const lost=await runtime.discardToolResponse(name,lostArgs);
