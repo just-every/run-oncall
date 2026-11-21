@@ -1,0 +1,38 @@
+PROBE BASE-AGENT-002 5 first Scribe autonomous: signed-in and MCP assignments saved the same Scribe and reason, kept companion roles, advanced both revisions once per door and appended one command.assign-role with distinct attribution; 0 open review, paging OFF and zero outbound requests
+PROBE BASE-AGENT-002 5 first Scribe held: signed-in and MCP assignments saved the same Scribe and reason, kept companion roles, advanced both revisions once per door and appended one command.assign-role with distinct attribution; 1 open review, paging OFF and zero outbound requests
+Scribe readback autonomous person 1440: Mira Patel
+Browser proof first-scribe-autonomous-person-people 1440: fits=true serious-or-critical=0 undersized-controls=0
+Scribe readback autonomous person 390: Mira Patel
+Browser proof first-scribe-autonomous-person-people 390: fits=true serious-or-critical=0 undersized-controls=0
+Scribe timeline autonomous person 1440: Synthetic signed-in Scribe assigner
+Browser proof first-scribe-autonomous-person-timeline 1440: fits=true serious-or-critical=0 undersized-controls=0
+Scribe timeline autonomous person 390: Synthetic signed-in Scribe assigner
+Browser proof first-scribe-autonomous-person-timeline 390: fits=true serious-or-critical=0 undersized-controls=0
+Scribe readback autonomous agent 1440: Mira Patel
+Browser proof first-scribe-autonomous-agent-people 1440: fits=true serious-or-critical=0 undersized-controls=0
+Scribe readback autonomous agent 390: Mira Patel
+Browser proof first-scribe-autonomous-agent-people 390: fits=true serious-or-critical=0 undersized-controls=0
+Scribe timeline autonomous agent 1440: Responder assistant for Alex Chen
+Browser proof first-scribe-autonomous-agent-timeline 1440: fits=true serious-or-critical=0 undersized-controls=0
+Scribe timeline autonomous agent 390: Responder assistant for Alex Chen
+Browser proof first-scribe-autonomous-agent-timeline 390: fits=true serious-or-critical=0 undersized-controls=0
+Scribe readback held person 1440: Mira Patel
+Browser proof first-scribe-held-person-people 1440: fits=true serious-or-critical=0 undersized-controls=0
+Scribe readback held person 390: Mira Patel
+Browser proof first-scribe-held-person-people 390: fits=true serious-or-critical=0 undersized-controls=0
+Scribe timeline held person 1440: Synthetic signed-in Scribe assigner
+Browser proof first-scribe-held-person-timeline 1440: fits=true serious-or-critical=0 undersized-controls=0
+Scribe timeline held person 390: Synthetic signed-in Scribe assigner
+Browser proof first-scribe-held-person-timeline 390: fits=true serious-or-critical=0 undersized-controls=0
+Scribe readback held agent 1440: Mira Patel
+Browser proof first-scribe-held-agent-people 1440: fits=true serious-or-critical=0 undersized-controls=0
+Scribe readback held agent 390: Mira Patel
+Browser proof first-scribe-held-agent-people 390: fits=true serious-or-critical=0 undersized-controls=0
+Scribe timeline held agent 1440: Responder assistant for Alex Chen
+Browser proof first-scribe-held-agent-timeline 1440: fits=true serious-or-critical=0 undersized-controls=0
+Scribe timeline held agent 390: Responder assistant for Alex Chen
+Browser proof first-scribe-held-agent-timeline 390: fits=true serious-or-critical=0 undersized-controls=0
+PROBE BASE-AGENT-002 5 Scribe browser: real People and priority control and MCP under both policies; reloaded Scribe, companion roles and attributed timeline at 1440 and 390; zero outbound requests
+PASS OC-050 native role controls: Lead transfer, Scribe and Communications assignment and transfer, exact revisions and attributed history after reload at 1440; selected controls captured at 1440 and 390 with labels, tooltips, overflow, hydration and serious or critical axe checks
+PASS OC-053 scoped API, atomic signed outbox, receipt uncertainty, replay, revocation and inactive native restore
+Regression witness on an isolated emitted Worker copy: reverting only the first Scribe audit mapping made the parity probe fail at the native event assertion (exit 1, actual incidents.update, expected command.assign-role).

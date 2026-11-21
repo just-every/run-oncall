@@ -1,0 +1,124 @@
+{
+  "files": [
+    {
+      "blob": "f318033c0fafec975a0c5971086a601f4b03f081",
+      "bytes": 4077,
+      "path": "PROBES.txt",
+      "sha256": "ed6fd027e46bab78aea7ccb44e6d18a2a61ccf6d91da6b73b3db597c7e2c2f57"
+    },
+    {
+      "blob": "de3c0874b4318e8a4e67ea705e611f5178e753a2",
+      "bytes": 7866,
+      "path": "RECEIPT.json",
+      "sha256": "0c0dc8489803d81e7ad50d300280fd8bae8a2f4265bfe29f680e9e3cccc61274"
+    },
+    {
+      "blob": "00853ed85fc8b489dae1e957f3d4185a8580ae22",
+      "bytes": 8934,
+      "path": "REPORT.md",
+      "sha256": "f4742de04fb5a67c337d5a7d60d2f3a8be982fdc30a3a4fd53e30ae02b4e62d8"
+    },
+    {
+      "blob": "5afc2e8239117938991954f766919c3dd242f0a9",
+      "bytes": 373643,
+      "path": "browser/agent-door-first-scribe-autonomous-agent-people-1440.png",
+      "sha256": "cd5fd67a01dc565047aefef67dc21184b1c3d5e5d0b012e1589a1e4cbb98e64d"
+    },
+    {
+      "blob": "679e7fd61dcc25d55365bfce609f08d981f26be8",
+      "bytes": 68905,
+      "path": "browser/agent-door-first-scribe-autonomous-agent-people-390.png",
+      "sha256": "f1d778d015a1096deae3830926a051995a3d9aa09d4afa39bba65b2f2657d2e6"
+    },
+    {
+      "blob": "d64ad21545801f712bf699cbd88dcc92fd8c9acb",
+      "bytes": 387039,
+      "path": "browser/agent-door-first-scribe-autonomous-agent-timeline-1440.png",
+      "sha256": "b0cdbdb840d29833c8fb260f2c81ebf0f53142d7fcf789923220e45d59c662aa"
+    },
+    {
+      "blob": "769f6efa05e70ee88f436bd02b7577bacc492dee",
+      "bytes": 100568,
+      "path": "browser/agent-door-first-scribe-autonomous-agent-timeline-390.png",
+      "sha256": "a6adecede53cddc2089fa53a3f0eef653ff2f86b9135481a155ca2b49e5b71ec"
+    },
+    {
+      "blob": "3ddca9897704519f7398bf7a3a44be395e72b382",
+      "bytes": 373637,
+      "path": "browser/agent-door-first-scribe-autonomous-person-people-1440.png",
+      "sha256": "45140d7252e17b010e2d106f9588115fb21847d349c4aac7acc31f0a5b1a0860"
+    },
+    {
+      "blob": "434c98721a27677f129388a5a2f3c6d5f835f624",
+      "bytes": 69029,
+      "path": "browser/agent-door-first-scribe-autonomous-person-people-390.png",
+      "sha256": "665c9ce5cdf5b96394f763a867f3560d60a00e2365f308d36ed9cd8fac340117"
+    },
+    {
+      "blob": "222520500e080b1628ada34e8cc4ff39e1b8047c",
+      "bytes": 387183,
+      "path": "browser/agent-door-first-scribe-autonomous-person-timeline-1440.png",
+      "sha256": "9645aa8a6e451b20c4747e75109e021a2f469c98104a312cc34ca6b7c2760941"
+    },
+    {
+      "blob": "6eb17c1b11d5702e46e12846c10ffd02ae936c16",
+      "bytes": 100690,
+      "path": "browser/agent-door-first-scribe-autonomous-person-timeline-390.png",
+      "sha256": "d6adbec9d0b15a1a1dc09042ec92a8735cdf556edcbb3faa1ed8eabccc3020a2"
+    },
+    {
+      "blob": "5bd7e56d6f66295845dfa8485524624b1bffcfb2",
+      "bytes": 371991,
+      "path": "browser/agent-door-first-scribe-held-agent-people-1440.png",
+      "sha256": "b08e4c23eb3b861bfce18abe68180a81dde12d7ae8c471ba6e417f4e8e11975c"
+    },
+    {
+      "blob": "679e7fd61dcc25d55365bfce609f08d981f26be8",
+      "bytes": 68905,
+      "path": "browser/agent-door-first-scribe-held-agent-people-390.png",
+      "sha256": "f1d778d015a1096deae3830926a051995a3d9aa09d4afa39bba65b2f2657d2e6"
+    },
+    {
+      "blob": "3a8832d1e1353393dce000087c831865982b134f",
+      "bytes": 386109,
+      "path": "browser/agent-door-first-scribe-held-agent-timeline-1440.png",
+      "sha256": "b037e4f36f25e2318d4a6bf7bc21c0e6a7625199d88504f7fdc320a0d7418eaa"
+    },
+    {
+      "blob": "82bd33f71eaba112855b40df5743a0ad57c84b86",
+      "bytes": 99589,
+      "path": "browser/agent-door-first-scribe-held-agent-timeline-390.png",
+      "sha256": "bcf377ac197397150f780e60a9ef564032b4e46475448cccb8b2b661badb836d"
+    },
+    {
+      "blob": "45b079b914bcb3ef6f28fd8f79f395e6c56e93b8",
+      "bytes": 372179,
+      "path": "browser/agent-door-first-scribe-held-person-people-1440.png",
+      "sha256": "d1917e19f506b016188d3e25bf1a89c42a87bb983fc0c599b5b7649b16ea92c7"
+    },
+    {
+      "blob": "434c98721a27677f129388a5a2f3c6d5f835f624",
+      "bytes": 69029,
+      "path": "browser/agent-door-first-scribe-held-person-people-390.png",
+      "sha256": "665c9ce5cdf5b96394f763a867f3560d60a00e2365f308d36ed9cd8fac340117"
+    },
+    {
+      "blob": "cdc9b4394fbbae3c452c898a904584c41affd0fa",
+      "bytes": 386379,
+      "path": "browser/agent-door-first-scribe-held-person-timeline-1440.png",
+      "sha256": "aef382111bb6b89070e2e2425eeb54ccceffa83fe3477e94229b4a1986c2bde3"
+    },
+    {
+      "blob": "c16eee57986e219f2cd93ca4fd39aca87fffab23",
+      "bytes": 99713,
+      "path": "browser/agent-door-first-scribe-held-person-timeline-390.png",
+      "sha256": "b276793fde6d3cf77b368735da85f3c79e303278c584cb8ee827d029c5b463fe"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f332",
+  "product_head": "885d4320e17f06d23fb397e40266ee8c7fca4292",
+  "ref": "refs/heads/evidence/sd-oncall-c-f332",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f332"
+}
