@@ -6400,7 +6400,7 @@
       "executable": false
     },
     "src/services/ServiceList.tsx": {
-      "sha256": "e31109a21c02d779f9de067cec4c1f5909714a18df26784a4550217d5cc32c21",
+      "sha256": "b8c6e67bd8b1fb1c125c10c65506db6170dcb28432341cfefd6c537402d7339f",
       "executable": false
     },
     "src/services/ServicePage.tsx": {
@@ -6408,7 +6408,7 @@
       "executable": false
     },
     "src/services/services.css": {
-      "sha256": "b0d07835798831af361b76aad4d0438c48207a2fc3b67091f75c549c7928a5a6",
+      "sha256": "99b5afa1ef9615093de8173f08ed827f66a5a04dafa566c1a0618ce633ac1d2b",
       "executable": false
     },
     "src/services/ServicesHome.tsx": {
@@ -6764,7 +6764,7 @@
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
-      "sha256": "2062ea4ca636e37ef32714fe000d64ea1c056dbfb0ccdd997f86fddc914789f6",
+      "sha256": "831bfe689addf249960a14ac3aa1478e9a4d511b657bdb76d1893b3ff1b4b9ea",
       "executable": false
     },
     "tests/missed-ack-flow.mjs": {

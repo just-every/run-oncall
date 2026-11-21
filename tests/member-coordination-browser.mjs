@@ -47,6 +47,93 @@ async function denied(page,label,id){
  assert.equal(await page.locator('.timeline').count(),0,`${label}: no incident history rendered`)
  assert.ok(!(await page.locator('body').innerText()).includes(noteText),`${label}: no coordination text in the page`)
 }
+
+async function serviceDirectorySearch(page, ownerPage, dependentId) {
+ const state = ok(await call(page, '/api/state'));
+ const checkout = state.services.find(service => service.id === 'checkout');
+ const dependent = state.services.find(service => service.id === dependentId);
+ assert.ok(checkout && dependent);
+ assert.equal(state.teams.find(team => team.id === checkout.team)?.visibility, 'public');
+ assert.ok(!dependent.team);
+ assert.equal(dependent.owner, '');
+ assert.deepEqual(dependent.dependencies, [checkout.id]);
+
+ const snapshot = async () => ({
+  memberState: ok(await call(page, '/api/state')),
+  ownerState: ok(await call(ownerPage, '/api/state')),
+  paging: ok(await call(ownerPage, '/api/paging/state')),
+  durable: durableSnapshot(worker),
+ });
+ const before = await snapshot();
+ assert.equal(before.paging.paging, 'OFF');
+ const outboundBefore = await worker.outboundRequests();
+ const outbound = [];
+ const observe = request => {if (new URL(request.url()).origin !== worker.origin) outbound.push(request.url());};
+ page.context().on('request', observe);
+ try {
+  const directoryPath = '/settings/services';
+  const directory = page.getByRole('region', {name:'Services', exact:true});
+  const search = directory.getByRole('searchbox', {name:'Search by service name or environment'});
+  const clear = directory.getByRole('button', {name:'Clear search', exact:true});
+  const links = directory.getByRole('link');
+  const path = service => directoryPath + '/' + encodeURIComponent(service.id);
+  const linkText = service => {
+   const owner = state.members.find(member => member.id === service.owner);
+   return service.name + ' ' + service.environment + ' · ' + (owner?.name ?? 'Unassigned');
+  };
+  const result = service => directory.getByRole('link', {name:linkText(service), exact:true});
+  const assertResult = async service => {
+   await expect(links).toHaveText([linkText(service)], {useInnerText:true});
+   await expect(result(service)).toHaveAttribute('href', path(service));
+  };
+
+  await page.goto(worker.origin + directoryPath);
+  await expect(links).toHaveText(state.services.map(linkText), {useInnerText:true});
+  assert.deepEqual(await links.evaluateAll(rows => rows.map(row => row.getAttribute('href'))), state.services.map(path));
+  await search.fill('  cHeCkOuT  ');
+  await assertResult(checkout);
+  await search.fill('sTaGiNg');
+  await assertResult(dependent);
+  await search.fill('no matching service name or environment');
+  await expect(links).toHaveCount(0);
+  await expect(directory.getByRole('status')).toHaveText('No services match your search.');
+  await clear.click();
+  await expect(search).toHaveValue('');
+  await expect(search).toBeFocused();
+  await expect(directory.getByRole('status')).toBeEmpty();
+  await expect(links).toHaveText(state.services.map(linkText), {useInnerText:true});
+
+  for (const width of [1440,390]) {
+   await page.setViewportSize({width, height:1000});
+   await page.goto(worker.origin + directoryPath);
+   await search.fill('sTaGiNg');
+   await search.press('Tab');
+   await page.keyboard.press('Tab');
+   const link = result(dependent);
+   await expect(link).toBeFocused();
+   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `service search fits ${width}`);
+   await directory.screenshot({path:`${captureDirectory}/oc023-service-search-${width}.png`});
+   await page.keyboard.press('Enter');
+   await page.waitForURL(worker.origin + path(dependent));
+   const detail = page.getByRole('article', {name:dependent.name, exact:true});
+   await expect(detail.getByRole('heading', {name:dependent.name, exact:true})).toBeVisible();
+   if (width === 1440) {
+    await expect(detail.getByText(dependent.environment, {exact:true})).toBeVisible();
+    await expect(detail.getByLabel('Owner', {exact:true})).toHaveValue(dependent.owner);
+    await detail.getByText('Depends on', {exact:true}).click();
+    await expect(detail.getByText(checkout.name, {exact:true})).toBeVisible();
+   }
+  }
+  assert.deepEqual(await snapshot(), before, 'service search and keyboard navigation leave records, revisions, permanent audit and paging unchanged');
+  assert.deepEqual(await worker.outboundRequests(), outboundBefore, 'service search and keyboard navigation make zero Worker outbound requests');
+  assert.deepEqual(outbound, [], 'service search and keyboard navigation make zero browser outbound requests');
+ } finally {
+  page.context().off('request', observe);
+  await page.setViewportSize({width:1440, height:1000});
+ }
+ console.log('PROBE OC-023 1: signed-in service directory matched protected names, links, environments and owners, including an Unassigned dependent service. Mixed-case name and environment queries, no match and clear passed at 1440. Tab and Enter opened the correct service at 1440 and 390. Records, revisions, permanent audit and paging matched before and after, with zero outbound requests.');
+}
+
 // Extend the existing autosave journey through the service and review screens.
 // Settings > Team owner journeys: assert once on desktop, capture both layouts.
 async function teamSettings(page, owner) {
@@ -541,11 +628,13 @@ try {
  }
  console.log('PROBE OC-023 browser: Backstage dependency review, conflict choice, apply, lost-response Retry and reload -> rendered and HTTP state agree; screens captured at 1440 and 390');
  // OC-023: both service forms preserve explicit unassigned ownership.
+ let dependentId;
  for(const width of [1440]) {
   await owner.page.setViewportSize({width,height:1000});await owner.page.goto(worker.origin+'/settings/services');await owner.page.reload();
   await owner.page.getByRole('button',{name:'Add service',exact:true}).click();
   const add=owner.page.locator('.service-create');
   await add.getByLabel('Service name',{exact:true}).fill('synthetic-oncall-23-'+width);
+  await add.getByLabel('Environment',{exact:true}).fill('staging');
   await add.getByLabel('Service owner',{exact:true}).selectOption('');
   await add.getByRole('button',{name:'Create service',exact:true}).click();
   const card=owner.page.locator('.service-page');
@@ -562,6 +651,9 @@ try {
   const axe=await new AxeBuilder({page:owner.page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();
   assert.deepEqual(axe.violations,[],'ownerless services have no accessibility violations');
   await edited.scrollIntoViewIfNeeded();await owner.page.screenshot({path:`${captureDirectory}/oc023-ownerless-services-${width}.png`,fullPage:true});
+  const current = ok(await call(owner.page, '/api/state'));
+  dependentId = current.services.find(service => service.name === 'synthetic-oncall-23-'+width+' edited').id;
+  ok(await call(owner.page, '/api/command', {type:'service-dependencies', service:dependentId, dependencies:['checkout'], workspaceRevision:current.revision}));
  }
  const declared=ok(await call(owner.page,'/api/command',{type:'declare',title:'Checkout payments failing',service:'checkout',severity:'critical',summary:'Card payments fail at checkout.',alerts:[]}))
 
@@ -570,6 +662,7 @@ try {
  const rosaMember=await passwordSignIn(rosa.page,responder)
  assert.equal(rosaMember.id,rosaRecord.id);assert.equal(rosaMember.role,'responder')
  assert.notEqual(rosaMember.id,ownerMember.id,'member and owner identities stay separate')
+ await serviceDirectorySearch(rosa.page, owner.page, dependentId)
  await openIncident(rosa.page,declared.id)
  await rosa.page.getByRole('button',{name:'Acknowledge',exact:true}).click()
  await rosa.page.locator('.incident-state.state-acknowledged').waitFor()
