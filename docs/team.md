@@ -22,7 +22,7 @@ Roles are checked on every request, so a change takes effect on the next thing t
 
 Under **Settings → Team**, an admin chooses **Add member**, fills in the person's **Name**, a **Role** and a **Password** of at least 12 characters, then presses **Create member** and shares the password with them directly. Oncall sends no invitations. Here, **local** means credentials stored in this Oncall installation, including when you host it for your team; it does not mean sign-in is limited to the same computer.
 
-To change someone's access later, use **Update access** on their card. **Reset password** on their card asks for a new password and a confirmation ("This ends their current sessions."); confirming sets it and signs them out everywhere.
+**Add member** opens the form above the member list and puts the cursor in **Name**. The owner can change their own name with **Edit name** on their card in **Settings → Team**, then **Save name**. Use **Member actions** on a card to revoke or restore access or reset a password; resetting ends that person's current sessions. The only active admin must make someone else an admin before changing their own role or revoking access. A refused change explains why and leaves the saved access in place; only an interrupted save keeps **Retry**. — Run Edit Run fleet, 17 November 2026.
 
 Being on the team does not put anyone on call: that is the [schedule's](schedules.md) job.
 

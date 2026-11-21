@@ -9,13 +9,14 @@ import {
 } from "@tanstack/react-router";
 import { WorkspaceOutlet } from "../app/WorkspaceOutlet";
 import { fontLinks } from "../brand/font-head";
+import { installationTitle } from "../identity";
 
 export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Oncall" },
+      { title: installationTitle() },
     ],
     links: [...fontLinks, { rel: "icon", href: "/brand/mark.svg", type: "image/svg+xml" }],
   }),

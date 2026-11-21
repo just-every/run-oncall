@@ -105,7 +105,9 @@ async function reviewed(env: Bindings, ctx: ToolContext, args: Record<string, un
 
 async function overridden(env: Bindings, ctx: ToolContext, args: Record<string, unknown>): Promise<Proposal> {
   const saved = await savedSchedule(env, ctx, args, true)
-  matchingRevision(saved.schedule, args.revision)
+  if (args.revision !== saved.schedule.revision) {
+    throw new ToolRefusal('revision_conflict', 'Schedule changed; reload and review again', { current_revision: saved.schedule.revision })
+  }
   const next = validateSchedule({ ...saved.schedule, revision: saved.schedule.revision + 1, overrides: [...saved.schedule.overrides, args.override] }, saved.access.state)
   return { ...saved, next }
 }

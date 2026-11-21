@@ -32,6 +32,7 @@ import { Route as OnCallNewRouteImport } from './routes/on-call.new'
 import { Route as ReviewsIncidentIdRouteImport } from './routes/reviews.$incidentId'
 import { Route as SettingsIndexRouteImport } from './routes/settings.index'
 import { Route as SettingsArchiveRouteImport } from './routes/settings.archive'
+import { Route as SettingsGeneralRouteImport } from './routes/settings.general'
 import { Route as SettingsIntegrationsRouteImport } from './routes/settings.integrations'
 import { Route as SettingsMoveInRouteImport } from './routes/settings.move-in'
 import { Route as SettingsReadinessRouteImport } from './routes/settings.readiness'
@@ -160,6 +161,11 @@ const SettingsArchiveRoute = SettingsArchiveRouteImport.update({
   path: '/archive',
   getParentRoute: () => SettingsRoute,
 } as any)
+const SettingsGeneralRoute = SettingsGeneralRouteImport.update({
+  id: '/general',
+  path: '/general',
+  getParentRoute: () => SettingsRoute,
+} as any)
 const SettingsIntegrationsRoute = SettingsIntegrationsRouteImport.update({
   id: '/integrations',
   path: '/integrations',
@@ -244,6 +250,7 @@ export interface FileRoutesByFullPath {
   '/on-call/new': typeof OnCallNewRoute
   '/reviews/$incidentId': typeof ReviewsIncidentIdRoute
   '/settings/archive': typeof SettingsArchiveRoute
+  '/settings/general': typeof SettingsGeneralRoute
   '/settings/integrations': typeof SettingsIntegrationsRouteWithChildren
   '/settings/move-in': typeof SettingsMoveInRoute
   '/settings/readiness': typeof SettingsReadinessRoute
@@ -280,6 +287,7 @@ export interface FileRoutesByTo {
   '/on-call/new': typeof OnCallNewRoute
   '/reviews/$incidentId': typeof ReviewsIncidentIdRoute
   '/settings/archive': typeof SettingsArchiveRoute
+  '/settings/general': typeof SettingsGeneralRoute
   '/settings/integrations': typeof SettingsIntegrationsRouteWithChildren
   '/settings/move-in': typeof SettingsMoveInRoute
   '/settings/readiness': typeof SettingsReadinessRoute
@@ -318,6 +326,7 @@ export interface FileRoutesById {
   '/on-call/new': typeof OnCallNewRoute
   '/reviews/$incidentId': typeof ReviewsIncidentIdRoute
   '/settings/archive': typeof SettingsArchiveRoute
+  '/settings/general': typeof SettingsGeneralRoute
   '/settings/integrations': typeof SettingsIntegrationsRouteWithChildren
   '/settings/move-in': typeof SettingsMoveInRoute
   '/settings/readiness': typeof SettingsReadinessRoute
@@ -357,6 +366,7 @@ export interface FileRouteTypes {
     | '/on-call/new'
     | '/reviews/$incidentId'
     | '/settings/archive'
+    | '/settings/general'
     | '/settings/integrations'
     | '/settings/move-in'
     | '/settings/readiness'
@@ -393,6 +403,7 @@ export interface FileRouteTypes {
     | '/on-call/new'
     | '/reviews/$incidentId'
     | '/settings/archive'
+    | '/settings/general'
     | '/settings/integrations'
     | '/settings/move-in'
     | '/settings/readiness'
@@ -430,6 +441,7 @@ export interface FileRouteTypes {
     | '/on-call/new'
     | '/reviews/$incidentId'
     | '/settings/archive'
+    | '/settings/general'
     | '/settings/integrations'
     | '/settings/move-in'
     | '/settings/readiness'
@@ -632,6 +644,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsArchiveRouteImport
       parentRoute: typeof SettingsRoute
     }
+    '/settings/general': {
+      id: '/settings/general'
+      path: '/general'
+      fullPath: '/settings/general'
+      preLoaderRoute: typeof SettingsGeneralRouteImport
+      parentRoute: typeof SettingsRoute
+    }
     '/settings/integrations': {
       id: '/settings/integrations'
       path: '/integrations'
@@ -793,6 +812,7 @@ const SettingsServicesRouteWithChildren =
 
 interface SettingsRouteChildren {
   SettingsArchiveRoute: typeof SettingsArchiveRoute
+  SettingsGeneralRoute: typeof SettingsGeneralRoute
   SettingsIntegrationsRoute: typeof SettingsIntegrationsRouteWithChildren
   SettingsMoveInRoute: typeof SettingsMoveInRoute
   SettingsReadinessRoute: typeof SettingsReadinessRoute
@@ -804,6 +824,7 @@ interface SettingsRouteChildren {
 
 const SettingsRouteChildren: SettingsRouteChildren = {
   SettingsArchiveRoute: SettingsArchiveRoute,
+  SettingsGeneralRoute: SettingsGeneralRoute,
   SettingsIntegrationsRoute: SettingsIntegrationsRouteWithChildren,
   SettingsMoveInRoute: SettingsMoveInRoute,
   SettingsReadinessRoute: SettingsReadinessRoute,

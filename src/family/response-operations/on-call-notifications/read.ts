@@ -1,7 +1,7 @@
 import {fail,type State} from '../domain.ts';
 
 /** Viewer-or-above read of on-call assignment and notification records. Records only; nothing was sent. */
-export function onCallNotifications(state:State,query:{incident?:string;alert?:string}) {
+export function onCallNotifications(state:State,query:{incident?:string;alert?:string},at=Date.now()) {
   const person = (id:string|null|undefined) => {
     if(!id)return null;
     const m = state.members.find(row=>row.id===id);
@@ -13,11 +13,21 @@ export function onCallNotifications(state:State,query:{incident?:string;alert?:s
     a.onCall.incident===query.incident||state.incidents.some(i=>i.id===query.incident&&i.alerts.includes(a.id))))
     .map(a=>{
       const run = a.onCall!, incident = state.incidents.find(i=>i.id===run.incident) ?? state.incidents.find(i=>i.alerts.includes(a.id));
-      return {alert:a.id,service:a.service,incident:incident?.id??null,assignedTo:person(incident?.assignee??null),assignedOnCall:person(run.assignee),
+      const answered=run.state==='stopped'&&['Stopped: incident acknowledged','Stopped: alert acknowledged'].includes(run.outcome);
+      const records=[...run.records].sort((x,y)=>x.step-y.step||x.dueAt.localeCompare(y.dueAt));
+      return {alert:a.id,service:a.service,incident:incident?.id??null,assignedTo:person(a.coordination?.assignee??incident?.assignee??a.owner??run.assignee),assignedOnCall:person(run.assignee),
+        status:answered?'answered' as const:run.state==='running'?'running' as const:'closed' as const,
         state:run.state,step:run.step,policy:run.policy,urgency:run.urgency,startedAt:run.startedAt,secondStepAt:run.secondStepAt,endsAt:run.endsAt,
         endedAt:run.endedAt,outcome:run.outcome,paging:'OFF',sender:'none',
-        records:run.records.map(r=>({id:r.id,step:r.step,person:person(r.member),contact:r.contact,rule:r.rule,dueAt:r.dueAt,recordedAt:r.recordedAt,
-          state:r.state,sender:'none',label:'recorded / no sender / paging OFF',outcome:r.outcome}))};
+        records:records.map((r,index)=>{
+          const stepEndsAt=r.step===1?run.secondStepAt:run.endsAt;
+          const next=records.slice(index+1).find(next=>next.step===r.step&&next.dueAt<stepEndsAt);
+          return {id:r.id,step:r.step,person:person(r.member),contact:r.contact,rule:r.rule,dueAt:r.dueAt,recordedAt:r.recordedAt,
+            status:answered?'answered' as const:run.state!=='running'||r.state==='stopped'?'closed' as const:r.state==='pending'&&Date.parse(r.dueAt)>at?'waiting' as const:'due' as const,
+            next:next?'rule' as const:r.step===1&&run.policy.secondStep!=='none'?'step' as const:'end' as const,
+            waitSeconds:Math.max(0,(Date.parse(next?.dueAt??stepEndsAt)-Date.parse(r.dueAt))/1000),
+            state:r.state,sender:'none',label:'recorded / no sender / paging OFF',outcome:r.outcome};
+        })};
     }).sort((x,y)=>y.startedAt.localeCompare(x.startedAt));
   return {paging:'OFF',sender:'none',label:'Recorded on-call notifications: no sender, nothing delivered',runs};
 }

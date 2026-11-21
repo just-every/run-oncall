@@ -1,3 +1,4 @@
+import {localMailChoiceRefusal,signedInInstallation,compiledHealth,installationNaming} from './installation-fit.mjs'
 import {developmentReadiness} from './readiness.mjs'
 import {recordHealthOutcome} from './health-outcomes.mjs'
 import {generateKeyPairSync,sign,createHash,randomUUID,randomBytes,createHmac} from 'node:crypto'
@@ -246,6 +247,8 @@ await mkdir('.rer/local',{recursive:true,mode:0o700});await mkdir('exports',{rec
 const answers='.rer/local/transfer-answers.json',archive='exports/transfer-proof.rer',corrupt='exports/transfer-corrupt.rer',invalidRecords='exports/transfer-invalid-records.rer',later='exports/transfer-later.rer'
 await writeFile(answers,JSON.stringify({OWNER_EMAIL:'transfer-owner@example.test'}),{mode:0o600})
 try{
+ await installationNaming();
+ await localMailChoiceRefusal(m,answers);
  await m.command(['setup','--answers',answers,'--port',String(m.port),'--non-interactive']);await business.configure();await m.start()
  let cookie=await m.owner(),req=(path,input)=>m.request(path,input,cookie),member=ok(await req('/api/session')).member
  await developmentReadiness(req);
@@ -263,6 +266,7 @@ try{
     await page.getByRole('checkbox').check();await page.getByRole('button',{name:'Finish setup'}).click()
    }
    await page.locator('.oncall-frame').waitFor()
+   await signedInInstallation(page,m.origin,{fallback:true});
    const archiveResponse=await context.request.get(m.origin+'/api/archive'),nativeArchive=await archiveResponse.json()
    assert.equal(archiveResponse.status(),200)
    await page.goto(m.origin+'/settings/archive');await page.locator('.archive-restore > summary').click()
@@ -273,6 +277,8 @@ try{
    assert.ok((await context.cookies()).some(row=>row.name.startsWith('oncall_session_')),'native restore issued a workspace session')
    await m.close();await m.command(['build','--non-interactive']);await m.preview()
    await page.goto(m.openLink);await page.locator('.oncall-frame').waitFor()
+   await signedInInstallation(page,m.origin,{capture:true});
+   await compiledHealth(path=>m.request(path));
    const session=await context.request.get(m.origin+'/api/session');assert.equal(session.status(),200)
    assert.equal((await session.json()).member.id,member.id,'preview owner opens the linked native archive identity')
    assert.equal(await page.locator('.oc-door-restore').count(),0,'an already linked owner needs no mapping')
@@ -282,6 +288,9 @@ try{
    await context.close()
   }finally{await browser.close();await m.close()}
  }
+ if(process.env.ONCALL_TRANSFER_JOURNEY==='installation-fit'){
+  console.log('PASS installation-fit: public setup refusal, corrected setup, runnable dev, signed-in fallback and built preview identity');
+ }else{
  await m.start();cookie=await m.owner()
  console.log('PROBE OC-018 native restore: Settings archive replacement -> build -> preview private owner link in the same browser -> mapped workspace without administrator selection')
  ok(await req('/api/command',{type:'service',id:'transfer',name:'Transfer service',environment:'production',owner:member.id,runbook:['Retain this instruction'],pager:''}))
@@ -857,4 +866,5 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
   invalidArchiveRefusals:'passed',currentArchiveRetainsErasure:true,
  })
  console.log('OC-041 accepted state and its audit entry commit together, survive subject erasure and export without secrets; OC-052 all current durable categories restore inactive without authority or replay: nonempty refusal, invalid-input rollback, full relational/history/journal restore, credential exclusion, paused timer, explicit new-owner mapping and held approval')
+ }
 }finally{await m.close();await rm(answers,{force:true});await rm(archive,{force:true});await rm(corrupt,{force:true});await rm(invalidRecords,{force:true});await rm(later,{force:true})}

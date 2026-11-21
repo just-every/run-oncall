@@ -18,6 +18,8 @@ To start Oncall again later, run the same line from the same folder. Adding `rer
 
 For Assisted, Managed and the walkthrough for your own Cloudflare account, see [Put Oncall online](https://run-oncall.com/docs/hosting).
 
+On an alert page, **Who this alert goes to** shows its assigned responder, the backup on the rota now and the recorded notification rules in due-time order, including each step's wait and whether the alert is waiting, due, answered or closed. The backup shown now may differ from a past recipient; the recorded rules and contacts remain the ones held for that run even if you edit today's settings. These steps are records only: Oncall does not send them; your existing pager remains responsible. If no rule matched, **Add one** opens **Settings → Team**. — Run Edit Run fleet (sd), 17 November 2026.
+
 ## Sign-in emails on your computer
 
 `rer dev --as signed-out` selects the signed-out persona. The compatibility flag `rer dev --login` still opens automatic owner entry. Ordinary `/signin` email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. The app does not capture mail or print sign-in tokens. Use a real owner mailbox for that flow. After delivery is configured, request an email link on the sign-in page, open the email on the same device and press **Confirm**. The default `rer dev` owner entry above needs no email delivery.
@@ -271,3 +273,15 @@ with missing inputs refuse. Remove old bound sending secrets explicitly with
 an existing deployment off; a new selection does not remove old secrets.
 
 — Run Edit Run fleet, 2026-11-15
+
+The name saved by setup in `src/branding.json` appears in signed-in tab titles and beside the Oncall mark on phones, or below it in the desktop rail, including Settings. An installation without a saved name uses Oncall.
+
+Local setup requires `MAIL_PROVIDER=development` for the no-email local owner entry. Selecting `MAIL_PROVIDER=none` stops setup with that correction, including on a retry; choose development and run setup again, then `rer dev`. Hosted deployments can still use `MAIL_PROVIDER=none` with guarded `rer signin`.
+
+`GET /health` includes `buildVersion` from the compiled package version and `deployment.sourceSha` from the deploy binding, falling back to the checkout commit captured when Vite starts or builds. The source is null only if neither is known. Fingerprint and deployment version bindings keep their existing meaning; storage failures still return 503 with the same build identity, and health does not prove pager coverage. These fields contain public build identity only.
+
+— Run Edit Run fleet, 2026-11-17
+
+Choose the name your team sees when setup asks **What should we call this?** You can change it later in **Settings → General**. The saved name appears in the header, browser tab and both sign-in pages; without a saved name, they show Oncall. (sd, 17 November 2026.)
+
+When a service has an acknowledgment timeout and its response policy declares an incident, the clock starts when the incident is declared. If nobody acknowledges in time, the incident, its linked alert, On call and Reviews retain the missed time and who was on call at that deadline. A later acknowledgment keeps the missed response visible for review. Expiry records a response obligation only; paging stays off, so continue using your existing pager. — Run Edit Run fleet, 17 November 2026.

@@ -3,12 +3,23 @@ import {randomBytes,randomUUID} from 'node:crypto';
 import {mkdir} from 'node:fs/promises';
 import {chromium} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import {agentRuntime,agentEffectSnapshot,pauseMatrix} from './agent-door-runtime.mjs';
-import {recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy,deadlineTarget} from './oncall-agent-fixtures.mjs';
+import {agentRuntime,agentEffectSnapshot,agentReadSnapshot,assertAgentReadUnchanged,pauseMatrix} from './agent-door-runtime.mjs';
+import {declareFromAlertParity,acknowledgeParity,recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy,deadlineTarget} from './oncall-agent-fixtures.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-revisions.mjs';
-import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
+import {actionSubmitNativeRevision} from './oncall-agent-action-submit-native-revision.mjs';
+import {focusedActionEvidenceReplay} from './oncall-agent-action-evidence-replay.mjs';
+import {agedActionEvidenceRetention} from './oncall-agent-action-evidence-retention.mjs';
+import {agedActionSubmitRetention} from './oncall-agent-action-submit-retention.mjs';
+import {actionSubmitResponseLoss} from './oncall-agent-action-submit-response-loss.mjs';
+import {changedReassignmentReasonConflict} from './oncall-agent-incident-replay.mjs';
+import {scribeClearReadback} from './oncall-agent-role-clear-replay.mjs';
+import {readClearedAssignee} from './oncall-agent-assignee-clear-replay.mjs';
+import {accessToken,autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {openIncidentAction} from './keyboard.mjs';
+import {standardServiceRunbookUpdate} from './oncall-agent-service-replay.mjs';
+import {declareIncidentFromAlert,savedServiceRunbookBrowser} from './product-browser-journey.mjs';
+import {staleOverrideRevision} from './oncall-agent-schedule-replay.mjs';
 
 const weekStart=Date.parse('2026-11-02T00:00:00.000Z'),weekNow=Date.parse('2026-11-04T12:00:00.000Z');
 const runtime=await agentRuntime({clock:null}),directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';
@@ -20,22 +31,22 @@ try{
  const context=await browser.newContext({baseURL:runtime.origin,viewport:{width:1440,height:1000}});
  await context.addCookies(runtime.cookie.split('; ').map(pair=>{const at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:runtime.origin,httpOnly:true,sameSite:'Lax'}}));
  page=await context.newPage();
- async function capture(label,path,prepare=async()=>{}){
+ async function capture(label,path,prepare=async()=>{},proofRuntime=runtime,proofPage=page){
   for(const width of [1440,390]){
-   await page.setViewportSize({width,height:1000});
-   await page.goto(runtime.origin+path);await prepare();
-   const fits=await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth);
-   const findings=(await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations.filter(row=>['serious','critical'].includes(row.impact));
-   const controls=await page.locator('button,input:not([type=hidden]),select,textarea').evaluateAll(nodes=>nodes.filter(node=>node.getClientRects().length).map(node=>({label:node.getAttribute('aria-label')??node.textContent?.trim().slice(0,60)??node.name,height:(node.matches('input[type=checkbox],input[type=radio]')?node.labels?.[0]??node:node).getBoundingClientRect().height})).filter(row=>row.height<44));
+   await proofPage.setViewportSize({width,height:1000});
+   await proofPage.goto(proofRuntime.origin+path);await prepare();
+   const fits=await proofPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth);
+   const findings=(await new AxeBuilder({page:proofPage}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations.filter(row=>['serious','critical'].includes(row.impact));
+   const controls=await proofPage.locator('button,input:not([type=hidden]),select,textarea').evaluateAll(nodes=>nodes.filter(node=>node.getClientRects().length).map(node=>({label:node.getAttribute('aria-label')??node.textContent?.trim().slice(0,60)??node.name,height:(node.matches('input[type=checkbox],input[type=radio]')?node.labels?.[0]??node:node).getBoundingClientRect().height})).filter(row=>row.height<44));
    if(width===1440){
     assert.ok(fits,`${label} fits ${width}px`);
     assert.deepEqual(findings,[],`${label} has no serious/critical accessibility findings`);
     assert.deepEqual(controls,[],`${label} controls have 44px targets`);
    }
    console.log(`Browser proof ${label} ${width}: fits=${fits} serious/critical=${findings.length} undersized-controls=${controls.length}`);
-   await page.screenshot({path:`${directory}/agent-door-${label}-${width}.png`,fullPage:true});
+   await proofPage.screenshot({path:`${directory}/agent-door-${label}-${width}.png`,fullPage:true});
   }
-  await page.setViewportSize({width:1440,height:1000});
+  await proofPage.setViewportSize({width:1440,height:1000});
  }
  // A known native week spans multiple audit cursor pages. Expected cohorts
  // are fixed by the calls below, independently of the page's SQL aggregation.
@@ -133,7 +144,115 @@ try{
  assert.deepEqual(await runtime.outboundRequests(),[],'Audit and Agents reads attempt zero outbound requests');
  console.log('PROBE BASE-AGENT-009 acceptance 3: native MCP at UTC week boundaries, complete paginated audit and Agents at 1440 and 390 -> 210 retained calls, 207 in period, exactly 8 cohorts, multi-class contributions once each, stable records and zero outbound requests');
  await runtime.time(null);
+ // The empty outbound ledger above isolates this edit from the later provider fixtures.
+ const declarations=await declareFromAlertParity(runtime,async ({title,alerts:[id]})=>{
+  await page.goto(runtime.origin+'/alerts/'+id);
+  const [response]=await Promise.all([
+   page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().method()==='POST'),
+   declareIncidentFromAlert(page,title),
+  ]);
+  assert.equal(response.status(),200);
+  return response.json();
+ });
+ const savedDeclarations=await agentEffectSnapshot(runtime);
+ for(const {mode,human,agent,humanLabel,agentLabel} of declarations){
+  for(const [door,incident,label] of [['person',human,humanLabel],['agent',agent,agentLabel]]){
+   await capture('alert-declaration-'+mode+'-'+door,'/incidents/'+incident.id,async()=>{
+    await page.locator('.detail').getByRole('heading',{name:incident.title,exact:true}).waitFor();
+    const entry=page.getByRole('region',{name:'Timeline',exact:true}).getByRole('listitem').filter({hasText:'Incident declared'});
+    await entry.getByText(incident.timeline[0].text,{exact:true}).waitFor();
+    await entry.getByText(label,{exact:true}).waitFor();
+    const runbook=page.getByRole('region',{name:'Runbook',exact:true});
+    await runbook.getByText(incident.runbook[0].text,{exact:true}).waitFor();
+    if(page.viewportSize().width===1440){
+     const steps=await runbook.getByRole('checkbox').evaluateAll(nodes=>nodes.map(node=>({
+      text:node.getAttribute('aria-label'),done:node.checked,
+     })));
+     assert.deepEqual(steps,incident.runbook,'The displayed checklist matches the saved incident');
+    }
+    if(mode==='autonomous'&&door==='person'){
+     await page.getByRole('button',{name:'Incident actions',exact:true}).focus();
+     await page.getByRole('tooltip',{name:'Incident actions',exact:true}).waitFor();
+    }
+   });
+  }
+ }
+ assert.deepEqual(await agentEffectSnapshot(runtime),savedDeclarations,'Viewing saved incidents preserves native and paging custody');
+ assert.deepEqual(await runtime.outboundRequests(),[]);
+ console.log('PROBE BASE-AGENT-002 5 browser: Alert details button and MCP in both policies; saved incidents, runbooks and separate attribution read at 1440 and 390; zero outbound requests');
+ console.log('PROBE BASE-AGENT-003 4 declaration browser: returned incidents under both policies -> saved declaration, copied runbook and agent attribution shown at 1440 and 390; zero outbound requests');
+ await acknowledgmentBrowser(runtime,browser,capture);
+ await savedServiceRunbookBrowser(page,runtime.origin,await standardServiceRunbookUpdate(runtime));
  await page.setViewportSize({width:1440,height:1000});
+ await changedReassignmentReasonConflict(runtime,{async observe({mode,saved,assignee,responder,reason,agentLabel}){
+  const before=await agentEffectSnapshot(runtime);
+  await capture('reassignment-readback-'+mode,'/incidents/'+saved.id,async()=>{
+   await page.getByRole('button',{name:'Assignee: '+responder.name,exact:true}).waitFor();
+   const readable=responder.name+' is now assignee. Previously '+assignee.name+'. Reason: '+reason;
+   const entry=page.getByRole('region',{name:'Timeline',exact:true}).getByRole('listitem').filter({hasText:readable});
+   await entry.getByText(readable,{exact:true}).waitFor();
+   await entry.getByText(agentLabel,{exact:true}).waitFor();
+  });
+  assert.deepEqual(await agentEffectSnapshot(runtime),before,'Viewing the saved reassignment changes no durable records');
+  assert.deepEqual(await runtime.outboundRequests(),[]);
+ }});
+ const retainedRotas=await staleOverrideRevision(runtime,{optionalExpectedRevision:true});
+ const beforeRotaReads=await agentEffectSnapshot(runtime),rotaOutbound=[];
+ const recordRotaOutbound=request=>{if(new URL(request.url()).origin!==runtime.origin)rotaOutbound.push(request.url())};
+ page.on('request',recordRotaOutbound);
+ for(const {mode,schedule,holder} of retainedRotas){
+  await capture('override-revision-retained-'+mode,'/on-call/'+schedule.id,async()=>{
+   await page.getByRole('heading',{name:schedule.name,exact:true}).waitFor();
+   const cover=page.locator('.oc-cover-list').getByRole('listitem');
+   await cover.getByText(holder,{exact:true}).waitFor();
+   if(page.viewportSize().width===1440){
+    assert.equal(await cover.count(),1);
+    assert.equal(await cover.getByText(/^primary · /).count(),1);
+   }
+   await cover.scrollIntoViewIfNeeded();
+  });
+ }
+ page.off('request',recordRotaOutbound);
+ assert.deepEqual(await agentEffectSnapshot(runtime),beforeRotaReads,'Viewing saved rota cover changes no durable records');
+ assert.deepEqual(rotaOutbound,[]);
+ assert.deepEqual(await runtime.outboundRequests(),[]);
+ assert.equal((await runtime.adopt(heldPolicy())).status,200);
+ const followUpFixture=runtime.context.surface.journey.find(row=>row.id==='follow-up');
+ const parentResponse=await http('/api/command',{type:'declare',service:'agent-service',
+  title:'Synthetic incident with an open follow-up',summary:'Review the saved coordination work',severity:'warning',alerts:[]});
+ assert.equal(parentResponse.status,200);
+ const parent=await parentResponse.json();
+ const rosterResponse=await http('/api/state');assert.equal(rosterResponse.status,200);
+ const followUpOwner=(await rosterResponse.json()).members.find(row=>row.active&&row.role==='responder');
+ assert.ok(followUpOwner);
+ const creation=await tool(followUpFixture.tool,{...followUpFixture.args,title:'Review the deployment handoff',
+  incident:parent.id,revision:parent.revision,owner:followUpOwner.id,idempotency_key:randomUUID()});
+ assert.equal(creation.status,200);assert.equal(creation.result.isError,false);
+ assert.equal(creation.decision.disposition,'review');
+ const createdIncident=creation.result.structuredContent;
+ const [openAction]=createdIncident.actions,createdEntry=createdIncident.timeline.at(-1);
+ const due=new Intl.DateTimeFormat('en-US',{timeZone:'UTC',month:'short',day:'numeric'}).format(new Date(followUpFixture.args.due+'T12:00:00Z'));
+ const creationText='Follow-up P1: '+openAction.title+' due '+due+', end of day UTC; human review';
+ const savedFollowUp=await agentEffectSnapshot(runtime);
+ await capture('follow-up-created','/reviews/'+parent.id,async()=>{
+  const dialog=page.getByRole('dialog',{name:parent.title,exact:true});
+  const material=dialog.locator('.review-material-body');
+  const followUps=material.locator('summary').filter({hasText:/^Follow-ups \(/});
+  const history=material.locator('summary').filter({hasText:/^From the timeline \(/});
+  await history.click();await followUps.click();
+  const followUp=followUps.locator('..').getByRole('listitem').filter({hasText:openAction.title});
+  const entry=history.locator('..').getByRole('listitem').filter({has:page.getByText(creationText,{exact:true})});
+  await followUp.waitFor();
+  await entry.getByText(createdEntry.metadata.agent.label,{exact:false}).waitFor();
+  await followUp.scrollIntoViewIfNeeded();
+  if(page.viewportSize().width===1440){
+   assert.equal((await followUp.innerText()).trim(),
+    [openAction.title,followUpOwner.name,'P1','due '+due+', end of day UTC','Open','Human review'].join(' · '));
+   assert.match(await entry.innerText(),/Responder assistant for Alex Chen · agent coordination record/);
+  }
+ });
+ assert.deepEqual(await agentEffectSnapshot(runtime),savedFollowUp,'Viewing the open follow-up and its history changes no durable records');
+ assert.deepEqual(await runtime.outboundRequests(),[]);
  assert.equal((await runtime.adopt()).status,200);
  const submitEvidenceRequests=[];
  const stopEvidence=route=>{submitEvidenceRequests.push(route.request().url());return route.abort()};
@@ -161,8 +280,249 @@ try{
    });
   },
  });
+ const submitApprovalPosts=[],submitReadbackOutbound=[];
+ const recordSubmitReadbackOutbound=request=>{
+  const url=new URL(request.url());
+  if(['http:','https:'].includes(url.protocol)&&url.origin!==runtime.origin)submitReadbackOutbound.push(url.origin);
+ };
+ const recordSubmitApproval=request=>{if(request.method()==='POST'&&new URL(request.url()).pathname.endsWith('/approve'))submitApprovalPosts.push(request.url())};
+ page.on('request',recordSubmitApproval);
+ await actionSubmitNativeRevision(runtime,{
+  async approve({handle,saved,owner}){
+   await capture('follow-up-submit-pending',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="pending"]').waitFor()});
+   await page.goto(handle.url);
+   await page.getByText(owner.name,{exact:false}).first().waitFor();
+   const submitted=page.waitForRequest(request=>request.method()==='POST'&&new URL(request.url()).pathname.endsWith('/approve'));
+   await page.getByRole('button',{name:'Approve',exact:true}).click();
+   const posted=(await submitted).postDataJSON();
+   assert.equal(posted.revision,saved.revision);assert.equal(posted.summary_sha256,saved.summary_sha256);
+   await page.locator('[data-approval-state="executed"]').waitFor();
+   await capture('follow-up-submit-executed',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="executed"]').waitFor()});
+  },
+  async observe({mode,incident,action,linkedIncident}){
+   const entry=linkedIncident.timeline.at(-1);
+   const response=await http('/api/reviews/'+linkedIncident.id+'/material');
+   assert.equal(response.status,200);
+   const material=await response.json();
+   assert.deepEqual(material.followups,linkedIncident.actions);
+   assert.equal(material.incidentRevision,linkedIncident.revision);
+   const submission=material.assertions.find(row=>row.id===entry.id);
+   assert.equal(submission.actor,runtime.context.agentId);
+   assert.equal(submission.classification,'agent coordination record');
+   assert.equal(action.owner,followUpOwner.id);
+   page.on('request',recordSubmitReadbackOutbound);
+   try{
+    await capture('follow-up-submit-'+mode,'/reviews/'+incident.id,async()=>{
+     const dialog=page.getByRole('dialog',{name:incident.title,exact:true});
+     const body=dialog.locator('.review-material-body');
+     const history=body.locator('summary').filter({hasText:/^From the timeline \(/});
+     const followUps=body.locator('summary').filter({hasText:/^Follow-ups \(/});
+     await history.click();await followUps.click();
+     const item=followUps.locator('..').getByRole('listitem').filter({hasText:action.title}).filter({hasText:'Awaiting acceptance'});
+     const attribution=history.locator('..').getByRole('listitem')
+      .filter({has:page.getByText(entry.text,{exact:true})}).locator('.review-meta');
+     await attribution.waitFor();
+     await item.waitFor();
+     const evidence=item.getByRole('link',{name:/^Evidence/});await evidence.waitFor();
+     const day=new Intl.DateTimeFormat('en-US',{timeZone:'UTC',month:'short',day:'numeric'}).format(new Date(action.due+'T12:00:00Z'));
+     const expected=[action.title,followUpOwner.name,'P1','due '+day+', end of day UTC','Awaiting acceptance','Human review'].join(' · ');
+     const text=await item.innerText(),href=await evidence.getAttribute('href');
+     const actor=(await attribution.innerText()).split('\n')[0];
+     if(page.viewportSize().width===1440){
+      assert.ok(text.startsWith(expected));
+      assert.equal(href,action.evidence);
+      assert.equal(actor,entry.metadata.agent.label+' · agent coordination record');
+     }
+     console.log('P1 submission review '+mode+' '+page.viewportSize().width+': '+text.trim()+' | '+actor+' | evidence matches='+String(href===action.evidence));
+     await evidence.scrollIntoViewIfNeeded();
+    });
+   }finally{page.off('request',recordSubmitReadbackOutbound)}
+  },
+ });
+ assert.equal(submitApprovalPosts.length,1,'One sponsor approval POST; completed-result retries never repeat the approval action');
+ page.off('request',recordSubmitApproval);
+ assert.deepEqual(submitReadbackOutbound,[],'Reading saved P1 submissions makes no outbound browser requests');
+ const lostResultApprovalPosts=[];
+ const recordLostResultApproval=request=>{
+  const path=new URL(request.url()).pathname;
+  if(request.method()==='POST'&&path.startsWith('/agents/api/approvals/')&&path.endsWith('/approve'))lostResultApprovalPosts.push(path);
+ };
+ page.on('request',recordLostResultApproval);
+ await actionSubmitResponseLoss(runtime,{
+  async approve({handle,saved,owner,completionPolicy}){
+   const label=completionPolicy==='evidence'?'follow-up-complete-loss':'follow-up-submit-loss';
+   await capture(label+'-pending',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="pending"]').waitFor()});
+   await page.goto(handle.url);
+   await page.getByText(owner.name,{exact:false}).first().waitFor();
+   const submitted=page.waitForRequest(request=>request.method()==='POST'&&new URL(request.url()).pathname==='/agents/api/approvals/'+handle.id+'/approve');
+   await page.getByRole('button',{name:'Approve',exact:true}).click();
+   const posted=(await submitted).postDataJSON();
+   assert.equal(posted.revision,saved.revision);assert.equal(posted.summary_sha256,saved.summary_sha256);
+   await page.locator('[data-approval-state="executed"]').waitFor();
+   assert.equal(lostResultApprovalPosts.filter(path=>path==='/agents/api/approvals/'+handle.id+'/approve').length,1,'The sponsor approves the saved submission exactly once');
+   await capture(label+'-executed',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="executed"]').waitFor()});
+  },
+  async observe({mode,incident,action}){
+   if(action.completionPolicy==='evidence'){
+    await capture('follow-up-complete-loss-'+mode,'/reviews/'+incident.id,async()=>{
+     await page.getByRole('dialog',{name:incident.title,exact:true}).waitFor();
+     const material=page.locator('.review-material-body');
+     await material.locator('summary').filter({hasText:/^Follow-ups \(/}).click();
+     const completed=material.getByRole('listitem').filter({hasText:action.title}).filter({hasText:/· P2 · due .+ · Complete · Completes with evidence/});
+     const evidence=completed.getByRole('link',{name:/^Evidence\b/});
+     await evidence.waitFor();
+     if(page.viewportSize().width===1440)assert.equal(await evidence.getAttribute('href'),action.evidence);
+     await evidence.scrollIntoViewIfNeeded();
+    });
+    return;
+   }
+   await capture('follow-up-submit-loss-'+mode,'/reviews/'+incident.id,async()=>{
+    await page.getByRole('dialog',{name:incident.title,exact:true}).waitFor();
+    await page.locator('.review-material-body summary').filter({hasText:/^Follow-ups \(/}).click();
+    await page.getByText('Awaiting acceptance',{exact:false}).first().waitFor();
+    const evidence=page.locator('.review-material-body').getByRole('link',{name:/^Evidence/});await evidence.waitFor();
+    if(page.viewportSize().width===1440)assert.equal(await evidence.getAttribute('href'),action.evidence);
+    await evidence.scrollIntoViewIfNeeded();
+   });
+  },
+ });
+ assert.equal(lostResultApprovalPosts.length,2,'Each held submission receives one approval across both losses and recoveries');
+ page.off('request',recordLostResultApproval);
  assert.deepEqual(submitEvidenceRequests,[],'The browser never fetches submitted evidence');
  await context.unroute('https://evidence.example.invalid/**',stopEvidence);
+ // Observe the original P2 write and linked read beside the held revision
+ // corrections in the signed-in sponsor and review pages.
+ async function connectEvidenceBrowser(evidenceRuntime,{retained=false}={}){
+  const evidenceContext=await browser.newContext({baseURL:evidenceRuntime.origin,viewport:{width:1440,height:1000}});
+  await evidenceContext.addCookies(evidenceRuntime.cookie.split('; ').map(pair=>{const at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:evidenceRuntime.origin,httpOnly:true,sameSite:'Lax'}}));
+  const evidencePage=await evidenceContext.newPage(),evidenceRequests=[],approvalPosts=[];
+  await evidenceContext.route('https://evidence.example.invalid/**',route=>{evidenceRequests.push(route.request().url());return route.abort()});
+  evidencePage.on('request',request=>{
+   const path=new URL(request.url()).pathname;
+   if(request.method()==='POST'&&path.endsWith('/approve'))approvalPosts.push({path,body:request.postDataJSON()});
+  });
+  const proofLabel=revisionCase=>retained?'follow-up-evidence-retained':
+   revisionCase?'follow-up-evidence-'+revisionCase+'-revision':'follow-up-evidence';
+  let observedApprovalCount=0;
+  return {
+   async approve({handle,saved,owner,kind='write',revisionCase}){
+    const before=approvalPosts.length;
+    const approvalPath=new URL(handle.url).pathname;
+    if(!retained)await capture(kind==='read'?'follow-up-evidence-read-pending':proofLabel(revisionCase)+'-pending',approvalPath,async()=>{
+     await evidencePage.locator('[data-approval-state="pending"]').waitFor();
+     await evidencePage.getByText(owner.name,{exact:false}).first().waitFor();
+    },evidenceRuntime,evidencePage);
+    await evidencePage.goto(handle.url);
+    await evidencePage.locator('[data-approval-state="pending"]').waitFor();
+    await evidencePage.getByText(owner.name,{exact:false}).first().waitFor();
+    await evidencePage.getByRole('button',{name:'Approve',exact:true}).click();
+    await evidencePage.locator('[data-approval-state="executed"]').waitFor();
+    assert.deepEqual(approvalPosts.slice(before),[{path:'/agents/api/approvals/'+handle.id+'/approve',
+     body:{revision:saved.revision,summary_sha256:saved.summary_sha256}}],
+     'The named sponsor approves this exact saved decision once');
+   },
+   async observe({mode,revisionCase,incident,action,handle,approved,linkedIncident}){
+    if(revisionCase&&mode==='autonomous')return;
+    const response=await evidenceRuntime.http('/api/reviews/'+incident.id+'/material');assert.equal(response.status,200);
+    const material=await response.json();
+    assert.deepEqual(material.followups,incident.actions,'Protected review material agrees with the stored MCP result');
+    assert.equal(material.followups.find(row=>row.id===action.id).done,true);
+    assert.equal(material.incidentRevision,incident.revision);
+    const completion=material.assertions.find(row=>row.kind==='complete');
+    assert.equal(completion.classification,'agent coordination record');
+    assert.equal(completion.actor,evidenceRuntime.context.agentId);
+    if(linkedIncident){
+     assert.deepEqual(material.followups,linkedIncident.actions);
+     assert.equal(material.incidentRevision,linkedIncident.revision);
+    }
+    const state=await (await evidenceRuntime.http('/api/state')).json();
+    const actionOwner=state.members.find(row=>row.id===action.owner);assert.ok(actionOwner);
+    const label=proofLabel(revisionCase);
+    await capture(label+'-'+mode,'/reviews/'+incident.id,async()=>{
+     await evidencePage.getByRole('dialog',{name:incident.title,exact:true}).waitFor();
+     const followups=evidencePage.locator('.review-material-body details').filter({has:evidencePage.locator('summary').filter({hasText:/^Follow-ups \(/})});
+     await followups.locator('summary').click();
+     const item=followups.locator('li').filter({hasText:action.title});await item.waitFor();
+     const evidence=item.getByRole('link',{name:/^Evidence/});await evidence.waitFor();
+     if(evidencePage.viewportSize().width===1440){
+      const text=await item.innerText();
+      assert.ok(text.includes(actionOwner.name));assert.match(text,/due Apr 12, end of day UTC/);
+      assert.match(text,/P2/);assert.match(text,/Complete · Completes with evidence/);
+      assert.ok(!text.includes('Awaiting acceptance'));
+      assert.equal(await evidence.getAttribute('href'),action.evidence);
+      if(linkedIncident){
+       const companion=linkedIncident.actions.find(row=>row.id!==action.id);
+       const companionItem=followups.getByRole('listitem').filter({hasText:companion.title});
+       assert.match(await companionItem.innerText(),/P3.*Open.*Human review/);
+       assert.equal(await companionItem.getByRole('link',{name:/^Evidence/}).count(),0);
+      }
+     }
+     await evidence.scrollIntoViewIfNeeded();
+    },evidenceRuntime,evidencePage);
+    if(handle)await capture(label+'-executed',new URL(handle.url).pathname,async()=>{
+     await evidencePage.locator('[data-approval-state="executed"]').waitFor();
+     if(evidencePage.viewportSize().width===1440){
+      assert.equal(await evidencePage.getByRole('button',{name:'Approve',exact:true}).count(),0);
+      if(approved){
+       const response=await evidenceRuntime.http('/agents/api/approvals/'+handle.id);assert.equal(response.status,200);
+       assert.deepEqual((await response.json()).approval,approved);
+      }
+     }
+    },evidenceRuntime,evidencePage);
+    if(mode==='held')observedApprovalCount+=linkedIncident?2:1;
+    assert.equal(approvalPosts.length,observedApprovalCount,
+     'The held write and linked read each use their own approval without repeats');
+    assert.deepEqual(evidenceRequests,[],'Saved material and approval never fetch the evidence URL');
+    console.log('PROBE BASE-AGENT-012 '+(retained?'aged ':'')+'evidence completion browser '+mode+(revisionCase?' '+revisionCase+' revision correction':'')+': protected review material equals MCP result; saved P2 Complete and Completes with evidence plus retained evidence link at 1440 and 390; original sponsor approval '+(handle?'executed once':'not needed')+'; zero evidence requests');
+   },
+   close:()=>evidenceContext.close(),
+  };
+ }
+ await focusedActionEvidenceReplay({connect:connectEvidenceBrowser});
+ await agedActionEvidenceRetention({connect:runtime=>connectEvidenceBrowser(runtime,{retained:true})});
+ // Each retained submission has isolated native custody. The browser takes
+ // the held sponsor step once at T, then only reads the retained result.
+ await agedActionSubmitRetention({async connect(retainedRuntime,mode){
+  const retainedContext=await browser.newContext({baseURL:retainedRuntime.origin,viewport:{width:1440,height:1000}});
+  await retainedContext.addCookies(retainedRuntime.cookie.split('; ').map(pair=>{const at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:retainedRuntime.origin,httpOnly:true,sameSite:'Lax'}}));
+  const retainedPage=await retainedContext.newPage(),evidenceRequests=[],approvalPosts=[];
+  await retainedContext.route('https://evidence.example.invalid/**',route=>{evidenceRequests.push(route.request().url());return route.abort()});
+  retainedPage.on('request',request=>{if(request.method()==='POST'&&new URL(request.url()).pathname.endsWith('/approve'))approvalPosts.push(request.postDataJSON())});
+  return {
+   async approve({handle,saved,owner}){
+    await retainedPage.goto(handle.url);
+    await retainedPage.locator('[data-approval-state="pending"]').waitFor();
+    await retainedPage.getByText(owner.name,{exact:false}).first().waitFor();
+    await retainedPage.getByRole('button',{name:'Approve',exact:true}).click();
+    await retainedPage.locator('[data-approval-state="executed"]').waitFor();
+    assert.deepEqual(approvalPosts,[{revision:saved.revision,summary_sha256:saved.summary_sha256}],'The sponsor posts the exact saved approval once at T');
+   },
+   async observe({elapsed,incident,action,handle,approved}){
+    // The helper compares custody at both boundaries. Capture each changed
+    // screen once per width after the last boundary on realistic native data.
+    if(elapsed!==86401000)return;
+    await capture('follow-up-submit-retained-'+mode,'/reviews/'+incident.id,async()=>{
+     await retainedPage.getByRole('dialog',{name:incident.title,exact:true}).waitFor();
+     await retainedPage.locator('.review-material-body summary').filter({hasText:/^Follow-ups \(/}).click();
+     await retainedPage.getByText('Awaiting acceptance',{exact:false}).first().waitFor();
+     const evidence=retainedPage.locator('.review-material-body').getByRole('link',{name:/^Evidence/});await evidence.waitFor();
+     if(retainedPage.viewportSize().width===1440)assert.equal(await evidence.getAttribute('href'),action.evidence);
+     await evidence.scrollIntoViewIfNeeded();
+    },retainedRuntime,retainedPage);
+    if(handle)await capture('follow-up-submit-retained-approval',new URL(handle.url).pathname,async()=>{
+     await retainedPage.locator('[data-approval-state="executed"]').waitFor();
+     if(retainedPage.viewportSize().width===1440){
+      assert.equal(await retainedPage.getByRole('button',{name:'Approve',exact:true}).count(),0);
+      const response=await retainedRuntime.http('/agents/api/approvals/'+handle.id);assert.equal(response.status,200);
+      assert.deepEqual((await response.json()).approval,approved,'The original executed approval is unchanged after retained-result retrieval');
+     }
+    },retainedRuntime,retainedPage);
+    assert.equal(approvalPosts.length,mode==='held'?1:0,'Aged retrieval never posts another approval');
+    assert.deepEqual(evidenceRequests,[],'Neither retained follow-up nor original approval fetches evidence');
+   },
+   close:()=>retainedContext.close(),
+  };
+ }});
  await specialist({request:runtime.request,origin:runtime.origin,cookie:runtime.cookie,fixtures:runtime.fixtures,tool});
  const native=async()=> (await (await http('/api/state')).json());
  let state=await native();
@@ -188,11 +548,14 @@ try{
    if(['commander','assignee'].includes(role))assert.notEqual(target.assignee,target.commander);
    const reason='Synthetic saved '+label+' clear '+mode,edge=await runtime.outboundRequests();
    const change=role==='assignee'?'reassign':'assign-role';
+   const {context:agent}=runtime;
+   const bearer=role==='scribe'?await accessToken(agent,{act:{sub:agent.agentId,name:'Responder assistant',specialist:'oncall-responder'}}):undefined;
    const answer=await tool('oncall.incidents.update',{change,...(role==='assignee'?{}:{role}),member:null,
-    incident:target.id,revision:target.revision,reason,idempotency_key:randomUUID()});
+    incident:target.id,revision:target.revision,reason,idempotency_key:randomUUID()},{},bearer);
    assert.equal(answer.result.isError,false);assert.deepEqual(answer.decision.classes.map(row=>row.class),['standard']);
-   const saved=answer.result.structuredContent;
+   const saved=role==='assignee'?await readClearedAssignee(runtime,{mode,first:answer}):answer.result.structuredContent;
    assert.deepEqual(saved,{...target,[role]:null,revision:target.revision+1,timeline:saved.timeline});
+   if(role==='scribe')await scribeClearReadback(runtime,answer,bearer,mode);
    const readingBefore=await agentEffectSnapshot(runtime);
    const lead='Lead: '+(role==='commander'?'Unassigned':owner.name),assigned='Assignee: '+(role==='assignee'?'Unassigned':assignee.name);
    await page.goto(runtime.origin+'/incidents/'+saved.id);
@@ -213,15 +576,16 @@ try{
    const entry=timeline.getByRole('listitem').filter({hasText:readable});
    await entry.getByText(readable,{exact:true}).waitFor();
    await entry.getByText('Responder assistant for Alex Chen',{exact:true}).waitFor();
-   if(mode==='held'){
-    await capture(role+'-cleared-timeline','/incidents/'+saved.id,async()=>{
+   if(mode==='held'||role==='scribe'||role==='assignee'){
+    const proof=role+(mode==='autonomous'?'-autonomous':'')+'-cleared';
+    await capture(proof+'-timeline','/incidents/'+saved.id,async()=>{
      await page.getByRole('button',{name:lead,exact:true}).waitFor();
      await page.getByRole('button',{name:assigned,exact:true}).waitFor();
      const entry=page.getByRole('region',{name:'Timeline',exact:true}).getByRole('listitem').filter({hasText:readable});
      await entry.getByText(readable,{exact:true}).waitFor();
      await entry.getByText('Responder assistant for Alex Chen',{exact:true}).waitFor();
     });
-    await capture(role+'-cleared-people','/incidents/'+saved.id,async()=>{
+    await capture(proof+'-people','/incidents/'+saved.id,async()=>{
      const people=await openIncidentAction(page,'People and priority');
      await people.getByRole('combobox',{name:'Scribe',exact:true}).waitFor();
      await people.getByRole('button',{name:'Close',exact:true}).focus();
@@ -414,6 +778,11 @@ try{
  const executedApproval=(await (await http('/agents/api/approvals/'+approvalHandle.id)).json()).approval;
  assert.equal(executedApproval.revision,savedApproval.revision);
  assert.equal(executedApproval.summary_sha256,savedApproval.summary_sha256);
+ const changedSummary='A different summary for the completed browser resolution';
+ const resolveConflict=await tool('oncall.incidents.resolve',{...resolveArgs,summary:changedSummary});
+ assert.equal(resolveConflict.result?.isError,true);
+ assert.equal(resolveConflict.result._meta['com.runeditrun/error'].code,'idempotency_conflict');
+ assert.equal(resolveConflict.result.structuredContent,undefined);
  const resolveRetry=await tool('oncall.incidents.resolve',resolveArgs);
  assert.equal(resolveRetry.result?.isError,false,JSON.stringify(resolveRetry.body));
  assert.equal(resolveRetry.result.structuredContent.state,'resolved');
@@ -427,7 +796,13 @@ try{
  await capture('resolution-timeline','/incidents/'+resolutionTarget.id,async()=>{
   await page.getByRole('region',{name:'Timeline',exact:true}).waitFor();
   if(await page.getByRole('button',{name:/^Earlier entries/}).count())await page.getByRole('button',{name:/^Earlier entries/}).click();
-  if((await page.viewportSize()).width===1440){const headings=await page.locator('.event-line strong').allTextContents();for(const raw of ['transition','complete','incident deadline'])assert.ok(!headings.includes(raw),'timeline headings describe activity');}
+  if((await page.viewportSize()).width===1440){
+   const headings=await page.locator('.event-line strong').allTextContents();
+   for(const raw of ['transition','complete','incident deadline'])assert.ok(!headings.includes(raw),'timeline headings describe activity');
+   const timeline=await page.getByRole('region',{name:'Timeline',exact:true}).innerText();
+   assert.ok(timeline.includes(resolveArgs.summary),'The original summary remains visible after the conflict and retry');
+   assert.ok(!timeline.includes(changedSummary),'The refused summary never enters the timeline');
+  }
   await page.getByText('Responder assistant for Alex Chen',{exact:true}).first().waitFor();
  });
  assert.equal((await runtime.adopt()).status,200);
@@ -574,6 +949,7 @@ try{
  for(const [label,document] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
   assert.equal((await runtime.adopt(document)).status,200);
   const before=await native(),paging=await (await http('/api/paging/state')).json(),edge=await runtime.outboundRequests();
+  const beforeRead=await agentReadSnapshot(runtime);
   await page.goto(runtime.origin+'/docs/agents');await page.locator('.docs-article').waitFor();
   const rows=await page.locator('.docs-article table').evaluateAll(tables=>tables.filter(table=>[...table.querySelectorAll('th')].some(th=>th.textContent==='Computed class checks')).flatMap(table=>[...table.querySelectorAll('tbody tr')].map(row=>[...row.querySelectorAll('td')].map(cell=>[...cell.querySelectorAll('code')].map(code=>code.textContent)))));
   const listing=await runtime.mcp('tools/list'),discovery=await runtime.mcp('server/discover'),templates=await runtime.mcp('resources/templates/list');
@@ -597,6 +973,7 @@ try{
   await page.waitForFunction(region=>region.scrollLeft>0,await inventoryRegion.elementHandle());
   assert.ok(await inventoryRegion.evaluate(region=>region.contains(document.activeElement)||region===document.activeElement),'The complete inventory remains keyboard scrollable');
   assert.deepEqual(await native(),before);assert.deepEqual(await (await http('/api/paging/state')).json(),paging);
+  assertAgentReadUnchanged(beforeRead,await agentReadSnapshot(runtime));
   assert.deepEqual(await runtime.outboundRequests(),edge);
   console.log(`PROBE BASE-AGENT-013 rendered ${label}: /docs/agents -> complete ${rows.length}-tool class, scope and fixture inventory agrees with MCP; ${templates.result.resourceTemplates.length} resource templates; native and paging unchanged; zero outbound requests`);
  }
@@ -611,3 +988,63 @@ try{
 
 // Reuse the same two-role parity journey in push Verify's browser invocation.
 await (await import('./oncall-agent-resource-parity.mjs')).resourceParity({browserProof:true});
+
+async function acknowledgmentBrowser(runtime,browser,capture) {
+ const {member,cookie}=await runtime.memberSession('Synthetic acknowledgment responder','responder');
+ const context=await browser.newContext({baseURL:runtime.origin,viewport:{width:1440,height:1000}});
+ await context.addCookies(cookie.split('; ').map(pair=>{
+  const at=pair.indexOf('=');
+  return {name:pair.slice(0,at),value:pair.slice(at+1),url:runtime.origin,httpOnly:true,sameSite:'Lax'};
+ }));
+ const outbound=[];
+ context.on('request',request=>{
+  const url=new URL(request.url());
+  if(['http:','https:'].includes(url.protocol)&&url.origin!==runtime.origin)outbound.push(url.origin);
+ });
+ const page=await context.newPage();
+ try{
+  const pairs=await acknowledgeParity(runtime,member,async (incident,summary)=>{
+   await page.goto('/incidents/'+incident.id);
+   const [response]=await Promise.all([
+    page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().method()==='POST'),
+    page.getByRole('region',{name:'Next step',exact:true}).getByRole('button',{name:'Acknowledge',exact:true}).click(),
+   ]);
+   assert.equal(response.status(),200);
+   assert.deepEqual(response.request().postDataJSON(),{
+    type:'transition',state:'acknowledged',incident:incident.id,revision:incident.revision,summary,
+   });
+   return response.json();
+  });
+  const saved=await agentEffectSnapshot(runtime);
+  for(const {mode,human,agent,humanLabel,agentLabel} of pairs){
+   for(const [door,incident,label] of [['person',human,humanLabel],['agent',agent,agentLabel]]){
+    await capture('acknowledgment-'+mode+'-'+door,'/incidents/'+incident.id,async()=>{
+     const detail=page.locator('.detail');
+     await detail.getByRole('heading',{name:incident.title,exact:true}).waitFor();
+     const state=await detail.locator('.incident-state').textContent();
+     const lead=await detail.getByRole('button',{name:/^Lead:/}).getAttribute('aria-label');
+     const assignee=await detail.getByRole('button',{name:/^Assignee:/}).getAttribute('aria-label');
+     const entry=detail.getByRole('region',{name:'Timeline',exact:true}).getByRole('listitem')
+      .filter({hasText:incident.timeline.at(-1).text});
+     const named=entry.locator('.named-responder');
+     const attribution=await entry.locator('small').textContent();
+     if(page.viewportSize().width===1440){
+      assert.equal(state.trim(),'Acknowledged');
+      assert.equal(lead,'Lead: '+member.name);
+      assert.equal(assignee,'Assignee: '+member.name);
+      assert.equal(attribution,label);
+      if(door==='agent')assert.equal(await named.textContent(),'Named responder: '+member.name);
+      else assert.equal(await named.count(),0);
+     }
+     console.log('Acknowledgment readback '+mode+' '+door+' '+page.viewportSize().width+': '+[state.trim(),lead,assignee,attribution].join(' | '));
+    },runtime,page);
+   }
+  }
+  assert.deepEqual(await agentEffectSnapshot(runtime),saved,'Reading the saved acknowledgments preserves native and paging custody');
+  assert.deepEqual(await runtime.outboundRequests(),[]);
+  assert.deepEqual(outbound,[]);
+  console.log('PROBE BASE-AGENT-002 5 acknowledgment browser: real Acknowledge button and MCP in both policies; saved state, responsibility and attribution read at 1440 and 390; zero outbound requests');
+ }finally{
+  await context.close();
+ }
+}

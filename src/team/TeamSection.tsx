@@ -6,7 +6,7 @@ import {SavedState, SaveFeedback} from '../app/autosave/SavedState';
 import {useLeaveGuard} from '../app/autosave/leaveGuard';
 import {InlineConfirm} from '../app/autosave/InlineConfirm';
 import {failureMessage} from '../app/FailureLine';
-import {request} from '../useWorkspace';
+import {HttpFailure, request} from '../useWorkspace';
 import {Field, Form} from '../forms';
 import {TeamsPanel} from '../teams/TeamsPanel';
 import {MemberRow} from './MemberRow';
@@ -14,22 +14,40 @@ import {TeamSignIn} from './TeamSignIn';
 import './team-section.css';
 export function TeamSection() {
   const {s, actor, admin, w, page} = useWorkspaceContext(), [adding, setAdding] = useState(false), [created, setCreated] = useState('');
+  const addForm = useRef<HTMLElement>(null);
+  const [owner, setOwner] = useState(false);
+  useEffect(() => {
+    if (page !== 'team') return;
+    let current = true;
+    void request('/auth/session').then(session => {if (current) setOwner(session.operator?.role === 'owner');}).catch(() => {if (current) setOwner(false);});
+    return () => {current = false;};
+  }, [page, actor.id]);
+  useEffect(() => {
+    if (!adding || page !== 'team') return;
+    const name = addForm.current?.querySelector<HTMLInputElement>('input[name="name"]');
+    name?.focus({preventScroll:true});
+    addForm.current?.scrollIntoView({block:'nearest'});
+  }, [adding, page]);
   if (page !== 'team') return null;
   return <div className="team-section">
     <section className="panel padded">{admin && <div className="team-title"><button type="button" aria-expanded={adding} onClick={() => {setAdding(value => !value); setCreated('');}}>Add member</button></div>}
       {!admin && <p>Admins can change roles and access.</p>}
-      <div className="team-members">{s.members.filter(member => !member.machine).map(member => admin && !member.erased ? <MemberEditor key={member.id} member={member} state={s} admin={admin} refresh={w.refresh}/> : <MemberRow key={member.id} member={member} admin={false} role={member.role} roleChanged={() => {}} accessAction={() => {}} resetAction={() => {}}/>)}</div>
-      {admin && adding && <section className="team-add" aria-label="Add member"><h3>Add member</h3><Form busy={w.busy} label="Create member" onSubmit={async data => {const result=await w.run('/api/members',data);if(result){w.setNotice('');setCreated(String(data.name??''));}return result;}}>
+      {admin && adding && <section ref={addForm} className="team-add" aria-label="Add member"><h3>Add member</h3><Form busy={w.busy} label="Create member" onSubmit={async data => {const result=await w.run('/api/members',data);if(result){w.setNotice('');setCreated(String(data.name??''));}return result;}}>
         <Field name="name" label="Name"/>
         <Field name="role" label="Role"><option value="responder">Responder</option><option value="viewer">Viewer</option><option value="stakeholder">Stakeholder</option><option value="admin">Admin</option></Field>
         <Field name="password" label="Password" type="password"/>
       </Form></section>}
       {admin && (adding || created) && <TeamSignIn name={created || undefined}/>}
+      <div className="team-members">{s.members.filter(member => !member.machine).map(member => admin && !member.erased ? <MemberEditor key={member.id} member={member} state={s} admin={admin} refresh={w.refresh} ownName={owner && member.id === actor.id}/> : <MemberRow key={member.id} member={member} nameEditor={owner && member.id === actor.id && <OwnName member={member} refresh={w.refresh}/>} admin={false} role={member.role} roleChanged={() => {}} accessAction={() => {}} resetAction={() => {}}/>)}</div>
     </section>
     <TeamsPanel state={s} actor={actor} refresh={w.refresh}/>
   </div>;
 }
-function MemberEditor({member, state, admin, refresh}: {member: Member; state: State; admin: boolean; refresh: () => Promise<void>}) {
+function MemberEditor({member, state, admin, refresh, ownName}: {member: Member; state: State; admin: boolean; refresh: () => Promise<void>; ownName: boolean}) {
+  const {actor} = useWorkspaceContext();
+  const onlyAdmin = member.active && member.role === 'admin' && state.members.filter(row => row.active && row.role === 'admin').length === 1;
+  const adminReason = `${member.id === actor.id ? 'This is your' : 'This is the'} only active admin account. Make someone else an admin first.`;
+  const [refused, setRefused] = useState<Partial<Record<'role' | 'active', string>>>({});
   const snapshot = (member: Member, revision: number) => ({values:{role:member.role, active:member.active}, revision});
   const save = useAutosave({storageKey:'member:'+member.id,snapshot:snapshot(member,state.revision), read:async () => {
     const latest: State = await request('/api/state');
@@ -37,10 +55,28 @@ function MemberEditor({member, state, admin, refresh}: {member: Member; state: S
     if (!found) throw Error('This member is no longer available.');
     return snapshot(found,latest.revision);
   }, write:async change => {
-    const result = await autosaveRequest('/api/command', {type:'member',id:member.id,field:change.field,from:change.from,to:change.to});
+    let result;
+    try {result = await autosaveRequest('/api/command', {type:'member',id:member.id,field:change.field,from:change.from,to:change.to});}
+    catch (cause) {
+      // A definite refusal is not an unfinished write. Keep Retry for uncertain
+      // transport failures and conflict comparison, never for rejected access.
+      if (!(cause instanceof HttpFailure) || cause.status < 400 || cause.status >= 500 || [408,409,429].includes(cause.status)) throw cause;
+      const reason = cause.message === 'Cannot remove last admin' ? adminReason : failureMessage(cause);
+      setRefused(value => ({...value,[change.field]:reason}));
+      const latest: State = await request('/api/state').catch(() => state);
+      void refresh();
+      return {...snapshot(latest.members.find(row => row.id === member.id) ?? member,latest.revision),changed:false};
+    }
     const latest: State = await request('/api/state');
     void refresh();return {...snapshot(latest.members.find(row => row.id === member.id)!,latest.revision),changed:result.changed !== false};
   }});
+  useEffect(() => {
+    // Older versions retained impossible last-admin changes in this browser.
+    // Remove those drafts without sending another refused command.
+    if (!onlyAdmin) return;
+    if (save.states.active?.status === 'failed' && save.values.active === false) save.change('active',member.active,'choice');
+    if (save.states.role?.status === 'failed' && save.values.role !== 'admin') save.change('role',member.role,'choice');
+  }, [onlyAdmin, save.values.active, save.values.role]);
   const [adminConfirm, setAdminConfirm] = useState(false), [action, setAction] = useState<'access' | 'password' | null>(null), [busy, setBusy] = useState(false), [error, setError] = useState('');
   const [resetVersion, setResetVersion] = useState(0), [resetSaved, setResetSaved] = useState(false);
   useEffect(() => {if (!resetSaved) return;const timer=setTimeout(() => setResetSaved(false),2000);return () => clearTimeout(timer);}, [resetSaved]);
@@ -52,11 +88,13 @@ function MemberEditor({member, state, admin, refresh}: {member: Member; state: S
   guard.current.pending = () => adminConfirm || !!action;
   useLeaveGuard(guard.current);
   const cancel = () => {setAction(null); setError(''); password.current = '';};
-  return <MemberRow member={member} admin={admin} role={adminConfirm ? 'admin' : save.values.role} roleChanged={role => {if(role === 'admin' && member.role !== 'admin') setAdminConfirm(true);else {setAdminConfirm(false);save.change('role',role,'choice');}}}
-    roleMark={<SavedState state={save.states.role}/>}
-    roleFeedback={<SaveFeedback state={save.states.role} retry={() => save.retry('role')} useMine={() => save.useMine('role')}/>}
+  return <MemberRow member={member} admin={admin} onlyAdmin={onlyAdmin} adminReason={adminReason}
+    nameEditor={ownName && <OwnName member={member} refresh={refresh}/>}
+    role={adminConfirm ? 'admin' : save.values.role} roleChanged={role => {setRefused(value => ({...value,role:undefined}));if(role === 'admin' && member.role !== 'admin') setAdminConfirm(true);else {setAdminConfirm(false);save.change('role',role,'choice');}}}
+    roleMark={!refused.role && <SavedState state={save.states.role}/>}
+    roleFeedback={refused.role ? <p role="alert">{refused.role}</p> : <SaveFeedback state={save.states.role} retry={() => save.retry('role')} useMine={() => save.useMine('role')}/>}
     roleConfirm={adminConfirm && <InlineConfirm action="Make admin" keep="Keep the old role" onCancel={() => setAdminConfirm(false)} onConfirm={() => {save.change('role','admin','choice');setAdminConfirm(false);}}>Make {member.name} an Admin? They can manage services, people and archives.</InlineConfirm>}
-    accessAction={() => {setAccessTarget(!member.active);setAction('access');setError('');}}
+    accessAction={() => {setRefused(value => ({...value,active:undefined}));setAccessTarget(!member.active);setAction('access');setError('');}}
     resetAction={value => {password.current=value;setAction('password');setError('');}}
     busy={busy} openRequest={openRequest} resetVersion={resetVersion}
     confirmation={action && <InlineConfirm action={action === 'password' ? 'Reset password' : accessTarget ? 'Restore access' : 'Revoke access'} keep={action === 'password' ? 'Keep the old password' : 'Keep the current access'} busy={busy} onCancel={cancel} onConfirm={async () => {
@@ -66,6 +104,28 @@ function MemberEditor({member, state, admin, refresh}: {member: Member; state: S
       catch (cause) {setError(failureMessage(cause));}
       finally {setBusy(false);}
     }}>{action === 'password' ? `Reset ${member.name}’s password? This ends their current sessions.` : !accessTarget ? `Revoke ${member.name}’s access? Their current sessions will end.` : `Restore ${member.name}’s access? They can sign in again.`}</InlineConfirm>}
-    accessFeedback={<><SaveFeedback state={save.states.active} retry={() => save.retry('active')} useMine={() => save.useMine('active')}/>{['failed','conflict'].includes(save.states.active?.status ?? '') && <button type="button" onClick={() => save.change('active',member.active,'choice')}>Keep current access</button>}</>}
+    accessFeedback={refused.active ? <p role="alert">{refused.active}</p> : <><SaveFeedback state={save.states.active} retry={() => save.retry('active')} useMine={() => save.useMine('active')}/>{['failed','conflict'].includes(save.states.active?.status ?? '') && <button type="button" onClick={() => save.change('active',member.active,'choice')}>Keep current access</button>}</>}
     feedback={<>{error && <p role="alert">{error}</p>}{resetSaved && <p role="status">Password reset</p>}</>}/>;
+}
+
+function OwnName({member, refresh}: {member: Member; refresh: () => Promise<void>}) {
+  const [editing, setEditing] = useState(false), [name, setName] = useState(member.name), [busy, setBusy] = useState(false), [error, setError] = useState('');
+  const input = useRef<HTMLInputElement>(null);
+  useEffect(() => {if (editing) input.current?.focus();}, [editing]);
+  if (!editing) return <button type="button" onClick={() => {setName(member.name);setError('');setEditing(true);}}>Edit name</button>;
+  return <form className="team-own-name" onSubmit={async event => {
+    event.preventDefault();setBusy(true);setError('');
+    let saved = false;
+    try {
+      await request('/auth/display-name',{displayName:name.trim()});saved = true;
+      await refresh();setEditing(false);
+    } catch (cause) {
+      setError(saved ? 'Your name was saved. Reload to see the updated team.' : cause instanceof HttpFailure ? 'Your name could not be saved. Enter a name using 1 to 100 characters, or sign in again.' : failureMessage(cause));
+    } finally {setBusy(false);}
+  }}>
+    <label className="field">Your name<input ref={input} autoComplete="name" required maxLength={100} value={name} onChange={event => setName(event.target.value)}/></label>
+    <button type="submit" disabled={busy}>{busy ? 'Saving…' : 'Save name'}</button>
+    <button type="button" disabled={busy} onClick={() => setEditing(false)}>Cancel</button>
+    {error && <p role="alert">{error}</p>}
+  </form>;
 }

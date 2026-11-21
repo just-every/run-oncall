@@ -1,3 +1,4 @@
+import {PagerNotice} from './PagerNotice';
 import {ValidationForm} from '../form-validation';
 import {useId} from 'react';
 import {RotaField} from './Field';
@@ -105,6 +106,7 @@ export function RotaPage({id, state, actor, value, refresh, edit = false, render
   };
   if (edit && schedule && renderEdit) return <>{renderEdit(schedule)}</>;
   return <div ref={tooltips} className="oc-oncall oc-rota-page"><aside className="oc-rota-neighbours oc-card" aria-label="Rotas"><h2>Rotas</h2>{value?.rotas.map(row=><Link key={row.id} to={'/on-call/'+encodeURIComponent(row.id) as any} aria-current={row.id===id?'page':undefined}><strong>{row.service.name}</strong><span>{row.name}</span><span>{row.now.primary?.name??'Nobody on call'}</span></Link>)}</aside><section className="oc-rota-record"><Link className="oc-back" to={'/on-call' as any}>‹ On call</Link><header className="oc-page-head"><div><h1>{schedule?.name ?? rota?.name ?? 'Rota'}</h1><p className="oc-quiet">{rota?.service.name ?? state.services.find(service => service.id === schedule?.service)?.name}</p></div>{(canEdit||!!schedule&&memberPTO(state,actor,schedule.service,actor.id)) && <Link className="oc-button" to={'/on-call/' + encodeURIComponent(id) + '/edit' as any}>{canEdit?'Edit rota':'Your PTO'}</Link>}</header>
+    <PagerNotice/>
     {savedNotice&&<p ref={savedLine} role="status" tabIndex={-1}>{savedNotice}</p>}
     <FailureLine failure={sheet ? null : failures.failure}/>
     {data && !schedule && <p>Rota not found. <Link to={'/on-call' as any}>Return to On call</Link></p>}
@@ -121,7 +123,7 @@ export function RotaPage({id, state, actor, value, refresh, edit = false, render
       <div className="oc-coordination"><ScheduleCoordination rotaPage onRequestSwap={() => openSwap()} schedule={schedule} state={state} actor={actor} onChanged={changed}/></div>
       <details className="oc-card oc-paging"><summary>Paging is off</summary><ScheduleSummary showCalendar={false} schedule={schedule} policies={data?.policies ?? []} admin={canEdit} request={request} onSaved={() => {void load();}}/></details>
     </>}
-    {sheet && schedule && <RotaSheet title={sheet === 'cover' ? 'Cover a shift' : 'Request a swap'} close={close}><p className="oc-quiet">{schedule.timezone}</p><FailureLine failure={failures.failure}/>
+    {sheet && schedule && <RotaSheet title={sheet === 'cover' ? 'Cover a shift' : 'Request a swap'} close={close} recoverFocus={sheet === 'cover' && !review && !!failures.failure && !failures.failure.read}><p className="oc-quiet">{schedule.timezone}</p><FailureLine failure={failures.failure}/>
       {review ? <ReviewedChange key={review.digest} review={review} busy={busy} onApply={() => void apply()}/> : sheet === 'cover' ? <ValidationForm onSubmit={event => {event.preventDefault();void coverShift();}}>
         <RotaField label={<>Who</>}><select value={cover.member} onChange={event => updateCover({member:event.target.value})}><option value="">Nobody on call</option>{state.members.filter(person => person.active && ['admin','responder'].includes(person.role)).map(person => <option value={person.id} key={person.id}>{person.name}</option>)}</select></RotaField>
         <RotaField label={<>Role</>}><select value={cover.role} onChange={event => updateCover({role:event.target.value as 'primary'|'backup'})}><option value="primary">Primary</option><option value="backup">Backup</option></select></RotaField>

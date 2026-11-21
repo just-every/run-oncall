@@ -1,9 +1,11 @@
 import {focusWorkspace,openIncidentAction,openWorkspaceSection} from './keyboard.mjs'
 import assert from 'node:assert/strict'
+import {randomBytes} from 'node:crypto'
 import {mkdir,readFile} from 'node:fs/promises'
+import {isDeepStrictEqual} from 'node:util'
 import {chromium,expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
-import {localWorker} from './worker.mjs'
+import {durableSnapshot,localWorker} from './worker.mjs'
 import {mailOffJourney} from './mail-off.mjs'
 if (!process.env.ONCALL_MEMBER_JOURNEY || process.env.ONCALL_MEMBER_JOURNEY === 'mail-off') await mailOffJourney()
 if (process.env.ONCALL_MEMBER_JOURNEY === 'mail-off') process.exit(0)
@@ -13,10 +15,11 @@ if (process.env.ONCALL_MEMBER_JOURNEY === 'mail-off') process.exit(0)
 // through the setup token; admin-created members sign in by password at
 // /signin/local, coordinate, reload and read attributed history; signed-out and
 // revoked sessions get no workspace; paging refuses.
-const worker=await localWorker({}, {clock:true})
+const worker=await localWorker({}, {clock:true,outboundLedger:true})
+const focusedTeam=process.env.ONCALL_MEMBER_JOURNEY==='team-settings';
 const focusedClients=process.env.ONCALL_MEMBER_JOURNEY==='api-clients';
 const focusedSaves=process.env.ONCALL_MEMBER_JOURNEY==='incident-saves';
-if(process.env.ONCALL_MEMBER_JOURNEY&&!focusedSaves&&!focusedClients)throw Error('Unknown member coordination journey');
+if(process.env.ONCALL_MEMBER_JOURNEY&&!focusedSaves&&!focusedClients&&!focusedTeam)throw Error('Unknown member coordination journey');
 const captureDirectory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser'
 await mkdir(captureDirectory,{recursive:true})
 const responder={name:'Rosa Responder',password:'synthetic-responder-testing-password'},viewer={name:'Vic Viewer',password:'synthetic-viewer-testing-password'}
@@ -45,6 +48,90 @@ async function denied(page,label,id){
  assert.ok(!(await page.locator('body').innerText()).includes(noteText),`${label}: no coordination text in the page`)
 }
 // Extend the existing autosave journey through the service and review screens.
+// Settings > Team owner journeys: assert once on desktop, capture both layouts.
+async function teamSettings(page, owner) {
+ const request=async(path,data)=>ok(await call(page,path,data));
+ const capture=async name=>{
+  for(const width of [1440,390]){
+   await page.setViewportSize({width,height:1000});
+   await page.screenshot({path:`${captureDirectory}/team-${name}-${width}.png`,fullPage:true});
+  }
+  await page.setViewportSize({width:1440,height:1000});
+ };
+ await page.goto(worker.origin+'/settings/team');
+ let own=page.getByRole('article',{name:owner.name,exact:true});
+ await own.getByRole('button',{name:'Member actions',exact:true}).click();
+ const actions=own.getByRole('region',{name:'Actions for '+owner.name,exact:true});
+ await expect(actions.getByRole('button',{name:'Revoke access',exact:true})).toHaveCount(0);
+ await expect(actions.getByText(/only active admin/)).toBeVisible();
+ await capture('only-admin');
+ await actions.getByRole('button',{name:'Done',exact:true}).click();
+ for(const contactsOpen of [false,true]){
+  if(contactsOpen){await own.getByText('Contact methods and notification rules',{exact:true}).click();await own.getByRole('button',{name:'Add contact method',exact:true}).waitFor();}
+  await page.getByRole('button',{name:'Add member',exact:true}).click();
+  const form=page.getByRole('region',{name:'Add member',exact:true}),name=form.getByLabel('Name',{exact:true});
+  await expect(name).toBeFocused();
+  const box=await name.boundingBox();assert.ok(box.y>=0&&box.y+box.height<=1000,'Name opens in view even with contacts expanded');
+  assert.ok(await form.evaluate(element=>Boolean(element.compareDocumentPosition(document.querySelector('.team-members'))&Node.DOCUMENT_POSITION_FOLLOWING)),'the form precedes member cards');
+  await capture('add-'+(contactsOpen?'contacts-open':'contacts-closed'));
+  if(contactsOpen){
+   await name.fill('Example Teammate');await form.getByLabel('Password',{exact:true}).fill('synthetic-oncall-teammate-password');
+   const created=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/members'&&r.request().method()==='POST');
+   await form.getByRole('button',{name:'Create member',exact:true}).click();assert.equal((await created).status(),201);
+   await expect(page.getByRole('article',{name:'Example Teammate',exact:true})).toBeVisible();
+  }
+  await page.getByRole('button',{name:'Add member',exact:true}).click();
+ }
+ console.log('PASS Team Add member: visible focused Name with contacts closed/open, then member created through the form');
+ await own.getByRole('button',{name:'Edit name',exact:true}).click();
+ await expect(own.getByLabel('Your name',{exact:true})).toBeFocused();
+ const corrected='Example Owner';await own.getByLabel('Your name',{exact:true}).fill(corrected);
+ await capture('edit-name');
+ await own.getByRole('button',{name:'Save name',exact:true}).click();
+ own=page.getByRole('article',{name:corrected,exact:true});await expect(own.getByRole('heading',{name:corrected,exact:true})).toBeVisible();
+ await page.reload();await expect(own.getByRole('button',{name:'Edit name',exact:true})).toBeVisible();
+ assert.equal((await request('/api/session')).member.name,corrected);
+ assert.equal((await request('/auth/session')).operator.displayName,corrected,'member and native owner names agree after reload');
+ await capture('name-saved');
+ console.log('PASS Team owner name: editable after setup, native identity and member name persist after reload');
+ // Start a normal action, then let another admin cease to be an admin before
+ // confirmation. The real server refuses: the UI must clear the rejected edit.
+ const other=ok(await call(page,'/api/members',{name:'Example Deputy',role:'admin',password:'synthetic-oncall-deputy-password'}),201);
+ await page.reload();
+ await own.getByRole('button',{name:'Member actions',exact:true}).click();await own.getByRole('button',{name:'Revoke access',exact:true}).click();
+ await request('/api/command',{type:'member',id:other.id,field:'role',from:'admin',to:'viewer'});
+ const refused=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().postDataJSON()?.id===owner.id);
+ await own.locator('.autosave-confirm').getByRole('button',{name:'Revoke access',exact:true}).click();assert.equal((await refused).status(),400);
+ await expect(own.getByRole('alert')).toBeVisible();await expect(own.getByRole('button',{name:'Retry',exact:true})).toHaveCount(0);
+ await expect.poll(()=>page.evaluate(id=>localStorage.getItem('oncall:pending:member:'+id),owner.id)).toBe(null);
+ assert.equal((await request('/api/state')).members.find(m=>m.id===owner.id).active,true);
+ await capture('refused');
+ await page.reload();await expect(own.getByRole('button',{name:'Edit name',exact:true})).toBeVisible();
+ await expect(own.getByRole('alert')).toHaveCount(0);await expect(own.getByRole('button',{name:'Retry',exact:true})).toHaveCount(0);
+ await capture('refused-reload');
+ // Upgrade recovery: an older browser may still hold this rejected draft.
+ const state=await request('/api/state');
+ await page.evaluate(({id,revision})=>localStorage.setItem('oncall:pending:member:'+id,JSON.stringify({version:1,edits:[{field:'active',from:true,to:false,revision,ready:true}]})),{id:owner.id,revision:state.revision});
+ let commands=0;const count=r=>{if(new URL(r.url()).pathname==='/api/command'&&r.method()==='POST')commands++;};page.on('request',count);
+ await page.reload();await expect(own.getByRole('button',{name:'Edit name',exact:true})).toBeVisible();
+ await expect.poll(()=>page.evaluate(id=>localStorage.getItem('oncall:pending:member:'+id),owner.id)).toBe(null);
+ assert.equal(commands,0,'the old refused draft is cleared without another write');page.off('request',count);
+ await expect(own.getByRole('alert')).toHaveCount(0);
+ // Connection uncertainty still retains its edit and supports a real retry.
+ const deputy=page.getByRole('article',{name:other.name,exact:true});
+ const interrupt=route=>route.request().postDataJSON()?.type==='member'?route.abort():route.continue();
+ await page.route('**/api/command',interrupt);
+ await deputy.getByRole('button',{name:'Member actions',exact:true}).click();await deputy.getByRole('button',{name:'Revoke access',exact:true}).click();
+ await deputy.locator('.autosave-confirm').getByRole('button',{name:'Revoke access',exact:true}).click();
+ await expect(deputy.getByRole('button',{name:'Retry',exact:true})).toBeVisible();
+ await page.unroute('**/api/command',interrupt);await deputy.getByRole('button',{name:'Retry',exact:true}).click();
+ await expect.poll(async()=>(await request('/api/state')).members.find(m=>m.id===other.id).active).toBe(false);
+ await expect(deputy.getByRole('button',{name:'Retry',exact:true})).toHaveCount(0);
+ await own.getByRole('button',{name:'Edit name',exact:true}).click();await own.getByLabel('Your name',{exact:true}).fill(owner.name);await own.getByRole('button',{name:'Save name',exact:true}).click();
+ await expect(page.getByRole('article',{name:owner.name,exact:true}).getByRole('button',{name:'Edit name',exact:true})).toBeVisible();
+ console.log('PASS Team refused access: last-admin action unavailable with a next step; real refusal clears its draft and Retry across reload; older refused draft cleared; uncertain write still retries');
+}
+
 async function incidentSaves(page) {
  const request=async(path,data)=>ok(await call(page,path,data));
  await page.setViewportSize({width:1440,height:1000});
@@ -257,6 +344,8 @@ try {
  if(await confirmation.count()){await confirmation.check();await owner.page.getByRole('button',{name:'Finish setup'}).click()}
  await owner.page.locator('.oncall-frame').waitFor({timeout:60000})
  const ownerMember=ok(await call(owner.page,'/api/session')).member
+ if(!focusedSaves)await teamSettings(owner.page,ownerMember);
+ if(!focusedTeam){
  const rosaRecord=ok(await call(owner.page,'/api/members',{...responder,role:'responder'}),201)
  ok(await call(owner.page,'/api/members',{...viewer,role:'viewer'}),201)
  ok(await call(owner.page,'/api/command',{type:'service',id:'checkout',name:'Checkout',environment:'production',owner:rosaRecord.id,runbook:['Check payment provider status'],pager:''}))
@@ -502,7 +591,14 @@ try {
  // OC-061: the existing shell carries internal status, with a status-only stakeholder session.
  const stakeholder={name:'Sam Stakeholder',password:'synthetic-oncall-61-password'}
  const sam=ok(await call(owner.page,'/api/members',{...stakeholder,role:'stakeholder'}),201)
- ok(await call(owner.page,'/api/command',{type:'service',id:'synthetic-oncall-61',name:'Payment gateway',environment:'production',owner:rosaRecord.id,runbook:['Private gateway recovery instructions'],pager:''}))
+ const communicator={name:'Casey Communications',password:'synthetic-oncall-611-password'}
+ const communications=ok(await call(owner.page,'/api/members',{...communicator,role:'responder'}),201)
+ const gateway={id:'synthetic-oncall-61',name:'Payment gateway',environment:'production'}
+ const incidentTitle='Private gateway timeouts'
+ const alertTitle='Private gateway queue stalled'
+ const timelineNote='Private gateway timeline records a blocked retry'
+ const runbookStep='Private gateway recovery instructions'
+ ok(await call(owner.page,'/api/command',{type:'service',...gateway,owner:rosaRecord.id,runbook:[runbookStep],pager:''}))
  await owner.page.goto(worker.origin+'/status');await owner.page.reload()
  const statusPanel=owner.page.getByRole('region',{name:'Internal business status'})
  await statusPanel.getByRole('heading',{name:'Business services',exact:true}).waitFor()
@@ -520,7 +616,7 @@ try {
  }
  // Refused creates retain their draft and name the invalid field beside it.
  const supporting=statusPanel.getByLabel('Supporting technical services',{exact:true}),createBusiness=statusPanel.getByRole('button',{name:'Create business service',exact:true});
- await statusPanel.getByLabel('Communications owner',{exact:true}).selectOption(rosaRecord.id);
+ await statusPanel.getByLabel('Communications owner',{exact:true}).selectOption(communications.id);
  const statusBefore=ok(await call(owner.page,'/api/status')),createRequests=[];
  const observeCreate=request=>{if(new URL(request.url()).pathname==='/api/status'&&request.method()==='POST')createRequests.push(request);};
  owner.page.on('request',observeCreate);
@@ -553,7 +649,7 @@ try {
  await expect(statusPanel.getByLabel('Business-service name',{exact:true})).toHaveValue('Checkout '.repeat(15));
  await captureRefusal('server-create',createBusiness);owner.page.off('request',observeCreate);
  await statusPanel.getByLabel('Business-service name',{exact:true}).fill('Checkout')
- await statusPanel.getByLabel('Communications owner',{exact:true}).selectOption(rosaRecord.id)
+ await statusPanel.getByLabel('Communications owner',{exact:true}).selectOption(communications.id)
  await statusPanel.getByRole('button',{name:'Create business service',exact:true}).click()
  const checkout=statusPanel.getByRole('article',{name:'Checkout',exact:true})
  await checkout.getByText('Derived status: operational',{exact:true}).waitFor()
@@ -577,7 +673,16 @@ try {
  await audience.getByRole('checkbox',{name:sam.name,exact:true}).check();await expect(audience.getByRole('status')).toHaveText('Saved');
  await checkout.getByText('Manage internal status',{exact:true}).click();
  console.log('PASS existing service audience: grant, subscribe, reload, revoke and regrant through the browser');
- const statusIncident=ok(await call(owner.page,'/api/command',{type:'declare',service:'synthetic-oncall-61',severity:'warning',title:'Private gateway timeouts',summary:'Customer payment attempts delayed',alerts:[]}))
+ const source='synthetic-oncall-611',key=randomBytes(32).toString('hex')
+ ok(await call(owner.page,'/api/sources',{id:source,key,scopes:[gateway.id],mode:'bearer'}))
+ const event=ok(await worker.request('/api/ingress/'+source,{
+  source,eventId:source,service:gateway.id,environment:gateway.environment,key:source,generation:source,
+  intent:'trigger',severity:'warning',title:alertTitle,observedAt:new Date().toISOString(),
+ },'',{authorization:'Bearer '+key}),201)
+ const alert=ok(await call(owner.page,'/api/state')).alerts.find(row=>row.events.includes(event.id))
+ assert.ok(alert,'the received event must populate an alert before testing the details')
+ const statusIncident=ok(await call(owner.page,'/api/command',{type:'declare',service:gateway.id,severity:'warning',title:incidentTitle,summary:'Customer payment attempts delayed',alerts:[alert.id]}))
+ ok(await call(owner.page,'/api/command',{type:'note',incident:statusIncident.id,revision:statusIncident.revision,text:timelineNote}))
  await focusWorkspace(owner.page)
  await checkout.getByText('Derived status: degraded',{exact:true}).waitFor()
  const statusCapture=async(page,screen,width)=>{
@@ -619,11 +724,193 @@ try {
   ok(await call(samView.page,'/api/command',{type:'declare',service:'synthetic-oncall-61',title:'Refused page',severity:'warning',summary:'No authority'}),403)
   const workspace=ok(await call(samView.page,'/api/workspace'));assert.equal(workspace.state,null)
   const html=await (await samView.context.request.get(worker.origin+'/')).text()
-  assert.ok(!html.includes('Private gateway timeouts')&&!html.includes('Private gateway recovery instructions'),'stakeholder HTML bootstrap contains no response data')
+  assert.ok(!html.includes(incidentTitle)&&!html.includes(runbookStep),'stakeholder HTML bootstrap contains no response data')
   await statusCapture(samView.page,'stakeholder-status-and-refusals',width)
  }
  console.log('OC-061 browser: existing internal-status panel, derived degraded, attributed override and reason, stakeholder subscription and private-door refusals at 1440')
+
+ // The same populated addresses must serve the owner and isolate the signed-in subscriber.
+ const details=[
+  ['incident','/incidents/'+encodeURIComponent(statusIncident.id),async page=>{
+   const incident=page.getByRole('region',{name:'Incident',exact:true})
+   await expect(incident.getByRole('heading',{name:incidentTitle,exact:true})).toBeVisible()
+   await expect(entry(page,timelineNote)).toBeVisible()
+  }],
+  ['alert','/alerts/'+encodeURIComponent(alert.id),async page=>{
+   const card=page.getByRole('article',{name:'Alert details',exact:true})
+   await expect(card.getByRole('heading',{name:alertTitle,exact:true})).toBeVisible()
+   await expect(card.getByText(runbookStep,{exact:true})).toBeVisible()
+  }],
+  ['service','/settings/services/'+encodeURIComponent(gateway.id),async page=>{
+   await expect(page.getByRole('heading',{name:gateway.name,exact:true})).toBeVisible()
+   await expect(page.getByLabel('Runbook steps (one per line)',{exact:true})).toHaveValue(runbookStep)
+  }],
+ ]
+ const noPrivateData=(body,label)=>{
+  for(const value of [incidentTitle,timelineNote,alertTitle,gateway.name,runbookStep])
+   assert.ok(!body.includes(value),label+' disclosed '+value)
+ }
+ const statusOnly=snapshot=>{
+  assert.equal(snapshot?.member?.id,sam.id)
+  assert.equal(snapshot.member.role,'stakeholder')
+  assert.equal(snapshot.state,null)
+ }
+ const custody=async()=>({
+  native:durableSnapshot(worker),
+  paging:ok(await call(owner.page,'/api/paging/state')),
+  status:ok(await call(owner.page,'/api/status')),
+ })
+ const outbound=[]
+ const observeRequest=request=>{if(!request.url().startsWith(worker.origin+'/'))outbound.push(new URL(request.url()).origin)}
+ for(const context of [owner.context,samView.context])context.on('request',observeRequest)
+ for(const width of [1440,390]){
+  await owner.page.setViewportSize({width,height:1000})
+  for(const [name,path,ownerSees] of details){
+   await owner.page.goto(worker.origin+path)
+   await ownerSees(owner.page)
+   await owner.page.screenshot({path:`${captureDirectory}/oc061-owner-${name}-${width}.png`,fullPage:true})
+  }
+ }
+
+ await owner.page.waitForLoadState('networkidle')
+ const beforeDetails=await custody()
+ assert.equal(beforeDetails.paging.paging,'OFF')
+ const subscription=beforeDetails.status.services.find(row=>row.name==='Checkout').subscriptions.find(row=>row.member===sam.id)
+ assert.equal(subscription?.active,true,'Checkout has an active subscription before the reads')
+ for(const width of [1440,390]){
+  await samView.page.setViewportSize({width,height:1000})
+  for(const [name,path] of details){
+   const replies=[]
+   const observeResponse=response=>{
+    const {pathname}=new URL(response.url())
+    if(/^\/(?:api|auth)(?:\/|$)/.test(pathname)||['fetch','xhr'].includes(response.request().resourceType()))replies.push(response)
+   }
+   samView.page.on('response',observeResponse)
+   try{
+    const shell=await samView.page.goto(worker.origin+path)
+    assert.ok(shell?.ok(),name+' returned a web document')
+    const html=await shell.text()
+    noPrivateData(html,name+' initial HTML and bootstrap')
+    const embedded=/<script[^>]*id="oncall-workspace"[^>]*>([\s\S]*?)<\/script>/.exec(html)
+    assert.ok(embedded,name+' includes the signed-in workspace bootstrap')
+    statusOnly(JSON.parse(embedded[1]))
+    await samView.page.waitForURL(worker.origin+'/status')
+    await expect(samCheckout.getByText('Derived status: degraded',{exact:true})).toBeVisible()
+    await expect(samCheckout.getByRole('heading',{name:'Recorded impact obligations',exact:true})).toBeVisible()
+    await samView.page.waitForLoadState('networkidle')
+    let checkoutStatus
+    for(const reply of replies){
+     const body=await reply.text(),path=new URL(reply.url()).pathname
+     noPrivateData(body,name+' response from '+path)
+     for(const id of [statusIncident.id,alert.id,gateway.id])
+      assert.ok(!body.includes(id),name+' response from '+path+' disclosed a private record ID')
+     if(path==='/api/workspace')statusOnly(ok({status:reply.status(),value:JSON.parse(body)}))
+     if(path==='/api/status')checkoutStatus=ok({status:reply.status(),value:JSON.parse(body)}).services.find(row=>row.name==='Checkout')
+    }
+    assert.equal(checkoutStatus?.derived,'degraded','the browser received the permitted Checkout status')
+    assert.deepEqual(checkoutStatus.subscription,subscription)
+    await expect(samView.page.locator('.timeline, .alert-page, .service-page-head')).toHaveCount(0)
+    noPrivateData(await samView.page.locator('html').evaluate(node=>node.outerHTML),name+' hydrated document')
+    await samView.page.screenshot({path:`${captureDirectory}/oc061-stakeholder-${name}-${width}.png`,fullPage:true})
+   }finally{
+    samView.page.off('response',observeResponse)
+   }
+  }
+ }
+ const afterDetails=await custody()
+ for(const context of [owner.context,samView.context])context.off('request',observeRequest)
+ const tables=new Set([...Object.keys(beforeDetails.native),...Object.keys(afterDetails.native)])
+ assert.deepEqual([...tables].filter(table=>!isDeepStrictEqual(afterDetails.native[table],beforeDetails.native[table])),[],
+  'stakeholder detail reads preserve native records')
+ assert.deepEqual(afterDetails.paging,beforeDetails.paging,'stakeholder detail reads preserve paging custody')
+ assert.deepEqual(afterDetails.status,beforeDetails.status,'stakeholder detail reads preserve subscription custody')
+ assert.deepEqual(outbound,[],'the detail browsers attempted no outbound request')
+ assert.deepEqual(await worker.outboundRequests(),[],'the emitted Worker attempted no outbound request')
+ console.log('PASS OC-061 direct stakeholder details: owner reads populated incident, alert and service; stakeholder lands on Checkout status with no private document, response or hydrated content at 1440 and 390; custody intact and zero outbound requests')
  await samView.context.close()
+
+ // The current role controls management even when the service still names this member.
+ const {context:communicationsContext,page:communicationsPage}=await open(1440)
+ for(const context of [owner.context,communicationsContext])context.on('request',observeRequest)
+ const signedIn=await passwordSignIn(communicationsPage,communicator)
+ assert.deepEqual([signedIn.id,signedIn.role,signedIn.active],[communications.id,'responder',true])
+ await communicationsPage.goto(worker.origin+'/status')
+ const communicationsCard=communicationsPage.getByRole('article',{name:'Checkout',exact:true})
+ const manage=communicationsCard.getByText('Manage internal status',{exact:true})
+ const manual=communicationsCard.getByLabel('Status set by hand',{exact:true})
+ const readCheckout=async()=>ok(await call(communicationsPage,'/api/status')).services.find(service=>service.name==='Checkout')
+ const beforeSave=await readCheckout()
+ assert.equal(beforeSave.communicationsOwner,communications.id)
+ await manage.click()
+ const reasonForOverride='The alternate gateway is now unavailable'
+ await manual.selectOption('major outage')
+ await communicationsCard.getByLabel('Reason',{exact:true}).fill(reasonForOverride)
+ const overrideReply=communicationsPage.waitForResponse(response=>new URL(response.url()).pathname==='/api/status'&&response.request().postDataJSON()?.action==='override')
+ await communicationsCard.getByRole('button',{name:'Set status',exact:true}).click()
+ assert.equal((await overrideReply).status(),200)
+ await communicationsPage.reload()
+ const saved=await readCheckout()
+ assert.deepEqual(
+  [saved.revision,saved.derived,saved.override.value,saved.override.reason,saved.override.by],
+  [beforeSave.revision+1,'degraded','major outage',reasonForOverride,communications.id],
+ )
+ const renderedOverride=communicationsCard.getByText(/^Manual override:/)
+ await expect(renderedOverride.getByText('major outage',{exact:true})).toBeVisible()
+ await expect(renderedOverride).toContainText(reasonForOverride)
+ await expect(renderedOverride).toContainText(communications.name)
+ await expect(communicationsCard.getByText('Derived status: degraded',{exact:true})).toBeVisible()
+ await manage.click()
+ await expect(manual).toHaveValue('major outage')
+ const captureRole=async role=>{
+  for(const width of [1440,390]){
+   await communicationsPage.setViewportSize({width,height:1000})
+   await communicationsCard.scrollIntoViewIfNeeded()
+   await communicationsPage.screenshot({path:`${captureDirectory}/oc061-status-${role}-${width}.png`,fullPage:true})
+  }
+  await communicationsPage.setViewportSize({width:1440,height:1000})
+ }
+ await captureRole('communications-owner')
+
+ const demoted=ok(await call(owner.page,'/api/command',{type:'member',id:communications.id,field:'role',from:'responder',to:'viewer'}))
+ assert.deepEqual([demoted.id,demoted.role,demoted.active],[communications.id,'viewer',true])
+ await communicationsPage.reload()
+ const currentMember=ok(await call(communicationsPage,'/api/session')).member
+ assert.deepEqual([currentMember.id,currentMember.role,currentMember.active],[communications.id,'viewer',true])
+ await expect(renderedOverride).toContainText(reasonForOverride)
+ await expect(renderedOverride).toContainText(communications.name)
+ await expect(communicationsCard.getByText('Derived status: degraded',{exact:true})).toBeVisible()
+ await expect(communicationsCard.getByText('Your subscription',{exact:true})).toBeVisible()
+ await expect(manage).toHaveCount(0)
+ await expect(manual).toHaveCount(0)
+ const current=await readCheckout()
+ assert.deepEqual([current.communicationsOwner,current.revision,current.derived,current.override],
+  [communications.id,saved.revision,saved.derived,saved.override])
+ const beforeDenial=await custody()
+ const denial=await call(communicationsPage,'/api/status',{
+  action:'override',id:current.id,revision:current.revision,value:'operational',reason:'Try to replace the saved override',
+ })
+ assert.equal(denial.status,403)
+ assert.deepEqual(await readCheckout(),current,'the viewer still reads the same saved status')
+ const afterDenial=await custody()
+ assert.deepEqual(afterDenial.status,beforeDenial.status)
+ assert.deepEqual(afterDenial.paging,beforeDenial.paging)
+ assert.equal(afterDenial.paging.paging,'OFF')
+ const {oc_admin_audit:priorAudit,oc_audit_clock:priorClock,...priorNative}=beforeDenial.native
+ const {oc_admin_audit:currentAudit,oc_audit_clock:currentClock,...currentNative}=afterDenial.native
+ assert.deepEqual(currentNative,priorNative,'the refusal preserves every non-audit record and revision')
+ assert.equal(currentClock[0].revision,priorClock[0].revision,'the refusal commits no workspace write')
+ const priorAuditIds=new Set(priorAudit.map(row=>row.id))
+ assert.deepEqual(currentAudit.filter(row=>priorAuditIds.has(row.id)),priorAudit)
+ const refusalRows=currentAudit.filter(row=>!priorAuditIds.has(row.id))
+ assert.equal(refusalRows.length,1)
+ assert.equal(refusalRows[0].outcome,'refused')
+ assert.equal(refusalRows[0].detail,null)
+ await captureRole('demoted-viewer')
+ for(const context of [owner.context,communicationsContext])context.off('request',observeRequest)
+ assert.deepEqual(outbound,[],'the status browsers attempted no outbound request')
+ assert.deepEqual(await worker.outboundRequests(),[],'the status Worker attempted no outbound request')
+ await communicationsContext.close()
+ console.log(`PROBE OC-061 6: signed-in communications owner saved major outage with reason and attribution at revision ${beforeSave.revision} -> ${saved.revision}; derived degraded. Same session as active viewer read the override and no management controls; current-revision POST returned ${denial.status}, with one refusal audit and unchanged native and paging custody. Both roles captured at 1440 and 390 with zero outbound requests.`)
 
  // OC-061 email lists: configure in Settings, inspect start/end records, unsubscribe and use shared erasure.
  for(const width of [1440]){
@@ -695,12 +982,13 @@ try {
  assert.equal(manual68.manualPage.creator,ownerMember.id);assert.equal(manual68.manualPage.obligations[0].target.id,rosaRecord.id)
  await openIncidentAction(owner.page,'Request responders')
  const requests68=owner.page.getByRole('region',{name:'Manual obligations and responder requests'})
- for(const message of ['Inspect payment provider','Inspect payment network']){
+ const recordRequest=async message=>{
   await requests68.getByLabel('Named responders',{exact:true}).selectOption(rosaRecord.id)
   await requests68.getByLabel('Responder request message',{exact:true}).fill(message)
   await requests68.getByRole('button',{name:'Record responder requests',exact:true}).click()
   await requests68.getByText(message,{exact:true}).waitFor()
  }
+ for(const message of ['Inspect payment provider','Inspect payment network'])await recordRequest(message)
  assert.equal(await requests68.getByRole('button',{name:'Accept request',exact:true}).count(),0,'the requester is not offered Accept for another responder')
  await openIncident(rosa.page,manual68.id);await rosa.page.reload()
  await openIncidentAction(rosa.page,'Request responders')
@@ -711,6 +999,124 @@ try {
  await responseRegion.getByRole('article').filter({hasText:'Inspect payment network'}).getByText(/^declined · requested/).waitFor()
  await responseRegion.getByText('Primary acknowledgment: Unacknowledged',{exact:true}).waitFor()
  for(const width of [1440])await statusCapture(rosa.page,'oc068-requests-and-obligations',width)
+
+ // OC-068 local responder-request cancellation through the signed-in web door.
+ const readWorkspace=async page=>ok(await call(page,'/api/state'))
+ const readManual=state=>state.incidents.find(incident=>incident.id===manual68.id)
+ const requestCard=(page,region,message)=>region.getByRole('article').filter({has:page.getByText(message,{exact:true})})
+ const cancelMessage='Review provider follow-up',siblingMessage='Review network follow-up'
+ const cancelButton={name:'Cancel request',exact:true}
+ const openRequests=async page=>{
+  await openIncident(page,manual68.id)
+  return openIncidentAction(page,'Request responders')
+ }
+ const captureRequests=async(page,region,screen)=>{
+  for(const width of [1440,390]){
+   await page.setViewportSize({width,height:1000})
+   await openRequests(page)
+   await requestCard(page,region,siblingMessage).scrollIntoViewIfNeeded()
+   await page.screenshot({path:`${captureDirectory}/oc068-cancel-${screen}-${width}.png`})
+  }
+  await page.setViewportSize({width:1440,height:1000})
+ }
+ const outboundBefore=await worker.outboundRequests()
+ for(const context of [owner.context,rosa.context])context.on('request',observeRequest)
+ try{
+  await openRequests(owner.page)
+  await recordRequest(cancelMessage)
+  await recordRequest(siblingMessage)
+  await openIncident(rosa.page,manual68.id)
+  await rosa.page.getByRole('button',{name:'Acknowledge',exact:true}).click()
+  await rosa.page.locator('.incident-state.state-acknowledged').waitFor()
+
+  const before=await readWorkspace(owner.page),incident=readManual(before)
+  const service=before.services.find(row=>row.id===incident.service)
+  assert.equal(before.teams.find(team=>team.id===service.team)?.visibility,'public')
+  assert.equal(incident.manualPage.acknowledgment.by,rosaRecord.id)
+  assert.deepEqual(incident.manualPage.obligations.map(row=>[row.target.id,row.state,row.outcome]),
+   [[rosaRecord.id,'stopped','Primary incident acknowledged']])
+  const pending=incident.responderRequests.filter(row=>row.status==='pending')
+  assert.deepEqual(pending.map(row=>row.message),[cancelMessage,siblingMessage])
+  const [target,sibling]=pending
+  for(const row of [target,sibling]){
+   assert.equal(row.requester,ownerMember.id)
+   assert.deepEqual(row.obligation.target,{kind:'user',id:rosaRecord.id})
+   assert.deepEqual([row.obligation.state,row.obligation.paging,row.obligation.automatic],['recorded','off',false])
+  }
+  assert.notEqual(target.obligation.id,sibling.obligation.id)
+
+  const beforePaging=ok(await call(owner.page,'/api/paging/state'))
+  const readEffects=()=>Object.fromEntries(Object.entries(durableSnapshot(worker))
+   .filter(([table])=>table.startsWith('paging_')||table.includes('outbox')||table.endsWith('_deadlines')))
+  const beforeEffects=readEffects()
+  const beforeAudit=worker.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal')
+  const auditOrdinal=beforeAudit.at(-1).ordinal
+  const responderDialog=await openRequests(rosa.page)
+  await responderDialog.getByRole('button',{name:'Close',exact:true}).focus()
+  await expect(responderDialog.getByRole('tooltip',{name:'Close dialog',exact:true})).toBeVisible()
+  for(const message of [cancelMessage,siblingMessage]){
+   const card=requestCard(rosa.page,responseRegion,message)
+   await expect(card.getByText(/^pending · requested/)).toBeVisible()
+   await expect(card.getByRole('button',{name:'Accept request',exact:true})).toBeVisible()
+   await expect(card.getByRole('button',cancelButton)).toHaveCount(0)
+  }
+  assert.deepEqual(await readWorkspace(owner.page),before,'opening as the named responder preserves protected state')
+  await captureRequests(rosa.page,responseRegion,'non-requester')
+
+  await owner.page.setViewportSize({width:1440,height:1000})
+  await openRequests(owner.page)
+  const cancelled=owner.page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'
+   &&response.request().method()==='POST'&&response.request().postDataJSON()?.type==='cancel-request')
+  await requestCard(owner.page,requests68,cancelMessage).getByRole('button',cancelButton).click()
+  const response=await cancelled
+  assert.equal(response.status(),200)
+  assert.deepEqual(response.request().postDataJSON(),{type:'cancel-request',incident:incident.id,revision:incident.revision,request:target.id})
+  await openIncident(owner.page,manual68.id)
+  const cancellationEntry=entry(owner.page,'Responder request cancelled')
+  await expect(cancellationEntry).toHaveCount(1)
+  await expect(cancellationEntry.locator('small')).toHaveText(ownerMember.name)
+  await openIncidentAction(owner.page,'Request responders')
+  const targetCard=requestCard(owner.page,requests68,cancelMessage),siblingCard=requestCard(owner.page,requests68,siblingMessage)
+  await expect(targetCard.getByText(/^cancelled · requested/)).toContainText('response by '+ownerMember.name)
+  await expect(targetCard.getByRole('button',cancelButton)).toHaveCount(0)
+  await expect(siblingCard.getByText(/^pending · requested/)).toBeVisible()
+  await expect(siblingCard.getByRole('button',cancelButton)).toBeEnabled()
+  await expect(requests68.getByText('Primary acknowledgment: '+responder.name,{exact:true})).toBeVisible()
+  await captureRequests(owner.page,requests68,'reopened')
+
+  const after=await readWorkspace(owner.page),saved=readManual(after)
+  const cancellation=saved.timeline.at(-1)
+  assert.deepEqual([cancellation.kind,cancellation.actor],['cancel-request',ownerMember.id])
+  assert.ok(cancellation.text.includes(target.id),'the attributed timeline entry identifies the cancelled request')
+  assert.ok(Number.isFinite(Date.parse(cancellation.at)))
+  const stopped={...target,status:'cancelled',response:{by:ownerMember.id,at:cancellation.at},
+   obligation:{...target.obligation,state:'stopped',outcome:'cancelled'}}
+  const expected={...incident,revision:incident.revision+1,timeline:[...incident.timeline,cancellation],
+   responderRequests:incident.responderRequests.map(row=>row.id===target.id?stopped:row)}
+  assert.deepEqual(saved,expected,'only the target request, its obligation, incident revision and one timeline entry change')
+  assert.deepEqual(after,{...before,revision:before.revision+1,incidents:before.incidents.map(row=>row.id===saved.id?expected:row)})
+
+  // Read the permanent audit directly because exporting it creates an audit row.
+  assert.deepEqual(worker.sql(`SELECT * FROM oc_admin_audit WHERE ordinal<=${auditOrdinal} ORDER BY ordinal`),
+   beforeAudit,'existing permanent audit history is unchanged')
+  const audit=worker.sql(`SELECT a.kind,a.outcome,actor.entity_id AS actor,subject.entity_id AS subject,
+   a.workspace_before,a.workspace_after,a.paging_before,a.paging_after,a.handoff_before=a.handoff_after AS handoff_unchanged
+   FROM oc_admin_audit a LEFT JOIN oc_audit_identities actor ON actor.label=a.actor AND actor.kind='member'
+   LEFT JOIN oc_audit_identities subject ON subject.label=a.subject AND subject.kind='entity'
+   WHERE a.ordinal>${auditOrdinal} ORDER BY a.ordinal`)
+  assert.deepEqual(audit,[{kind:'command.cancel-request',outcome:'accepted',actor:ownerMember.id,subject:incident.id,
+   workspace_before:before.revision,workspace_after:after.revision,paging_before:beforePaging.revision,
+   paging_after:beforePaging.revision,handoff_unchanged:1}])
+  assert.equal(beforePaging.paging,'OFF')
+  assert.deepEqual(ok(await call(owner.page,'/api/paging/state')),{...beforePaging,workspaceRevision:after.revision})
+  assert.deepEqual(readEffects(),beforeEffects,'cancellation creates no paging work, receipt, deadline or outbox record')
+  assert.deepEqual(await worker.outboundRequests(),outboundBefore,'cancellation and reopen create no Worker outbound requests')
+  assert.deepEqual(outbound,[],'the requester and named responder browsers attempt no outbound requests')
+ }finally{
+  for(const context of [owner.context,rosa.context])context.off('request',observeRequest)
+ }
+ console.log('PROBE OC-068 5: on a signed-in manual incident for a public-team service, the named responder saw two pending requests and no Cancel control. The requester cancelled one and reopened at 1440 and 390. One attributed timeline entry and one permanent audit row persisted. Only the target obligation stopped. The sibling and primary acknowledgment and obligation stayed unchanged. Zero outbound or paging effects.')
+
  await openIncident(vic.page,manual68.id);await vic.page.reload()
  await openIncidentAction(vic.page,'Request responders')
  await vic.page.getByText('Only responders and admins may create manual pages or request responders.',{exact:true}).waitFor()
@@ -780,13 +1186,14 @@ try {
  console.log('OC-018 real hosted member coordination persists after reload: on the emitted production Worker a password member acknowledged and noted an incident, reloaded at 1440 and kept attribution; a viewer read it; signed-out, anonymous and revoked sessions got no workspace; paging refused (409)')
  }
 }
+}
 } finally {
  await browser?.close()
  await worker.close()
 }
 
 // Finish identity management with owner correction, sign-out and honest mail availability.
-if(!focusedSaves&&!focusedClients){
+if(!focusedSaves&&!focusedClients&&!focusedTeam){
 const {default:assert}=await import('node:assert/strict')
 const {mkdir,readFile}=await import('node:fs/promises')
 const {chromium}=await import('@playwright/test')
@@ -898,7 +1305,7 @@ try {
 }
 
 // Configure scoped automation, inspect delivery failure and retain machine attribution in the workspace.
-if(!focusedSaves){
+if(!focusedSaves&&!focusedTeam){
 const {default:assert}=await import('node:assert/strict')
 const {mkdir}=await import('node:fs/promises')
 const {join,resolve}=await import('node:path')

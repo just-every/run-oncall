@@ -3,7 +3,7 @@ import {createPortal} from 'react-dom';
 import {HttpFailure, InterruptedTransport} from '../useWorkspace';
 import './flows.css';
 
-export type ActionFailure = {message: string; read?: boolean; target: HTMLElement | null; retry?: () => Promise<unknown>; retryLabel?: string; saved?: string};
+export type ActionFailure = {message: string; read?: boolean; target: HTMLElement | null; focus?: HTMLElement; retry?: () => Promise<unknown>; retryLabel?: string; saved?: string};
 export function failureMessage(error: unknown, read = false) {
   if (error instanceof InterruptedTransport) return read
     ? 'Oncall could not be reached. The current view is still here.'
@@ -26,6 +26,7 @@ export function useActionFailure() {
   const [failure, setFailure] = useState<ActionFailure | null>(null);
   const current = useRef<ActionFailure | null>(null);
   const action = useRef<HTMLElement | null>(null);
+  const keyboardFocus = useRef<HTMLElement | undefined>(undefined);
   useEffect(() => {
     const capture = (event: Event) => {
       const element = event.target as HTMLElement;
@@ -33,6 +34,9 @@ export function useActionFailure() {
       const form = element.closest('form');
       const button = form?.querySelector<HTMLElement>('button[type="submit"], button:not([type])') ?? element.closest('button');
       action.current = button?.parentElement ?? form ?? null;
+      const active = document.activeElement;
+      keyboardFocus.current = active instanceof HTMLElement && active.matches(':focus-visible') &&
+        (active === button || form?.contains(active)) ? active : undefined;
     };
     document.addEventListener('submit', capture, true);
     document.addEventListener('click', capture, true);
@@ -42,7 +46,9 @@ export function useActionFailure() {
     if (options.read && current.current && !current.current.read) return;
     const reason = failureMessage(error, options.read);
     const message = /[.!?]$/.test(reason) ? reason : reason + '.';
-    const next = {read: options.read, saved: options.saved, retryLabel: options.retryLabel, message: message + (!options.read && !options.retry && error instanceof InterruptedTransport ? ' Check the current records before trying this action again.' : ''), target: options.target === undefined ? action.current : options.target, retry: options.retry};
+    const target = options.target === undefined ? action.current : options.target;
+    const focus = target === action.current ? keyboardFocus.current : undefined;
+    const next = {read: options.read, saved: options.saved, retryLabel: options.retryLabel, message: message + (!options.read && !options.retry && error instanceof InterruptedTransport ? ' Check the current records before trying this action again.' : ''), target, focus, retry: options.retry};
     current.current = next; setFailure(next);
   }
   return {failure, show, clear: () => {current.current = null; setFailure(null);}, action, current};
@@ -53,12 +59,18 @@ export function FailureLine({failure}: {failure: ActionFailure | null}) {
   const [retrying, setRetrying] = useState(false);
   useEffect(() => {
     if (!failure || failure.read || !line.current) return;
+    // Disabling a form during a write can drop focus. Keep a user's later
+    // focus choice if they have already moved to another control.
+    const focus = failure.focus;
+    if (focus?.isConnected && !focus.matches(':disabled') && document.activeElement === document.body) {
+      focus.focus({preventScroll: true});
+    }
     const box = line.current.getBoundingClientRect();
     if (box.top < 0 || box.bottom > window.innerHeight) line.current.scrollIntoView({block: 'center'});
   }, [failure]);
   if (!failure) return null;
   const content = <div className={failure.read ? 'failure-line read-failure' : 'failure-line'} role="alert" ref={line}>
-    <span>{failure.message}{failure.saved && <><br />Saved: {failure.saved}</>}</span>
+    <span>{failure.message}{failure.saved && <><br />Current record: {failure.saved}</>}</span>
     {failure.retry && <button type="button" disabled={retrying} onClick={async () => {
       setRetrying(true);
       try {await failure.retry?.();} catch { /* The retained failure still describes the unsuccessful retry. */ } finally {setRetrying(false);}

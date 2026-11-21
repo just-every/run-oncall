@@ -1,12 +1,10 @@
-/* The workspace sign-in door (/signin/local): the form on the left like the hero's copy, the hero's
-   hands passing the now and next badges to its right. */
+/* Keep the colleague sign-in focused on the installation and its form. */
 .oc-door {
-  max-width: var(--oc-max);
+  max-width: 672px;
   margin: 0 auto;
   padding: 88px var(--oc-gutter) 96px;
   display: grid;
-  grid-template-columns: minmax(0, 560px) minmax(0, 1fr);
-  gap: 64px;
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
 }
 .oc-door h1 { margin: 0; font-size: clamp(44px, 5vw, 72px); line-height: 1.02; font-weight: 760; letter-spacing: -0.042em; text-wrap: balance; }
@@ -21,6 +19,7 @@
   background: var(--oc-surface);
   box-shadow: var(--oc-shadow-card);
 }
+.oc-door-installation { margin: 0 0 24px; font-size: 20px; font-weight: 650; overflow-wrap: anywhere; }
 .oc-door form { margin: 0; }
 .oc-door fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
 .oc-door .field { display: grid; gap: 8px; margin: 0 0 22px; }
@@ -82,14 +81,10 @@
 .oc-door-confirm input { flex: none; width: 20px; height: 20px; margin: 3px 0 0; accent-color: var(--oc-ink); }
 .oc-door-reload { margin-top: 18px; padding: 4px 0; border: 0; background: none; color: var(--oc-ink); font: inherit; text-decoration: underline; cursor: pointer; }
 .oc-door-confirm input:focus-visible, .oc-door-reload:focus-visible { outline: 2px solid var(--oc-ink); outline-offset: 3px; }
-.oc-door-board { position: relative; min-width: 0; margin: 96px calc(-1 * var(--bleed)) 0 0; }
-.oc-door-sample { margin: 0 0 16px; padding: 0 var(--oc-gutter); color: var(--oc-muted); font-size: 14px; text-align: center; }
 
-/* Tablet and phone, as the hero stacks: the form first, then the board up close. */
 @media (max-width: 1179px) {
   .oc-door { grid-template-columns: 1fr; padding-top: 48px; padding-bottom: 64px; gap: 28px; }
   .oc-door-copy { max-width: 600px; }
-  .oc-door-board { width: min(calc(100% + var(--bleed)), 760px); margin: 24px calc(-1 * var(--bleed)) 0 auto; }
 }
 @media (max-width: 599px) {
   .oc-door { padding-top: 40px; }
@@ -97,8 +92,6 @@
   .oc-door-line { margin-top: 16px; font-size: 18px; }
   .oc-door-links { font-size: 16px; }
   .oc-door-card { margin-top: 28px; padding: 24px 20px 22px; }
-  /* Phones: the drawing spans the screen and crops at both edges. */
-  .oc-door-board { width: calc(100% + var(--bleed) + var(--oc-gutter)); margin: 24px calc(-1 * var(--bleed)) 0 calc(-1 * var(--oc-gutter)); }
   .oc-door .primary { width: 100%; }
   .oc-door-restore { font-size: 16px; }
 }

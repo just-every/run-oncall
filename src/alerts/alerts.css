@@ -22,6 +22,15 @@
 .alert-runbook li { margin: 10px 0; }
 .alert-page input,.alert-page select,.alert-page textarea { min-height: 44px; }
 .alert-page small { font-size: 13px; }
+.alert-notifications { margin: 24px 0; }
+.alert-notifications h3 { margin: 0 0 12px; font-size: 18px; }
+.alert-notifications p { margin: 6px 0; }
+.alert-notification-rules { padding: 0; margin: 16px 0; list-style: none; }
+.alert-notification-rules > li { padding: 12px 0; border-block-start: 1px solid var(--oc-line); }
+.alert-notification-title { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; }
+.alert-notification-rules p { font-size: 13px; line-height: 1.5; color: var(--oc-ink-soft); }
+.alert-notification-state { font-size: 13px; font-weight: 600; }
+.alert-notification-state.is-answered { color: var(--oc-done-ink); }
 @media(max-width: 700px) {
  .alerts-workspace.has-alert { display: block; }
  .alerts-workspace.has-alert > .alert-list { display: none; }

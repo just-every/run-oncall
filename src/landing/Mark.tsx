@@ -1,3 +1,4 @@
+import { installationName } from "../identity";
 // Oncall's mark: a name badge on its lanyard and clip, the one on call now. Standalone on any ground;
 // public/brand/mark.svg is the same drawing as a file.
 export function Mark({ size = 30 }: { size?: number }) {
@@ -16,9 +17,9 @@ export function Mark({ size = 30 }: { size?: number }) {
 
 export function Wordmark() {
   return (
-    <a className="oc-wordmark" href="/" aria-label="Oncall home">
+    <a className="oc-wordmark" href="/" data-installation-home aria-label={`${installationName()} home`}>
       <Mark />
-      <span>Oncall</span>
+      <span data-installation-name>{installationName()}</span>
     </a>
   );
 }

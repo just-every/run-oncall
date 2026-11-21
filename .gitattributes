@@ -1,0 +1,10 @@
+# Keep independently added browser assertions together.
+tests/agent-door-browser.mjs merge=union
+# Keep independently added agent flow checks together.
+tests/oncall-agent-flow.mjs merge=union
+# Keep independently added agent fixtures together.
+tests/oncall-agent-fixtures.mjs merge=union
+# Keep both rounds' added product browser assertion blocks.
+tests/product-browser-journey.mjs merge=union
+# Keep both rounds' added triage assertion blocks.
+tests/triage.mjs merge=union

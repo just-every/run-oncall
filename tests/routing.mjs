@@ -1,3 +1,4 @@
+import {isDeepStrictEqual} from 'node:util'
 import {createHmac,createHash,randomBytes} from 'node:crypto'
 import assert from 'node:assert/strict'
 import {localWorker,durableSnapshot} from './worker.mjs'
@@ -255,6 +256,83 @@ export async function rateJourney(w,cookie,actor) {
  // Management has current-member authority and optimistic publication semantics.
  ok(await w.request('/api/intake/allowances',{id:'intake:rate-main',requests:2,events:2,revision:state.revision}),401);
  ok(await req('/api/intake/allowances',{id:'intake:rate-main',requests:2,events:2,revision:state.revision}),409);
+
+ const nativeAt=Date.now();
+ await w.time(nativeAt);
+ const prepareNativeKey=async(id,routed)=>{
+  const credential='synthetic-oncall-'+secret();
+  const source=routed?'intake:'+id:id;
+  const policyId=routed?source:'source:'+source;
+  if(routed)ok(await configure(id,credential),201);
+  else ok(await req('/api/sources',{id,key:credential,scopes:['payments']}));
+  const {revision}=ok(await req('/api/state'));
+  ok(await req('/api/intake/allowances',{id:policyId,requests:3,events:120,revision}));
+  const trigger={...event(id),source,service:'payments',environment:'production',observedAt:new Date(nativeAt).toISOString()};
+  return {
+   trigger,
+   post:(input=trigger)=>send(input,credential,'/api/ingress/'+source),
+   usage:()=>w.sql(`SELECT at,requests,events FROM oc_key_rate_usage WHERE key_id='${policyId}' ORDER BY at`),
+   notices:async()=>ok(await req('/api/state')).audit.filter(entry=>entry.kind==='intake-throttled'&&entry.actor==='source:'+policyId),
+  };
+ };
+ const custody=async()=>{
+  const {workspaceRevision,...paging}=ok(await req('/api/paging/state'));
+  return {grouped:await protectedState(),paging,outbound:await w.outboundRequests()};
+ };
+ for(const [id,routed] of [['native-service-requests',false],['native-routed-requests',true]]) {
+  const native=await prepareNativeKey(id,routed);
+  const other=await prepareNativeKey(id+'-isolation',routed);
+  const usage=requests=>[{at:nativeAt,requests,events:1}];
+  assert.deepEqual(native.usage(),[]);
+  const accepted=await native.post(),admitted=ok(accepted,201);
+  assert.equal(admitted.duplicate,false);
+  assert.deepEqual(native.usage(),usage(1));
+  const held=await custody();
+  assert.ok(held.grouped.alerts.some(alert=>alert.events.includes(admitted.id)));
+  if(routed)assert.ok(held.grouped.intakeReceipts.some(receipt=>receipt.id===admitted.id&&receipt.event===admitted.id));
+  assert.equal(held.paging.paging,'OFF');
+  assert.deepEqual(held.outbound,[]);
+  const retry=await native.post();
+  assert.deepEqual(ok(retry),{...admitted,duplicate:true});
+  assert.deepEqual(native.usage(),usage(2));
+  assert.deepEqual(await custody(),held);
+
+  const observation={...native.trigger,eventId:native.trigger.eventId+'-next'};
+  const rejected=await native.post({...observation,source:'synthetic-oncall-mismatched'});
+  assert.match(ok(rejected,403).error,/"source" must match/);
+  const afterRejection=native.usage();
+  assert.deepEqual(afterRejection,usage(3));
+  assert.deepEqual(await native.notices(),[]);
+  assert.deepEqual(await custody(),held);
+
+  const throttled=await native.post(observation),retryAfter=throttled.headers.get('retry-after');
+  assert.match(ok(throttled,429).error,/Key requests allowance exceeded/);
+  assert.equal(retryAfter,'60');
+  assert.deepEqual(native.usage(),usage(4));
+  const notices=await native.notices();
+  assert.equal(notices.length,1);
+  assert.equal(notices[0].at,new Date(nativeAt).toISOString());
+  const keyName=routed?'Rate boundary '+id:id;
+  assert.ok(notices[0].text.includes(`Integration owner ${actor.id}: key ${keyName} throttled at 4 requests`));
+  assert.deepEqual(await custody(),held);
+  const repeatedThrottle=await native.post(observation);
+  ok(repeatedThrottle,429);
+  assert.equal(repeatedThrottle.headers.get('retry-after'),retryAfter);
+  assert.deepEqual(await native.notices(),notices);
+  assert.deepEqual(native.usage(),usage(5));
+  assert.deepEqual(await custody(),held);
+
+  const isolated=await other.post();
+  const isolatedReceipt=ok(isolated,201);
+  assert.deepEqual(other.usage(),usage(1));
+  assert.ok((await protectedState()).alerts.some(alert=>alert.events.includes(isolatedReceipt.id)));
+  assert.deepEqual(native.usage(),usage(5));
+  assert.deepEqual(await w.outboundRequests(),held.outbound);
+  console.log(`PROBE OC-084 2 ${id}: ${accepted.status}, ${retry.status}, ${rejected.status}; `+
+   `${JSON.stringify(afterRejection[0])}; ${throttled.status} Retry-After=${retryAfter}; `+
+   `${notices.length} notice at 4 requests; repeated ${repeatedThrottle.status}; `+
+   `unchanged grouped records, receipts and paging; zero outbound; other key ${isolated.status}`);
+ }
  await w.time(Date.now());
  console.log('PASS OC-084 per-record rolling allowances: default 121st event, other-key isolation, duplicate request boundary, rotation, exact-window recovery, owner notices, pre-grouping and incomplete refusal, checkpoint policy custody');
 }
@@ -310,7 +388,7 @@ const platformFetch=globalThis.fetch;
 globalThis.fetch=(input,init={})=>{const headers=new Headers(init.headers??(input instanceof Request?input.headers:undefined));headers.set('connection','close');return platformFetch(input,{...init,headers});};
 
 // One public Worker journey: real admission, replay, authority and archive doors.
-const w=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'},{clock:true}),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
+const w=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'},{clock:true,outboundLedger:true}),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
 const secret=()=>randomBytes(32).toString('hex'),keys={pd:secret(),og:secret(),sp:secret()};
 let cookie;
 const req=(path,data)=>w.request(path,data,cookie);
@@ -355,10 +433,36 @@ try {
  const declared=ok(await req('/api/command',{type:'declare',service:'payments',severity:'critical',title:'Nightly customer impact',summary:'Source recovery is separate',alerts:[web.alert]}));
  await mail(w,local,'OK: nightly-web');assert.equal(ok(await req('/api/state')).incidents.find(i=>i.id===declared.id).state,'declared');
  await mail(w,second,'FAILED: nightly-db');assert.notEqual(ok(await req('/api/email')).receipts.at(-1).generation,db.generation);
- await mail(w,local,'Unmatched failure');assert.equal(ok(await req('/api/email')).receipts.at(-1).outcome,'opened');
- const draft={revision:1,mode:'custom',fallback:'quarantine',rules:recoveryRules()};
- const beforeWorkspace=ok(await req('/api/archive')),beforeReplay=w.sql('SELECT COUNT(*) AS n FROM oc_admin_audit')[0].n;
- const replay=ok(await req('/api/email/addresses/nightly/preview',{...draft,samples:email.samples.filter(s=>s.address==='nightly').map(s=>s.id)}));assert.equal(replay.sideEffects,false);assert.equal(replay.decisions.length,4);assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_admin_audit')[0].n,beforeReplay);assert.deepEqual(ok(await req('/api/archive')),beforeWorkspace);
+ await mail(w,local,'Unmatched failure');
+ email=ok(await req('/api/email'));
+ assert.equal(email.receipts.at(-1).outcome,'opened');
+ const savedMail=email.samples.filter(s=>s.address==='nightly');
+ assert.equal(savedMail.length,6,'all admitted samples on this address enter the comparison');
+ const publishedEmail=email.versions.find(v=>v.address==='nightly');
+ assert.equal(publishedEmail.fallback,'subject');
+ const draft={revision:1,mode:publishedEmail.mode,fallback:'quarantine',rules:publishedEmail.rules};
+ const beforeWorkspace=ok(await req('/api/archive')),pagingBeforeEmailPreview=ok(await req('/api/paging/state'));
+ const beforeReplay=durableSnapshot(w),outboundBeforeEmailPreview=await w.outboundRequests();
+ const replay=ok(await req('/api/email/addresses/nightly/preview',{...draft,samples:savedMail.map(s=>s.id)}));
+ assert.equal(replay.sideEffects,false);
+ assert.deepEqual(replay.decisions.map(row=>row.sample),savedMail.map(s=>s.id));
+ for(const row of replay.decisions) {
+  const archived=beforeWorkspace.emailReceipts.find(r=>r.sample===row.sample);
+  assert.deepEqual(row.historical,archived.decision);
+  assert.equal(row.historical.version,publishedEmail.version);
+  if(row.historical.rule)assert.deepEqual(row.proposed,{...row.historical,version:publishedEmail.version+1});
+ }
+ const unmatchedMail=savedMail.find(sample=>sample.subject==='Unmatched failure');
+ const fallbackDecisions=replay.decisions.find(row=>row.sample===unmatchedMail.id);
+ assert.deepEqual([fallbackDecisions.historical.mode,fallbackDecisions.historical.rule,fallbackDecisions.historical.key,fallbackDecisions.historical.action],
+  ['custom',null,'Unmatched failure','trigger']);
+ assert.deepEqual([fallbackDecisions.proposed.mode,fallbackDecisions.proposed.version,fallbackDecisions.proposed.rule,fallbackDecisions.proposed.key,fallbackDecisions.proposed.action],
+  ['custom',publishedEmail.version+1,null,null,'quarantine']);
+ assert.deepEqual(ok(await req('/api/paging/state')),pagingBeforeEmailPreview);
+ assert.ok(isDeepStrictEqual(durableSnapshot(w),beforeReplay),'draft replay changes no durable records or audit');
+ assert.deepEqual(ok(await req('/api/archive')),beforeWorkspace);
+ assert.deepEqual(await w.outboundRequests(),outboundBeforeEmailPreview);
+ console.log('PASS saved email draft replay: current samples, archived decisions, proposed quarantine, unchanged durable and paging state');
  ok(await req('/api/email/addresses/nightly/publish',draft));await mail(w,local,'Unmatched quarantine');assert.equal(ok(await req('/api/email')).receipts.at(-1).diagnostic,'no_rule_matched');
  const pathological={id:'linear',action:'trigger',match:'all',conditions:[{field:'text',op:'matches',value:'^(a+)+$'}],key:{field:'subject',kind:'markers',start:'[',end:']'}};
  ok(await req('/api/email/addresses/nightly/publish',{revision:2,mode:'custom',fallback:'subject',rules:[pathological]}));await mail(w,local,'Pathological input',{body:'a'.repeat(128*1024)+'!'});assert.equal(ok(await req('/api/email')).receipts.at(-1).outcome,'opened');

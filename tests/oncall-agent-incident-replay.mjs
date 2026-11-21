@@ -3,9 +3,9 @@ import {randomUUID} from 'node:crypto';
 import {agentEffectSnapshot} from './agent-door-runtime.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 
-/** A completed reassignment rejects a changed reason and retains its first outcome. */
-export async function changedReassignmentReasonConflict(runtime){
- const {db,http,tool,adopt,context}=runtime;
+/** A completed reassignment rejects a changed reason and exposes its saved incident. */
+export async function changedReassignmentReasonConflict(runtime,{observe=async()=>{}}={}){
+ const {db,http,tool,adopt,context,completeResource}=runtime;
  const read=async path=>{const response=await http(path);assert.equal(response.status,200);return response.json()};
  const command=async input=>{const response=await http('/api/command',input);assert.equal(response.status,200);return response.json()};
  const rows=async(sql,...values)=>(await db.prepare(sql).bind(...values).all()).results;
@@ -19,8 +19,13 @@ export async function changedReassignmentReasonConflict(runtime){
   let incident=await command({type:'declare',service:'agent-service',title:'Synthetic reassignment reason conflict '+mode,
    summary:'Native coordination without protected evidence',severity:'warning',alerts:[]});
   incident=await command({type:'transition',incident:incident.id,revision:incident.revision,state:'acknowledged',summary:'Synthetic current assignee'});
+  for(const role of ['scribe','communications']){
+   incident=await command({type:'assign-role',incident:incident.id,revision:incident.revision,role,member:owner.id,reason:'Synthetic companion responsibility'});
+   assert.equal(incident[role],owner.id);
+  }
   const before=await snapshot(),pagingBefore=await read('/api/paging/state'),priorAudit=await audits();
   assert.equal(incident.assignee,owner.id);
+  assert.equal(incident.commander,owner.id);
   const assignee=before.application.members.find(row=>row.id===incident.assignee);
   const responder=before.application.members.find(row=>row.active&&row.role==='responder'&&row.id!==assignee.id);
   assert.ok(assignee.active);assert.ok(responder,'Reassignment must name an existing distinct active responder');
@@ -35,6 +40,7 @@ export async function changedReassignmentReasonConflict(runtime){
   assert.deepEqual(result,native);assert.deepEqual(once.application.incidents.find(row=>row.id===incident.id),native);
   assert.equal(result.assignee,responder.id);assert.notEqual(result.assignee,incident.assignee);
   assert.equal(result.commander,incident.commander);assert.equal(result.state,incident.state);
+  assert.equal(result.scribe,incident.scribe);assert.equal(result.communications,incident.communications);
   assert.equal(result.revision,args.revision+1);assert.equal(once.application.revision,before.application.revision+1);
   assert.equal(once.records.workspace_control[0].revision,before.records.workspace_control[0].revision+1);
   assert.equal(once.application.incidents.length,before.application.incidents.length);
@@ -109,6 +115,50 @@ export async function changedReassignmentReasonConflict(runtime){
   }
   assert.deepEqual(await runtime.outboundRequests(),[],'Reassignment, changed reason and exact retry attempt zero outbound requests');
   console.log('PROBE BASE-AGENT-012 acceptance 3 '+mode+' reassignment: one standard-only agent-attributed assignment to a distinct active responder, one incident and workspace revision and native audit commit; original key and revision with changed reason -> isError idempotency_conflict in metadata and text, no private result; exact original arguments with new RPC id -> saved result and original review; native effect custody and paging unchanged; attributed refusal and linked replay audit only; zero outbound requests');
+
+  // Follow the link from the original successful response as the same MCP agent.
+  const links=first.result.content.filter(row=>row.type==='resource_link');
+  assert.equal(links.length,1);
+  const [link]=links;
+  const {initial,answer,content,value}=await completeResource(link.uri);
+  assert.equal(initial,answer,'The evidence-free incident read completes without an approval');
+  assert.equal(content.uri,link.uri);
+  assert.deepEqual(answer.decision.classes.map(row=>row.class),['standard']);
+  assert.equal(answer.decision.disposition,disposition);
+  assert.notEqual(answer.decision.id,first.decision.id);
+  assert.deepEqual(value,result,'The original link returns the full committed reassignment');
+  assert.deepEqual(value,(await read('/api/state')).incidents.find(row=>row.id===incident.id));
+  const afterRead=await snapshot();
+  const {agent_door_reviews:afterReviews,agent_door_usage:afterUsage,...afterRecords}=afterRead.records;
+  const {agent_door_reviews:beforeReviews,agent_door_usage:beforeUsage,...beforeRecords}=once.records;
+  assert.deepEqual(afterRead.application,once.application);
+  assert.deepEqual(afterRecords,beforeRecords,'The read preserves native records, revisions, state-changing audit, paging, approvals and saved calls');
+  assert.deepEqual(afterUsage.filter(row=>row.decision_id!==answer.decision.id),beforeUsage);
+  const usage=afterUsage.filter(row=>row.decision_id===answer.decision.id);
+  assert.equal(usage.length,1);assert.equal(usage[0].agent,context.agentId);
+  assert.deepEqual(await read('/api/paging/state'),pagingOnce);
+  const readReview=answer.result._meta['com.runeditrun/review'];
+  if(mode==='held'){
+   assert.ok(readReview?.id);
+   assert.notEqual(readReview.id,stored.review.id);
+   const added=afterReviews.find(row=>row.id===readReview.id);
+   assert.equal(added?.state,'open');
+   assert.equal(JSON.parse(added.saved).decision_id,answer.decision.id);
+   assert.deepEqual(afterReviews.filter(row=>row.id!==readReview.id),beforeReviews,'The original open write review is unchanged');
+  }else{
+   assert.equal(readReview,undefined);
+   assert.deepEqual(afterReviews,beforeReviews);
+  }
+  const readAudit=await audits();
+  assert.deepEqual(readAudit.slice(0,-1),retried);
+  assert.equal(readAudit.length,retried.length+1);
+  const receipt=JSON.parse(readAudit.at(-1).row);
+  assert.equal(receipt.id,answer.decision.id);assert.equal(receipt.outcome,'done');
+  assert.equal(receipt.tool,'resources/read');assert.equal(receipt.resource,link.uri);
+  assert.equal(receipt.agent.id,context.agentId);assert.equal(receipt.sponsor.id,owner.id);
+  assert.deepEqual(await runtime.outboundRequests(),[]);
+  await observe({mode,saved:value,assignee,responder,reason:args.reason,agentLabel:entry.metadata.agent.agent.name+' for '+owner.name});
+  console.log('PROBE BASE-AGENT-003 4 '+mode+': original reassignment link -> full write and protected native state equality, new assignee and attributed timeline, unchanged companion roles; '+(mode==='held'?'separate open read review and original write review unchanged':'autonomous read without review')+'; native records, revisions, state-changing audit and paging unchanged; zero outbound requests');
  }
  assert.equal((await adopt()).status,200);
 }
