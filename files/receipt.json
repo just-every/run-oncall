@@ -1,0 +1,191 @@
+{
+  "acceptance_point": 4,
+  "advertised_product_head": "900509be411168d03ee9f6817b1032c7f7e348bd",
+  "base_main": "a88277234a1c53ac983f6df2f90a7a8bd6d684a6",
+  "before_after_counts": {
+    "after": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41
+    },
+    "before": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41
+    }
+  },
+  "branch": "cloud/sd-oncall-c-f331",
+  "browser": {
+    "assertion_width": 1440,
+    "candidate_delta": [
+      "CONTRACT.md",
+      "sources.lock.json"
+    ],
+    "chromium": "Chromium 154.0.8037.57 built on Debian GNU/Linux 13 (trixie)",
+    "command": "node tests/agent-door-browser.mjs",
+    "exit": 0,
+    "head": "cacaaf6a3f98a15eeac49e587515cc510474b01c",
+    "lines": [
+      "Browser proof override-coverage-autonomous 1440: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof override-coverage-autonomous 390: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof override-coverage-held 1440: fits=true serious/critical=0 undersized-controls=0",
+      "Browser proof override-coverage-held 390: fits=true serious/critical=0 undersized-controls=0",
+      "PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements"
+    ],
+    "runtime_observations": [
+      "PROBE BASE-AGENT-003 4 override autonomous: completed resource link matches native rota revision 3, active primary override and unchanged backup with two current holders, direct read, zero native changes or outbound requests",
+      "PROBE BASE-AGENT-003 4 override held: completed resource link matches native rota revision 3, active primary override and unchanged backup with two current holders, separate saved read approval, zero native changes or outbound requests"
+    ],
+    "screens": [
+      {
+        "file": "agent-door-override-coverage-autonomous-1440.png",
+        "height": 3837,
+        "mode": "autonomous",
+        "sha256": "87b3458f337a789fd4fdec31757c9ad742156b46cb84fb2e5278079b5f5ffe11",
+        "width": 1440
+      },
+      {
+        "file": "agent-door-override-coverage-autonomous-390.png",
+        "height": 4254,
+        "mode": "autonomous",
+        "sha256": "7659d40239182b65b5bee75bbed1d41048d5bbc94975969b9579f81996fc3ec5",
+        "width": 390
+      },
+      {
+        "file": "agent-door-override-coverage-held-1440.png",
+        "height": 3837,
+        "mode": "held",
+        "sha256": "ed3d483008ada8ece1077dd7582b011a78c0bdf6fd790a00158c64bdf72fa547",
+        "width": 1440
+      },
+      {
+        "file": "agent-door-override-coverage-held-390.png",
+        "height": 4254,
+        "mode": "held",
+        "sha256": "5acafac01d10a6a951ea866d8bb1c521ca8f23bdb0f05b4d6cb15f8f88c478e6",
+        "width": 390
+      }
+    ]
+  },
+  "clause": "BASE-AGENT-003",
+  "contract_status": "missing",
+  "head": "900509be411168d03ee9f6817b1032c7f7e348bd",
+  "landing": {
+    "mainEqualsCandidate": false,
+    "run_site": "fleet lander pending"
+  },
+  "mechanical": {
+    "build_command": "npx -y @runeditrun/rer build",
+    "build_exit": 0,
+    "build_head": "900509be411168d03ee9f6817b1032c7f7e348bd",
+    "candidate_identity_inspection": "pass",
+    "contract_candidate_diff": false,
+    "first_party_command": "pnpm exec rer check --profile first-party",
+    "first_party_exit": 0,
+    "full_commit_history": true,
+    "generated_views_in_candidate": false,
+    "git_diff_check": 0,
+    "ledger": "no migration changes",
+    "lock_commands": [
+      "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check"
+    ],
+    "lock_exit": 0,
+    "lock_sha256": "b7a6aa29edbd084439686d6fd365da333ca8590316b6da812a511b986c2bb154",
+    "planning_command": "node scripts/verify-oncall.mjs --plan",
+    "planning_exit": 0,
+    "typecheck_command": "pnpm typecheck",
+    "typecheck_exit": 0,
+    "views_commands": [
+      "node src/base/contract-docs.mjs write",
+      "node src/base/contract-docs.mjs check"
+    ],
+    "views_exit": 0
+  },
+  "prior_main_ci": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "513ec690f92432d5e78f67c1f23374d56954ddf7",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44942410760",
+      "id": 44942410760,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "513ec690f92432d5e78f67c1f23374d56954ddf7",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44942410761",
+      "id": 44942410761,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "513ec690f92432d5e78f67c1f23374d56954ddf7",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44940687003",
+      "id": 44940687003,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "a88277234a1c53ac983f6df2f90a7a8bd6d684a6",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44944251462",
+      "id": 44944251462,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "a88277234a1c53ac983f6df2f90a7a8bd6d684a6",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44944251302",
+      "id": 44944251302,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "a88277234a1c53ac983f6df2f90a7a8bd6d684a6",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44942656646",
+      "id": 44942656646,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "publication_scan": {
+    "commit": "900509be411168d03ee9f6817b1032c7f7e348bd",
+    "complete": null,
+    "findings": null,
+    "historyScanned": null,
+    "status": "fleet lander pending"
+  },
+  "repository": "just-every/run-oncall",
+  "runtime": {
+    "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+    "exit": 0,
+    "lines": [
+      "PROBE BASE-AGENT-003 4 override autonomous: completed resource link matches native rota revision 3, active primary override and unchanged backup with two current holders, direct read, zero native changes or outbound requests",
+      "PROBE BASE-AGENT-003 4 override held: completed resource link matches native rota revision 3, active primary override and unchanged backup with two current holders, separate saved read approval, zero native changes or outbound requests",
+      "Runtime agents completed (743.2s)"
+    ],
+    "provenance": "Early local runtime run. The signed-in browser journey reruns the same fixture with the rebuilt Worker."
+  },
+  "scope": "first returned coverage resource link after a completed primary schedule override",
+  "tag": "sd-oncall-c-f331",
+  "verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_branch": "cloud/sd-oncall-c-f331",
+    "head_sha": "900509be411168d03ee9f6817b1032c7f7e348bd",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44944812907",
+    "id": 44944812907,
+    "name": "Verify",
+    "status": "completed"
+  }
+}

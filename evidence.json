@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "6719d30c7e3f0c28a887a96235312bd6a8644252",
+      "bytes": 7640,
+      "path": "REPORT.md",
+      "sha256": "ff4d4373b7c19140e9ffd15598484099c7e34510c7ef35ed3fec9b68422d3cfd"
+    },
+    {
+      "blob": "9654d24384aec3a205673dfd11b88d774bf8d0d6",
+      "bytes": 372360,
+      "path": "agent-door-override-coverage-autonomous-1440.png",
+      "sha256": "87b3458f337a789fd4fdec31757c9ad742156b46cb84fb2e5278079b5f5ffe11"
+    },
+    {
+      "blob": "9116f063c5467e3784a03c8636cc2a637eb9c742",
+      "bytes": 300485,
+      "path": "agent-door-override-coverage-autonomous-390.png",
+      "sha256": "7659d40239182b65b5bee75bbed1d41048d5bbc94975969b9579f81996fc3ec5"
+    },
+    {
+      "blob": "a0a8d95e63e5439397887caef6c78698d506b6e1",
+      "bytes": 368750,
+      "path": "agent-door-override-coverage-held-1440.png",
+      "sha256": "ed3d483008ada8ece1077dd7582b011a78c0bdf6fd790a00158c64bdf72fa547"
+    },
+    {
+      "blob": "9b3f90c1e684e06a1e77dc302e42f9965289c6b7",
+      "bytes": 296237,
+      "path": "agent-door-override-coverage-held-390.png",
+      "sha256": "5acafac01d10a6a951ea866d8bb1c521ca8f23bdb0f05b4d6cb15f8f88c478e6"
+    },
+    {
+      "blob": "f0bf80b78f8b6989f01742d7cf4ed8d841c549b5",
+      "bytes": 7433,
+      "path": "receipt.json",
+      "sha256": "6d85cf0e654a3dd97746cee70cd2c61d059a69437f118463c0426cc65d27e449"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f331",
+  "product_head": "900509be411168d03ee9f6817b1032c7f7e348bd",
+  "ref": "refs/heads/evidence/sd-oncall-c-f331",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f331"
+}
