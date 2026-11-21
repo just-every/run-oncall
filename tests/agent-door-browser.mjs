@@ -197,6 +197,41 @@ try{
   assert.deepEqual(await agentEffectSnapshot(runtime),before,'Viewing the saved reassignment changes no durable records');
   assert.deepEqual(await runtime.outboundRequests(),[]);
  }});
+ const overrideRotas=await staleOverrideRevision(runtime);
+ const beforeOverrideViews=await agentEffectSnapshot(runtime);
+ try{
+  for(const {mode,schedule,coverage} of overrideRotas){
+   await runtime.time(coverage.at);
+   const loaded=page.waitForResponse(response=>new URL(response.url()).pathname===coverage.path&&response.ok());
+   await capture('override-coverage-'+mode,'/on-call/'+schedule.id,async()=>{
+    await page.getByRole('heading',{name:schedule.name,exact:true,level:1}).waitFor();
+    const panel=page.locator('.scheduling-now-next');
+    await panel.locator('.now').last().waitFor();
+    if(page.viewportSize().width===1440){
+     assert.deepEqual(await (await loaded).json(),coverage.nowNext,'The rota uses the same native now and next at the frozen instant');
+     const name=id=>coverage.people.find(row=>row.id===id).name;
+     assert.deepEqual(await panel.locator('.scheduling-now-role h3').allTextContents(),['primary','backup']);
+     assert.deepEqual(await panel.locator('.now').allTextContents(),[
+      'Now: '+name(coverage.nowNext.now.primary),
+      'Now: '+name(coverage.nowNext.now.backup),
+     ]);
+     const rows=panel.locator('.scheduling-now-role');
+     for(const [index,window] of coverage.nowNext.now.windows.entries()){
+      const explanation=window.explanation??coverage.nowNext.now.warnings.filter(row=>row.startsWith(window.role+':')).join('; ');
+      assert.equal(await rows.nth(index).locator('.scheduling-rule').first().innerText(),explanation);
+     }
+     assert.ok(await panel.evaluate(node=>[...node.querySelectorAll('h2,h3,p')].every(el=>parseFloat(getComputedStyle(el).fontSize)>=13)));
+     const removeCover=page.getByRole('button',{name:'Remove cover',exact:true});
+     await removeCover.focus();
+     await page.getByRole('tooltip',{name:'Remove cover',exact:true}).waitFor();
+     await removeCover.blur();
+    }
+    await panel.scrollIntoViewIfNeeded();
+   });
+  }
+ }finally{await runtime.time(null)}
+ assert.deepEqual(await agentEffectSnapshot(runtime),beforeOverrideViews,'Viewing the current override coverage preserves native effects');
+ assert.deepEqual(await runtime.outboundRequests(),[]);
  const retainedRotas=await staleOverrideRevision(runtime,{optionalExpectedRevision:true});
  const reviewedRotas=await staleReviewedScheduleRevision(runtime);
  const beforeRotaReads=await agentEffectSnapshot(runtime),rotaOutbound=[];
