@@ -1250,7 +1250,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 | `oncall.triage.list` | Search, filter and save triage views | OC-060 | standard; sensitive when returned records contain personal or incident evidence | Read-only search and filters shipped; saved views not yet shipped |
 | `oncall.triage.bulk` | Apply one action to selected or matching items | OC-079 | standard (+ commitment) (+ live) | Not yet shipped |
 | `oncall.pages.create` | Page a service, a person or a policy, or request responders | OC-026, OC-068 | live | Not yet shipped · API (incidents) |
-| `oncall.schedules.update` | Change rotations, layers, overrides, holiday and PTO coverage | OC-011, OC-024, OC-077 | live | Shipped |
+| `oncall.schedules.update` | Change rotations, layers, overrides, holiday and PTO coverage | OC-011, OC-024, OC-077 | standard (+ sensitive) (+ live) | Shipped |
 | `oncall.schedules.create` | Create a native schedule within the granted service and team authority | OC-003, OC-011, OC-012, OC-024, OC-053 | standard (+ sensitive) (+ live) | Shipped |
 | `oncall.schedules.override` | Append a primary or backup override to a schedule | OC-003, OC-011, OC-012, OC-024, OC-053 | standard (+ sensitive) (+ live) | Shipped |
 | `oncall.schedules.read` | Read schedules within the granted service scope | OC-003, OC-011, OC-014, OC-053 | standard (+ sensitive) | Shipped |
