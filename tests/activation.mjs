@@ -174,7 +174,11 @@ export async function scheduleCoordination(){
   ok(await as(viewerCookie,request),403);ok(await as(outsiderCookie,request),409);
   let swap=ok(await coord(request)).record;
   ok(await as(outsiderCookie,{action:'accept',id:swap.id,revision:swap.revision}),403);
-  ok(await as(substituteCookie,{action:'accept',id:swap.id,revision:swap.revision}),403);
+  const unapprovedPaging=ok(await req('/api/paging/state'));
+  const earlyAcceptance=ok(await as(substituteCookie,{action:'accept',id:swap.id,revision:swap.revision}),403);
+  assert.match(earlyAcceptance.error,/Administrator approval is required/);
+  assert.deepEqual((await rows()).find(row=>row.id===swap.id),{...swap,status:'pending'});
+  assert.deepEqual(ok(await req('/api/paging/state')),unapprovedPaging,'the unapproved acceptance changes no assignment or paging state');
   ok(await as(outsiderCookie,{action:'approve',id:swap.id,revision:swap.revision}),403);
   swap=ok(await coord({action:'approve',id:swap.id,revision:swap.revision})).record;
   let racing=ok(await coord(request)).record;racing=ok(await coord({action:'approve',id:racing.id,revision:racing.revision})).record;

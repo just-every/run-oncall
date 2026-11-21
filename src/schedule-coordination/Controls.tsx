@@ -31,7 +31,8 @@ export function ScheduleCoordination({schedule,state,actor,onChanged,rotaPage=fa
    <p>{row.data.role} · {rotaPage?shortTime(row.data.start,schedule.timezone):row.data.start} → {rotaPage?shortTime(row.data.end,schedule.timezone):row.data.end} · {row.active?row.status:'restored inactive'} · {row.data.approved?'approval recorded':'admin approval required'}</p>
    {(canApprove||canRespond||canCancel)&&<div className="routing-actions">
     {canApprove&&<button disabled={busy} onClick={()=>send({action:'approve',id:row.id,revision:row.revision})}>Approve swap</button>}
-    {canRespond&&<><button disabled={busy} onClick={()=>send({action:'accept',id:row.id,revision:row.revision})}>Accept swap</button><button disabled={busy} onClick={()=>send({action:'decline',id:row.id,revision:row.revision})}>Decline swap</button></>}
+    {canRespond&&row.data.approved&&<button disabled={busy} onClick={()=>send({action:'accept',id:row.id,revision:row.revision})}>Accept swap</button>}
+    {canRespond&&<button disabled={busy} onClick={()=>send({action:'decline',id:row.id,revision:row.revision})}>Decline swap</button>}
     {canCancel&&<button disabled={busy} onClick={()=>send({action:'cancel',id:row.id,revision:row.revision})}>Cancel swap</button>}
    </div>}
   </article>;
