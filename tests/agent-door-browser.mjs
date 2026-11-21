@@ -4,7 +4,7 @@ import {mkdir} from 'node:fs/promises';
 import {chromium} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {agentRuntime,agentEffectSnapshot,agentReadSnapshot,assertAgentReadUnchanged,pauseMatrix} from './agent-door-runtime.mjs';
-import {declareFromAlertParity,acknowledgeParity,recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy,deadlineTarget} from './oncall-agent-fixtures.mjs';
+import {declareFromAlertParity,acknowledgeParity,resolutionParity,recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy,deadlineTarget} from './oncall-agent-fixtures.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-revisions.mjs';
 import {actionSubmitNativeRevision} from './oncall-agent-action-submit-native-revision.mjs';
@@ -182,6 +182,7 @@ try{
  console.log('PROBE BASE-AGENT-002 5 browser: Alert details button and MCP in both policies; saved incidents, runbooks and separate attribution read at 1440 and 390; zero outbound requests');
  console.log('PROBE BASE-AGENT-003 4 declaration browser: returned incidents under both policies -> saved declaration, copied runbook and agent attribution shown at 1440 and 390; zero outbound requests');
  await acknowledgmentBrowser(runtime,browser,capture);
+ await resolutionBrowser(runtime,browser,page,capture);
  await savedServiceRunbookBrowser(page,runtime.origin,await standardServiceRunbookUpdate(runtime));
  await page.setViewportSize({width:1440,height:1000});
  await changedReassignmentReasonConflict(runtime,{async observe({mode,saved,assignee,responder,reason,agentLabel}){
@@ -1059,6 +1060,83 @@ async function acknowledgmentBrowser(runtime,browser,capture) {
   assert.deepEqual(outbound,[]);
   console.log('PROBE BASE-AGENT-002 5 acknowledgment browser: real Acknowledge button and MCP in both policies; saved state, responsibility and attribution read at 1440 and 390; zero outbound requests');
  }finally{
+  await context.close();
+ }
+}
+
+async function resolutionBrowser(runtime, browser, sponsorPage, capture) {
+ const {member,cookie}=await runtime.memberSession('Synthetic resolution responder','responder');
+ const context=await browser.newContext({baseURL:runtime.origin,viewport:{width:1440,height:1000}});
+ await context.addCookies(cookie.split('; ').map(pair=>{
+  const at=pair.indexOf('=');
+  return {name:pair.slice(0,at),value:pair.slice(at+1),url:runtime.origin,httpOnly:true,sameSite:'Lax'};
+ }));
+ const outbound=[];
+ const recordOutbound=request=>{
+  const url=new URL(request.url());
+  if(['http:','https:'].includes(url.protocol)&&url.origin!==runtime.origin)outbound.push(url.origin);
+ };
+ context.on('request',recordOutbound);
+ sponsorPage.on('request',recordOutbound);
+ try{
+  const page=await context.newPage();
+  const pairs=await resolutionParity(runtime,member,async (incident,summary)=>{
+   await page.goto('/incidents/'+incident.id);
+   const next=page.getByRole('region',{name:'Next step',exact:true});
+   const resolve=next.getByRole('button',{name:'Resolve',exact:true});
+   await resolve.click();
+   await next.getByLabel('Resolution summary').fill(summary);
+   const [response]=await Promise.all([
+    page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().method()==='POST'),
+    resolve.click(),
+   ]);
+   assert.equal(response.status(),200);
+   assert.deepEqual(response.request().postDataJSON(),{
+    type:'transition',state:'resolved',incident:incident.id,revision:incident.revision,summary,evidence:incident.recovery,
+   });
+   return response.json();
+  },async (path,evidence,handle)=>{
+   await sponsorPage.goto(new URL(handle.url).pathname);
+   const approvePath=path+'/approve';
+   const [response]=await Promise.all([
+    sponsorPage.waitForResponse(response=>new URL(response.url()).pathname===approvePath&&response.request().method()==='POST'),
+    sponsorPage.getByRole('button',{name:'Approve',exact:true}).click(),
+   ]);
+   assert.equal(response.status(),200);
+   assert.deepEqual(response.request().postDataJSON(),evidence);
+   await sponsorPage.locator('[data-approval-state="executed"]').waitFor();
+  });
+  const before=await agentEffectSnapshot(runtime);
+  for(const {mode,human,agent,humanLabel,agentLabel,sponsorName,summary} of pairs){
+   for(const [door,incident,label] of [['person',human,humanLabel],['agent',agent,agentLabel]]){
+    await capture('native-resolution-'+mode+'-'+door,'/incidents/'+incident.id,async()=>{
+     const detail=page.locator('.detail');
+     await detail.getByRole('heading',{name:incident.title,exact:true}).waitFor();
+     const state=(await detail.locator('.incident-state').textContent()).trim();
+     const recovery=await detail.getByRole('link',{name:'Recovery evidence',exact:true}).getAttribute('href');
+     const entry=detail.getByRole('region',{name:'Timeline',exact:true}).getByRole('listitem').filter({hasText:summary});
+     const attribution=await entry.locator('small').textContent();
+     if(page.viewportSize().width===1440){
+      assert.equal(state,'Resolved');
+      assert.equal(recovery,incident.recovery);
+      assert.equal(attribution,label);
+      const approval=entry.getByText('Approved by: '+sponsorName,{exact:true});
+      assert.equal(await approval.count(),Number(mode==='held'&&door==='agent'));
+      const actions=detail.getByRole('button',{name:'Incident actions',exact:true});
+      await actions.focus();
+      await page.getByRole('tooltip',{name:'Incident actions',exact:true}).waitFor();
+      await actions.blur();
+     }
+     console.log('Resolution readback '+mode+' '+door+' '+page.viewportSize().width+': '+[state,summary,recovery,attribution].join(' | '));
+    },runtime,page);
+   }
+  }
+  assert.deepEqual(await agentEffectSnapshot(runtime),before,'Reading saved resolutions preserves native and paging custody');
+  assert.deepEqual(await runtime.outboundRequests(),[]);
+  assert.deepEqual(outbound,[]);
+  console.log('PROBE BASE-AGENT-002 5 resolution browser: actual Resolve form and MCP in both policies; saved state, summary, recovery evidence and distinct attribution read at 1440 and 390');
+ }finally{
+  sponsorPage.off('request',recordOutbound);
   await context.close();
  }
 }

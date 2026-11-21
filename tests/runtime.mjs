@@ -1760,8 +1760,18 @@ try {
  ok(await api('actions',{type:'action',incident:incident.id,revision:incident.revision,title:'Automation evidence claim',owner:admin.id,due:'2026-12-01',completionPolicy:'evidence'}),201);incident=ok(await api('incidents/'+incident.id));
  ok(await api('actions',{type:'complete',incident:incident.id,revision:incident.revision,action:incident.actions[1].id,evidence:'https://example.test/automation-claim'}),201);incident=ok(await api('incidents/'+incident.id));
  assert.equal(incident.actions[1].submission.by,client.id);assert.equal(incident.actions[1].accepted.by,client.id);assert.equal(incident.timeline.at(-1).actor,client.id);assert.equal(incident.actions[0].done,false);
- await transition('transition',{state:'recovered',summary:'Recovery evidence recorded',evidence:'https://example.test/evidence'});await transition('transition',{state:'resolved',summary:'Resolved with evidence'});
- assert.deepEqual(incident.timeline.find(e=>e.id===acknowledgment.id),acknowledgment);assert.deepEqual(ok(await owner('/api/audit/export')).rows.find(r=>r.id===acknowledgmentFact.id),acknowledgmentFact);
+ await transition('transition',{state:'recovered',summary:'Recovery evidence recorded',evidence:'https://example.test/evidence'});
+ const beforeResolutionAudit=ok(await owner('/api/audit/export')).rows;
+ await transition('transition',{state:'resolved',summary:'Resolved with evidence'});
+ const afterResolutionAudit=ok(await owner('/api/audit/export')).rows;
+ // The REST credential request meter advances a separate workspace revision.
+ const resolutionFacts=afterResolutionAudit.slice(beforeResolutionAudit.length)
+  .filter(r=>r.workspaceBefore!==r.workspaceAfter&&r.kind!=='automation.request');
+ assert.equal(resolutionFacts.length,1);
+ assert.equal(resolutionFacts[0].kind,'automation.incidents','Scoped REST resolution retains the OC-053 audit kind');
+ assert.equal(resolutionFacts[0].subject,acknowledgmentFact.subject);
+ assert.deepEqual(afterResolutionAudit.slice(0,beforeResolutionAudit.length),beforeResolutionAudit);
+ assert.deepEqual(incident.timeline.find(e=>e.id===acknowledgment.id),acknowledgment);assert.deepEqual(afterResolutionAudit.find(r=>r.id===acknowledgmentFact.id),acknowledgmentFact);
  console.log('PASS OC-053 permanent named responder: service-account acknowledgment names A; reassignment and new commander B and resolution preserve timeline and pseudonymous audit attribution');
  for(let n=0;n<3;n++)ok(await api('incidents',{...input,title:'Synthetic page '+n}),201);
  const page=ok(await api('incidents?limit=2'));assert.equal(page.data.length,2);assert.ok(page.nextCursor);const page2=ok(await api('incidents?limit=2&cursor='+encodeURIComponent(page.nextCursor)));assert.equal(new Set([...page.data,...page2.data].map(i=>i.id)).size,4);
