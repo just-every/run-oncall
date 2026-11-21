@@ -432,7 +432,7 @@
       "executable": false
     },
     "HANDOFF-WORKFLOW.md": {
-      "sha256": "77f6c270036f718a274ec4302f65f0cf251bb377020bf848b225d8162a636168",
+      "sha256": "b143978d0179078b4696b6383cfa67412cbc8c9f5e40b34aba4fa43de0bc8dab",
       "executable": false
     },
     "HANDOVER.md": {
@@ -864,7 +864,7 @@
       "executable": false
     },
     "scripts/browser-prerequisite.mjs": {
-      "sha256": "da7b3faa525a429b1e7b144b7082be1bc7a024087043f461e3c0a45c59b21f16",
+      "sha256": "a89d6103894b35e75f4973c7aaddde730264dd6eaf6267ac59ab294fd34d34e0",
       "executable": false
     },
     "scripts/build-delivery-artifact.mjs": {
@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "scripts/handoffs.mjs": {
-      "sha256": "915f23752045add3c47e0aea38c585a28339766eb9230762eda6980e61e86366",
+      "sha256": "5536dcb2591f1f6671be9e99877c96627afa1ae5e0b7ecb749ee07c8b1b5a53d",
       "executable": false
     },
     "scripts/install-chromium-deps.py": {
@@ -1861,10 +1861,6 @@
     },
     "src/app/GeneralSection.tsx": {
       "sha256": "679dd6909e39617c8f53ecad65ef71fd8b13497522da7547713c60d9bee724d0",
-      "executable": false
-    },
-    "src/app/HandoffPreview.tsx": {
-      "sha256": "9741bacacfb0549f8919053f13485f8450e88fbe489236288f449749609ad9af",
       "executable": false
     },
     "src/app/IncidentBulkActions.tsx": {
@@ -5648,7 +5644,7 @@
       "executable": false
     },
     "src/move-in/MoveIn.tsx": {
-      "sha256": "dcbf78f0ed44e1ebb6e3aefc2e52dc5a944b41c04932232c6043386dadcd3a27",
+      "sha256": "f4b64b1254a76206157692959eb953da4620e130aa47c464b4f43335843e529f",
       "executable": false
     },
     "src/move-in/native-erasure.ts": {
@@ -6012,7 +6008,7 @@
       "executable": false
     },
     "src/reviews/ReviewSheet.tsx": {
-      "sha256": "351085a3a3c61a815ba7da7b1095324c810c7f4a8cc3b44b110cb085c702bc41",
+      "sha256": "a5dafba07a561381b114f2af22fd91d721adf46c0bf4c59058545d73383f9d7b",
       "executable": false
     },
     "src/reviews/ReviewsHome.tsx": {
@@ -6972,7 +6968,7 @@
       "executable": false
     },
     "tests/stranger-trip-steps.mjs": {
-      "sha256": "3b981f6a64c284d55053696c04bfa5cf9cc53a19e7f0d499d652454a30bc8af9",
+      "sha256": "56541261321c21eb6d24111feb6a2fbf0dc22eecb52c950a7a3e805d14a26e6a",
       "executable": false
     },
     "tests/transfer.mjs": {
