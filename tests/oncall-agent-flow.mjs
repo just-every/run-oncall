@@ -1492,6 +1492,7 @@ try{
  await scheduleReplay(runtime);
  await staleOverrideRevision(runtime);
  await staleOverrideRevision(runtime, {optionalExpectedRevision: true});
+ await (await import('./oncall-agent-schedule-replay.mjs')).staleReviewedScheduleRevision(runtime);
  await eraseReplay(runtime);
  await eraseClasses(runtime);
  await staleReassignmentNativeRevision(runtime);
