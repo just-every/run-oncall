@@ -1,0 +1,138 @@
+{
+  "advertised_main": "05eedfe4fa5e45409377638fca63758a68acdb02",
+  "base": "9e7d7cdc9a4b1fa53cbcd01ba4d0047b18cf523d",
+  "base_run_site": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "9e7d7cdc9a4b1fa53cbcd01ba4d0047b18cf523d",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44953278752",
+      "id": 44953278752,
+      "name": "Run site",
+      "status": "completed"
+    }
+  ],
+  "base_verify": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "9e7d7cdc9a4b1fa53cbcd01ba4d0047b18cf523d",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44953278792",
+      "id": 44953278792,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "9e7d7cdc9a4b1fa53cbcd01ba4d0047b18cf523d",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44951009946",
+      "id": 44951009946,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "branch": "cloud/sd-oncall-c-f337",
+  "candidate": "a35f0764a17fb8cca58aa491743052520b4e84f1",
+  "candidate_equals_main": false,
+  "candidate_verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "a35f0764a17fb8cca58aa491743052520b4e84f1",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44960583179",
+    "id": 44960583179,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "candidate_verify_state": "success",
+  "captured_at": "2026-11-21T23:28:56.718963+00:00",
+  "contract_status": {
+    "after": "MISSING",
+    "before": "MISSING",
+    "clause": "BASE-AGENT-012"
+  },
+  "counts": {
+    "after": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41
+    },
+    "before": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41
+    }
+  },
+  "journey": {
+    "file": "tests/oncall-agent-schedule-replay.mjs",
+    "function": "droppedScheduleCreateReplay",
+    "sha256": "eca4f28504b30198c2787e82ebeb5afd7ae23b2c732c0ba270b4de8c92e19c2f"
+  },
+  "local_checks": [
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/verify-oncall-build.mjs",
+      "exit": 0,
+      "head": "a35f0764a17fb8cca58aa491743052520b4e84f1"
+    },
+    {
+      "command": "node scripts/verify-oncall.mjs agents",
+      "exit": 0,
+      "head": "a35f0764a17fb8cca58aa491743052520b4e84f1",
+      "probes": [
+        "PROBE BASE-AGENT-012 acceptance 2 autonomous oncall.schedules.create: real HTTP response discarded at headers with its body unread; terminal D1 result and one revision-1 rota with distinct primary and backup, recorded notices and one native audit commit; new RPC id returns the stored result and original sponsor receipt when held; replay changes only linked audit and capacity bookkeeping; zero outbound requests",
+        "PROBE BASE-AGENT-012 acceptance 2 held oncall.schedules.create: real HTTP response discarded at headers with its body unread; terminal D1 result and one revision-1 rota with distinct primary and backup, recorded notices and one native audit commit; new RPC id returns the stored result and original sponsor receipt when held; replay changes only linked audit and capacity bookkeeping; zero outbound requests"
+      ],
+      "runtime_seconds": 478.9
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check origin/main...HEAD",
+      "exit": 0
+    }
+  ],
+  "publication_scan": {
+    "commit": "a35f0764a17fb8cca58aa491743052520b4e84f1",
+    "complete": false,
+    "disposition": "Fleet lander owns the full-history publication scan",
+    "findings": null,
+    "historyScanned": null
+  },
+  "published_save": "3944ee079f43529aa8267522ceaeb95d9a9c6c3e",
+  "repository": "just-every/run-oncall",
+  "superseded_candidate_verify": {
+    "conclusion": "cancelled",
+    "event": "push",
+    "head_sha": "7567ea96fc7e68d3af746f23e1e7d15242e9a4bc",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44959829539",
+    "id": 44959829539,
+    "name": "Verify",
+    "status": "completed"
+  }
+}
