@@ -13,12 +13,13 @@ import {agedActionEvidenceRetention} from './oncall-agent-action-evidence-retent
 import {agedActionSubmitRetention} from './oncall-agent-action-submit-retention.mjs';
 import {actionSubmitResponseLoss} from './oncall-agent-action-submit-response-loss.mjs';
 import {changedReassignmentReasonConflict} from './oncall-agent-incident-replay.mjs';
+import {changedScribeReasonConflict} from './oncall-agent-role-replay.mjs';
 import {roleClearReadback} from './oncall-agent-role-clear-replay.mjs';
 import {readClearedAssignee} from './oncall-agent-assignee-clear-replay.mjs';
 import {accessToken,autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {openIncidentAction} from './keyboard.mjs';
 import {standardServiceRunbookUpdate} from './oncall-agent-service-replay.mjs';
-import {declareIncidentFromAlert,savedServiceRunbookBrowser} from './product-browser-journey.mjs';
+import {chooseIncidentRole,declareIncidentFromAlert,savedServiceRunbookBrowser} from './product-browser-journey.mjs';
 import {staleOverrideRevision,staleReviewedScheduleRevision} from './oncall-agent-schedule-replay.mjs';
 
 const weekStart=Date.parse('2026-11-02T00:00:00.000Z'),weekNow=Date.parse('2026-11-04T12:00:00.000Z');
@@ -182,6 +183,7 @@ try{
  console.log('PROBE BASE-AGENT-002 5 browser: Alert details button and MCP in both policies; saved incidents, runbooks and separate attribution read at 1440 and 390; zero outbound requests');
  console.log('PROBE BASE-AGENT-003 4 declaration browser: returned incidents under both policies -> saved declaration, copied runbook and agent attribution shown at 1440 and 390; zero outbound requests');
  await acknowledgmentBrowser(runtime,browser,capture);
+ await firstScribeBrowser(runtime,browser,capture);
  await resolutionBrowser(runtime,browser,page,capture);
  await savedServiceRunbookBrowser(page,runtime.origin,await standardServiceRunbookUpdate(runtime));
  await page.setViewportSize({width:1440,height:1000});
@@ -1094,6 +1096,79 @@ async function acknowledgmentBrowser(runtime,browser,capture) {
   assert.deepEqual(await runtime.outboundRequests(),[]);
   assert.deepEqual(outbound,[]);
   console.log('PROBE BASE-AGENT-002 5 acknowledgment browser: real Acknowledge button and MCP in both policies; saved state, responsibility and attribution read at 1440 and 390; zero outbound requests');
+ }finally{
+  await context.close();
+ }
+}
+
+async function firstScribeBrowser(runtime,browser,capture){
+ const person=await runtime.memberSession('Synthetic signed-in Scribe assigner','responder');
+ const context=await browser.newContext({baseURL:runtime.origin,viewport:{width:1440,height:1000}});
+ const outbound=[];
+ context.on('request',request=>{
+  const url=new URL(request.url());
+  if(['http:','https:'].includes(url.protocol)&&url.origin!==runtime.origin)outbound.push(url.origin);
+ });
+ try{
+  await context.addCookies(person.cookie.split('; ').map(pair=>{
+   const at=pair.indexOf('=');
+   return {name:pair.slice(0,at),value:pair.slice(at+1),url:runtime.origin,httpOnly:true,sameSite:'Lax'};
+  }));
+  const page=await context.newPage();
+  await changedScribeReasonConflict(runtime,{
+   person,
+   async assignAsPerson(incident,member,reason){
+    await page.goto('/incidents/'+incident.id);
+    const [response]=await Promise.all([
+     page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().method()==='POST'&&response.request().postDataJSON().role==='scribe'),
+     chooseIncidentRole(page,'scribe',member,reason),
+    ]);
+    assert.equal(response.status(),200);
+    assert.deepEqual(response.request().postDataJSON(),{
+     type:'assign-role',role:'scribe',incident:incident.id,revision:incident.revision,member,reason,
+    });
+    return response.json();
+   },
+   async observe(pairs){
+    const before=await agentEffectSnapshot(runtime);
+    for(const {mode,human,agent,humanLabel,agentLabel,responder,reason,roles,leadLabel} of pairs){
+     for(const [door,incident,label] of [['person',human,humanLabel],['agent',agent,agentLabel]]){
+      const path='/incidents/'+incident.id,labelPrefix='first-scribe-'+mode+'-'+door;
+      await capture(labelPrefix+'-people',path,async()=>{
+       const people=await openIncidentAction(page,'People and priority');
+       const scribe=people.getByLabel('Scribe',{exact:true}),communications=people.getByLabel('Communications',{exact:true});
+       const selected=await scribe.inputValue(),companion=await communications.inputValue();
+       if(page.viewportSize().width===1440){
+        assert.equal(selected,responder.id);
+        assert.equal(companion,roles.communications);
+       }
+       await people.getByRole('button',{name:'Close',exact:true}).focus();
+       await page.getByRole('tooltip',{name:'Close dialog',exact:true}).waitFor();
+       console.log('Scribe readback '+mode+' '+door+' '+page.viewportSize().width+': '+await scribe.locator('option:checked').textContent());
+      },runtime,page);
+      await capture(labelPrefix+'-timeline',path,async()=>{
+       const detail=page.locator('.detail');
+       const readable=responder.name+' is now scribe. Previously Unassigned. Reason: '+reason;
+       const entry=detail.getByRole('region',{name:'Timeline',exact:true}).getByRole('listitem').filter({hasText:readable});
+       await entry.getByText(readable,{exact:true}).waitFor();
+       const attribution=await entry.locator('small').textContent();
+       if(page.viewportSize().width===1440){
+        assert.equal(await entry.count(),1);
+        assert.equal(attribution,label);
+        await detail.getByRole('button',{name:'Lead: '+leadLabel,exact:true}).waitFor();
+        await detail.getByRole('button',{name:'Assignee: '+person.member.name,exact:true}).waitFor();
+       }
+       await entry.scrollIntoViewIfNeeded();
+       console.log('Scribe timeline '+mode+' '+door+' '+page.viewportSize().width+': '+attribution);
+      },runtime,page);
+     }
+    }
+    assert.deepEqual(await agentEffectSnapshot(runtime),before,'Viewing the saved Scribe assignments leaves native and paging custody unchanged');
+   },
+  });
+  assert.deepEqual(await runtime.outboundRequests(),[]);
+  assert.deepEqual(outbound,[]);
+  console.log('PROBE BASE-AGENT-002 5 Scribe browser: real People and priority control and MCP under both policies; reloaded Scribe, companion roles and attributed timeline at 1440 and 390; zero outbound requests');
  }finally{
   await context.close();
  }

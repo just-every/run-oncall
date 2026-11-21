@@ -1753,6 +1753,16 @@ try {
  await transition('reassign',{member:memberB.id,reason:'Explicit reassignment'});await transition('assign-role',{role:'commander',member:memberB.id,reason:'Role assignment'});
  assert.equal(incident.assignee,memberB.id);assert.equal(incident.commander,memberB.id);assert.deepEqual(incident.timeline.find(e=>e.id===acknowledgment.id),acknowledgment);assert.ok(!incident.timeline.some(e=>e.kind==='transition'&&e.lifecycle?.to==='acknowledged'&&e.actor===memberA.id));
  assert.deepEqual(ok(await owner('/api/audit/export')).rows.find(r=>r.id===acknowledgmentFact.id),acknowledgmentFact);
+ assert.equal(incident.scribe??null,null);
+ const beforeScribeAudit=ok(await owner('/api/audit/export')).rows;
+ await transition('assign-role',{role:'scribe',member:memberA.id});
+ assert.equal(incident.scribe,memberA.id);
+ const scribeFacts=ok(await owner('/api/audit/export')).rows.slice(beforeScribeAudit.length)
+  .filter(r=>r.workspaceBefore!==r.workspaceAfter&&r.kind!=='automation.request');
+ assert.equal(scribeFacts.length,1);
+ assert.equal(scribeFacts[0].kind,'automation.incidents','Scoped REST first Scribe assignment retains the OC-053 audit kind');
+ assert.equal(scribeFacts[0].actor,acknowledgmentFact.actor);
+ assert.equal(scribeFacts[0].subject,acknowledgmentFact.subject);
  ok(await api('actions',{type:'action',incident:incident.id,revision:incident.revision,title:'Follow up',owner:admin.id,due:'2026-12-01',completionPolicy:'human-review'}),201);incident=ok(await api('incidents/'+incident.id));
  ok(await api('actions',{type:'accept-action',incident:incident.id,revision:incident.revision,action:incident.actions[0].id,reason:'Not a human'}),403);
  ok(await api('actions',{type:'complete',incident:incident.id,revision:incident.revision,action:incident.actions[0].id,evidence:'https://example.test/machine-review'}),201);incident=ok(await api('incidents/'+incident.id));
@@ -1788,11 +1798,11 @@ try {
  const scheduleOperation=ok(await api('schedules',schedule,apiKey,'synthetic-oncall-schedule-notice'),201);assert.deepEqual(ok(await api('schedules',schedule,apiKey,'synthetic-oncall-schedule-notice')),scheduleOperation);
  const machineNotices=(await state()).scheduleRecords.filter(r=>r.kind==='notice'&&r.data.schedule===schedule.id);assert.ok(machineNotices.length>0);assert.ok(machineNotices.every(r=>r.data.obligation.creator===client.id&&r.data.obligation.reason==='schedule-change'&&r.data.obligation.automatic===false));
  ok(await api('schedules',schedule),409);assert.equal(ok(await api('schedules/'+schedule.id)).revision,1);
- const snapshot=await state();assert.ok(snapshot.apiOutbox.every(o=>o.owner===admin.id&&Number.isFinite(Date.parse(o.due))),'every durable delivery has its named owner and due time');assert.equal(snapshot.apiOutbox.length,12);assert.deepEqual(new Set(snapshot.apiOutbox.map(o=>o.event)),new Set(['trigger','acknowledgment','reassignment','role','follow-up','resolution']));
+ const snapshot=await state();assert.ok(snapshot.apiOutbox.every(o=>o.owner===admin.id&&Number.isFinite(Date.parse(o.due))),'every durable delivery has its named owner and due time');assert.equal(snapshot.apiOutbox.length,13);assert.deepEqual(new Set(snapshot.apiOutbox.map(o=>o.event)),new Set(['trigger','acknowledgment','reassignment','role','follow-up','resolution']));
  await runtime.restart();const committedLogin=await runtime.request('/api/login',{name:'Synthetic Owner',password:'synthetic-oncall-owner-password'});ok(committedLogin);cookie=committedLogin.cookie;assert.deepEqual((await state()).apiOutbox,snapshot.apiOutbox,'restart after domain commit retains queued operations exactly');
  const scheduled=await fetch(runtime.origin+'/cdn-cgi/local/scheduled');assert.equal(scheduled.status,200);await scheduled.text();assert.equal((await state()).apiOutbox.filter(o=>o.status==='sent').length,10,'one scheduled step is bounded to ten deliveries');const nextScheduled=await fetch(runtime.origin+'/cdn-cgi/local/scheduled');assert.equal(nextScheduled.status,200);await nextScheduled.text();assert.ok((await state()).apiOutbox.every(o=>o.status==='sent'),'scheduled handler dispatches the durable batch without a browser');
- assert.equal(applied.size,12);assert.equal((await state()).incidents.length,4);
- await isolated('scheduled delivery before rotation',12);
+ assert.equal(applied.size,13);assert.equal((await state()).incidents.length,4);
+ await isolated('scheduled delivery before rotation',13);
  receiverKey=randomBytes(32).toString('hex');endpoint=ok(await owner('/api/automation/endpoints/'+endpoint.id+'/rotate',{revision:endpoint.revision,key:receiverKey,approve:true}));
  // Real foreign records never appear through direct IDs, pagination or linked mutations.
  let hidden=ok(await owner('/api/command',{...input,service:foreign.id,title:'Hidden incident'}));hidden=ok(await owner('/api/command',{type:'action',incident:hidden.id,revision:hidden.revision,title:'Hidden action',owner:admin.id,due:'2026-12-01'}));

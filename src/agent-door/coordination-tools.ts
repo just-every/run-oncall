@@ -135,6 +135,11 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
         const actor = nativeActor(current, ctx)
         actor.agent = { ...actor.agent!, approvers: ctx.approvers.map(({ id, name }) => ({ id, name })) }
         const nativeInput=operation.input(args)
+        // A cleared Scribe is also null. Read the pre-command timeline to distinguish the first assignment.
+        const firstScribeAssignment = operation.name === 'incidents.update' && nativeInput.type === 'assign-role'
+          && nativeInput.role === 'scribe' && typeof nativeInput.member === 'string' && incident
+          && incident.scribe == null && !protectedRecords(incident)
+          && !incident.timeline.some(entry => entry.kind === 'assign-role' && entry.text.startsWith('scribe: '))
         let context
         if(['manual-page','snooze','cancel-deadline'].includes(String(nativeInput.type))){
           const snapshot=await pagingSnapshot(env.DB)
@@ -145,7 +150,8 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
         const result = command(current.state, actor, nativeInput, new Date(ctx.now()).toISOString(),context) as Incident
         const auditType = operation.name === 'incidents.resolve' ? 'command.transition'
           : operation.name === 'incidents.declare' ? 'command.declare'
-          : operation.name === 'incidents.acknowledge' ? 'command.transition' : operation.name
+          : operation.name === 'incidents.acknowledge' ? 'command.transition'
+          : firstScribeAssignment ? 'command.assign-role' : operation.name
         nativeAudit(env, ctx, auditType, result.id)
         if(operation.name==='incidents.acknowledge')auditIdentity(env.DB,{namedMember:{kind:'member',id:String(args.member)}})
         await persistNative(env, current)
