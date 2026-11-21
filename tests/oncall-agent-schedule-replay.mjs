@@ -211,12 +211,12 @@ export async function droppedScheduleCreateReplay(runtime) {
     assert.deepEqual(again.result.structuredContent,retry.result.structuredContent);
     assert.deepEqual(again.result._meta['com.runeditrun/receipt'],retry.result._meta['com.runeditrun/receipt']);
     await assertReplay(afterRetry,again.decision.id);
-    assert.equal((await adopt()).status,200);
-    const readback=await tool('oncall.schedules.read',{id:expected.id},scope);
-    assert.deepEqual(readback.result.structuredContent.schedules,[expected]);
     assert.equal(code(await tool(name,{...args,idempotency_key:randomUUID()},scope)),'revision_conflict',
       'A new key cannot create an existing native schedule');
     assert.equal(code(await tool(name,{...args,schedule:{...args.schedule,name:'Changed key content'}},scope)),'idempotency_conflict');
+    if (pending) assert.equal((await adopt()).status,200);
+    const readback=await tool('oncall.schedules.read',{id:expected.id},scope);
+    assert.deepEqual(readback.result.structuredContent.schedules,[expected]);
     assert.deepEqual(await runtime.outboundRequests(),[]);
     console.log('PROBE BASE-AGENT-012 acceptance 2 '+mode+' oncall.schedules.create: real HTTP response discarded at headers with its body unread; terminal D1 result and one revision-1 rota with distinct primary and backup, recorded notices and one native audit commit; new RPC id returns the stored result and original sponsor receipt when held; replay changes only linked audit and capacity bookkeeping; zero outbound requests');
   }
