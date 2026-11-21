@@ -25,8 +25,8 @@ reads only the saved files for this import.
 (checked 19 November 2026).
 
 **Execution date for this public-documentation review: 31 October 2026 (UTC).**
-This is planning guidance. No account migration was executed and no migration
-execution date is scheduled.
+This is planning guidance. As of this review, no account migration was executed
+and no migration execution date is scheduled.
 At execution, record the actual UTC date, operator, account, region and evidence
 for each gate. Recheck current provider and export availability then: a public
 page being readable does not establish authenticated account access or a working
