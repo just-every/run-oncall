@@ -75,19 +75,30 @@ export function matchingIncidents(state: State, actor: Member, query: TriageQuer
 export function matchingItems(state:State,actor:Member,query:TriageQuery):TriageItem[]{
  if(query.kind!=='alerts')return matchingIncidents(state,actor,query).map(i=>({...i,kind:'incident' as const,triageStatus:incidentTriageStatus(i)}));
  return state.alerts.filter(a=>!state.incidents.some(i=>i.alerts.includes(a.id))).map(a=>{
-  const events=a.events.map(id=>state.events.find(e=>e.id===id)).filter(e=>!!e),first=events[0],last=events.at(-1),held=a.coordination;
+  const events=a.events.map(id=>state.events.find(e=>e.id===id)).filter(e=>!!e),first=events[0],held=a.coordination;
   const severity=alertSeverity(state,a);
   const lifecycle=held?.state==='closed'||a.state==='recovered'?'resolved':held?.state==='acknowledged'?'acknowledged':'declared';
   const triageStatus=lifecycle==='resolved'?'resolved':held?.state==='acknowledged'?(held.snoozeDue?'snoozed':'acknowledged'):'triggered';
-  return {id:a.id,kind:'alert' as const,triageStatus,revision:a.revision??1,title:first?.title??a.key,summary:a.key,service:a.service??'',severity,state:lifecycle,createdAt:first?.acceptedAt??state.intakeReceipts?.find(r=>r.alert===a.id)?.acceptedAt??'2000-01-01T00:00:00.000Z',assignee:held?.assignee??a.owner,commander:null,urgency:a.urgency??'high',priority:a.priority??null,alerts:[a.id],runbook:[],actions:[],timeline:held?.history??[],recovery:'',review:''} as TriageItem;
- }).filter(i=>{
+  const item: TriageItem & {summary: string} = {id:a.id,kind:'alert',triageStatus,revision:a.revision??1,title:first?.title??a.key,summary:a.key,service:a.service??'',severity,state:lifecycle,createdAt:first?.acceptedAt??state.intakeReceipts?.find(r=>r.alert===a.id)?.acceptedAt??'2000-01-01T00:00:00.000Z',assignee:held ? held.assignee : a.owner,commander:null,urgency:a.urgency??'high',priority:a.priority??null,alerts:[a.id],runbook:[],actions:[],timeline:held?.history??[],recovery:'',review:''};
+  if (!first) return {item, updated: incidentUpdated(item)};
+  const eventTime = events.reduce((latest, event) => Math.max(latest, Date.parse(event.acceptedAt)), Date.parse(first.acceptedAt));
+  const updated = item.timeline.reduce((latest, entry) => Math.max(latest, Date.parse(entry.at)), eventTime);
+  return {item, updated: new Date(updated).toISOString()};
+ }).filter(({item: i, updated})=>{
   const service=state.services.find(s=>s.id===i.service),terms=query.q?.toLocaleLowerCase().split(/\s+/).filter(Boolean)??[];
   const haystack=[i.title,state.alerts.find(a=>a.id===i.id)?.key,service?.name,service?.environment,...i.timeline.map(e=>e.text)].join(' ').toLocaleLowerCase();
   if(!terms.every(term=>haystack.includes(term)))return false;
   if(!matchesStatus(query,i.state,i.triageStatus))return false;
   if(query.severity&&query.severity!==i.severity||query.service&&query.service!==i.service||query.urgency&&query.urgency!==i.urgency||query.priority&&(i.priority??'unset')!==query.priority||query.assignee&&(i.assignee??'unassigned')!==query.assignee||query.mine&&i.assignee!==actor.id)return false;
-  const updated=incidentUpdated(i);return !(query.createdAfter&&i.createdAt<query.createdAfter||query.createdBefore&&i.createdAt>=query.createdBefore||query.updatedAfter&&updated<query.updatedAfter||query.updatedBefore&&updated>=query.updatedBefore);
- }).sort((a,b)=>query.sort==='priority'?(a.priority??'P9').localeCompare(b.priority??'P9')||a.id.localeCompare(b.id):query.sort==='urgency'?Number(b.urgency==='high')-Number(a.urgency==='high')||a.id.localeCompare(b.id):Date.parse(query.sort==='updated'?incidentUpdated(b):b.createdAt)-Date.parse(query.sort==='updated'?incidentUpdated(a):a.createdAt)||a.id.localeCompare(b.id));
+  return !(query.createdAfter&&i.createdAt<query.createdAfter||query.createdBefore&&i.createdAt>=query.createdBefore||query.updatedAfter&&updated<query.updatedAfter||query.updatedBefore&&updated>=query.updatedBefore);
+ }).sort((a, b) => {
+  let order: number;
+  if (query.sort === 'priority') order = (a.item.priority ?? 'P9').localeCompare(b.item.priority ?? 'P9');
+  else if (query.sort === 'urgency') order = Number(b.item.urgency === 'high') - Number(a.item.urgency === 'high');
+  else if (query.sort === 'updated') order = Date.parse(b.updated) - Date.parse(a.updated);
+  else order = Date.parse(b.item.createdAt) - Date.parse(a.item.createdAt);
+  return order || a.item.id.localeCompare(b.item.id);
+ }).map(({item}) => item);
 }
 
 export function triagePage(state: State, actor: Member, query: TriageQuery, cursor?: string, limit = 25) {

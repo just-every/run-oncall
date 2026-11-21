@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {agentRuntime,agentEffectSnapshot} from './agent-door-runtime.mjs';
+import {readSubmittedIncident} from './oncall-agent-action-evidence-replay.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 
 /** Changed evidence cannot replace a completed human-review submission. */
@@ -139,8 +140,20 @@ export async function actionSubmitReplay(runtime,{approve,observe=async()=>{},be
   assert.equal(attempt.agent.id,context.agentId);assert.equal(attempt.sponsor.id,owner.id);
   assert.equal(attempt.idempotency_key,args.idempotency_key);await bookkeeping(permanentBefore);
   assert.deepEqual(await runtime.outboundRequests(),[],'Submission, approval, conflict and retry never fetch evidence or send requests');
-  await observe({mode,incident:result,action:result.actions[0],handle,saved:savedApproval});
-  assert.deepEqual(await snapshot(),once,'Reading the saved follow-up leaves the retained outcome unchanged');
+  // Held execution first returns its completed MCP result on the exact retry after approval.
+  const completedWrite=mode==='held'?retry:first;
+  const {value:linkedIncident,afterRead}=await readSubmittedIncident(runtime,{mode,completedWrite,incidentId:incident.id,
+   evidence:args.evidence,owner,writeApproval:handle,writeDecision:first.decision,read,snapshot,audits,permanent,bookkeeping,
+   async approveRead({handle:readHandle,saved}){
+    const response=await http('/agents/api/approvals/'+readHandle.id+'/approve',{
+     revision:saved.revision,summary_sha256:saved.summary_sha256});
+    assert.equal(response.status,200);assert.equal((await response.json()).approval.state,'executed');
+   }});
+  const [submitted]=linkedIncident.actions;
+  assert.equal(submitted.done,false);assert.equal(submitted.accepted,undefined);
+  await observe({mode,incident:result,action:result.actions[0],handle,saved:savedApproval,linkedIncident});
+  assert.deepEqual(await snapshot(),afterRead,'Viewing the saved follow-up leaves the write and read outcomes unchanged');
+  console.log('PROBE BASE-AGENT-003 4 '+mode+': completed P1 human-review submission link returns full protected incident at revision '+linkedIncident.revision+' with evidence, agent attribution and acceptance still open; '+(mode==='held'?'distinct saved read approval and receipt':'direct read')+'; original write, mutation audit and paging preserved; zero outbound requests');
   assert.deepEqual(await runtime.outboundRequests(),[]);
   console.log('PROBE BASE-AGENT-012 acceptance 3 '+mode+' oncall.actions.submit: one agent-attributed owned due-dated P1 human-review submission stays open; standard plus sensitive; changed evidence with original key and revision -> isError idempotency_conflict in metadata and text without private result; exact original arguments with new RPC id return stored outcome and original approval identity; native custody unchanged apart from refusal and linked replay audit; zero outbound requests and no evidence fetch');
  }
