@@ -1,0 +1,99 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f323",
+  "product_head": "a9433e3d6d1d9c9b6f8ea872d7a247669c08decd",
+  "main_base": "d0a94b025d5ef864b77485a56c1474ae805c569e",
+  "product_tree": "473911dde9aa3a383e6fb17e46f99f6338c0f75e",
+  "product_ref_advertised": true,
+  "local_node": "22.20.0",
+  "baseline_regression": {
+    "build_head": "d0a94b025d5ef864b77485a56c1474ae805c569e",
+    "exit": 1,
+    "assertion": "MCP names the authorized native rota revision",
+    "actual": {
+      "code": "revision_conflict"
+    },
+    "expected": {
+      "code": "revision_conflict",
+      "current_revision": 2
+    }
+  },
+  "checks": {
+    "npx -y @runeditrun/rer build": 0,
+    "pnpm typecheck": 0,
+    "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs": 0,
+    "node tests/agent-door-browser.mjs (system Chromium)": 0,
+    "pnpm exec rer check --profile first-party": 0,
+    "node src/base/contract-docs.mjs write": 0,
+    "node src/base/contract-docs.mjs check": 0,
+    "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock": 0,
+    "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check": 0,
+    "git diff --check origin/main...HEAD": 0
+  },
+  "added_text_findings": 0,
+  "contract_counts": {
+    "before": [
+      26,
+      41,
+      34,
+      101
+    ],
+    "after": [
+      26,
+      41,
+      34,
+      101
+    ]
+  },
+  "contract_judgment": "MISSING",
+  "runtime_receipts": [
+    "PASS native service immutable environment and approved schedule creation replay: allowed edit, no-effect environment refusal, one schedule, fresh-key conflict and changed-argument conflict",
+    "PASS held schedule receipts: update/override replay once; exact review/revision, changed key/arguments, scopes, Pause and current native role remain fenced",
+    "PROBE BASE-AGENT-012 4 autonomous: override native revision 1, no expected_revision -> revision_conflict, current_revision 2 in metadata and text; scoped-out and absent indistinguishable; fresh revision -> one native override and audit, autonomous; replay unchanged; zero outbound requests",
+    "PROBE BASE-AGENT-012 4 held: override native revision 1, no expected_revision -> revision_conflict, current_revision 2 in metadata and text; scoped-out and absent indistinguishable; fresh revision -> one native override and audit, one exact sponsor approval; replay unchanged; zero outbound requests",
+    "PROBE BASE-AGENT-012 4 autonomous: override native revision 2, stale expected_revision 1 -> revision_conflict, current_revision 2 in metadata and text; scoped-out and absent indistinguishable; fresh revision -> one native override and audit, autonomous; replay unchanged; zero outbound requests",
+    "PROBE BASE-AGENT-012 4 held: override native revision 2, stale expected_revision 1 -> revision_conflict, current_revision 2 in metadata and text; scoped-out and absent indistinguishable; fresh revision -> one native override and audit, one exact sponsor approval; replay unchanged; zero outbound requests",
+    "PROBE BASE-AGENT-012 4 autonomous: update native revision 1, no expected_revision -> revision_conflict, current_revision 2 in metadata and text; scoped-out and absent indistinguishable; fresh revision -> one native update and audit, autonomous; replay unchanged; zero outbound requests",
+    "PROBE BASE-AGENT-012 4 held: update native revision 1, no expected_revision -> revision_conflict, current_revision 2 in metadata and text; scoped-out and absent indistinguishable; fresh revision -> one native update and audit, one exact sponsor approval; replay unchanged; zero outbound requests",
+    "Runtime agents completed (490.8s)"
+  ],
+  "browser_receipts": [
+    "Browser proof reviewed-revision-retained-autonomous 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof reviewed-revision-retained-autonomous 390: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof reviewed-revision-retained-held 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof reviewed-revision-retained-held 390: fits=true serious/critical=0 undersized-controls=0"
+  ],
+  "browser_files": {
+    "agent-door-reviewed-revision-retained-autonomous-1440.png": "60998793e5a4fd0d68469c206aef3caa36c70ce94635951c103136094e9fcd86",
+    "agent-door-reviewed-revision-retained-autonomous-390.png": "8a1e58640f8764e8426d877ceca1c78474880f002a442c91e42b73b0f785738d",
+    "agent-door-reviewed-revision-retained-held-1440.png": "327578b27f309129899893cae292dc0cbed71a6808c5f0c9e152d7be9e5aef03",
+    "agent-door-reviewed-revision-retained-held-390.png": "61e04bdb0f3a1fd553db902d382f40cf2e9e297eee9118f5ce8e1c7ab27bdb8c"
+  },
+  "main_base_verify_run": 44916181661,
+  "main_base_run_site_run": 44916181647,
+  "publication_scan": {
+    "commit": "a9433e3d6d1d9c9b6f8ea872d7a247669c08decd",
+    "status": "fleet pending",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  },
+  "verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_branch": "cloud/sd-oncall-c-f323",
+    "head_sha": "a9433e3d6d1d9c9b6f8ea872d7a247669c08decd",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44921621036",
+    "id": 44921621036,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "observed_utc": "2026-11-21T16:16:21.406978+00:00",
+  "changed_paths": [
+    "sources.lock.json",
+    "src/agent-door/schedule-tools.ts",
+    "tests/agent-door-browser.mjs",
+    "tests/oncall-agent-flow.mjs",
+    "tests/oncall-agent-schedule-replay.mjs"
+  ]
+}
