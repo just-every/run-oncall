@@ -1,7 +1,7 @@
 import {useNavigate} from '@tanstack/react-router';
 import {FailureLine,useActionFailure} from './FailureLine';
 import { Tooltip } from './Tooltip';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { request } from '../useWorkspace';
 import type { Member, State } from '../family/response-operations/domain';
 import { BulkResults, type BulkDisplay, type BulkSelection } from './BulkResults';
@@ -16,7 +16,8 @@ export function IncidentTriage({state, actor, current, select, children, busy, r
   const navigate=useNavigate();
   const failures=useActionFailure();
   const [query, setQuery] = useState<TriageQuery>(readQuery);
-  const [page, setPage] = useState<{items: TriageItem[]; total: number; nextCursor: string | null; workspaceRevision: number} | null>(null);
+  const [page, setPage] = useState<{items: TriageItem[]; total: number; nextCursor: string | null; workspaceRevision: number; query: string} | null>(null);
+  const continuationScope = useRef<symbol | null>(null);
   const [views, setViews] = useState<SavedView[]>([]);
   const [selection, setSelection] = useState<BulkSelection[]>([]);
   const [clearedBulk, setClearedBulk] = useState<BulkDisplay | null>(null);
@@ -43,10 +44,16 @@ export function IncidentTriage({state, actor, current, select, children, busy, r
   const [selectionRevision, setSelectionRevision] = useState(0);
   const [loading, setLoading] = useState(false);
   const [viewName, setViewName] = useState('');
+  const params = new URLSearchParams(Object.fromEntries(Object.entries(query).filter(([, value]) => value))).toString();
   // A workspace save completes before its separate triage read. Keep the old
   // rows visible, but do not let a new selection capture their stale revisions.
-  const refreshing = loading || (page?.workspaceRevision ?? -1) < state.revision;
-  const params = new URLSearchParams(Object.fromEntries(Object.entries(query).filter(([, value]) => value))).toString();
+  const refreshing = loading || page?.query !== params || page.workspaceRevision < state.revision;
+  useLayoutEffect(() => {
+    // Invalidate outstanding continuations when the displayed cursor, query or
+    // workspace changes, before the new first-page effect can start.
+    continuationScope.current = Symbol();
+    return () => {continuationScope.current = null;};
+  }, [params, state.revision, page]);
   function applyQuery(next: TriageQuery) {
     const url = new URL(location.href);
     for (const key of queryFields) { url.searchParams.delete('triage_' + key); if (next[key]) url.searchParams.set('triage_' + key, next[key]!); }
@@ -56,10 +63,26 @@ export function IncidentTriage({state, actor, current, select, children, busy, r
   useEffect(() => { const pop = () => {setQuery(readQuery()); setSelection([]); setAllMatching(false);}; window.addEventListener('popstate', pop); return () => window.removeEventListener('popstate', pop); }, []);
   useEffect(() => {
     let live = true; failures.clear(); setLoading(true);
-    request('/api/triage?' + params).then(v => {if (live) {setPage(v);onUpdated?.(v.workspaceRevision);}}).catch(e => {if (live) {failures.show(e,{read:true,target:null});onUpdated?.(state.revision);}}).finally(() => {if (live) setLoading(false);});
+    request('/api/triage?' + params).then(v => {if (live) {setPage({...v, query: params});onUpdated?.(v.workspaceRevision);}}).catch(e => {if (live) {failures.show(e,{read:true,target:null});onUpdated?.(state.revision);}}).finally(() => {if (live) setLoading(false);});
     request('/api/triage/views').then(v => {if (live) setViews(v.views);}).catch(e => {if (live) failures.show(e,{read:true,target:null});});
     return () => {live = false;};
   }, [params, state.revision]);
+  async function loadMore() {
+    const scope = continuationScope.current;
+    const cursor = page?.nextCursor;
+    if (!scope || !page || !cursor || refreshing) return;
+    setLoading(true);
+    try {
+      const next = await request('/api/triage?' + params + '&cursor=' + encodeURIComponent(cursor));
+      if (continuationScope.current === scope && next.workspaceRevision === page.workspaceRevision) {
+        setPage({...next, query: params, items: [...page.items, ...next.items]});
+      }
+    } catch (e) {
+      if (continuationScope.current === scope) failures.show(e,{read:true,target:null});
+    } finally {
+      if (continuationScope.current === scope) setLoading(false);
+    }
+  }
   async function selectMatching() {
     failures.clear(); setLoading(true);
     try {
@@ -95,6 +118,6 @@ export function IncidentTriage({state, actor, current, select, children, busy, r
       </button>
     </div>)}
     {page?.total === 0 && state.incidents.length > 0 && <p>No incidents match these filters.</p>}
-    {page?.nextCursor && <button disabled={loading} onClick={async () => {setLoading(true);try {const next = await request('/api/triage?' + params + '&cursor=' + encodeURIComponent(page.nextCursor!)); setPage({...next, items: [...page.items, ...next.items]});} catch (e) {failures.show(e,{read:true,target:null});} finally {setLoading(false);}}}>Load more incidents</button>}
+    {page?.nextCursor && <button disabled={refreshing} onClick={loadMore}>Load more incidents</button>}
   </section>;
 }
