@@ -93,7 +93,7 @@ export async function resourceParity({browserProof=false}={}){
      {kind:'handoffs',id:fixture.ownHandoff.id,expected:handoff.record,path:'/incidents/'+fixture.own.id},
      {kind:'changes',id:native.changes.find(c=>c.source===changes.rootSource).id,expected:native.changes.find(c=>c.source===changes.rootSource),path:'/settings/services/agent-service'},
      {kind:'service-changes',id:'agent-service',uri:'oncall://services/agent-service/changes',expected:recent,path:'/settings/services/agent-service'},
-     {kind:'reports',id:fixture.ownPeriod,expected:report,path:'/reviews'},
+     {kind:'reports',id:fixture.ownPeriod,expected:report,path:'/reviews',nativeDoor:reportPath},
      {kind:'review-material',id:review.incident.id,uri:'oncall://incidents/'+review.incident.id+'/review-material',expected:material,path:'/reviews/'+review.incident.id,nativeDoor:materialPath},
     ];
     const before=await agentReadSnapshot(runtime);
@@ -372,7 +372,13 @@ async function captureViews(browser,runtime,person,mode,cases,report,receipt){
      await page.getByLabel('Until date (excluded)',{exact:true}).fill(to.slice(0,10));
      const response=await ready;
      await page.locator('.review-snapshot').getByText(report.cohort.count+' incidents',{exact:true}).waitFor();
-     if(width===1440)assert.deepEqual(await response.json(),report,'Rendered report consumes the exact same month and observation');
+     if(width===1440){
+      const rendered=await response.json();
+      const linked=await json(person.http,screen.nativeDoor+'&include=alertIds');
+      assert.deepEqual(rendered,linked,'Rendered report consumes the exact protected response with alert links');
+      const noisy=rendered.noise.noisy.map(({alertIds,...row})=>row);
+      assert.deepEqual({...rendered,noise:{...rendered.noise,noisy}},report,'Rendered report retains the complete monthly resource figures');
+     }
     }else if(kind==='review-material'){
      await captureReviewMaterial(page,screen,person,width);
      if(width===1440)assert.deepEqual(await (await materialResponse).json(),screen.expected,'Review screen consumes its exact native response');

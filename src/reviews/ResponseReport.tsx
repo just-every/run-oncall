@@ -1,7 +1,7 @@
 import {useViewAnchor} from '../app/useViewAnchor';
 import { useEffect, useRef, useState } from 'react';
 import type { State } from '../family/response-operations/domain';
-import type { ProjectedReport as Report } from './load';
+import type { ProjectedReportWithAlertIds as Report } from './load';
 import { CoverageLoad } from './CoverageLoad';
 import { AlertNoise } from './AlertNoise';
 import {browserZone,periodBounds,shortTime} from './time';
@@ -30,7 +30,9 @@ export function ResponseReport({state}: {state: State}) {
     const current = ++sequence.current;
     if (!background) setLoading(true); failures.clear();
     try {
-      const result: Report = await request('/api/reports/response?' + parameters(filters));
+      const query = parameters(filters);
+      query.set('include', 'alertIds');
+      const result: Report = await request('/api/reports/response?' + query);
       if (current === sequence.current) { preserveView(); setReport(result); setApplied(filters); }
     } catch (e) { if (current === sequence.current) failures.show(e,{read:true,target:null,retry:()=>load(filters, Boolean(report))}); }
     finally { if (current === sequence.current) setLoading(false); }
