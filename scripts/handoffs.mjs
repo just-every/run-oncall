@@ -5,7 +5,7 @@ import { open, lstat } from "node:fs/promises";
 
 const TEXT_LIMIT = 16 * 1024 * 1024;
 const HELP = `Local reviewed handoffs — always UNSENT; no provider actions.
-Usage: node scripts/handoffs.mjs --origin URL --session-file FILE COMMAND
+Usage: rer run --script scripts/handoffs.mjs --origin URL --session-file FILE COMMAND
 
   list                          Inspect saved records and current diagnostics
   inspect ID                    Inspect exact copy, source snapshots and history

@@ -4,7 +4,7 @@ import { constants } from 'node:fs'
 import { createRequire } from 'node:module'
 import { join } from 'node:path'
 
-export const browserInstall = 'node node_modules/@playwright/test/cli.js install chromium'
+export const browserInstall = 'rer run --script node_modules/@playwright/test/cli.js install chromium'
 
 // Ask the installed Playwright CLI for its platform/revision-specific location.
 // This stays read-only, including when doctor runs in a fresh HOME.
