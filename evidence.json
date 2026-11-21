@@ -1,0 +1,70 @@
+{
+  "files": [
+    {
+      "blob": "f94d23c493ec1b4e33c9405112303900135d2ee7",
+      "bytes": 7748,
+      "path": "REPORT.md",
+      "sha256": "6167658db1dd479d56acf7e3de6ab80184f00de7a5b2cf9c1cae55013eab6ce9"
+    },
+    {
+      "blob": "65b3d2c9d2a6cb7db9f726e355b5f73d29d85b64",
+      "bytes": 7196,
+      "path": "checks.json",
+      "sha256": "8064d7c6fe1787e78a3aada089965e5205c0862df5d25f2511cca7dc2800de3f"
+    },
+    {
+      "blob": "3add28c07be8891861022749ba9c8cd889ff6e39",
+      "bytes": 129141,
+      "path": "screenshots/service-runbook-autonomous-mcp-1440.png",
+      "sha256": "63c8f9c0cab0582ca8c78a146cae53996a635272496e332fdcb50f1cb62bfbc9"
+    },
+    {
+      "blob": "d5f1e5f6a1186420e1593b526f8240777242e430",
+      "bytes": 59644,
+      "path": "screenshots/service-runbook-autonomous-mcp-390.png",
+      "sha256": "088ce31b1e5fef715b0bdc1019a63beba1eb8e6e673503f2d597d12a27519012"
+    },
+    {
+      "blob": "fb650fd01140ba1ebacd4fcb428c8e20ffcd0620",
+      "bytes": 129110,
+      "path": "screenshots/service-runbook-autonomous-settings-1440.png",
+      "sha256": "1b5765b76a239a9317f0a00433166e84a7c7d229187a04d5c8c079bb6acbb464"
+    },
+    {
+      "blob": "d5f1e5f6a1186420e1593b526f8240777242e430",
+      "bytes": 59644,
+      "path": "screenshots/service-runbook-autonomous-settings-390.png",
+      "sha256": "088ce31b1e5fef715b0bdc1019a63beba1eb8e6e673503f2d597d12a27519012"
+    },
+    {
+      "blob": "7dc9edc6c2bd5df4ad18402f00381e17d33b815d",
+      "bytes": 128919,
+      "path": "screenshots/service-runbook-held-mcp-1440.png",
+      "sha256": "3a0f031d3937cb16342b8f0752c9c2f43170745e9d4ddf8fcbb75238d1bdcd00"
+    },
+    {
+      "blob": "2a65e967916bf2811d813ec1c517bb4e1bf501ae",
+      "bytes": 59367,
+      "path": "screenshots/service-runbook-held-mcp-390.png",
+      "sha256": "da1864ec0db2ac9ab2fc76d9882ba14d36e5547ea64584c84579a142bbb83708"
+    },
+    {
+      "blob": "c38e925052cbfd19c0d30fef1041fa50f5f8b345",
+      "bytes": 128886,
+      "path": "screenshots/service-runbook-held-settings-1440.png",
+      "sha256": "0c72a70821e3c803a2dc5055511464c7d8284e715fad29ddf8f5a0968915aa15"
+    },
+    {
+      "blob": "2a65e967916bf2811d813ec1c517bb4e1bf501ae",
+      "bytes": 59367,
+      "path": "screenshots/service-runbook-held-settings-390.png",
+      "sha256": "da1864ec0db2ac9ab2fc76d9882ba14d36e5547ea64584c84579a142bbb83708"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f335",
+  "product_head": "a8eea7a6220c533b41b5de76fd64d42a97b8a81f",
+  "ref": "refs/heads/evidence/sd-oncall-c-f335",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f335"
+}

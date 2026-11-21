@@ -1,0 +1,181 @@
+{
+  "tag": "sd-oncall-c-f335",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f335",
+  "head": "a8eea7a6220c533b41b5de76fd64d42a97b8a81f",
+  "base": "9e7d7cdc9a4b1fa53cbcd01ba4d0047b18cf523d",
+  "save": "ab2f53fa7927e28e9bb24e7a78a0f27410d389a5",
+  "clause": {
+    "id": "BASE-AGENT-002",
+    "point": 5,
+    "coverage": "runbook-only parity",
+    "before": "MISSING",
+    "after": "MISSING"
+  },
+  "countBefore": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "countAfter": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "startedFromMain": {
+    "head": "9e7d7cdc9a4b1fa53cbcd01ba4d0047b18cf523d",
+    "verify": 44953278792,
+    "runSite": 44953278752
+  },
+  "verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_branch": "cloud/sd-oncall-c-f335",
+    "head_sha": "a8eea7a6220c533b41b5de76fd64d42a97b8a81f",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44960884544",
+    "id": 44960884544,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "landing": {
+    "publicationScan": {
+      "commit": "a8eea7a6220c533b41b5de76fd64d42a97b8a81f",
+      "complete": null,
+      "historyScanned": null,
+      "findings": null
+    },
+    "mainEquality": false,
+    "runSite": null
+  },
+  "checks": [
+    {
+      "command": "rer build",
+      "exit": 0
+    },
+    {
+      "command": "node tests/runtime.mjs",
+      "shard": "agents",
+      "exit": 0
+    },
+    {
+      "command": "node tests/runtime.mjs",
+      "shard": "machines",
+      "exit": 0
+    },
+    {
+      "command": "node tests/agent-door-browser.mjs",
+      "browser": "Chromium",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "observedAt": "2026-11-21T23:36:05.909637+00:00",
+  "probes": {
+    "nativeRuntime": [
+      "PROBE BASE-AGENT-003 4 service runbook autonomous: first completed write link -> full protected service and write projection without ETag; autonomous read without review; original write outcome and receipt, copied incident runbook, native records and revisions, mutation audit and paging unchanged; zero outbound requests",
+      "PROBE BASE-AGENT-002 5 service runbook autonomous: signed-in native command and MCP -> identical saved service fields and literal steps; copied runbooks preserved, one attributed command.service and one workspace increment per door; no write review; paging OFF and zero outbound requests",
+      "PROBE BASE-AGENT-003 4 service runbook held: first completed write link -> full protected service and write projection without ETag; separate open standard read review, original write review unchanged; original write outcome and receipt, copied incident runbook, native records and revisions, mutation audit and paging unchanged; zero outbound requests",
+      "PROBE BASE-AGENT-002 5 service runbook held: signed-in native command and MCP -> identical saved service fields and literal steps; copied runbooks preserved, one attributed command.service and one workspace increment per door; one open standard review for the MCP save; paging OFF and zero outbound requests",
+      "Runtime agents completed (487.9s)"
+    ],
+    "machineRuntime": [
+      "Runtime machines completed (189.9s)"
+    ],
+    "browser": [
+      "PROBE BASE-AGENT-002 5 service runbook autonomous: signed-in native command and MCP -> identical saved service fields and literal steps; copied runbooks preserved, one attributed command.service and one workspace increment per door; no write review; paging OFF and zero outbound requests",
+      "PASS savedServiceRunbookBrowser: service-runbook-autonomous-settings displayed the saved literal steps at 1440, with reload captures at 1440 and 390",
+      "PASS savedServiceRunbookBrowser: service-runbook-autonomous-mcp displayed the saved literal steps at 1440, with reload captures at 1440 and 390",
+      "PROBE BASE-AGENT-002 5 service runbook held: signed-in native command and MCP -> identical saved service fields and literal steps; copied runbooks preserved, one attributed command.service and one workspace increment per door; one open standard review for the MCP save; paging OFF and zero outbound requests",
+      "PASS savedServiceRunbookBrowser: service-runbook-held-settings displayed the saved literal steps at 1440, with reload captures at 1440 and 390",
+      "PASS savedServiceRunbookBrowser: service-runbook-held-mcp displayed the saved literal steps at 1440, with reload captures at 1440 and 390",
+      "PROBE BASE-AGENT-002 5 browser: Settings autosave and MCP saved the same runbook under both policies; both settings reloaded at 1440 and 390; zero browser and Worker outbound requests"
+    ]
+  },
+  "screenshots": [
+    {
+      "path": "screenshots/service-runbook-autonomous-settings-1440.png",
+      "policy": "autonomous",
+      "door": "settings",
+      "width": 1440,
+      "sha256": "1b5765b76a239a9317f0a00433166e84a7c7d229187a04d5c8c079bb6acbb464"
+    },
+    {
+      "path": "screenshots/service-runbook-autonomous-settings-390.png",
+      "policy": "autonomous",
+      "door": "settings",
+      "width": 390,
+      "sha256": "088ce31b1e5fef715b0bdc1019a63beba1eb8e6e673503f2d597d12a27519012"
+    },
+    {
+      "path": "screenshots/service-runbook-autonomous-mcp-1440.png",
+      "policy": "autonomous",
+      "door": "mcp",
+      "width": 1440,
+      "sha256": "63c8f9c0cab0582ca8c78a146cae53996a635272496e332fdcb50f1cb62bfbc9"
+    },
+    {
+      "path": "screenshots/service-runbook-autonomous-mcp-390.png",
+      "policy": "autonomous",
+      "door": "mcp",
+      "width": 390,
+      "sha256": "088ce31b1e5fef715b0bdc1019a63beba1eb8e6e673503f2d597d12a27519012"
+    },
+    {
+      "path": "screenshots/service-runbook-held-settings-1440.png",
+      "policy": "held",
+      "door": "settings",
+      "width": 1440,
+      "sha256": "0c72a70821e3c803a2dc5055511464c7d8284e715fad29ddf8f5a0968915aa15"
+    },
+    {
+      "path": "screenshots/service-runbook-held-settings-390.png",
+      "policy": "held",
+      "door": "settings",
+      "width": 390,
+      "sha256": "da1864ec0db2ac9ab2fc76d9882ba14d36e5547ea64584c84579a142bbb83708"
+    },
+    {
+      "path": "screenshots/service-runbook-held-mcp-1440.png",
+      "policy": "held",
+      "door": "mcp",
+      "width": 1440,
+      "sha256": "3a0f031d3937cb16342b8f0752c9c2f43170745e9d4ddf8fcbb75238d1bdcd00"
+    },
+    {
+      "path": "screenshots/service-runbook-held-mcp-390.png",
+      "policy": "held",
+      "door": "mcp",
+      "width": 390,
+      "sha256": "da1864ec0db2ac9ab2fc76d9882ba14d36e5547ea64584c84579a142bbb83708"
+    }
+  ]
+}
