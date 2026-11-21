@@ -3,7 +3,7 @@ import {randomBytes,randomUUID} from 'node:crypto';
 import {mkdir} from 'node:fs/promises';
 import {chromium} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import {agentRuntime,agentEffectSnapshot,pauseMatrix} from './agent-door-runtime.mjs';
+import {agentRuntime,agentEffectSnapshot,agentReadSnapshot,assertAgentReadUnchanged,pauseMatrix} from './agent-door-runtime.mjs';
 import {declareFromAlertParity,acknowledgeParity,recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy,deadlineTarget} from './oncall-agent-fixtures.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {staleActionSubmitExpectedRevision} from './oncall-agent-action-submit-revisions.mjs';
@@ -280,7 +280,11 @@ try{
    });
   },
  });
- const submitApprovalPosts=[];
+ const submitApprovalPosts=[],submitReadbackOutbound=[];
+ const recordSubmitReadbackOutbound=request=>{
+  const url=new URL(request.url());
+  if(['http:','https:'].includes(url.protocol)&&url.origin!==runtime.origin)submitReadbackOutbound.push(url.origin);
+ };
  const recordSubmitApproval=request=>{if(request.method()==='POST'&&new URL(request.url()).pathname.endsWith('/approve'))submitApprovalPosts.push(request.url())};
  page.on('request',recordSubmitApproval);
  await actionSubmitNativeRevision(runtime,{
@@ -295,19 +299,49 @@ try{
    await page.locator('[data-approval-state="executed"]').waitFor();
    await capture('follow-up-submit-executed',new URL(handle.url).pathname,async()=>{await page.locator('[data-approval-state="executed"]').waitFor()});
   },
-  async observe({mode,incident,action}){
-   await capture('follow-up-submit-'+mode,'/reviews/'+incident.id,async()=>{
-    await page.getByRole('dialog',{name:incident.title,exact:true}).waitFor();
-    await page.locator('.review-material-body summary').filter({hasText:/^Follow-ups \(/}).click();
-    await page.getByText('Awaiting acceptance',{exact:false}).first().waitFor();
-    const evidence=page.locator('.review-material-body').getByRole('link',{name:/^Evidence/});await evidence.waitFor();
-    if(page.viewportSize().width===1440)assert.equal(await evidence.getAttribute('href'),action.evidence);
-    await evidence.scrollIntoViewIfNeeded();
-   });
+  async observe({mode,incident,action,linkedIncident}){
+   const entry=linkedIncident.timeline.at(-1);
+   const response=await http('/api/reviews/'+linkedIncident.id+'/material');
+   assert.equal(response.status,200);
+   const material=await response.json();
+   assert.deepEqual(material.followups,linkedIncident.actions);
+   assert.equal(material.incidentRevision,linkedIncident.revision);
+   const submission=material.assertions.find(row=>row.id===entry.id);
+   assert.equal(submission.actor,runtime.context.agentId);
+   assert.equal(submission.classification,'agent coordination record');
+   assert.equal(action.owner,followUpOwner.id);
+   page.on('request',recordSubmitReadbackOutbound);
+   try{
+    await capture('follow-up-submit-'+mode,'/reviews/'+incident.id,async()=>{
+     const dialog=page.getByRole('dialog',{name:incident.title,exact:true});
+     const body=dialog.locator('.review-material-body');
+     const history=body.locator('summary').filter({hasText:/^From the timeline \(/});
+     const followUps=body.locator('summary').filter({hasText:/^Follow-ups \(/});
+     await history.click();await followUps.click();
+     const item=followUps.locator('..').getByRole('listitem').filter({hasText:action.title}).filter({hasText:'Awaiting acceptance'});
+     const attribution=history.locator('..').getByRole('listitem')
+      .filter({has:page.getByText(entry.text,{exact:true})}).locator('.review-meta');
+     await attribution.waitFor();
+     await item.waitFor();
+     const evidence=item.getByRole('link',{name:/^Evidence/});await evidence.waitFor();
+     const day=new Intl.DateTimeFormat('en-US',{timeZone:'UTC',month:'short',day:'numeric'}).format(new Date(action.due+'T12:00:00Z'));
+     const expected=[action.title,followUpOwner.name,'P1','due '+day+', end of day UTC','Awaiting acceptance','Human review'].join(' · ');
+     const text=await item.innerText(),href=await evidence.getAttribute('href');
+     const actor=(await attribution.innerText()).split('\n')[0];
+     if(page.viewportSize().width===1440){
+      assert.ok(text.startsWith(expected));
+      assert.equal(href,action.evidence);
+      assert.equal(actor,entry.metadata.agent.label+' · agent coordination record');
+     }
+     console.log('P1 submission review '+mode+' '+page.viewportSize().width+': '+text.trim()+' | '+actor+' | evidence matches='+String(href===action.evidence));
+     await evidence.scrollIntoViewIfNeeded();
+    });
+   }finally{page.off('request',recordSubmitReadbackOutbound)}
   },
  });
  assert.equal(submitApprovalPosts.length,1,'One sponsor approval POST; completed-result retries never repeat the approval action');
  page.off('request',recordSubmitApproval);
+ assert.deepEqual(submitReadbackOutbound,[],'Reading saved P1 submissions makes no outbound browser requests');
  const lostResultApprovalPosts=[];
  const recordLostResultApproval=request=>{
   const path=new URL(request.url()).pathname;
@@ -915,6 +949,7 @@ try{
  for(const [label,document] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
   assert.equal((await runtime.adopt(document)).status,200);
   const before=await native(),paging=await (await http('/api/paging/state')).json(),edge=await runtime.outboundRequests();
+  const beforeRead=await agentReadSnapshot(runtime);
   await page.goto(runtime.origin+'/docs/agents');await page.locator('.docs-article').waitFor();
   const rows=await page.locator('.docs-article table').evaluateAll(tables=>tables.filter(table=>[...table.querySelectorAll('th')].some(th=>th.textContent==='Computed class checks')).flatMap(table=>[...table.querySelectorAll('tbody tr')].map(row=>[...row.querySelectorAll('td')].map(cell=>[...cell.querySelectorAll('code')].map(code=>code.textContent)))));
   const listing=await runtime.mcp('tools/list'),discovery=await runtime.mcp('server/discover'),templates=await runtime.mcp('resources/templates/list');
@@ -938,6 +973,7 @@ try{
   await page.waitForFunction(region=>region.scrollLeft>0,await inventoryRegion.elementHandle());
   assert.ok(await inventoryRegion.evaluate(region=>region.contains(document.activeElement)||region===document.activeElement),'The complete inventory remains keyboard scrollable');
   assert.deepEqual(await native(),before);assert.deepEqual(await (await http('/api/paging/state')).json(),paging);
+  assertAgentReadUnchanged(beforeRead,await agentReadSnapshot(runtime));
   assert.deepEqual(await runtime.outboundRequests(),edge);
   console.log(`PROBE BASE-AGENT-013 rendered ${label}: /docs/agents -> complete ${rows.length}-tool class, scope and fixture inventory agrees with MCP; ${templates.result.resourceTemplates.length} resource templates; native and paging unchanged; zero outbound requests`);
  }

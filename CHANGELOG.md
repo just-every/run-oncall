@@ -1,3 +1,20 @@
+# 0.5.22 · 2026-11-21
+
+- Oncall now uses rer 0.2.126. Local archive transfers preserve the recorded order of applied owner migrations, and compatible archives from Run Edit Run Platform can be restored into a native checkout.
+- `rer dev --as PERSONA` now prints a sign-in link for the selected local account that expires after 15 minutes. Local sign-in guidance explains how to find the rer command when it isn't on your PATH.
+
+### Upgrade from 0.5.21
+
+Back up first. For local data, run `rer export --output exports/before-0.5.22.rer`. For hosted data, export the D1 database with the original deploying Cloudflare credentials. Keep the backup private and verify it before updating.
+
+Stop the local app with Ctrl-C, update the checkout with `git pull --ff-only` and run `rer dev`. From a detached release tag, run `git fetch --tags && git checkout v0.5.22` once the release is published. For a hosted installation, update the original deploying checkout and run `rer deploy --environment ENVIRONMENT` with the same credentials. Restore only into an empty destination.
+
+This update adds no migrations. All 68 migration files from 0.5.21 are byte-identical. Keep them unchanged. The checkout keeps rer pinned to 0.2.126.
+
+## Known limits
+
+Paging stays OFF. Keep your existing pager active. Release 2 paging and independent standby are still unavailable. Live AWS delivery and live PagerDuty account migration or cutover remain unverified.
+
 # 0.5.21 · 2026-11-20
 
 This release includes the changes since 0.5.19. The 0.5.20 tag was unpublished.
