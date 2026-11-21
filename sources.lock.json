@@ -284,7 +284,7 @@
       "executable": false
     },
     "docs/response-api.md": {
-      "sha256": "287007a5b86d688c250de16993d994dc443726b2c2e80e2ddad645927e8d82b7",
+      "sha256": "8cc2ee72fe80056eaec21820ed47630313134a5c6e3dd47c29a17aaeccb02699",
       "executable": false
     },
     "docs/reviews.md": {
@@ -5568,7 +5568,7 @@
       "executable": false
     },
     "src/move-in/CompatibilityReview.tsx": {
-      "sha256": "23e3fcac2b575a41a74db6b296aea74debc7000016566c71f8b4b6b3a909df52",
+      "sha256": "eb0fc037fa63cc22a362c8b6a79c166fb87ac647d67620524360be77a1020079",
       "executable": false
     },
     "src/move-in/ConnectStep.tsx": {
@@ -6952,7 +6952,7 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "7e5f889918046a34e4aab44c47035909958a721ffb0411f173be69e10ebbc3ad",
+      "sha256": "b62431af47d36940f8f6b4a8236b06bb6d7678eb9b654bc31cbaee19a422a38a",
       "executable": false
     },
     "tests/product-browser.mjs": {
