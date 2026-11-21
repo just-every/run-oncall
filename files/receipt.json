@@ -1,0 +1,374 @@
+{
+  "tag": "sd-oncall-c-f322",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f322",
+  "head": "5259c6675deda0281eca57aa894f53e0a35ba066",
+  "branch_advertised": true,
+  "observed_at": "2026-11-21T16:03:42.762725+00:00",
+  "base": "d0a94b025d5ef864b77485a56c1474ae805c569e",
+  "main": "d0a94b025d5ef864b77485a56c1474ae805c569e",
+  "main_equals_candidate": false,
+  "base_ci": {
+    "Verify": {
+      "id": 44916181661,
+      "event": "push",
+      "conclusion": "success"
+    },
+    "Run site": {
+      "id": 44916181647,
+      "event": "push",
+      "conclusion": "success"
+    }
+  },
+  "exact_verify": {
+    "conclusion": "failure",
+    "event": "push",
+    "head_sha": "5259c6675deda0281eca57aa894f53e0a35ba066",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44921031082",
+    "id": 44921031082,
+    "status": "completed"
+  },
+  "verify_classification": "Build and all nine shards passed. The overall failure was limited to the generated ACCEPTANCE.md freshness check and its aggregate guard. The fleet rule allows READY on this exact candidate.",
+  "verify_observations": [
+    {
+      "conclusion": null,
+      "head_sha": "5259c6675deda0281eca57aa894f53e0a35ba066",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44921031082",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "5259c6675deda0281eca57aa894f53e0a35ba066",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44921031082",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": "failure",
+      "head_sha": "5259c6675deda0281eca57aa894f53e0a35ba066",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44921031082",
+      "status": "completed"
+    }
+  ],
+  "verify_jobs": [
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 136896885191,
+      "name": "plan",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Check the generated contract documents"
+      ],
+      "id": 136896970690,
+      "name": "contract-docs",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 136896970733,
+      "name": "build",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "id": 136896971859,
+      "name": "light",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 136897617328,
+      "name": "shards (agents)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 136897617373,
+      "name": "shards (activation)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 136897617374,
+      "name": "shards (runtime)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 136897617392,
+      "name": "shards (changes)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 136897617411,
+      "name": "shards (hosted)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 136897617414,
+      "name": "shards (intake)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 136897617416,
+      "name": "shards (triage)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 136897617434,
+      "name": "shards (browser)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 136897617447,
+      "name": "shards (transfer)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 136900977840,
+      "name": "full-push-proof",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "id": 136900979492,
+      "name": "nightly-proof",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Require the selected coverage and its proof"
+      ],
+      "id": 136901006846,
+      "name": "verify",
+      "status": "completed"
+    }
+  ],
+  "ci_diagnostics": "- Agents shard 136897617328 and hosted shard 136897617411 succeeded. The build and full-push-proof also succeeded.\n- contract-docs job 136896970690 exited 1 and reported `ACCEPTANCE.md: generated content differs; run contract-docs write.` The same command reproduced the expected generated-view difference locally on the candidate SHA.\n- The aggregate verify job 136901006846 exited 1 at the coverage gate with `CONTRACT_DOCS: failure`.",
+  "run_site_on_candidate": "pending guarded landing",
+  "status_counts": {
+    "before": [
+      26,
+      41,
+      34
+    ],
+    "after": [
+      26,
+      41,
+      34
+    ],
+    "ordered_as": [
+      "DONE",
+      "PARTIAL",
+      "MISSING"
+    ]
+  },
+  "clause": {
+    "id": "BASE-AGENT-003",
+    "status": "MISSING",
+    "observation": "Acceptance 4 Communications-clear link"
+  },
+  "publication_scan": {
+    "commit": "5259c6675deda0281eca57aa894f53e0a35ba066",
+    "status": "pending guarded lander",
+    "complete": false,
+    "historyScanned": null,
+    "findings": null
+  },
+  "local_checks": [
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/agent-door-browser.mjs",
+      "exit": 0
+    },
+    {
+      "command": "focusedRoleClearReplay on the committed candidate",
+      "exit": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check with regenerated views",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    }
+  ],
+  "tracked_generated_view_reproduction": "Contract prose: 0 errors, 0 warnings.\nACCEPTANCE.md: generated content differs; run contract-docs write.\nexit=1",
+  "runtime_observations": [
+    "PROBE BASE-AGENT-012 acceptance 1 autonomous assign-role Communications clear T+86400000ms: renewed same policy and fresh same-identity token; new RPC id -> original structured outcome; one original native effect and no duplicate held review; all replay-baseline records unchanged; linked attempt audit only; original expiry retained; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 1 autonomous assign-role Communications clear T+86401000ms: renewed same policy and fresh same-identity token; new RPC id -> original structured outcome; one original native effect and no duplicate held review; all replay-baseline records unchanged; linked attempt audit only; original expiry retained; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 1 held assign-role Communications clear T+86400000ms: renewed same policy and fresh same-identity token; new RPC id -> original structured outcome; one original native effect and no duplicate held review; all replay-baseline records unchanged; linked attempt audit only; original expiry retained; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 1 held assign-role Communications clear T+86401000ms: renewed same policy and fresh same-identity token; new RPC id -> original structured outcome; one original native effect and no duplicate held review; all replay-baseline records unchanged; linked attempt audit only; original expiry retained; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 2 autonomous Scribe assignment: real MCP response destroyed at headers with unread body; D1 confirms completed standard-only call, saved outcome and one agent-attributed assign-role before retry; original revision and key with new RPC id return exact result and original review identity; one incident and workspace revision increment and native audit commit; native custody and paging unchanged; one linked replay-attempt audit and capacity bookkeeping only; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 2 held Scribe assignment: real MCP response destroyed at headers with unread body; D1 confirms completed standard-only call, saved outcome and one agent-attributed assign-role before retry; original revision and key with new RPC id return exact result and original review identity; one incident and workspace revision increment and native audit commit; one original open review; native custody and paging unchanged; one linked replay-attempt audit and capacity bookkeeping only; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 3 autonomous Scribe assignment: one standard-only agent-attributed assign-role from unassigned to an existing active responder, one incident and workspace revision and native audit commit; original key and revision with changed reason -> isError idempotency_conflict in metadata and text, no private result; exact original arguments with new RPC id -> saved result and original review; native effect custody and paging unchanged; attributed refusal and linked replay audit only; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 3 held Scribe assignment: one standard-only agent-attributed assign-role from unassigned to an existing active responder, one incident and workspace revision and native audit commit; original key and revision with changed reason -> isError idempotency_conflict in metadata and text, no private result; exact original arguments with new RPC id -> saved result and original review; native effect custody and paging unchanged; attributed refusal and linked replay audit only; zero outbound requests",
+    "PASS incident resolution classification: commitment and sensitive facts, autonomous and isolated blocked policies, immutable pending and stale approval, ignored caller and record claims, attributed once-only resolution and effect-free retry",
+    "PROBE BASE-AGENT-012 acceptance 1 and 3 autonomous Communications clear: standard-only populated role to null once, companion fields retained; new RPC id returns equal original result; original key and revision with changed reason -> isError idempotency_conflict in metadata and text without private result; original arguments still replay; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 2 autonomous Communications clear: real MCP response destroyed at headers without reading body; D1 proves completed original call, outcome and one native role clear; new RPC id recovers original result and review; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 4 autonomous Communications clear expected revision: stale expected revision -> revision_conflict and exact parent current_revision 5 in metadata and text without private result; fresh key corrected from diagnostic clears the role once; exact retry adds no effect or review; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 4 autonomous Communications clear native revision: stale native revision -> revision_conflict and exact parent current_revision 5 in metadata and text without private result; fresh key corrected from diagnostic clears the role once; exact retry adds no effect or review; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 1 and 3 held Communications clear: standard-only populated role to null once, companion fields retained; new RPC id returns equal original result; original key and revision with changed reason -> isError idempotency_conflict in metadata and text without private result; original arguments still replay; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 2 held Communications clear: real MCP response destroyed at headers without reading body; D1 proves completed original call, outcome and one native role clear; new RPC id recovers original result and review; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 4 held Communications clear expected revision: stale expected revision -> revision_conflict and exact parent current_revision 5 in metadata and text without private result; fresh key corrected from diagnostic clears the role once; exact retry adds no effect or review; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 4 held Communications clear native revision: stale native revision -> revision_conflict and exact parent current_revision 5 in metadata and text without private result; fresh key corrected from diagnostic clears the role once; exact retry adds no effect or review; zero outbound requests",
+    "PASS native sponsor erasure: retained agent audit IDs, redacted sponsor name/label and immediate Business admission refusal",
+    "Runtime agents completed (472.6s)"
+  ],
+  "browser_observations": [
+    "PROBE BASE-AGENT-003 4 autonomous Communications clear: original MCP resource link matches the entire saved incident and protected sponsor state at revision 7, with null Communications, companion roles, assignee and attributed role history; direct read without review; original write outcome, native records, revisions, state-changing audit and paging unchanged; new outbound requests=0",
+    "Browser proof communications-autonomous-cleared-timeline 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof communications-autonomous-cleared-timeline 390: fits=true serious/critical=0 undersized-controls=0",
+    "Communications clear autonomous 1440: Communications=Unassigned, Scribe=Alex Chen, Priority=P2",
+    "Browser proof communications-autonomous-cleared-people 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Communications clear autonomous 390: Communications=Unassigned, Scribe=Alex Chen, Priority=P2",
+    "Browser proof communications-autonomous-cleared-people 390: fits=true serious/critical=0 undersized-controls=0",
+    "PROBE BASE-AGENT-003 4 held Communications clear: original MCP resource link matches the entire saved incident and protected sponsor state at revision 7, with null Communications, companion roles, assignee and attributed role history; distinct open read review, original write review unchanged; original write outcome, native records, revisions, state-changing audit and paging unchanged; new outbound requests=0",
+    "Browser proof communications-cleared-timeline 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Browser proof communications-cleared-timeline 390: fits=true serious/critical=0 undersized-controls=0",
+    "Communications clear held 1440: Communications=Unassigned, Scribe=Alex Chen, Priority=P2",
+    "Browser proof communications-cleared-people 1440: fits=true serious/critical=0 undersized-controls=0",
+    "Communications clear held 390: Communications=Unassigned, Scribe=Alex Chen, Priority=P2",
+    "Browser proof communications-cleared-people 390: fits=true serious/critical=0 undersized-controls=0",
+    "PROBE BASE-AGENT-012 Communications clear browser: autonomous and held MCP -> saved Unassigned Communications, preserved companion responsibilities, attributed native timeline; changed incident shown at 1440 and 390; zero outbound requests",
+    "PASS incident resolution browser: commitment-only approval, exact saved revision, native human approver and agent preparer, one attributed resolution and effect-free retry",
+    "PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements"
+  ],
+  "focused_observations": [
+    "head=5259c6675deda0281eca57aa894f53e0a35ba066",
+    "PROBE BASE-AGENT-003 4 autonomous Scribe clear: original MCP resource link matches the entire saved incident and protected sponsor state at revision 6, with null Scribe, companion roles, assignee and attributed role history; direct read without review; original write outcome, native records, revisions, state-changing audit and paging unchanged; new outbound requests=0",
+    "PROBE BASE-AGENT-003 4 held Scribe clear: original MCP resource link matches the entire saved incident and protected sponsor state at revision 6, with null Scribe, companion roles, assignee and attributed role history; distinct open read review, original write review unchanged; original write outcome, native records, revisions, state-changing audit and paging unchanged; new outbound requests=0",
+    "PROBE BASE-AGENT-003 4 autonomous Communications clear: original MCP resource link matches the entire saved incident and protected sponsor state at revision 6, with null Communications, companion roles, assignee and attributed role history; direct read without review; original write outcome, native records, revisions, state-changing audit and paging unchanged; new outbound requests=0",
+    "PROBE BASE-AGENT-003 4 held Communications clear: original MCP resource link matches the entire saved incident and protected sponsor state at revision 6, with null Communications, companion roles, assignee and attributed role history; distinct open read review, original write review unchanged; original write outcome, native records, revisions, state-changing audit and paging unchanged; new outbound requests=0",
+    "exit=0"
+  ],
+  "browser_images": [
+    {
+      "file": "browser/agent-door-communications-autonomous-cleared-people-1440.png",
+      "width": 1440,
+      "height": 4430,
+      "sha256": "66728e9aeb822afac9a409be51a2235c5bbd9c6c55e40545c6e0b0d2c7251953"
+    },
+    {
+      "file": "browser/agent-door-communications-autonomous-cleared-people-390.png",
+      "width": 390,
+      "height": 1379,
+      "sha256": "44d19e433bbf0d2c03ff698285ba4378588986d2eaf0cf93fde83fc70e8d54f6"
+    },
+    {
+      "file": "browser/agent-door-communications-autonomous-cleared-timeline-1440.png",
+      "width": 1440,
+      "height": 4430,
+      "sha256": "e469d41cd16f4c7762307e8f4095153147fb0830e5f0ad7c5e627d15a9a20a4e"
+    },
+    {
+      "file": "browser/agent-door-communications-autonomous-cleared-timeline-390.png",
+      "width": 390,
+      "height": 1379,
+      "sha256": "f6968cccbf97aa795c3335c68eb8fc5040075d2253a3d891eba272dc7489675c"
+    },
+    {
+      "file": "browser/agent-door-communications-cleared-people-1440.png",
+      "width": 1440,
+      "height": 4451,
+      "sha256": "ee4f69d69d809b77bab486d64cf6af8bfcc61b3e537e159f290a17849e3af20f"
+    },
+    {
+      "file": "browser/agent-door-communications-cleared-people-390.png",
+      "width": 390,
+      "height": 1332,
+      "sha256": "aeb2d07b0ea41e6b4bce12ddbcee5d477a9828ede6312cde5d3cc80a3346cebc"
+    },
+    {
+      "file": "browser/agent-door-communications-cleared-timeline-1440.png",
+      "width": 1440,
+      "height": 4451,
+      "sha256": "93dcfc2ee5bcaba6cd6ce00d7a21f246c8b3533f0a9c074621453c98d67d8925"
+    },
+    {
+      "file": "browser/agent-door-communications-cleared-timeline-390.png",
+      "width": 390,
+      "height": 1332,
+      "sha256": "d38a0b26a9f05adfda3e8ceca2efaf4d870adc3f47ce02dfecb6ee8dbd428fb3"
+    }
+  ],
+  "source_refs": [
+    {
+      "path": "tests/oncall-agent-role-clear-replay.mjs",
+      "lines": "7–72, 214–235, 283–309",
+      "sha256": "fa8ba969337463dffb13b461c8f6db86c05279250df234c55eadac5d103e548f"
+    },
+    {
+      "path": "tests/agent-door-browser.mjs",
+      "lines": "534–608",
+      "sha256": "d1b7fd4d0ead7b26d5dbd5254779209309ecd3154808fd75d474d93e26c6e651"
+    },
+    {
+      "path": "tests/agent-door-runtime.mjs",
+      "lines": "13–51, 119–145",
+      "sha256": "d991e3612aad1ec6b1bfcd7923d6b730c0fc986f80b2e3d8aa952926032abd90"
+    },
+    {
+      "path": "tests/oncall-agent-flow.mjs",
+      "lines": "1112, 1241–1339, 1498–1502",
+      "sha256": "fcb315f8a72cfce2ee4298220b6d645da39a57fb8dd4987a19eccc37c101b6cc"
+    },
+    {
+      "path": "src/agent-door/resources.ts",
+      "lines": "154–157",
+      "sha256": "416e8e3b9f9dfd349184a887e7978227342711bc77a28cef83c81aa47164c664"
+    },
+    {
+      "path": "CONTRACT.md",
+      "lines": "1064, 1319, 1482–1486",
+      "sha256": "abbacd53fc6d671f49eb879a5a856ca70a72f6bb37a28df0f525ed404dfb464d"
+    }
+  ]
+}
