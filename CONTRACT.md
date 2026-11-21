@@ -537,6 +537,8 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 **Requirement.** Keep authored incident, review, runbook and follow-up history until explicit owner erasure or a separately chosen retention policy. Publish data categories, custody, configured retention and effects before enabling automatic expiry for telemetry snapshots, recordings or provider content. Admins can erase an incident, contact or member or integration and its local copies, pending deliveries, credentials and imported custody; receipts contain per-table counts and completion state and are not issued before commit. Preserve erasure fences without personal content; an erased responder leaves an explicit gap. Imports and restores carrying the later source erasure journal cannot resurrect erased data. Older offline copies, already sent provider messages and in-flight external calls cannot be recalled; document recipient and provider deletion requests. Cross-site erasure must reconcile standby before success is claimed.
 
+The [Change erasure guide](docs/changes.md#erase-a-retained-change) links to the incident, member and integration custody and retention procedures. The served guides distinguish single-event erasure, which keeps source credentials, from integration erasure and explain the local completion receipt, unreconciled standby and separate requests to holders of external copies.
+
 **Acceptance.**
 1. Erase an imported person including filenames, plans and indirect schedule references, then erase native contact/incident/connector data and inspect all local/standby/export copies and receipts.
 2. Restore with a later erasure journal, inject a failure and race a send; prove rollback or a visible incomplete state, explicit schedule gaps and no success before all owned custody is handled.
@@ -1254,7 +1256,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 | `oncall.triage.list` | Search, filter and save triage views | OC-060 | standard; sensitive when returned records contain personal or incident evidence | Read-only search and filters shipped; saved views not yet shipped |
 | `oncall.triage.bulk` | Apply one action to selected or matching items | OC-079 | standard (+ commitment) (+ live) | Not yet shipped |
 | `oncall.pages.create` | Page a service, a person or a policy, or request responders | OC-026, OC-068 | live | Not yet shipped · API (incidents) |
-| `oncall.schedules.update` | Change rotations, layers, overrides, holiday and PTO coverage | OC-011, OC-024, OC-077 | live | Shipped |
+| `oncall.schedules.update` | Change rotations, layers, overrides, holiday and PTO coverage | OC-011, OC-024, OC-077 | standard (+ sensitive) (+ live) | Shipped |
 | `oncall.schedules.create` | Create a native schedule within the granted service and team authority | OC-003, OC-011, OC-012, OC-024, OC-053 | standard (+ sensitive) (+ live) | Shipped |
 | `oncall.schedules.override` | Append a primary or backup override to a schedule | OC-003, OC-011, OC-012, OC-024, OC-053 | standard (+ sensitive) (+ live) | Shipped |
 | `oncall.schedules.read` | Read schedules within the granted service scope | OC-003, OC-011, OC-014, OC-053 | standard (+ sensitive) | Shipped |

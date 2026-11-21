@@ -758,10 +758,10 @@ async function changeAndSigningBrowser(page,context){
  }
  await request('/api/intake/sources',{id:'synthetic-oncall-grafana',name:'Synthetic Grafana',provider:'grafana',service:'synthetic-oncall-1',key:token(),revision:0});
  await request('/api/monitoring/synthetic-oncall-grafana/signing',{revision:1,secret:signingSecret});
- const check=async(label,width)=>{
+ const check=async(label,width,mask=[])=>{
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),label+' fits viewport');assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0);
   const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(axe.violations,[],label+' has no WCAG axe violations');
-  await page.screenshot({path:`evidence/browser/${label}-${width}.png`,fullPage:true});await page.screenshot({path:`evidence/browser/${label}-focus-${width}.png`});
+  await page.screenshot({path:`evidence/browser/${label}-${width}.png`,fullPage:true,mask});await page.screenshot({path:`evidence/browser/${label}-focus-${width}.png`,mask});
  };
  for(const width of [1440]){
   await page.setViewportSize({width,height:1000});await page.reload();await openWorkspaceSection(page,'services');
@@ -775,6 +775,9 @@ async function changeAndSigningBrowser(page,context){
   const changeResponse=await context.request.post('/api/changes/ingress/'+erasureSource,{headers:{authorization:'Bearer '+erasureKey},data:{eventId:erasureSource,summary:'Synthetic erasable change '+width,author:'synthetic-oncall-40',timestamp:new Date().toISOString()}});assert.equal(changeResponse.status(),201);
   const erasureChange=await changeResponse.json();await page.reload();
   await page.goto(origin+'/settings/archive');const settings=page.locator('.erase-data');await settings.locator(':scope > summary').click();
+  const erasureCategory=settings.getByLabel('Erasure category',{exact:true});
+  const changeEventLabel=await erasureCategory.locator('option[value="change-event"]').textContent();
+  const changeIntegrationLabel=await erasureCategory.locator('option[value="change"]').textContent();
   await settings.getByLabel('Retained change',{exact:true}).selectOption(erasureChange.id);
   assert.equal(await settings.getByRole('button',{name:'Erase retained change',exact:true}).isEnabled(),false);
   const erasedName=await settings.locator('select').nth(1).evaluate(select=>select.selectedOptions[0].label);
@@ -783,8 +786,10 @@ async function changeAndSigningBrowser(page,context){
   const erasureResponse=page.waitForResponse(r=>r.url().endsWith('/api/changes/'+erasureChange.id+'/erase'));
   await settings.getByRole('button',{name:'Erase retained change',exact:true}).click();assert.equal((await erasureResponse).status(),200);
   await settings.getByText(erasedName+' erased: 1 change. Standby not reconciled.',{exact:true}).waitFor();
-  assert.equal((await (await erasureResponse).json()).stores.oc_changes.deleted,1);assert.equal((await (await erasureResponse).json()).stores.oc_changes.updated,0);
+  const changeReceipt=await (await erasureResponse).json();
+  assert.equal(changeReceipt.stores.oc_changes.deleted,1);assert.equal(changeReceipt.stores.oc_changes.updated,0);
   assert.ok(!(await request('/api/state')).changes.some(row=>row.id===erasureChange.id));
+  assert.ok((await request('/api/integrations/change/'+erasureSource+'/reveal',{})).key===erasureKey,'erasing an event retains its source credential');
   await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-erasure-receipt',width);
   const erasedIncident=await request('/api/command',{type:'declare',service:'synthetic-oncall-1',title:'Synthetic erasable incident '+width,summary:'Synthetic erasable impact',severity:'warning'});
   await focusWorkspace(page);
@@ -795,7 +800,8 @@ async function changeAndSigningBrowser(page,context){
   await settings.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await check('oc040-incident-review',width);
   const incidentEraseResponse=page.waitForResponse(r=>r.url().endsWith('/api/erasure/incident/'+erasedIncident.id));
   await settings.getByRole('button',{name:'Erase selected subject',exact:true}).click();assert.equal((await incidentEraseResponse).status(),200);
-  assert.equal((await (await incidentEraseResponse).json()).stores.oc_incidents.deleted,1);assert.equal((await (await incidentEraseResponse).json()).stores.oc_incidents.updated,0);
+  const incidentReceipt=await (await incidentEraseResponse).json();
+  assert.equal(incidentReceipt.stores.oc_incidents.deleted,1);assert.equal(incidentReceipt.stores.oc_incidents.updated,0);
   await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-incident-receipt',width);
   assert.ok(!(await request('/api/state')).incidents.some(i=>i.id===erasedIncident.id));
   const erasedIntegration='synthetic-oncall-40-integration-'+width;
@@ -807,7 +813,8 @@ async function changeAndSigningBrowser(page,context){
   await settings.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await check('oc040-integration-review',width);
   const integrationEraseResponse=page.waitForResponse(r=>r.url().endsWith('/api/erasure/intake/'+erasedIntegration));
   await settings.getByRole('button',{name:'Erase selected subject',exact:true}).click();assert.equal((await integrationEraseResponse).status(),200);
-  assert.equal((await (await integrationEraseResponse).json()).stores.oc_intake_credentials.deleted,1);assert.equal((await (await integrationEraseResponse).json()).stores.oc_intake_credentials.updated,0);
+  const integrationReceipt=await (await integrationEraseResponse).json();
+  assert.equal(integrationReceipt.stores.oc_intake_credentials.deleted,1);assert.equal(integrationReceipt.stores.oc_intake_credentials.updated,0);
   await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-integration-receipt',width);
   assert.ok(!(await request('/api/state')).intakeSources.some(i=>i.id===erasedIntegration));
   const erasedEmail='synthetic-oncall-440-'+width;
@@ -855,7 +862,9 @@ async function changeAndSigningBrowser(page,context){
   assert.equal((await request('/api/state')).members.find(m=>m.id===erasedMember.id).name,'Erased member');
   const erasedBusiness=(await request('/api/state')).businessServices.find(row=>row.id===memberBusiness.id);
   assert.ok(!erasedBusiness.audience.includes(erasedMember.id));assert.ok(!erasedBusiness.subscriptions.some(row=>row.member===erasedMember.id));
-  assert.ok((await memberReply.json()).stores.oc_business_services.updated>0);
+  const memberReceipt=await memberReply.json();
+  assert.ok(memberReceipt.stores.oc_business_services.updated>0);
+  assert.equal(memberReceipt.stores.credentials.deleted,1);
 
   await page.goto(new URL('/on-call/'+encodeURIComponent(memberScheduleId),page.url()).href);
   await page.locator('.scheduling-now-next').getByText('Now: Nobody on call',{exact:true}).first().waitFor();await page.locator('.scheduling-now-next').scrollIntoViewIfNeeded();await check('oc040-member-schedule-gap',width);
@@ -923,7 +932,58 @@ async function changeAndSigningBrowser(page,context){
   await page.goto(origin+'/settings/integrations/'+encodeURIComponent('intake:synthetic-oncall-grafana'));const panel=page.getByLabel('Grafana signature settings',{exact:true});await panel.locator('summary').click();await panel.getByText('Signature required with bearer authentication',{exact:true}).waitFor();
   await panel.getByRole('button',{name:'Disable signature check',exact:true}).click();await panel.getByRole('button',{name:'Disable check',exact:true}).click();await panel.getByText('Bearer authentication only',{exact:true}).waitFor();
   await panel.getByRole('button',{name:'Enable signature check',exact:true}).click();await panel.getByRole('button',{name:'Create signing key',exact:true}).click();assert.ok(await panel.getByLabel('Signing key',{exact:true}).inputValue());await panel.getByRole('button',{name:'Done',exact:true}).click();await panel.getByText('Signature required with bearer authentication',{exact:true}).waitFor();await page.reload();await panel.locator('summary').click();assert.equal(await panel.getByLabel('Signing key',{exact:true}).count(),0);await panel.scrollIntoViewIfNeeded();await check('oc030-signing',width);
-  for(const [slug,section] of [['changes','erase-a-retained-change'],['routed-intake','event-time-correlation-and-flapping'],['data','incident-member-and-integration-erasure'],['urgency','']]){await page.goto(new URL(page.url()).origin+'/docs/'+slug+(section?'#'+section:''));await page.locator('.docs-article').waitFor();if(section)await page.locator('#'+section).scrollIntoViewIfNeeded();await check('oc040-043-docs-'+slug,width);}
+  // Follow the served erasure guide, using the receipts just returned by the protected Worker.
+  const captureErasureGuide=async(label,section)=>{
+   const mask=[page.locator('.docs-article code').filter({hasText:/[\w.+-]+@[\w.-]+\.[a-z]{2,}/i})];
+   await section.scrollIntoViewIfNeeded();
+   await check(label,width,mask);
+   await page.setViewportSize({width:390,height:1000});
+   await section.scrollIntoViewIfNeeded();
+   await page.screenshot({path:`evidence/browser/${label}-390.png`,fullPage:true,mask});
+   await page.setViewportSize({width,height:1000});
+  };
+  await page.goto(origin+'/docs/changes#erase-a-retained-change');
+  const changeGuide=page.locator('.docs-article[data-doc="changes"]');
+  const custodyLink=changeGuide.getByRole('link',{name:'Incident, member and integration erasure',exact:true});
+  await custodyLink.waitFor();
+  const changeText=await changeGuide.innerText();
+  const changeStates=changeText.match(/local state:\s*(\w+)[^.]*standby:\s*([\w-]+)/i);
+  assert.deepEqual(changeStates?.slice(1),[changeReceipt.state,changeReceipt.standby]);
+  assert.match(changeText,/credentials (?:remain|in place)/i);
+  const changeActions=await changeGuide.locator('strong').allTextContents();
+  assert.ok(changeActions.includes(changeEventLabel)&&changeActions.includes(changeIntegrationLabel),'the guide points to both distinct Settings choices');
+  await captureErasureGuide('oc040-043-docs-changes',changeGuide.locator('#erase-a-retained-change'));
+
+  await custodyLink.click();
+  assert.equal(page.url(),origin+'/docs/data#incident-member-and-integration-erasure');
+  const dataGuide=page.locator('.docs-article[data-doc="data"]');
+  const custodySection=dataGuide.locator('#incident-member-and-integration-erasure');
+  await custodySection.waitFor();
+  for(const [name,scope] of [
+   ['Incident',/incident timeline.*notes/i],
+   ['Integration',/signing custody.*incumbent credentials/i],
+   [/^native contact.*member$/i,/password credentials.*sessions/i],
+  ]){
+   const heading=dataGuide.getByRole('heading',{name,exact:true});
+   const [local,retention]=await heading.locator('xpath=following-sibling::p[position() <= 2]').allTextContents();
+   assert.match(local,scope);
+   assert.match(retention,/until explicit erasure/i);
+  }
+  const custodyReceipt=await dataGuide.locator('p').filter({hasText:/count-only receipt.*standby:/i}).innerText();
+  const custodyStates=custodyReceipt.match(/local\s+(\w+)\s+and\s+standby:\s*([\w-]+)/i);
+  for(const receipt of [incidentReceipt,memberReceipt,integrationReceipt]){
+   assert.deepEqual(custodyStates?.slice(1),[receipt.state,receipt.standby]);
+   assert.equal(receipt.state,'complete');assert.equal(receipt.standby,'not-reconciled');
+  }
+  assert.equal(memberReceipt.outstanding.length,1);
+  assert.equal(memberReceipt.outstanding[0].state,'not-requested');
+  const externalProcedure=await dataGuide.locator('p').filter({hasText:/ask the named recipient and provider/i}).innerText();
+  assert.match(externalProcedure,/ask the named recipient and provider to delete.*record their response separately/i);
+  assert.match(externalProcedure,/request deletion of offline exports and copied text from their holders/i);
+  await captureErasureGuide('oc040-043-docs-data',custodySection);
+  console.log('PROBE OC-040: followed Change erasure to Data custody; category retention and scope, local completion, unreconciled standby and separate external deletion agree with the protected receipts; both guides captured at 1440 and 390');
+
+  for(const [slug,section] of [['routed-intake','event-time-correlation-and-flapping'],['urgency','']]){await page.goto(new URL(page.url()).origin+'/docs/'+slug+(section?'#'+section:''));await page.locator('.docs-article').waitFor();if(section)await page.locator('#'+section).scrollIntoViewIfNeeded();await check('oc040-043-docs-'+slug,width);}
   for(const slug of docSlugs.filter(slug=>!['changes','routed-intake','data','urgency'].includes(slug))){await page.goto(new URL(page.url()).origin+'/docs/'+slug);await page.locator('.docs-article').waitFor();if(slug==='limits')await limitationsBrowser(page,context);else await check('oc040-043-docs-'+slug,width);}
   await page.goto(new URL(page.url()).origin);
  }
