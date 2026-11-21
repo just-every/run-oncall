@@ -1,0 +1,198 @@
+{
+  "tag": "sd-oncall-c-f327",
+  "repository": "just-every/run-oncall",
+  "observed_at": "2026-11-21T18:13:44+00:00",
+  "product_head": "47a542826f975f4c60137de5d49e921e94c79a8c",
+  "product_branch": "cloud/sd-oncall-c-f327",
+  "product_push": "advertised",
+  "integrated_main": "82c51561770c1a67ba6e1a3b41752bbabf707007",
+  "initial_base_and_negative_build": "d0a94b025d5ef864b77485a56c1474ae805c569e",
+  "clause": {
+    "id": "OC-068",
+    "before": "PARTIAL",
+    "after": "PARTIAL",
+    "acceptance_5": "local resolution covered",
+    "fully_proven_points": [
+      6
+    ]
+  },
+  "counts": {
+    "before": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "after": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "proof_files_sha256": {
+    "src/manual-pages/model.ts": "e474fd609b5bf0978f0b4ae1da36dc7dbe255bae5757eee0ecf3733553e9d840",
+    "tests/activation.mjs": "81eb754bb951e2421e80207fe1715ac1bf245ec0a0dab5b90e7adcd632c747a1",
+    "tests/member-coordination-browser.mjs": "06884ffbb9ab825e8c4bb73432761c1699c932fb8912be861cd480402b919d08"
+  },
+  "proof_files_and_product_source_unchanged_across_main_update": true,
+  "reproduced_on_main": {
+    "command": "node tests/activation.mjs",
+    "exit": 1,
+    "failure": "Resolution overwrote all three terminal obligation outcomes with Incident resolved",
+    "before": [
+      "accepted",
+      "declined",
+      "cancelled",
+      "pending"
+    ],
+    "overwritten": [
+      "accepted",
+      "declined",
+      "cancelled"
+    ]
+  },
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "node tests/activation.mjs",
+      "exit": 0,
+      "proof": "PROBE OC-068 5: protected public-service resolution kept the three terminal response records and prior timeline, stopped one pending obligation and the recorded requester notice, and wrote one attributed resolution audit. Paging stayed OFF and no outbound requests were made."
+    },
+    {
+      "command": "node tests/member-coordination-browser.mjs",
+      "exit": 0,
+      "proof": [
+        "PROBE OC-068 5: on a signed-in manual incident for a public-team service, the named responder saw two pending requests and no Cancel control. The requester cancelled one and reopened at 1440 and 390. One attributed timeline entry and one permanent audit row persisted. Only the target obligation stopped. The sibling and primary acknowledgment and obligation stayed unchanged. Zero outbound or paging effects.",
+        "PROBE OC-068 5: signed-in Resolve and reopened request history show accepted, declined, cancelled and ended with the original attribution. Protected state and timeline agree, and paging and outbound activity are unchanged. Captured desktop and mobile."
+      ],
+      "assertion_width": 1440,
+      "visual_proof_widths": [
+        1440,
+        390
+      ],
+      "chromium": "system Chromium 154.0.8037.57"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    }
+  ],
+  "output": {
+    "requests_before": [
+      "accepted",
+      "declined",
+      "cancelled",
+      "pending"
+    ],
+    "requests_after": [
+      "accepted",
+      "declined",
+      "cancelled",
+      "ended"
+    ],
+    "terminal_requests_preserved": 3,
+    "newly_ended_requests": 1,
+    "prior_timeline_preserved": true,
+    "new_attributed_resolution_timeline_entries": 1,
+    "new_attributed_permanent_resolution_audits": 1,
+    "primary_obligation_finished": true,
+    "recorded_requester_notice_closed": true,
+    "paging": "OFF",
+    "paging_revision_unchanged": true,
+    "worker_outbound_requests": 0,
+    "browser_outbound_requests": 0
+  },
+  "screenshots": [
+    {
+      "file": "oc068-resolved-requests-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "91b3f3696ea352f7d1e0f8ba7da427ce4e7ec0d8bd71ff71465745bbc404f0c1"
+    },
+    {
+      "file": "oc068-resolved-requests-390.png",
+      "width": 390,
+      "height": 1000,
+      "sha256": "9273760e7af6300c15aa20ae165c3aa6d336eb9678c8ff91369e5168e373692a"
+    }
+  ],
+  "candidate_verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_branch": "cloud/sd-oncall-c-f327",
+    "head_sha": "47a542826f975f4c60137de5d49e921e94c79a8c",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/44932439138",
+    "id": 44932439138,
+    "name": "Verify",
+    "run_attempt": 1,
+    "status": "completed"
+  },
+  "integration_main_runs": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_branch": "main",
+      "head_sha": "82c51561770c1a67ba6e1a3b41752bbabf707007",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44931991602",
+      "id": 44931991602,
+      "name": "Run site",
+      "run_attempt": 1,
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_branch": "main",
+      "head_sha": "82c51561770c1a67ba6e1a3b41752bbabf707007",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44931991659",
+      "id": 44931991659,
+      "name": "Verify",
+      "run_attempt": 1,
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_branch": "cloud/sd-oncall-c-f322-rebase-82c51561770c1a67ba6e1a3b41752bbabf707007",
+      "head_sha": "82c51561770c1a67ba6e1a3b41752bbabf707007",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44930221537",
+      "id": 44930221537,
+      "name": "Verify",
+      "run_attempt": 1,
+      "status": "completed"
+    }
+  ],
+  "landing": {
+    "candidate_is_main": false,
+    "candidate_run_site": "pending landing",
+    "full_history_publication_scan": "fleet lander pending"
+  }
+}
