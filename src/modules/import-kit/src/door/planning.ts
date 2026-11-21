@@ -4,7 +4,7 @@ import { canonicalJson, sha256 } from '../provenance/identity.ts';
 import { readFileSource } from '../readers/file.ts';
 import { planD1Import } from '../d1/jobs.ts';
 import { erasedSourcePredicates } from '../d1/erasure-claims.ts';
-import type { ImportPlan, MappingResult, SourceBundle } from '../types.ts';
+import type { ImportMapping, ImportPlan, Json, MappingResult, SourceBundle, SourceRecord } from '../types.ts';
 import type { DoorPlanRow, DoorRecord, DoorRequest, DoorSnapshot } from './types.ts';
 import { kitContext } from './authority.ts';
 import { importedTargets, recordKey } from './inventory.ts';
@@ -13,6 +13,10 @@ import { assertion, lineage, loadSnapshot, planRow, saveSnapshot, sql, statement
 import { bundleBytes, text, uploadRow, type UploadRow } from './uploads.ts';
 import { sourceRefusal } from './refusals.ts';
 import { intakeState } from './intake-policy.ts';
+
+/** Optional adapter projection for catch-up comparisons. The kit still uses the
+ * full payload and its hash for review fingerprints and durable provenance. */
+export type CatchupMapping = ImportMapping & { catchupContent?: (payload: Json) => Json };
 
 export function preview(snapshot: DoorSnapshot, created: boolean) {
   const {plan,differences} = snapshot;
@@ -87,6 +91,9 @@ async function planUpload(request: DoorRequest, input: Record<string, unknown>, 
   // refuses (413); an upload holding an erased record is refused and goes first.
   if (previous) await screen(request,upload);
   const planId = randomUUID(), options = request.options, {kitNamespace,source,retainedFrom} = await readUpload(request,upload,planId);
+  const {catchupContent} = options.mapping as CatchupMapping;
+  const contentHashes = catchupContent && new Map(source.records.map(record=>[recordKey(record),sha256(canonicalJson(catchupContent(record.payload)))]));
+  const contentHash = (record: SourceRecord, key: string) => contentHashes?.get(key) ?? record.payloadHash;
   const prior = new Map((previous?.records ?? []).map(r=>[recordKey(r),r]));
   const revisions = new Map<string,{revision:string;matches:boolean}>();
   const priorTargets = [...prior.values()].flatMap(record=>record.targets), found = await importedTargets(request,priorTargets);
@@ -98,7 +105,7 @@ async function planUpload(request: DoorRequest, input: Record<string, unknown>, 
   const mapping = {version:options.mapping.version,map(record:typeof source.records[number]):MappingResult {
     const key = recordKey(record), old = prior.get(key);
     let result: MappingResult;
-    if (old && (old.targets.length || old.explanation) && old.sourceHash === record.payloadHash && previous?.plan.mappingVersion === options.mapping.version) {
+    if (old && (old.targets.length || old.explanation) && old.sourceHash === contentHash(record,key) && previous?.plan.mappingVersion === options.mapping.version) {
       result = {effects:[],unmapped:[{reason:'Unchanged source; previous imported targets retained.'}]};
       snapshot.differences.unchanged.push(key);
     } else {
@@ -123,7 +130,7 @@ async function planUpload(request: DoorRequest, input: Record<string, unknown>, 
     const key = recordKey(entry.source), old = prior.get(key); seen.add(key);
     const unchanged = snapshot.differences.unchanged.includes(key);
     const record: DoorRecord = {kind:entry.source.kind,sourceId:entry.source.sourceId,
-      sourceHash:entry.rejection && old ? old.sourceHash : entry.source.payloadHash,
+      sourceHash:entry.rejection && old ? old.sourceHash : contentHash(entry.source,key),
       targets:entry.effects.length?entry.effects.map(e=>({kind:e.targetKind,id:e.targetId,ownerPlanId:snapshot.id,sourceIdentity:entry.identity})):(old?.targets ?? [])};
     const reason = unchanged ? (old?.targets.length ? undefined : old?.explanation) : entry.rejection ?? (entry.unmapped.length ? entry.unmapped.map(u=>u.reason).join('; ') : undefined);
     if (reason) record.explanation = reason;
