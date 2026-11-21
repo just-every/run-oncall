@@ -1,0 +1,58 @@
+{
+  "files": [
+    {
+      "blob": "692a94fee1631c545a62e6b86d21b2d688a9e6f9",
+      "bytes": 5113,
+      "path": "CHECKS.json",
+      "sha256": "5507ff9733027a9ab3abd561c16b9f052785ea01921c458a7d0af643ef8df6fb"
+    },
+    {
+      "blob": "a9ea560420c177a175da9402ab190d51b8a72957",
+      "bytes": 8743,
+      "path": "REPORT.md",
+      "sha256": "133e490cf7404b0d594312b2e396d1b48632e90c449ac1f2c92a9259152fd076"
+    },
+    {
+      "blob": "e28828cd4ce0452fce523602d2f4ea7b06995064",
+      "bytes": 393357,
+      "path": "schedule-update-autonomous-1440.png",
+      "sha256": "81dc9cfa275b4dfea0a764072dea1feaff6be62e97082bf8aa7ad5eca073abc5"
+    },
+    {
+      "blob": "8c746b1eb2493d12eda51323736aa4778ebbe940",
+      "bytes": 91303,
+      "path": "schedule-update-autonomous-390.png",
+      "sha256": "8767a22a59498f397386f41233445078000486cab3150fcb15a09ece572e43f7"
+    },
+    {
+      "blob": "e28828cd4ce0452fce523602d2f4ea7b06995064",
+      "bytes": 393357,
+      "path": "schedule-update-held-1440.png",
+      "sha256": "81dc9cfa275b4dfea0a764072dea1feaff6be62e97082bf8aa7ad5eca073abc5"
+    },
+    {
+      "blob": "8c746b1eb2493d12eda51323736aa4778ebbe940",
+      "bytes": 91303,
+      "path": "schedule-update-held-390.png",
+      "sha256": "8767a22a59498f397386f41233445078000486cab3150fcb15a09ece572e43f7"
+    },
+    {
+      "blob": "3ac9f4747ba82c6f0a16ac02da2fd0f2d5eeab31",
+      "bytes": 1007,
+      "path": "schedule-update-observations.json",
+      "sha256": "d94adfbd8491eb3719e3a9d562a908628d2326ae7240f8bdb74fc863d7d71938"
+    },
+    {
+      "blob": "fe6e416a42e6bf8017b684aaff1ec53be905c05a",
+      "bytes": 5663,
+      "path": "schedule-update-probe.mjs",
+      "sha256": "ebe6adbc39e048b28fff974dfa8db5270f1b1f942773cdf8dd3c1cfbef3c9d40"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f321",
+  "product_head": "8e3062590f3c796e070bff5f66e6bd820dc39dbd",
+  "ref": "refs/heads/evidence/sd-oncall-c-f321",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f321"
+}

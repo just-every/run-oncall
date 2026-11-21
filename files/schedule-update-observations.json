@@ -1,0 +1,54 @@
+[
+  {
+    "policy": "autonomous",
+    "tool": "oncall.schedules.update",
+    "count": 42,
+    "classes": [
+      "standard",
+      "sensitive",
+      "live"
+    ],
+    "clauses": [
+      "OC-011",
+      "OC-024",
+      "OC-077"
+    ],
+    "scope": "schedules:write",
+    "reviewDigestRequired": true,
+    "nativeState": "unchanged",
+    "mutationAudit": "unchanged",
+    "paging": "OFF and unchanged",
+    "workerOutbound": 0,
+    "browserOutbound": 0,
+    "guideWidths": [
+      1440,
+      390
+    ]
+  },
+  {
+    "policy": "held",
+    "tool": "oncall.schedules.update",
+    "count": 42,
+    "classes": [
+      "standard",
+      "sensitive",
+      "live"
+    ],
+    "clauses": [
+      "OC-011",
+      "OC-024",
+      "OC-077"
+    ],
+    "scope": "schedules:write",
+    "reviewDigestRequired": true,
+    "nativeState": "unchanged",
+    "mutationAudit": "unchanged",
+    "paging": "OFF and unchanged",
+    "workerOutbound": 0,
+    "browserOutbound": 0,
+    "guideWidths": [
+      1440,
+      390
+    ]
+  }
+]

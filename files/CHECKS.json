@@ -1,0 +1,147 @@
+{
+  "branch": "cloud/sd-oncall-c-f321",
+  "browserArtifacts": [
+    {
+      "path": "schedule-update-autonomous-1440.png",
+      "sha256": "81dc9cfa275b4dfea0a764072dea1feaff6be62e97082bf8aa7ad5eca073abc5"
+    },
+    {
+      "path": "schedule-update-autonomous-390.png",
+      "sha256": "8767a22a59498f397386f41233445078000486cab3150fcb15a09ece572e43f7"
+    },
+    {
+      "path": "schedule-update-held-1440.png",
+      "sha256": "81dc9cfa275b4dfea0a764072dea1feaff6be62e97082bf8aa7ad5eca073abc5"
+    },
+    {
+      "path": "schedule-update-held-390.png",
+      "sha256": "8767a22a59498f397386f41233445078000486cab3150fcb15a09ece572e43f7"
+    }
+  ],
+  "changed": [
+    "CONTRACT.md",
+    "sources.lock.json"
+  ],
+  "checks": [
+    {
+      "changedGeneratedViews": 0,
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "resolvedRelease": "0.2.126"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "node": "22.20.0"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build --site",
+      "exit": 0,
+      "resolvedRelease": "0.2.126"
+    },
+    {
+      "command": "node .git/schedule-update-probe.mjs",
+      "exit": 0,
+      "observations": "schedule-update-observations.json"
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=agents node tests/runtime.mjs",
+      "exit": 0,
+      "output": [
+        "PROBE BASE-AGENT-013 1 autonomous: GET /docs/agents and MCP discovery -> 42 exact tools, scopes and class sets; 17 scoped resource templates; event target withheld; native and paging unchanged; zero outbound requests",
+        "PROBE BASE-AGENT-013 1 held: GET /docs/agents and MCP discovery -> 42 exact tools, scopes and class sets; 17 scoped resource templates; event target withheld; native and paging unchanged; zero outbound requests",
+        "PASS held schedule receipts: update/override replay once; exact review/revision, changed key/arguments, scopes, Pause and current native role remain fenced",
+        "Runtime agents completed (486.7s)"
+      ]
+    },
+    {
+      "command": "node tests/agent-door-browser.mjs",
+      "exit": 0,
+      "output": [
+        "PROBE BASE-AGENT-013 rendered autonomous: /docs/agents -> complete 42-tool class, scope and fixture inventory agrees with MCP; 17 resource templates; native and paging unchanged; zero outbound requests",
+        "PROBE BASE-AGENT-013 rendered held: /docs/agents -> complete 42-tool class, scope and fixture inventory agrees with MCP; 17 resource templates; native and paging unchanged; zero outbound requests",
+        "Browser proof guide 1440: fits=true serious/critical=0 undersized-controls=0",
+        "Browser proof guide 390: fits=true serious/critical=0 undersized-controls=0",
+        "PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements"
+      ]
+    }
+  ],
+  "head": "8e3062590f3c796e070bff5f66e6bd820dc39dbd",
+  "intent": "Selected schedule-update risk cell only, within acceptance 1.",
+  "mainChecks": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "d0a94b025d5ef864b77485a56c1474ae805c569e",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44916181661",
+      "id": 44916181661,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "d0a94b025d5ef864b77485a56c1474ae805c569e",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44916181647",
+      "id": 44916181647,
+      "name": "Run site",
+      "status": "completed"
+    }
+  ],
+  "originMain": "d0a94b025d5ef864b77485a56c1474ae805c569e",
+  "publicationScan": {
+    "complete": null,
+    "findings": null,
+    "head": "8e3062590f3c796e070bff5f66e6bd820dc39dbd",
+    "historyScanned": null,
+    "status": "pending guarded lander"
+  },
+  "recordedUtc": "2026-11-21T16:04:15+00:00",
+  "repository": "just-every/run-oncall",
+  "status": {
+    "SURFACE-001": "missing",
+    "after": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41,
+      "total": 101
+    },
+    "before": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41,
+      "total": 101
+    }
+  },
+  "verify": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "8e3062590f3c796e070bff5f66e6bd820dc39dbd",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44921586130",
+      "id": 44921586130,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ]
+}
