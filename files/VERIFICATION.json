@@ -1,0 +1,313 @@
+{
+  "acceptanceAndStatusMatchBase": true,
+  "authorAndCommitterChecked": true,
+  "base": "513ec690f92432d5e78f67c1f23374d56954ddf7",
+  "branch": "cloud/sd-oncall-c-f329",
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_PRODUCT_PART=settings ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/product-browser.mjs",
+      "exit": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node tests/activation.mjs",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/transfer.mjs",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "context": "with regenerated views present",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "context": "committed views",
+      "exit": 1,
+      "output": "ACCEPTANCE.md: generated content differs; run contract-docs write."
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    }
+  ],
+  "ci": {
+    "baseWorkflows": [
+      {
+        "conclusion": "success",
+        "event": "push",
+        "head_sha": "513ec690f92432d5e78f67c1f23374d56954ddf7",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44942410760",
+        "id": 44942410760,
+        "name": "Run site",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "event": "push",
+        "head_sha": "513ec690f92432d5e78f67c1f23374d56954ddf7",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44942410761",
+        "id": 44942410761,
+        "name": "Verify",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "event": "push",
+        "head_sha": "513ec690f92432d5e78f67c1f23374d56954ddf7",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/44940687003",
+        "id": 44940687003,
+        "name": "Verify",
+        "status": "completed"
+      }
+    ],
+    "candidateVerify": {
+      "conclusion": "failure",
+      "event": "push",
+      "head_sha": "ffe8f4820deb0da19e3dd216c1eeffe027830000",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/44943535818",
+      "id": 44943535818,
+      "name": "Verify",
+      "status": "completed"
+    },
+    "failedJobArchives": [
+      {
+        "error": "failed to get run log: zip: not a valid zip file",
+        "exit": 1,
+        "httpStatus": null,
+        "job": 136965827365
+      },
+      {
+        "exit": 0,
+        "job": 136970301564,
+        "observed": {
+          "BUILD": "success",
+          "CONTRACT_DOCS": "failure",
+          "SHARDS": "success"
+        }
+      }
+    ],
+    "readyBasis": "All build and shard jobs passed. The contract-docs check reproduced the expected committed ACCEPTANCE.md drift locally on this exact head. The final coverage guard failed on that dependency.",
+    "terminalJobs": [
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 136965741044,
+        "name": "plan",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          "Check the generated contract documents"
+        ],
+        "id": 136965827365,
+        "name": "contract-docs",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "id": 136965828470,
+        "name": "light",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 136965832991,
+        "name": "build",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 136966715464,
+        "name": "shards (intake)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 136966715469,
+        "name": "shards (transfer)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 136966715471,
+        "name": "shards (triage)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 136966715477,
+        "name": "shards (hosted)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 136966715502,
+        "name": "shards (runtime)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 136966715528,
+        "name": "shards (activation)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 136966715554,
+        "name": "shards (changes)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 136966715570,
+        "name": "shards (browser)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 136966715593,
+        "name": "shards (agents)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 136970282772,
+        "name": "full-push-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "id": 136970284298,
+        "name": "nightly-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          "Require the selected coverage and its proof"
+        ],
+        "id": 136970301564,
+        "name": "verify",
+        "status": "completed"
+      }
+    ]
+  },
+  "clause": {
+    "after": "PARTIAL",
+    "before": "PARTIAL",
+    "fullAcceptancesClosed": [],
+    "id": "OC-040"
+  },
+  "counts": {
+    "after": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41,
+      "total": 101
+    },
+    "before": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41,
+      "total": 101
+    }
+  },
+  "head": "ffe8f4820deb0da19e3dd216c1eeffe027830000",
+  "landing": {
+    "candidateMainEquality": "pending guarded lander",
+    "candidateRunSite": "main-only, pending guarded lander",
+    "publicationScan": "pending guarded lander"
+  },
+  "laneEvidence": {
+    "activation": {
+      "adminErasureAndRefusals": "passed",
+      "auditRollback": "passed",
+      "nativeRestoreFences": "passed",
+      "revocationAndReplay": "passed",
+      "scheduleGap": "passed"
+    },
+    "browser": {
+      "captures": [
+        {
+          "bytes": 3563021,
+          "file": "oc040-043-docs-changes-1440.png",
+          "sha256": "2f7e7d5926560c3240db1eec2c18e93f441455176619bffcce4e450cad0462ca",
+          "width": 1440
+        },
+        {
+          "bytes": 2302664,
+          "file": "oc040-043-docs-changes-390.png",
+          "sha256": "efa5eb5075f3cdd0f3c7c11e3a9be0109f41469e257c08713027aff1ee87e612",
+          "width": 390
+        },
+        {
+          "bytes": 4408868,
+          "file": "oc040-043-docs-data-1440.png",
+          "sha256": "17f8035c4d4ff1cfe4f4ef8e79eea450915751b76bb139df09db10d66d5cecb0",
+          "width": 1440
+        },
+        {
+          "bytes": 2893624,
+          "file": "oc040-043-docs-data-390.png",
+          "sha256": "06df6458c5de7b08d12ff6ed237dae150f31c44aaf4fac50a57938f546bdd816",
+          "width": 390
+        }
+      ],
+      "changeSourceCredentialRetained": true,
+      "desktopAssertions": 1440,
+      "destination": "/docs/data#incident-member-and-integration-erasure",
+      "externalRecipientDeletion": "not-requested",
+      "incidentRowsDeleted": 1,
+      "integrationCredentialsDeleted": 1,
+      "memberCredentialsDeleted": 1,
+      "receiptState": "complete",
+      "standby": "not-reconciled"
+    },
+    "transfer": {
+      "currentArchiveRetainsErasure": "passed",
+      "inconsistentArchiveRefusal": "passed",
+      "staleArchiveRefusal": "passed"
+    }
+  },
+  "newCommitCount": 1,
+  "productRemoteRefVerified": true,
+  "repository": "just-every/run-oncall",
+  "tag": "sd-oncall-c-f329",
+  "trailersPresent": false
+}
