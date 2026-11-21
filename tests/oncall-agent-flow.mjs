@@ -6,7 +6,7 @@ import {lexer} from 'marked';
 import {agentRuntime,agentEffectSnapshot,agentReadSnapshot,assertAgentReadUnchanged,pauseMatrix,policyAdoption,consentRevocationMatrix} from './agent-door-runtime.mjs';
 import {resourceJourney} from './oncall-agent-resources.mjs';
 import {resourceParity} from './oncall-agent-resource-parity.mjs';
-import {declareFromAlertParity,acknowledgeParity,recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
+import {declareFromAlertParity,acknowledgeParity,resolutionParity,recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
 import {manualPageClassification,deadlineClassification} from './oncall-agent-live.mjs';
 import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
@@ -696,7 +696,8 @@ async function agedResolutionReplay(mode,policy){
   assert.deepEqual(entry.metadata.agent.approvers??[],approved?[{id:owner.id,name:owner.name}]:[]);
   assert.deepEqual(JSON.parse(once.records.oc_incidents.find(row=>row.id===incident.id).data),resolved);
   const mutations=once.records.oc_admin_audit.filter(row=>!before.records.oc_admin_audit.some(prior=>prior.id===row.id));
-  assert.equal(mutations.length,1);assert.equal(mutations[0].kind,'incidents.resolve');
+  assert.equal(mutations.length,1);
+  assert.equal(mutations[0].kind,'command.transition','The retained resolution has the native transition audit kind');
   assert.equal(mutations[0].outcome,'accepted');
   assert.equal(once.records.agent_door_calls.length,before.records.agent_door_calls.length+1);
   assert.equal(once.records.agent_door_approvals.length,before.records.agent_door_approvals.length+Number(Boolean(approved)));
@@ -1097,6 +1098,18 @@ try{
   const response=await acknowledgmentResponder.http('/api/command',{type:'transition',state:'acknowledged',incident:incident.id,revision:incident.revision,summary});
   assert.equal(response.status,200);
   return response.json();
+ });
+ const resolutionResponder=await runtime.memberSession('Synthetic resolution responder','responder');
+ await resolutionParity(runtime,resolutionResponder.member,async (incident,summary)=>{
+  const response=await resolutionResponder.http('/api/command',{
+   type:'transition',state:'resolved',incident:incident.id,revision:incident.revision,summary,evidence:incident.recovery,
+  });
+  assert.equal(response.status,200);
+  return response.json();
+ },async (path,evidence)=>{
+  const response=await http(path+'/approve',evidence);
+  assert.equal(response.status,200);
+  await response.body.cancel();
  });
  await droppedDeclarationReplay(runtime);
  await droppedCoordinationReplay(runtime);

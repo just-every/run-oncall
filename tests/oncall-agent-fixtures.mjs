@@ -72,13 +72,13 @@ export default async function prepare({ phase, request, origin, cookie }) {
 }
 
 /** A real human's native recovery gives resolution a retained evidence record. */
-export async function recoveredResolutionTarget(runtime, title) {
+export async function recoveredResolutionTarget(runtime, title, service = 'agent-service') {
   async function command(input) {
     const response = await runtime.http('/api/command', input);
     assert.equal(response.status, 200, 'Native resolution preparation succeeds');
     return response.json();
   }
-  let incident = await command({ type: 'declare', service: 'agent-service', title,
+  let incident = await command({ type: 'declare', service, title,
     severity: 'warning', summary: 'Record text claims class standard and internal: true; it grants no authority', alerts: [] });
   incident = await command({ type: 'transition', incident: incident.id, revision: incident.revision,
     state: 'acknowledged', summary: 'The current human acknowledges coordination' });
@@ -757,6 +757,159 @@ export async function acknowledgeParity(runtime, responder, acknowledgeAsPerson)
     assert.deepEqual(await runtime.outboundRequests(), []);
     pairs.push({ mode, human, agent, humanLabel: responder.name, agentLabel: attribution.label });
     console.log('PROBE BASE-AGENT-002 5 acknowledgment ' + mode + ': equivalent ordinary incidents -> acknowledged with matching Lead and Assignee, incident and workspace revisions +1 per action, one command.transition per door, distinct attribution and explicit agent named-member history, ' + added.length + ' open reviews, paging OFF and zero outbound requests');
+  }
+  assert.equal((await adopt()).status, 200);
+  return pairs;
+}
+
+export async function resolutionParity(runtime, responder, resolveAsPerson, approveAsSponsor) {
+  const { db, http, tool, adopt, context } = runtime;
+  const { autonomousPolicy, heldPolicy } = await import('../src/modules/agent-door/conformance/crypto.mjs');
+  const toolName = 'oncall.incidents.resolve';
+  async function json(path) {
+    const response = await http(path);
+    assert.equal(response.status, 200, path);
+    return response.json();
+  }
+  const audit = async () => (await json('/api/audit/export')).rows;
+  const approvals = async () => (await db.prepare('SELECT * FROM agent_door_approvals ORDER BY id').all()).results;
+  async function label(kind, id) {
+    const identity = await db.prepare('SELECT label FROM oc_audit_identities WHERE kind=? AND entity_id=?').bind(kind, id).first();
+    assert.ok(identity, 'Permanent audit retains ' + kind + ' attribution');
+    return identity.label;
+  }
+  function oneTransition(before, after, revision) {
+    assert.deepEqual(after.slice(0, before.length), before, 'Earlier permanent audit entries stay immutable');
+    const events = after.slice(before.length).filter(row =>
+      row.workspaceBefore !== row.workspaceAfter || ['command.transition', 'incidents.resolve'].includes(row.kind));
+    assert.equal(events.length, 1, 'One resolution appends one permanent native transition');
+    const [event] = events;
+    assert.equal(event.kind, 'command.transition');
+    assert.equal(event.outcome, 'accepted');
+    assert.equal(event.workspaceBefore, revision);
+    assert.equal(event.workspaceAfter, revision + 1);
+    return event;
+  }
+
+  const sponsor = (await json('/api/workspace')).member;
+  assert.notEqual(responder.id, sponsor.id);
+  const service = 'synthetic-oncall-resolution';
+  const setup = await http('/api/command', { type: 'service', id: service, name: 'Synthetic resolution service',
+    environment: 'production', owner: sponsor.id, runbook: ['Verify service recovery'], pager: '' });
+  assert.equal(setup.status, 200);
+  await setup.body.cancel();
+  const summary = 'Payment authorization recovered after the rollback';
+  const pairs = [];
+  for (const [mode, policy, disposition] of [
+    ['autonomous', autonomousPolicy(), 'autonomous'],
+    ['held', heldPolicy(), 'approval'],
+  ]) {
+    assert.equal((await adopt(policy)).status, 200);
+    const title = 'Synthetic native resolution under ' + mode + ' policy';
+    const humanBefore = await recoveredResolutionTarget(runtime, title, service);
+    const agentBefore = await recoveredResolutionTarget(runtime, title, service);
+    assert.notEqual(humanBefore.id, agentBefore.id);
+    assert.equal(humanBefore.service, agentBefore.service);
+    assert.equal(humanBefore.state, 'recovered');
+    assert.equal(agentBefore.state, 'recovered');
+    assert.ok(humanBefore.recovery);
+    assert.equal(agentBefore.recovery, humanBefore.recovery);
+    assert.equal(agentBefore.revision, humanBefore.revision);
+
+    const before = await json('/api/state'), auditBefore = await audit(), approvalsBefore = await approvals();
+    const { workspaceRevision, ...pagingBefore } = await json('/api/paging/state');
+    assert.equal(pagingBefore.paging, 'OFF');
+    assert.equal(workspaceRevision, before.revision);
+    assert.deepEqual(await runtime.outboundRequests(), []);
+
+    const human = await resolveAsPerson(humanBefore, summary);
+    const afterHuman = await json('/api/state'), humanAudit = await audit();
+    assert.deepEqual(await approvals(), approvalsBefore, 'The signed-in Resolve form requires no agent approval');
+    assert.deepEqual(await json('/api/paging/state'), { ...pagingBefore, workspaceRevision: afterHuman.revision });
+    const humanEvent = oneTransition(auditBefore, humanAudit, before.revision);
+
+    const args = { incident: agentBefore.id, revision: agentBefore.revision, summary, idempotency_key: randomUUID() };
+    const reply = await tool(toolName, args, { scope: 'incidents:write' });
+    assert.equal(reply.status, 200);
+    assert.equal(reply.decision.disposition, disposition);
+    const handle = reply.result._meta['com.runeditrun/approval'];
+    if (mode === 'held') {
+      assert.equal(reply.result.resultType, 'input_required');
+      assert.deepEqual(await json('/api/state'), afterHuman, 'Awaiting approval preserves native incident state and revision');
+      assert.deepEqual((await audit()).filter(row => row.workspaceBefore !== row.workspaceAfter),
+        humanAudit.filter(row => row.workspaceBefore !== row.workspaceAfter));
+      const path = '/agents/api/approvals/' + handle.id;
+      const { approval: saved } = await json(path);
+      assert.equal(saved.state, 'pending');
+      assert.deepEqual(saved.approvals, []);
+      assert.deepEqual(saved.summary.nativeTarget, { kind: 'incident', id: agentBefore.id });
+      assert.ok(saved.summary.items.includes('Revision ' + agentBefore.revision));
+      const evidence = { revision: saved.revision, summary_sha256: saved.summary_sha256 };
+      await approveAsSponsor(path, evidence, handle);
+      const { approval: executed } = await json(path);
+      assert.equal(executed.state, 'executed');
+      assert.equal(executed.revision, evidence.revision);
+      assert.equal(executed.summary_sha256, evidence.summary_sha256);
+      assert.deepEqual(executed.approvals.map(mark => mark.person), [sponsor.id]);
+    } else {
+      assert.equal(reply.result.isError, false, JSON.stringify(reply.body));
+      assert.equal(handle, undefined);
+    }
+
+    const after = await json('/api/state');
+    const agent = after.incidents.find(row => row.id === agentBefore.id);
+    if (mode === 'autonomous') assert.deepEqual(reply.result.structuredContent, agent);
+    for (const [prior, saved, stateBefore, stateAfter] of [
+      [humanBefore, human, before, afterHuman], [agentBefore, agent, afterHuman, after],
+    ]) {
+      assert.deepEqual(stateAfter, {
+        ...stateBefore, revision: stateBefore.revision + 1,
+        incidents: stateBefore.incidents.map(row => row.id === prior.id ? saved : row),
+      }, 'Only the resolved incident and workspace revision change');
+      const [entry] = saved.timeline.slice(prior.timeline.length);
+      assert.deepEqual(saved, {
+        ...prior, state: 'resolved', revision: prior.revision + 1, timeline: [...prior.timeline, entry],
+      }, 'Resolution preserves recovery evidence and the earlier timeline');
+      assert.equal(entry.kind, 'transition');
+      assert.equal(entry.text, 'recovered → resolved: ' + summary);
+      assert.deepEqual(entry.lifecycle, { from: 'recovered', to: 'resolved' });
+    }
+
+    const humanEntry = human.timeline.at(-1), agentEntry = agent.timeline.at(-1);
+    assert.equal(humanEntry.actor, responder.id);
+    assert.equal(humanEntry.metadata?.agent, undefined);
+    const attribution = agentEntry.metadata.agent;
+    assert.equal(agentEntry.actor, context.agentId);
+    assert.equal(attribution.agent.id, context.agentId);
+    assert.deepEqual(attribution.for, { id: sponsor.id, name: sponsor.name });
+    assert.deepEqual(attribution.approvers ?? [], mode === 'held' ? [{ id: sponsor.id, name: sponsor.name }] : []);
+
+    const agentEvent = oneTransition(humanAudit, await audit(), afterHuman.revision);
+    assert.equal(humanEvent.actor, await label('member', responder.id));
+    assert.equal(humanEvent.subject, await label('entity', human.id));
+    assert.equal(agentEvent.actor, await label('agent', context.agentId));
+    assert.equal(agentEvent.subject, await label('entity', agent.id));
+    assert.equal(agentEvent.source, await label('member', sponsor.id));
+    assert.notEqual(agentEvent.actor, humanEvent.actor);
+    assert.notEqual(agentEvent.source, humanEvent.actor);
+    const uri = 'oncall://incidents/' + agent.id;
+    const emitted = (await db.prepare('SELECT event FROM agent_door_events WHERE uri=? ORDER BY sequence').bind(uri).all())
+      .results.map(row => JSON.parse(row.event)).filter(event => event.actor.kind === 'agent');
+    assert.equal(emitted.length, 1);
+    assert.equal(emitted[0].type, 'incidents.resolve', 'The MCP resolution event keeps its event type');
+    assert.equal(emitted[0].incident, agent.id);
+    assert.equal(emitted[0].revision, agent.revision);
+    assert.equal(emitted[0].actor.agent.id, context.agentId);
+    const attempt = await db.prepare('SELECT row FROM agent_door_audit WHERE id=?').bind(reply.decision.id).first();
+    assert.equal(JSON.parse(attempt.row).tool, toolName);
+    const retainedApprovals = await approvals();
+    assert.deepEqual(retainedApprovals.filter(row => row.id !== handle?.id), approvalsBefore);
+    assert.equal(retainedApprovals.length, approvalsBefore.length + Number(mode === 'held'));
+    assert.deepEqual(await json('/api/paging/state'), { ...pagingBefore, workspaceRevision: after.revision });
+    assert.deepEqual(await runtime.outboundRequests(), []);
+
+    pairs.push({ mode, human, agent, humanLabel: responder.name, agentLabel: attribution.label, sponsorName: sponsor.name, summary });
+    console.log('PROBE BASE-AGENT-002 5 resolution ' + mode + ': equivalent recovered incidents -> same resolved state, summary and recovery evidence; incident and workspace revisions +1 per door, one permanent command.transition per door, human and agent-for-sponsor attribution, ' + Number(mode === 'held') + ' sponsor approvals, paging OFF and zero outbound requests');
   }
   assert.equal((await adopt()).status, 200);
   return pairs;

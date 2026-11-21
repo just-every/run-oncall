@@ -143,7 +143,8 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
           context=responseContext(snapshot,ctx.now())
         }
         const result = command(current.state, actor, nativeInput, new Date(ctx.now()).toISOString(),context) as Incident
-        const auditType = operation.name === 'incidents.declare' ? 'command.declare'
+        const auditType = operation.name === 'incidents.resolve' ? 'command.transition'
+          : operation.name === 'incidents.declare' ? 'command.declare'
           : operation.name === 'incidents.acknowledge' ? 'command.transition' : operation.name
         nativeAudit(env, ctx, auditType, result.id)
         if(operation.name==='incidents.acknowledge')auditIdentity(env.DB,{namedMember:{kind:'member',id:String(args.member)}})
