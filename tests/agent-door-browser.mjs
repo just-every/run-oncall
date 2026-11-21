@@ -249,11 +249,29 @@ try{
    await cover.scrollIntoViewIfNeeded();
   });
  }
- for(const {mode,schedule} of reviewedRotas){
-  await capture('reviewed-revision-retained-'+mode,'/on-call/'+schedule.id,async()=>{
-   await page.getByRole('heading',{name:schedule.name,exact:true}).waitFor();
-  });
- }
+ try{
+  for(const {mode,schedule,coverage} of reviewedRotas){
+   await runtime.time(coverage.at);
+   const loaded=page.waitForResponse(response=>new URL(response.url()).pathname===coverage.path&&response.ok());
+   await capture('reviewed-revision-retained-'+mode,'/on-call/'+schedule.id,async()=>{
+    await page.getByRole('heading',{name:schedule.name,exact:true,level:1}).waitFor();
+    const panel=page.locator('.scheduling-now-next');
+    await panel.locator('.now').last().waitFor();
+    if(page.viewportSize().width===1440){
+     assert.deepEqual(await (await loaded).json(),coverage.nowNext,'The renamed rota reads the protected coverage at the frozen instant');
+     const name=id=>coverage.people.find(row=>row.id===id).name;
+     assert.deepEqual(await panel.locator('.scheduling-now-role h3').allTextContents(),['primary','backup']);
+     assert.deepEqual(await panel.locator('.now').allTextContents(),[
+      'Now: '+name(coverage.nowNext.now.primary),
+      'Now: '+name(coverage.nowNext.now.backup),
+     ]);
+     await page.locator('.oc-rota-record').getByText('Paging is off',{exact:true}).first().waitFor();
+     assert.ok(await panel.evaluate(node=>[...node.querySelectorAll('h2,h3,p')].every(el=>parseFloat(getComputedStyle(el).fontSize)>=13)));
+    }
+    await panel.scrollIntoViewIfNeeded();
+   });
+  }
+ }finally{await runtime.time(null)}
  page.off('request',recordRotaOutbound);
  assert.deepEqual(await agentEffectSnapshot(runtime),beforeRotaReads,'Viewing saved rota cover changes no durable records');
  assert.deepEqual(rotaOutbound,[]);
