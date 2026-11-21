@@ -1,0 +1,7 @@
+branch=cloud/sd-oncall-c-f330
+head=3eee70bbfeadefba838a50fb31bc165e6e79ed04
+parent=513ec690f92432d5e78f67c1f23374d56954ddf7
+tree=67c5f534b73b205be76d3492edff4b31bb5f7b36
+Product branch push succeeded. The named remote branch advertised this exact head.
+Fleet identity and empty trailers verified for all commits above origin/main.
+Added-line hygiene precheck found zero email-shaped strings or bare slash tokens.

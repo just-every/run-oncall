@@ -1,0 +1,14 @@
+parent=513ec690f92432d5e78f67c1f23374d56954ddf7
+tested_tree=67c5f534b73b205be76d3492edff4b31bb5f7b36
+Node v22.20.0, pnpm 10.12.4
+Emitted Worker build via cloud_run npx -y @runeditrun/rer build exit=0
+ONCALL_RUNTIME_PART=agents WRANGLER_SEND_METRICS=false cloud_run node tests/runtime.mjs exit=0
+PROBE BASE-AGENT-012 4 autonomous: override native revision 1, no expected_revision -> revision_conflict, current_revision 2 in metadata and text; scoped-out and absent indistinguishable; fresh revision -> one native override and audit, autonomous; replay unchanged; zero outbound requests
+PROBE BASE-AGENT-012 4 held: override native revision 1, no expected_revision -> revision_conflict, current_revision 2 in metadata and text; scoped-out and absent indistinguishable; fresh revision -> one native override and audit, one exact sponsor approval; replay unchanged; zero outbound requests
+PROBE BASE-AGENT-012 4 autonomous: override native revision 2, stale expected_revision 1 -> revision_conflict, current_revision 2 in metadata and text; scoped-out and absent indistinguishable; fresh revision -> one native override and audit, autonomous; replay unchanged; zero outbound requests
+PROBE BASE-AGENT-012 4 held: override native revision 2, stale expected_revision 1 -> revision_conflict, current_revision 2 in metadata and text; scoped-out and absent indistinguishable; fresh revision -> one native override and audit, one exact sponsor approval; replay unchanged; zero outbound requests
+PROBE BASE-AGENT-012 4 autonomous: update native revision 1, no expected_revision -> revision_conflict, current_revision 2 in metadata and text; scoped-out and absent indistinguishable; fresh revision -> one native update and audit, autonomous; replay unchanged; zero outbound requests
+PROBE BASE-AGENT-012 4 held: update native revision 1, no expected_revision -> revision_conflict, current_revision 2 in metadata and text; scoped-out and absent indistinguishable; fresh revision -> one native update and audit, one exact sponsor approval; replay unchanged; zero outbound requests
+PROBE BASE-AGENT-012 4 autonomous: update native revision 2, current proposal revision 2, stale expected_revision 1 -> revision_conflict, current_revision 2 in metadata and text; scoped-out and absent indistinguishable; fresh revision -> one native update and audit, autonomous; replay unchanged; zero outbound requests
+PROBE BASE-AGENT-012 4 held: update native revision 2, current proposal revision 2, stale expected_revision 1 -> revision_conflict, current_revision 2 in metadata and text; scoped-out and absent indistinguishable; fresh revision -> one native update and audit, one exact sponsor approval; replay unchanged; zero outbound requests
+Runtime agents completed (489.5s)
