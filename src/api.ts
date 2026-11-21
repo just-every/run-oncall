@@ -388,7 +388,8 @@ api.post("/api/ingress/:source", async (c) => {
   };
   const state = await load(c.env.DB), before=structuredClone(state);
   const rate=await beginRate(c,{load,save},state,{id:'source:'+c.req.param('source'),name:c.req.param('source'),owner:state.members.find(m=>m.active&&m.role==='admin')!.id},authority);
-  const parsed = parseNativeRequest(nativeBody);
+  const scopes: string[] = JSON.parse(source.scopes);
+  const parsed = parseNativeRequest(nativeBody, scopes.length === 1 ? scopes[0] : undefined);
   if (!parsed) {
     const custody = await nativeIncompleteSource(state, c.req.param("source"), source);
     const result = await retainNativeIncomplete(state, custody, nativeBody, key);
@@ -402,7 +403,7 @@ api.post("/api/ingress/:source", async (c) => {
   // Names are input aliases only. Retain the established source identity so old
   // senders, retry receipts and alert generations keep sharing the same custody.
   signal.source = c.req.param("source");
-  if (!JSON.parse(source.scopes).includes(signal.service))
+  if (!scopes.includes(signal.service))
     fail('"service" must be an internal service ID authorized for this source', 403);
   const revision = state.revision;
   const result = admit(state, signal);

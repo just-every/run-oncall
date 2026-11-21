@@ -14,7 +14,11 @@ export type NativeDefinition = { id: string; authentication: 'signed' | 'bearer'
 export type SourceRecord = { id: string; name: string; kind: IntegrationKind; service: string; active: boolean; statusKnown?: boolean; native?: NativeDefinition };
 export const privateKey = (bytes = 32) => Array.from(crypto.getRandomValues(new Uint8Array(bytes)), b => b.toString(16).padStart(2, '0')).join('');
 export const newIdentity = (prefix: string) => prefix + '-' + privateKey(6);
-export const sourcePath = (id: string) => '/settings/integrations/' + encodeURIComponent(id);
+export const sourcePath = (id: string) => '/settings/integrations/' + encodeURIComponent(id.startsWith('native:') ? 'events-' + id.slice(7) : id);
+export const sourceIdFromPath = (path: string) => {
+  const segment = decodeURIComponent(path);
+  return segment.startsWith('events-') ? 'native:' + segment.slice(7) : segment;
+};
 export const addPath = (kind: string) => '/settings/integrations/new/' + kind;
 export const shortTime = (value: string) => new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(value));
 export function sourcesFrom(state: State, native: NativeDefinition[], canReadNative = true): SourceRecord[] {

@@ -1173,11 +1173,14 @@ async function eventsSourceBrowser(page,context) {
   const example=await page.getByLabel('Sample request',{exact:true}).inputValue();assert.ok(!example.includes(key),'sample never embeds the secret');
   assert.ok(!(await page.locator('.integrations').innerText()).includes(service),'source-created recipe names its service without exposing its internal identity');
   assert.equal(await page.getByLabel('Sample request',{exact:true}).isVisible(),false,'raw request code opens deliberately');
-  assert.equal(JSON.parse(example.match(/'({\n[\s\S]*\n})'/)[1].replaceAll("'\\''","'")).service,service,'copied request already supplies the service');
+  assert.ok(!example.includes(service),'the copied request can use the credential’s service without an internal ID');
   await page.getByRole('button',{name:'Copy sample request',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),example);
   if(mode==='bearer')await proof('created');
   const path=new URL(await page.getByRole('link',{name:'Open source',exact:true}).getAttribute('href'),origin).pathname;
-  return {key,url,example,path,name:await page.getByRole('heading',{level:2}).innerText(),source:decodeURIComponent(new URL(url).pathname.split('/').at(-1))};
+  const name=await page.getByRole('heading',{level:2}).innerText(),source=decodeURIComponent(new URL(url).pathname.split('/').at(-1));
+  assert.equal(source.replaceAll('-',' '),name,'the ingress address names the source');
+  assert.ok(path.endsWith(encodeURIComponent(source))&&!path.includes('%3A'),'the settings link uses the readable source address');
+  return {key,url,example,path,name,source};
  };
  // Compatible samples execute through the public receiver without Node on PATH.
  const compatibleSample=async(key,kind)=>{
@@ -1307,7 +1310,7 @@ async function eventsSourceBrowser(page,context) {
   const example=await page.getByLabel('Sample request',{exact:true}).inputValue();
   const body=JSON.parse(example.match(/'({\n[\s\S]*\n})'/)[1].replaceAll("'\\''","'"));
   assert.equal(body.source,sample.name,'sample uses the source name shown on its page');
-  assert.equal(body.service,service,'sample keeps the service identity required by the API');
+  assert.equal(body.service,undefined,'the source scope supplies the service for this sample');
   assert.ok(body.key.includes(serviceName)&&!body.key.includes(service),'dedup key describes the named service');
   assert.ok(body.generation.includes(body.observedAt)&&body.eventId.includes(body.generation),'sample observation and lifecycle IDs use a readable timestamp');
   assert.ok(!body.eventId.includes(service)&&!/[a-f0-9]{8}-[a-f0-9]{4}-/i.test(body.eventId),'event identity contains no internal UUID');
@@ -1338,7 +1341,7 @@ async function eventsSourceBrowser(page,context) {
    else {const timestamp=String(Math.floor(Date.now()/1000));headers['x-oncall-timestamp']=timestamp;headers['x-oncall-signature']=createHmac('sha256',sample.key).update(timestamp+'.'+raw).digest('hex');}
    const response=await context.request.post(sample.url,{headers,data:raw});return {status:response.status(),value:await response.json()};
   };
-  const legacy=await sendBody({...body,source:sample.source});assert.equal(legacy.status,200);assert.equal(legacy.value.id,receipt.id);assert.equal(legacy.value.duplicate,true,'legacy ID retries share the named sample receipt');
+  const legacy=await sendBody({...body,source:sample.source,service});assert.equal(legacy.status,200);assert.equal(legacy.value.id,receipt.id);assert.equal(legacy.value.duplicate,true,'explicit source and service ID retries share the named sample receipt');
   const accepted=await request('/api/state'),event=accepted.events.find(event=>event.id===receipt.id),alert=accepted.alerts.find(alert=>alert.events.includes(receipt.id));
   assert.equal(event.source,sample.source,'stored event keeps the established source identity');assert.equal(event.key,body.key);assert.equal(alert.state,'active');assert.equal(alert.service,service);
   assert.equal((await sendBody({...body,source:'Another source',eventId:body.eventId+'-wrong-source'})).status,403,'a display name cannot select another source');
