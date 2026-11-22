@@ -1,3 +1,22 @@
+# 0.5.25 · 2026-11-22
+
+- The Run page and setup guides look up the latest published GitHub Release tag for installs and updates. Updating a detached checkout now switches to the published tag.
+- Hosted recovery submissions refuse stale incident revisions and show the saved record. If the incident status and recovery evidence are unchanged, responders can review the conflict and explicitly apply their edit. Saved incident and review changes carry across screens, so responders can add a follow-up from an accepted review without reloading.
+- In Move in, choose **PagerDuty** under **Source** to upload a saved export under **Export JSON**, then review the plan and import it paused.
+- When no explicit coordination rule or on-call policy applies, a service's first alert can go to the primary on call at intake. The alert stays unassigned if no primary is eligible or the staffed rotas disagree. Explicit routing and suppression still take precedence.
+
+### Upgrade from 0.5.24
+
+Back up first. For local data, run `rer export --output exports/before-0.5.25.rer`. For hosted data, export the D1 database with the original deploying Cloudflare credentials. Keep the backup private and verify it before updating.
+
+Stop the local app with Ctrl-C or `rer dev --stop`. Once the release is published, run `git fetch --depth 1 origin tag v0.5.25` and `git checkout --detach v0.5.25`, then start with `rer dev --host localhost`. For a hosted installation, update the original deploying checkout to the same tag and run `rer deploy --environment ENVIRONMENT` with the same credentials. Restore only into an empty destination.
+
+This update adds no migrations. Keep all 69 previously released migration files unchanged. The checkout pins rer to 0.2.129.
+
+## Known limits
+
+Paging stays OFF. Keep your existing pager active. Release 2 paging and independent standby are still unavailable. Live AWS delivery and live PagerDuty account migration or cutover remain unverified.
+
 # 0.5.24 · 2026-11-22
 
 - The Run page, Getting started, and Install and run advanced to the published `v0.5.23` checkout. Install commands follow publication of each tag. The hosting guides distinguish the loopback address from `rer setup` and the private hosted owner link from `rer signin`.
