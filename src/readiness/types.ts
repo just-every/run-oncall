@@ -10,9 +10,15 @@ export type MatrixRow = {
  observation: {state: 'available' | 'unavailable'; configured: number | null; active: number | null; lastAcceptedAt: string | null} | null;
  limitation: string;
 };
+export type HostingChecks = {
+ identity: {state: 'healthy' | 'unbound' | 'unavailable' | 'not-applicable'; detail: string};
+ owner: {state: 'signed-in' | 'owner-session-required' | 'not-applicable'; detail: string};
+ removal: {state: 'not-done' | 'not-applicable'; detail: string};
+};
 export type InstallationDependency = {
  id: string; name: string; clauses: string[]; state: MatrixState;
- completion: 'not-done' | 'guidance-only' | 'confirmed' | 'changed-since' | 'not-applicable' | 'unknown';
+ completion: 'not-done' | 'guidance-only' | 'confirmed' | 'changed-since' | 'not-applicable' | 'unknown' | 'by-check';
+ checks?: HostingChecks;
  signInConfirmedAt?: string;
  signInConfirmedSender?: string;
  matrix: {id: string; state: MatrixState}[];

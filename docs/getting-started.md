@@ -4,13 +4,13 @@ Oncall runs on your own computer first. Open a terminal (on a Mac, Terminal in A
 
 <!-- rer:local-recipe -->
 ```sh
-ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" && mkdir run-oncall && cd run-oncall && git init -q && git remote add origin https://github.com/just-every/run-oncall && git fetch --depth 1 origin tag "$ONCALL_TAG" && git checkout --detach "refs/tags/$ONCALL_TAG" && curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev --host localhost
+ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" && mkdir run-oncall && cd run-oncall && git init -q && git remote add origin https://github.com/just-every/run-oncall && git fetch --quiet --depth 1 origin tag "$ONCALL_TAG" && git checkout --quiet --detach "refs/tags/$ONCALL_TAG" && curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev --host localhost
 ```
 
 Already have Node 22 or later?
 
 ```sh
-ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" && mkdir run-oncall && cd run-oncall && git init -q && git remote add origin https://github.com/just-every/run-oncall && git fetch --depth 1 origin tag "$ONCALL_TAG" && git checkout --detach "refs/tags/$ONCALL_TAG" && npx -y @runeditrun/rer dev --host localhost
+ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" && mkdir run-oncall && cd run-oncall && git init -q && git remote add origin https://github.com/just-every/run-oncall && git fetch --quiet --depth 1 origin tag "$ONCALL_TAG" && git checkout --quiet --detach "refs/tags/$ONCALL_TAG" && npx -y @runeditrun/rer dev --host localhost
 ```
 
 macOS, Linux or Windows with WSL2. git is required; rer brings Node and pnpm.
@@ -18,7 +18,7 @@ macOS, Linux or Windows with WSL2. git is required; rer brings Node and pnpm.
 
 The line clones the latest published Oncall release into a `run-oncall` folder, installs `rer` and the app's dependencies, prepares the local database and a local owner, and starts Oncall. A first local start usually takes about a minute. On a busy computer it can take longer: `rer dev` prints progress every 20 seconds, with the limit to allow. Wait for the private `RER_OPEN` link in the terminal, then open it on the same computer. Treat it like a password. The first time, Oncall opens **Finish setup**. Tick *I confirm this owner account is ready to use* and press **Finish setup**. This free copy runs only on your computer and sends no email.
 
-To start Oncall again later, run `cd run-oncall && rer dev --host localhost`. Adding `rer` to your shell's PATH is optional for future terminals; the one-line launch already finds it for this run.
+If you used the installer, restart with `cd run-oncall && "$HOME/.local/bin/rer" dev --host localhost`. If you used the Node alternative, restart with `cd run-oncall && npx -y @runeditrun/rer dev --host localhost`.
 
 For Assisted, Managed and the walkthrough for your own Cloudflare account, see [Put Oncall online](https://run-oncall.com/docs/hosting).
 
@@ -44,7 +44,7 @@ rer dev --stop
 
 Your schedules, incidents and team stay in the folder until you [export them](data.md) or reset the installation.
 
-Restart from the same folder with `rer dev --host localhost`. If the saved port is in use, run the `rer setup --port N` command printed in the error, then restart. Your data stays in the same folder.
+From the same folder, restart with the command above for the installer or Node. If the saved port is in use, run the `rer setup --port N` command printed in the error, then restart. Your data stays in the same folder.
 
 ## Explicit and unattended setup
 
@@ -117,8 +117,8 @@ export PATH="$HOME/.local/bin:$PATH"
 ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" &&
 mkdir oncall-hosted && cd oncall-hosted && git init -q &&
 git remote add origin https://github.com/just-every/run-oncall &&
-git fetch --depth 1 origin tag "$ONCALL_TAG" &&
-git checkout --detach "refs/tags/$ONCALL_TAG" &&
+git fetch --quiet --depth 1 origin tag "$ONCALL_TAG" &&
+git checkout --quiet --detach "refs/tags/$ONCALL_TAG" &&
 rer install &&
 rer setup --owner-email you@example.com
 ```

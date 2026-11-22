@@ -1152,11 +1152,17 @@ async function readinessBrowser(page,context) {
  assert.equal(await checklist.locator('input,button,select,textarea').count(),0,'checklist has no self-attestation or provider action control');
  for(const item of report.installation.items){
   const row=checklist.locator('[data-installation-item="'+item.id+'"]'),text=await row.innerText();
-  if(item.id!=='mail')assert.equal(await row.locator('[data-state]').getAttribute('data-state'),item.state);
-  assert.ok(text.includes(item.name));assert.ok(text.includes(item.requirement));
+  assert.ok(text.includes(item.name));
+  if(item.checks){
+   assert.ok(text.includes(item.checks.identity.detail));
+   assert.equal(await row.locator('[data-state]').count(),0,'hosting has no aggregate readiness badge');
+  } else {
+   if(item.id!=='mail')assert.equal(await row.locator('[data-state]').getAttribute('data-state'),item.state);
+   assert.ok(text.includes(item.requirement));
+  }
   assert.doesNotMatch(text,/\bOC-\d+\b|\bR-\d+\b|tests\/[\w-]+\.mjs/,'checklist names no internal contract id, field-proof id or test path');
   if(item.id==='mail')assert.doesNotMatch(text,/Hosted sign-in mail: Unproven live/i,'the mail checklist row reports installation status without a second state');
-  else for(const matrix of item.matrix){
+  else if(!item.checks)for(const matrix of item.matrix){
    const capability=report.matrix.find(row=>row.id===matrix.id),state={'working-here':'Working here',off:'Off','not-built':'Not built','unproven-live':'Unproven live'}[matrix.state];
    assert.ok(text.includes(capability.area+': '+state),'each constituent release state is readable beside its dependency');
   }

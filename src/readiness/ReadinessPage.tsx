@@ -1,6 +1,6 @@
 import {useEffect,useState} from 'react';
 import {useWorkspaceContext} from '../app/shell/WorkspaceContext';
-import type {InstallationDependency, Readiness} from './types';
+import type {HostingChecks, InstallationDependency, Readiness} from './types';
 import './readiness.css';
 import {shortTime} from '../reviews/time';
 
@@ -11,7 +11,26 @@ const fieldProofNames:Record<string,string>={'R-1':'Hosted deployment check','R-
 const completionLabel:Record<InstallationDependency['completion'],string>={
  'not-done':'Not done for this installation','guidance-only':'Guidance only',confirmed:'Email sign-in confirmed',
  'changed-since':'Mail settings changed', 'not-applicable':'Not required here',unknown:'Confirmation unknown',
+ 'by-check':'See individual checks',
 };
+const hostingLabels={
+ identity:'Deployment identity and health',owner:'Owner access',removal:'Removal',
+};
+const hostingStateLabel:Record<HostingChecks[keyof HostingChecks]['state'],string>={
+ healthy:'Healthy',unbound:'Source not bound',unavailable:'Health unconfirmed',
+ 'signed-in':'Signed in as owner','owner-session-required':'Owner session needed',
+ 'not-done':'Not done','not-applicable':'Not required here',
+};
+function HostingStatus({checks}:{checks:HostingChecks}) {
+ if(checks.identity.state==='not-applicable')return <p>{checks.identity.detail}</p>;
+ return <ul className="readiness-hosting">{(Object.keys(hostingLabels) as (keyof HostingChecks)[]).map(id=>{
+  const check=checks[id];
+  return <li key={id} data-hosting-check={id} data-hosting-state={check.state}>
+   <strong>{hostingLabels[id]} · {hostingStateLabel[check.state]}</strong>
+   <p>{check.detail}</p>
+  </li>;
+ })}</ul>;
+}
 export function ReadinessSection() {
  const {page}=useWorkspaceContext();
  return page==='readiness'?<ReadinessPage/>:null;
@@ -53,11 +72,11 @@ function ReadinessPage() {
     <p>Reviewed {report.installation.reviewedOn}. Release evidence comes from the matrix and the contract field proof register. Reading this checklist grants no provider, deployment, publication or cutover authority.</p>
     <p>Account steps require verification for this installation. Keep your existing pager authoritative.</p>
     <div className="panel readiness-matrix">{report.installation.items.map(item=><article key={item.id} data-installation-item={item.id}>
-     <div><h3>{item.name}</h3>{item.id!=='mail'&&<><span className="readiness-state" data-state={item.state}>{label(item.state)}</span><p>{completionLabel[item.completion]}</p></>}</div>
-     <div><p>{item.signInConfirmedAt && item.signInConfirmedSender
+     <div><h3>{item.name}</h3>{item.id!=='mail'&&!item.checks&&<><span className="readiness-state" data-state={item.state}>{label(item.state)}</span><p>{completionLabel[item.completion]}</p></>}</div>
+     <div>{item.checks?<HostingStatus checks={item.checks}/>:<p>{item.signInConfirmedAt && item.signInConfirmedSender
       ? <>Confirmed on <time dateTime={item.signInConfirmedAt}>{shortTime(item.signInConfirmedAt)}</time> for {item.signInConfirmedSender}.</>
-      : item.requirement}</p></div>
-     <div className="readiness-evidence"><strong>Release evidence</strong>{item.id!=='mail'&&item.matrix.map(row=><span key={row.id}>{report.matrix.find(item=>item.id===row.id)?.area}: {label(row.state)}</span>)}
+      : item.requirement}</p>}</div>
+     <div className="readiness-evidence"><strong>Release evidence</strong>{item.id!=='mail'&&!item.checks&&item.matrix.map(row=><span key={row.id}>{report.matrix.find(item=>item.id===row.id)?.area}: {label(row.state)}</span>)}
       {item.fieldProof.length?item.fieldProof.map(row=><span key={row.id} data-field-proof={row.id}>{fieldProofNames[row.id]??'Field check'}: {row.state==='passed'?'Passed on '+row.date+' · dated prior evidence':'Not run'}</span>):<span>No field-proof row recorded</span>}
      </div>
     </article>)}</div>

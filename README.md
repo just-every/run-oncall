@@ -51,14 +51,14 @@ You need Git on macOS, Linux or Windows with WSL2. The installer provides Node a
    ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" &&
    mkdir run-oncall && cd run-oncall && git init -q &&
    git remote add origin https://github.com/just-every/run-oncall &&
-   git fetch --depth 1 origin tag "$ONCALL_TAG" &&
-   git checkout --detach "refs/tags/$ONCALL_TAG" &&
-   rer dev --host localhost
+   git fetch --quiet --depth 1 origin tag "$ONCALL_TAG" &&
+   git checkout --quiet --detach "refs/tags/$ONCALL_TAG" &&
+   "$HOME/.local/bin/rer" dev --host localhost
    ```
 
 **Alternative for Node 22 or later.** Skip step 1 and replace the last line in step 2 with `npx -y @runeditrun/rer dev --host localhost`.
 
-To start it again later, run `cd run-oncall && rer dev --host localhost`. `rer dev` installs the application dependencies, creates a local development owner and prints a private link that opens Oncall signed in. On first launch, review the owner details and select **Finish setup**. Later launches open the app directly. To choose your own owner mailbox before the first launch, use [explicit setup](docs/getting-started.md#explicit-and-unattended-setup), which also accepts a private answers file for unattended runs. Once setup returns, run `rer dev --host localhost` and open its private `RER_OPEN` link.
+If you used the installer, restart with `cd run-oncall && "$HOME/.local/bin/rer" dev --host localhost`. If you used the Node alternative, restart with `cd run-oncall && npx -y @runeditrun/rer dev --host localhost`. `rer dev` installs the application dependencies, creates a local development owner and prints a private link that opens Oncall signed in. On first launch, review the owner details and select **Finish setup**. Later launches open the app directly. To choose your own owner mailbox before the first launch, use [explicit setup](docs/getting-started.md#explicit-and-unattended-setup), which also accepts a private answers file for unattended runs. Once setup returns, use the restart command from inside the checkout and open its private `RER_OPEN` link.
 
 Open the printed link on this computer. After setup, open your account menu and choose **Sign-in settings → Enroll passkey**. See [local passkey setup](docs/getting-started.md#sign-in-with-a-local-passkey). `rer dev --as signed-out` selects the signed-out persona. The compatibility flag `rer dev --login` still opens automatic owner entry. Ordinary `/signin` email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. The app does not capture mail or print sign-in tokens. Stop the background server with `rer dev --stop` (Ctrl-C also stops a foreground run); stop preview with `rer preview --stop` before building, verifying or deploying. A running dev or preview server owns the local state, so even a deploy dry run refuses with exit 4 until it stops.
 

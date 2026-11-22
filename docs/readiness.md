@@ -49,17 +49,19 @@ publication or cutover authority.
 Each item retains its owning clauses, constituent matrix states and applicable
 [contract field proof](https://github.com/just-every/run-oncall/blob/main/CONTRACT.md#field-proof-register)
 state and date. **Working here**, **off**, **not built** and **unproven live**
-describe the release capability; a passed field row means **passed on its date**,
+describe the release capability. A passed field row means **passed on its date**,
 never that this installation is ready. A **not run** row supplies no proof.
 The hosted sign-in mail row also shows this installation’s retained email link
 confirmation date, when available. Confirm a fresh link after changing the mail
-settings to check the current sender. Other account or live steps require their
-own verification. The 911 row is guidance only. Configuration counts, a local
+settings to check the current sender. Hosting reports whether workspace storage
+responded and the deployment bound a source SHA. It shows owner access when
+viewed from a hosted owner session. Verify removal separately in Cloudflare.
+Other account or live steps require their own verification. The 911 row is guidance only. Configuration counts, a local
 receipt or an unbound deployment identity cannot complete a prerequisite.
 
 | US dependency | Owning clauses | Release state and field proof | Installer requirement still outstanding |
 | --- | --- | --- | --- |
-| Hosting account and deployment identity | OC-018 | Coordination working here; R-1 passed on 2026-10-19, dated prior evidence | Authorize this Cloudflare account and deployment operation; verify its source SHA, artifact fingerprint, version, owner access and removal. Prior evidence is not the current deployment. |
+| Hosting | OC-018 | R-1 passed on 2026-10-19 as dated prior evidence | Authorize the Cloudflare account and deployment operation. Check deployment identity and health, sign in as the owner, and verify removal of the Worker and database separately. |
 | Remote mail for hosted sign-in | OC-018 | Unproven live; R-1 passed on 2026-10-19, dated prior evidence | Configure a remote mail provider, credentials and verified sender; test a real sign-in email. Local owner entry proves no mail delivery. R-2 passed on 2026-10-21 for inbound intake only, not sign-in or paging. |
 | Registered US voice and SMS | OC-026, OC-066 | Paging off; R-5 not run | Register A2P 10DLC brand and campaign, sending numbers and caller identity; establish consent, opt-out handling and carrier tests. No sending authority is granted. |
 | APNs and FCM entitlements | OC-029 | iOS and Android not built; R-7 not run | Provision APNs and FCM, iOS Critical Alerts entitlement and Android full-screen and Do Not Disturb permissions; prove device acceptance. |

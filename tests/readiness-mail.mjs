@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {randomBytes} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
 import {mkdtemp,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
@@ -8,7 +9,9 @@ import {localWorker} from './worker.mjs';
 async function hostedMailFixture(persistTo, sessionSecret, senderName) {
  const origin='https://synthetic-oncall-mail.example.test', owner='owner@example.test';
  const address='oncall@example.test', sender=senderName+' <'+address+'>';
+ const source=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
  const worker=await localWorker({AUTH_LOCAL:'false',AUTH_ORIGIN:origin,OWNER_EMAIL:owner,SESSION_SECRET:sessionSecret,MAIL_PROVIDER:'sendgrid',
+  RER_DEPLOY_SOURCE:source,
   MAIL_API_KEY:'synthetic-example-mail-credential',MAIL_FROM:sender}, {persistTo,requestOrigin:origin,fetchSource:`
   let providerMode='normal',providerCalls=[],pkceChallenge='',pkceValid=true,revoked=false;
   globalThis.fetch=async (input,init)=>{
@@ -64,6 +67,15 @@ export async function readinessMail() {
   assert.equal((await fixture.request('/auth/confirm',{token:randomBytes(32).toString('base64url')})).status,400);
   assert.deepEqual(await read(initial.cookie),before,'provider acceptance, link preview and a refused confirmation leave the checklist pending');
   const confirmedCookie=await confirm(token);
+  const health=await fixture.request('/health');
+  assert.equal(health.status,200);
+  assert.equal(health.value.deployment.sourceSha,fixture.worker.vars.RER_DEPLOY_SOURCE);
+  const hosted=await fixture.request('/api/readiness',undefined,confirmedCookie);
+  assert.equal(hosted.status,200);
+  const {checks}=hosted.value.installation.items.find(item=>item.id==='hosting');
+  assert.equal(checks.identity.state,'healthy');
+  assert.equal(checks.owner.state,'signed-in');
+  assert.equal(checks.removal.state,'not-done');
   const observed=await read(confirmedCookie);
   assert.equal(observed.completion,'confirmed');
   assert.ok(Number.isFinite(Date.parse(observed.signInConfirmedAt)));

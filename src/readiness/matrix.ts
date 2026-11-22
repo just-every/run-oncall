@@ -1,6 +1,6 @@
 import {integrationKinds} from '../integrations/catalog';
 import {changeProviderNames} from '../changes/model';
-import type {MatrixRow, InstallationChecklist, InstallationDependency} from './types';
+import type {MatrixRow, HostingChecks, InstallationChecklist, InstallationDependency} from './types';
 import type {SignInMail} from './sign-in-mail';
 declare const __ONCALL_FIELD_PROOF__: InstallationDependency['fieldProof'];
 
@@ -37,7 +37,7 @@ export const matrixDefinitions: Definition[] = [
 const register = new Map(__ONCALL_FIELD_PROOF__.map(row=>[row.id,row]));
 type Dependency = {id:string;name:string;clauses:string[];matrix:string[];proof:string[];requirement:string;boundary?:boolean};
 const dependencies:Dependency[] = [
- {id:'hosting',name:'Hosting account and deployment identity',clauses:['OC-018'],matrix:['coordination'],proof:['R-1'],requirement:'Not done for this installation: authorize its Cloudflare account and deployment operation, bind the source SHA, artifact fingerprint and version, and verify owner access and removal. The earlier hosted check is dated prior evidence, not this deployment.'},
+ {id:'hosting',name:'Hosting',clauses:['OC-018'],matrix:['coordination'],proof:['R-1'],requirement:'Check deployment identity and health, owner access, and removal separately.'},
  {id:'mail',name:'Remote mail for hosted sign-in',clauses:['OC-018'],matrix:['hosted-mail'],proof:['R-1','R-2'],requirement:'Configure a remote mail provider, credentials and verified sender, then confirm a link from a sign-in email.'},
  {id:'us-sending',name:'Registered US voice and SMS sending',clauses:['OC-026','OC-066'],matrix:['paging'],proof:['R-5'],requirement:'Not done: register US A2P 10DLC brand and campaign, sender numbers and caller identity; establish consent, opt-out handling and carrier tests. Paging remains OFF; account configuration grants no sending authority.'},
  {id:'push',name:'APNs and FCM entitlements',clauses:['OC-029'],matrix:['ios','android'],proof:['R-7'],requirement:'Not done: provision APNs and FCM, iOS Critical Alerts entitlement, Android full-screen and Do Not Disturb permissions, and device acceptance. No native push adapter is built.'},
@@ -64,13 +64,14 @@ function mailCompletion(mail: SignInMail): Partial<Pick<InstallationDependency,'
  }
 }
 
-export function installationChecklist(matrix:MatrixRow[],mail:SignInMail):InstallationChecklist {
+export function installationChecklist(matrix:MatrixRow[],mail:SignInMail,hosting:HostingChecks):InstallationChecklist {
  return {country:'US',reviewedOn:'2026-11-12',items:dependencies.map(item=>{
   const rows=item.matrix.map(id=>{const row=matrix.find(row=>row.id===id);if(!row)throw Error('Missing installation matrix dependency');return {id,state:row.state};});
   // The least-ready constituent wins; registration and receipts stay separate.
   const state=rows.map(row=>row.state).sort((a,b)=>['off','not-built','unproven-live','working-here'].indexOf(a)-['off','not-built','unproven-live','working-here'].indexOf(b))[0];
   return {id:item.id,name:item.name,clauses:item.clauses,state,completion:item.boundary?'guidance-only':'not-done',matrix:rows,
    fieldProof:item.proof.map(id=>{const row=register.get(id);if(!row)throw Error('Missing installation field proof');return row;}),requirement:item.requirement,
-   ...(item.id==='mail'?mailCompletion(mail):{})} satisfies InstallationDependency;
+   ...(item.id==='mail'?mailCompletion(mail):{}),
+   ...(item.id==='hosting'?{completion:'by-check',checks:hosting}:{})} satisfies InstallationDependency;
  })};
 }
