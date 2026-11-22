@@ -1,3 +1,22 @@
+# 0.5.28 · 2026-11-22
+
+- Hosted Settings → Readiness shows when someone last confirmed a sign-in email link on this installation, including links sent through SendGrid. After changing mail settings, confirm a fresh link to check the current sender.
+- The Run page, README and install guides fetch the latest published tag and check it out directly. This avoids Git's “is not a commit” warning for annotated tags.
+- When a source recovers an incident while you are editing it, the conflict prompt identifies the recovery and who made the change. Review the update and select **Apply my edit** to save your draft when it can still be applied.
+- On the On call overview, select a rota name under **This week** to open that rota.
+
+### Upgrade from 0.5.27
+
+Back up first. For local data, run `rer export --output exports/before-0.5.28.rer`. For hosted data, export the D1 database with the original deploying Cloudflare credentials. Keep the backup private and verify it before updating.
+
+Stop the local app with Ctrl-C or `rer dev --stop`. Once the release is published, run `git fetch --depth 1 origin tag v0.5.28` and `git checkout --detach v0.5.28`, then start with `rer dev --host localhost`. For a hosted installation, update the original deploying checkout to the same tag and run `rer deploy --environment ENVIRONMENT` with the same credentials. Restore only into an empty destination.
+
+This update adds no migrations. Keep all 69 previously released migration files unchanged. The checkout pins rer to 0.2.131.
+
+## Known limits
+
+Paging stays OFF. Keep your existing pager active. Release 2 paging and independent standby are still unavailable. Live AWS delivery and live PagerDuty account migration or cutover remain unverified.
+
 # 0.5.27 · 2026-11-22
 
 - Oncall now uses rer 0.2.131, which fixes a first-start failure on macOS where the browser check could prevent the private `RER_OPEN` owner link from appearing when started with an isolated home directory.
