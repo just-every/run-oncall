@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import {savedIncidentSummary, savedRecordSummary} from './app/savedEditSummary';
+import {incidentChangeSummary, savedIncidentSummary, savedRecordSummary} from './app/savedEditSummary';
 import {useViewAnchor} from "./app/useViewAnchor";
 import {useActionFailure, failureMessage, hasChangeBase} from "./app/FailureLine";
 import type { Incident, Member, State } from "./family/response-operations/domain";
@@ -149,6 +149,7 @@ export function useWorkspace() {
     const original = currentState.current;
     const originalIncident = original?.incidents.find(row => row.id === (change as any)?.incident);
     const originalNotes = new Set(originalIncident?.timeline.map(entry => entry.id));
+    let incidentBase = originalIncident;
     let lostResponse = false;
     const execute = async (): Promise<any> => {
       setBusy(true); updateError(""); failures.clear(); setNotice("");
@@ -184,8 +185,9 @@ export function useWorkspace() {
           if (!input.baseValues) {
             const incident = record && 'timeline' in record ? record : undefined;
             const saved = incident ? savedIncidentSummary(input, incident, currentState.current?.members ?? []) : undefined;
+            const change = incident && currentState.current ? incidentChangeSummary(incident, incidentBase, currentState.current) : undefined;
             const recoveryUnchanged = input.type === 'transition' && input.state === 'recovered' &&
-              incident?.state === originalIncident?.state && incident?.recovery === originalIncident?.recovery;
+              incident?.state === incidentBase?.state && incident?.recovery === incidentBase?.recovery;
             const apply = incident && !incident.mergedInto && (input.type === 'note' || recoveryUnchanged) ? async () => {
               if (recoveryUnchanged && form && (!form.isConnected || formValues() !== values)) {
                 if (form.isConnected) failures.show(new Error('Your draft has changed. Submit the form to apply the current draft.'), {target, saved});
@@ -193,13 +195,14 @@ export function useWorkspace() {
                 finish(null);
                 return null;
               }
+              incidentBase = incident;
               input.revision = incident.revision;
               return execute();
             } : undefined;
             const conflict = apply
-              ? new Error('Incident changed. Review the current record, then select Apply my edit to save your draft.')
+              ? new Error(`Incident changed. Review ${change ? 'the update below' : 'the timeline'}, then select Apply my edit to save your draft.`)
               : error;
-            failures.show(conflict, {target, saved, retryLabel: 'Apply my edit', retry: apply});
+            failures.show(conflict, {target, saved, change, retryLabel: 'Apply my edit', retry: apply});
             setBusy(false); if (!apply) finish(null); return null;
           }
           failures.show(error, {target, saved: base ? savedRecordSummary(input, base, desiredValue, currentState.current?.members ?? []) : undefined, retryLabel: 'Apply my edit', retry: base ? async () => {input.baseValues = base; return execute();} : undefined});

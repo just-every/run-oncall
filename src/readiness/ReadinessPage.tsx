@@ -1,6 +1,6 @@
 import {useEffect,useState} from 'react';
 import {useWorkspaceContext} from '../app/shell/WorkspaceContext';
-import type {Readiness} from './types';
+import type {InstallationDependency, Readiness} from './types';
 import './readiness.css';
 import {shortTime} from '../reviews/time';
 
@@ -8,6 +8,10 @@ const label=(value:string)=>value.replaceAll('-',' ').replace(/([a-z])([A-Z])/g,
 const display=(value:string|number|boolean|null)=>value===null?'Unknown':typeof value==='boolean'?value?'Yes':'No':typeof value==='number'?value.toLocaleString():/^\d{4}-\d{2}-\d{2}T/.test(value)?shortTime(value):({ 'single-installation': 'One installation', 'not-provided': 'Not set', missing: 'Not set' }[value] ?? label(value));
 // Field-proof ids are the contract's; people read what each real-world check covers.
 const fieldProofNames:Record<string,string>={'R-1':'Hosted deployment check','R-2':'Inbound email check','R-5':'US voice and SMS registration','R-6':'Live handset delivery','R-7':'App store distribution','R-8':'Live phone drills','R-12':'Vendor tenant check'};
+const completionLabel:Record<InstallationDependency['completion'],string>={
+ 'not-done':'Not done for this installation','guidance-only':'Guidance only',confirmed:'Email sign-in confirmed',
+ 'not-applicable':'Not required here',unknown:'Confirmation unknown',
+};
 export function ReadinessSection() {
  const {page}=useWorkspaceContext();
  return page==='readiness'?<ReadinessPage/>:null;
@@ -46,10 +50,10 @@ function ReadinessPage() {
    </section>
    <section aria-labelledby="installation-title" id="us-installation">
     <h2 id="installation-title">US installation and dependency checklist</h2>
-    <p>Reviewed {report.installation.reviewedOn}. States come from this release matrix and the contract field proof register. Passed evidence is dated prior evidence, not completion for this installation. Reading this checklist grants no provider, deployment, publication or cutover authority.</p>
-    <p>Account steps remain not done until independently verified. Keep your existing pager authoritative.</p>
+    <p>Reviewed {report.installation.reviewedOn}. Release evidence comes from the matrix and the contract field proof register. Reading this checklist grants no provider, deployment, publication or cutover authority.</p>
+    <p>Account steps require verification for this installation. Keep your existing pager authoritative.</p>
     <div className="panel readiness-matrix">{report.installation.items.map(item=><article key={item.id} data-installation-item={item.id}>
-     <div><h3>{item.name}</h3><span className="readiness-state" data-state={item.state}>{label(item.state)}</span><p>{item.completion==='not-done'?'Not done for this installation':'Guidance only'}</p></div>
+     <div><h3>{item.name}</h3>{item.id!=='mail'&&<span className="readiness-state" data-state={item.state}>{label(item.state)}</span>}<p>{completionLabel[item.completion]}{item.signInConfirmedAt&&<><br/><time dateTime={item.signInConfirmedAt}>{shortTime(item.signInConfirmedAt)}</time></>}</p></div>
      <div><p>{item.requirement}</p></div>
      <div className="readiness-evidence"><strong>Release evidence</strong>{item.matrix.map(row=><span key={row.id}>{report.matrix.find(item=>item.id===row.id)?.area}: {label(row.state)}</span>)}
       {item.fieldProof.length?item.fieldProof.map(row=><span key={row.id} data-field-proof={row.id}>{fieldProofNames[row.id]??'Field check'}: {row.state==='passed'?'Passed on '+row.date+' · dated prior evidence':'Not run'}</span>):<span>No field-proof row recorded</span>}

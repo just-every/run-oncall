@@ -3,7 +3,7 @@ import {createPortal} from 'react-dom';
 import {HttpFailure, InterruptedTransport} from '../useWorkspace';
 import './flows.css';
 
-export type ActionFailure = {message: string; read?: boolean; target: HTMLElement | null; focus?: HTMLElement; retry?: () => Promise<unknown>; retryLabel?: string; saved?: string};
+export type ActionFailure = {message: string; read?: boolean; target: HTMLElement | null; focus?: HTMLElement; retry?: () => Promise<unknown>; retryLabel?: string; saved?: string; change?: string};
 export function failureMessage(error: unknown, read = false) {
   if (error instanceof InterruptedTransport) return read
     ? 'Oncall could not be reached. The current view is still here.'
@@ -42,13 +42,13 @@ export function useActionFailure() {
     document.addEventListener('click', capture, true);
     return () => {document.removeEventListener('submit', capture, true); document.removeEventListener('click', capture, true);};
   }, []);
-  function show(error: unknown, options: {retry?: () => Promise<unknown>; read?: boolean; target?: HTMLElement | null; retryLabel?: string; saved?: string} = {}) {
+  function show(error: unknown, options: Omit<Partial<ActionFailure>, 'message' | 'focus'> = {}) {
     if (options.read && current.current && !current.current.read) return;
     const reason = failureMessage(error, options.read);
     const message = /[.!?]$/.test(reason) ? reason : reason + '.';
     const target = options.target === undefined ? action.current : options.target;
     const focus = target === action.current ? keyboardFocus.current : undefined;
-    const next = {read: options.read, saved: options.saved, retryLabel: options.retryLabel, message: message + (!options.read && !options.retry && error instanceof InterruptedTransport ? ' Check the current records before trying this action again.' : ''), target, focus, retry: options.retry};
+    const next = {...options, message: message + (!options.read && !options.retry && error instanceof InterruptedTransport ? ' Check the current records before trying this action again.' : ''), target, focus};
     current.current = next; setFailure(next);
   }
   return {failure, show, clear: () => {current.current = null; setFailure(null);}, action, current};
@@ -70,7 +70,7 @@ export function FailureLine({failure}: {failure: ActionFailure | null}) {
   }, [failure]);
   if (!failure) return null;
   const content = <div className={failure.read ? 'failure-line read-failure' : 'failure-line'} role="alert" ref={line}>
-    <span>{failure.message}{failure.saved && <><br />Current record: {failure.saved}</>}</span>
+    <span>{failure.message}{failure.change && <><br />{failure.change}</>}{failure.saved && <><br />Current record: {failure.saved}</>}</span>
     {failure.retry && <button type="button" disabled={retrying} onClick={async () => {
       setRetrying(true);
       try {await failure.retry?.();} catch { /* The retained failure still describes the unsuccessful retry. */ } finally {setRetrying(false);}

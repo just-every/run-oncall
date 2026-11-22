@@ -16,7 +16,7 @@ export const run: RunData = {
 
 // Resolve GitHub's published release redirect without downloading the release page.
 const findRelease = String.raw`ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' ${run.repository}/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG"`
-const cloneRelease = `${findRelease} && git clone --depth 1 --branch "$ONCALL_TAG" ${run.repository} && cd run-oncall`
+const cloneRelease = `${findRelease} && mkdir run-oncall && cd run-oncall && git init -q && git remote add origin ${run.repository} && git fetch --depth 1 origin tag "$ONCALL_TAG" && git checkout --detach "refs/tags/$ONCALL_TAG"`
 export const releaseInstall = `${cloneRelease} && curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev --host localhost`
 export const releaseNodeStart = `${cloneRelease} && npx -y @runeditrun/rer dev --host localhost`
 const restart = 'rer dev --host localhost'

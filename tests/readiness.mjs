@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {readFile} from 'node:fs/promises'
+import {readinessMail} from './readiness-mail.mjs'
 
 // The public report must compute dependencies from its release matrix and the
 // contract register, without allowing local credentials to certify live setup.
@@ -34,7 +35,7 @@ export async function assertInstallationChecklist(report) {
   const priority=['off','not-built','unproven-live','working-here'];
   assert.equal(item.state,rows.map(row=>row.state).sort((a,b)=>priority.indexOf(a)-priority.indexOf(b))[0]);
   assert.deepEqual(item.fieldProof,proof.map(id=>register.get(id)),'field state and date come from the actual contract register');
-  assert.equal(item.completion,item.id==='911'?'guidance-only':'not-done','unverified installation steps never become complete');
+  if(item.id!=='mail')assert.equal(item.completion,item.id==='911'?'guidance-only':'not-done','unverified installation steps never become complete');
   assert.ok(item.requirement.length>0);
  }
 }
@@ -65,6 +66,7 @@ export async function readinessHealth(deployment) {
    assert.equal((await call('/api/readiness',undefined,login.cookie)).status,role==='stakeholder'?403:200);
   }
   const baseline=await value('/api/readiness');assert.equal(baseline.complete,true);await assertInstallationChecklist(baseline);assert.deepEqual(baseline.release.deployment,deployment);
+  assert.equal(baseline.installation.items.find(item=>item.id==='mail').completion,'not-applicable','local owner entry supplies no hosted mail evidence');
   const pkg=JSON.parse(await readFile('package.json','utf8'));assert.equal(baseline.release.version,pkg.version);assert.equal(baseline.release.package,pkg.name);
   assert.equal(new Set(baseline.matrix.map(row=>row.id)).size,baseline.matrix.length);
   for(const row of baseline.matrix){assert.ok(['working-here','off','not-built','unproven-live'].includes(row.state));assert.ok(['maintained-journey','dated-owner-evidence','none'].includes(row.evidence.kind));if(!['coordination','us-emergency'].includes(row.id))assert.notEqual(row.state,'working-here');if(row.observation){assert.equal(row.observation.configured,0);assert.equal(row.observation.active,0);assert.equal(row.observation.lastAcceptedAt,null);}}
@@ -134,6 +136,7 @@ export async function readinessHealth(deployment) {
   console.log('PROBE OC-044 acceptance 1 checklist: protected GET /api/readiness -> every US dependency matches release matrix and actual field register; account steps remain not done; populated queued-work reads preserve all durable tables and revisions with zero outbound requests');
   console.log('PASS OC-054 readiness: release identity, closed matrix states, dynamic source/revocation observations; independent durable signals, zero-write reads, public-door queued delivery/refused intake/overdue deadline; isolated 503 and restored signal; admin/responder/viewer access and signed-out/stakeholder/expired/revoked refusal; storage never proves pager coverage; zero outbound calls');
  } finally {await runtime.close();}
+ await readinessMail();
 }
 
 // Keep the newer development-door comparison in the managed transfer journey.

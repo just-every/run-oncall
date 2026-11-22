@@ -2458,6 +2458,7 @@ export async function keyboardCoordination(page,context,width,{ownerLink,openSes
   await expect(alert).toContainText('Incident changed')
   await expect(alert).toBeInViewport()
   await expect(alert).toContainText(winningText)
+  await expect(alert).toContainText(secondMember.name)
   await expect(alert).not.toContainText(losingText)
   await expect(page.locator('.notice[role="status"]')).toHaveText('')
   await expect(draft).toBeEditable()

@@ -1,5 +1,6 @@
-import type {Incident, Member} from '../family/response-operations/domain';
+import type {Incident, Member, State} from '../family/response-operations/domain';
 import {incidentAssignee, incidentUrgency} from '../family/response-operations/incident-controls';
+import {memberName as timelineActor, timelineHeading} from '../incident/types';
 
 type Difference = {label: string; saved: unknown; edit: unknown; display?: string};
 const summary = (fields: Difference[]) => fields
@@ -23,11 +24,21 @@ export function savedRecordSummary(input: any, base: Record<string, unknown>, de
   }));
 }
 
+export function incidentChangeSummary(incident: Incident, base: Incident | undefined, state: State) {
+  if (!base) return undefined;
+  const seen = new Set(base.timeline.map(entry => entry.id));
+  const changes = incident.timeline.filter(entry => !seen.has(entry.id));
+  const latest = changes.at(-1);
+  // A source recovery can append a deadline cancellation in the same operation.
+  const entry = latest?.kind === 'deadline-cancelled'
+    ? changes.findLast(entry => entry.kind === 'source-recovery' && entry.at === latest.at) ?? latest
+    : latest;
+  if (!entry) return undefined;
+  const actor = entry.metadata?.agent?.label ?? timelineActor(state, entry.actor);
+  return `${timelineHeading(entry.kind)} · ${actor}${entry.kind === 'note' ? ` — ${entry.text}` : ''}`;
+}
+
 export function savedIncidentSummary(input: any, incident: Incident, members: Member[]) {
-  if (input.type === 'note') {
-    const saved = incident.timeline.filter(entry => entry.kind === 'note').at(-1)?.text;
-    return saved === input.text.trim() ? undefined : saved ?? 'No timeline note.';
-  }
   if (input.type === 'assign-role' || input.type === 'reassign') {
     const role = input.type === 'reassign' ? 'assignee' : input.role;
     const saved = input.type === 'reassign' ? incidentAssignee(incident) : incident[role as 'commander' | 'scribe' | 'communications'];

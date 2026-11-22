@@ -1,6 +1,7 @@
 import {integrationKinds} from '../integrations/catalog';
 import {changeProviderNames} from '../changes/model';
 import type {MatrixRow, InstallationChecklist, InstallationDependency} from './types';
+import type {SignInMail} from './sign-in-mail';
 declare const __ONCALL_FIELD_PROOF__: InstallationDependency['fieldProof'];
 
 type Definition = Omit<MatrixRow, 'observation'> & {source?: 'intake' | 'events' | 'email' | 'changes'; provider?: string};
@@ -11,7 +12,7 @@ const journey = (reference: string) => ({kind: 'maintained-journey' as const, re
 export const matrixDefinitions: Definition[] = [
  {id:'coordination',area:'Coordination',state:'working-here',evidence:journey('tests/runtime.mjs / tests/coordination-health.mjs'),limitation:'Coordination beside your existing pager; local storage and authority proof only.'},
  {id:'paging',area:'Native paging',state:'off',evidence:journey('tests/runtime.mjs — paging refusal'),limitation:'No phone, SMS, push or incident email sender. Keep your existing pager.'},
- {id:'hosted-mail',area:'Hosted sign-in mail',state:'unproven-live',evidence:none,limitation:'A remote mail provider and verified sender must be configured and tested for this installation; local owner entry proves no mail delivery.'},
+ {id:'hosted-mail',area:'Hosted sign-in mail',state:'unproven-live',evidence:none,limitation:'See Remote mail for hosted sign-in in the installation checklist for this installation’s confirmation status.'},
  {id:'bridges',area:'Zoom and Microsoft Teams bridges',state:'not-built',evidence:none,limitation:'No working conference bridge adapter or real inbound-call acceptance.'},
  {id:'regulated-data',area:'Regulated-data agreements and controls',state:'unproven-live',evidence:none,limitation:'Applicable agreements and validated controls have not been established; use redacted descriptions.'},
  {id:'us-emergency',area:'US emergency boundary',state:'working-here',evidence:journey('tests/product-browser.mjs — limitationsBrowser'),limitation:'Oncall is not a 911 dispatch service. Call 911 directly for US emergencies; do not wait for Oncall.'},
@@ -37,7 +38,7 @@ const register = new Map(__ONCALL_FIELD_PROOF__.map(row=>[row.id,row]));
 type Dependency = {id:string;name:string;clauses:string[];matrix:string[];proof:string[];requirement:string;boundary?:boolean};
 const dependencies:Dependency[] = [
  {id:'hosting',name:'Hosting account and deployment identity',clauses:['OC-018'],matrix:['coordination'],proof:['R-1'],requirement:'Not done for this installation: authorize its Cloudflare account and deployment operation, bind the source SHA, artifact fingerprint and version, and verify owner access and removal. The earlier hosted check is dated prior evidence, not this deployment.'},
- {id:'mail',name:'Remote mail for hosted sign-in',clauses:['OC-018'],matrix:['hosted-mail'],proof:['R-1','R-2'],requirement:'Not done: configure a remote mail provider, credentials and verified sender, then prove a real hosted sign-in email. Local owner entry is not mail delivery; the earlier hosted check does not verify this sender. The earlier inbound email check is dated prior evidence for intake only, not hosted sign-in or paging.'},
+ {id:'mail',name:'Remote mail for hosted sign-in',clauses:['OC-018'],matrix:['hosted-mail'],proof:['R-1','R-2'],requirement:'Configure a remote mail provider, credentials and verified sender, then confirm a link from a sign-in email.'},
  {id:'us-sending',name:'Registered US voice and SMS sending',clauses:['OC-026','OC-066'],matrix:['paging'],proof:['R-5'],requirement:'Not done: register US A2P 10DLC brand and campaign, sender numbers and caller identity; establish consent, opt-out handling and carrier tests. Paging remains OFF; account configuration grants no sending authority.'},
  {id:'push',name:'APNs and FCM entitlements',clauses:['OC-029'],matrix:['ios','android'],proof:['R-7'],requirement:'Not done: provision APNs and FCM, iOS Critical Alerts entitlement, Android full-screen and Do Not Disturb permissions, and device acceptance. No native push adapter is built.'},
  {id:'native-apps',name:'Native apps and store distribution',clauses:['OC-029'],matrix:['ios','android'],proof:['R-7'],requirement:'Not done: build and distribute iOS and Android apps through the App Store and Google Play, with native-device proof. A web app or local test is not distribution evidence.'},
@@ -49,12 +50,25 @@ const dependencies:Dependency[] = [
  {id:'regulated-data',name:'Applicable regulated-data agreements and validated controls',clauses:['OC-044'],matrix:['regulated-data'],proof:[],requirement:'Not done: applicable agreements and validated controls are absent, and no field-proof row records them. Make no HIPAA or regulated-data suitability claim; use redacted incident descriptions and separately authorized references.'},
  {id:'911',name:'911 emergency boundary',clauses:['OC-044'],matrix:['us-emergency'],proof:[],boundary:true,requirement:'Oncall is not a 911 dispatch service. For a US emergency, call 911 directly; do not send it to Oncall or wait for an alert or acknowledgment. This is guidance, not an emergency-service capability; no field-proof row applies.'},
 ];
-export function installationChecklist(matrix:MatrixRow[]):InstallationChecklist {
+function mailCompletion(mail: SignInMail): Partial<Pick<InstallationDependency,'completion'|'requirement'|'signInConfirmedAt'>> {
+ switch (mail.state) {
+  case 'confirmed': return {completion:'confirmed',signInConfirmedAt:mail.at,
+   requirement:'A link from a sign-in email was used successfully here. If you’ve edited mail settings since then, confirm a new link to check the current sender.'};
+  case 'awaiting-confirmation': return {requirement:'Remote mail is configured. Request a sign-in email and open and confirm its link. This installation has no retained confirmation yet.'};
+  case 'off': return {completion:'not-applicable',requirement:'Email is off for this installation. The owner can sign in with rer signin.'};
+  case 'local': return {completion:'not-applicable',requirement:'Hosted mail checks apply to hosted installations. Local owner entry uses a separate sign-in path.'};
+  case 'unavailable': return {completion:'unknown',requirement:'Sign-in history is unavailable. Refresh readiness to check for an email link confirmation.'};
+  case 'unconfigured': return {};
+ }
+}
+
+export function installationChecklist(matrix:MatrixRow[],mail:SignInMail):InstallationChecklist {
  return {country:'US',reviewedOn:'2026-11-12',items:dependencies.map(item=>{
   const rows=item.matrix.map(id=>{const row=matrix.find(row=>row.id===id);if(!row)throw Error('Missing installation matrix dependency');return {id,state:row.state};});
   // The least-ready constituent wins; registration and receipts stay separate.
   const state=rows.map(row=>row.state).sort((a,b)=>['off','not-built','unproven-live','working-here'].indexOf(a)-['off','not-built','unproven-live','working-here'].indexOf(b))[0];
   return {id:item.id,name:item.name,clauses:item.clauses,state,completion:item.boundary?'guidance-only':'not-done',matrix:rows,
-   fieldProof:item.proof.map(id=>{const row=register.get(id);if(!row)throw Error('Missing installation field proof');return row;}),requirement:item.requirement} satisfies InstallationDependency;
+   fieldProof:item.proof.map(id=>{const row=register.get(id);if(!row)throw Error('Missing installation field proof');return row;}),requirement:item.requirement,
+   ...(item.id==='mail'?mailCompletion(mail):{})} satisfies InstallationDependency;
  })};
 }

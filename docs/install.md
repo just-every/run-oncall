@@ -9,13 +9,13 @@ Start with the dated [US installation and dependency checklist](readiness.md#us-
 One line clones the latest published Oncall release into `run-oncall`, installs the `rer` command and starts Oncall.
 
 ```sh
-ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" && git clone --depth 1 --branch "$ONCALL_TAG" https://github.com/just-every/run-oncall && cd run-oncall && curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev --host localhost
+ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" && mkdir run-oncall && cd run-oncall && git init -q && git remote add origin https://github.com/just-every/run-oncall && git fetch --depth 1 origin tag "$ONCALL_TAG" && git checkout --detach "refs/tags/$ONCALL_TAG" && curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev --host localhost
 ```
 
 Already have Node 22 or later?
 
 ```sh
-ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" && git clone --depth 1 --branch "$ONCALL_TAG" https://github.com/just-every/run-oncall && cd run-oncall && npx -y @runeditrun/rer dev --host localhost
+ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" && mkdir run-oncall && cd run-oncall && git init -q && git remote add origin https://github.com/just-every/run-oncall && git fetch --depth 1 origin tag "$ONCALL_TAG" && git checkout --detach "refs/tags/$ONCALL_TAG" && npx -y @runeditrun/rer dev --host localhost
 ```
 
 If the installer prints a line that puts `rer` on your PATH, run that line too. To start it again later, run `cd run-oncall && rer dev --host localhost`. `rer dev` installs the locked dependencies, prepares the local database and creates a local development owner (`owner@<checkout-name>.test`). It starts Oncall and prints a private `RER_OPEN` link. Open that link on this computer and you are signed in as the owner. Use the printed address: the default port starts at 8787 and another free port is selected if needed; `rer dev --port N` requests a specific free port.
@@ -126,8 +126,10 @@ Release 1 supports hosted incident coordination alongside your team's existing p
 curl -fsSL https://runeditrun.com/install.sh | sh
 export PATH="$HOME/.local/bin:$PATH"
 ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" &&
-git clone --depth 1 --branch "$ONCALL_TAG" https://github.com/just-every/run-oncall oncall-hosted &&
-cd oncall-hosted &&
+mkdir oncall-hosted && cd oncall-hosted && git init -q &&
+git remote add origin https://github.com/just-every/run-oncall &&
+git fetch --depth 1 origin tag "$ONCALL_TAG" &&
+git checkout --detach "refs/tags/$ONCALL_TAG" &&
 rer install &&
 rer setup --owner-email you@example.com
 ```

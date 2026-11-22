@@ -18,7 +18,7 @@ export function OnCallHome({state, actor, value}: {state: State; actor: Member; 
     <MissedAcknowledgments state={state} openOnly/>
     {value && !value.rotas.length && !value.unrostered.length && <section className="oc-card"><h2>Start with a service</h2>{actor.role==='admin'?<Link className="oc-button" to={'/settings/services' as any}>Add service</Link>:<p>A workspace administrator can add a service for your rota.</p>}</section>}
     {value && (value.rotas.length>0||value.unrostered.length>0) && <><section className="oc-rota-list" aria-label="Rotas">{value.rotas.map(rota => <RotaRow key={rota.id} rota={rota} asOf={Date.parse(value.at)}/>)}{value.unrostered.map(service => <article className="oc-rota-row oc-no-rota" key={service.id}><div><h2>{service.name}</h2><p>No rota</p></div>{teamCoverage(state, actor, service.id) && <Link className="oc-button" to={'/on-call/new' as any} search={{service: service.id} as any}>New rota</Link>}</article>)}</section>
-      <WeekBands rotas={value.rotas} from={Date.parse(value.at) - 86_400_000} to={Date.parse(value.at) + 6 * 86_400_000}/>
+      <WeekBands rotas={value.rotas} from={Date.parse(value.at) - 86_400_000} to={Date.parse(value.at) + 6 * 86_400_000} linkRotas/>
     </>}
   </div>;
 }

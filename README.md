@@ -49,8 +49,10 @@ You need Git on macOS, Linux or Windows with WSL2. The installer provides Node a
 
    ```sh
    ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" &&
-   git clone --depth 1 --branch "$ONCALL_TAG" https://github.com/just-every/run-oncall &&
-   cd run-oncall &&
+   mkdir run-oncall && cd run-oncall && git init -q &&
+   git remote add origin https://github.com/just-every/run-oncall &&
+   git fetch --depth 1 origin tag "$ONCALL_TAG" &&
+   git checkout --detach "refs/tags/$ONCALL_TAG" &&
    rer dev --host localhost
    ```
 

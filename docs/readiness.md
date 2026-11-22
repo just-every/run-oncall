@@ -51,9 +51,11 @@ Each item retains its owning clauses, constituent matrix states and applicable
 state and date. **Working here**, **off**, **not built** and **unproven live**
 describe the release capability; a passed field row means **passed on its date**,
 never that this installation is ready. A **not run** row supplies no proof.
-Every account or live step below remains **not done for this installation**.
-The 911 row is guidance only. Configuration counts, a local receipt or an
-unbound deployment identity cannot complete a prerequisite.
+The hosted sign-in mail row also shows this installation’s retained email link
+confirmation date, when available. Confirm a fresh link after changing the mail
+settings to check the current sender. Other account or live steps require their
+own verification. The 911 row is guidance only. Configuration counts, a local
+receipt or an unbound deployment identity cannot complete a prerequisite.
 
 | US dependency | Owning clauses | Release state and field proof | Installer requirement still outstanding |
 | --- | --- | --- | --- |

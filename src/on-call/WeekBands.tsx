@@ -1,3 +1,4 @@
+import {Link} from '@tanstack/react-router';
 import {useEffect, useRef, useState} from 'react';
 import {Tooltip} from '../app/Tooltip';
 import type {OnCallBand} from './read';
@@ -26,7 +27,7 @@ function BandName({name}: {name: string}) {
   return <span ref={root} className="oc-band-name"><span ref={measure} className="oc-band-measure" aria-hidden="true">{name}</span><span aria-hidden="true">{compact ? initials(name) : name}</span></span>;
 }
 
-export function WeekBands({rotas, from, to, title = 'This week', onShift, selectable, zone = viewerZone()}: {rotas: {id: string; name: string; week: OnCallBand[]}[]; from: number; to: number; title?: string; zone?: string; onShift?: (band: OnCallBand) => void; selectable?: (band: OnCallBand) => boolean}) {
+export function WeekBands({rotas, from, to, title = 'This week', linkRotas = false, onShift, selectable, zone = viewerZone()}: {rotas: {id: string; name: string; week: OnCallBand[]}[]; from: number; to: number; title?: string; linkRotas?: boolean; zone?: string; onShift?: (band: OnCallBand) => void; selectable?: (band: OnCallBand) => boolean}) {
   const root = useRef<HTMLElement>(null), [width, setWidth] = useState(0);
   const scroll = useRef<HTMLDivElement>(null), axis = useRef<HTMLDivElement>(null), [scrolling, setScrolling] = useState(false);
   useEffect(() => {
@@ -64,13 +65,16 @@ export function WeekBands({rotas, from, to, title = 'This week', onShift, select
     return () => observer.disconnect();
   }, [stacked, axisWidth]);
   const label = (band: OnCallBand) => `${band.member?.name ?? 'Nobody on call'} · ${shortTime(band.from, zone)} – ${shortTime(band.to, zone)}`;
+  const rotaName = (rota: {id: string; name: string}) => linkRotas
+    ? <Link to={'/on-call/' + encodeURIComponent(rota.id) as any}>{rota.name}</Link>
+    : rota.name;
   const canSelect = (band: OnCallBand) => onShift && (!selectable || selectable(band));
   return <section ref={root} className="oc-bands oc-card" aria-label={title}><h2>{title}</h2><p className="oc-quiet" data-time-zone={zone}>Times shown in {zone}</p>
-    {stacked ? <div className="oc-bands-list">{rows.map(rota => <section key={rota.id} className="oc-band-rota"><h3>{rota.name}</h3>{rota.roles.map(({role, bands}) => <div key={role} className="oc-band-list-role"><h4>{role === 'primary' ? 'Primary' : 'Backup'}</h4><ol>{bands.map((band, index) => <li key={index} className={!band.member ? 'oc-band-list-gap' : ''}>{canSelect(band) ? <button type="button" aria-label={label(band)} onClick={() => onShift!(band)}>{band.member?.name ?? 'Nobody on call'}</button> : <strong>{band.member?.name ?? 'Nobody on call'}</strong>}<p><time dateTime={band.from}>{shortTime(band.from, zone)}</time><span aria-hidden="true"> → </span><span> to </span><time dateTime={band.to}>{shortTime(band.to, zone)}</time></p></li>)}</ol></div>)}</section>)}</div> : <>
+    {stacked ? <div className="oc-bands-list">{rows.map(rota => <section key={rota.id} className="oc-band-rota"><h3>{rotaName(rota)}</h3>{rota.roles.map(({role, bands}) => <div key={role} className="oc-band-list-role"><h4>{role === 'primary' ? 'Primary' : 'Backup'}</h4><ol>{bands.map((band, index) => <li key={index} className={!band.member ? 'oc-band-list-gap' : ''}>{canSelect(band) ? <button type="button" aria-label={label(band)} onClick={() => onShift!(band)}>{band.member?.name ?? 'Nobody on call'}</button> : <strong>{band.member?.name ?? 'Nobody on call'}</strong>}<p><time dateTime={band.from}>{shortTime(band.from, zone)}</time><span aria-hidden="true"> → </span><span> to </span><time dateTime={band.to}>{shortTime(band.to, zone)}</time></p></li>)}</ol></div>)}</section>)}</div> : <>
       {scrolling && <p className="oc-band-scroll-hint">↔ Scroll sideways to see every day</p>}
       <div ref={scroll} className="oc-bands-scroll" tabIndex={0} role="region" aria-label={`${title} coverage bands`}><div ref={axis} className="oc-bands-axis" style={{minWidth: axisWidth}}>
         <div className="oc-band-dates"><span/>{Array.from({length: days}, (_, index) => <time key={index} dateTime={new Date(from + index * DAY).toISOString()} style={{left: `calc(140px + (100% - 140px) * ${index / days})`}}>{new Intl.DateTimeFormat('en-GB', {timeZone: zone, day:'numeric',month:'short'}).format(from + index * DAY)}</time>)}</div>
-        {rows.map(rota => <div className="oc-band-rota" key={rota.id}><h3>{rota.name}</h3>{rota.roles.map(({role, bands}) => <div className="oc-band-role" key={role}><span>{role === 'primary' ? 'Primary' : 'Backup'}</span><div className="oc-band-track">{bands.map((band, index) => {
+        {rows.map(rota => <div className="oc-band-rota" key={rota.id}><h3>{rotaName(rota)}</h3>{rota.roles.map(({role, bands}) => <div className="oc-band-role" key={role}><span>{role === 'primary' ? 'Primary' : 'Backup'}</span><div className="oc-band-track">{bands.map((band, index) => {
           const start = Date.parse(band.from), end = Date.parse(band.to), name = band.member?.name ?? 'Nobody on call';
           const style = {left: `${(start - from) / (to - from) * 100}%`, width: `${(end - start) / (to - from) * 100}%`};
           const current = start <= Date.now() && end > Date.now();

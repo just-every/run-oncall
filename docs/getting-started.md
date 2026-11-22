@@ -4,13 +4,13 @@ Oncall runs on your own computer first. Open a terminal (on a Mac, Terminal in A
 
 <!-- rer:local-recipe -->
 ```sh
-ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" && git clone --depth 1 --branch "$ONCALL_TAG" https://github.com/just-every/run-oncall && cd run-oncall && curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev --host localhost
+ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" && mkdir run-oncall && cd run-oncall && git init -q && git remote add origin https://github.com/just-every/run-oncall && git fetch --depth 1 origin tag "$ONCALL_TAG" && git checkout --detach "refs/tags/$ONCALL_TAG" && curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev --host localhost
 ```
 
 Already have Node 22 or later?
 
 ```sh
-ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" && git clone --depth 1 --branch "$ONCALL_TAG" https://github.com/just-every/run-oncall && cd run-oncall && npx -y @runeditrun/rer dev --host localhost
+ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" && mkdir run-oncall && cd run-oncall && git init -q && git remote add origin https://github.com/just-every/run-oncall && git fetch --depth 1 origin tag "$ONCALL_TAG" && git checkout --detach "refs/tags/$ONCALL_TAG" && npx -y @runeditrun/rer dev --host localhost
 ```
 
 macOS, Linux or Windows with WSL2. git is required; rer brings Node and pnpm.
@@ -115,8 +115,10 @@ Release 1 supports hosted incident coordination alongside your team's existing p
 curl -fsSL https://runeditrun.com/install.sh | sh
 export PATH="$HOME/.local/bin:$PATH"
 ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" &&
-git clone --depth 1 --branch "$ONCALL_TAG" https://github.com/just-every/run-oncall oncall-hosted &&
-cd oncall-hosted &&
+mkdir oncall-hosted && cd oncall-hosted && git init -q &&
+git remote add origin https://github.com/just-every/run-oncall &&
+git fetch --depth 1 origin tag "$ONCALL_TAG" &&
+git checkout --detach "refs/tags/$ONCALL_TAG" &&
 rer install &&
 rer setup --owner-email you@example.com
 ```
