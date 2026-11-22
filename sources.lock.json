@@ -6772,7 +6772,7 @@
       "executable": false
     },
     "tests/installation-fit.mjs": {
-      "sha256": "a488c0de0b5fed4ec967f6ea1dd2ae928b2055e4dba03de160c42a056920c452",
+      "sha256": "dc63d691241c5d3542194d806bbff0e96f7fcf768290ebdab376e9b8895e7aa8",
       "executable": false
     },
     "tests/intake.mjs": {

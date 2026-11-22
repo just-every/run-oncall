@@ -43,8 +43,11 @@ export async function signedInInstallation(page, origin, {fallback=false, captur
    // Vite reloads the actual saved identity; neither the app nor auth is mocked.
    const {name,...withoutName}=branding;
    await writeFile('src/branding.json',JSON.stringify(withoutName)+'\n');
-   await page.reload();
-   await expect(page).toHaveTitle('Oncall');
+   // The first reload can arrive before Vite invalidates the changed module.
+   await expect(async()=>{
+    await page.reload();
+    await expect(page).toHaveTitle('Oncall',{timeout:1000});
+   }).toPass({timeout:15000});
    await expect(page.locator('.shell-rail .brand')).toHaveText('Oncall');
    await expect(page.locator('.installation-name')).toHaveCount(0);
   }finally{await writeFile('src/branding.json',original);}
