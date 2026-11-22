@@ -15,6 +15,7 @@ export function ReviewSheet({incident,state,canEdit,command,onOpenIncident,onSav
   const navigate=useNavigate(), sheet=useRef<HTMLDivElement>(null), failures=useActionFailure();
   const [latest,setLatest]=useState(incident),[material,setMaterial]=useState<Material|null>(null),[confirm,setConfirm]=useState(false),[accepting,setAccepting]=useState(false),[menu,setMenu]=useState(false);
   const current=latest.revision>incident.revision?latest:incident;
+  const canAccept=canEdit&&incident.state==='resolved'&&!current.reviewAcceptance;
   const snapshot=(i:Incident)=>({values:{text:i.review,rootCause:i.rootCause??i.reviewAcceptance?.rootCause??'',impact:i.impact??i.reviewAcceptance?.impact??''},revision:i.revision});
   const save=useAutosave({keepSaved:true,storageKey:'review:'+draftScope+':'+incident.id,snapshot:snapshot(current),read:async()=>{const state:State=await request('/api/state');return snapshot(state.incidents.find(i=>i.id===incident.id)!);},write:async change=>{
     const result:Incident=await autosaveRequest('/api/command',{type:'review',incident:incident.id,revision:change.revision,field:change.field==='text'?'review':change.field,to:change.to});setLatest(result);onSaved?.(result);return snapshot(result);
@@ -55,9 +56,9 @@ export function ReviewSheet({incident,state,canEdit,command,onOpenIncident,onSav
       {current.reviewAcceptance&&<p className="review-meta">Accepted by {state.members.find(m=>m.id===current.reviewAcceptance!.by)?.name??'Former member'} · {shortTime(current.reviewAcceptance.at)}</p>}
       {accepting&&<p role="status">Wait for review acceptance to finish.</p>}
       {!canEdit&&<p>A responder or administrator can write and accept this review.</p>}
-      {canEdit&&incident.state==='resolved'&&!accepting&&!Object.values(save.values).every(v=>v.trim())&&<p>Complete Review, Root cause and Impact to accept this review.</p>}
-      {canEdit&&incident.state==='resolved'&&<button disabled={accepting||!Object.values(save.values).every(v=>v.trim())} onClick={async()=>{if(await save.flush())setConfirm(true);}}>Accept review</button>}
-      {confirm&&<InlineConfirm action="Accept this review" keep="Keep writing" busy={accepting} onCancel={()=>setConfirm(false)} onConfirm={async()=>{
+      {canAccept&&!accepting&&!Object.values(save.values).every(v=>v.trim())&&<p>Complete Review, Root cause and Impact to accept this review.</p>}
+      {canAccept&&<button disabled={accepting||!Object.values(save.values).every(v=>v.trim())} onClick={async()=>{if(await save.flush())setConfirm(true);}}>Accept review</button>}
+      {canAccept&&confirm&&<InlineConfirm action="Accept this review" keep="Keep writing" busy={accepting} onCancel={()=>setConfirm(false)} onConfirm={async()=>{
         if(!await save.flush())return;setAccepting(true);failures.clear();
         try{const retained:Material=await request('/api/reviews/'+encodeURIComponent(incident.id)+'/material');const result:Incident=await autosaveRequest('/api/command',{type:'review',incident:incident.id,revision:retained.incidentRevision,...save.values,accept:true,materialRevision:retained.incidentRevision,materialWorkspaceRevision:retained.workspaceRevision});setLatest(result);onSaved?.(result);setConfirm(false);await refresh();}catch(error){failures.show(error);}finally{setAccepting(false);}
       }}>Accept the Review, Root cause and Impact on screen now as your human assessment?</InlineConfirm>}

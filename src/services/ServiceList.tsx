@@ -30,13 +30,16 @@ export function ServiceList({state, admin, busy, selected, command, open}: Props
     {admin && (adding || !state.services.length) && <section className="service-create" aria-label="Add service">
       <h3>Add service</h3>
       <Form busy={busy} label="Create service" onSubmit={async data => {
-        const service = await command({...data, type: 'service', runbook: [], pager: ''});
+        const runbook = data.runbook.split('\n').map((step: string) => step.trim()).filter(Boolean);
+        const service = await command({...data, type: 'service', runbook, pager: data.pager.trim()});
         if (service) {setAdding(false); open(servicePath(service.id));}
         return !!service;
       }}>
         <Field name="name" label="Service name"/>
         <Field name="environment" label="Environment" value="production"/>
         <Field name="owner" label="Service owner" required={false}><option value="">Unassigned</option>{state.members.filter(member => member.active && ['admin', 'responder'].includes(member.role)).map(member => <option key={member.id} value={member.id}>{member.name}</option>)}</Field>
+        <Field name="runbook" label="Runbook steps (one per line)" type="textarea" required={false}/>
+        <Field name="pager" label="Existing pager link" type="url" required={false}/>
       </Form>
     </section>}
     {!admin && !selected && <p className="muted">Admins can add services and change their settings.</p>}

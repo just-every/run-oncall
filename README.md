@@ -140,6 +140,8 @@ This restarts the updated local app, applies migrations and keeps your owner, sc
 
 Hosting is in `v0.3.0` and later. Release 1 hosts coordination alongside your existing pager, with paging OFF and no standby requirement. Follow [Getting started](docs/getting-started.md#host-for-your-team) to prepare a real owner mailbox, obtain Cloudflare and SendGrid credentials with the required permissions, and save them in an owner-only `0600` file outside Git. The Install page includes each provider's menu path, verification steps and expected results.
 
+`rer setup` prints a loopback `RER_SETUP_READY` address for local setup. Run `rer signin` after deployment to print the private hosted owner link.
+
 Stop dev and preview from the hosting checkout before either the dry run or deployment (Ctrl-C also stops a foreground server). With the private file prepared as described there:
 
 ```sh

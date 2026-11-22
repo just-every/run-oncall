@@ -5,3 +5,5 @@ The public source repository is `just-every/run-oncall` (`https://github.com/jus
 Before a release, freeze and independently verify the candidate, review the migration and update instructions in RELEASE.json, and run Base's publication checks against the exact intended public tree. The actual parentless export must have a complete history scan with zero findings, source bytes and modes that match exactly, and a clean-clone verify. A dry run must record DRY_RUN, no created or pushed tag and nothing published.
 
 Publish or tag only through the authorized release procedure after review. Keep the limitations in ACCEPTANCE.md and OPERATIONS.md in any public announcement.
+
+After the GitHub Release is public, update the Run page and the Getting started and Install and run commands to clone its published tag.

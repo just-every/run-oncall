@@ -4,10 +4,10 @@ Oncall runs on your own computer first. Open a terminal (on a Mac, Terminal in A
 
 <!-- rer:local-recipe -->
 ```sh
-git clone --depth 1 --branch v0.5.22 https://github.com/just-every/run-oncall && cd run-oncall && curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev --host localhost
+git clone --depth 1 --branch v0.5.23 https://github.com/just-every/run-oncall && cd run-oncall && curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev --host localhost
 ```
 
-Already have Node 22 or later? `git clone --depth 1 --branch v0.5.22 https://github.com/just-every/run-oncall && cd run-oncall && npx -y @runeditrun/rer dev --host localhost` does the same.
+Already have Node 22 or later? `git clone --depth 1 --branch v0.5.23 https://github.com/just-every/run-oncall && cd run-oncall && npx -y @runeditrun/rer dev --host localhost` does the same.
 
 macOS, Linux or Windows with WSL2. git is required; rer brings Node and pnpm.
 <!-- /rer:local-recipe -->
@@ -110,7 +110,7 @@ Release 1 supports hosted incident coordination alongside your team's existing p
 ```sh
 curl -fsSL https://runeditrun.com/install.sh | sh
 export PATH="$HOME/.local/bin:$PATH"
-git clone --depth 1 --branch v0.5.22 https://github.com/just-every/run-oncall oncall-hosted
+git clone --depth 1 --branch v0.5.23 https://github.com/just-every/run-oncall oncall-hosted
 cd oncall-hosted
 rer install
 rer setup --owner-email you@example.com
@@ -118,7 +118,7 @@ rer setup --owner-email you@example.com
 
 Already running Oncall locally from `run-oncall`? Keep that folder and its data, and use the fresh `oncall-hosted` checkout above for hosting. Hosting never uploads local records. See [Transfer local coordination records to hosting](data.md#transfer-local-coordination-records-to-hosting) before planning a move; [Export and restore](data.md) explains local backup and recovery.
 
-Replace `you@example.com` with a real mailbox you can open. Setup prepares the owner and private settings locally and stops its temporary app before returning. Repeating setup preserves the configured owner; it does not change their email.
+Replace `you@example.com` with a real mailbox you can open. Setup prepares the owner and private settings locally, prints a loopback `RER_SETUP_READY` address, and stops its temporary app before returning. After deployment, run [`rer signin`](#owner-access-without-email) to print the private hosted owner link. Repeating setup preserves the configured owner; it does not change their email.
 
 The examples use the named environment `production`. Choose the environment once and use the same `--environment NAME` for deployment, sign-in, updates and removal. Each name has its own hosted resources and deployment record; omitting the flag selects `production`. Names start with a lowercase letter and contain lowercase letters, digits and single hyphens, up to 32 characters.
 

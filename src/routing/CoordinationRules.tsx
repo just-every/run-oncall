@@ -6,7 +6,7 @@ type Rule={service:string;severity:string;action:'route'|'suppress';owner:string
 export function CoordinationRules({state,admin,busy,run}:IntegrationProps) {
  const [editing,setEditing]=useState<string>(),[confirm,setConfirm]=useState(false);
  const key=editing??'new',published=state.policies.find(p=>p.id===key);
- return <section className="panel padded integrations coordination-rules"><h2>Coordination rules</h2>
+ return <section id="coordination-rules" className="panel padded integrations coordination-rules"><h2>Coordination rules</h2>
   {state.policies.map(p=><article className="coordination-row" key={p.id}><strong>{state.services.find(s=>s.id===p.service)?.name} · {p.severity==='*'?'All severities':p.severity}</strong><p>{p.action==='route'?'Route to '+(state.members.find(m=>m.id===p.owner)?.name??'Unassigned'):'Suppress'} · version {p.version}</p>{admin&&<button onClick={()=>{setEditing(p.id);setConfirm(false);}}>Edit rule</button>}</article>)}
   {admin&&state.services.length>0&&<>{editing===undefined?<button onClick={()=>setEditing('new')}>Add rule</button>:<CoordinationDraft key={key} state={state} busy={busy} run={run} id={key} version={published?.version??0} initial={{service:published?.service??state.services[0].id,severity:published?.severity??'*',action:published?.action??'route',owner:published?.owner??state.members.find(m=>m.active&&['admin','responder'].includes(m.role))?.id??''}} confirm={confirm} setConfirm={setConfirm} onPublished={()=>{setEditing(undefined);setConfirm(false);}}/>}</>}
  </section>;

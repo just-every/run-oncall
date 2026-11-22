@@ -11,7 +11,7 @@ import {alertDisplay} from './alert-display';
 import {AlertNotificationRun} from './AlertNotificationRun';
 import type {OnCall} from '../on-call/read';
 export function AlertPage({alert, state, canEdit, busy, run, name, onDeclare, onOpenIncident,onSaved,draftScope,onCall}: {alert: Alert; state: State; canEdit: boolean; busy: boolean; run: IntakeRun; name: (id: string | null) => string; onDeclare: (data: unknown) => Promise<void>; onOpenIncident: (id: string) => void;onSaved:(alert:Alert)=>void;draftScope:string;onCall:OnCall|null}) {
-  const {events, triggers, severity, title, service, incidents, unmatchedReason} = alertDisplay(alert, state);
+  const {events, triggers, severity, title, service, incidents, unmatchedReason, inUnmatchedQueue} = alertDisplay(alert, state);
   const [chosenService, setChosenService] = useState('');
   const source = state.intakeSources?.find(source => alert.source === 'intake:' + source.id);
   const scopedServices = state.services.filter(service => source?.routing?.scope.includes(service.id));
@@ -21,7 +21,7 @@ export function AlertPage({alert, state, canEdit, busy, run, name, onDeclare, on
     <a className="alert-back" href="/alerts">‹ Alerts</a>
     <h2>{title}</h2><p className="alert-meta"><span className={'priority sev-' + severity}>{severity}</span> · {service?.name ?? 'Integration unrouted queue'} · {alert.environment} · {alert.state}</p>
     {incidents.map(incident => <div key={incident.id}><AcknowledgmentStatus incident={incident} state={state}/><p><a href={'/incidents/' + encodeURIComponent(incident.id)} onClick={event => {event.preventDefault(); onOpenIncident(incident.id);}}>In incident {incident.title}</a></p></div>)}
-    <AlertNotificationRun alert={alert} state={state} onCall={onCall} />
+    <AlertNotificationRun alert={alert} state={state} onCall={onCall} unmatched={inUnmatchedQueue && triggers[0]?.decision.policy === null} />
     <AlertUrgency storageKey={'alert-urgency:'+draftScope+':'+alert.id} onSaved={onSaved} alert={alert} state={state} canEdit={canEdit && alert.service !== null} busy={busy} run={run} />
     <section className="alert-runbook"><h3>Runbook</h3>{service?.runbook.length ? <ol>{service.runbook.map((step, index) => <li key={index}>{step}</li>)}</ol> : <p>No service runbook is configured.</p>}</section>
     {canEdit && !incidents.length && <>

@@ -6,7 +6,7 @@
   "toolchain": {
     "id": "runeditrun/edition-authoring",
     "version": "1.1.0",
-    "sha256": "a1b3801ecb3c1ad5263135138c10aa7afccebc2843cc57102264d681288617b0"
+    "sha256": "4afb54aff4bb60a05f902e67bb9b20f8478c2d6cb76819ce8e17f142224c25b8"
   },
   "components": [
     {
@@ -252,7 +252,7 @@
       "executable": false
     },
     "docs/getting-started.md": {
-      "sha256": "69ea842e63ff08dddaeaf052fb7d7f6b32c5078bfbdfd13e24f62b143bb2dec6",
+      "sha256": "6f527a5a3d40623334c3543e5908f1d2fb4db311ea14f50666cb4143bdcd9acc",
       "executable": false
     },
     "docs/incidents.md": {
@@ -260,7 +260,7 @@
       "executable": false
     },
     "docs/install.md": {
-      "sha256": "d184fd99e479bd00ae290999ab74cb863923ce1334fdfafd570b057d02b4f6ca",
+      "sha256": "2a5f70daf4da206ee676b60c8b609bbe7a4d4a61113c382c0e865ca66a77829b",
       "executable": false
     },
     "docs/limits.md": {
@@ -272,7 +272,7 @@
       "executable": false
     },
     "docs/move-in.md": {
-      "sha256": "73d75e6dc2e3461ba77138ae938658129a5f8dc13c1a294397599ca5d936b0bf",
+      "sha256": "109169e82b419df88c0f1542396bf18d2a17090b151ea2f0168005aa8fe93188",
       "executable": false
     },
     "docs/overview.md": {
@@ -724,7 +724,7 @@
       "executable": false
     },
     "MOVE-IN.md": {
-      "sha256": "c09cf98f7649ab3ebcb0f61d6f196250ebef5848953a7ebb63162ef5c42abb2e",
+      "sha256": "1ff4dc8b85e9d96c88cd04fd9e7ce011f1184097c6b6a98230963fe1b3953aee",
       "executable": false
     },
     "NOTICE.md": {
@@ -744,11 +744,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "a7eb36d5f318e83547c747eb3c989e9acd40ec99bd9315b38d628cddf9c07fa5",
+      "sha256": "2566ced84f6f3e23c7d347f8f06225bf97607ea4168ef04aecf492d773486064",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "926bfd8f7206341348bf51574bdcf7a1c1788b393311594b920c4873ee714ea0",
+      "sha256": "a13eb28f453af66742f054b8d4e715e30bad7c8d4ace4308e5476038fb240a6e",
       "executable": false
     },
     "public/brand/badge-rail-1x.webp": {
@@ -836,7 +836,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "105258e9498fa2f9115f102ecb802080c7c1143fc8fb45271140eb4dddf8ef31",
+      "sha256": "3a9c7c073e2b98ffa29d0335e96abbadd49cfec0540c7976daa6edca024ff270",
       "executable": false
     },
     "RELEASE.json": {
@@ -844,7 +844,7 @@
       "executable": false
     },
     "RELEASE.md": {
-      "sha256": "3b2d593ef188d7732fa3a93e7f25b8bcdfa9592a4cebdb3d13c5de9a361bb1c7",
+      "sha256": "5f66848a6bedb708ef84d4dabcea4de8c32c3f1c66a2792540f6aeb5f2d6d5a7",
       "executable": false
     },
     "rer-project.json": {
@@ -1804,11 +1804,11 @@
       "executable": false
     },
     "src/alerts/AlertNotificationRun.tsx": {
-      "sha256": "5f3edd49d2490743e8d84d7dd7c5401d8aa068a1884236d0278cc4887eea1792",
+      "sha256": "ba05c2c31d4b1a78a49a50db3d212848d63392161575541c4554d1a9fdd11611",
       "executable": false
     },
     "src/alerts/AlertPage.tsx": {
-      "sha256": "f1614351c3f4448d337a799f9f74b814e5b9f99c9217c7d294333fe97e9c0c06",
+      "sha256": "0f66789f4f51e662eefa59b5e0ed182931971c7e5f94deebd0e6b57a611aa5fc",
       "executable": false
     },
     "src/alerts/alerts.css": {
@@ -6032,7 +6032,7 @@
       "executable": false
     },
     "src/reviews/ReviewSheet.tsx": {
-      "sha256": "22c4de927f77351dc8262aa74e961f1748839121e0f13d18aac3683f7e5921d0",
+      "sha256": "c29c1051a4667037a2d277d3a233a0ca211b1c2669e562d2ff0b5fd77582e12e",
       "executable": false
     },
     "src/reviews/ReviewsHome.tsx": {
@@ -6212,7 +6212,7 @@
       "executable": false
     },
     "src/routing/CoordinationRules.tsx": {
-      "sha256": "01898c4943b6b2b617276f34743c28baa216f542d633a2fc24eeddee0e9ac846",
+      "sha256": "e66f26097ccfe377d6901929a235c0d711442aa8e129bb4897a83b36e1742072",
       "executable": false
     },
     "src/routing/DecisionExplanation.tsx": {
@@ -6424,7 +6424,7 @@
       "executable": false
     },
     "src/services/ServiceList.tsx": {
-      "sha256": "b8c6e67bd8b1fb1c125c10c65506db6170dcb28432341cfefd6c537402d7339f",
+      "sha256": "e965d5216c3c1e0653f77785927053a0d3bfb4a2cc55c1c7f9aaac7883bfe1d8",
       "executable": false
     },
     "src/services/ServicePage.tsx": {
@@ -6452,7 +6452,7 @@
       "executable": false
     },
     "src/site/run.ts": {
-      "sha256": "4beeb33e94cc3e2408812f60ad7e5892d0cfffa3cdccd59db14d8ed81930500c",
+      "sha256": "939dd962b5d6072ec9a2e9e917b2b9be22c6a0ff35c264efd600b9c55cbd997a",
       "executable": false
     },
     "src/site/shared-pages.css": {
