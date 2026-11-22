@@ -45,10 +45,10 @@ You need Git on macOS, Linux or Windows with WSL2. The installer provides Node a
 
    The installer puts `rer` in `~/.local/bin`. If that directory is missing from your PATH, run `export PATH="$HOME/.local/bin:$PATH"` in Bash or Zsh. For a setup that also works in future terminals, or for a different shell, run `"$HOME/.local/bin/rer" cli path` and follow the printed instructions.
 
-2. Download and start Oncall.
+2. Download and start Oncall once `v0.5.23` appears in [GitHub Releases](https://github.com/just-every/run-oncall/releases).
 
    ```sh
-   git clone --depth 1 --branch v0.5.22 https://github.com/just-every/run-oncall
+   git clone --depth 1 --branch v0.5.23 https://github.com/just-every/run-oncall
    cd run-oncall
    rer dev --host localhost
    ```

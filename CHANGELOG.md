@@ -1,3 +1,25 @@
+# 0.5.23 · 2026-11-22
+
+- Local owners can enroll a passkey from **Sign-in settings** after opening the private `RER_OPEN` link and finishing setup. Run Oncall with `rer dev --host localhost` to enroll and sign in. The private owner link remains available if the passkey is unavailable.
+- The README and setup guides use tagged checkouts for installation and updates. The guides explain how a Business setup agent passes the private first-owner sign-in link from `rer signin` in the `sign_in` field of `session.report`.
+- ACCEPTANCE.md now walks through Release 1 coordination beside your existing pager, from owner setup and alert intake through verified recovery, review and follow-up.
+- Creating an Events API source shows its ingress URL, key and a runnable sample together. Existing senders can keep their source IDs, and sources linked to one service can accept events without a service ID.
+- The service directory is searchable by name and environment. Reviewed rota changes explain why backup is uncovered when it would be the same person as primary. Swap acceptance appears after approval is saved. Overdue pending swaps stay visible so the requester can cancel them.
+- Reviews open the follow-up form directly. Internal handoffs can be copied as plain text, and incident resolution preserves the recorded outcomes of responder requests.
+- Move in shows rejected schedules first and explains the retirement of the Opsgenie configuration API. The change erasure guide links to the custody and retention procedures.
+
+### Upgrade from 0.5.22
+
+Back up first. For local data, run `rer export --output exports/before-0.5.23.rer`. For hosted data, export the D1 database with the original deploying Cloudflare credentials. Keep the backup private and verify it before updating.
+
+Stop the local app with Ctrl-C or `rer dev --stop`. Once the release is published, run `git fetch --depth 1 origin tag v0.5.23` and `git checkout --detach v0.5.23`, then start with `rer dev --host localhost`. For a hosted installation, update the original deploying checkout to the same tag and run `rer deploy --environment ENVIRONMENT` with the same credentials. Restore only into an empty destination.
+
+This update adds the additive `0165_local_passkeys.sql` migration. Keep all 68 previously released migration files unchanged. Local passkeys stay with the installation and are excluded from archives. The checkout keeps rer pinned to 0.2.126.
+
+## Known limits
+
+Paging stays OFF. Keep your existing pager active. Release 2 paging and independent standby are still unavailable. Live AWS delivery and live PagerDuty account migration or cutover remain unverified.
+
 # 0.5.22 · 2026-11-21
 
 - Oncall now uses rer 0.2.126. Local archive transfers preserve the recorded order of applied owner migrations, and compatible archives from Run Edit Run Platform can be restored into a native checkout.
