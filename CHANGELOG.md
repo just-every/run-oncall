@@ -1,3 +1,22 @@
+# 0.5.26 · 2026-11-22
+
+- When a stale incident edit can be reapplied, the conflict message asks responders to review the saved record and select **Apply my edit** to save their draft.
+- The rota list and detail agree on the next scheduled hand-over, including when the same person covers consecutive turns.
+- The team and hosting guides agree on hosted owner sign-in with email off. Set `MAIL_PROVIDER=none` and run `rer signin` from the deploying checkout with the same Cloudflare credentials.
+- The README directs new installs and existing checkouts to the latest published release. Getting started explains that the first local start can take up to 10 minutes and to wait for the private `RER_OPEN` link if the local port returns 404.
+
+### Upgrade from 0.5.25
+
+Back up first. For local data, run `rer export --output exports/before-0.5.26.rer`. For hosted data, export the D1 database with the original deploying Cloudflare credentials. Keep the backup private and verify it before updating.
+
+Stop the local app with Ctrl-C or `rer dev --stop`. Once the release is published, run `git fetch --depth 1 origin tag v0.5.26` and `git checkout --detach v0.5.26`, then start with `rer dev --host localhost`. For a hosted installation, update the original deploying checkout to the same tag and run `rer deploy --environment ENVIRONMENT` with the same credentials. Restore only into an empty destination.
+
+This update adds no migrations. Keep all 69 previously released migration files unchanged. The checkout pins rer to 0.2.129.
+
+## Known limits
+
+Paging stays OFF. Keep your existing pager active. Release 2 paging and independent standby are still unavailable. Live AWS delivery and live PagerDuty account migration or cutover remain unverified.
+
 # 0.5.25 · 2026-11-22
 
 - The Run page and setup guides look up the latest published GitHub Release tag for installs and updates. Updating a detached checkout now switches to the published tag.
