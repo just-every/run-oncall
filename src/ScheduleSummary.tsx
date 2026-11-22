@@ -15,7 +15,9 @@ function handoffLabel(instant:string|null|undefined,timezone:string,changesHolde
 }
 
 type ReadProps = {schedule:Schedule;state:State;request:(path:string,data?:unknown)=>Promise<any>}
-type NowNext = {now:Coverage;upcoming:Record<'primary'|'backup',Coverage|null>;handover:Record<'primary'|'backup',Coverage|null>;searchThrough:string;limited:('primary'|'backup')[]}
+type Role = 'primary'|'backup';
+type ByRole = Record<Role,Coverage|null>;
+type NowNext = {now:Coverage;next:ByRole;upcoming:ByRole;handover:ByRole;searchThrough:string;limited:Role[]}
 
 export function ScheduleNowNext({schedule,state,request}:ReadProps) {
  const [value,setValue]=useState<NowNext|null>(null)
@@ -31,9 +33,23 @@ export function ScheduleNowNext({schedule,state,request}:ReadProps) {
  // Layers explain themselves in one plain sentence: who covers, or that no layer does.
  const why=(coverage:Coverage|null|undefined,role:'primary'|'backup')=>{const window=coverage?.windows.find(w=>w.role===role);const winner=window?.decisions?.find(d=>d.state==='winner');return winner?`${winner.name} covers this time.`:window?.decisions?.length?'No layer covers this time.':window?.explanation??coverage?.warnings.filter(w=>w.startsWith(role+':')).join('; ')};
  return <section className="scheduling-panel scheduling-now-next"><h2>On call now and next</h2><FailureLine failure={failures.failure}/>{value&&startsLater&&<p>This rota starts <RotaStartTime at={schedule.validFrom} zone={schedule.timezone} asOf={value.now.at}/>.</p>}{value&&<div className="scheduling-form-grid two">{(['primary','backup'] as const).map(role=>{
-  // With a holder now, next is the next hand-over to someone else; without one, the next covered time.
-  const following=value.now[role]?value.handover[role]:value.upcoming[role];
-  return <div key={role} className="scheduling-now-role"><h3>{role}</h3><p className={value.now[role]?"now":"oc-now-gap"}>Now: {name(value.now[role])}</p>{!startsLater&&<p className="scheduling-rule">{why(value.now,role)}</p>}<p className="next">Next: {following?name(following[role]):value.now[role]?'No hand-over scheduled yet':name(null)}</p><p className="scheduling-rule">{why(following,role)}</p><p className="handoff">{following?handoffLabel(new Date(following.at).toISOString(),schedule.timezone,!!value.now[role]):value.now[role]?'No change of holder in the next 90 days':value.limited.includes(role)?`No coverage scheduled through ${new Intl.DateTimeFormat('en-GB',{timeZone:schedule.timezone,dateStyle:'medium'}).format(Date.parse(value.searchThrough))}`:handoffLabel(null,schedule.timezone)}</p></div>})}</div>}</section>
+  const holder=value.now[role];
+  const nextTurn=value.next[role];
+  // Show the scheduled turn even when the same person covers consecutive slots.
+  const following=holder?(nextTurn?.[role]?nextTurn:value.handover[role]):value.upcoming[role];
+  const timing=following
+   ? handoffLabel(new Date(following.at).toISOString(),schedule.timezone,!!holder)
+   : holder?'No change of holder in the next 90 days'
+   : value.limited.includes(role)?`No coverage scheduled through ${new Intl.DateTimeFormat('en-GB',{timeZone:schedule.timezone,dateStyle:'medium'}).format(Date.parse(value.searchThrough))}`
+   : handoffLabel(null,schedule.timezone);
+  return <div key={role} className="scheduling-now-role">
+   <h3>{role}</h3>
+   <p className={holder?"now":"oc-now-gap"}>Now: {name(holder)}</p>
+   {!startsLater&&<p className="scheduling-rule">{why(value.now,role)}</p>}
+   <p className="next">Next: {following?name(following[role]):holder?'No hand-over scheduled yet':name(null)}</p>
+   <p className="scheduling-rule">{holder&&following?.[role]===holder?'Same person continues.':why(following,role)}</p>
+   <p className="handoff">{timing}</p>
+  </div>})}</div>}</section>
 }
 
 const escalationFields = ['primaryWaitSeconds','backupWaitSeconds','retrySeconds','maxAttempts'] as const;

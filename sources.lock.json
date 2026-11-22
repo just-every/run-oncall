@@ -252,7 +252,7 @@
       "executable": false
     },
     "docs/getting-started.md": {
-      "sha256": "e1da6be98edb1c7e7605f72b4a895d778f283f327a450a731ce8b5645c44dca7",
+      "sha256": "0adc09a5eac526afffe608e60653b0516326a9335b21abe96ae771ce98316357",
       "executable": false
     },
     "docs/incidents.md": {
@@ -304,7 +304,7 @@
       "executable": false
     },
     "docs/team.md": {
-      "sha256": "b2509d0d4ffe41718ff58e9c25ab62c3e7f297ae6994c2ec11f1a621d1b5f48c",
+      "sha256": "49188c3dda5f4c892d698de71d3276635449d6444923622815e775d1eb2d6d2b",
       "executable": false
     },
     "docs/urgency.md": {
@@ -836,7 +836,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "3148983cb301c21372836df15a2099c10f97b1ec4795515fcda204c3c058d56c",
+      "sha256": "ad521c922e0dbbd9bd4a58a7dbea22c97a159c06054372e3bc353786d621a9c7",
       "executable": false
     },
     "RELEASE.json": {
@@ -6332,7 +6332,7 @@
       "executable": false
     },
     "src/ScheduleSummary.tsx": {
-      "sha256": "e1e61c518b2a1f2f63515eb2c41a9c2d3c7fcc70964d26dd87da4220b6528bae",
+      "sha256": "1e7ada2d1c6df734e0233864b3f55548db8b5e82b97b0dbebcc6cdf92acdab7e",
       "executable": false
     },
     "src/scheduling.css": {
@@ -6580,7 +6580,7 @@
       "executable": false
     },
     "src/useWorkspace.ts": {
-      "sha256": "ed4d87035bd26bb791539907e46836da2a4d9c0323fa9811933abb2eeb667853",
+      "sha256": "e3236d5ab6dd58184f0aee69db7c60b9c62d90079a98725aaf0b7ee54e9ecb0d",
       "executable": false
     },
     "src/workspace-document.ts": {

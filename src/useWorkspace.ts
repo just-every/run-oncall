@@ -196,8 +196,8 @@ export function useWorkspace() {
               input.revision = incident.revision;
               return execute();
             } : undefined;
-            const conflict = apply && recoveryUnchanged
-              ? new Error('Incident changed. Review the current record before applying your recovery evidence.')
+            const conflict = apply
+              ? new Error('Incident changed. Review the current record, then select Apply my edit to save your draft.')
               : error;
             failures.show(conflict, {target, saved, retryLabel: 'Apply my edit', retry: apply});
             setBusy(false); if (!apply) finish(null); return null;

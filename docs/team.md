@@ -2,11 +2,11 @@
 
 ## Signing in
 
-The owner signs in with their email address. On the sign-in page, enter it and press **Email a sign-in link**, then open the link on the same device and press **Confirm**. A link works once and expires after 15 minutes. Local `rer dev` prints a private `RER_OPEN` owner entry; first launch confirms the read-only owner at `/setup`, then opens the app directly. Ordinary `/signin` email sign-in has no sender configured by default and sends only through a configured remote mail provider with real credentials (see [Getting started](getting-started.md#sign-in-emails-on-your-computer)). The app does not capture mail or print sign-in tokens. Hosted release 1 also uses this email-link flow: deployment claims the configured owner automatically, and a configured remote mail provider is required. The local `RER_OPEN` entry does not sign you in to the hosted app.
+**Hosted owner.** Deployment claims the configured owner automatically. With a remote mail provider configured, enter the owner email on the sign-in page, press **Email a sign-in link**, then open the link on the same device and press **Confirm**. A link works once and expires after 15 minutes. For [hosted coordination with email off](getting-started.md#hosted-coordination-with-email-off), set `MAIL_PROVIDER=none` and run `rer signin` from the deploying checkout with the same Cloudflare credentials. Open the private link it prints and press **Confirm**. Complete **Finish setup** if shown.
 
-The first time the owner signs in, Oncall asks them to **Finish setup** before anything else.
+**Local owner.** Open the private `RER_OPEN` link printed by `rer dev`. On first launch, choose **Finish setup** to confirm the owner details. Anonymous first-admin setup is available only on the local loopback app. See [sign-in emails on your computer](getting-started.md#sign-in-emails-on-your-computer) to configure local email delivery.
 
-On local and hosted apps, team members created by an admin sign in at **Sign in with a workspace password** (`/signin/local`), linked from the sign-in page, with the workspace name and password the admin gave them. These credentials belong to this installation. Only anonymous first-admin bootstrap is restricted to the local loopback app; the configured owner uses the email-link flow above.
+**Team members.** On local and hosted apps, team members created by an admin choose **Sign in with a workspace password** (`/signin/local`) on the sign-in page. Use the workspace name and password the admin provided for that installation.
 
 ## Roles
 
