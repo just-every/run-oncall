@@ -62,7 +62,11 @@ export function ReviewSheet({incident,state,canEdit,command,onOpenIncident,onSav
         try{const retained:Material=await request('/api/reviews/'+encodeURIComponent(incident.id)+'/material');const result:Incident=await autosaveRequest('/api/command',{type:'review',incident:incident.id,revision:retained.incidentRevision,...save.values,accept:true,materialRevision:retained.incidentRevision,materialWorkspaceRevision:retained.workspaceRevision});setLatest(result);onSaved?.(result);setConfirm(false);await refresh();}catch(error){failures.show(error);}finally{setAccepting(false);}
       }}>Accept the Review, Root cause and Impact on screen now as your human assessment?</InlineConfirm>}
       {material&&<ReviewMaterial material={material} state={state}/>}
-      <p><a href={'/incidents/'+encodeURIComponent(incident.id)}>Add a follow-up on this incident</a></p>
+      {canEdit&&<p><a href={'/incidents/'+encodeURIComponent(incident.id)+'#add-follow-up'} onClick={e=>{
+        if(e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
+        e.preventDefault();
+        void leaveAfterSaving(()=>{void navigate({to:'/incidents/$id',params:{id:incident.id},hash:'add-follow-up'});});
+      }}>Add a follow-up on this incident</a></p>}
     </div>
   </div>;
 }

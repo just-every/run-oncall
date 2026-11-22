@@ -1,5 +1,6 @@
 import {AcknowledgmentStatus} from '../incident-deadlines/Status';
 import {useEffect, useState} from 'react';
+import {useLocation} from '@tanstack/react-router';
 import {leaveAfterSaving} from '../app/autosave/leaveGuard';
 import {IncidentHead} from './IncidentHead';
 import {PeoplePicker} from './PeoplePicker';
@@ -24,8 +25,9 @@ import './incident.css';
 
 const sheets = {followups: Followups, people: People, responders: Responders, snooze: Snooze, merge: Merge, split: Split, test: TestPage, handoff: Handoff, changes: Changes, context: ServiceContext};
 export function IncidentPage(incidentProps: IncidentProps) {
+  const openFollowupForm = useLocation({select: location => location.hash === 'add-follow-up'}) && incidentProps.canEdit;
   const [menu, setMenu] = useState(false);
-  const [action, setAction] = useState<IncidentAction | null>(null);
+  const [action, setAction] = useState<IncidentAction | null>(openFollowupForm ? 'followups' : null);
   const after = useMutateAfterSaves(incidentProps.mutate);
   const props = {...incidentProps, mutate: after.mutate, busy: incidentProps.busy || after.waiting};
   const Sheet = action ? sheets[action] : null;
@@ -44,6 +46,8 @@ export function IncidentPage(incidentProps: IncidentProps) {
       <div className="incident-body"><Runbook {...props} /><Timeline {...props} /></div>
     </section>
     {menu && <MoreMenu demo={props.demo && props.incident.state !== 'resolved'} canEdit={props.canEdit} close={() => setMenu(false)} choose={action => {setMenu(false);setAction(action);}} />}
-    {action && Sheet && <ActionSheet title={incidentActions.find(([id]) => id === action)![1]} close={() => {void leaveAfterSaving(() => setAction(null));}}><Sheet {...props} /></ActionSheet>}
+    {action && Sheet && <ActionSheet title={incidentActions.find(([id]) => id === action)![1]} close={() => {void leaveAfterSaving(() => setAction(null));}}>
+      {action === 'followups' ? <Followups {...props} openForm={openFollowupForm} /> : <Sheet {...props} />}
+    </ActionSheet>}
   </div>;
 }

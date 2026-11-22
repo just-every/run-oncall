@@ -12,8 +12,8 @@ export function followupOrder(a: Action, b: Action) {
 export function isOverdue(action: Action, now = Date.now()) {
   return !action.done && now >= Date.parse(action.due + 'T00:00:00.000Z') + 86400000;
 }
-type Props = {incident: Incident; members: Member[]; busy: boolean; canEdit: boolean; mutate: (data: any) => Promise<any>; incidentMode?: boolean; onlyAction?:string; compact?:boolean; zone?:string};
-export function Followups({incident, members, busy, canEdit, mutate, incidentMode = false, onlyAction, compact=false, zone=browserZone()}: Props) {
+type Props = {incident: Incident; members: Member[]; busy: boolean; canEdit: boolean; mutate: (data: any) => Promise<any>; incidentMode?: boolean; openForm?: boolean; onlyAction?:string; compact?:boolean; zone?:string};
+export function Followups({incident, members, busy, canEdit, mutate, incidentMode = false, openForm = false, onlyAction, compact=false, zone=browserZone()}: Props) {
   if(compact)return <section className="followups">{incident.actions.filter(a=>(!onlyAction||a.id===onlyAction)&&!a.done).map(action=><CompactFollowup key={action.id} action={action} members={members} busy={busy} canEdit={canEdit} mutate={mutate} zone={zone}/>)}</section>;
   const shownTime = utc;
   const name = (id: string) => members.find(member => member.id === id)?.name ?? 'Erased member';
@@ -42,7 +42,7 @@ export function Followups({incident, members, busy, canEdit, mutate, incidentMod
         </div>}
       </>}
     </li>)}</ul>
-    {canEdit && <CreateFollowup key={incident.id} members={members} busy={busy} mutate={mutate} incidentMode={incidentMode} initiallyOpen={incidentMode && !incident.actions.length} />}
+    {canEdit && <CreateFollowup key={incident.id} members={members} busy={busy} mutate={mutate} incidentMode={incidentMode} initiallyOpen={openForm || (incidentMode && !incident.actions.length)} />}
   </section>;
 }
 function CreateFollowup({members, busy, mutate, incidentMode = false, initiallyOpen = false}: Pick<Props, 'members' | 'busy' | 'mutate' | 'incidentMode'> & {initiallyOpen?: boolean}) {
