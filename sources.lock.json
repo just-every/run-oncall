@@ -6456,7 +6456,7 @@
       "executable": false
     },
     "src/site/shared-pages.css": {
-      "sha256": "5382e08a409836adfc407d37280eb8d14966d1115f342aedb3117cda132d2fc6",
+      "sha256": "d1c462aa9aadf41d8e76cfce19f55a26260ded8ab5061c3a90d63c7ec63c454c",
       "executable": false
     },
     "src/subject-erasure-identity.ts": {
