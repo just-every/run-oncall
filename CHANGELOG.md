@@ -1,3 +1,21 @@
+# 0.5.29 · 2026-11-22
+
+- Alerts refreshes when you open the list. An alert just accepted by the Events API appears as soon as the refresh completes, with a loading message while the read is pending.
+- The Run command fetches the latest published tag and checks it out directly, avoiding Git's “is not a commit!” warning for annotated tags.
+- In hosted Settings → Readiness, the sign-in email row shows the confirmed date and sender together. If mail settings change or the previous confirmation recorded no sender, request a fresh sign-in email and confirm its link. An older link can still sign you in without confirming the current sender.
+
+### Upgrade from 0.5.28
+
+Back up first. For local data, run `rer export --output exports/before-0.5.29.rer`. For hosted data, export the D1 database with the original deploying Cloudflare credentials. Keep the backup private and verify it before updating.
+
+Stop the local app with Ctrl-C or `rer dev --stop`. Once the release is published, run `git fetch --depth 1 origin tag v0.5.29` and `git checkout --detach refs/tags/v0.5.29`, then start with `rer dev --host localhost`. For a hosted installation, update the original deploying checkout to the same tag and run `rer deploy --environment ENVIRONMENT` with the same credentials. Restore only into an empty destination.
+
+This update applies one additive migration, `0166_sign_in_mail_sender.sql`, to record the sender configuration used for new sign-in links. Keep all 69 previously released migration files unchanged. The checkout pins rer to 0.2.131.
+
+## Known limits
+
+Paging stays OFF. Keep your existing pager active. Release 2 paging and independent standby are still unavailable. Live AWS delivery and live PagerDuty account migration or cutover remain unverified.
+
 # 0.5.28 · 2026-11-22
 
 - Hosted Settings → Readiness shows when someone last confirmed a sign-in email link on this installation, including links sent through SendGrid. After changing mail settings, confirm a fresh link to check the current sender.
