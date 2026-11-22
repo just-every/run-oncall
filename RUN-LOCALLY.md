@@ -1,10 +1,8 @@
 # Run it locally
 
-Start Oncall from nothing with
-`curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-oncall`
-(Git is required; rer brings Node and pnpm. Already have Node 22 or later?
-`npx -y @runeditrun/rer dev just-every/run-oncall` does the same; to set up only,
-use `setup` in place of `dev`). After the installer script, a terminal without
+Follow [Getting started](docs/getting-started.md) to install the latest
+published Oncall release. Git is required. The installer brings Node and pnpm,
+and the guide also has a command for Node 22 or later. After the installer script, a terminal without
 `~/.local/bin` on PATH needs `export PATH="$HOME/.local/bin:$PATH"` before a bare
 `rer dev`, or it says `rer: command not found` (add that line to your shell
 startup file to keep it; `"$HOME/.local/bin/rer" cli path` shows the line for
@@ -283,15 +281,9 @@ one use within 15 minutes; its use is audited. Open it privately and press
 **Confirm**. Never redirect or share the output. Run from the original deploying checkout and use
 the environment named in its deployment record.
 
-Update this checkout from `main` without resetting its data:
-
-```sh
-git pull --ff-only
-rer deploy --environment production --env-file "$HOME/.config/oncall/production.env"
-```
-
-`rer` installs a pulled change of its own pin before it runs and provides the
-pinned Node and pnpm versions. Updates keep the hosted owner and data. Local
+Follow [Update a hosted installation](docs/getting-started.md#update-a-hosted-installation)
+to switch this checkout to the latest published release and deploy again.
+`rer` uses the checkout's pinned Node and pnpm versions. Updates keep the hosted owner and data. Local
 and hosted databases are separate; deployment does not upload local records.
 Existing hosted secrets are preserved even if the file's values have changed.
 To rotate the mail credential or sender after editing the private file, run the

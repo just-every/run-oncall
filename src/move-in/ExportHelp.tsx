@@ -19,7 +19,7 @@ export function ExportHelp({vendor}:{vendor:string}) {
  if(!['opsgenie','pagerduty'].includes(vendor))return <SavedExportHelp key={vendor} vendor={vendor}/>
  return <details className="move-in-export-help" key={vendor}>
   <summary>How to export from {name}</summary>
-  <p>Use the downloadable exporter on your computer to create one ready-to-upload JSON file. It reads {name} with GET requests, handles every page, gets schedule details and joins each override to its schedule. Your existing pager stays in charge. It needs a read-only key from a real {name} account; with no account, use <strong>Other: from a file</strong> to upload an export you already have.</p>
+  <p>Use the downloadable exporter on your computer to create one ready-to-upload JSON file. It reads {name} with GET requests, handles every page, gets schedule details and joins each override to its schedule. Your existing pager stays in charge. The exporter needs a read-only key from a real {name} account. If you already have an export, {ops?<>choose <strong>Other: from a file</strong> to upload it</>:<>choose <strong>PagerDuty</strong> under <strong>Source</strong> and upload it under <strong>Export JSON</strong></>}.</p>
   {ops&&<>
    <h3>Opsgenie migration readiness</h3>
    <p>Save your Opsgenie configuration export before the configuration APIs retire in April 2027 or your account shuts down, whichever comes first. The US and EU Alert and integration-event APIs will continue for customers moving to or already on Jira Service Management. Schedule exports still depend on the configuration APIs to read users, schedules, overrides and escalations. <a href={opsApiNotice} target="_blank" rel="noreferrer">Atlassian API notice</a>.</p>

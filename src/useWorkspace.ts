@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import {savedIncidentSummary, savedRecordSummary} from './app/savedEditSummary';
 import {useViewAnchor} from "./app/useViewAnchor";
 import {useActionFailure, failureMessage, hasChangeBase} from "./app/FailureLine";
-import type { Member, State } from "./family/response-operations/domain";
+import type { Incident, Member, State } from "./family/response-operations/domain";
 export class InterruptedTransport extends Error {
   constructor(){super('Connection interrupted; no success confirmed');}
 }
@@ -48,6 +48,18 @@ export function useWorkspace() {
   const preserveView = useViewAnchor();
   const reading = useRef<Promise<void> | null>(null);
   const currentState = useRef<State | null>(null);
+  const currentMember = useRef<string | null>(null);
+  const incidentWrites = useRef(new Map<string, Incident>());
+  // Share the server's write response across routes while workspace reads catch up.
+  function commitIncident(incident: Incident) {
+    if (member?.id !== currentMember.current) return;
+    const current = currentState.current;
+    const previous = current?.incidents.find(row => row.id === incident.id);
+    if (!current || !previous || incident.revision <= previous.revision) return;
+    incidentWrites.current.set(incident.id, incident);
+    currentState.current = {...current, incidents: current.incidents.map(row => row.id === incident.id ? incident : row)};
+    setState(currentState.current);
+  }
   function refresh(): Promise<void> {
     if (reading.current) return reading.current;
     const pending = request("/api/workspace").then(session => {
@@ -64,8 +76,18 @@ export function useWorkspace() {
     setSetup(session.setup);
     setLocalSignInSettings(session.localSignInSettings === true);
     setPagerdutyConnect(session.moveIn?.pagerdutyConnect === true);
-    currentState.current = session.state;
-    setState(session.state);
+    const memberId = session.member?.id ?? null;
+    if (currentMember.current !== memberId || !session.state) incidentWrites.current.clear();
+    currentMember.current = memberId;
+    const next = session.state;
+    currentState.current = next && incidentWrites.current.size ? {...next, incidents: next.incidents.map(incident => {
+      const written = incidentWrites.current.get(incident.id);
+      if (!written) return incident;
+      if (written.revision > incident.revision) return written;
+      incidentWrites.current.delete(incident.id);
+      return incident;
+    })} : next;
+    setState(currentState.current);
     setOnCall(session.onCall ?? null);
     setReady(true);
   }
@@ -125,7 +147,8 @@ export function useWorkspace() {
     };
     const guarded = hasChangeBase(change);
     const original = currentState.current;
-    const originalNotes = new Set(original?.incidents.find(row => row.id === (change as any)?.incident)?.timeline.map(entry => entry.id));
+    const originalIncident = original?.incidents.find(row => row.id === (change as any)?.incident);
+    const originalNotes = new Set(originalIncident?.timeline.map(entry => entry.id));
     let lostResponse = false;
     const execute = async (): Promise<any> => {
       setBusy(true); updateError(""); failures.clear(); setNotice("");
@@ -161,8 +184,22 @@ export function useWorkspace() {
           if (!input.baseValues) {
             const incident = record && 'timeline' in record ? record : undefined;
             const saved = incident ? savedIncidentSummary(input, incident, currentState.current?.members ?? []) : undefined;
-            const apply = incident && input.type === 'note' ? async () => {input.revision = incident.revision; return execute();} : undefined;
-            failures.show(error, {target, saved, retryLabel: 'Apply my edit', retry: apply});
+            const recoveryUnchanged = input.type === 'transition' && input.state === 'recovered' &&
+              incident?.state === originalIncident?.state && incident?.recovery === originalIncident?.recovery;
+            const apply = incident && !incident.mergedInto && (input.type === 'note' || recoveryUnchanged) ? async () => {
+              if (recoveryUnchanged && form && (!form.isConnected || formValues() !== values)) {
+                if (form.isConnected) failures.show(new Error('Your draft has changed. Submit the form to apply the current draft.'), {target, saved});
+                else failures.clear();
+                finish(null);
+                return null;
+              }
+              input.revision = incident.revision;
+              return execute();
+            } : undefined;
+            const conflict = apply && recoveryUnchanged
+              ? new Error('Incident changed. Review the current record before applying your recovery evidence.')
+              : error;
+            failures.show(conflict, {target, saved, retryLabel: 'Apply my edit', retry: apply});
             setBusy(false); if (!apply) finish(null); return null;
           }
           failures.show(error, {target, saved: base ? savedRecordSummary(input, base, desiredValue, currentState.current?.members ?? []) : undefined, retryLabel: 'Apply my edit', retry: base ? async () => {input.baseValues = base; return execute();} : undefined});
@@ -179,6 +216,9 @@ export function useWorkspace() {
         setBusy(false);
         return null;
       }
+      if (path === '/api/command' && result?.id === originalIncident?.id && Number.isSafeInteger(result?.revision) && Array.isArray(result?.timeline)) {
+        commitIncident(result);
+      }
       try {
         // A read begun before this write cannot be the write's confirmation read.
         if (reading.current) await reading.current.catch(() => {});
@@ -192,5 +232,5 @@ export function useWorkspace() {
     void execute();
     return completion;
   }
-  return {localSignInSettings, state, onCall, demo, member, setup, pagerdutyConnect, ready, error, busy, notice, run, refresh, setError, setNotice, failure: failures.failure};
+  return {localSignInSettings, state, onCall, demo, member, setup, pagerdutyConnect, ready, error, busy, notice, run, refresh, commitIncident, setError, setNotice, failure: failures.failure};
 }

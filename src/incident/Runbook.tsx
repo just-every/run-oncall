@@ -20,6 +20,7 @@ export function Runbook(props: IncidentProps) {
   const save = useAutosave({storageKey: 'incident:' + incident.id + ':runbook', snapshot: snapshot(incident), read, write: async change => {
     const [kind, id] = change.field.split(':');
     const result = await autosaveRequest('/api/command', {type: kind === 'runbook' ? 'runbook' : 'template-check', ...(kind === 'runbook' ? {index: Number(id)} : {item: id}), done: change.to, incident: incident.id, revision: change.revision});
+    props.onSaved(result);
     await refreshAfterWrite(props.refresh).catch(() => {});
     return snapshot(result);
   }});

@@ -1,15 +1,16 @@
 import {severityLabel, urgencyLabel} from '../reviews/display';
 import {useId, useState} from 'react';
-import type {Incident, Member} from '../family/response-operations/domain';
+import type {Member} from '../family/response-operations/domain';
+import type {IncidentProps} from '../incident/types';
 import {InlineConfirm} from './autosave/InlineConfirm';
 import {SavedState, SaveFeedback} from './autosave/SavedState';
 import {savedResponseValue, useIncidentValues} from '../incident/useIncidentValues';
 
-export function IncidentResponseControls({incident, members, canEdit, refresh = async () => {}}: {incident: Incident; members: Member[]; busy: boolean; canEdit: boolean; mutate: (data: any) => Promise<any>; refresh?: () => Promise<void>}) {
+export function IncidentResponseControls({incident, members, canEdit, refresh, onSaved}: Pick<IncidentProps, 'incident' | 'canEdit' | 'refresh' | 'onSaved'> & {members: Member[]}) {
   const id = useId();
   const fields = ['scribe', 'communications', 'priority', 'urgency', 'severity'];
   const [reasonInputs, setReasonInputs] = useState<Record<string, string>>({});
-  const save = useIncidentValues({incident, refresh}, fields, (field, reason) => {
+  const save = useIncidentValues({incident, refresh, onSaved}, fields, (field, reason) => {
     setReasonInputs(previous => previous[field] === reason ? {...previous, [field]: ''} : previous);
   });
   const [lowering, setLowering] = useState(false);

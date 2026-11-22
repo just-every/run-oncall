@@ -12,6 +12,7 @@ export type IncidentProps = {
   busy: boolean;
   demo: boolean;
   refresh: () => Promise<void>;
+  onSaved: (incident: Incident) => void;
   command: (data: any) => Promise<any>;
   mutate: (data: any) => Promise<any>;
 };

@@ -6,4 +6,4 @@ Before a release, freeze and independently verify the candidate, review the migr
 
 Publish or tag only through the authorized release procedure after review. Keep the limitations in ACCEPTANCE.md and OPERATIONS.md in any public announcement.
 
-After the GitHub Release is public, update the Run page and the Getting started and Install and run commands to clone its published tag.
+After publication, check that GitHub's latest release points to the new tag. Oncall's install and update commands resolve that release when they run.

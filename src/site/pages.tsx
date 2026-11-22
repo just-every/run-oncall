@@ -1,8 +1,7 @@
 import type { ReactElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { contractPageHtml } from '../base/contract-page'
-import { hostingPageHtml } from '../base/hosting-page'
-import { runPageHtml, siteNotFoundHtml, type SiteBuild, type SiteContext } from '../base/run-site'
+import { siteNotFoundHtml, type SiteBuild, type SiteContext } from '../base/run-site'
 import { fontLinks } from '../brand/font-head'
 import { identity } from '../identity'
 import { Home } from '../landing/Home'
@@ -10,7 +9,7 @@ import { LandingHeader } from '../landing/Hero'
 import { DocsIndex } from '../docs/DocsIndex'
 import { DocsArticle } from '../docs/DocsArticle'
 import { docsHead, docsPages } from '../docs/pages'
-import { run } from './run'
+import { oncallHostingPage, oncallRunPage, run } from './run'
 import '../brand/tokens.css'
 // The approved homepage inherits these document defaults from the workspace route.
 import '../app/shell.css'
@@ -34,8 +33,8 @@ export function sitePages({ styles, contract, hosting }: SiteContext): SiteBuild
   return {
     pages: [
       { path: '/', html: document("Oncall — who's on call, now and next", identity.tagline, <Home variant="site" />) },
-      { path: '/run', html: sharedPage(runPageHtml(identity, run, contract, homepageHeader)) },
-      { path: '/docs/hosting', html: sharedPage(hostingPageHtml(identity, run, hosting ?? null, contract, homepageHeader)) },
+      { path: '/run', html: sharedPage(oncallRunPage(contract, homepageHeader)) },
+      { path: '/docs/hosting', html: sharedPage(oncallHostingPage(hosting ?? null, contract, homepageHeader)) },
       ...(contract ? [{ path: '/contract', html: contractPageHtml(identity, run, contract) }] : []),
       { path: '/docs', html: document(...head(), <DocsIndex variant="site" />) },
       ...docsPages.map(page => ({ path: `/docs/${page.slug}`, html: document(...head(page.slug), <DocsArticle slug={page.slug} variant="site" />) })),

@@ -37,8 +37,9 @@ export function savedIncidentSummary(input: any, incident: Incident, members: Me
   if (input.type === 'set-urgency') return summary([{label: 'Response urgency', saved: incidentUrgency(incident), edit: input.urgency}]);
   if (input.type === 'set-severity') return summary([{label: 'Response severity', saved: incident.severity, edit: input.severity}]);
   if (input.type === 'transition') return summary([
-    {label: 'Next state', saved: incident.state, edit: input.state},
-    ...(input.evidence ? [{label: 'Recovery evidence URL (required for recovered)', saved: incident.recovery, edit: input.evidence}] : []),
+    {label: 'Status', saved: incident.state, edit: input.state},
+    ...(input.state === 'recovered' && incident.sourceRecovery ? [{label: 'Source recovery', saved: 'Recorded', edit: null}] : []),
+    ...(input.evidence ? [{label: 'Recovery evidence', saved: incident.recovery, edit: input.evidence, display: incident.recovery || 'None recorded'}] : []),
   ]);
   if (input.type === 'runbook') {
     const step = incident.runbook[input.index];

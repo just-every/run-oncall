@@ -22,7 +22,7 @@ Answer the region and UTC comparison-date prompts, then paste only the read-only
 
 A successful run prints **Saved** and the full path to a new `opsgenie-export-DATE-TIME.json` or `pagerduty-export-DATE-TIME.json` in the current folder. Keep it private. If Opsgenie returns **HTTP 422**, the key may be malformed: copy the full key again without `GenieKey` or header text; if it persists, ask your administrator to check the key, region and configuration access. Failed collection saves no file; do not upload an export left from an earlier run. See the linked guide for other errors and size limits.
 
-Return to **Settings → Move in**, choose **Other: from a file** under **Source**, choose **PagerDuty** or **Opsgenie** under **File source**, then choose the saved file under **Export JSON**. Preview, confirm paused import, and explicitly map service and people for adoption remain separate actions. Paging stays OFF. The response-shape reference below is for operators maintaining their own export tooling; the downloadable tool builds the bundle for you.
+Return to **Settings → Move in**. For PagerDuty, choose **PagerDuty** under **Source**. For Opsgenie, choose **Other: from a file** under **Source** and **Opsgenie** under **File source**. Choose the saved file under **Export JSON**. Preview, confirm paused import, and explicitly map service and people for adoption remain separate actions. Paging stays OFF. The response-shape reference below is for operators maintaining their own export tooling; the downloadable tool builds the bundle for you.
 
 ## Accepted response shapes
 

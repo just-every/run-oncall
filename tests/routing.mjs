@@ -97,10 +97,56 @@ export async function nativeRouting(w,cookie,actor) {
  ok(await send(event('rotated-out'),old),401);ok(await send(event('rotated-in')),201);
  const signedSource=ok(await req('/api/state')).intakeSources.find(s=>s.id==='signed-native');
  ok(await req('/api/intake/sources/signed-native/revoke',{revision:signedSource.revision}));ok(await send(event('revoked','payments','trigger','signed-native'),signed,'signed'),401);
+
+ const rotaSource='rota-admission',rotaKey=key(),service='foreign';
+ const primary=ok(await req('/api/members',{name:'Synthetic rota primary',role:'responder',password:'synthetic-rota-primary-password'}),201);
+ ok(await req('/api/routing/keys',{id:rotaSource,name:'Rota intake',provider:'native',scope:[service],owner:actor.id,key:rotaKey,revision:0,rules:[],catchAll:service}),201);
+ const validFrom=new Date(Math.floor(Date.now()/60000)*60000-3600000).toISOString();
+ const rotation=members=>({anchorLocal:validFrom.slice(0,16),periodDays:1,members,ambiguity:'earlier'});
+ const draft={id:rotaSource,name:'Regional rota',service,revision:0,timezone:'UTC',validFrom,validUntil:null,primary:rotation([primary.id]),backup:rotation([actor.id]),overrides:[]};
+ ok(await req('/api/paging/schedules',draft));
+ const pagingBefore=ok(await req('/api/paging/state')),outboundBefore=await w.outboundRequests();
+ const observation=(id,severity='warning')=>({...event(id,service,'trigger',rotaSource),key:id,generation:id,severity,observedAt:new Date(Date.parse(validFrom)-1).toISOString()});
+ const admitted=async(input,owner,action)=>{
+  const received=ok(await send(input,rotaKey),201),state=ok(await req('/api/state'));
+  const stored=state.events.find(e=>e.id===received.id),alert=state.alerts.find(a=>a.events.includes(stored.id));
+  const receipt=state.intakeReceipts.find(r=>r.event===stored.id);
+  assert.equal(alert.owner,owner);assert.equal(stored.decision.action,action);assert.equal(stored.decision.owner,owner);
+  assert.equal(alert.onCall,undefined);assert.deepEqual(receipt.routing.serviceDecision,{event:stored.id,...stored.decision});
+  return {received,stored,alert};
+ };
+ const staffed=observation('staffed-rota'),first=await admitted(staffed,primary.id,'route');
+ assert.equal(first.stored.decision.policy,null);assert.ok(first.stored.observedAt<validFrom&&validFrom<=first.stored.acceptedAt);
+ assert.deepEqual(first.alert.obligation.target,{kind:'service',id:service});
+ const replay=ok(await req('/api/replay',{events:[first.stored]}));assert.deepEqual(replay.decisions[0].historical,first.stored.decision);
+ assert.deepEqual(ok(await send(staffed,rotaKey)),{...first.received,duplicate:true});
+ const pagingAfter=ok(await req('/api/paging/state'));
+ for(const field of ['policies','jobs','receipts','callbacks','paging'])assert.deepEqual(pagingAfter[field],pagingBefore[field]);
+ assert.deepEqual(await w.outboundRequests(),outboundBefore);
+
+ ok(await req('/api/command',{type:'policy',service,severity:'info',action:'route',owner:actor.id,reason:'Assigned explicitly'}));
+ const explicit=await admitted(observation('explicit-owner','info'),actor.id,'route');assert.ok(explicit.stored.decision.policy);
+ ok(await req('/api/command',{type:'policy',service,severity:'critical',action:'suppress',owner:actor.id,reason:'Suppressed explicitly'}));
+ const suppressed=await admitted(observation('suppressed','critical'),null,'suppress');assert.equal(suppressed.alert.suppressed,true);
+ ok(await req('/api/paging/schedules',{...draft,id:'empty-rota',name:'Rota with a primary gap',primary:rotation([])}));
+ await admitted(observation('staffed-with-gap'),primary.id,'route');
+ ok(await req('/api/paging/schedules',{...draft,id:'ambiguous-rota',name:'Another regional rota',primary:rotation([actor.id])}));
+ await admitted(observation('overlapping-rotas'),null,'unmatched');
+ const loneRotaService='uncovered-rota-service';
+ ok(await req('/api/command',{type:'service',id:loneRotaService,name:'Uncovered rota service',environment:'production',owner:actor.id,runbook:[],pager:''}));
+ ok(await req('/api/paging/schedules',{...draft,id:'uncovered-rota',name:'Uncovered rota',service:loneRotaService,primary:rotation([])}));
+ const gapKey=key();
+ ok(await req('/api/routing/keys',{id:'gap-native',name:'Gap intake',provider:'native',scope:[loneRotaService],owner:actor.id,key:gapKey,revision:0,rules:[],catchAll:loneRotaService}),201);
+ const gap=ok(await send(event('coverage-gap',loneRotaService,'trigger','gap-native'),gapKey),201),afterGap=ok(await req('/api/state'));
+ assert.equal(afterGap.alerts.find(a=>a.events.includes(gap.id)).owner,null,'a backup alone cannot assign the alert');
+ assert.deepEqual(afterGap.events.find(e=>e.id===first.stored.id),first.stored,'rota changes preserve the original decision');
+ assert.equal(afterGap.alerts.find(a=>a.id===first.alert.id).owner,primary.id);
+
  const held=ok(await req('/api/recovery/checkpoint'));
- for(const secret of [old,bearer,signed])assert.ok(!JSON.stringify(held).includes(secret));
+ for(const secret of [old,bearer,signed,rotaKey,gapKey])assert.ok(!JSON.stringify(held).includes(secret));
  assert.equal(w.sql("SELECT signing_custody IS NOT NULL AS held FROM oc_intake_credentials WHERE source='native'")[0].held,0);
  console.log('Native routed public journey: bearer/HMAC, immutable retries, scope, per-service recovery, unrouted/readmission, zero-write replay, stale publication, audit rollback, rotation/revocation and secret-free checkpoint passed');
+ console.log('PASS routed native rota assignment at admission with explicit owners and suppression preserved, ambiguous and uncovered rotas unassigned, immutable decision/receipt and zero notification runs or outbound requests');
  return {bearer,signed};
 }
 

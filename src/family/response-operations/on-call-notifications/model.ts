@@ -1,6 +1,6 @@
-import {coverage,type Schedule} from '../schedules.ts';
+import {coverage,scheduleServices,type Schedule} from '../schedules.ts';
 import {servicePolicy,validatePolicy,type EscalationPolicy} from '../escalation.ts';
-import {fail,type Alert,type Entry,type Incident,type State} from '../domain.ts';
+import {fail,updateAdmissionDecision,type Alert,type Entry,type Event,type Incident,type State} from '../domain.ts';
 import {memberNotificationRules,validateNotificationRules,type Contact,type NotificationRule} from './rules.ts';
 
 /**
@@ -60,15 +60,38 @@ const assignedText = (run:OnCallRun,name:string|null) => name
   ? `Assigned the selected responder for escalation policy ${run.policy.service} revision ${run.policy.revision} (rota ${run.policy.scheduleId}) at ${run.startedAt}; notifications ${noSender}.`
   : `No one on call for escalation policy ${run.policy.service} revision ${run.policy.revision} (rota ${run.policy.scheduleId}) at ${run.startedAt}; left unassigned, operator action required; paging OFF.`;
 
+function assignRotaPrimary(state:State,alert:Alert,first:Event,schedules:Schedule[]) {
+  if(alert.owner!==null||alert.coordination||first.decision.policy!==null||first.decision.action!=='unmatched')return;
+  const at = Date.parse(first.acceptedAt);
+  let staffed: {schedule:Schedule;primary:string}|undefined;
+  for(const schedule of schedules) {
+    if(!scheduleServices(schedule).includes(first.service))continue;
+    const primary = coverage(schedule,state.members,at).primary;
+    if(primary===null)continue;
+    if(staffed&&staffed.primary!==primary)return;
+    staffed??={schedule,primary};
+  }
+  if(!staffed)return;
+
+  const {schedule,primary} = staffed;
+  const decision = {...first.decision,action:'route' as const,owner:primary,
+    reason:`Assigned to the primary on call at admission from ${schedule.name} (rota revision ${schedule.revision}).`};
+  alert.owner = primary;
+  updateAdmissionDecision(first,decision);
+  for(const receipt of state.intakeReceipts??[]) {
+    if(receipt.routing?.serviceDecision?.event===first.id)receipt.routing.serviceDecision = {event:first.id,...decision};
+  }
+}
+
 export function startOnCall(state:State,policies:EscalationPolicy[],schedules:Schedule[],now:number) {
   const ids = pendingStarts.get(state);
   pendingStarts.delete(state);
   for(const id of ids??[]) {
     const alert = state.alerts.find(a=>a.id===id);
     if(!alert||alert.onCall||alert.state!=='active'||alert.suppressed||alert.service===null)continue;
-    // Services without an escalation policy keep the upstream behaviour exactly.
-    const policy = servicePolicy(policies,alert.service!), first = state.events.find(e=>e.id===alert.events[0]);
-    if(!policy||!first)continue;
+    const policy = servicePolicy(policies,alert.service), first = state.events.find(e=>e.id===alert.events[0]);
+    if(!first)continue;
+    if(!policy){assignRotaPrimary(state,alert,first,schedules);continue;}
     const t0 = Date.parse(first.acceptedAt), schedule = schedules.find(s=>s.id===policy.scheduleId);
     const target = alert.coordination?.assignee ?? alert.owner ?? (schedule ? coverage(schedule,state.members,t0).primary : null);
     const incident = linkedIncidents(state,alert).find(i=>!i.mergedInto) ?? null;

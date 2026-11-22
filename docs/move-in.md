@@ -2,10 +2,10 @@
 
 Open **Settings → Move in** to read schedules from PagerDuty or Opsgenie, then review the result before anything is imported. PagerDuty uses its own sign-in when this installation has a PagerDuty app; either provider can use a read-only key for this one read. The key stays in page and request memory and is never kept in an archive, audit entry or log. No provider schedules or routing are changed, and everything imported arrives paused. Paging stays off.
 
-To upload saved PagerDuty JSON, choose **Source → Other: from a file → File source → PagerDuty**, then choose the file under **Export JSON**. The private terminal fallback is folded under **No key? Use the exporter on your computer**. Both paths lead to Review, then Import paused. Adoption, Undo and integration activation each ask once on the same page.
+To upload saved PagerDuty JSON, choose **PagerDuty** under **Source**, then choose the file under **Export JSON**. The private terminal fallback is folded under **No key? Use the exporter on your computer**. Both paths lead to Review, then Import paused. Adoption, Undo and integration activation each ask once on the same page.
 
 The shared file door accepts **PagerDuty, Opsgenie, Splunk On-Call, Jira Service
-Management Ops and Better Stack** exports. Select the matching **File source**. Preview retains the uploaded file and import bookkeeping;
+Management Ops and Better Stack** exports. For a saved file from another provider, choose **Other: from a file** and select the matching **File source**. Preview retains the uploaded file and import bookkeeping;
 it writes zero native objects and grants no login or paging authority. These
 adapters have synthetic saved-response proof within their documented mapping
 limits; no real customer export, complete account migration or live cutover is
@@ -123,7 +123,7 @@ The exporter reads all people, schedules and policies accessible to the key. It 
 
 A successful run prints **Saved**, the full filename, object count and comparison window. The file is created in the folder where you ran the command, normally Downloads, with a name like `opsgenie-export-DATE-TIME.json` or `pagerduty-export-DATE-TIME.json`. Each run uses a new name. Keep it private: it contains names, email addresses and schedules. File permissions are owner-only on systems supporting Unix file modes.
 
-Return to **Settings → Move in**, choose **Other: from a file** under **Source** and the matching **File source**, then choose that file under **Export JSON**. Oncall shows its review at once. Export success means the file was collected; the preview decides which settings are compatible. Read every rejection, difference and coverage comparison before confirming. Ask your administrator to revoke the dedicated export key after use.
+Return to **Settings → Move in**. For PagerDuty, choose **PagerDuty** under **Source**. For Opsgenie, choose **Other: from a file** under **Source** and **Opsgenie** under **File source**. Choose the saved file under **Export JSON**. Oncall shows its review at once. Export success means the file was collected; the preview decides which settings are compatible. Read every rejection, difference and coverage comparison before confirming. Ask your administrator to revoke the dedicated export key after use.
 
 If the tool stops:
 
@@ -141,7 +141,7 @@ Exporter references checked on 16 October 2026: Opsgenie's [pagination](https://
 
 ## Preview, then import
 
-1. **Connect:** open **Settings → Move in**. Connect PagerDuty or read schedules with a read-only key. For a saved file, choose **Other: from a file** under **Source**, choose the matching **File source**, and choose the file under **Export JSON**. Oncall shows its review at once.
+1. **Connect:** open **Settings → Move in**. Connect PagerDuty or read schedules with a read-only key. For a saved PagerDuty file, choose **PagerDuty** under **Source**. For other saved files, choose **Other: from a file** and select the matching **File source**. Choose the file under **Export JSON** to open its review.
 2. **Review:** this is a dry run: it changes nothing in your workspace, however often you choose a file. Oncall keeps the file with its review in the import journal, so the import applies exactly what you reviewed. Read the **Compatibility review**: it counts what mapped, what was rejected and what came across with differences, then lists every object with its reason. Nothing is skipped quietly. If this source already holds an import, the review shows what the new file adds or changes; people or schedules edited in Oncall since are refused by name, and anything missing from the file stays.
 3. **Import paused:** if you are happy, press **Import paused**, review the confirmation, then press **Confirm paused import**. Oncall applies exactly the review you saw. If you pick a different file, it shows a new review first.
 

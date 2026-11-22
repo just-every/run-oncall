@@ -45,17 +45,18 @@ You need Git on macOS, Linux or Windows with WSL2. The installer provides Node a
 
    The installer puts `rer` in `~/.local/bin`. If that directory is missing from your PATH, run `export PATH="$HOME/.local/bin:$PATH"` in Bash or Zsh. For a setup that also works in future terminals, or for a different shell, run `"$HOME/.local/bin/rer" cli path` and follow the printed instructions.
 
-2. Download and start Oncall with the published `v0.5.23` checkout below. Once `v0.5.24` appears in [GitHub Releases](https://github.com/just-every/run-oncall/releases), use the [update steps](#later-updates) to switch to it.
+2. Clone the [latest published release](https://github.com/just-every/run-oncall/releases/latest) and start Oncall.
 
    ```sh
-   git clone --depth 1 --branch v0.5.23 https://github.com/just-every/run-oncall
-   cd run-oncall
+   ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" &&
+   git clone --depth 1 --branch "$ONCALL_TAG" https://github.com/just-every/run-oncall &&
+   cd run-oncall &&
    rer dev --host localhost
    ```
 
-**Alternative for Node 22 or later.** Clone and enter the tagged checkout above, then run `npx -y @runeditrun/rer dev --host localhost`.
+**Alternative for Node 22 or later.** Skip step 1 and replace the last line in step 2 with `npx -y @runeditrun/rer dev --host localhost`.
 
-To start it again later, run `cd run-oncall && rer dev --host localhost`. `rer dev` installs the application dependencies, creates a local development owner and prints a private link that opens Oncall signed in. On first launch, review the owner details and select **Finish setup**. Later launches open the app directly. To choose your own owner mailbox before the first launch, use [explicit setup](docs/getting-started.md#explicit-and-unattended-setup), which also accepts a private answers file for unattended runs.
+To start it again later, run `cd run-oncall && rer dev --host localhost`. `rer dev` installs the application dependencies, creates a local development owner and prints a private link that opens Oncall signed in. On first launch, review the owner details and select **Finish setup**. Later launches open the app directly. To choose your own owner mailbox before the first launch, use [explicit setup](docs/getting-started.md#explicit-and-unattended-setup), which also accepts a private answers file for unattended runs. Once setup returns, run `rer dev --host localhost` and open its private `RER_OPEN` link.
 
 Open the printed link on this computer. After setup, open your account menu and choose **Sign-in settings → Enroll passkey**. See [local passkey setup](docs/getting-started.md#sign-in-with-a-local-passkey). `rer dev --as signed-out` selects the signed-out persona. The compatibility flag `rer dev --login` still opens automatic owner entry. Ordinary `/signin` email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. The app does not capture mail or print sign-in tokens. Stop the background server with `rer dev --stop` (Ctrl-C also stops a foreground run); stop preview with `rer preview --stop` before building, verifying or deploying. A running dev or preview server owns the local state, so even a deploy dry run refuses with exit 4 until it stops.
 
@@ -102,39 +103,33 @@ Read [CONTRACT.md](CONTRACT.md), [ACCEPTANCE.md](ACCEPTANCE.md), [OPERATIONS.md]
 
 ## Update, host and remove
 
+### Later updates
+
+From your existing checkout, stop the local servers and switch to the latest published release.
+
+```sh
+rer dev --stop
+rer preview --stop
+ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" &&
+git fetch --depth 1 origin tag "$ONCALL_TAG" &&
+git checkout --detach "refs/tags/$ONCALL_TAG" &&
+rer dev --host localhost
+```
+
+This restarts the updated local app, applies migrations and keeps your owner, schedules and incidents. `rer` uses the new checkout's pinned toolchain. If the saved port is in use, run the `rer setup --port N` command printed in the error, then restart.
+
 ### From 0.1.0
 
-Stop the old servers **before pulling**: 0.1.0 uses the checkout's runner, which the update removes.
+Stop the old servers before switching releases. 0.1.0 uses the checkout's runner, which the update removes.
 
 ```sh
 node scripts/rer.mjs dev --stop
 node scripts/rer.mjs preview --stop
 ```
 
-Then, from this checkout on `main`, update and start it with the installed `rer`.
-
-```sh
-git pull --ff-only
-rer dev
-```
-
-**Alternative for Node 22 or later.** After pulling, run `npx -y @runeditrun/rer dev`.
+Then use [Later updates](#later-updates). Install `rer` first or use `npx -y @runeditrun/rer` in place of each `rer` command if you already have Node 22 or later.
 
 The update applies Oncall's additive migrations. Your data, owner and password accounts are kept; people who sign in with a workspace password sign in once more after updating to 0.3.0. Do not reset to upgrade.
-
-### Later updates
-
-Pick an Oncall release tag from [GitHub Releases](https://github.com/just-every/run-oncall/releases) and substitute it for `TAG` to update this checkout:
-
-```sh
-rer dev --stop
-rer preview --stop
-git fetch --depth 1 origin tag TAG
-git checkout --detach TAG
-rer dev --host localhost
-```
-
-This restarts the updated local app, applies migrations and keeps your owner, schedules and incidents. `rer` installs a pulled change of its own pin before it runs and provides the pinned Node and pnpm versions.
 
 ### Host for your team
 
@@ -165,11 +160,12 @@ For Business agent setup, run `rer signin` after deployment to print the first-o
 
 This prints a private, single-use owner link that expires within 15 minutes. Open it privately and press **Confirm**; do not record or share the output. It does not test mail delivery.
 
-Deployment uses a separate hosted database; it does not upload local schedules or incidents. Keep this checkout's `.rer/deploy/` records. For later hosted updates, substitute the release tag for `TAG` and deploy to the same environment:
+Deployment uses a separate hosted database; it does not upload local schedules or incidents. Keep this checkout's `.rer/deploy/` records. For later hosted updates, switch to the latest published release and deploy to the same environment.
 
 ```sh
-git fetch --depth 1 origin tag TAG
-git checkout --detach TAG
+ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" &&
+git fetch --depth 1 origin tag "$ONCALL_TAG" &&
+git checkout --detach "refs/tags/$ONCALL_TAG" &&
 rer deploy --environment production --env-file "$HOME/.config/oncall/production.env"
 ```
 

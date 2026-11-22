@@ -299,7 +299,21 @@ async function incidentSaves(page) {
  assert.equal(accepted.timeline.filter(row=>row.kind==='review').length,1,'only explicit acceptance records the review in the timeline');
  assert.equal(accepted.timeline.at(-1).actor,accepted.reviewAcceptance.by);
  assert.equal(accepted.timeline.at(-1).review.review,accepted.review);
- await page.goto(worker.origin+'/incidents/'+incident.id);await page.locator('.incident-timeline').waitFor();
+ await review.getByRole('link',{name:'Add a follow-up on this incident',exact:true}).click();
+ const followupSheet=page.getByRole('dialog',{name:'Follow-ups',exact:true});
+ const followupForm=followupSheet.locator('.followup-create');
+ const improvement='Alert on gateway configuration validation failures';
+ await followupForm.getByLabel('Improvement action',{exact:true}).fill(improvement);
+ await followupForm.getByLabel('Due date (UTC)',{exact:true}).fill('2026-11-21');
+ const [createdFollowup]=await Promise.all([
+  page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().postDataJSON()?.type==='action'),
+  followupForm.getByRole('button',{name:'Add follow-up',exact:true}).click(),
+ ]);
+ assert.equal(createdFollowup.request().postDataJSON().revision,accepted.revision,'following the review link uses the revision returned by acceptance');
+ assert.equal(createdFollowup.status(),200,'adding a follow-up needs no reload after review acceptance');
+ await expect(followupSheet.getByText(improvement,{exact:true})).toBeVisible();
+ await followupSheet.getByRole('button',{name:'Close',exact:true}).click();
+ await page.locator('.incident-timeline').waitFor();
  await expect(page.locator('.incident-timeline .event').filter({hasText:'Human accepted root cause'})).toHaveCount(1);
  await capture('accepted-timeline');
  await page.goto(worker.origin+'/reviews');

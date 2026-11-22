@@ -10,7 +10,7 @@ export function ReplayComparison({ result, members, events = [] }: { result: Res
   function decision(value: Decision | null, people: Member[]) {
     if (!value) return <p>No accepted event with this identity.</p>;
     const owner = value.owner ? people.find(member => member.id === value.owner)?.name ?? `Unavailable member` : "Unassigned";
-    return <><p><strong>{value.action === 'route' ? 'Routed' : value.action === 'suppress' ? 'Suppressed' : 'Unassigned'}</strong> · {owner}</p><p>{value.reason}</p><DecisionExplanation decision={value} events={events} ownerView/><span>{value.policy ? "Service response policy" : "No matching policy"}</span></>;
+    return <><p><strong>{value.action === 'route' ? 'Routed' : value.action === 'suppress' ? 'Suppressed' : 'Unassigned'}</strong> · {owner}</p><p>{value.reason}</p><DecisionExplanation decision={value} events={events} ownerView/><span>{value.policy ? 'Service response policy' : value.action === 'route' ? 'Primary on call' : 'No matching policy'}</span></>;
   }
   return <section aria-label="Replay comparison">
     <p>{result.decisions.length} events compared. No records changed.</p>
@@ -19,6 +19,7 @@ export function ReplayComparison({ result, members, events = [] }: { result: Res
       <h4>Historical decision</h4>{decision(row.historical, row.historicalEvaluation?.members ?? members)}
       {row.historicalUrgency&&<p>Historical urgency: <strong>{urgencyLabel(row.historicalUrgency.urgency)}</strong> · {row.historicalUrgency.reason}</p>}
       <h4>Proposed decision</h4>{decision(row.proposed, members)}
+      {row.historical?.policy===null&&row.historical.action==='route'&&<p>Replay evaluates coordination rules. Rota coverage is used at admission.</p>}
       {row.proposedUrgency&&<p>Proposed urgency: <strong>{urgencyLabel(row.proposedUrgency.urgency)}</strong> · {row.proposedUrgency.reason}</p>}
       {row.proposedWorkflow&&<p>Proposed workflow: {row.proposedWorkflow.steps.join(' → ')}. Recorded obligation only; no effects.</p>}
       <p>Evaluated {shortTime(row.proposedEvaluation)}</p>

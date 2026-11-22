@@ -14,21 +14,23 @@ export function AlertNotificationRun({alert,state,onCall,unmatched}:{alert:Alert
   const rota=onCall?.rotas.find(rota=>rota.id===run?.policy.scheduleId);
   const serviceRotas=onCall?.rotas.filter(rota=>rota.service.id===alert.service)??[];
   const rotaPath=serviceRotas.length===1?'/on-call/'+encodeURIComponent(serviceRotas[0].id):'/on-call';
-  const assigned=run?.assignedTo??state.members.find(member=>member.id===(alert.coordination?.assignee??alert.owner));
+  const assigned=run?.assignedTo??state.members.find(member=>member.id===(alert.coordination?alert.coordination.assignee:alert.owner));
+  const admission=state.events.find(event=>event.id===alert.events[0])?.decision;
   return <section className="alert-notifications" aria-labelledby="alert-notifications-heading">
     <h3 id="alert-notifications-heading">Who this alert goes to</h3>
     <p className="alert-assignment">Assigned to <strong>{assigned?.name??'Nobody'}</strong></p>
     {run?.assignedOnCall&&run.assignedOnCall.id!==assigned?.id&&<p>At the start: {run.assignedOnCall.name}</p>}
     {rota&&<p>Backup on rota now: <strong>{rota.now.backup?.name??'Nobody on call'}</strong> · <a href={'/on-call/'+encodeURIComponent(rota.id)}>{rota.name}</a></p>}
     {run&&!rota&&<p>Backup coverage is unavailable for this rota.</p>}
-    <p>These steps are recorded. Oncall doesn't send them; your pager does.</p>
     {!run?<>
+      {admission?.policy===null&&admission.action==='route'&&<p>{admission.reason}</p>}
       <p>No notification run was recorded for this alert.</p>
       {unmatched&&!assigned&&<>
         <p>No coordination rule matched when this alert arrived. To assign future alerts to a named responder, publish a <strong>Route to owner</strong> rule for this service and severity in <a href="/settings/routing#coordination-rules">Settings → Routing → Coordination rules</a>.</p>
-        <p>To use the primary on call instead, open the service’s <a href={rotaPath}>rota</a> and save a wait setting under <strong>Paging is off → Who to contact, in order</strong>. A staffed rota provides coverage. Saving its contact order lets Oncall use it for assignment.</p>
+        <p>Future alerts can go to the primary on call when the service’s rotas point to one available primary. Check the <a href={rotaPath}>rota</a>.</p>
       </>}
     </>:<>
+      <p>These steps are recorded. Oncall doesn't send them; your pager does.</p>
       {run.status==='answered'&&<p className="alert-run-outcome">Answered · The alert was acknowledged; later steps have stopped.</p>}
       {run.status==='closed'&&<p className="alert-run-outcome">Closed · {run.outcome}</p>}
       <ol className="alert-notification-rules" aria-label="Recorded notification steps">

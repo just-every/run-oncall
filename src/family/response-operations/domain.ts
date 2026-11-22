@@ -282,7 +282,7 @@ export function route(state: State, signal: Signal, at=new Date().toISOString(),
       version: null,
       action: "unmatched",
       owner: null,
-      reason: "No matching policy; visible unowned alert",
+      reason: "No matching coordination rule",
     };
   const owner = state.members.find(
     (m) => m.id === policy.owner && m.active && ["admin", "responder"].includes(m.role),
@@ -339,6 +339,13 @@ export function signalInput(input: any, exactKey = false, keyLimit = 200): Signa
     observedAt: new Date(input.observedAt).toISOString(),
     evidence,
   };
+}
+const admissionAudits = new WeakMap<Event, Entry>();
+const eventAuditText = (event: Event) => `${event.intent} ${event.eventId}: ${event.decision.reason}`;
+export function updateAdmissionDecision(event: Event, decision: Decision) {
+  event.decision = decision;
+  const audit = admissionAudits.get(event);
+  if (audit) audit.text = eventAuditText(event);
 }
 export function admit(state: State, input: any, at = new Date().toISOString(), exactKey = false, keyLimit = 200,labels?:Record<string,string>) {
   const signal = signalInput(input,exactKey,keyLimit);
@@ -413,14 +420,9 @@ export function admit(state: State, input: any, at = new Date().toISOString(), e
     recordAlertObligation(alert, event.id);
   }
   state.events.push(event);
-  state.audit.push(
-    stamp(
-      `source:${signal.source}`,
-      "event",
-      `${signal.intent} ${signal.eventId}: ${event.decision.reason}`,
-      at,
-    ),
-  );
+  const audit = stamp(`source:${signal.source}`, 'event', eventAuditText(event), at);
+  state.audit.push(audit);
+  admissionAudits.set(event, audit);
   return { event, alert: alert?.id ?? null, duplicate: false };
 }
 export function command(state:State,actor:Member,input:any,at=new Date().toISOString(),context:PolicyContext={policies:[],eligible:{}}) {

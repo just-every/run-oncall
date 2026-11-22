@@ -22,6 +22,7 @@ export function ConnectStep({ waiting, source, vendor, choose, fileVendor, conne
    {upload}
    <details className="move-in-fallback"><summary>No key? Use the exporter on your computer</summary><ExportHelp vendor={vendor} /></details>
   </> : <>
+   {source === 'pagerduty' && upload}
    <label className="scheduling-field"><span id="move-in-region">Region</span><select aria-labelledby="move-in-region" value={region} disabled={busy} onChange={event => setRegion(event.target.value as Region)}><option value="us">United States</option><option value="eu">Europe</option></select></label>
    {keyPath ? <form onSubmit={event => { event.preventDefault(); const credential = key; void read(source as Provider, region, credential).finally(() => setKey('')) }}>
     <label className="scheduling-field">Read-only key<input type="password" value={key} onChange={event => setKey(event.target.value)} disabled={busy} autoComplete="off" autoCapitalize="none" spellCheck={false} required maxLength={4096} /></label>
@@ -35,7 +36,7 @@ export function ConnectStep({ waiting, source, vendor, choose, fileVendor, conne
     <p>Register a PagerDuty app with this redirect address:</p><code>{typeof location === 'undefined' ? '<app address>' : location.origin}/api/move-in/pagerduty/callback</code>
     <pre><code>rer secret set PAGERDUTY_OAUTH_CLIENT_ID{'\n'}rer secret set PAGERDUTY_OAUTH_CLIENT_SECRET</code></pre>
    </details>}
-   <details className="move-in-fallback"><summary>No key? Use the exporter on your computer</summary><ExportHelp vendor={source} />{upload}</details>
+   <details className="move-in-fallback"><summary>No key? Use the exporter on your computer</summary><ExportHelp vendor={source} />{source === 'opsgenie' && upload}</details>
   </>}
  </section>
 }

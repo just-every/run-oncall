@@ -31,6 +31,6 @@ export function IncidentsSection() {
         {reminders.map(item => <div key={item.id}><button onClick={() => open(item.id)}>{item.title}</button><p>all alerts recovered — awaiting resolution · {name(item.sourceRecovery!.reminder.commander)}</p></div>)}
       </section>}
     </IncidentTriage>
-    {selected && incident && <IncidentPage key={incident.id} incident={incident} state={s} actor={actor} canEdit={canEdit} busy={w.busy} demo={w.demo} command={command} mutate={mutate} refresh={w.refresh} />}
+    {selected && incident && <IncidentPage key={incident.id} incident={incident} state={s} actor={actor} canEdit={canEdit} busy={w.busy} demo={w.demo} command={command} mutate={mutate} refresh={w.refresh} onSaved={w.commitIncident} />}
   </div>;
 }

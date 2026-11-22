@@ -21,7 +21,7 @@ export function responseCommand(field: string, value: string, reason?: string) {
 export const savedResponseValue = (value: unknown) => value && typeof value === 'object' && 'value' in value ? (value as {value: string}).value : value;
 
 type Choice = {value: string; reason: string; draftReason?: string};
-export function useIncidentValues(props: Pick<IncidentProps, 'incident' | 'refresh'>, fields: string[], onSaved?: (field: string, reason: string | undefined) => void) {
+export function useIncidentValues(props: Pick<IncidentProps, 'incident' | 'refresh' | 'onSaved'>, fields: string[], onSaved?: (field: string, reason: string | undefined) => void) {
   const {incident} = props;
   const reasons = useRef<Record<string, string>>({});
   const snapshot = (record: Incident) => ({revision: record.revision, values: Object.fromEntries(fields.map(field => [field, {value: responseValue(record, field), reason: ''}])) as Record<string, Choice>});
@@ -34,6 +34,7 @@ export function useIncidentValues(props: Pick<IncidentProps, 'incident' | 'refre
   const save = useAutosave({storageKey: 'incident:' + incident.id + ':response:' + fields.join(','), snapshot: snapshot(incident), read, write: async change => {
     const draftReason = change.to.draftReason;
     const result = await autosaveRequest('/api/command', {...responseCommand(change.field, change.to.value, change.to.reason), incident: incident.id, revision: change.revision});
+    if (result.changed !== false) props.onSaved(result);
     const answer = result.changed === false ? await read() : snapshot(result);
     // Consume this change's reason only after acceptance. A later draft and a
     // refused change keep their own reason.
