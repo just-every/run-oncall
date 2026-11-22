@@ -69,6 +69,11 @@ export function useWorkspace() {
     reading.current = pending;
     return pending;
   }
+  async function refreshAfterPendingRead() {
+    // A read already in flight may have started before the user opened Alerts.
+    if (reading.current) await reading.current.catch(() => {});
+    await refresh();
+  }
   function apply(session: {member: Member | null; demo?: boolean; localSignInSettings?: boolean; moveIn?: {pagerdutyConnect: boolean}; setup: boolean; state: State | null; onCall?: import('./on-call/read').OnCall}) {
     preserveView();
     setMember(session.member);
@@ -235,5 +240,5 @@ export function useWorkspace() {
     void execute();
     return completion;
   }
-  return {localSignInSettings, state, onCall, demo, member, setup, pagerdutyConnect, ready, error, busy, notice, run, refresh, commitIncident, setError, setNotice, failure: failures.failure};
+  return {localSignInSettings, state, onCall, demo, member, setup, pagerdutyConnect, ready, error, busy, notice, run, refresh, refreshAfterPendingRead, commitIncident, setError, setNotice, failure: failures.failure};
 }

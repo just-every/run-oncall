@@ -50,10 +50,12 @@ const dependencies:Dependency[] = [
  {id:'regulated-data',name:'Applicable regulated-data agreements and validated controls',clauses:['OC-044'],matrix:['regulated-data'],proof:[],requirement:'Not done: applicable agreements and validated controls are absent, and no field-proof row records them. Make no HIPAA or regulated-data suitability claim; use redacted incident descriptions and separately authorized references.'},
  {id:'911',name:'911 emergency boundary',clauses:['OC-044'],matrix:['us-emergency'],proof:[],boundary:true,requirement:'Oncall is not a 911 dispatch service. For a US emergency, call 911 directly; do not send it to Oncall or wait for an alert or acknowledgment. This is guidance, not an emergency-service capability; no field-proof row applies.'},
 ];
-function mailCompletion(mail: SignInMail): Partial<Pick<InstallationDependency,'completion'|'requirement'|'signInConfirmedAt'>> {
+function mailCompletion(mail: SignInMail): Partial<Pick<InstallationDependency,'completion'|'requirement'|'signInConfirmedAt'|'signInConfirmedSender'>> {
  switch (mail.state) {
-  case 'confirmed': return {completion:'confirmed',signInConfirmedAt:mail.at,
-   requirement:'A link from a sign-in email was used successfully here. If you’ve edited mail settings since then, confirm a new link to check the current sender.'};
+  case 'confirmed': return {completion:'confirmed',signInConfirmedAt:mail.at,signInConfirmedSender:mail.sender,
+   requirement:'A link from the current sign-in email sender was confirmed.'};
+  case 'changed-since': return {completion:'changed-since',requirement:'Mail settings changed since the last confirmation. Send a new sign-in email and confirm its link.'};
+  case 'sender-unrecorded': return {requirement:'The earlier confirmation did not record its sender. Send a new sign-in email and confirm its link.'};
   case 'awaiting-confirmation': return {requirement:'Remote mail is configured. Request a sign-in email and open and confirm its link. This installation has no retained confirmation yet.'};
   case 'off': return {completion:'not-applicable',requirement:'Email is off for this installation. The owner can sign in with rer signin.'};
   case 'local': return {completion:'not-applicable',requirement:'Hosted mail checks apply to hosted installations. Local owner entry uses a separate sign-in path.'};

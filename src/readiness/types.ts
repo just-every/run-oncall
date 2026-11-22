@@ -12,8 +12,9 @@ export type MatrixRow = {
 };
 export type InstallationDependency = {
  id: string; name: string; clauses: string[]; state: MatrixState;
- completion: 'not-done' | 'guidance-only' | 'confirmed' | 'not-applicable' | 'unknown';
+ completion: 'not-done' | 'guidance-only' | 'confirmed' | 'changed-since' | 'not-applicable' | 'unknown';
  signInConfirmedAt?: string;
+ signInConfirmedSender?: string;
  matrix: {id: string; state: MatrixState}[];
  fieldProof: {id: string; state: 'passed' | 'not run'; date: string | null}[];
  requirement: string;

@@ -1155,7 +1155,8 @@ async function readinessBrowser(page,context) {
   if(item.id!=='mail')assert.equal(await row.locator('[data-state]').getAttribute('data-state'),item.state);
   assert.ok(text.includes(item.name));assert.ok(text.includes(item.requirement));
   assert.doesNotMatch(text,/\bOC-\d+\b|\bR-\d+\b|tests\/[\w-]+\.mjs/,'checklist names no internal contract id, field-proof id or test path');
-  for(const matrix of item.matrix){
+  if(item.id==='mail')assert.doesNotMatch(text,/Hosted sign-in mail: Unproven live/i,'the mail checklist row reports installation status without a second state');
+  else for(const matrix of item.matrix){
    const capability=report.matrix.find(row=>row.id===matrix.id),state={'working-here':'Working here',off:'Off','not-built':'Not built','unproven-live':'Unproven live'}[matrix.state];
    assert.ok(text.includes(capability.area+': '+state),'each constituent release state is readable beside its dependency');
   }
@@ -1295,7 +1296,7 @@ async function eventsSourceBrowser(page,context) {
  await proof('compatible-recover-form');await sendCompatible();compatibleState=await request('/api/state');
  compatibleAlerts=compatibleState.alerts.filter(a=>a.source===compatibleId);assert.equal(compatibleAlerts.length,2);
  assert.ok(compatibleAlerts.every(a=>a.state==='recovered'),'no compatible test alert remains active');
- await page.goto(origin+'/alerts');const recoveredRows=page.locator('.alert-row').filter({hasText:'Checkout gateway connection saturation'});assert.equal(await recoveredRows.count(),2);
+ await page.goto(origin+'/alerts');const recoveredRows=page.locator('.alert-row').filter({hasText:'Checkout gateway connection saturation'});await expect(recoveredRows).toHaveCount(2);
  for(const row of await recoveredRows.all())assert.equal(await row.locator('xpath=..').getByRole('heading',{name:'Recovered',exact:true}).count(),1);
  await proof('compatible-recovered-list');
  // A wrong compatible credential uses its provider error envelope (HTTP 400).
@@ -1327,7 +1328,7 @@ async function eventsSourceBrowser(page,context) {
  state=await request('/api/state');alerts=state.alerts.filter(a=>a.source===source.source);assert.equal(alerts.length,1);assert.equal(alerts[0].id,alert.id);assert.equal(alerts[0].state,'recovered');assert.equal(alerts[0].events.length,2);
  assert.equal(state.incidents.find(i=>i.id===incident.id).state,'acknowledged','source recovery keeps the acknowledged incident open');
  const events=state.events.filter(e=>e.source===source.source);assert.deepEqual(events.map(e=>[e.intent,e.key,e.generation,e.severity]),[['trigger',key,generation,'critical'],['recover',key,generation,'warning']]);
- await page.goto(origin+'/alerts');assert.equal(await row.count(),1);assert.equal(await row.locator('xpath=..').getByRole('heading',{name:'Recovered',exact:true}).count(),1);
+ await page.goto(origin+'/alerts');await expect(row).toHaveCount(1);assert.equal(await row.locator('xpath=..').getByRole('heading',{name:'Recovered',exact:true}).count(),1);
  assert.equal(await nav().innerText(),String(state.alerts.filter(a=>a.state==='active').length));await proof('recovered-list');
  await row.click();await page.getByRole('article',{name:'Alert details',exact:true}).waitFor();assert.match(await page.locator('.alert-meta').innerText(),/critical.*recovered/);await proof('recovered-alert');
  // Extend this source-recovery journey: readable history at desktop width and
@@ -1406,7 +1407,7 @@ async function eventsSourceBrowser(page,context) {
   assert.equal((await sendBody({...body,source:'Another source',eventId:body.eventId+'-wrong-source'})).status,403,'a display name cannot select another source');
   assert.equal((await sendBody({...body,service:serviceName,eventId:body.eventId+'-wrong-service'})).status,403,'service names cannot bypass the explicit ID scope');
   const unchanged=await request('/api/state');assert.deepEqual(unchanged.events,accepted.events);assert.deepEqual(unchanged.alerts,accepted.alerts,'refused identities create no accepted event or alert');
-  await page.goto(origin+'/alerts');const opened=page.locator('.alert-row').filter({hasText:body.title});assert.ok(await opened.count()>0,'the sent sample opens an alert visible in Alerts');
+  await page.goto(origin+'/alerts');const opened=page.locator('.alert-row').filter({hasText:body.title});await expect(opened.first(),'the sent sample opens an alert visible in Alerts').toBeVisible();
   await page.locator('.alert-row[href="/alerts/'+encodeURIComponent(alert.id)+'"]').click();
   await page.getByRole('article',{name:'Alert details',exact:true}).waitFor();
   await page.goto(origin+sample.path);assert.equal(await page.getByRole('region',{name:'Integration source',exact:true}).getByRole('heading',{level:2}).innerText(),sample.name,'the original page URL still works after sending');
