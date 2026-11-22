@@ -1,3 +1,23 @@
+# 0.5.24 · 2026-11-22
+
+- The Run page, Getting started, and Install and run advanced to the published `v0.5.23` checkout. Install commands follow publication of each tag. The hosting guides distinguish the loopback address from `rer setup` and the private hosted owner link from `rer signin`.
+- Oncall now uses rer 0.2.129, which includes fixes for waiting for the local owner entry to be ready on first launch.
+- The Move in guide shows how to upload a saved PagerDuty export under **Other: from a file**, then review it and import it paused.
+- When an alert is unassigned because no coordination rule matched, its detail page links to routing settings and the rota to explain how to assign future alerts. You can also add runbook steps and an existing pager link when creating a service.
+- **Accept review** appears only for editable reviews of resolved incidents that have yet to be accepted.
+
+### Upgrade from 0.5.23
+
+Back up first. For local data, run `rer export --output exports/before-0.5.24.rer`. For hosted data, export the D1 database with the original deploying Cloudflare credentials. Keep the backup private and verify it before updating.
+
+Stop the local app with Ctrl-C or `rer dev --stop`. Once the release is published, run `git fetch --depth 1 origin tag v0.5.24` and `git checkout --detach v0.5.24`, then start with `rer dev --host localhost`. For a hosted installation, update the original deploying checkout to the same tag and run `rer deploy --environment ENVIRONMENT` with the same credentials. Restore only into an empty destination.
+
+This update adds no migrations. Keep all 69 previously released migration files unchanged. The checkout pins rer to 0.2.129.
+
+## Known limits
+
+Paging stays OFF. Keep your existing pager active. Release 2 paging and independent standby are still unavailable. Live AWS delivery and live PagerDuty account migration or cutover remain unverified.
+
 # 0.5.23 · 2026-11-22
 
 - Local owners can enroll a passkey from **Sign-in settings** after opening the private `RER_OPEN` link and finishing setup. Run Oncall with `rer dev --host localhost` to enroll and sign in. The private owner link remains available if the passkey is unavailable.
