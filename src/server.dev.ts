@@ -6,13 +6,50 @@ import worker from './server'
 import { withDevIdentity } from './modules/operator-auth/dev/index.mjs'
 import { authConfig, clearWorkspaceSession, runtimeBindings, type Bindings } from './auth.server'
 import { devPersonas } from './dev-personas'
+import { admitted } from './base/setup-state'
+import { managedInstallation } from './modules/operator-auth/dev/index.mjs'
+import { localhost, passkeyDoor, passkeyResponse } from './local-passkey/door'
+import { passkeySettings, passkeySignIn } from './local-passkey/pages'
 
 const linkStyle = 'a{color:var(--rer-link,var(--rer-text,#17212e));text-underline-offset:3px}a:focus-visible{outline:3px solid var(--rer-focus,#17212e);outline-offset:3px}'
-const dev = withDevIdentity<Bindings, typeof worker>(worker, { bindings: runtimeBindings, config: authConfig, personas: devPersonas })
+const localOwnerEntry = (env: Bindings) => env.AUTH_LOCAL === 'true' && !!env.RER_DEV_KEY
+ && env.RER_DEV_IDENTITY !== 'off' && env.RER_DEMO !== '1' && !managedInstallation({ ...env })
+const dev = withDevIdentity<Bindings, typeof worker>({
+ ...worker,
+ async fetch(request, original, execution) {
+  const env = runtimeBindings(original)
+  if (new URL(request.url).pathname === passkeyDoor && localOwnerEntry(env) && localhost(env.AUTH_ORIGIN))
+   return passkeyResponse(request, env, env.RER_DEV_KEY!)
+  return worker.fetch(request, original, execution)
+ },
+}, { bindings: runtimeBindings, config: authConfig, personas: devPersonas })
 export default {
  ...dev,
  async fetch(request:Parameters<typeof dev.fetch>[0],env:Bindings,execution:ExecutionContext) {
+  const bindings = runtimeBindings(env), url = new URL(request.url), path = url.pathname
+  const supported = localOwnerEntry(bindings)
+  const document = ['GET', 'HEAD'].includes(request.method)
+  if (supported && document && ['/', '/app', '/signin', '/auth/settings/identity'].includes(path)) {
+   const canonical = new URL(bindings.AUTH_ORIGIN)
+   // Keep cookies and WebAuthn bound to the configured origin. Accept the
+   // other loopback spelling only as a navigation to that exact server.
+   if (canonical.hostname !== url.hostname && canonical.port === url.port && canonical.protocol === url.protocol
+    && [canonical.hostname, url.hostname].sort().join(',') === '127.0.0.1,localhost' && admitted(request, url.origin)) {
+    return new Response(null, { status: 303, headers: { Location: canonical.origin + path + url.search, 'Cache-Control': 'no-store' } })
+   }
+  }
   let response = await dev.fetch(request,env,execution)
+  if (supported && document && admitted(request, bindings.AUTH_ORIGIN)) {
+   if (path === '/signin' && localhost(bindings.AUTH_ORIGIN)) {
+    const signIn = await passkeySignIn(request, bindings)
+    if (signIn) {
+     void response.body?.cancel()
+     response = signIn
+    }
+   }
+   if (path === '/auth/settings/identity' && request.method === 'GET' && response.ok
+    && response.headers.get('content-type')?.includes('text/html')) response = await passkeySettings(request, response, bindings)
+  }
   if (request.method === 'GET' && new URL(request.url).pathname === '/__dev/key' && response.headers.get('content-type')?.includes('text/html') && await env.DB.prepare('SELECT 1 FROM credentials LIMIT 1').first()) {
    // The gate page's own style has no link rule and its CSP admits only hashed styles: add this one hashed rule so the link reads as the brand's.
    const hash = btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(linkStyle)))))

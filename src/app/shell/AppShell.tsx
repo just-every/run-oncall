@@ -62,7 +62,7 @@ export function AppShell() {
       location.replace('/signin');
     } catch (error) {setSigningOut(false); w.setError((error as Error).message);}
   };
-  const owner = () => <OwnerMenu actor={actor} busy={w.busy} signingOut={signingOut} onSignOut={signOut} />;
+  const owner = () => <OwnerMenu actor={actor} signInSettings={w.localSignInSettings} busy={w.busy} signingOut={signingOut} onSignOut={signOut} />;
   const links = (items: NavItem[], mobile = false) => items.map(item => <a key={item.id} className={`nav ${page === item.id ? 'active' : ''}`} href={item.path} aria-current={page === item.id ? 'page' : undefined} onClick={mobile ? () => {sheetNavigation.current = true; closeSheet(); document.getElementById('main')?.focus({preventScroll: true});} : undefined}>
     {item.icon && <NavIcon name={item.icon} />}<span className="nav-label">{item.label}</span>
     {item.count !== undefined && <span className="nav-count" aria-label={`${item.count} ${item.id === 'incidents' ? 'open' : 'active'}`}>{item.count}</span>}

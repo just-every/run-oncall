@@ -27,6 +27,8 @@ export interface RunData {
    * the same `dev just-every/cradle` handed to the installer (startLine).
    */
   clone: string
+  /** The published version tag to install. */
+  releaseTag?: string
   /** "MIT". */
   licence: string
   /** Whether the run site carries /docs. */
@@ -57,8 +59,18 @@ const shellArgument = (value: string) => /[^A-Za-z0-9_./-]/.test(value) ? `'${va
  */
 export const startLine = (run: RunData) => {
   checkRunData(run)
-  return PATHS.self.command(run.clone.slice(repoStart.length))
+  return run.releaseTag
+    ? `${releaseClone(run)} && curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev --host localhost`
+    : PATHS.self.command(run.clone.slice(repoStart.length))
 }
+const releaseFolder = (run: RunData) => run.clone.split('/').at(-1)!
+const releaseClone = (run: RunData) => `git clone --depth 1 --branch ${shellArgument(run.releaseTag!)} ${shellArgument(run.repository)} && cd ${releaseFolder(run)}`
+export const nodeStartLine = (run: RunData) => run.releaseTag
+  ? `${releaseClone(run)} && ${npxStart}dev --host localhost`
+  : run.clone
+const separateStart = (run: RunData) => run.releaseTag
+  ? `${releaseClone(run)} && $HOME/.local/bin/rer dev --host localhost`
+  : `$HOME/.local/bin/rer dev ${run.clone.slice(repoStart.length)}`
 /** The one requirements sentence: rer clones with git; the installer brings Node and rer the pinned pnpm. */
 export const runRequirements = 'git is required; rer brings Node and pnpm.'
 
@@ -102,6 +114,7 @@ export function checkRunData(run: RunData): RunData {
   for (const key of ['name', 'clone', 'licence'] as const) if (typeof run[key] !== 'string' || !run[key].trim()) throw new Error(`Run data needs ${key}.`)
   if (run.leadLine !== undefined && typeof run.leadLine !== 'string') throw new Error('Run data leadLine is a plain string when present.')
   const repo = run.clone.slice(repoStart.length)
+  if (run.releaseTag !== undefined && !/^v\d+\.\d+\.\d+$/.test(run.releaseTag)) throw new Error('Run data releaseTag must be a version tag.')
   if (!run.clone.startsWith(repoStart) || repositoryId.exec(repo)?.[0] !== repo) throw new Error(`Run data clone must be ${repoStart}<owner>/<repo> with a valid repository id.`)
   if (!/^https:\/\/[^\s"<>]+$/.test(run.repository)) throw new Error('Run data repository is an https URL.')
   if (typeof run.docs !== 'boolean') throw new Error('Run data declares docs.')
@@ -178,7 +191,7 @@ export function header(identity: EditionIdentity, run: RunData, contract?: SeedC
     + `<nav aria-label="Site">${siteLinks(run, contract, current)}</nav></header>`
 }
 // The one-line alternative can break only before the repository; keep plain spaces for copying.
-const inlineStart = (run: RunData) => `<code><span class="code-word">${escape(npxStart)}dev</span> <span class="code-word">${escape(run.clone.slice(repoStart.length))}</span></code>`
+const inlineStart = (run: RunData) => run.releaseTag ? `<code>${escape(nodeStartLine(run))}</code>` : `<code><span class="code-word">${escape(npxStart)}dev</span> <span class="code-word">${escape(run.clone.slice(repoStart.length))}</span></code>`
 // Preserve install.sh | sh as one code word at narrow widths (also the one line on /docs/hosting).
 export const pipelines = (line: string) => escape(line).replace(/[^\s/]+(?: \| \S+)+/g, words => `<span class="code-word">${words}</span>`).replace('https://runeditrun.com/', 'https://runeditrun.com/<wbr>').replace(/ ([^ ]+)$/, ' <span class="code-repo">$1</span>')
 const TICK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3 8 3 3 7-7"/></svg>'
@@ -198,10 +211,10 @@ export function runPageHtml(identity: EditionIdentity, run: RunData, contract?: 
       + `<p class="door-body">${escape(path.lead + ' ' + (closed ? PATHS.closed.line : path.rest))}</p><p class="price">${escape(path.price(run))} · ${escape(PATHS.priceNote(run))}</p><p class="door-action">${action(PATHS.entry(id, product), closed ? PATHS.closed.action : path.action)}</p></section>`
   }).join('')
   const body = `${homepage?.html ?? header(identity, run, contract)}<main><div class="intro"><h1>${escape(PATHS.heading(run.name))}</h1>${run.leadLine !== undefined ? `<p class="sub">${escape(run.leadLine)}</p>` : ''}</div><div class="chooser">`
-    + `<section class="self" aria-labelledby="self"><div class="self-heading"><span class="badge">${escape(self.badge)}</span><h2 id="self">${escape(self.title)}</h2><p class="self-body">${escape(self.body(run.name))}</p></div>`
+    + `<section class="self" aria-labelledby="self"><div class="self-heading"><span class="badge">${escape(self.badge)}</span><h2 id="self">${escape(self.title)}</h2><p class="self-body">${escape(self.body(run.name))}${run.releaseTag ? ` This installs ${escape(run.releaseTag)}.` : ''}</p></div>`
     + codeBlock(startLine(run), self.title)
     + `<section class="paste-panel" aria-labelledby="paste-title"><h3 id="paste-title">${escape(self.pasteTitle)}</h3><div class="paste-track">${stops(steps, true)}<p class="track-note">${escape(self.note)}</p></div></section>`
-    + `<details class="other-ways"><summary>Other ways to run locally</summary><p class="alt"><span>${escape(self.alt)}</span>${inlineStart(run)}</p><div class="alt"><span>To install rer separately:</span><pre><code>curl -fsSL https://runeditrun.com/install.sh | sh</code></pre><span>Then run:</span><pre><code>$HOME/.local/bin/rer dev ${escape(repo)}</code></pre></div><p class="alt"><span>For later terminals: add <code>$HOME/.local/bin</code> to your shell’s PATH, so a bare <code>rer</code> command is found there. The one-line launch above already finds rer for this run.</span></p></details><p class="requirements">${escape(self.requirements)}${run.paths.requirementsExtra ? ' ' + escape(run.paths.requirementsExtra) : ''}</p><p class="email-note">${escape(self.email)}</p>`
+    + `<details class="other-ways"><summary>Other ways to run locally</summary><p class="alt"><span>${escape(self.alt)}</span>${inlineStart(run)}</p><div class="alt"><span>To install rer separately:</span><pre><code>curl -fsSL https://runeditrun.com/install.sh | sh</code></pre><span>Then run:</span><pre><code>${escape(separateStart(run))}</code></pre></div>${run.releaseTag ? `<p class="alt"><span>To start it again:</span><code>cd ${escape(releaseFolder(run))} &amp;&amp; $HOME/.local/bin/rer dev --host localhost</code></p>` : ''}<p class="alt"><span>For later terminals: add <code>$HOME/.local/bin</code> to your shell’s PATH, so a bare <code>rer</code> command is found there. The one-line launch above already finds rer for this run.</span></p></details><p class="requirements">${escape(self.requirements)}${run.paths.requirementsExtra ? ' ' + escape(run.paths.requirementsExtra) : ''}</p><p class="email-note">${escape(self.email)}</p>`
     + `<div class="timeline">${stops([self.start, ...steps])}<span class="track-divider" aria-hidden="true"></span><p class="track-note">${escape(self.note)}</p></div>`
     + (run.docs ? `<p class="guide">${action(self.guide.href, self.guide.label)}</p>` : '')
     + `</section><div class="doors">${doors}</div><div class="quiet"><p>${escape(PATHS.business.lead)} ${action(PATHS.business.href, PATHS.business.action)}</p></div>`

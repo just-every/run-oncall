@@ -10,7 +10,7 @@
 // both maintained exporters.
 import { coldRunBudget } from './run-data.mjs'
 import { checkIdentity, type EditionIdentity } from './identity'
-import { PATHS, checkRunData, document, escape, header, pipelines, startLine, type HomepageHeader, type RunData } from './run-site'
+import { PATHS, checkRunData, document, escape, header, nodeStartLine, pipelines, startLine, type HomepageHeader, type RunData } from './run-site'
 import type { SeedContract } from './seed-contract.mjs'
 
 /** What `rer build --site` reads for this page from the seed's declarations: names and permissions, never values. */
@@ -129,9 +129,9 @@ export function hostingPageHtml(identity: EditionIdentity, run: RunData, hosting
 
   const self = `<section class="card self" aria-labelledby="self"><h2 id="self">${escape(PATHS.self.title)}</h2><p>${escape(PATHS.self.body(run.name))}</p>`
     + `<div class="code"><pre class="line" aria-label="${escape(PATHS.self.title)}"><code>${pipelines(line)}</code></pre><button class="copy" type="button" hidden data-copy="${escape(line)}">Copy</button></div>`
-    + `<p class="alt"><span>Already have Node 22 or later?</span>${code(run.clone)}</p>`
+    + `<p class="alt"><span>Already have Node 22 or later?</span>${code(nodeStartLine(run))}</p>`
     + `<p class="note">${escape(PATHS.self.requirements)}${run.paths.requirementsExtra ? ` ${escape(run.paths.requirementsExtra)}` : ''}</p>`
-    + `<p class="note">${name} then runs only on your computer: nobody else can open it, and it sends no email. To start it again later, run the same line from the same folder.</p>`
+    + `<p class="note">${name} then runs only on your computer: nobody else can open it, and it sends no email. To start it again later, ${run.releaseTag ? `run ${code('rer dev --host localhost')} inside ${code(folder)}.` : 'run the same line from the same folder.'}</p>`
     + (run.docs ? `<p class="guide"><a href="${escape(PATHS.self.guide.href)}">${escape(PATHS.self.guide.label)}</a></p>` : '')
     + '</section>'
   const assisted = `<section class="card assisted" aria-labelledby="assisted"><p class="kicker">${escape(PATHS.assisted.title)}</p><h2 id="assisted">Let Run Edit Run do it</h2>`
@@ -188,13 +188,13 @@ export function hostingPageHtml(identity: EditionIdentity, run: RunData, hosting
     `<h3 id="deploy-file">Write the deploy file</h3><p>In the ${code(folder)} folder, create a file named ${code(env)} with these lines, each value replaced with yours:</p>${command(lines, 'The deploy file')}`
       + (notes.length ? `<ul>${notes.map(note => `<li>${note}</li>`).join('')}</ul>` : '')
       + `<p>Make it readable only by you; rer deploy refuses it otherwise. Never add it to a commit.</p>${command([`chmod 600 ${env}`], 'Make it private')}${fixedSender}`,
-    `<h3 id="deploy">Deploy</h3><p>Stop ${name} on this computer first: rer deploy refuses while it runs. To start it again later, run the same line from the same folder; its data stays as you left it.</p>${command(['rer dev --stop', `rer deploy --env-file ${env}`], 'Deploy')}`
+    `<h3 id="deploy">Deploy</h3><p>Stop ${name} on this computer first: rer deploy refuses while it runs. To start it again later, ${run.releaseTag ? `run ${code('rer dev --host localhost')} inside ${code(folder)}` : 'run the same line from the same folder'}. Its data stays as you left it.</p>${command(['rer dev --stop', `rer deploy --env-file ${env}`], 'Deploy')}`
       + `<p>rer deploy builds ${name}, creates ${list(['its Worker', ...made])} on your account and checks that it answers. ${address ? `It ends with ${hosting.ownerEmail ? 'these lines' : 'this line'}:</p>${output([`Your application is live on your Cloudflare account at ${address}.`, ...(hosting.ownerEmail ? [`Claimed the hosted owner (you@example.com); the one-time setup token was removed. Sign in by email at ${address}.`] : [])], 'What rer deploy prints')}` : `It ends with the address, after ${code('Sign in by email at')}.</p>`}`
       + `<p>Open that address and sign in with your owner email: ${name} emails you a sign-in link. If it does not arrive, look for the message in your mail provider's dashboard. The hosted ${name} starts with its own, empty data; the data on this computer stays where it is.</p>`,
   ]
 
   const current = [
-    `<strong>Update ${name}:</strong> in the ${code(folder)} folder, run ${code('git pull')}, then ${code(`rer deploy --env-file ${env}`)} again. The hosted data stays.`,
+    `<strong>Update ${name}:</strong> in the ${code(folder)} folder, run ${run.releaseTag ? code('git fetch --depth 1 origin tag TAG && git checkout --detach TAG') + ' with the version tag you are upgrading to' : code('git pull')}, then ${code(`rer deploy --env-file ${env}`)} again. The hosted data stays.`,
     `<strong>Change one setting:</strong> put the new value in ${code(env)}, then run ${code(`rer deploy --set-secret NAME --env-file ${env}`)} with the setting's name.`,
     `<strong>Keep the ${code('.rer')} folder.</strong> It records what rer deploy created on your account, so later deploys update the same ${name}. Deploy from the same folder each time.`,
     `<strong>Take it down:</strong> ${code(`rer deploy --remove --yes --env-file ${env}`)} deletes the Worker and everything rer created for it, with its data, and checks that none of it remains. Save what you need first.`,

@@ -88,7 +88,7 @@ import {
   type Member,
 } from "./family/response-operations/domain";
 type Env = Bindings;
-const api = new Hono<{ Bindings: Env; Variables: { actor: Member; sessionDigest: string } }>();
+const api = new Hono<{ Bindings: Env; Variables: { actor: Member; sessionDigest: string; localOwner?: boolean } }>();
 const hash = async (v: string) =>
   Array.from(
     new Uint8Array(
@@ -252,13 +252,15 @@ api.get("/api/workspace", async (c) => {
   const current = await authorizedState(c, false, true);
   const currentMember = current.members.find(m => m.id === member.id)!;
   if (currentMember.role === "stakeholder") return c.json({setup:false, member:currentMember, demo:false, state:null});
-  return c.json({setup: false, member: current.members.find(m => m.id === member.id), demo: c.env.RER_DEMO === "1", moveIn: {pagerdutyConnect: pagerdutyConnect(runtimeBindings(c.env))}, state: memberWorkspace(current, member), onCall: await workspaceOnCall(c.env.DB, current, currentMember)});
+  const localSignInSettings = c.get('localOwner') && c.env.AUTH_LOCAL === 'true' && !!c.env.RER_DEV_KEY
+    && c.env.RER_DEV_IDENTITY !== 'off' && c.env.RER_DEMO !== '1';
+  return c.json({setup: false, member: current.members.find(m => m.id === member.id), ...(localSignInSettings ? {localSignInSettings} : {}), demo: c.env.RER_DEMO === "1", moveIn: {pagerdutyConnect: pagerdutyConnect(runtimeBindings(c.env))}, state: memberWorkspace(current, member), onCall: await workspaceOnCall(c.env.DB, current, currentMember)});
 });
 async function session(c: any, state: State): Promise<Member | null> {
   const token = readSessionCookie(c.req.raw);
   if (!token) {
     const native = await nativeMember(c.env, c.req.raw);
-    if (native) { c.set('sessionDigest',native.digest); auditIdentity(c.env.DB,{actor:{kind:'member',id:native.member.id}}); }
+    if (native) { c.set('sessionDigest',native.digest); c.set('localOwner',native.owner); auditIdentity(c.env.DB,{actor:{kind:'member',id:native.member.id}}); }
     return native?.member ?? null;
   }
   const digest = await hash(token);
@@ -270,6 +272,7 @@ async function session(c: any, state: State): Promise<Member | null> {
   if(row?.operator_session){
     const native=await nativeMember(c.env,c.req.raw);
     if(!native||native.digest!==`native:${row.operator_session}`||native.member.id!==row.member)return null;
+    c.set('localOwner',native.owner);
   }
   const member = row
     ? (state.members.find((m) => m.id === row.member && m.active) ?? null)

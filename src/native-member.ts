@@ -4,7 +4,7 @@ import { loadWorkspace, workspaceRows, workspaceWrite } from './workspace-store'
 import type { Member } from './family/response-operations/domain'
 
 /** Base sessions retain Base's key gate, expiry and revocation checks. */
-export async function nativeMember(env:Bindings,request:Request):Promise<{member:Member;digest:string}|null> {
+export async function nativeMember(env:Bindings,request:Request):Promise<{member:Member;digest:string;owner:boolean}|null> {
   if(!env.SESSION_SECRET || !env.OWNER_EMAIL) return null
   const native=await operatorAuth(runtimeBindings(env)).getSession(request)
   if(!native) return null
@@ -48,5 +48,5 @@ export async function nativeMember(env:Bindings,request:Request):Promise<{member
   }
   auditIdentity(env.DB,{actor:{kind:'member',id:member.id}})
   if(!link.linked) await env.DB.prepare('INSERT INTO sessions(token,member,expires,operator_session) SELECT ?,?,?,? WHERE EXISTS(SELECT 1 FROM oa_sessions s JOIN oa_operators o ON o.id=s.operator_id WHERE s.id=? AND s.revoked_at IS NULL AND s.expires_at>? AND o.status=\'active\' AND o.version=s.operator_version) ON CONFLICT(token) DO NOTHING').bind(digest,member.id,native.expiresAt,native.id,native.id,Date.now()).run()
-  return {member,digest}
+  return {member,digest,owner:native.operator.role==='owner'}
 }

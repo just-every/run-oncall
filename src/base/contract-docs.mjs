@@ -121,7 +121,8 @@ function generatedFiles(text) {
   const registerRows = register.split('\n').filter(line => /^R-\d+$/.test(plainText(cells(line)[0] ?? ''))).map(line => cells(line))
   const registerCount = state => registerRows.filter(row => row[3] === state).length
   const judged = section(text, 'Status').split('\n').find(line => line.startsWith('Judged from'))
-  const acceptance = [marker, `# Accept a ${seed} installation`, journey, '## Progress', [
+  const releasedJourney = section(text, 'Release 1 journey')
+  const acceptance = [marker, `# Accept an ${seed} installation`, ...(releasedJourney ? ['## Release 1 journey', releasedJourney.trim(), 'The progress below tracks the full product target.'] : [journey]), '## Progress', [
     '| Tier | Done | Partial | Missing | Total |', '| --- | ---: | ---: | ---: | ---: |',
     ...['Core', 'Agent surface', 'Later'].map(tier => countRow(tier, clauses.filter(clause => clause.meta.Tier === tier))), countRow('Full target', clauses),
   ].join('\n'), `${judged} Field proof register: ${registerRows.length} rows; ${registerCount('passed')} passed, ${registerCount('failed')} failed, ${registerCount('not run')} not run.`]

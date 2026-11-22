@@ -4,21 +4,27 @@ Oncall runs on your own computer first. Open a terminal (on a Mac, Terminal in A
 
 <!-- rer:local-recipe -->
 ```sh
-curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-oncall
+git clone --depth 1 --branch v0.5.22 https://github.com/just-every/run-oncall && cd run-oncall && curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev --host localhost
 ```
 
-Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-oncall` does the same.
+Already have Node 22 or later? `git clone --depth 1 --branch v0.5.22 https://github.com/just-every/run-oncall && cd run-oncall && npx -y @runeditrun/rer dev --host localhost` does the same.
 
 macOS, Linux or Windows with WSL2. git is required; rer brings Node and pnpm.
 <!-- /rer:local-recipe -->
 
 The line installs `rer`, the Run Edit Run command, clones Oncall into a `run-oncall` folder, installs everything, prepares the local database and a local owner, and starts Oncall. It prints a private `RER_OPEN` link: open it on the same computer and you are signed in as the owner. Treat it like a password. The first time, Oncall opens **Finish setup**: tick *I confirm this owner account is ready to use* and press **Finish setup**. This free copy runs only on your computer: it sends no email, and nobody else can open it.
 
-To start Oncall again later, run the same line from the same folder. Adding `rer` to your shell's PATH is optional for future terminals; the one-line launch already finds it for this run.
+To start Oncall again later, run `cd run-oncall && rer dev --host localhost`. Adding `rer` to your shell's PATH is optional for future terminals; the one-line launch already finds it for this run.
 
 For Assisted, Managed and the walkthrough for your own Cloudflare account, see [Put Oncall online](https://run-oncall.com/docs/hosting).
 
 On an alert page, **Who this alert goes to** shows its assigned responder, the backup on the rota now and the recorded notification rules in due-time order, including each step's wait and whether the alert is waiting, due, answered or closed. The backup shown now may differ from a past recipient; the recorded rules and contacts remain the ones held for that run even if you edit today's settings. These steps are records only: Oncall does not send them; your existing pager remains responsible. If no rule matched, **Add one** opens **Settings → Team**. — Run Edit Run fleet (sd), 17 November 2026.
+
+## Sign in with a local passkey
+
+On releases with local passkeys, open the private `RER_OPEN` link and finish owner setup. In Oncall, open your account menu (inside **Menu** on a phone), then choose **Sign-in settings → Enroll passkey** and follow your browser’s prompt. On a later visit to your `http://localhost` address, choose **Sign in → Sign in with a passkey**.
+
+If your running address uses `127.0.0.1`, run `rer dev --stop` and then `rer dev --host localhost` in the same checkout. Open the new `RER_OPEN` link. The checkout keeps your schedules and incidents. If your passkey is unavailable, open the private link printed by `rer dev --host localhost` to get back in.
 
 ## Sign-in emails on your computer
 
@@ -36,7 +42,7 @@ Your schedules, incidents and team stay in the folder until you [export them](da
 
 ## Explicit and unattended setup
 
-After the installer above, make `rer` available in this terminal with `export PATH="$HOME/.local/bin:$PATH"`. To choose a real owner mailbox before the first launch, run `rer setup just-every/run-oncall` (set up only; in an interactive terminal it asks for your owner email), then `cd run-oncall && rer dev`. Or, from the checkout, one verb at a time:
+After the installer above, make `rer` available in this terminal with `export PATH="$HOME/.local/bin:$PATH"`. To choose a real owner mailbox before the first launch, clone the tagged release from the command above, enter `run-oncall`, then run `rer setup` (it asks for your owner email in an interactive terminal). Or, from the checkout, one verb at a time:
 
 ```sh
 rer install
@@ -81,13 +87,14 @@ The update applies Oncall's additive migrations. Your data, owner and password a
 
 ### Later local updates
 
-Update this checkout without resetting its data:
+Pick an Oncall release tag from [GitHub Releases](https://github.com/just-every/run-oncall/releases) and substitute it for `TAG` to update this checkout:
 
 ```sh
 rer dev --stop
 rer preview --stop
-git pull --ff-only
-rer dev
+git fetch --depth 1 origin tag TAG
+git checkout --detach TAG
+rer dev --host localhost
 ```
 
 This restarts the updated local app, applies migrations and keeps your owner, schedules and incidents. `rer` installs a pulled change of its own pin before it runs and provides the pinned Node and pnpm versions. Do not reset to upgrade.
@@ -103,8 +110,9 @@ Release 1 supports hosted incident coordination alongside your team's existing p
 ```sh
 curl -fsSL https://runeditrun.com/install.sh | sh
 export PATH="$HOME/.local/bin:$PATH"
-rer install just-every/run-oncall --dir oncall-hosted
+git clone --depth 1 --branch v0.5.22 https://github.com/just-every/run-oncall oncall-hosted
 cd oncall-hosted
+rer install
 rer setup --owner-email you@example.com
 ```
 
@@ -205,14 +213,17 @@ If the owner cannot receive mail, run this from the checkout that deployed that 
 rer signin --environment production --env-file "$HOME/.config/oncall/production.env"
 ```
 
+For Business agent setup, run `rer signin` after deployment to print the first-owner sign-in link on its own line, then pass it only as the tool’s `sign_in` in `session.report`. Keep it out of chat and files.
+
 This writes a single-use grant for the recorded owner in the hosted database and prints its private sign-in link once in your terminal. Open it privately within 15 minutes and press **Confirm** to enter as the owner. It works once, only for that owner, and its use is audited. Do not redirect, record, screenshot or share this output. This command proves owner recovery access; use the email test above to prove mail delivery. If the command reports no deployment for the environment, use the environment it lists and the original deploying checkout; do not create another environment to recover access.
 
 ### Update a hosted installation
 
-Keep this checkout's `.rer/deploy/` records, use the same environment and credentials, and update from `main`:
+Keep this checkout's `.rer/deploy/` records, use the same environment and credentials, and substitute the release tag for `TAG`:
 
 ```sh
-git pull --ff-only
+git fetch --depth 1 origin tag TAG
+git checkout --detach TAG
 rer deploy --environment production --env-file "$HOME/.config/oncall/production.env"
 ```
 

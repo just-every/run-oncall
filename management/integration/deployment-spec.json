@@ -417,6 +417,12 @@
       "name": "0164_alert_key_reveal.sql",
       "sha256": "272d98066c8199868584136e00f5de5ad860bcc94ba52ff73a7099048646403c",
       "sql": "-- Retain existing credential digests and signed custody unchanged. Held digest-only keys\n-- cannot be reconstructed: their next explicit rotation supplies encrypted reveal custody.\nALTER TABLE sources ADD COLUMN key_custody TEXT;\nALTER TABLE oc_intake_credentials ADD COLUMN key_custody TEXT;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0165_local_passkeys.sql",
+      "sha256": "36c4b6811eb85de3ed942882db5371b4e50091f3b8c10293ef6589ad0b7cd0f3",
+      "sql": "-- Credentials are local to this installation and excluded from portable archives.\nCREATE TABLE oa_local_passkeys (\n operator_id TEXT PRIMARY KEY REFERENCES oa_operators(id) ON DELETE CASCADE,\n credential_id TEXT NOT NULL UNIQUE,\n public_key BLOB NOT NULL,\n counter INTEGER NOT NULL\n);\n\nCREATE TABLE oa_local_passkey_challenges (\n id TEXT PRIMARY KEY,\n challenge TEXT NOT NULL,\n operation TEXT NOT NULL CHECK(operation IN ('enroll','signin')),\n operator_id TEXT NOT NULL REFERENCES oa_operators(id) ON DELETE CASCADE,\n session_id TEXT,\n expires_at INTEGER NOT NULL\n);\nCREATE INDEX oa_local_passkey_challenge_expiry ON oa_local_passkey_challenges(expires_at);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

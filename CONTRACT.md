@@ -13,6 +13,10 @@ Oncall owns the full on-call alerting and incident-response job: receive monitor
 
 The primary journey: receive a monitoring or phone-in incident, find who is on call, page them through real phone, SMS and push until someone acknowledges, coordinate verified recovery in the incident, communicate it and finish the follow-up.
 
+## Release 1 journey
+
+Set up your owner account and create a service and rota. Keep your existing pager responsible for delivery and escalation. Record a monitoring alert in Oncall, check who is on call and declare an incident. Acknowledge ownership, coordinate the response, record verified recovery and resolve the incident. Write and accept the review, then assign and verify the follow-up. You can preview a saved incumbent export and import its supported records in a paused state. Oncall paging stays off throughout this journey.
+
 ## How to read this contract
 
 - This follows the RER contract standard. Existing ids remain stable: OC-001 to OC-022 are the published release guarantees, and OC-023 onward completes the purchased job.

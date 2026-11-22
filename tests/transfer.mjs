@@ -1,8 +1,9 @@
 import {localMailChoiceRefusal,signedInInstallation,compiledHealth,installationNaming} from './installation-fit.mjs'
+import {localPasskey} from './local-passkey.mjs'
 import {developmentReadiness} from './readiness.mjs'
 import {recordHealthOutcome} from './health-outcomes.mjs'
 import {generateKeyPairSync,sign,createHash,randomUUID,randomBytes,createHmac} from 'node:crypto'
-import {appendFile,mkdtemp,symlink,cp,lstat,mkdir,readFile,readdir,writeFile,rm} from 'node:fs/promises'
+import {appendFile,mkdtemp,cp,lstat,mkdir,readFile,readdir,writeFile,rm} from 'node:fs/promises'
 import {tmpdir} from 'node:os'
 import {dirname,join,relative} from 'node:path'
 import {fileURLToPath} from 'node:url'
@@ -166,7 +167,9 @@ export async function isolatedEntrypoint(url){
  let child
  try{
   execFileSync('git',['clone','--quiet','--local','--no-hardlinks',root,checkout],{stdio:'ignore'})
-  await symlink(join(root,'node_modules'),join(checkout,'node_modules'),'dir')
+  // The fresh browser has no dev key after passkey sign-in. Its Vite assets
+  // must resolve inside the test checkout, just as they do on a normal install.
+  execFileSync('pnpm',['install','--offline','--frozen-lockfile'],{cwd:checkout,stdio:'inherit'})
   await cp(join(root,'dist'),join(checkout,'dist'),{recursive:true})
   const sha=execFileSync('git',['rev-parse','HEAD'],{cwd:checkout,encoding:'utf8'}).trim()
   console.log(`Fresh-clone ${script}: ${sha}`)
@@ -192,10 +195,10 @@ export async function managedSeed(bindings={}){
  function spawnCommand(args,childEnv=env){const child=spawn(process.execPath,[fileURLToPath(import.meta.resolve('@runeditrun/rer/internal/bin/rer.mjs')),...args],{env:childEnv,stdio:['ignore','pipe','pipe']});children.push(child);let output='';for(const stream of [child.stdout,child.stderr])stream.on('data',c=>output+=c);return {child,output:()=>output}}
  async function command(args,status=0,childEnv=env){const run=spawnCommand(args,childEnv),code=await new Promise(r=>run.child.once('exit',r));assert.equal(code,status,safe(run.output()).slice(-1400));commandOutcomes.push({verb:args[0],exitCode:code,expectedExitCode:status});return run.output()}
  let openLink
- async function start(){
-  const run=spawnCommand(['dev','--foreground','--port',String(port),'--idle-timeout','180','--non-interactive']);for(let n=0;n<600;n++){if(run.child.exitCode!==null||run.child.signalCode!==null)throw Error(safe(run.output()).slice(-1400));const link=run.output().match(/RER_OPEN (http[^\s]+)/)?.[1];if(link){openLink=link;return;}await new Promise(r=>setTimeout(r,250))}throw Error('Managed dev readiness timeout')}
+ async function start(host='127.0.0.1'){
+  const run=spawnCommand(['dev','--host',host,'--foreground','--port',String(port),'--idle-timeout','180','--non-interactive']);for(let n=0;n<600;n++){if(run.child.exitCode!==null||run.child.signalCode!==null)throw Error(safe(run.output()).slice(-1400));const link=run.output().match(/RER_OPEN (http[^\s]+)/)?.[1];if(link){openLink=link;return;}await new Promise(r=>setTimeout(r,250))}throw Error('Managed dev readiness timeout')}
  async function preview(){
-  const run=spawnCommand(['preview','--foreground','--port',String(port),'--idle-timeout','120','--non-interactive'])
+  const run=spawnCommand(['preview','--host','127.0.0.1','--foreground','--port',String(port),'--idle-timeout','120','--non-interactive'])
   for(let n=0;n<600;n++){
    if(run.child.exitCode!==null||run.child.signalCode!==null)throw Error(safe(run.output()).slice(-1400))
    const link=run.output().match(/RER_OPEN (http[^\s]+)/)?.[1]
@@ -267,6 +270,10 @@ try{
    }
    await page.locator('.oncall-frame').waitFor()
    await signedInInstallation(page,m.origin,{fallback:true});
+   const localhost=m.origin.replace('127.0.0.1','localhost');
+   assert.ok((await page.goto(localhost+'/auth/settings/identity')).ok(),'literal localhost reaches sign-in settings on a numeric-host checkout');
+   assert.equal(new URL(page.url()).origin,m.origin,'alternate loopback navigation preserves the configured origin');
+   await page.getByRole('heading',{name:'Sign-in settings',exact:true}).waitFor();
    const archiveResponse=await context.request.get(m.origin+'/api/archive'),nativeArchive=await archiveResponse.json()
    assert.equal(archiveResponse.status(),200)
    await page.goto(m.origin+'/settings/archive');await page.locator('.archive-restore > summary').click()
@@ -275,7 +282,17 @@ try{
    const restored=page.waitForResponse(r=>r.url().endsWith('/api/restore')&&r.request().method()==='POST')
    await page.getByRole('button',{name:'Replace workspace with this archive',exact:true}).click();assert.equal((await restored).status(),200)
    assert.ok((await context.cookies()).some(row=>row.name.startsWith('oncall_session_')),'native restore issued a workspace session')
-   await m.close();await m.command(['build','--non-interactive']);await m.preview()
+   await m.close();
+   await m.start('localhost');
+   const evidence=process.env.ONCALL_BROWSER_EVIDENCE;
+   await localPasskey(browser,m.openLink,{width:390,capture:async(page,screen)=>{
+    if(!evidence)return;
+    await mkdir(evidence,{recursive:true});
+    await page.screenshot({path:join(evidence,'local-passkey-'+screen+'-390.png'),fullPage:true});
+   }});
+   console.log('PASS local passkey: public owner entry and sign-in with a real WebAuthn ceremony');
+   await m.close();
+   await m.command(['build','--non-interactive']);await m.preview()
    await page.goto(m.openLink);await page.locator('.oncall-frame').waitFor()
    await signedInInstallation(page,m.origin,{capture:true});
    await compiledHealth(path=>m.request(path));

@@ -1,8 +1,12 @@
 <!-- Generated from CONTRACT.md by contract-docs. Edit CONTRACT.md, then regenerate. -->
 
-# Accept a Oncall installation
+# Accept an Oncall installation
 
-The primary journey: receive a monitoring or phone-in incident, find who is on call, page them through real phone, SMS and push until someone acknowledges, coordinate verified recovery in the incident, communicate it and finish the follow-up.
+## Release 1 journey
+
+Set up your owner account and create a service and rota. Keep your existing pager responsible for delivery and escalation. Record a monitoring alert in Oncall, check who is on call and declare an incident. Acknowledge ownership, coordinate the response, record verified recovery and resolve the incident. Write and accept the review, then assign and verify the follow-up. You can preview a saved incumbent export and import its supported records in a paused state. Oncall paging stays off throughout this journey.
+
+The progress below tracks the full product target.
 
 ## Progress
 

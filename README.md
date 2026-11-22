@@ -33,7 +33,7 @@ Rotas, alerts and incident notes for your team. Works beside your pager.
 
 # Run it locally
 
-See the [Oncall Run page](https://run-oncall.com/run) for local launch and PATH help. Public source: [just-every/run-oncall](https://github.com/just-every/run-oncall). The `v0.5.15` release candidate includes hosted coordination. See [Getting started](docs/getting-started.md#host-for-your-team) for complete credentials and deployment instructions.
+See the [Oncall Run page](https://run-oncall.com/run) for local launch and PATH help. Public source: [just-every/run-oncall](https://github.com/just-every/run-oncall). The current release supports hosted coordination. See [Getting started](docs/getting-started.md#host-for-your-team) for complete credentials and deployment instructions.
 
 You need Git on macOS, Linux or Windows with WSL2. The installer provides Node and pnpm.
 
@@ -48,14 +48,16 @@ You need Git on macOS, Linux or Windows with WSL2. The installer provides Node a
 2. Download and start Oncall.
 
    ```sh
-   rer dev just-every/run-oncall
+   git clone --depth 1 --branch v0.5.22 https://github.com/just-every/run-oncall
+   cd run-oncall
+   rer dev --host localhost
    ```
 
-**Alternative for Node 22 or later.** Run `npx -y @runeditrun/rer dev just-every/run-oncall`.
+**Alternative for Node 22 or later.** Clone and enter the tagged checkout above, then run `npx -y @runeditrun/rer dev --host localhost`.
 
-To start it again later, run `cd run-oncall && rer dev`. `rer dev` installs the application dependencies, creates a local development owner and prints a private link that opens Oncall signed in. On first launch, review the owner details and select **Finish setup**. Later launches open the app directly. To choose your own owner mailbox before the first launch, use [explicit setup](docs/getting-started.md#explicit-and-unattended-setup), which also accepts a private answers file for unattended runs.
+To start it again later, run `cd run-oncall && rer dev --host localhost`. `rer dev` installs the application dependencies, creates a local development owner and prints a private link that opens Oncall signed in. On first launch, review the owner details and select **Finish setup**. Later launches open the app directly. To choose your own owner mailbox before the first launch, use [explicit setup](docs/getting-started.md#explicit-and-unattended-setup), which also accepts a private answers file for unattended runs.
 
-Open the printed link on this computer. `rer dev --as signed-out` selects the signed-out persona. The compatibility flag `rer dev --login` still opens automatic owner entry. Ordinary `/signin` email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. The app does not capture mail or print sign-in tokens. Stop the background server with `rer dev --stop` (Ctrl-C also stops a foreground run); stop preview with `rer preview --stop` before building, verifying or deploying. A running dev or preview server owns the local state, so even a deploy dry run refuses with exit 4 until it stops.
+Open the printed link on this computer. After setup, open your account menu and choose **Sign-in settings → Enroll passkey**. See [local passkey setup](docs/getting-started.md#sign-in-with-a-local-passkey). `rer dev --as signed-out` selects the signed-out persona. The compatibility flag `rer dev --login` still opens automatic owner entry. Ordinary `/signin` email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. The app does not capture mail or print sign-in tokens. Stop the background server with `rer dev --stop` (Ctrl-C also stops a foreground run); stop preview with `rer preview --stop` before building, verifying or deploying. A running dev or preview server owns the local state, so even a deploy dry run refuses with exit 4 until it stops.
 
 ```sh
 rer build
@@ -122,13 +124,14 @@ The update applies Oncall's additive migrations. Your data, owner and password a
 
 ### Later updates
 
-Update this checkout without resetting its data:
+Pick an Oncall release tag from [GitHub Releases](https://github.com/just-every/run-oncall/releases) and substitute it for `TAG` to update this checkout:
 
 ```sh
 rer dev --stop
 rer preview --stop
-git pull --ff-only
-rer dev
+git fetch --depth 1 origin tag TAG
+git checkout --detach TAG
+rer dev --host localhost
 ```
 
 This restarts the updated local app, applies migrations and keeps your owner, schedules and incidents. `rer` installs a pulled change of its own pin before it runs and provides the pinned Node and pnpm versions.
@@ -156,12 +159,15 @@ The deploying owner can recover access without email from the original checkout:
 rer signin --environment production --env-file "$HOME/.config/oncall/production.env"
 ```
 
+For Business agent setup, run `rer signin` after deployment to print the first-owner sign-in link on its own line, then pass it only as the tool’s `sign_in` in `session.report`. Keep it out of chat and files.
+
 This prints a private, single-use owner link that expires within 15 minutes. Open it privately and press **Confirm**; do not record or share the output. It does not test mail delivery.
 
-Deployment uses a separate hosted database; it does not upload local schedules or incidents. Keep this checkout's `.rer/deploy/` records. For later hosted updates, pull `main` and deploy to the same environment:
+Deployment uses a separate hosted database; it does not upload local schedules or incidents. Keep this checkout's `.rer/deploy/` records. For later hosted updates, substitute the release tag for `TAG` and deploy to the same environment:
 
 ```sh
-git pull --ff-only
+git fetch --depth 1 origin tag TAG
+git checkout --detach TAG
 rer deploy --environment production --env-file "$HOME/.config/oncall/production.env"
 ```
 
