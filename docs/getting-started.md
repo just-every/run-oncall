@@ -16,7 +16,7 @@ ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/ju
 macOS, Linux or Windows with WSL2. git is required; rer brings Node and pnpm.
 <!-- /rer:local-recipe -->
 
-The line clones the latest published Oncall release into a `run-oncall` folder, installs `rer` and the app's dependencies, prepares the local database and a local owner, and starts Oncall. Allow up to 10 minutes on the first start. The local port may return 404 while setup is still running. Wait for the private `RER_OPEN` link in the terminal, then open it on the same computer. Treat it like a password. The first time, Oncall opens **Finish setup**. Tick *I confirm this owner account is ready to use* and press **Finish setup**. This free copy runs only on your computer and sends no email.
+The line clones the latest published Oncall release into a `run-oncall` folder, installs `rer` and the app's dependencies, prepares the local database and a local owner, and starts Oncall. A first local start usually takes about a minute. On a busy computer it can take longer: `rer dev` prints progress every 20 seconds, with the limit to allow. Wait for the private `RER_OPEN` link in the terminal, then open it on the same computer. Treat it like a password. The first time, Oncall opens **Finish setup**. Tick *I confirm this owner account is ready to use* and press **Finish setup**. This free copy runs only on your computer and sends no email.
 
 To start Oncall again later, run `cd run-oncall && rer dev --host localhost`. Adding `rer` to your shell's PATH is optional for future terminals; the one-line launch already finds it for this run.
 

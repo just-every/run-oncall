@@ -252,7 +252,7 @@
       "executable": false
     },
     "docs/getting-started.md": {
-      "sha256": "0adc09a5eac526afffe608e60653b0516326a9335b21abe96ae771ce98316357",
+      "sha256": "751d3f05f71c972ccb729fb08c3ce59435b22f77f7419feae280a935c25c9bb8",
       "executable": false
     },
     "docs/incidents.md": {
@@ -744,11 +744,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "9794a27bdc0076282267d21e0f74b795ec904528c385af3f37dd921167c622e2",
+      "sha256": "1bac3559029752c430c005827771e0091f5445c1421f63dbbc6272c45353d290",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "a13eb28f453af66742f054b8d4e715e30bad7c8d4ace4308e5476038fb240a6e",
+      "sha256": "31df3103367b89e4ef37abaaffa1e518853b49623079547c927023ca72143a19",
       "executable": false
     },
     "public/brand/badge-rail-1x.webp": {
@@ -860,7 +860,7 @@
       "executable": false
     },
     "RUN-LOCALLY.md": {
-      "sha256": "45dfd062eecec28c641407d8e1409aee6a38d7f5e8b6cfecbe4d6b6d75fe1506",
+      "sha256": "5d757c3299d9972f2340b86073726356259c15d0ba6a7ed8ee3739d06304773e",
       "executable": false
     },
     "SCHEDULE-SEMANTICS.md": {
@@ -2144,7 +2144,7 @@
       "executable": false
     },
     "src/base/run-site.ts": {
-      "sha256": "7aca07d3e0efae0102fc6cb2ff4288b362698b55106241c17e821e3728bee206",
+      "sha256": "17b73f7f0efccf772f3c913879d66e8834c4d65604735021d8ae8355e8009d4e",
       "executable": false
     },
     "src/base/seed-contract.d.mts": {
