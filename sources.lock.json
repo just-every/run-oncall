@@ -444,7 +444,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "268a384a2260066ba70174e655a10073139535c4a7440f3164de4808aeb66110",
+      "sha256": "2d0ec882c23fd0189c59a3a10e8b30594d27ba5789c3ed944766c8109ae0b1d2",
       "executable": false
     },
     "migrations/core/0001_initial.sql": {
@@ -6976,7 +6976,7 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "bbf7ede2ad4ba2bd995f41590b25828c7fbbdbb631a2fdbeef156604c7a47c08",
+      "sha256": "a5dacd0682c1343ac88845d668f3b012afeaa27bb0d5f6e3ab939a4da375308e",
       "executable": false
     },
     "tests/readable-names-browser.mjs": {
@@ -7000,7 +7000,7 @@
       "executable": false
     },
     "tests/runtime.mjs": {
-      "sha256": "b70925603d0426bd0a39c01ebe7e2ddf0744f6a4942ca112a04f30c62c2c49f6",
+      "sha256": "7d9b0f98fe094cf92072632488fcda88f22493ce7222f0d4bd5cb5a5e8d0390d",
       "executable": false
     },
     "tests/sns.mjs": {

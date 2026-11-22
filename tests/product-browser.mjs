@@ -1313,8 +1313,9 @@ async function eventsSourceBrowser(page,context) {
  const send=async()=>{const pending=page.waitForResponse(r=>r.url()===source.url&&r.request().method()==='POST');await page.getByRole('button',{name:'Send test event',exact:true}).click();assert.equal((await pending).status(),201);await page.getByRole('button',{name:'Send test event',exact:true}).waitFor();};
  await send();await page.goto(origin+'/alerts');
  let state=await request('/api/state'),alerts=state.alerts.filter(a=>a.source===source.source);assert.equal(alerts.length,1);assert.equal(alerts[0].state,'active');
- const alert=alerts[0],nav=()=>page.locator('a[href="/alerts"] .nav-count').first();assert.equal(await nav().innerText(),String(state.alerts.filter(a=>a.state==='active').length));
- const row=page.locator('.alert-row').filter({hasText:'Checkout API latency above 2 seconds'});assert.equal(await row.count(),1);assert.match(await row.innerText(),/critical/);
+ const alert=alerts[0],nav=()=>page.locator('a[href="/alerts"] .nav-count').first();
+ const row=page.locator('.alert-row').filter({hasText:'Checkout API latency above 2 seconds'});await expect(row).toHaveCount(1);assert.match(await row.innerText(),/critical/);
+ await expect(nav()).toHaveText(String(state.alerts.filter(a=>a.state==='active').length));
  await row.click();await page.getByRole('button',{name:'Declare incident from alert',exact:true}).click();
  await page.locator('.incident-page h1').waitFor();
  const incident=(await request('/api/state')).incidents.find(item=>item.alerts.includes(alert.id));assert.ok(incident);

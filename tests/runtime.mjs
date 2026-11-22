@@ -323,9 +323,11 @@ const migration = () => {
       "--persist-to",
       persist,
     ],
-    { encoding: "utf8" },
+    // Wrangler redraws the migration table after every applied file.
+    { encoding: "utf8", stdio: ["ignore", "ignore", "pipe"] },
   );
-  assert.equal(r.status, 0, r.stderr + r.stdout);
+  assert.ifError(r.error);
+  assert.equal(r.status, 0, r.stderr);
 };
 function sql(command) { fixtureDatabase(persist,command); }
 const rows=command=>fixtureDatabase(persist,command)[0];
