@@ -6988,7 +6988,7 @@
       "executable": false
     },
     "tests/runtime.mjs": {
-      "sha256": "c0666b5464f89f33e7a87611409a31f063c8612f2d7b3867c0a81eeb27f9bc9f",
+      "sha256": "b70925603d0426bd0a39c01ebe7e2ddf0744f6a4942ca112a04f30c62c2c49f6",
       "executable": false
     },
     "tests/sns.mjs": {

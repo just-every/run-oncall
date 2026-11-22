@@ -158,6 +158,7 @@ assert.deepEqual(await deploymentSpec(process.cwd(),specInputs),declared,'The pa
 // the way rer deploy hosts it (the Worker runs before the static assets). A link that redirects and
 // then falls through to the app's 404 fails here, whichever file it names.
 const walk=async dir=>(await Promise.all((await readdir(dir,{withFileTypes:true})).map(e=>e.isDirectory()?walk(join(dir,e.name)):[join(dir,e.name)]))).flat()
+const ownerSettings='/auth/settings/identity'
 const links=new Set;for(const file of (await walk('src')).filter(f=>/\.tsx$/.test(f)))for(const m of (await readFile(file,'utf8')).matchAll(/href="(\/[^"#?]+)"/g))links.add(m[1])
 for(const file of (await walk('dist/client')).filter(f=>f.endsWith('.html')))links.add(file.slice('dist/client'.length))
 assert.ok(links.size>0,'the app links at least one built file')
@@ -171,16 +172,17 @@ try{
  for(const link of links) {
   let path=link.slice(1),status
   for(let hop=0;hop<3;hop++){const r=await hosted.fetch(path);await r.arrayBuffer();status=r.status;const next=r.headers.get('location');if(status<300||status>=400||!next)break;path=next.replace(/^\//,'')}
-  assert.equal(status,200,`${link} must answer 200 when hosted (ended at ${status})`)
+  if(link===ownerSettings)assert.equal(status,401,'owner Sign-in settings refuse anonymous hosted requests')
+  else assert.equal(status,200,`${link} must answer 200 when hosted (ended at ${status})`)
  }
  const old=await hosted.fetch('move-in-guide');await old.arrayBuffer();assert.equal(old.headers.get('location'),'/docs/move-in','the old guide link leads to the docs page')
  const guide=await hosted.fetch('docs/move-in');assert.equal(guide.status,200);await guide.arrayBuffer()
  await recordHealthOutcome('hosted-mode','tests/runtime.mjs: hosted production output',{
-  health:{httpStatus:health.status,...body},linkedPages:{checked:links.size,httpStatus:200},
+  health:{httpStatus:health.status,...body},linkedPages:{checked:links.size-Number(links.has(ownerSettings)),httpStatus:200},
   deploymentIdentitySource:'actual checkout and emitted Worker; version binding supplied by the journey',
  })
  await recordHealthFieldOutcomes()
- console.log(`Hosted links passed: ${links.size} linked page or file(s) answer 200 through the hosted Worker`)
+ console.log(`Hosted links passed: ${links.size} linked routes and files checked through the hosted Worker`)
 }finally{await hosted.close()}
 
 }
