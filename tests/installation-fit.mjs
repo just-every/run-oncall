@@ -39,18 +39,22 @@ export async function signedInInstallation(page, origin, {fallback=false, captur
  }
  if(fallback){
   const original=await readFile('src/branding.json','utf8');
+  const reloadWithTitle=async title=>{
+   await expect(async()=>{
+    await page.reload();
+    await expect(page).toHaveTitle(title,{timeout:1000});
+   }).toPass({timeout:15000});
+  };
   try{
    // Vite reloads the actual saved identity; neither the app nor auth is mocked.
    const {name,...withoutName}=branding;
    await writeFile('src/branding.json',JSON.stringify(withoutName)+'\n');
    // The first reload can arrive before Vite invalidates the changed module.
-   await expect(async()=>{
-    await page.reload();
-    await expect(page).toHaveTitle('Oncall',{timeout:1000});
-   }).toPass({timeout:15000});
+   await reloadWithTitle('Oncall');
    await expect(page.locator('.shell-rail .brand')).toHaveText('Oncall');
    await expect(page.locator('.installation-name')).toHaveCount(0);
   }finally{await writeFile('src/branding.json',original);}
+  await reloadWithTitle(expectedTitle);
  }
  console.log('PASS signed-in installation: saved name in title and rail across workspace/settings'+(fallback?', absent name falls back to product':'')+(capture?', built screens captured at 1440/390':''));
 }

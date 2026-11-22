@@ -6772,7 +6772,7 @@
       "executable": false
     },
     "tests/installation-fit.mjs": {
-      "sha256": "dc63d691241c5d3542194d806bbff0e96f7fcf768290ebdab376e9b8895e7aa8",
+      "sha256": "66cdc56f709d317eafb8f19523e35ccf2210506bb4f4b8124da7e5df19499bad",
       "executable": false
     },
     "tests/intake.mjs": {
@@ -7000,7 +7000,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "ffde1bf5587b52aea618a6fdc33a6f3063022d893617c9df156e9356a53a4c50",
+      "sha256": "a62a8d77eaf068ac6d1f8e81837ff56fb2eb50ef0433683714fe0e69cf0b0186",
       "executable": false
     },
     "tests/triage-time-fixture.mjs": {

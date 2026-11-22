@@ -269,11 +269,13 @@ try{
     await page.getByRole('checkbox').check();await page.getByRole('button',{name:'Finish setup'}).click()
    }
    await page.locator('.oncall-frame').waitFor()
-   await signedInInstallation(page,m.origin,{fallback:true});
+   // Check the origin redirect before the branding fixture triggers a Vite reload.
    const localhost=m.origin.replace('127.0.0.1','localhost');
-   assert.ok((await page.goto(localhost+'/auth/settings/identity')).ok(),'literal localhost reaches sign-in settings on a numeric-host checkout');
+   const settings=await page.goto(localhost+'/auth/settings/identity');
+   assert.equal(settings.status(),200,'literal localhost reaches sign-in settings on a numeric-host checkout');
    assert.equal(new URL(page.url()).origin,m.origin,'alternate loopback navigation preserves the configured origin');
    await page.getByRole('heading',{name:'Sign-in settings',exact:true}).waitFor();
+   await signedInInstallation(page,m.origin,{fallback:true});
    const archiveResponse=await context.request.get(m.origin+'/api/archive'),nativeArchive=await archiveResponse.json()
    assert.equal(archiveResponse.status(),200)
    await page.goto(m.origin+'/settings/archive');await page.locator('.archive-restore > summary').click()
