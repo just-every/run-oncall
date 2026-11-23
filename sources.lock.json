@@ -6592,7 +6592,7 @@
       "executable": false
     },
     "src/useWorkspace.ts": {
-      "sha256": "d14c63d6c819b71d29e48f43341196a3dfb1c790b648083e05b024165ea8680b",
+      "sha256": "0fa2c95f61933c79a9859ea56646f2d150e68d82e2fae72d0315370407085f36",
       "executable": false
     },
     "src/workspace-document.ts": {

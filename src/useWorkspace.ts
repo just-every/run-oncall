@@ -193,8 +193,8 @@ export function useWorkspace(refreshInterval = 10000) {
             const change = incident && currentState.current ? incidentChangeSummary(incident, incidentBase, currentState.current) : undefined;
             const recoveryUnchanged = input.type === 'transition' && input.state === 'recovered' &&
               incident?.state === incidentBase?.state && incident?.recovery === incidentBase?.recovery;
-            const sourceRecoveryOnly = incident && incidentBase && !incidentBase.sourceRecovery &&
-              incident.sourceRecovery && incident.revision === incidentBase.revision + 1;
+            const sourceRecoveryOnly = incident && incidentBase && incidentBase.revision === input.revision &&
+              !incidentBase.sourceRecovery && incident.sourceRecovery && incident.revision === incidentBase.revision + 1;
             const apply = incident && !incident.mergedInto && (input.type === 'note' || recoveryUnchanged) ? async () => {
               if (recoveryUnchanged && form && (!form.isConnected || formValues() !== values)) {
                 if (form.isConnected) failures.show(new Error('Your draft has changed. Submit the form to apply the current draft.'), {target, saved});
