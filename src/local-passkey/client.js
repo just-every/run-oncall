@@ -28,8 +28,8 @@ if (!globalThis.PublicKeyCredential?.parseCreationOptionsFromJSON || !PublicKeyC
       if (operation === 'signin') location.assign(button.dataset.returnTo);
       else location.reload();
     } catch {
-      message.textContent = operation === 'enroll' && !document.hasFocus()
-        ? 'Bring this tab to the front, then try enrolling your passkey again.'
+      message.textContent = operation === 'enroll'
+        ? 'The passkey could not be used. Bring this tab to the front and try again, or open the private link from rer dev.'
         : 'The passkey could not be used. Try again, or open the private link from rer dev.';
       button.disabled = false;
     }

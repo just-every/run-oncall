@@ -29,9 +29,13 @@ const lifecycle = {
   if (input.MAIL_PROVIDER === 'none') throw refuse('MAIL_PROVIDER=none is for hosted deployments; choose MAIL_PROVIDER=development for local setup.');
   if (options.verb !== 'setup') return baseLifecycle.run(root, input, store, onApp, signal, options);
   const setupStore = Object.create(store);
-  setupStore.step = (label, ...args) => store.step(label === labels.complete
-   ? 'Local setup is ready. The temporary app stops when setup exits; run rer dev to start Oncall.'
-   : label, ...args);
+  setupStore.step = async (label, ...args) => {
+   if (label !== labels.complete) return store.step(label, ...args);
+   await store.step('Local setup is ready. The temporary app stops when setup exits. Run rer dev to start Oncall.', ...args);
+   store.report('For hosting, supply Cloudflare credentials. Email is optional.');
+   store.report('  1. With email off, set MAIL_PROVIDER=none in the deploy environment or --env-file and leave sender and mail credentials unset. After deploying, run rer signin from this checkout.');
+   store.report('  2. For email sign-in links, configure a mail provider and verified sender. For SendGrid, set MAIL_PROVIDER=sendgrid, SENDGRID_API_KEY and MAIL_FROM.');
+  };
   return baseLifecycle.run(root, input, setupStore, onApp, signal, options);
  },
 };

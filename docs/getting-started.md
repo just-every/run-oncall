@@ -121,12 +121,12 @@ git remote add origin https://github.com/just-every/run-oncall &&
 git fetch --quiet --depth 1 origin tag "$ONCALL_TAG" &&
 git checkout --quiet --detach "refs/tags/$ONCALL_TAG" &&
 "$HOME/.local/bin/rer" install &&
-"$HOME/.local/bin/rer" setup --owner-email you@example.com
+MAIL_PROVIDER=none "$HOME/.local/bin/rer" setup --owner-email you@example.com
 ```
 
 Already running Oncall locally from `run-oncall`? Keep that folder and its data, and use the fresh `oncall-hosted` checkout above for hosting. Hosting never uploads local records. See [Transfer local coordination records to hosting](data.md#transfer-local-coordination-records-to-hosting) before planning a move; [Export and restore](data.md) explains local backup and recovery.
 
-Replace `you@example.com` with a real mailbox you can open. Setup prepares the owner and private settings locally, prints a loopback `RER_SETUP_READY` address, and stops its temporary app before returning. After deployment, run [`"$HOME/.local/bin/rer" signin`](#owner-access-without-email) to print the private hosted owner link. Repeating setup preserves the configured owner; it does not change their email.
+Replace `you@example.com` with your owner email. The `MAIL_PROVIDER=none` prefix tells setup to list hosting requirements with email off. Setup prepares the owner locally, prints a loopback `RER_SETUP_READY` address, and stops its temporary app. Set your mail choice separately in the deploy file. Repeating setup preserves the configured owner.
 
 The examples use the named environment `production`. Choose the environment once and use the same `--environment NAME` for deployment, sign-in, updates and removal. Each name has its own hosted resources and deployment record; omitting the flag selects `production`. Names start with a lowercase letter and contain lowercase letters, digits and single hyphens, up to 32 characters.
 
@@ -135,7 +135,7 @@ The examples use the named environment `production`. Choose the environment once
 Use the Cloudflare account where you want the app and its database to live. You need an account member who can grant the permissions below. No domain purchase or DNS transfer is needed for the default `workers.dev` app address.
 
 - **`CLOUDFLARE_ACCOUNT_ID` identifies the destination account.** In the [Cloudflare dashboard](https://dash.cloudflare.com/), select that account, open **Workers & Pages**, find **Account Details**, and copy **Account ID**. This is the 32-character account ID, not a zone ID. Cloudflare also offers **Search → Copy account ID**. See [Cloudflare's account-ID instructions](https://developers.cloudflare.com/fundamentals/account/find-account-and-zone-ids/).
-- **`CLOUDFLARE_API_TOKEN` authorizes deployment and removal.** Open your profile menu → **My Profile → API Tokens → Create Token → Create Custom Token → Get started**. Name it for this installation. Add the two permission rows below and set **Account Resources → Include → Specific account → your destination account**. Choose **Continue to summary → Create Token**, then copy the token secret immediately into your password manager or the private file in step 3; it is shown once. See [Cloudflare's token creation guide](https://developers.cloudflare.com/fundamentals/api/get-started/create-token/).
+- **`CLOUDFLARE_API_TOKEN` authorizes deployment and removal.** Open your profile menu → **My Profile → API Tokens → Create Token → Create Custom Token → Get started**. Name it for this installation. Add the two permission rows below and set **Account Resources → Include → Specific account → your destination account**. Choose **Continue to summary → Create Token**, then copy the token secret immediately into your password manager or the private file in step 2; it is shown once. See [Cloudflare's token creation guide](https://developers.cloudflare.com/fundamentals/api/get-started/create-token/).
 
 | Permission row | Why this deployment needs it |
 | --- | --- |
@@ -146,18 +146,7 @@ These are the minimum permission groups for this checkout's `deploy.json`: one W
 
 In **Workers & Pages**, also confirm that the account has a **Your subdomain** value ending in `workers.dev`; complete Cloudflare's first-use Workers onboarding if prompted. `rer` reads this existing account subdomain and enables the app's route; it does not create the account subdomain. Existing accounts can use **Change** next to **Your subdomain**. See [Cloudflare's `workers.dev` configuration](https://developers.cloudflare.com/workers/configuration/routing/workers-dev/).
 
-### 2. Get a SendGrid key and verified sender
-
-For email-link sign-in, choose `MAIL_PROVIDER=sendgrid` with the inputs below. To host with email off, skip the provider account and follow [Hosted coordination with email off](#hosted-coordination-with-email-off). Use a SendGrid account enabled for sending and complete its account verification and two-factor authentication prompts. See [SendGrid account verification](https://www.twilio.com/docs/sendgrid/ui/account-and-settings/verifying-your-account).
-
-**`MAIL_FROM` is the sender address recipients see**, for example `oncall@example.com`. It is separate from the owner's recipient mailbox and must be verified in the same SendGrid account as the key:
-
-- For a team installation, open the [SendGrid console](https://app.sendgrid.com/) → **Settings → Sender Authentication → Domain Authentication → Get Started**. Select your DNS host, choose whether to brand links, enter the domain you send from, then continue to the DNS records. Add the exact records SendGrid gives you at your DNS provider. Return to SendGrid and click **Verify**; wait until verification succeeds. Set `MAIL_FROM` to an address on that exact authenticated domain. See [SendGrid's domain authentication guide](https://www.twilio.com/docs/sendgrid/ui/account-and-settings/how-to-set-up-domain-authentication).
-- For an initial test using a mailbox you control, use **Settings → Sender Authentication → Single Sender Verification → Verify a Single Sender**. Fill in the sender details, including **From Email Address**, click **Create**, then open the verification email in that mailbox and follow its link. Set `MAIL_FROM` to that exact address. Complete domain authentication before production sending, as SendGrid recommends. See [single sender verification](https://www.twilio.com/docs/sendgrid/ui/sending-email/sender-verification) and [sender identity requirements](https://www.twilio.com/docs/sendgrid/for-developers/sending-email/sender-identity).
-
-**`SENDGRID_API_KEY` authorizes sign-in mail.** In SendGrid, open **Settings → API Keys → Create API Key**. Name it for Oncall, select **Custom Access** (also called **Restricted Access**), and enable **Mail Send → Mail Send → Full Access** only (`mail.send`). Leave **Scheduled Sends** and other groups at **No Access**. Click **Create & View**, then copy the complete API key into your password manager or the private file below; it is displayed once. This app submits to `/v3/mail/send` and needs no template, contacts or API-key-management permissions. See [SendGrid API key creation](https://www.twilio.com/docs/sendgrid/ui/account-and-settings/api-keys) and its [Mail Send permission guidance](https://www.twilio.com/docs/sendgrid/for-developers/sending-email/quickstart-go).
-
-### 3. Save credentials in a private file
+### 2. Save credentials in a private file
 
 The following macOS/Linux/WSL shell commands create a file outside the checkout, readable and writable only by your user (`0600`). The creation step refuses to overwrite an existing file. Run it once, then use your editor to replace the placeholders with the copied values; do not paste real secrets into shell commands or shared logs.
 
@@ -170,9 +159,7 @@ chmod 700 "$HOME/.config/oncall"
   cat > "$HOME/.config/oncall/production.env" <<'ENV'
 CLOUDFLARE_ACCOUNT_ID=replace-with-account-id
 CLOUDFLARE_API_TOKEN=replace-with-token-secret
-MAIL_PROVIDER=sendgrid
-SENDGRID_API_KEY=replace-with-sendgrid-key
-MAIL_FROM=oncall@example.com
+MAIL_PROVIDER=none
 ENV
 )
 chmod 600 "$HOME/.config/oncall/production.env"
@@ -183,27 +170,27 @@ In `vi`, press `i` to edit, replace each placeholder after `=` with its copied v
 
 `--env-file` accepts an absolute path or a path relative to the checkout. If a credential helper already set Cloudflare variables in your shell, unset them before running deploy with the private file. For the variables above, run `unset CLOUDFLARE_ACCOUNT_ID CLOUDFLARE_API_TOKEN`. Rer refuses the duplicate sources even when the values match. Use this separate file rather than the local `.dev.vars`: local development keys are refused for deployment. You do not need to invent `OWNER_EMAIL`, `SESSION_SECRET` or `SETUP_TOKEN` entries here: `rer` uses the setup owner and generates new hosted secrets where needed, then retires the one-time setup token.
 
-### 4. Deploy and test sign-in
+Mail is optional. Choose one option in your deploy file:
 
-If a server is running in the hosting checkout, stop it with `"$HOME/.local/bin/rer" dev --stop` for development or `"$HOME/.local/bin/rer" preview --stop` for preview. Ctrl-C also stops a foreground server. A running local server owns the state, so even a deploy dry run refuses with exit 4 until it stops.
+1. **With email off**, keep `MAIL_PROVIDER=none` and leave the sender and all mail credentials unset. After deploying, use [owner access without email](#owner-access-without-email).
+2. **With email links**, set `MAIL_PROVIDER=sendgrid` and add `SENDGRID_API_KEY` and a verified `MAIL_FROM`. Use a real owner mailbox you can open. See [SendGrid setup](#get-a-sendgrid-key-and-verified-sender-for-email-links).
+
+### 3. Deploy and test sign-in
+
+If a server is running in the hosting checkout, stop it with `"$HOME/.local/bin/rer" dev --stop` for development or `"$HOME/.local/bin/rer" preview --stop` for preview. Ctrl-C also stops a foreground server. A deploy dry run also refuses while a local server is running.
+
+From the hosting checkout, run:
 
 ```sh
-"$HOME/.local/bin/rer" deploy --environment production --dry-run
-```
-
-**The dry run is local only.** It builds and validates the local deployment plan. With no env file or Cloudflare credentials, a valid local plan exits 0: no Cloudflare requests are made, nothing changes remotely, and target secrets, deployment permissions and remote readiness are not checked. Local validation or build errors can still refuse. Passing `--env-file` with `--dry-run` does not enable remote checks.
-
-To check the target and deploy, use the real command below with the private file from step 3. It supplies `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `SENDGRID_API_KEY` and `MAIL_FROM`; the sender must be verified and the setup owner must use a real mailbox. This creates or updates hosted resources. A successful dry run is not proof that the credentials, target secrets or hosted sign-in are ready.
-
-```sh
+"$HOME/.local/bin/rer" deploy --environment production --env-file "$HOME/.config/oncall/production.env" --dry-run
 "$HOME/.local/bin/rer" deploy --environment production --env-file "$HOME/.config/oncall/production.env"
 ```
 
 Check each result:
 
-1. **Dry run:** expect exit 0 and the local-only completion message when local validation and the build pass. Missing Cloudflare credentials do not prevent that result; target secrets and remote readiness remain unchecked.
+1. **Dry run:** expect exit 0 once the local validation and build pass. It makes no Cloudflare requests and leaves the hosted deployment unchanged. Target credentials, permissions, secrets and mail delivery are unchecked.
 2. **Real deployment:** exits successfully and returns an HTTPS `workers.dev` app address. It creates the Worker and D1 database, applies migrations, verifies deployment identity at `/health`, claims the owner automatically and retires its setup token. There is no setup token to copy or delete. Opening `/health` at that address should return HTTP 200.
-3. **Email delivery and owner access:** open the app address, enter the configured owner email and press **Email a sign-in link**. Expect a real email from `MAIL_FROM`. Open it on the same device and press **Confirm**; expect to enter Oncall as the owner. Complete **Finish setup** at `/setup` if shown. A successful deployment alone is not evidence that the mailbox received mail.
+3. **Owner access:** with email off, run [`rer signin`](#owner-access-without-email), open the private URL and press **Confirm**. With email links enabled, open the app address, enter the owner email, press **Email a sign-in link**, then open the email on the same device and press **Confirm**. Complete **Finish setup** at `/setup` if shown.
 
 If Cloudflare refuses a request, read the named permission/provider error, confirm the account ID, token account restriction, expiration and the two permission rows, then repeat the same command. For `workers-subdomain-missing`, finish the account's Workers onboarding first. If mail is not received, check the actual mailbox's spam folder, sender verification and the key's Mail Send permission; also check that SendGrid has enabled your account to send. The app does not capture mail or print email sign-in tokens.
 
@@ -213,15 +200,26 @@ Hosted D1 and your local database are separate stores. Deploy does not upload lo
 
 ### Owner access without email
 
-If the owner cannot receive mail, run this from the checkout that deployed that environment, using the same Cloudflare credentials:
+With email off, or to recover access when email is unavailable, run this from the checkout that deployed that environment, using the same Cloudflare credentials:
 
 ```sh
 "$HOME/.local/bin/rer" signin --environment production --env-file "$HOME/.config/oncall/production.env"
 ```
 
-For Business agent setup, run `"$HOME/.local/bin/rer" signin` after deployment to print the first-owner sign-in link on its own line, then pass it only as the tool’s `sign_in` in `session.report`. Keep it out of chat and files.
+`rer signin` writes a single-use grant for the recorded owner. It prints a one-time sign-in notice, the private URL on its own line with no `RER_OPEN` prefix, then `signin: complete (exit 0)`. Open the URL privately within 15 minutes and press **Confirm**. Its use is audited. Keep the URL out of logs, chat and files.
 
-This writes a single-use grant for the recorded owner in the hosted database and prints its private sign-in link once in your terminal. Open it privately within 15 minutes and press **Confirm** to enter as the owner. It works once, only for that owner, and its use is audited. Do not redirect, record, screenshot or share this output. This command proves owner recovery access; use the email test above to prove mail delivery. If the command reports no deployment for the environment, use the environment it lists and the original deploying checkout; do not create another environment to recover access.
+For Business agent setup, pass only the printed URL as `sign_in` in `session.report`. If the command reports no completed deployment, check the environment name and use the original deploying checkout.
+
+### Get a SendGrid key and verified sender for email links
+
+For email-link sign-in, use a SendGrid account enabled for sending. Complete its account verification and two-factor authentication prompts. See [SendGrid account verification](https://www.twilio.com/docs/sendgrid/ui/account-and-settings/verifying-your-account).
+
+**`MAIL_FROM` is the sender address recipients see**, for example `oncall@example.com`. It is separate from the owner's recipient mailbox and must be verified in the same SendGrid account as the key:
+
+- For a team installation, open the [SendGrid console](https://app.sendgrid.com/) → **Settings → Sender Authentication → Domain Authentication → Get Started**. Select your DNS host, choose whether to brand links, enter the domain you send from, then continue to the DNS records. Add the exact records SendGrid gives you at your DNS provider. Return to SendGrid and click **Verify**; wait until verification succeeds. Set `MAIL_FROM` to an address on that exact authenticated domain. See [SendGrid's domain authentication guide](https://www.twilio.com/docs/sendgrid/ui/account-and-settings/how-to-set-up-domain-authentication).
+- For an initial test using a mailbox you control, use **Settings → Sender Authentication → Single Sender Verification → Verify a Single Sender**. Fill in the sender details, including **From Email Address**, click **Create**, then open the verification email in that mailbox and follow its link. Set `MAIL_FROM` to that exact address. Complete domain authentication before production sending, as SendGrid recommends. See [single sender verification](https://www.twilio.com/docs/sendgrid/ui/sending-email/sender-verification) and [sender identity requirements](https://www.twilio.com/docs/sendgrid/for-developers/sending-email/sender-identity).
+
+**`SENDGRID_API_KEY` authorizes sign-in mail.** In SendGrid, open **Settings → API Keys → Create API Key**. Name it for Oncall, select **Custom Access** (also called **Restricted Access**), and enable **Mail Send → Mail Send → Full Access** only (`mail.send`). Leave **Scheduled Sends** and other groups at **No Access**. Click **Create & View**, then copy the complete API key into your password manager or the private file below; it is displayed once. This app submits to `/v3/mail/send` and needs no template, contacts or API-key-management permissions. See [SendGrid API key creation](https://www.twilio.com/docs/sendgrid/ui/account-and-settings/api-keys) and its [Mail Send permission guidance](https://www.twilio.com/docs/sendgrid/for-developers/sending-email/quickstart-go).
 
 ### Update a hosted installation
 
@@ -274,8 +272,7 @@ With email off, the owner runs `"$HOME/.local/bin/rer" signin --environment prod
 checkout that deployed this environment, using its Cloudflare account credentials
 and its private recorded deployment. Rer checks the recorded app Worker, account,
 project, environment and ownership receipt against the live deployment before
-issuing a short-lived, one-time owner link. Keep that link private. A missing or
-replaced deployment record cannot be bypassed with local development entry.
+issuing the [private URL described above](#owner-access-without-email). Keep that link private. Use the original deploying checkout and its recorded environment.
 
 Email sign-in links and invitations return `503 mail_unavailable`. Existing
 workspace members can still use their installation-local passwords. Schedules,

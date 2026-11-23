@@ -135,9 +135,14 @@ The update applies Oncall's additive migrations. Your data, owner and password a
 
 ### Host for your team
 
-Hosting is in `v0.3.0` and later. Release 1 hosts coordination alongside your existing pager, with paging OFF and no standby requirement. Follow [Getting started](docs/getting-started.md#host-for-your-team) to prepare a real owner mailbox, obtain Cloudflare and SendGrid credentials with the required permissions, and save them in an owner-only `0600` file outside Git. The Install page includes each provider's menu path, verification steps and expected results.
+Hosting is in `v0.3.0` and later. Release 1 hosts coordination alongside your existing pager, with paging OFF and no standby requirement. Follow [Getting started](docs/getting-started.md#host-for-your-team) to set up the owner and save your Cloudflare account ID and API token in an owner-only `0600` file outside Git.
 
-`rer setup` prints a loopback `RER_SETUP_READY` address for local setup. Run `"$HOME/.local/bin/rer" signin` after deployment to print the private hosted owner link.
+Mail is optional. Choose how the owner will sign in and set it in the same deploy file:
+
+1. **With email off**, set `MAIL_PROVIDER=none` and leave the sender and mail credentials unset. The deploying owner signs in with `rer signin`.
+2. **With email links**, configure [SendGrid and a verified sender](docs/getting-started.md#get-a-sendgrid-key-and-verified-sender-for-email-links). Set `MAIL_PROVIDER=sendgrid`, `SENDGRID_API_KEY` and `MAIL_FROM`. The owner can then request an emailed sign-in link.
+
+`rer setup` prints a loopback `RER_SETUP_READY` address for local setup. The hosted owner signs in after deployment.
 
 If a server is running in the hosting checkout, stop it with `"$HOME/.local/bin/rer" dev --stop` for development or `"$HOME/.local/bin/rer" preview --stop` for preview. Ctrl-C also stops a foreground server. With the private file prepared as described there:
 
@@ -146,19 +151,21 @@ If a server is running in the hosting checkout, stop it with `"$HOME/.local/bin/
 "$HOME/.local/bin/rer" deploy --environment production --env-file "$HOME/.config/oncall/production.env"
 ```
 
-The dry run above remains local even with the private file. The real command without `--dry-run` uses `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `SENDGRID_API_KEY` and `MAIL_FROM` from that file to check the target and deploy; a dry-run success does not prove those inputs work.
+The dry run validates the local plan even with the private file. The real command uses the Cloudflare credentials and the chosen mail settings from that file to check the target and deploy.
 
-Use the same named environment for every later command; it defaults to `production` if omitted. Deployment creates the hosted installation, applies migrations, verifies deployment identity, claims the configured owner automatically and retires its one-time setup token. Open the returned address and use **Email a sign-in link**, then open the email on the same device and press **Confirm**. Finish the owner confirmation at `/setup` if shown. Local dev entry links do not work there. Admin-created team members use their workspace name and password at `/signin/local`; Oncall sends no invitations.
+Use the same named environment for every later command. It defaults to `production`. Deployment creates the hosted installation, applies migrations, verifies deployment identity, claims the configured owner automatically and retires its one-time setup token.
 
-The deploying owner can recover access without email from the original checkout:
+**With email off**, run this from the deploying checkout with the same Cloudflare credentials:
 
 ```sh
 "$HOME/.local/bin/rer" signin --environment production --env-file "$HOME/.config/oncall/production.env"
 ```
 
-For Business agent setup, run `"$HOME/.local/bin/rer" signin` after deployment to print the first-owner sign-in link on its own line, then pass it only as the tool’s `sign_in` in `session.report`. Keep it out of chat and files.
+`rer signin` prints a one-time sign-in notice, then the private URL on its own line with no `RER_OPEN` prefix. Open it privately within 15 minutes and press **Confirm**. For Business agent setup, pass only that URL as `sign_in` in `session.report`. Keep it out of chat and files.
 
-This prints a private, single-use owner link that expires within 15 minutes. Open it privately and press **Confirm**; do not record or share the output. It does not test mail delivery.
+**With email links**, open the deployed address and press **Email a sign-in link**. Open the received link on the same device and press **Confirm**. The same `rer signin` command also works for owner recovery.
+
+Finish the owner confirmation at `/setup` if shown. Admin-created team members use their workspace name and password at `/signin/local`. Oncall sends no invitations.
 
 Deployment uses a separate hosted database; it does not upload local schedules or incidents. Keep this checkout's `.rer/deploy/` records. For later hosted updates, switch to the latest published release and deploy to the same environment.
 
