@@ -73,7 +73,7 @@ export type ImportDoorOptions = ImportDoorMountOptions & (
   });
 export type DoorAccess = Pick<DoorGrant, 'action' | 'installationId' | 'email' | 'namespace'
   | 'maxBytes' | 'maxChunks' | 'maxRecords' | 'fingerprint' | 'approvalRecordId' | 'approvedAt' | 'catchup'>;
-export interface ImportOperatorOptions extends ImportDoorRuntimeOptions {
+interface OperatorOptions {
   installationId: string;
   appOrigin: string;
   ownerEmail: string;
@@ -81,8 +81,11 @@ export interface ImportOperatorOptions extends ImportDoorRuntimeOptions {
   /** Authenticate the owner and return a CURRENT same-database session predicate.
    * Check the seed's normal CSRF policy here as well. Null denies access. */
   authorize(request: Request, action: DoorAccess['action']): Promise<D1Sql | null>;
+  /** Product details from the reviewed plan, for the owner screen. */
+  reconciliationDetails?(plan: ImportPlan): Json;
 }
-export type ImportRawOperatorOptions = Omit<ImportOperatorOptions, 'format' | 'parse' | 'intake'> & ImportDoorRawSource;
+export type ImportOperatorOptions = ImportDoorRuntimeOptions & OperatorOptions;
+export type ImportRawOperatorOptions = ImportDoorRawRuntimeOptions & OperatorOptions;
 export interface DoorHistoryEntry {
   planId: string; jobId: string; namespace: string; fingerprint: string; state: string;
   owner: string; approvedAt: string; approvalRecordId: string; reviewer: string; caption: string;
@@ -113,6 +116,7 @@ export interface DoorRequest {
   options: ImportDoorRuntime; access: Readonly<DoorAccess>;
   via: 'grant' | 'operator';
   authority: D1Sql;
+  reconciliationDetails?: OperatorOptions['reconciliationDetails'];
   /** The destination's erasure journal rows when the request was admitted. */
   epoch: number;
   /** A grant request's accepted single-use nonce; owner-session requests have none. */

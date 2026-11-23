@@ -1,6 +1,6 @@
 # Private recovery checkpoints
 
-Run the local app with `rer dev`. Checkpoints contain authored coordination,
+Run the local app with `"$HOME/.local/bin/rer" dev`. Checkpoints contain authored coordination,
 schedules, escalation history and (by default) reviewed handoffs. They exclude
 passwords, sessions and intake credentials. Keep checkpoint files private.
 This is a paired product checkpoint, separate from `rer export`/`rer import`,
@@ -24,8 +24,8 @@ or HttpOnly.
 Run from the Oncall checkout with the installer’s `rer` command; it supplies Node, so no global `node` is needed. With the real origin and private paths substituted:
 
 ```sh
-rer run --script scripts/checkpoint.mjs --origin http://127.0.0.1:3000 --session-file /private/path/session export /private/path/checkpoint.json
-rer run --script scripts/checkpoint.mjs --origin http://127.0.0.1:3000 --session-file /private/path/session restore /private/path/checkpoint.json --replace
+"$HOME/.local/bin/rer" run --script scripts/checkpoint.mjs --origin http://127.0.0.1:3000 --session-file /private/path/session export /private/path/checkpoint.json
+"$HOME/.local/bin/rer" run --script scripts/checkpoint.mjs --origin http://127.0.0.1:3000 --session-file /private/path/session restore /private/path/checkpoint.json --replace
 ```
 
 Export requires a new destination and writes mode 0600. It reads all datasets

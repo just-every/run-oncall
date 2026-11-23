@@ -44,6 +44,7 @@ export type Reconciliation = {
  ok: boolean
  counts: { sourceRecords: number; present: number; explained: number; nativeTargets: number }
  sourceIds: { kind: string; sourceId: string; status: string; conflicts?: string[]; reason?: string }[]
+ details?: { coverageNotCompared: ('missing' | 'outside')[] }
 }
 
 /** Compare the applied snapshot with the current native objects, never the apply receipt. */

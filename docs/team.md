@@ -2,7 +2,7 @@
 
 ## Signing in
 
-**Hosted owner.** Deployment claims the configured owner automatically. With a remote mail provider configured, enter the owner email on the sign-in page, press **Email a sign-in link**, then open the link on the same device and press **Confirm**. A link works once and expires after 15 minutes. For [hosted coordination with email off](getting-started.md#hosted-coordination-with-email-off), set `MAIL_PROVIDER=none` and run `rer signin` from the deploying checkout with the same Cloudflare credentials. Open the private link it prints and press **Confirm**. Complete **Finish setup** if shown.
+**Hosted owner.** Deployment claims the configured owner automatically. With a remote mail provider configured, enter the owner email on the sign-in page, press **Email a sign-in link**, then open the link on the same device and press **Confirm**. A link works once and expires after 15 minutes. For [hosted coordination with email off](getting-started.md#hosted-coordination-with-email-off), set `MAIL_PROVIDER=none` and run `"$HOME/.local/bin/rer" signin` from the deploying checkout with the same Cloudflare credentials. Open the private link it prints and press **Confirm**. Complete **Finish setup** if shown.
 
 **Local owner.** Open the private `RER_OPEN` link printed by `rer dev`. On first launch, choose **Finish setup** to confirm the owner details. Anonymous first-admin setup is available only on the local loopback app. See [sign-in emails on your computer](getting-started.md#sign-in-emails-on-your-computer) to configure local email delivery.
 

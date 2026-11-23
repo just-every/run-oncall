@@ -2,17 +2,14 @@
 
 Follow [Getting started](docs/getting-started.md) to install the latest
 published Oncall release. Git is required. The installer brings Node and pnpm,
-and the guide also has a command for Node 22 or later. After the installer script, a terminal without
-`~/.local/bin` on PATH needs `export PATH="$HOME/.local/bin:$PATH"` before a bare
-`rer dev`, or it says `rer: command not found` (add that line to your shell
-startup file to keep it; `"$HOME/.local/bin/rer" cli path` shows the line for
-your shell).
+and the examples use the installed launcher directly. With Node 22 or later,
+you can use `npx -y @runeditrun/rer` in place of `"$HOME/.local/bin/rer"`.
 `rer` runs every verb with the checkout's exact `@runeditrun/rer` package pin.
 The `OPERATIONS.json` argv and `package.json` aliases name `rer VERB`.
 
 ## Launch with one command
 
-From a runnable edition's root, `rer dev` is the whole launch. It installs
+From a runnable edition's root, `"$HOME/.local/bin/rer" dev` is the whole launch. It installs
 locked dependencies when they are missing or older than the lockfile. On a
 checkout that is not set up it sets up a local owner
 (`owner@<checkout-name>.test`) and fills the setup answers the seed declares a
@@ -22,16 +19,15 @@ is set up. A required setup answer with no value and no `localDefault` stops it
 with exit 3 and a message naming the field.
 
 - **Port.** The first port from 8787 that is free on both `127.0.0.1` and `::1`
-  and held by no registered server. Override with `rer dev --port N`; start the
+  and held by no registered server. Override with `"$HOME/.local/bin/rer" dev --port N`; start the
   search elsewhere with `RER_DEV_PORT_FROM=N`.
 - **Detaching.** Without a terminal (an agent's shell tool) `rer dev` returns once
   the app is ready and leaves it running in the background, printing its
   private log path; in a terminal it stays in the foreground and Ctrl-C stops
   it. `--detach` and `--foreground` override that.
-- **Progress and resuming.** A first local start usually takes about a minute.
-  On a busy computer it can take longer: `rer dev` prints progress every 20 seconds,
-  with the limit to allow. With `--json` these are `progress` events.
-  If the calling command is killed the launch carries on; run `rer dev` again to
+- **Progress and resuming.** A first local start can take several minutes.
+  `rer dev` prints progress every 20 seconds and tells you how long to allow.
+  If the calling command is killed the launch carries on; run `"$HOME/.local/bin/rer" dev` again to
   reattach or to finish an install or setup that stopped. A second `rer dev`
   reprints the ready lines.
 - **Server limit.** Up to 10 dev or preview servers run on one computer. Set
@@ -39,7 +35,7 @@ with exit 3 and a message naming the field.
 - **Idle timeout.** A server stops after 12 hours (43200 seconds) without
   activity. Set `--idle-timeout SECONDS` or `RER_SERVER_IDLE_SECONDS=N` to change
   it.
-- **Stopping.** `rer dev --stop` stops the server, and any launch still preparing.
+- **Stopping.** `"$HOME/.local/bin/rer" dev --stop` stops the server, and any launch still preparing.
 
 ## Install for a real owner
 
@@ -49,9 +45,9 @@ edition's root: install locked dependencies, prepare its local owner, then start
 development:
 
 ```sh
-rer install
-rer setup --owner-email you@example.com
-rer dev
+"$HOME/.local/bin/rer" install
+"$HOME/.local/bin/rer" setup --owner-email you@example.com
+"$HOME/.local/bin/rer" dev
 ```
 
 Commands that run project work select the exact Node version declared by the
@@ -75,8 +71,8 @@ After `RER_READY`, Oncall prints `RER_SIGNED_IN EMAIL` and a private
 `RER_OPEN URL`. Open that URL on this computer to enter as the owner. On first
 launch, `/setup` asks you to confirm the read-only owner details; once complete,
 later launches open the app directly. Treat `RER_OPEN` as a credential.
-`rer dev --as signed-out` selects the signed-out persona; the compatibility flag
-`rer dev --login` still opens automatic owner entry. Ordinary `/signin` email
+`"$HOME/.local/bin/rer" dev --as signed-out` selects the signed-out persona; the compatibility flag
+`"$HOME/.local/bin/rer" dev --login` still opens automatic owner entry. Ordinary `/signin` email
 sign-in sends only through a configured remote mail provider with real
 credentials; no sender is configured by default. The app does not capture mail or print sign-in tokens.
 
@@ -91,7 +87,7 @@ ports in one browser each keep their own sign-in.
 A first `setup` without `--port` saves the first free port from 8787 and prints
 it in one line; it never saves a port another process listens on, on any
 address. To move a checkout whose saved port is held by another checkout (or
-by nothing), run `rer setup --port N` in it: only the saved
+by nothing), run `"$HOME/.local/bin/rer" setup --port N` in it: only the saved
 port changes, its data is kept, no reset is needed, and setup prints the old
 and new port. A refusal for a busy port names the process or checkout that
 holds it and gives that exact command with a free port.
@@ -109,7 +105,7 @@ below their own floor, described next.
 
 Missing non-interactive setup answers exit 3 and name the manifest fields.
 Read `rer-setup.json` and pass a private, mode-0600 JSON object keyed by those
-names using `rer setup --answers PATH --non-interactive`,
+names using `"$HOME/.local/bin/rer" setup --answers PATH --non-interactive`,
 for example `{"OWNER_EMAIL":"owner@example.com"}`. Secret values stay in
 private inputs and never go in command arguments. A setup rerun with the saved
 owner and origin preserves existing owner/data and exact private settings.
@@ -140,8 +136,8 @@ configured remote mail provider with real credentials.
 
 Dev and preview are managed servers. In a terminal the first invocation stays
 active while serving; without one, `rer dev` returns once the app is ready and
-leaves it running (see the launch section above). Use `rer dev --stop` or
-`rer preview --stop` to stop them; `--idle-timeout SECONDS`
+leaves it running (see the launch section above). Use `"$HOME/.local/bin/rer" dev --stop` or
+`"$HOME/.local/bin/rer" preview --stop` to stop them; `--idle-timeout SECONDS`
 sets inactivity cleanup. Compatible repeated starts reuse the registered
 server, print readiness and exit. Preview serves fixed production output; dev
 serves live source edits.
@@ -180,13 +176,13 @@ path served by the app. Import requires an empty destination and `--yes`
 confirms the restore.
 
 ```sh
-rer verify
-rer export --output exports/installation.rer &&
+"$HOME/.local/bin/rer" verify
+"$HOME/.local/bin/rer" export --output exports/installation.rer &&
   test -s exports/installation.rer &&
-  rer reset --yes
-rer import --input exports/installation.rer --yes
-rer deploy --environment production --env-file "$HOME/.config/oncall/production.env"
-rer describe
+  "$HOME/.local/bin/rer" reset --yes
+"$HOME/.local/bin/rer" import --input exports/installation.rer --yes
+"$HOME/.local/bin/rer" deploy --environment production --env-file "$HOME/.config/oncall/production.env"
+"$HOME/.local/bin/rer" describe
 ```
 
 Stop dev or preview with `--stop` or Ctrl-C before build or verification, and
@@ -206,7 +202,7 @@ Release 1 supports hosted incident coordination alongside the existing pager,
 with paging OFF and no independent standby prerequisite. Release 2 paging and
 independent standby are not built. `rer deploy` deploys coordination to the
 operator's Cloudflare account; see [hosting instructions](docs/getting-started.md#host-for-your-team).
-`rer deploy --environment production --dry-run` builds and validates the local deployment plan. It needs no credentials, makes no Cloudflare requests and changes nothing remotely. It does not check target secrets, deployment permissions or remote readiness, even with `--env-file`. The default environment is `production`; select another with
+`"$HOME/.local/bin/rer" deploy --environment production --dry-run` builds and validates the local deployment plan. It needs no credentials, makes no Cloudflare requests and changes nothing remotely. It does not check target secrets, deployment permissions or remote readiness, even with `--env-file`. The default environment is `production`; select another with
 `--environment NAME`. Local validation does not establish provider acceptance,
 hosted health or mail delivery.
 
@@ -250,8 +246,8 @@ default is `production`. Use the same name for deploy, sign-in, updates, secret
 changes and removal. Keep the deploying checkout and its `.rer/deploy/` records.
 
 ```sh
-rer deploy --environment production --env-file "$HOME/.config/oncall/production.env" --dry-run
-rer deploy --environment production --env-file "$HOME/.config/oncall/production.env"
+"$HOME/.local/bin/rer" deploy --environment production --env-file "$HOME/.config/oncall/production.env" --dry-run
+"$HOME/.local/bin/rer" deploy --environment production --env-file "$HOME/.config/oncall/production.env"
 ```
 
 `--env-file` reads an owned private regular file of `KEY=VALUE` lines, relative
@@ -273,7 +269,7 @@ links do not work there.
 The deploying owner can sign in without email:
 
 ```sh
-rer signin --environment production --env-file "$HOME/.config/oncall/production.env"
+"$HOME/.local/bin/rer" signin --environment production --env-file "$HOME/.config/oncall/production.env"
 ```
 
 This uses the Cloudflare credentials to write a one-time grant for the recorded
@@ -291,8 +287,8 @@ To rotate the mail credential or sender after editing the private file, run the
 applicable command and repeat the real email sign-in test:
 
 ```sh
-rer deploy --environment production --env-file "$HOME/.config/oncall/production.env" --set-secret MAIL_API_KEY
-rer deploy --environment production --env-file "$HOME/.config/oncall/production.env" --set-secret MAIL_FROM
+"$HOME/.local/bin/rer" deploy --environment production --env-file "$HOME/.config/oncall/production.env" --set-secret MAIL_API_KEY
+"$HOME/.local/bin/rer" deploy --environment production --env-file "$HOME/.config/oncall/production.env" --set-secret MAIL_FROM
 ```
 
 `MAIL_API_KEY` reads the file's `SENDGRID_API_KEY`; `MAIL_FROM` reads `MAIL_FROM`.
@@ -302,7 +298,7 @@ Removal deletes the hosted database and its records. Use the same Cloudflare
 credentials, deployment record and environment:
 
 ```sh
-rer deploy --environment production --env-file "$HOME/.config/oncall/production.env" --remove --yes
+"$HOME/.local/bin/rer" deploy --environment production --env-file "$HOME/.config/oncall/production.env" --remove --yes
 ```
 
 This deletes only recorded resources created by that deployment and reads back

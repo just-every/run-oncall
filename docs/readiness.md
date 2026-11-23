@@ -110,21 +110,21 @@ server you started before export, using its terminal's Ctrl-C. Keep archives
 private and outside the checkout when replacing or removing it.
 
 ```sh
-rer export --output exports/installation.rer
-rer import --input exports/installation.rer --yes
+"$HOME/.local/bin/rer" export --output exports/installation.rer
+"$HOME/.local/bin/rer" import --input exports/installation.rer --yes
 ```
 
 Import validates first and requires an empty local destination; it does not
 replace a populated installation. Install the checkout in that destination,
-copy the private archive, import, then run `rer setup --owner-email you@example.com`
-and `rer dev`. Confirm the owner and map the archived administrator as described
+copy the private archive, import, then run `"$HOME/.local/bin/rer" setup --owner-email you@example.com`
+and `"$HOME/.local/bin/rer" dev`. Confirm the owner and map the archived administrator as described
 in the data procedure. Passwords and sessions do not travel. Restored integration
 credentials and pending work do not become active delivery authority. An empty
 installation cannot know an erasure fence it has never received; provide the
 later archive as the documented import journal when required.
 
 The separate [private paired checkpoint procedure](https://github.com/just-every/run-oncall/blob/main/docs/checkpoints.md)
-uses `rer run --script scripts/checkpoint.mjs --origin http://127.0.0.1:3000 --session-file SESSION_FILE export CHECKPOINT_FILE`
+uses `"$HOME/.local/bin/rer" run --script scripts/checkpoint.mjs --origin http://127.0.0.1:3000 --session-file SESSION_FILE export CHECKPOINT_FILE`
 and the corresponding `restore CHECKPOINT_FILE --replace`. Its
 current-administrator session file must be private, mode 0600. Replacement is
 explicit and destructive. Follow that procedure's validation, rotated-cookie

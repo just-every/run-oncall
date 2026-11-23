@@ -88,28 +88,27 @@ Keep the key out of commands and files. For an in-app read, paste it in the read
 
 ### Download and run
 
-Use the Oncall installer’s **rer** command in a macOS, Linux or WSL terminal with internet access to the provider. It supplies its own Node.js runtime; no separate Node installation or npm packages are needed. If `rer` is missing or does not recognize `--script`, install or update it before continuing:
+Use the Oncall installer’s **rer** command in a macOS, Linux or WSL terminal with internet access to the provider. It supplies its own Node.js runtime; no separate Node installation or npm packages are needed. If the launcher is missing or does not recognize `--script`, install or update it before continuing:
 
 ```sh
 curl -fsSL https://runeditrun.com/install.sh | sh
-export PATH="$HOME/.local/bin:$PATH"
 ```
 
 [Download oncall-export.mjs](../public/move-in/oncall-export.mjs.txt) from your running Oncall app and save it in **Downloads** with that exact name, without a `.txt` suffix. You can inspect the downloaded source in a text editor. Run these two lines in Terminal, using the command for your provider:
 
 ```sh
 cd ~/Downloads
-rer run --script ./oncall-export.mjs opsgenie
+"$HOME/.local/bin/rer" run --script ./oncall-export.mjs opsgenie
 ```
 
 or:
 
 ```sh
 cd ~/Downloads
-rer run --script ./oncall-export.mjs pagerduty
+"$HOME/.local/bin/rer" run --script ./oncall-export.mjs pagerduty
 ```
 
-On Windows, use WSL and change to the folder where you saved the download. If you saved the script in a different folder, change to that folder first. `rer run --script ./oncall-export.mjs --help` explains usage without requesting a key or contacting a provider.
+On Windows, use WSL and change to the folder where you saved the download. If you saved the script in a different folder, change to that folder first. `"$HOME/.local/bin/rer" run --script ./oncall-export.mjs --help` explains usage without requesting a key or contacting a provider.
 
 Answer the prompts:
 

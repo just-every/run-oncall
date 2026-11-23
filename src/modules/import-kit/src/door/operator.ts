@@ -18,7 +18,7 @@ export function createImportOperatorHandler(options: ImportOperatorOptions | Imp
     // The owner's session, under the same erasure and destination fence as a grant.
     const epoch = await erasures(database, options.destination), fence = doorFence(options.installationId, options.namespace, options.destination, epoch);
     const authority = sql(`(${owner.sql}) AND (${fence.sql})`, ...owner.params ?? [], ...fence.params ?? []);
-    const admitted: DoorRequest = {options:{...options,database},authority,via:'operator',epoch,access:{action,installationId:options.installationId,
+    const admitted: DoorRequest = {options:{...options,database},authority,via:'operator',epoch,reconciliationDetails:options.reconciliationDetails,access:{action,installationId:options.installationId,
       email:options.ownerEmail,namespace:options.namespace,
       maxBytes:Math.min(options.limits?.maxBytes ?? 67_108_864,67_108_864),
       maxChunks:1024,maxRecords:Math.min(options.limits?.maxRecords ?? 1_000_000,1_000_000)}};

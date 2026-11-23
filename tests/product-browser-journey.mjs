@@ -408,7 +408,7 @@ export async function fileJourney(page,context,origin,{readProvider=false}={}) {
  await page.getByRole('heading',{name:'Import complete',exact:true}).waitFor()
  if(width===1440) {
   const report=await reconciled.json();assert.equal(reconciled.status(),200);assert.equal(report.ok,true)
-  await page.getByText(/^Matched\./).waitFor()
+  assert.equal(report.counts.present+report.counts.explained,report.counts.sourceRecords,'the completed check accounts for every source record')
   assert.equal(report.counts.nativeTargets,(await objects()).length-before.length)
   for(const size of [1440]){await page.setViewportSize({width:size,height:1000});await screenshot(page,`reconcile-matched-${size}`)}
   await page.setViewportSize({width,height:1000})

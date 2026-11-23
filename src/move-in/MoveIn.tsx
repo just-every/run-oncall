@@ -137,7 +137,9 @@ export function MoveIn({admin,connect,request}:{admin:boolean;connect:boolean;re
  {erased&&!reconciliation?<><h2>Person erased from this import</h2><p>This import no longer matches its saved export: the person and the source records kept for them are permanently gone. The rest of the imported data is unchanged.</p></>:<>
  <h2>{reconciliation?.ok?'Import complete':reconciliation?'Import differences':busy?'Checking imported data':'Import needs checking'}</h2>
  {reconciliation?<>
- <p>{reconciliation.ok?'Matched. The imported data agrees with the saved export.':'The native data differs from the saved export. Review these differences before continuing.'}</p>
+ <p>{reconciliation.ok?'Oncall checked the imported records against the saved export.':'The native data differs from the saved export. Review these differences before continuing.'}</p>
+ {reconciliation.details?.coverageNotCompared.includes('missing')&&<p>The saved export was missing a final coverage list for one or more schedules. Oncall could not compare who was on call for those schedules.</p>}
+ {reconciliation.details?.coverageNotCompared.includes('outside')&&<p>Some final coverage lists fell outside the imported schedule dates. Oncall could not compare who was on call for those schedules.</p>}
  <p>{reconciliation.counts.sourceRecords} {reconciliation.counts.sourceRecords===1?'object':'objects'} in the file, {reconciliation.counts.present+reconciliation.counts.explained} accounted for ({reconciliation.counts.nativeTargets} created in Oncall, the rest kept as source evidence)</p>
  {!reconciliation.ok&&<ul>{reconciliation.sourceIds.filter(row=>row.status==='mismatched').map(row=><li key={JSON.stringify([row.kind,row.sourceId])}>{row.kind}: {row.sourceId}<ul>{row.conflicts?.map(conflict=><li key={conflict}>Changed or missing native object: {conflict}</li>)}</ul></li>)}</ul>}
  {reconciliation.ok&&<p>Review imported data below. Adopt a schedule when you’re ready.</p>}

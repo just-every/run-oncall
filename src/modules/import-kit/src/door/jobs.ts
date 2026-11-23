@@ -100,7 +100,8 @@ export async function reconcile(request: DoorRequest, input: Record<string,unkno
   if (current.head_id!==row.id) throw new DoorError('import_superseded',409);
   const report = await inspectRecords(request,snapshot.records);
   await authorized(request);
-  return {planId:row.id,fingerprint:row.fingerprint,bundleSha256:snapshot.bundleSha256,...report};
+  return {planId:row.id,fingerprint:row.fingerprint,bundleSha256:snapshot.bundleSha256,...report,
+    ...(request.reconciliationDetails ? {details:request.reconciliationDetails(snapshot.plan)} : {})};
 }
 /** RER's cleanup for a plan created only while checking an executor's report.
  * It can discard private plan custody, never a reviewed or published import. */

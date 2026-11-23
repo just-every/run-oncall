@@ -56,36 +56,36 @@ You need Git on macOS, Linux or Windows with WSL2. The installer provides Node a
    "$HOME/.local/bin/rer" dev --host localhost
    ```
 
-**Alternative for Node 22 or later.** Skip step 1 and replace the last line in step 2 with `npx -y @runeditrun/rer dev --host localhost`.
+**Alternative for Node 22 or later.** Skip step 1 and use `npx -y @runeditrun/rer` in place of `"$HOME/.local/bin/rer"` in any example below.
 
 If you used the installer, restart with `cd run-oncall && "$HOME/.local/bin/rer" dev --host localhost`. If you used the Node alternative, restart with `cd run-oncall && npx -y @runeditrun/rer dev --host localhost`. `rer dev` installs the application dependencies, creates a local development owner and prints a private link that opens Oncall signed in. On first launch, review the owner details and select **Finish setup**. Later launches open the app directly. To choose your own owner mailbox before the first launch, use [explicit setup](docs/getting-started.md#explicit-and-unattended-setup), which also accepts a private answers file for unattended runs. Once setup returns, use the restart command from inside the checkout and open its private `RER_OPEN` link.
 
-Open the printed link on this computer. After setup, open your account menu and choose **Sign-in settings → Enroll passkey**. See [local passkey setup](docs/getting-started.md#sign-in-with-a-local-passkey). `rer dev --as signed-out` selects the signed-out persona. The compatibility flag `rer dev --login` still opens automatic owner entry. Ordinary `/signin` email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. The app does not capture mail or print sign-in tokens. Stop the background server with `rer dev --stop` (Ctrl-C also stops a foreground run); stop preview with `rer preview --stop` before building, verifying or deploying. A running dev or preview server owns the local state, so even a deploy dry run refuses with exit 4 until it stops.
+Open the printed link on this computer. After setup, open your account menu and choose **Sign-in settings → Enroll passkey**. See [local passkey setup](docs/getting-started.md#sign-in-with-a-local-passkey). `"$HOME/.local/bin/rer" dev --as signed-out` selects the signed-out persona. The compatibility flag `"$HOME/.local/bin/rer" dev --login` still opens automatic owner entry. Ordinary `/signin` email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. The app does not capture mail or print sign-in tokens. Stop the background server with `"$HOME/.local/bin/rer" dev --stop` (Ctrl-C also stops a foreground run); stop preview with `"$HOME/.local/bin/rer" preview --stop` before building, verifying or deploying. A running dev or preview server owns the local state, so even a deploy dry run refuses with exit 4 until it stops.
 
 ```sh
-rer build
-rer preview
-rer verify
-rer export --output exports/installation.rer
-rer import --input exports/installation.rer --yes
-rer reset --yes
-rer dev --stop
-rer preview --stop
-rer deploy --environment production --dry-run
-rer describe
-rer check
+"$HOME/.local/bin/rer" build
+"$HOME/.local/bin/rer" preview
+"$HOME/.local/bin/rer" verify
+"$HOME/.local/bin/rer" export --output exports/installation.rer
+"$HOME/.local/bin/rer" import --input exports/installation.rer --yes
+"$HOME/.local/bin/rer" reset --yes
+"$HOME/.local/bin/rer" dev --stop
+"$HOME/.local/bin/rer" preview --stop
+"$HOME/.local/bin/rer" deploy --environment production --dry-run
+"$HOME/.local/bin/rer" describe
+"$HOME/.local/bin/rer" check
 ```
 
 Before the first `rer verify`, stop dev and preview, then install its browser using the dependencies `rer dev` (or `rer install`) already installed:
 
 ```sh
-rer run --script node_modules/@playwright/test/cli.js install chromium
-rer verify
+"$HOME/.local/bin/rer" run --script node_modules/@playwright/test/cli.js install chromium
+"$HOME/.local/bin/rer" verify
 ```
 
-This command uses the installer’s private Node runtime; no global Node or pnpm is needed. On Linux, add `--with-deps` to the browser install command if system libraries are missing. `rer doctor` reports a missing verification browser. `rer check` is silent on success (exit 0); `rer check --json` prints the result.
+This command uses the installer’s private Node runtime; no global Node or pnpm is needed. On Linux, add `--with-deps` to the browser install command if system libraries are missing. `rer doctor` reports a missing verification browser. `rer check` is silent on success (exit 0); `"$HOME/.local/bin/rer" check --json` prints the result.
 
-Export includes supported durable records and the import journal, excluding sessions and dev credentials. Import requires an empty destination and explicit confirmation. If it refuses with `target_not_empty`, export any data you need to keep, stop dev and preview, then run `rer reset --yes` before importing into the now-empty installation. Configure a new owner, sign in, then explicitly map an archived administrator identity from the signed-out workspace; credentials never travel. Reset deletes local data and owner settings and keeps your exports; see [Export and restore](docs/data.md) for the in-place restore sequence.
+Export includes supported durable records and the import journal, excluding sessions and dev credentials. Import requires an empty destination and explicit confirmation. If it refuses with `target_not_empty`, export any data you need to keep, stop dev and preview, then run `"$HOME/.local/bin/rer" reset --yes` before importing into the now-empty installation. Configure a new owner, sign in, then explicitly map an archived administrator identity from the signed-out workspace; credentials never travel. Reset deletes local data and owner settings and keeps your exports; see [Export and restore](docs/data.md) for the in-place restore sequence.
 
 A deploy dry run builds and validates the local deployment plan. With no env file or Cloudflare credentials, a valid local plan exits 0: it sends nothing to Cloudflare, changes nothing remotely and checks no target secrets, deployment permissions or remote readiness. Adding `--env-file` to a dry run does not enable remote checks. For those checks, prepare the private credentials file and run the real deployment described in [Host for your team](#host-for-your-team); it creates or updates hosted resources. Email delivery needs the separate sign-in test below.
 
@@ -99,7 +99,7 @@ Move in (under Settings) reviews supplied Opsgenie exports first, then PagerDuty
 
 Held data upgrades in place through unchanged migrations 0001–0006 and additive migrations. Coordination now stores individual members, services, policies, events, alerts, incidents and audit entries in relational tables. Old password accounts remain usable; Base owner identity never silently takes over an existing workspace. For a held installation, continue using its password accounts until the owner explicitly links identity during a future identity migration. On local and hosted apps, the configured owner uses email links and admin-created team members use their installation-local workspace name and password at `/signin/local`. Only anonymous first-admin bootstrap remains loopback-only. Do not reset to upgrade.
 
-To look around with realistic sample data, run `rer demo` after setup: a throwaway, signed-in copy where nothing can page, call, text or email ([DEMO.md](DEMO.md)).
+To look around with realistic sample data, run `"$HOME/.local/bin/rer" demo` after setup: a throwaway, signed-in copy where nothing can page, call, text or email ([DEMO.md](DEMO.md)).
 
 Read [CONTRACT.md](CONTRACT.md), [ACCEPTANCE.md](ACCEPTANCE.md), [OPERATIONS.md](OPERATIONS.md) and [RELEASE.md](RELEASE.md). The checkout declares its exact command version in `package.json` and the lockfile. `base-copies.json` records each Base runtime/module copy and its own revision; `src/base` comes from Base 6d38b54a6401879989e8d1f7ab4a02ffbdb4c46c. Source locks are generated with Base's edition-authoring command from this checkout. This repository is runnable source, without a composition step.
 
@@ -110,15 +110,15 @@ Read [CONTRACT.md](CONTRACT.md), [ACCEPTANCE.md](ACCEPTANCE.md), [OPERATIONS.md]
 From your existing checkout, stop the local servers and switch to the latest published release.
 
 ```sh
-rer dev --stop
-rer preview --stop
+"$HOME/.local/bin/rer" dev --stop
+"$HOME/.local/bin/rer" preview --stop
 ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" &&
 git fetch --depth 1 origin tag "$ONCALL_TAG" &&
 git checkout --detach "refs/tags/$ONCALL_TAG" &&
-rer dev --host localhost
+"$HOME/.local/bin/rer" dev --host localhost
 ```
 
-This restarts the updated local app, applies migrations and keeps your owner, schedules and incidents. `rer` uses the new checkout's pinned toolchain. If the saved port is in use, run the `rer setup --port N` command printed in the error, then restart.
+This restarts the updated local app, applies migrations and keeps your owner, schedules and incidents. `rer` uses the new checkout's pinned toolchain. If the saved port is in use, run the `"$HOME/.local/bin/rer" setup --port N` command printed in the error, then restart.
 
 ### From 0.1.0
 
@@ -129,7 +129,7 @@ node scripts/rer.mjs dev --stop
 node scripts/rer.mjs preview --stop
 ```
 
-Then use [Later updates](#later-updates). Install `rer` first or use `npx -y @runeditrun/rer` in place of each `rer` command if you already have Node 22 or later.
+Then use [Later updates](#later-updates). Use the installer or Node alternative above.
 
 The update applies Oncall's additive migrations. Your data, owner and password accounts are kept; people who sign in with a workspace password sign in once more after updating to 0.3.0. Do not reset to upgrade.
 
@@ -137,15 +137,15 @@ The update applies Oncall's additive migrations. Your data, owner and password a
 
 Hosting is in `v0.3.0` and later. Release 1 hosts coordination alongside your existing pager, with paging OFF and no standby requirement. Follow [Getting started](docs/getting-started.md#host-for-your-team) to prepare a real owner mailbox, obtain Cloudflare and SendGrid credentials with the required permissions, and save them in an owner-only `0600` file outside Git. The Install page includes each provider's menu path, verification steps and expected results.
 
-`rer setup` prints a loopback `RER_SETUP_READY` address for local setup. Run `rer signin` after deployment to print the private hosted owner link.
+`rer setup` prints a loopback `RER_SETUP_READY` address for local setup. Run `"$HOME/.local/bin/rer" signin` after deployment to print the private hosted owner link.
 
 Stop dev and preview from the hosting checkout before either the dry run or deployment (Ctrl-C also stops a foreground server). With the private file prepared as described there:
 
 ```sh
-rer dev --stop
-rer preview --stop
-rer deploy --environment production --env-file "$HOME/.config/oncall/production.env" --dry-run
-rer deploy --environment production --env-file "$HOME/.config/oncall/production.env"
+"$HOME/.local/bin/rer" dev --stop
+"$HOME/.local/bin/rer" preview --stop
+"$HOME/.local/bin/rer" deploy --environment production --env-file "$HOME/.config/oncall/production.env" --dry-run
+"$HOME/.local/bin/rer" deploy --environment production --env-file "$HOME/.config/oncall/production.env"
 ```
 
 The dry run above remains local even with the private file. The real command without `--dry-run` uses `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `SENDGRID_API_KEY` and `MAIL_FROM` from that file to check the target and deploy; a dry-run success does not prove those inputs work.
@@ -155,10 +155,10 @@ Use the same named environment for every later command; it defaults to `producti
 The deploying owner can recover access without email from the original checkout:
 
 ```sh
-rer signin --environment production --env-file "$HOME/.config/oncall/production.env"
+"$HOME/.local/bin/rer" signin --environment production --env-file "$HOME/.config/oncall/production.env"
 ```
 
-For Business agent setup, run `rer signin` after deployment to print the first-owner sign-in link on its own line, then pass it only as the tool’s `sign_in` in `session.report`. Keep it out of chat and files.
+For Business agent setup, run `"$HOME/.local/bin/rer" signin` after deployment to print the first-owner sign-in link on its own line, then pass it only as the tool’s `sign_in` in `session.report`. Keep it out of chat and files.
 
 This prints a private, single-use owner link that expires within 15 minutes. Open it privately and press **Confirm**; do not record or share the output. It does not test mail delivery.
 
@@ -168,7 +168,7 @@ Deployment uses a separate hosted database; it does not upload local schedules o
 ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" &&
 git fetch --depth 1 origin tag "$ONCALL_TAG" &&
 git checkout --detach "refs/tags/$ONCALL_TAG" &&
-rer deploy --environment production --env-file "$HOME/.config/oncall/production.env"
+"$HOME/.local/bin/rer" deploy --environment production --env-file "$HOME/.config/oncall/production.env"
 ```
 
 Updates keep the hosted owner and data. Existing hosted secrets are retained; [Getting started](docs/getting-started.md#update-a-hosted-installation) explains explicit mail-key and sender changes.
@@ -176,7 +176,7 @@ Updates keep the hosted owner and data. Existing hosted secrets are retained; [G
 To remove the hosted installation and its database, keep its deployment records and use the same Cloudflare credentials and environment:
 
 ```sh
-rer deploy --environment production --env-file "$HOME/.config/oncall/production.env" --remove --yes
+"$HOME/.local/bin/rer" deploy --environment production --env-file "$HOME/.config/oncall/production.env" --remove --yes
 ```
 
 Removal deletes only recorded resources created by this deployment and verifies each is absent. Your local folder and data stay.

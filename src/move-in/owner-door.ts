@@ -60,6 +60,18 @@ const review = (plan: ImportPlan) => plan.entries.map(entry => {
   rejection: entry.rejection, unmapped: entry.unmapped, effects: entry.effects }
 })
 
+function reconciliationDetails(plan: ImportPlan) {
+ const coverageNotCompared = new Set<'missing' | 'outside'>()
+ for (const entry of plan.entries) for (const effect of entry.effects) {
+  if (effect.targetKind !== 'schedule') continue
+  const comparison = (effect.value as {equivalence?: {status: string; differences?: string[]}}).equivalence
+  if (comparison?.status === 'not-supplied') {
+   coverageNotCompared.add(comparison.differences?.some(text => text.includes('outside')) ? 'outside' : 'missing')
+  }
+ }
+ return {coverageNotCompared: [...coverageNotCompared]}
+}
+
 /** The saved file names of an earlier import, so a sentence can name it by provider and file. Null when its plan is gone or unreadable. */
 const importFiles = (db: D1Database, principal: string) => async (job: string, namespace: string) => {
  try {
@@ -130,7 +142,7 @@ export async function ownerImport(c: any): Promise<Response> {
  const session = adminSession(c.get('sessionDigest'), actor.id)
  const door = createImportOperatorHandler({ database: db, targets, destination: 'oncall', format: 'json', limits: DOOR_LIMITS, ownerPrincipalId: actor.id,
   installationId: IMPORT_DOOR_KEY, appOrigin: runtimeBindings(c.env).AUTH_ORIGIN, ownerEmail: await approver(db, actor), namespace: vendor,
-  authorize: async () => session, ...source })
+  authorize: async () => session, reconciliationDetails, ...source })
  const send = async (sent: Request) => {
   const response = (await door(sent)) ?? answer({ error: 'not_found' }, 404)
   await attempt?.finish(response.ok)
