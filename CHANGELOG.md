@@ -1,3 +1,21 @@
+# 0.5.30 · 2026-11-23
+
+- Hosted Settings → Readiness reports deployment identity and health, owner access, and removal separately. A healthy deployment with a confirmed owner session still leaves removal to verify in Cloudflare.
+- The Run page, README and setup guides fetch and check out the latest published release quietly, so Git can open the annotated release tag without the “is not a commit!” warning.
+- You can restart Oncall from a new terminal without adding rer to PATH. Use `"$HOME/.local/bin/rer" dev --host localhost` if you used the installer, or `npx -y @runeditrun/rer dev --host localhost` if you used Node.
+
+### Upgrade from 0.5.29
+
+Back up first. For local data, run `rer export --output exports/before-0.5.30.rer`. For hosted data, export the D1 database with the original deploying Cloudflare credentials. Keep the backup private and verify it before updating.
+
+Stop the local app with Ctrl-C or `rer dev --stop`. Once the release is published, run `git fetch --quiet --depth 1 origin tag v0.5.30` and `git checkout --quiet --detach refs/tags/v0.5.30`, then restart with the command above for your installation method. For a hosted installation, update the original deploying checkout to the same tag and run `rer deploy --environment ENVIRONMENT` with the same credentials. Restore only into an empty destination.
+
+This update adds no migrations. Keep all 70 previously released migration files unchanged. The checkout pins rer to 0.2.131.
+
+## Known limits
+
+Paging stays OFF. Keep your existing pager active. Release 2 paging and independent standby are still unavailable. Live AWS delivery and live PagerDuty account migration or cutover remain unverified.
+
 # 0.5.29 · 2026-11-22
 
 - Alerts refreshes when you open the list. An alert just accepted by the Events API appears as soon as the refresh completes, with a loading message while the read is pending.
