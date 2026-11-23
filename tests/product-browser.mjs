@@ -1,6 +1,6 @@
 import {alertNotificationRunBrowser} from './alert-notification-run-browser.mjs';
 // Owner fault regression: synthetic data through the emitted Worker and browser doors.
-async function ownerFaultsBrowser(page,context) {
+async function ownerFaultsBrowser(page,context,worker) {
  const request=async(path,data,status=200,cookie)=>{
   const response=await worker.request(path,data,cookie??ownerCookie);
   assert.equal(response.status,status,`${path}: ${response.value?.error??''}`);return response.value;
@@ -55,7 +55,9 @@ async function ownerFaultsBrowser(page,context) {
  const importedDoor=ownerDoor(worker,ownerCookie),sharedSource={users:[{id:'fault-pd-person',name:'Synthetic shared responder',email:'shared-responder@example.test'}],schedules:[{id:'fault-pd-rota',name:'Shared support rota',time_zone:'UTC',schedule_layers:[{id:'fault-layer',name:'Daily',start:'2026-01-01T09:00:00Z',rotation_virtual_start:'2026-01-01T09:00:00Z',rotation_turn_length_seconds:86400,users:[{user:{id:'fault-pd-person'}}],restrictions:[]}]}],escalation_policies:[{id:'fault-pd-policy',name:'Shared support escalation',num_loops:0,escalation_rules:[{escalation_delay_in_minutes:5,targets:[{id:'fault-pd-rota',type:'schedule_reference'}]}]}],services:['one','two'].map(id=>({id:'fault-pd-service-'+id,name:'Source '+id,escalation_policy:{id:'fault-pd-policy',type:'escalation_policy_reference'}}))};
  const planned=await importedDoor.preview('pagerduty',JSON.stringify(sharedSource));assert.equal(planned.status,200);assert.equal(planned.value.rejected.length,0);assert.equal(planned.value.items.flatMap(i=>i.effects).filter(e=>e.targetKind==='policy').length,1);assert.equal(planned.value.items.flatMap(i=>i.effects).filter(e=>e.targetKind==='schedule').length,1);
  assert.equal((await importedDoor.apply('pagerduty',planned.value)).status,200);
- assert.equal((await importedDoor.call('pagerduty','reconcile',{planId:planned.value.planId})).value.ok,true);
+ const checked=await importedDoor.call('pagerduty','reconcile',{planId:planned.value.planId});
+ assert.equal(checked.status,200);
+ assert.equal(checked.value.ok,true,'the shared schedule and escalation policy match their saved import plan');
  const objects=await request('/api/move-in/objects'),importedRota=objects.find(o=>o.targetId==='pagerduty:fault-pd-rota'),importedPolicy=objects.find(o=>o.targetId==='pagerduty:fault-pd-policy');assert.equal(importedPolicy.value.serviceSources.length,2);assert.ok(importedPolicy.value.serviceSources.every(s=>s.policyId===importedPolicy.targetId));
  await page.setViewportSize({width:1440,height:1000});await page.goto(worker.origin+'/settings/move-in');const adoptionForm=page.locator('.move-in-objects > li').filter({has:page.getByText('Shared support rota',{exact:true})});await adoptionForm.getByRole('button',{name:'Make schedule live',exact:true}).click();
  await adoptionForm.getByRole('combobox',{name:'Service for Shared support rota',exact:true}).selectOption('fault-checkout');await adoptionForm.locator('input[type=checkbox][value="fault-billing"]').check();await adoptionForm.getByLabel('Shared escalation policy',{exact:true}).selectOption(importedPolicy.targetId);
@@ -1457,20 +1459,24 @@ if(productPart&&!['core','settings'].includes(productPart))throw Error('Unknown 
 if(productPart&&process.env.ONCALL_PRODUCT_JOURNEY)throw Error('Choose a product browser part or focused journey, not both');
 const worker=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'},{clock:true,outboundLedger:true})
 const credentials={name:'Product browser owner',password:randomBytes(32).toString('hex')}
+async function ownerContext(browser,runtime,timezoneId='UTC') {
+ const owner=await runtime.request('/api/setup',credentials)
+ assert.equal(owner.status,200,'the public setup door creates the local browser owner')
+ // The journey pauses for D1 reads and held responses. Match localWorker's
+ // one-request connections so Playwright cannot reuse a Worker-idle socket.
+ const context=await browser.newContext({baseURL:runtime.origin,viewport:{width:1440,height:1000},locale:'en-US',timezoneId,extraHTTPHeaders:{connection:'close'}})
+ await context.addCookies(owner.headers.getSetCookie().map(line=>{
+  const pair=line.split(';')[0],at=pair.indexOf('=')
+  return {name:pair.slice(0,at),value:pair.slice(at+1),url:runtime.origin,httpOnly:true,sameSite:'Lax'}
+ }))
+ return context
+}
 let browser,page
 try {
  await mkdir('evidence/browser',{recursive:true})
  await mkdir('.rer/local',{recursive:true,mode:0o700})
- const owner=await worker.request('/api/setup',credentials)
- assert.equal(owner.status,200,'the public setup door creates the local browser owner')
  browser=await chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM_PATH??process.env.CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox','--use-mock-keychain','--password-store=basic']})
- // The journey pauses for D1 reads and held responses. Match localWorker's
- // one-request connections so Playwright cannot reuse a Worker-idle socket.
- const context=await browser.newContext({baseURL:worker.origin,viewport:{width:1440,height:1000},locale:'en-US',timezoneId:process.env.ONCALL_PRODUCT_JOURNEY==='readable-times'?'Australia/Brisbane':'UTC',extraHTTPHeaders:{connection:'close'}})
- await context.addCookies(owner.headers.getSetCookie().map(line=>{
-  const pair=line.split(';')[0],at=pair.indexOf('=')
-  return {name:pair.slice(0,at),value:pair.slice(at+1),url:worker.origin,httpOnly:true,sameSite:'Lax'}
- }))
+ const context=await ownerContext(browser,worker,process.env.ONCALL_PRODUCT_JOURNEY==='readable-times'?'Australia/Brisbane':'UTC')
  page=await context.newPage()
  const errors=[];page.on('pageerror',error=>errors.push(error.message))
  await page.goto(worker.origin)
@@ -1515,7 +1521,7 @@ try {
   const {productImport}=await import('./product-browser-journey.mjs');await productImport(page,context,1440,session,triageProof);
  }
  if(focused==='alert-run')await alertNotificationRunBrowser(page,context,{worker,setTime});
- if(focused==='owner-faults')await ownerFaultsBrowser(page,context);
+ if(focused==='owner-faults')await ownerFaultsBrowser(page,context,worker);
  if(focused==='rota-timeline'){
   const session=await (await context.request.get('/api/session')).json();
   await context.request.post('/api/command',{headers:{origin:worker.origin},data:{type:'service',id:'synthetic-oncall-1',name:'Checkout',environment:'test',owner:session.member.id,runbook:[],pager:''}});
@@ -1564,7 +1570,25 @@ try {
  if(!focused)await responseReportBrowser(browser)
  if(!focused)await eventsSourceBrowser(page,context)
  assert.deepEqual(errors,[],'no browser application errors')
- if(!focused){await setTime(null);await ownerFaultsBrowser(page,context);assert.deepEqual(errors,[],'owner fault journey has no browser application errors');await alertNotificationRunBrowser(page,context,{worker,setTime});assert.deepEqual(errors,[],'alert notification run has no browser application errors');}
+ if(!focused){
+  await setTime(null)
+  // Earlier journeys intentionally change retained PagerDuty data. The shared
+  // adoption fixture exercises a new plan in its own workspace.
+  const faultWorker=await localWorker({}, {clock:true,outboundLedger:true})
+  let faultContext
+  try {
+   faultContext=await ownerContext(browser,faultWorker)
+   const faultPage=await faultContext.newPage(),faultErrors=[]
+   faultPage.on('pageerror',error=>faultErrors.push(error.message))
+   await ownerFaultsBrowser(faultPage,faultContext,faultWorker)
+   assert.deepEqual(faultErrors,[],'owner fault journey has no browser application errors')
+  } finally {
+   await faultContext?.close()
+   await faultWorker.close()
+  }
+  await alertNotificationRunBrowser(page,context,{worker,setTime})
+  assert.deepEqual(errors,[],'alert notification run has no browser application errors')
+ }
  console.log(focused==='alert-run'?'Emitted Worker alert notification run passed: assertions at 1440, changed screens at 1440/390; paging OFF and zero outbound':focused==='workspace-links'?'Emitted Worker workspace-links journey passed: 19 canonical entries and five hostile legacy fragments; no external document navigation, encoded unknown-workspace HTTP 404s; assertions at 1440, captures at 1440 and 390':focused==='owner-faults'?'Emitted Worker owner faults passed: admin key readback, person contacts/rules, shared PagerDuty mapping/adoption, bounded past coverage; paging OFF, zero outbound, proof at 1440/390':focused==='sender-setup'?'Emitted Worker sender setup journey passed at 1440; screens captured at 1440 and 390':focused==='response-policy'?'Emitted Worker response-policy journey passed at 1440':focused==='imported-email'?'Emitted Worker saved email import journey passed at 1440; changed states captured at 1440 and 390':focused==='rota-timeline'?'Emitted Worker rota timeline passed: readable phone lists and compact accessible desktop slices on overview and rota pages':focused==='readable-times'?'Emitted Worker readable-times journey passed at 1440 in Australia/Brisbane with an America/New_York rota; changed rota and readiness screens captured at 1440 and 390':focused==='events-source'?'Emitted Worker Events source journey passed at 1440; screens captured at 1440 and 390':focused==='support-start'?'Emitted Worker support-start browser journey passed at 1440; screens captured at 1440 and 390':focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
  }
  if(productPart)console.log('Product browser part completed: '+productPart);
