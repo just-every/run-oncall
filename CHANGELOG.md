@@ -1,3 +1,23 @@
+# 0.5.33 · 2026-11-23
+
+- Move in shows “needs checking” in the saved import journal until the check against the saved plan succeeds. If the check is interrupted, retry it from the journal without importing again. Schedule coverage warnings stay visible, and imported schedules must pass the check before you can make them live.
+- The short Hosting guide tells you which command stops development or preview. It also explains how to deploy with `MAIL_PROVIDER=none` and open a private owner link with `rer signin`.
+- If local passkey enrollment fails while the tab is unfocused, Oncall tells you to bring it forward and try again.
+- The first incident review acceptance button tells you that a confirmation follows.
+- The shared PagerDuty adoption browser test uses its own workspace so earlier import tests cannot interfere with its saved-plan check.
+
+### Upgrade from 0.5.32
+
+Back up first. For local data, run `"$HOME/.local/bin/rer" export --output exports/before-0.5.33.rer`. For hosted data, export the D1 database with the original deploying Cloudflare credentials. Keep the backup private and verify it before updating.
+
+Stop the local app with Ctrl-C or `"$HOME/.local/bin/rer" dev --stop`. If preview is running, stop it with `"$HOME/.local/bin/rer" preview --stop`. Once the release is published, run `git fetch --quiet --depth 1 origin tag v0.5.33` and `git checkout --quiet --detach refs/tags/v0.5.33`. Restart with `"$HOME/.local/bin/rer" dev --host localhost` or `npx -y @runeditrun/rer dev --host localhost` if you used Node. Use the same npx substitution for the other rer commands if you used Node. For a hosted installation, update the original deploying checkout to the same tag and run `"$HOME/.local/bin/rer" deploy --environment ENVIRONMENT` with the same credentials. Restore only into an empty destination.
+
+This update adds no migrations. Keep all 70 previously released migration files unchanged. The checkout pins rer to 0.2.131.
+
+## Known limits
+
+Paging stays OFF. Keep your existing pager active. Release 2 paging and independent standby are still unavailable. Live AWS delivery and live PagerDuty account migration or cutover remain unverified.
+
 # 0.5.32 · 2026-11-23
 
 - Move in keeps schedule coverage mismatch and backup coverage warnings visible after import and when you recheck it from the saved import journal. If the saved import plan is unavailable, the check stops without reporting the import as complete.
