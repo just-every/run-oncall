@@ -15,6 +15,7 @@ import type { Vendor } from './source'
 import { sourceRefusal, withdrawUpload } from './saved-file-refusals'
 import { alreadyImported, changedSinceImport, Refusal, supersededBy } from './refusals'
 import { expireInterruptedImports, importAttempt } from './import-lifecycle'
+import { snapshotHeld } from './check-state'
 import { reviewCoverageWarnings, savedReviewItems as review } from './review-copy'
 
 // The owner's move-in screen imports through Base's owner-session door, the
@@ -124,7 +125,13 @@ export async function ownerImport(c: any): Promise<Response> {
  const attempt = action === 'apply' && typeof input?.planId === 'string' ? importAttempt(base, { planId: input.planId }) : undefined
  const db = (attempt?.database ?? base) as D1Database
  const session = adminSession(c.get('sessionDigest'), actor.id)
- const door = createImportOperatorHandler({ database: db, targets, destination: 'oncall', format: 'json', limits: DOOR_LIMITS, ownerPrincipalId: actor.id,
+ // Reconcile uses the saved job's custody identity with the current admin's live session.
+ const checkOwner = action === 'reconcile' && typeof input?.planId === 'string'
+  ? await db.prepare(`SELECT j.principal_id FROM ik_door_plans p JOIN ik_jobs j ON j.id=p.job_id
+    WHERE p.id=? AND p.installation_id=? AND p.namespace=? AND j.destination='oncall'`)
+    .bind(input.planId, IMPORT_DOOR_KEY, vendor).first<{principal_id:string}>()
+  : null
+ const door = createImportOperatorHandler({ database: db, targets, destination: 'oncall', format: 'json', limits: DOOR_LIMITS, ownerPrincipalId: checkOwner?.principal_id ?? actor.id,
   installationId: IMPORT_DOOR_KEY, appOrigin: runtimeBindings(c.env).AUTH_ORIGIN, ownerEmail: await approver(db, actor), namespace: vendor,
   authorize: async () => session, reconciliationDetails, ...source })
  const send = async (sent: Request) => {
@@ -205,11 +212,18 @@ export async function ownerImport(c: any): Promise<Response> {
  if (action === 'reconcile' && typeof input?.planId === 'string') {
   const response = await send(request)
   if (!response.ok || (await response.clone().json() as {ok?:boolean}).ok!==true) return response
-  await db.prepare(`DELETE FROM move_in_previews WHERE plan_id=? AND (${session.sql}) AND EXISTS(
-   SELECT 1 FROM ik_door_plans p JOIN ik_jobs j ON j.id=p.job_id
+  // The head compares inherited targets. A replacement had to match its predecessor
+  // before writing and Undo can only restore that exact revision.
+  await db.prepare(`WITH RECURSIVE lineage(id, previous_id) AS (
+   SELECT p.id,p.previous_id FROM ik_door_plans p JOIN ik_jobs j ON j.id=p.job_id
    JOIN ik_door_namespaces n ON n.installation_id=p.installation_id AND n.namespace=p.namespace AND n.head_id=p.id
-   WHERE p.id=move_in_previews.plan_id AND j.state='completed' AND j.principal_id=?
-   AND EXISTS(SELECT 1 FROM ik_door_plan_chunks WHERE plan_id=p.id))`).bind(input.planId,...session.params!,actor.id).run()
+   WHERE p.id=? AND p.installation_id=? AND p.namespace=? AND j.state='completed' AND ${snapshotHeld('p.id')}
+   UNION SELECT p.id,p.previous_id FROM ik_door_plans p JOIN lineage l ON l.previous_id=p.id
+   WHERE p.installation_id=? AND p.namespace=?
+  ) DELETE FROM move_in_previews WHERE plan_id IN (
+   SELECT l.id FROM lineage l JOIN ik_door_plans p ON p.id=l.id JOIN ik_jobs j ON j.id=p.job_id
+   WHERE j.state='completed' AND ${snapshotHeld('l.id')}
+  ) AND (${session.sql})`).bind(input.planId,IMPORT_DOOR_KEY,vendor,IMPORT_DOOR_KEY,vendor,...session.params!).run()
   return response
  }
  if (action === 'undo' && typeof input?.planId === 'string') {

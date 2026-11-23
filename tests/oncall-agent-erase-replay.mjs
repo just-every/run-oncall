@@ -133,6 +133,14 @@ export async function eraseClasses(runtime) {
    assert.equal(plan.status,200,JSON.stringify(plan.value));
    const applied=await door.apply('splunk',plan.value);
    assert.equal(applied.status,200,JSON.stringify(applied.value));assert.equal(applied.value.job.state,'completed');
+   const importStatus=async()=>{
+    const answer=await tool('oncall.imports.read',{});
+    assert.equal(answer.result?.isError,false,JSON.stringify(answer.body));
+    return answer.result.structuredContent.data.find(row=>row.id===applied.value.job.id);
+   };
+   const unchecked=await importStatus();assert.equal(unchecked.state,'needs_check');assert.equal(unchecked.needsCheck,true);
+   const checked=await door.call('splunk','reconcile',{planId:plan.value.planId});assert.equal(checked.value.ok,true);
+   assert.equal((await importStatus()).state,'completed');
    const imported=(await json('/api/move-in/objects')).filter(row=>row.targetKind==='integration'&&!before.has(row.targetId));
    assert.equal(imported.length,1);
    await json('/api/intake/incumbent',{importedId:imported[0].targetId,importedRevision:imported[0].revision,id,service,name:id,revision:0,key},201);

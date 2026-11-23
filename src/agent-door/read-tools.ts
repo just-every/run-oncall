@@ -5,6 +5,7 @@ import { incidentWithinServices } from '../incident-workflows/scope'
 import { recentChanges } from '../changes/model'
 import { reviewMaterial } from '../reviews/material'
 import { pagingSnapshot } from '../paging-store'
+import { journalCheckState, type ImportCheckState } from '../move-in/check-state'
 import { readMoveInJournal } from '../move-in/journal'
 import { targets } from '../move-in/target'
 import { protectedRecords } from './resources'
@@ -138,8 +139,11 @@ export function readTools(env: Bindings): ToolDefinition[] {
     }, true),
     read('imports.read', 'imports:read', ['OC-038', 'OC-040'], list, async (_args, ctx) => {
       const access = await nativeAccess(env, ctx, 'imports:read', undefined, true)
-      const rows = (await env.DB.prepare(`SELECT id,namespace FROM ik_jobs WHERE destination='oncall' AND principal_id=? AND (${access.guard.sql}) ORDER BY rowid DESC`).bind(access.member.id, ...access.guard.values).all<{ id: string; namespace: string }>()).results
-      return Promise.all(rows.map(row => readMoveInJournal(row.id, { destination: 'oncall', namespace: row.namespace, mappingVersion: 'oncall-move-in-1', storage: { database: env.DB, targets }, authorization: { principalId: access.member.id, predicate: () => ({ sql: access.guard.sql, params: access.guard.values }) } })))
+      const rows = (await env.DB.prepare(`SELECT id,namespace,mapping_version,${journalCheckState} AS check_state FROM ik_jobs j WHERE destination='oncall' AND principal_id=? AND (${access.guard.sql}) ORDER BY rowid DESC`).bind(access.member.id, ...access.guard.values).all<{ id: string; namespace: string; mapping_version: string; check_state: ImportCheckState }>()).results
+      return Promise.all(rows.map(async row => {
+        const saved = await readMoveInJournal(row.id, { destination: 'oncall', namespace: row.namespace, mappingVersion: row.mapping_version, storage: { database: env.DB, targets }, authorization: { principalId: access.member.id, predicate: () => ({ sql: access.guard.sql, params: access.guard.values }) } }, row.check_state)
+        return { ...saved, state: saved.needsCheck ? 'needs_check' : saved.checkUnavailable ?? saved.state }
+      }))
     }),
     read('coordination.read', 'workspace:read', ['OC-003', 'OC-004', 'OC-036', 'OC-053'], list, async (_args, ctx) => {
       const access = await nativeAccess(env, ctx, 'workspace:read', undefined, true)

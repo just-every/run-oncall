@@ -49,7 +49,11 @@ export type Reconciliation = {
 
 /** Compare the applied snapshot with the current native objects, never the apply receipt. */
 export async function reconcilePlan(door: Door, planId: string): Promise<Reconciliation> {
- const report = await door('reconcile', { planId })
+ const report = await door('reconcile', { planId }).catch(error=>{
+  if(error instanceof DoorRefusal&&error.code==='snapshot_withdrawn')
+   throw new DoorRefusal('An erasure withdrew the saved snapshot. Review the schedule coverage before making a schedule live.',error.code,error.status)
+  throw error
+ })
  if (report?.planId!==planId||typeof report.ok!=='boolean'||!Array.isArray(report.details?.coverageWarnings))
   throw new Error('The check did not return schedule coverage details for this import. Check imported data again.')
  return report

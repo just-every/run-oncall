@@ -1780,7 +1780,7 @@
       "executable": false
     },
     "src/agent-door/read-tools.ts": {
-      "sha256": "3638514f4bae81ae046099e4b6bbd65b7cc1493195d24ce6cb6dd38a4170bcac",
+      "sha256": "a8d076c6e7576f2770bc15a0526a737a1fdd748faef5dd0113a85e8bee0a80d4",
       "executable": false
     },
     "src/agent-door/resources.ts": {
@@ -5592,11 +5592,15 @@
       "executable": false
     },
     "src/move-in/adoption.ts": {
-      "sha256": "6625bbd8584cff4225563bcd2f2d7907edea4b358d9e7cf91fac4bf8a7074690",
+      "sha256": "5df86ab2414a5f3659981baabd0697d3339fab08e651c497ca815044eddc2e14",
       "executable": false
     },
     "src/move-in/api.ts": {
-      "sha256": "6e8293c3aefd6d6b572d674ad8d86ecf4aa5bd2c82013c3dee9d3c72e861dca6",
+      "sha256": "7ba2a7f9745d6b6ac151de9e0465b7eb3c95c45f0a9c75c7cdde5fb41c3ab2e7",
+      "executable": false
+    },
+    "src/move-in/check-state.ts": {
+      "sha256": "64121587946a9d90758b6d58d7d54781264c90d29cf2a1982053c2cb04c64522",
       "executable": false
     },
     "src/move-in/collect/bundle.ts": {
@@ -5624,7 +5628,7 @@
       "executable": false
     },
     "src/move-in/door-client.ts": {
-      "sha256": "e71a5e00149e71060710993d35a43733902f4fef3247219e54562911593004a8",
+      "sha256": "ab63e0bfaf57e6a8a529e92f59910bb9e4ddc9103782963baae8fe8deb2edec2",
       "executable": false
     },
     "src/move-in/door-key.ts": {
@@ -5672,7 +5676,7 @@
       "executable": false
     },
     "src/move-in/ImportJournal.tsx": {
-      "sha256": "1a6889121c133b53cad7396a81da54b0b3a4350a1f9fd8f046f2e4b69602ddc0",
+      "sha256": "23bc72f2ab35a20ff1e40b1de390dfeb8f7d979d2c0fe631572f6ba641234ba6",
       "executable": false
     },
     "src/move-in/ImportStep.tsx": {
@@ -5680,7 +5684,7 @@
       "executable": false
     },
     "src/move-in/journal.ts": {
-      "sha256": "fd880ab2ef13d9b24c3bc3896a53c2cd09919890a44fd84bb88bfc30fcce20ca",
+      "sha256": "88ccf4bccd2fc1c7a02a80f06b35de504899ea33dce2dd022d520a430e505009",
       "executable": false
     },
     "src/move-in/mapping.ts": {
@@ -5692,7 +5696,7 @@
       "executable": false
     },
     "src/move-in/MoveIn.tsx": {
-      "sha256": "f5fc9a8471211dea7d550a2e5cfc5c244b9bfb1e6f437b9ba2e956448b4bd309",
+      "sha256": "62fb983f25f2ebf04f393170aee72366ab551d04c9f0c24103f1e41e67f64a18",
       "executable": false
     },
     "src/move-in/native-erasure.ts": {
@@ -5700,7 +5704,7 @@
       "executable": false
     },
     "src/move-in/owner-door.ts": {
-      "sha256": "e873b6cacedf834f139e6b0705dede8050b607ee53c5a36bc9cb258b032b19b7",
+      "sha256": "e5f7596d095137bb414a8e011a3f1c4502e78bdf4a8a38253076bfa3ab5445de",
       "executable": false
     },
     "src/move-in/pagerduty-mapping.ts": {
@@ -6908,7 +6912,7 @@
       "executable": false
     },
     "tests/oncall-agent-erase-replay.mjs": {
-      "sha256": "3009d353b76e7866568e531e1469bfe017338e4378488be187f14e430f3898d5",
+      "sha256": "50f2aa9163993e27e6b91688317afe41f821a58ed51619ec058f532b5f3359d2",
       "executable": false
     },
     "tests/oncall-agent-erase-roster.mjs": {
