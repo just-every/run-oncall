@@ -9,7 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { WorkspaceOutlet } from "../app/WorkspaceOutlet";
 import { fontLinks } from "../brand/font-head";
-import { installationTitle } from "../identity";
+import { installationName, installationTitle } from "../identity";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -22,7 +22,7 @@ export const Route = createRootRoute({
   }),
   notFoundComponent: () => <h1>Not found</h1>,
   component: () => (
-    <html lang="en">
+    <html lang="en" data-oncall-installation={installationName()}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: introGuardScript }} />
         <style>{introCss}</style>

@@ -36,7 +36,7 @@ function publishedCommands(html: string) {
 
 export function oncallRunPage(contract: SeedContract | undefined, homepage: HomepageHeader) {
   return publishedCommands(runPageHtml(identity, run, contract, homepage))
-    .replaceAll(escape(PATHS.self.note), 'A first local start can take several minutes. rer dev prints progress every 20 seconds and tells you how long to allow.')
+    .replaceAll(escape(PATHS.self.note), 'On a busy Mac, the first local start can take several minutes. rer dev prints progress every 20 seconds and tells you how long to allow.')
     .replaceAll('>rer installs itself<', '>Clones Oncall<')
     .replaceAll('>Gets Oncall<', '>Installs rer<')
     .replace(escape('$HOME/.local/bin/rer dev just-every/run-oncall'),
@@ -55,6 +55,8 @@ export function oncallHostingPage(hosting: SiteHosting | null, contract: SeedCon
       () => `If Oncall is running in this checkout, stop it with <code>${launcher} dev --stop</code> for development or <code>${launcher} preview --stop</code> for preview.`)
     .replaceAll('rer dev --stop\nrer deploy --env-file ', () => `${launcher} deploy --env-file `)
     .replace(', so the hosted Oncall can email sign-in links.', ' if you want Oncall to email sign-in links.')
+    .replace('It ends with these lines:', 'With email enabled, rer deploy ends with these lines.')
+    .replace('<h3 id="deploy">Deploy</h3>', '<h3 id="deploy">Deploy</h3><p>If a credential helper set Cloudflare variables in your shell, unset them before deploying with the private file. For the variables above, run <code>unset CLOUDFLARE_ACCOUNT_ID CLOUDFLARE_API_TOKEN</code>. Rer refuses the duplicate sources even when the values match.</p>')
     .replace('Open that address and sign in with your owner email:', 'With email enabled, open that address and sign in with your owner email.')
     .replace('The hosted Oncall starts with its own, empty data; the data on this computer stays where it is.</p>',
       () => `The hosted Oncall starts with its own, empty data; the data on this computer stays where it is.</p><p>For <a href="/docs/getting-started#hosted-coordination-with-email-off">hosted coordination with email off</a>, set <code>MAIL_PROVIDER=none</code> in the deploy file, leave mail credentials and the sender unset, and after deployment run <code>${launcher} signin --env-file .env.oncall</code> for a private owner link.</p>`)

@@ -7,10 +7,17 @@ export async function readableErasure(page,context,receipt,{reload=false}={}) {
  const erased=jobs.find(job=>job.files?.some(file=>file.startsWith('erased-artifact:')));
  assert.ok(erased,'erasure retains internal artifact custody');
  if(reload)await page.reload();
- await page.getByLabel('Source',{exact:true}).selectOption('file');await page.getByLabel('File source',{exact:true}).selectOption('opsgenie');
- if(jobs.length>1){const selector=page.getByLabel('Saved import journal',{exact:true});await selector.waitFor();await selector.selectOption(erased.id);}
- else if(await page.getByRole('heading',{name:'Import journal',exact:true}).count()===0)await page.getByRole('button',{name:'Open saved import',exact:true}).click();
- await page.getByRole('heading',{name:'Import journal',exact:true}).waitFor();
+ const journal=page.getByRole('status').filter({has:page.getByRole('heading',{name:'Import journal',exact:true})});
+ await journal.waitFor();
+ const selector=page.getByLabel('Saved import journal',{exact:true});
+ if(await selector.count()){
+  const other=(await selector.locator('option').evaluateAll(options=>options.map(option=>option.value))).find(id=>id!==erased.id);
+  await selector.selectOption(other);
+  await selector.selectOption(erased.id);
+ }
+ assert.equal(erased.checkUnavailable,'snapshot_withdrawn');
+ await journal.getByText(/erasure withdrew.*check the import/i).waitFor();
+ assert.equal(await journal.getByRole('button',{name:/^Check /}).count(),0);
  const text=await page.locator('.move-in-workspace').innerText();
  assert.doesNotMatch(text,/erased-artifact:|\b[a-f0-9]{64}\b|\b[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}\b/i,'erasure renders labels instead of internal hashes or UUIDs');
  assert.ok(!text.includes(receipt.receiptId),'the full erasure receipt stays internal');

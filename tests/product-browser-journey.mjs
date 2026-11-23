@@ -364,7 +364,9 @@ export async function journal(page,origin,vendor,jobId,state) {
   await page.goto(origin)
   await openWorkspaceSection(page,'move-in')
   await page.getByLabel('Source',{exact:true}).selectOption(vendor)
-  await page.getByLabel('Saved import journal',{exact:true}).or(page.getByRole('button',{name:'Open saved import',exact:true})).waitFor();if(await page.getByLabel('Saved import journal',{exact:true}).count())await page.getByLabel('Saved import journal',{exact:true}).selectOption(jobId);else await page.getByRole('button',{name:'Open saved import',exact:true}).click()
+  await page.getByRole('heading',{name:'Import journal',exact:true}).waitFor()
+  const picker=page.getByLabel('Saved import journal',{exact:true})
+  if(await picker.count())await picker.selectOption(jobId)
   await page.getByText('Approval details',{exact:true}).click()
   await page.getByText(/^approved via Business by /).waitFor()
   await page.getByRole('status').filter({hasText:'Import journal'}).getByText(new RegExp(state)).first().waitFor()
@@ -382,6 +384,7 @@ export async function fileSource(page,vendor) {
 export async function confirmImport(page) {
  await page.getByRole('button',{name:'Import paused',exact:true}).click()
  await page.getByRole('button',{name:'Confirm paused import',exact:true}).click()
+ await page.getByRole('heading',{name:'3 · Import paused',exact:true}).waitFor({state:'hidden'})
  await page.getByRole('heading',{name:'Import journal',exact:true}).waitFor()
 }
 export async function confirmUndo(page) {
@@ -455,11 +458,26 @@ export async function reconciliationJourney(page,context,session) {
  const reconcile='**/api/operator/import/reconcile'
  let edited
  await page.route(reconcile,async route=>{
-  // Another client checks the saved plan and adopts it before this client reads
-  // the comparison. The original comparison must report that native edit.
-  const checked=await route.fetch()
-  assert.equal(checked.status(),200)
-  assert.equal((await checked.json()).ok,true)
+  // A fresh workspace admin checks the Opsgenie job without changing the
+  // default source. The applying admin then adopts before the original check.
+  const password=randomBytes(32).toString('hex')
+  const colleague=await request('/api/members',{name:'Maya Chen',role:'admin',password})
+  const second=await context.browser().newContext({baseURL:origin,extraHTTPHeaders:{connection:'close'}})
+  try {
+   assert.equal((await second.request.post('/api/login',{headers:{origin},data:{name:colleague.name,password}})).status(),200)
+   const reopened=await second.newPage()
+   await reopened.goto(origin+'/settings/move-in')
+   const journal=reopened.getByRole('status').filter({has:reopened.getByRole('heading',{name:'Import journal',exact:true})})
+   const check=journal.getByRole('button',{name:'Check imported data',exact:true})
+   await expect(journal).toContainText('synthetic-reconcile-export.json')
+   await expect(journal.getByRole('button',{name:'Undo this import',exact:true})).toHaveCount(0)
+   const [checked]=await Promise.all([reopened.waitForResponse(response=>response.url().endsWith('/api/operator/import/reconcile')),check.click()])
+   assert.equal(checked.status(),200)
+   assert.equal((await checked.json()).ok,true)
+   await reopened.reload()
+   await expect(journal).toContainText('synthetic-reconcile-export.json')
+   await expect(check).toBeEnabled()
+  } finally {await second.close()}
   const rows=await request('/api/move-in/objects'),row=rows.find(row=>row.targetKind==='schedule'&&row.value.sourceId===scheduleId)
   assert.ok(row,'the applied schedule exists in native storage')
   const choices=await request('/api/move-in/adoption')

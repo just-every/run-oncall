@@ -3,6 +3,8 @@ export const snapshotHeld = (plan: string) =>
 
 export type ImportCheckState = 'pending' | 'withdrawn' | null
 
-// The same retained marker drives both journal readers and the adoption gate.
-export const journalCheckState = `(SELECT CASE WHEN ${snapshotHeld('d.id')} THEN 'pending' ELSE 'withdrawn' END
- FROM ik_door_plans d JOIN move_in_previews v ON v.plan_id=d.id WHERE d.job_id=j.id AND j.state='completed')`
+// Erasure withdraws the snapshot even if a successful check already removed the marker.
+export const journalCheckState = `(SELECT CASE
+ WHEN NOT ${snapshotHeld('d.id')} THEN 'withdrawn'
+ WHEN EXISTS(SELECT 1 FROM move_in_previews v WHERE v.plan_id=d.id) THEN 'pending' END
+ FROM ik_door_plans d WHERE d.job_id=j.id AND j.state='completed')`

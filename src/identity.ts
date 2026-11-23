@@ -4,10 +4,9 @@ import branding from './branding.json'
 export const identity: EditionIdentity = {
   product: 'Oncall',
   get deployment() {
-    // The uncached document carries only the public installation name. Read it
-    // on hydration and navigation; server rendering uses the saved setup brand.
-    const saved = typeof document === 'undefined' ? null : document.getElementById('oncall-installation');
-    return saved ? (JSON.parse(saved.textContent!).name as string) : branding.name;
+    // Keep the public installation name on the root element so the HTML
+    // rewriter and React share it without inserting a child during hydration.
+    return (typeof document === 'undefined' ? null : document.documentElement.getAttribute('data-oncall-installation')) ?? branding.name;
   },
   purpose: "{deployment}'s rota and incident coordination, in one private workspace.",
   tagline: "Oncall shows who's on now, who's next and exactly when they hand over.",

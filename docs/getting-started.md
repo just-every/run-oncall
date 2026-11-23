@@ -16,7 +16,7 @@ ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/ju
 macOS, Linux or Windows with WSL2. git is required; rer brings Node and pnpm.
 <!-- /rer:local-recipe -->
 
-The line clones the latest published Oncall release into a `run-oncall` folder, installs `rer` and the app's dependencies, prepares the local database and a local owner, and starts Oncall. A first local start can take several minutes. `rer dev` prints progress every 20 seconds and tells you how long to allow. Wait for the private `RER_OPEN` link in the terminal, then open it on the same computer. Treat it like a password. The first time, Oncall opens **Finish setup**. Tick *I confirm this owner account is ready to use* and press **Finish setup**. This free copy runs only on your computer and sends no email.
+The line clones the latest published Oncall release into a `run-oncall` folder, installs `rer` and the app's dependencies, prepares the local database and a local owner, and starts Oncall. On a busy Mac, the first local start can take several minutes. `rer dev` prints progress every 20 seconds and tells you how long to allow. Wait for the private `RER_OPEN` link in the terminal, then open it on the same computer. Treat it like a password. The first time, Oncall opens **Finish setup**. Tick *I confirm this owner account is ready to use* and press **Finish setup**. This free copy runs only on your computer and sends no email.
 
 The following examples use `"$HOME/.local/bin/rer"`. If you started with Node, use `npx -y @runeditrun/rer` in its place.
 
@@ -181,7 +181,7 @@ vi "$HOME/.config/oncall/production.env"
 
 In `vi`, press `i` to edit, replace each placeholder after `=` with its copied value, then press Escape, type `:wq` and press Enter to save and close. Use your preferred local editor in place of `vi` if you already have one. Save one `KEY=VALUE` per line, without spaces around `=`, `export`, shell substitutions or inline comments. Blank lines and lines beginning with `#` are allowed. One pair of double quotes around a value is accepted; single quotes are literal. Values are read as text, not executed by a shell. The file must be owned by your user, be a regular file with one hard link, and have no group/other permissions; symlinks are refused. Keep it outside Git and keep private backups of both credentials and this checkout's deployment records.
 
-`--env-file` accepts an absolute path or a path relative to the checkout. File values override variables already in your shell for that command only. Use this separate file rather than the local `.dev.vars`: local development keys are refused for deployment. You do not need to invent `OWNER_EMAIL`, `SESSION_SECRET` or `SETUP_TOKEN` entries here: `rer` uses the setup owner and generates new hosted secrets where needed, then retires the one-time setup token.
+`--env-file` accepts an absolute path or a path relative to the checkout. If a credential helper already set Cloudflare variables in your shell, unset them before running deploy with the private file. For the variables above, run `unset CLOUDFLARE_ACCOUNT_ID CLOUDFLARE_API_TOKEN`. Rer refuses the duplicate sources even when the values match. Use this separate file rather than the local `.dev.vars`: local development keys are refused for deployment. You do not need to invent `OWNER_EMAIL`, `SESSION_SECRET` or `SETUP_TOKEN` entries here: `rer` uses the setup owner and generates new hosted secrets where needed, then retires the one-time setup token.
 
 ### 4. Deploy and test sign-in
 

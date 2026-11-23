@@ -252,7 +252,7 @@
       "executable": false
     },
     "docs/getting-started.md": {
-      "sha256": "fd33306ef63565823b1b9eb713855972a8be8a481db0197a760a648102f4b88f",
+      "sha256": "2dea5a176470c11497b8339f85961f7cadfd195df19d4b6489276f67b78c4966",
       "executable": false
     },
     "docs/incidents.md": {
@@ -856,7 +856,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "93faffa0e2d57212d2ae8fb89c07a45cd8bde1f959ca188d12c4802c6e5e3b7e",
+      "sha256": "2beaf65cd44f74068f8e6a61c607e718f8769584b48d354c043430435c76196f",
       "executable": false
     },
     "RELEASE.json": {
@@ -2208,7 +2208,7 @@
       "executable": false
     },
     "src/brand/installation.ts": {
-      "sha256": "7fab5e456ebb6a854b486f334ff09ec6844a97b68a7fc555da2780249b17f7c2",
+      "sha256": "6c8fd04ebdf9c6d94e0d0f7120c8993df957e83e07081059172197d4a81c930d",
       "executable": false
     },
     "src/brand/tokens.css": {
@@ -2536,7 +2536,7 @@
       "executable": false
     },
     "src/identity.ts": {
-      "sha256": "aa8f6fb3d3be25709eac4c744800cae886b68498a4483c22308b90970127c93b",
+      "sha256": "41ae0f6ed18a934f2650b0b0cdf98bc4dafe937983b01eb4a0990d50b1774e25",
       "executable": false
     },
     "src/incident-deadlines/archive.ts": {
@@ -5596,11 +5596,11 @@
       "executable": false
     },
     "src/move-in/api.ts": {
-      "sha256": "7ba2a7f9745d6b6ac151de9e0465b7eb3c95c45f0a9c75c7cdde5fb41c3ab2e7",
+      "sha256": "082e0d8a1830be7774cf2c587551cdd0f317082bedf814d01dbba9ebbd57f1b2",
       "executable": false
     },
     "src/move-in/check-state.ts": {
-      "sha256": "64121587946a9d90758b6d58d7d54781264c90d29cf2a1982053c2cb04c64522",
+      "sha256": "604c8a405cd1dd087f33d5731dbadfb800badea213a1f011a99c757bdffb5f1e",
       "executable": false
     },
     "src/move-in/collect/bundle.ts": {
@@ -5676,7 +5676,7 @@
       "executable": false
     },
     "src/move-in/ImportJournal.tsx": {
-      "sha256": "23bc72f2ab35a20ff1e40b1de390dfeb8f7d979d2c0fe631572f6ba641234ba6",
+      "sha256": "54e358a86d4770b2b564f324c917d9abcee3103667da4c8699e284c826ccc24d",
       "executable": false
     },
     "src/move-in/ImportStep.tsx": {
@@ -5696,7 +5696,7 @@
       "executable": false
     },
     "src/move-in/MoveIn.tsx": {
-      "sha256": "62fb983f25f2ebf04f393170aee72366ab551d04c9f0c24103f1e41e67f64a18",
+      "sha256": "e0c35cef16e28f40969869b9363e0a2cb83d33e52e96a287ba39ba35136725a0",
       "executable": false
     },
     "src/move-in/native-erasure.ts": {
@@ -5768,7 +5768,7 @@
       "executable": false
     },
     "src/MoveInAdoption.tsx": {
-      "sha256": "98d9c881f7bb47801b73d8cd743512ec05083503e0bc718e5e29ac2153ce297d",
+      "sha256": "e07a7cf237d1bdd90a6e38fd5a0f65a605def1b1aa4bfb3ffab95aea715deaf1",
       "executable": false
     },
     "src/native-incomplete-model.ts": {
@@ -6088,7 +6088,7 @@
       "executable": false
     },
     "src/routes/__root.tsx": {
-      "sha256": "b0ac37f13e555251e900ab26fb10773bf68f7d6419b873fa01f165405cac5c19",
+      "sha256": "b37ee8eab84e7cbee3655776996af10106a7482371514929d4a1a116370fd946",
       "executable": false
     },
     "src/routes/$.tsx": {
@@ -6488,7 +6488,7 @@
       "executable": false
     },
     "src/site/run.ts": {
-      "sha256": "d267741780d781711d663ed98071ed15639e0b1ac7b5a850e50b4462df28b1a0",
+      "sha256": "2a0e0b22433bf55159babeae66a78ce31720dd8c7d27bee4744b99667d3430e8",
       "executable": false
     },
     "src/site/shared-pages.css": {
@@ -7008,7 +7008,7 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "8f50e45a6b35db9cb64bb0ea4a970a72090bc379481d9b4deb5338edf4cf1ad1",
+      "sha256": "478e752ef9c2b3b410c24235e8fbbaa6c147e8a0c0aa2905d4335908d6b54926",
       "executable": false
     },
     "tests/product-browser.mjs": {
@@ -7044,7 +7044,7 @@
       "executable": false
     },
     "tests/stranger-trip-steps.mjs": {
-      "sha256": "56541261321c21eb6d24111feb6a2fbf0dc22eecb52c950a7a3e805d14a26e6a",
+      "sha256": "cb7ac7c6d8f33ccd0c60633187e8c9db08b612ab882355b02194b4eb6ae0b279",
       "executable": false
     },
     "tests/transfer.mjs": {

@@ -18,14 +18,11 @@ export async function installationDocument(response: Response, env: Bindings, pa
   if (!response.headers.get('content-type')?.startsWith('text/html')) return response;
   const name = await savedInstallationName(env);
   const title = name === identity.product ? identity.product : `${name} · ${identity.product}`;
-  const json = JSON.stringify({name}).replace(/[<>&\u2028\u2029]/g, value =>
-    `\\u${value.charCodeAt(0).toString(16).padStart(4, '0')}`);
   const headers = new Headers(response.headers);
   headers.set('cache-control', 'no-store, no-transform');
   headers.delete('content-length');
   return new HTMLRewriter()
-    .on('#oncall-installation', {element(element) {element.remove();}})
-    .on('head', {element(head) {head.prepend(`<script id="oncall-installation" type="application/json">${json}</script>`, {html: true});}})
+    .on('html', {element(element) {element.setAttribute('data-oncall-installation', name);}})
     .on('h1', {element(element) {if (pathname === '/signin') element.setInnerContent(`Sign in to ${name}`);}})
     .on('title', {element(element) {element.setInnerContent(title);}})
     .on('[data-installation-name], .rer-brand [data-rer-name], .rer-themed .brand [data-rer-name]', {element(element) {element.setInnerContent(name);}})
