@@ -10,6 +10,9 @@ export type ImportCheckState = 'pending' | 'withdrawn' | null
 export const journalCheckState = `(SELECT CASE WHEN ${snapshotHeld('d.id')} THEN 'pending' ELSE 'withdrawn' END
  FROM ik_door_plans d JOIN move_in_previews v ON v.plan_id=d.id WHERE d.job_id=j.id AND j.state='completed')`
 
+export const journalLiveSchedules = `(SELECT json_group_array(p.target_id) FROM ik_provenance p
+ WHERE p.job_id=j.id AND p.target_kind='schedule' AND p.reversed=0 AND j.state='completed')`
+
 export const markedTargets = `FROM ik_provenance p JOIN ik_door_plans d ON d.job_id=p.job_id
  JOIN move_in_previews v ON v.plan_id=d.id JOIN ik_jobs j ON j.id=p.job_id
  WHERE p.destination='oncall' AND p.reversed=0 AND j.state='completed'`

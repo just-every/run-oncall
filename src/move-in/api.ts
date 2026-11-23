@@ -10,7 +10,7 @@ import { fail } from '../family/response-operations/domain'
 import { eraseImportedPerson } from './erasure'
 import { mailbox } from './rotations'
 import { changedSinceImport, Refusal } from './refusals'
-import { journalCheckState, snapshotHeld, type ImportCheckState } from './check-state'
+import { journalCheckState, journalLiveSchedules, snapshotHeld, type ImportCheckState } from './check-state'
 import { readMoveInJournal } from './journal'
 import { readImportDoorHistory } from '../modules/import-kit/src/door/index'
 import { IMPORT_DOOR_KEY } from './door-key'
@@ -47,7 +47,7 @@ export function installMoveIn(api:any,body:(c:any,max?:number)=>Promise<any>) {
   const rows=await (c.env.DB as D1Database).prepare(`WITH journal AS (
    SELECT j.id,j.namespace,j.mapping_version,j.principal_id,j.rowid AS newest,
    ${journalCheckState} AS check_state,
-   (SELECT json_group_array(v.target_id) FROM ik_provenance v WHERE v.job_id=j.id AND v.target_kind='schedule' AND v.reversed=0 AND j.state='completed') AS live_schedules,
+   ${journalLiveSchedules} AS live_schedules,
    (SELECT d.id FROM ik_door_namespaces n JOIN ik_door_plans d ON d.id IN (n.pending_id,n.head_id)
     JOIN ik_jobs current ON current.id=d.job_id AND current.state='completed'
     WHERE n.installation_id=? AND n.namespace=? AND ${snapshotHeld('d.id')}

@@ -1784,7 +1784,7 @@
       "executable": false
     },
     "src/agent-door/read-tools.ts": {
-      "sha256": "a8d076c6e7576f2770bc15a0526a737a1fdd748faef5dd0113a85e8bee0a80d4",
+      "sha256": "e9d92a27c41ea12696696236d4d51d42fbfad796f730ce43ffdabcb51472ea99",
       "executable": false
     },
     "src/agent-door/resources.ts": {
@@ -5600,11 +5600,11 @@
       "executable": false
     },
     "src/move-in/api.ts": {
-      "sha256": "9ca98ce00be15e43b860e0fb501c937066b25c97fd9ecbf4768f7ec9c3b21a5b",
+      "sha256": "3ceeae85cd360ce32628c271dda8f4c534c51a71711b5f0580bf642abed268b3",
       "executable": false
     },
     "src/move-in/check-state.ts": {
-      "sha256": "da528ddbef9a0c002947a0fa30bcb8be509ef85c030fac0500d1b4940495234c",
+      "sha256": "5e6e77400405368ae4b693b35af9877e9ae8c8692012843f4b5309d9472e0478",
       "executable": false
     },
     "src/move-in/collect/bundle.ts": {
@@ -5688,7 +5688,7 @@
       "executable": false
     },
     "src/move-in/journal.ts": {
-      "sha256": "376293382cc0f97cf4a5d8929551dfebaeb4e23b59b0c68842aac472ab2cf16f",
+      "sha256": "9947051a41536f5a43f76e0823a563d57cecb86bd093490fbfedaa25789fda0e",
       "executable": false
     },
     "src/move-in/mapping.ts": {
