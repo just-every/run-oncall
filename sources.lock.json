@@ -7044,7 +7044,7 @@
       "executable": false
     },
     "tests/stranger-trip-steps.mjs": {
-      "sha256": "cb7ac7c6d8f33ccd0c60633187e8c9db08b612ab882355b02194b4eb6ae0b279",
+      "sha256": "ed0b07bcf6081ee55c76a0b9946d30b42012c3bdd38e5cce869909a62eba226b",
       "executable": false
     },
     "tests/transfer.mjs": {

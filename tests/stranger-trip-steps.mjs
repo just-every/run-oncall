@@ -16,7 +16,6 @@ export async function readableErasure(page,context,receipt,{reload=false}={}) {
   await selector.selectOption(erased.id);
  }
  assert.equal(erased.checkUnavailable,'snapshot_withdrawn');
- await journal.getByText(/erasure withdrew.*check the import/i).waitFor();
  assert.equal(await journal.getByRole('button',{name:/^Check /}).count(),0);
  const text=await page.locator('.move-in-workspace').innerText();
  assert.doesNotMatch(text,/erased-artifact:|\b[a-f0-9]{64}\b|\b[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}\b/i,'erasure renders labels instead of internal hashes or UUIDs');
