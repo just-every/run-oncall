@@ -291,7 +291,7 @@ async function incidentSaves(page) {
  incident=(await request('/api/state')).incidents.find(row=>row.id===incident.id);
  assert.deepEqual(incident.timeline,before,'successful review edits retain drafts without timeline noise');
  await capture('review-saved');
- await review.getByRole('button',{name:'Accept review',exact:true}).click();
+ await review.getByRole('button',{name:/^Accept review/}).click();
  await review.getByRole('button',{name:'Accept this review',exact:true}).click();
  await expect(review.locator('.review-meta').filter({hasText:'Accepted by'})).toBeVisible();
  const accepted=(await request('/api/state')).incidents.find(row=>row.id===incident.id);

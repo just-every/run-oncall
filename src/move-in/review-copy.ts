@@ -1,3 +1,5 @@
+import type { ImportPlan } from '../modules/import-kit/src/types'
+
 /** Presentation only: the saved plan, its differences and fingerprint stay untouched. */
 const kinds:Record<string,string>={users:'Person',schedules:'Schedule',services:'Service',integrations:'Integration',escalations:'Escalation policy',escalation_policies:'Escalation policy',overrides:'Override',timelines:'Coverage comparison',teams:'Team',business_services:'Business service',maintenance_windows:'Maintenance window',event_orchestrations:'Event routing',incidents:'Incident'}
 const fields:Record<string,string>={
@@ -9,6 +11,32 @@ const fields:Record<string,string>={
 const words=(value:string)=>fields[value.replaceAll('-','_')]??value.replaceAll('_',' ').replace(/([a-z])([A-Z])/g,'$1 $2')
 export const reviewKind=(kind:string)=>kinds[kind]??words(kind)
 const sentence=(text:string)=>/[.!?]$/.test(text)?text:text+'.'
+
+export function savedReviewItems(plan:ImportPlan) {
+ return plan.entries.filter(entry=>!entry.erased).map(entry=>{
+  const value=entry.source.payload as any
+  return {kind:entry.source.kind,id:entry.source.sourceId,location:entry.source.location,
+   disposition:entry.rejection?'rejected':entry.unmapped.length?'mapped-with-differences':'mapped',
+   name:value?.fullName??value?.name??value?.title??value?.summary??value?.username??value?.email??entry.source.sourceId,
+   rejection:entry.rejection,unmapped:entry.unmapped,effects:entry.effects}
+ })
+}
+
+export function reviewCoverageWarnings(items:any[]):string[] {
+ const copy=reviewCopy(items),warnings:string[]=[]
+ for(const item of items) {
+  if(item.kind!=='schedules')continue
+  for(const effect of item.effects) {
+   if(effect.targetKind!=='schedule')continue
+   const equivalence=effect.value.equivalence??{status:'not-supplied'}
+   if(equivalence.status!=='equivalent-in-window')warnings.push(...copy.comparison(item,equivalence))
+  }
+  const backup=item.unmapped.find((note:any)=>note.field==='backup')
+  if(backup)warnings.push(copy.difference(item,backup))
+  if(!item.effects.length&&!item.rejection)warnings.push(`This check did not compare coverage for ${item.name}. Review the earlier import’s coverage before adopting the schedule.`)
+ }
+ return warnings
+}
 
 const list=(values:string[])=>values.length<3?values.join(' and '):`${values.slice(0,-1).join(', ')} and ${values.at(-1)}`
 export function reviewCopy(items:any[]) {

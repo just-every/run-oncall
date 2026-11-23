@@ -28,7 +28,9 @@ if (!globalThis.PublicKeyCredential?.parseCreationOptionsFromJSON || !PublicKeyC
       if (operation === 'signin') location.assign(button.dataset.returnTo);
       else location.reload();
     } catch {
-      message.textContent = 'The passkey could not be used. Try again, or open the private link from rer dev.';
+      message.textContent = operation === 'enroll' && !document.hasFocus()
+        ? 'Bring this tab to the front, then try enrolling your passkey again.'
+        : 'The passkey could not be used. Try again, or open the private link from rer dev.';
       button.disabled = false;
     }
   });

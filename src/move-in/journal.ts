@@ -3,10 +3,11 @@ import { authorize, readAtomic } from '../modules/import-kit/src/d1/database'
 import { requestContext } from '../modules/import-kit/src/d1/budget'
 import { nativeStagingScope } from '../modules/import-kit/src/d1/native-staging-context'
 import type { D1ImportContext } from '../modules/import-kit/src/d1/types'
+import { reviewCoverageWarnings, savedReviewItems } from './review-copy'
 
 /** Read the retained plan even after undo removes its native schedule rows.
  * Use the kit's exact read fence so erasure and current authority still apply. */
-export async function readMoveInJournal(id:string,context:D1ImportContext) {
+export async function readMoveInJournal(id:string,context:D1ImportContext,unchecked=false) {
  context=requestContext(context)
  await authorize(context,'read')
  const {job,plan}=await stored(id,context)
@@ -29,5 +30,7 @@ export async function readMoveInJournal(id:string,context:D1ImportContext) {
   const name=value?.name??value?.fullName??value?.summary
   return typeof name==='string'?entry.effects.map(effect=>[effect.targetKind+':'+effect.targetId,name]):[]
  }))
- return {...job,schedules,files,exportedAt,comparisons,labels}
+ const needsCheck=job.state==='completed'&&unchecked
+ return {...job,schedules,files,exportedAt,comparisons,labels,
+  ...(needsCheck?{needsCheck,coverageWarnings:reviewCoverageWarnings(savedReviewItems(plan))}:{})}
 }

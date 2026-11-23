@@ -889,6 +889,7 @@ try {
  assert.ok(policy.unmapped.some(d=>d.field==='rules.0.delay'&&/not equivalent/.test(d.reason)),'review makes the timing change explicit')
  assert.ok(review.items.find(i=>i.kind==='schedules').unmapped.every(d=>!d.reason.includes('Overrides must be supplied')))
  assert.equal(ok(await door.apply('opsgenie',review)).job.state,'completed')
+ assert.equal(ok(await door.call('opsgenie','reconcile',{planId:review.planId})).ok,true)
  const imported=()=>req('/api/move-in/objects').then(ok)
  const row=(await imported()).find(o=>o.targetKind==='schedule')
  const input={id:row.targetId,revision:row.revision,service:'checkout',members:{'alice@example.test':alice.id,'bob@example.test':bob.id},confirm:true}

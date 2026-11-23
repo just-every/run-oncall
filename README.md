@@ -139,11 +139,9 @@ Hosting is in `v0.3.0` and later. Release 1 hosts coordination alongside your ex
 
 `rer setup` prints a loopback `RER_SETUP_READY` address for local setup. Run `"$HOME/.local/bin/rer" signin` after deployment to print the private hosted owner link.
 
-Stop dev and preview from the hosting checkout before either the dry run or deployment (Ctrl-C also stops a foreground server). With the private file prepared as described there:
+If a server is running in the hosting checkout, stop it with `"$HOME/.local/bin/rer" dev --stop` for development or `"$HOME/.local/bin/rer" preview --stop` for preview. Ctrl-C also stops a foreground server. With the private file prepared as described there:
 
 ```sh
-"$HOME/.local/bin/rer" dev --stop
-"$HOME/.local/bin/rer" preview --stop
 "$HOME/.local/bin/rer" deploy --environment production --env-file "$HOME/.config/oncall/production.env" --dry-run
 "$HOME/.local/bin/rer" deploy --environment production --env-file "$HOME/.config/oncall/production.env"
 ```

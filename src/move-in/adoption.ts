@@ -6,6 +6,9 @@ import { validateSchedule,sharedServices } from '../family/response-operations/s
 import { pagingSnapshot, bound, putSchedule,putPolicy } from '../paging-store'
 
 const completed = `EXISTS(SELECT 1 FROM ik_provenance p JOIN ik_jobs j ON j.id=p.job_id WHERE p.destination='oncall' AND p.target_kind='schedule' AND p.target_id=? AND p.reversed=0 AND j.state='completed')`
+const uncheckedSchedules = `SELECT p.target_id FROM ik_provenance p JOIN ik_door_plans d ON d.job_id=p.job_id
+ JOIN move_in_previews v ON v.plan_id=d.id
+ WHERE p.destination='oncall' AND p.target_kind='schedule' AND p.reversed=0`
 
 /** Adoption is an explicit native edit. Import undo must preserve it, including after restart. */
 export function installAdoption(api:any,body:(c:any)=>Promise<any>) {
@@ -18,7 +21,8 @@ export function installAdoption(api:any,body:(c:any)=>Promise<any>) {
  api.get('/api/move-in/adoption',async(c:any)=>{
   const s=await snapshot(c)
   // Rotas already live, so the screen can say before adoption that a service has one.
-  return c.json({services:s.workspace.services,members:s.workspace.members.filter(m=>m.active&&['admin','responder'].includes(m.role)),rotas:s.archive.schedules.map(rota=>({id:rota.id,name:rota.name,services:[...new Set([rota.service,...(rota.services??[])])]})),paging:'OFF'})
+  const unchecked=await (c.env.DB as D1Database).prepare(uncheckedSchedules).all<{target_id:string}>()
+  return c.json({services:s.workspace.services,members:s.workspace.members.filter(m=>m.active&&['admin','responder'].includes(m.role)),rotas:s.archive.schedules.map(rota=>({id:rota.id,name:rota.name,services:[...new Set([rota.service,...(rota.services??[])])]})),uncheckedSchedules:unchecked.results.map(row=>row.target_id),paging:'OFF'})
  })
  api.post('/api/move-in/adopt',async(c:any)=>{
   const s=await snapshot(c),input=await body(c),db=c.env.DB as D1Database
@@ -29,6 +33,7 @@ export function installAdoption(api:any,body:(c:any)=>Promise<any>) {
   const value=JSON.parse(row.data)
   if(row.revision!==input.revision)fail('Imported schedule changed; reload and review again',409)
   if(value.adopted)fail('This schedule has already been adopted; edit it under Schedules',409)
+  if(await db.prepare(uncheckedSchedules+' AND p.target_id=?').bind(input.id).first())fail('Check imported data in the saved journal before making this schedule live',409)
   if(s.archive.schedules.some(v=>v.id===input.id))fail('A live schedule already uses this ID; keep or rename that schedule before adopting',409)
   const services=input.services===undefined?[input.service]:sharedServices(input.services,input.service)
   const source=validateSchedule(value.schedule)
@@ -61,8 +66,8 @@ export function installAdoption(api:any,body:(c:any)=>Promise<any>) {
   // One batch publishes both the native schedule and the import edit marker. Concurrent undo,
   // erasure, member revocation, another adoption or schedule edits invalidate this whole write.
   const result=await db.batch([
-   db.prepare(`UPDATE paging_control SET revision=revision+1,write_token=? WHERE id=1 AND revision=? AND EXISTS(SELECT 1 FROM workspace_control WHERE id=1 AND revision=?) AND EXISTS(SELECT 1 FROM oc_current_sessions s JOIN oc_members m ON m.id=s.member WHERE s.token=? AND s.member=? AND s.expires>? AND json_extract(m.data,'$.active')=1 AND json_extract(m.data,'$.role')='admin') AND EXISTS(SELECT 1 FROM move_in_objects WHERE kind='schedule' AND id=? AND revision=? AND data=?) AND NOT EXISTS(SELECT 1 FROM paging_schedules WHERE id=?) AND ${completed} ${policyRow?"AND EXISTS(SELECT 1 FROM move_in_objects WHERE kind='policy' AND id=? AND revision=? AND data=?) AND EXISTS(SELECT 1 FROM ik_provenance p JOIN ik_jobs j ON j.id=p.job_id WHERE p.target_kind='policy' AND p.target_id=? AND p.reversed=0 AND j.state='completed')":''}`)
-    .bind(token,s.revision,s.workspace.revision,c.get('sessionDigest'),c.get('actor').id,at,input.id,row.revision,row.data,schedule.id,input.id,...(policyRow?[input.policy.id,policyRow.revision,policyRow.data,input.policy.id]:[])),
+   db.prepare(`UPDATE paging_control SET revision=revision+1,write_token=? WHERE id=1 AND revision=? AND EXISTS(SELECT 1 FROM workspace_control WHERE id=1 AND revision=?) AND EXISTS(SELECT 1 FROM oc_current_sessions s JOIN oc_members m ON m.id=s.member WHERE s.token=? AND s.member=? AND s.expires>? AND json_extract(m.data,'$.active')=1 AND json_extract(m.data,'$.role')='admin') AND EXISTS(SELECT 1 FROM move_in_objects WHERE kind='schedule' AND id=? AND revision=? AND data=?) AND NOT EXISTS(SELECT 1 FROM paging_schedules WHERE id=?) AND ${completed} AND NOT EXISTS(${uncheckedSchedules} AND p.target_id=?) ${policyRow?"AND EXISTS(SELECT 1 FROM move_in_objects WHERE kind='policy' AND id=? AND revision=? AND data=?) AND EXISTS(SELECT 1 FROM ik_provenance p JOIN ik_jobs j ON j.id=p.job_id WHERE p.target_kind='policy' AND p.target_id=? AND p.reversed=0 AND j.state='completed')":''}`)
+    .bind(token,s.revision,s.workspace.revision,c.get('sessionDigest'),c.get('actor').id,at,input.id,row.revision,row.data,schedule.id,input.id,input.id,...(policyRow?[input.policy.id,policyRow.revision,policyRow.data,input.policy.id]:[])),
    putSchedule(db,schedule,token),
    ...(policy?[putPolicy(db,policy,token),db.prepare("UPDATE move_in_objects SET revision=?,data=? WHERE kind='policy' AND id=? AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND write_token=?)").bind(`adopted-${token}`,JSON.stringify({...JSON.parse(policyRow!.data),adopted:{policyId:policy.id,services,scheduleId:schedule.id,at:new Date(at).toISOString()}}),input.policy.id,token)]:[]),
    db.prepare('UPDATE workspace_control SET revision=revision+1,write_token=? WHERE id=1 AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND write_token=?)').bind(token,token),

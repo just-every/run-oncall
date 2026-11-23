@@ -15,7 +15,7 @@ import type { Vendor } from './source'
 import { sourceRefusal, withdrawUpload } from './saved-file-refusals'
 import { alreadyImported, changedSinceImport, Refusal, supersededBy } from './refusals'
 import { expireInterruptedImports, importAttempt } from './import-lifecycle'
-import { reviewCopy } from './review-copy'
+import { reviewCoverageWarnings, savedReviewItems as review } from './review-copy'
 
 // The owner's move-in screen imports through Base's owner-session door, the
 // same pipeline and allow-list as Business: upload → plan → reviewed
@@ -52,34 +52,8 @@ async function body(request: Request): Promise<Record<string, unknown> | undefin
  try { const text = await request.clone().text(); return text.length <= 100_000 ? JSON.parse(text) : undefined } catch { return undefined }
 }
 
-/** The compatibility review the move-in screen shows: every source object with its effects, differences and any rejection. */
-const review = (plan: ImportPlan) => plan.entries.map(entry => {
- const value = entry.source.payload as any
- return { kind: entry.source.kind, id: entry.source.sourceId, location: entry.source.location,
-  disposition: entry.rejection ? 'rejected' : entry.unmapped.length ? 'mapped-with-differences' : 'mapped',
-  name: value?.fullName ?? value?.name ?? value?.title ?? value?.summary ?? value?.username ?? value?.email ?? entry.source.sourceId,
-  rejection: entry.rejection, unmapped: entry.unmapped, effects: entry.effects }
-})
-
 function reconciliationDetails(plan: ImportPlan) {
- const items = review(plan), copy = reviewCopy(items)
- const coverageWarnings: string[] = []
- for (const item of items) {
-  if (item.kind !== 'schedules') continue
-  for (const effect of item.effects) {
-   if (effect.targetKind !== 'schedule') continue
-   const {equivalence} = effect.value as {equivalence?: {status: string}}
-   if (equivalence?.status !== 'equivalent-in-window') {
-    coverageWarnings.push(...copy.comparison(item, equivalence ?? {status: 'not-supplied'}))
-   }
-  }
-  const backup = item.unmapped.find(note => note.field === 'backup')
-  if (backup) coverageWarnings.push(copy.difference(item, backup))
-  if (!item.effects.length && !item.rejection) {
-   coverageWarnings.push(`This check did not compare coverage for ${item.name}. Review the earlier import’s coverage before adopting the schedule.`)
-  }
- }
- return {coverageWarnings}
+ return {coverageWarnings:reviewCoverageWarnings(review(plan))}
 }
 
 /** The saved file names of an earlier import, so a sentence can name it by provider and file. Null when its plan is gone or unreadable. */
@@ -224,8 +198,18 @@ export async function ownerImport(c: any): Promise<Response> {
    catch { return null }
   })()
   if (held) return refusal(held)
+  // Keep the screen's preview marker through apply. A completed kit job with
+  // this marker still needs a successful check against the saved plan.
+  return send(request)
+ }
+ if (action === 'reconcile' && typeof input?.planId === 'string') {
   const response = await send(request)
-  if (response.ok) await forget(db, input.planId)
+  if (!response.ok || (await response.clone().json() as {ok?:boolean}).ok!==true) return response
+  await db.prepare(`DELETE FROM move_in_previews WHERE plan_id=? AND (${session.sql}) AND EXISTS(
+   SELECT 1 FROM ik_door_plans p JOIN ik_jobs j ON j.id=p.job_id
+   JOIN ik_door_namespaces n ON n.installation_id=p.installation_id AND n.namespace=p.namespace AND n.head_id=p.id
+   WHERE p.id=move_in_previews.plan_id AND j.state='completed' AND j.principal_id=?
+   AND EXISTS(SELECT 1 FROM ik_door_plan_chunks WHERE plan_id=p.id))`).bind(input.planId,...session.params!,actor.id).run()
   return response
  }
  if (action === 'undo' && typeof input?.planId === 'string') {

@@ -185,11 +185,9 @@ In `vi`, press `i` to edit, replace each placeholder after `=` with its copied v
 
 ### 4. Deploy and test sign-in
 
-Stop the development server and preview from the hosting checkout before a dry run or deployment. Ctrl-C also stops a foreground server. A running local server owns the state, so even a deploy dry run refuses with exit 4 until it stops.
+If a server is running in the hosting checkout, stop it with `"$HOME/.local/bin/rer" dev --stop` for development or `"$HOME/.local/bin/rer" preview --stop` for preview. Ctrl-C also stops a foreground server. A running local server owns the state, so even a deploy dry run refuses with exit 4 until it stops.
 
 ```sh
-"$HOME/.local/bin/rer" dev --stop
-"$HOME/.local/bin/rer" preview --stop
 "$HOME/.local/bin/rer" deploy --environment production --dry-run
 ```
 

@@ -51,9 +51,13 @@ export function oncallHostingPage(hosting: SiteHosting | null, contract: SeedCon
     .replaceAll('run the same line from the same folder', `inside <code>run-oncall</code>, run <code>${escape(restart)}</code> if you used the installer or <code>npx -y @runeditrun/rer dev --host localhost</code> if you used the Node alternative`)
     .replace(/run <code><span class="code-word">git<\/span> <span class="code-word">pull<\/span><\/code>, then .*?\. The hosted data stays\./,
       'follow the <a href="/docs/getting-started#update-a-hosted-installation">release update steps</a>.')
-    .replaceAll('rer dev --stop\nrer deploy --env-file ', () => [
-      `${launcher} dev --stop`, `${launcher} preview --stop`, `${launcher} deploy --env-file `,
-    ].join('\n'))
+    .replace('Stop Oncall on this computer first: rer deploy refuses while it runs.',
+      () => `If Oncall is running in this checkout, stop it with <code>${launcher} dev --stop</code> for development or <code>${launcher} preview --stop</code> for preview.`)
+    .replaceAll('rer dev --stop\nrer deploy --env-file ', () => `${launcher} deploy --env-file `)
+    .replace(', so the hosted Oncall can email sign-in links.', ' if you want Oncall to email sign-in links.')
+    .replace('Open that address and sign in with your owner email:', 'With email enabled, open that address and sign in with your owner email.')
+    .replace('The hosted Oncall starts with its own, empty data; the data on this computer stays where it is.</p>',
+      () => `The hosted Oncall starts with its own, empty data; the data on this computer stays where it is.</p><p>For <a href="/docs/getting-started#hosted-coordination-with-email-off">hosted coordination with email off</a>, set <code>MAIL_PROVIDER=none</code> in the deploy file, leave mail credentials and the sender unset, and after deployment run <code>${launcher} signin --env-file .env.oncall</code> for a private owner link.</p>`)
     .replaceAll(/(<span class="code-word">)rer(<\/span> <span class="code-word">deploy<\/span>)/g, (_, before, after) => `${before}${launcher}${after}`)
     .replace('wherever this page says <code><span class="code-word">rer</span></code>',
       () => `in place of <code><span class="code-word">${launcher}</span></code> in the commands below`)

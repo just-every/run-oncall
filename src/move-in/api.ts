@@ -43,13 +43,16 @@ export function installMoveIn(api:any,body:(c:any,max?:number)=>Promise<any>) {
   const ctx=context(c,c.req.query('vendor')??'opsgenie'),auth=ctx.authorization.predicate('read','oncall')
   await expireInterruptedImports(c.env.DB)
   const history=await readImportDoorHistory(c.env.DB,IMPORT_DOOR_KEY,auth)
-  const rows=await c.env.DB.prepare(`SELECT j.id,j.namespace,j.mapping_version FROM ik_jobs j WHERE destination='oncall' AND principal_id=?
+  const rows=await c.env.DB.prepare(`SELECT j.id,j.namespace,j.mapping_version,
+   EXISTS(SELECT 1 FROM ik_door_plans p JOIN move_in_previews v ON v.plan_id=p.id WHERE p.job_id=j.id) AS needs_check
+   FROM ik_jobs j WHERE destination='oncall' AND principal_id=?
    AND (namespace=? OR EXISTS(SELECT 1 FROM ik_door_plans p WHERE p.job_id=j.id AND p.namespace=? AND p.installation_id=?))
    AND (${auth.sql}) ORDER BY j.rowid DESC`).bind(ctx.authorization.principalId,ctx.namespace,ctx.namespace,IMPORT_DOOR_KEY,...auth.params!).all()
   // Owner and Business door imports list together, each with its approval: "approved by" or "approved via Business by".
   return c.json(await Promise.all(rows.results.map(async(row:any)=>{
    const approved=history.find(item=>item.jobId===row.id)
-   return {...await readMoveInJournal(row.id,{...ctx,namespace:row.namespace,mappingVersion:row.mapping_version}),vendor:ctx.namespace,approval:approved?.caption,
+   const saved=await readMoveInJournal(row.id,{...ctx,namespace:row.namespace,mappingVersion:row.mapping_version},Boolean(row.needs_check))
+   return {...saved,vendor:ctx.namespace,approval:approved?.caption,
     door:approved?{planId:approved.planId,fingerprint:approved.fingerprint,business:approved.reviewer===approved.approvalRecordId}:undefined}
   })))
  })

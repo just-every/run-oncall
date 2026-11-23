@@ -3,7 +3,8 @@ const provider=(job:any)=>vendorName(job.vendor??job.namespace)
 const shortProvider=(job:any)=>(({splunk:'Splunk',jsm:'Jira',betterstack:'Better Stack'} as Record<string,string>)[job.vendor??job.namespace]??provider(job))
 const day=(value:string)=>Number.isFinite(Date.parse(value))?new Intl.DateTimeFormat('en-US',{dateStyle:'medium',timeStyle:'short',timeZone:'UTC'}).format(new Date(value))+' UTC':value
 const artifactLabel=(value:string)=>value.startsWith('erased-artifact:')?'Import file containing erased data':value
-const label=(job:any)=>[provider(job),...(job.schedules??[]).map(artifactLabel),...(job.files??[]).map(artifactLabel),job.state.replaceAll('_',' ')].join(' · ')
+const stateLabel=(job:any)=>job.needsCheck?'needs checking':job.state.replaceAll('_',' ')
+const label=(job:any)=>[provider(job),...(job.schedules??[]).map(artifactLabel),...(job.files??[]).map(artifactLabel),stateLabel(job)].join(' · ')
 
 // A door import continues and undoes through the door; Business's continue only through Business, and a failed one needs a new preview.
 const resumable=(job:any)=>job.door?job.state==='rolling_back'||(!job.door.business&&['queued','applying'].includes(job.state)):['queued','applying','failed','rolling_back'].includes(job.state)
@@ -11,7 +12,7 @@ const undoable=(job:any)=>['completed','undoing'].includes(job.state)||(job.door
 
 export function ImportJournal({jobs,job,busy,select,resume,reconcile,undo}:{jobs:any[];job:any;busy:boolean;select:(job:any)=>void;resume:()=>void;reconcile:()=>void;undo:()=>void}) {
  return <>
- {jobs.length>1&&<label className="scheduling-field">Saved import journal<select aria-label="Saved import journal" value={job?.id??''} onChange={event=>select(jobs.find(saved=>saved.id===event.target.value)??null)}><option value="">Choose an import</option>{jobs.map((saved,index)=><option key={saved.id} value={saved.id}>{shortProvider(saved)} · {saved.state.replaceAll('_',' ')} {index+1}</option>)}</select></label>}
+ {jobs.length>1&&<label className="scheduling-field">Saved import journal<select aria-label="Saved import journal" value={job?.id??''} disabled={busy} onChange={event=>select(jobs.find(saved=>saved.id===event.target.value)??null)}><option value="">Choose an import</option>{jobs.map((saved,index)=><option key={saved.id} value={saved.id}>{shortProvider(saved)} · {stateLabel(saved)} {index+1}</option>)}</select></label>}
  {jobs.length===1&&!job&&<button disabled={busy} onClick={()=>select(jobs[0])}>Open saved import</button>}
  {job&&<div role="status"><h3>Import journal</h3><p>{label(job)} · {job.checkpoint}/{job.total} source objects processed</p>
  {job.exportedAt&&<p>Export date from filename: {new Date(job.exportedAt).toLocaleDateString([], {month:'short',day:'numeric',year:'numeric'})}</p>}

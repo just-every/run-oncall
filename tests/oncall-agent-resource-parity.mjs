@@ -470,7 +470,7 @@ async function captureReviewMaterial(page,screen,person,width){
   assert.equal(await dialog.getByLabel('Root cause',{exact:true}).inputValue(),(material.accepted??screen.draft).rootCause);
   assert.equal(await dialog.getByLabel('Impact',{exact:true}).inputValue(),(material.accepted??screen.draft).impact);
   for(const label of ['Review','Root cause','Impact'])assert.equal(await dialog.getByLabel(label,{exact:true}).evaluate(node=>node.readOnly),person.member.role==='viewer');
-  assert.equal(await dialog.getByRole('button',{name:'Accept review',exact:true}).count(),person.member.role==='admin'&&!material.accepted?1:0,'Only an editable draft offers review acceptance');
+  assert.equal(await dialog.getByRole('button',{name:/^Accept review/}).count(),person.member.role==='admin'&&!material.accepted?1:0,'Only an editable draft offers review acceptance');
   for(const observation of material.observations)await body.getByText(observation.title,{exact:true}).waitFor();
   for(const assertion of material.assertions)if(assertion.kind==='note')await body.getByText(assertion.text,{exact:true}).waitFor();
   for(const change of material.changes)await body.getByText(change.summary,{exact:true}).waitFor();

@@ -455,7 +455,11 @@ export async function reconciliationJourney(page,context,session) {
  const reconcile='**/api/operator/import/reconcile'
  let edited
  await page.route(reconcile,async route=>{
-  // Adoption is an ordinary native edit after the final apply, before reconcile.
+  // Another client checks the saved plan and adopts it before this client reads
+  // the comparison. The original comparison must report that native edit.
+  const checked=await route.fetch()
+  assert.equal(checked.status(),200)
+  assert.equal((await checked.json()).ok,true)
   const rows=await request('/api/move-in/objects'),row=rows.find(row=>row.targetKind==='schedule'&&row.value.sourceId===scheduleId)
   assert.ok(row,'the applied schedule exists in native storage')
   const choices=await request('/api/move-in/adoption')

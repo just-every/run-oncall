@@ -56,7 +56,7 @@ export function ReviewSheet({incident,state,canEdit,command,onOpenIncident,onSav
       {accepting&&<p role="status">Wait for review acceptance to finish.</p>}
       {!canEdit&&<p>A responder or administrator can write and accept this review.</p>}
       {canAccept&&!accepting&&!Object.values(save.values).every(v=>v.trim())&&<p>Complete Review, Root cause and Impact to accept this review.</p>}
-      {canAccept&&<button disabled={accepting||!Object.values(save.values).every(v=>v.trim())} onClick={async()=>{if(await save.flush())setConfirm(true);}}>Accept review</button>}
+      {canAccept&&<button disabled={accepting||!Object.values(save.values).every(v=>v.trim())} onClick={async()=>{if(await save.flush())setConfirm(true);}}>Accept review · confirm next</button>}
       {canAccept&&confirm&&<InlineConfirm action="Accept this review" keep="Keep writing" busy={accepting} onCancel={()=>setConfirm(false)} onConfirm={async()=>{
         if(!await save.flush())return;setAccepting(true);failures.clear();
         try{const retained:Material=await request('/api/reviews/'+encodeURIComponent(incident.id)+'/material');const result:Incident=await autosaveRequest('/api/command',{type:'review',incident:incident.id,revision:retained.incidentRevision,...save.values,accept:true,materialRevision:retained.incidentRevision,materialWorkspaceRevision:retained.workspaceRevision});onSaved(result);setConfirm(false);await refresh();}catch(error){failures.show(error);}finally{setAccepting(false);}
