@@ -51,7 +51,9 @@ export function oncallHostingPage(hosting: SiteHosting | null, contract: SeedCon
     .replaceAll('run the same line from the same folder', `inside <code>run-oncall</code>, run <code>${escape(restart)}</code> if you used the installer or <code>npx -y @runeditrun/rer dev --host localhost</code> if you used the Node alternative`)
     .replace(/run <code><span class="code-word">git<\/span> <span class="code-word">pull<\/span><\/code>, then .*?\. The hosted data stays\./,
       'follow the <a href="/docs/getting-started#update-a-hosted-installation">release update steps</a>.')
-    .replaceAll('rer dev --stop\nrer deploy --env-file ', () => `${launcher} dev --stop\n${launcher} deploy --env-file `)
+    .replaceAll('rer dev --stop\nrer deploy --env-file ', () => [
+      `${launcher} dev --stop`, `${launcher} preview --stop`, `${launcher} deploy --env-file `,
+    ].join('\n'))
     .replaceAll(/(<span class="code-word">)rer(<\/span> <span class="code-word">deploy<\/span>)/g, (_, before, after) => `${before}${launcher}${after}`)
     .replace('wherever this page says <code><span class="code-word">rer</span></code>',
       () => `in place of <code><span class="code-word">${launcher}</span></code> in the commands below`)

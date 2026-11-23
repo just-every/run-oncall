@@ -44,12 +44,14 @@ export type Reconciliation = {
  ok: boolean
  counts: { sourceRecords: number; present: number; explained: number; nativeTargets: number }
  sourceIds: { kind: string; sourceId: string; status: string; conflicts?: string[]; reason?: string }[]
- details?: { coverageNotCompared: ('missing' | 'outside')[] }
+ details: { coverageWarnings: string[] }
 }
 
 /** Compare the applied snapshot with the current native objects, never the apply receipt. */
 export async function reconcilePlan(door: Door, planId: string): Promise<Reconciliation> {
- return door('reconcile', { planId })
+ const report = await door('reconcile', { planId })
+ if (!Array.isArray(report?.details?.coverageWarnings)) throw new Error('The check did not return schedule coverage details. Check imported data again.')
+ return report
 }
 
 const hex = async (bytes: Uint8Array) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes as Uint8Array<ArrayBuffer>))].map(b => b.toString(16).padStart(2, '0')).join('')

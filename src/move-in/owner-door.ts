@@ -15,6 +15,7 @@ import type { Vendor } from './source'
 import { sourceRefusal, withdrawUpload } from './saved-file-refusals'
 import { alreadyImported, changedSinceImport, Refusal, supersededBy } from './refusals'
 import { expireInterruptedImports, importAttempt } from './import-lifecycle'
+import { reviewCopy } from './review-copy'
 
 // The owner's move-in screen imports through Base's owner-session door, the
 // same pipeline and allow-list as Business: upload → plan → reviewed
@@ -61,15 +62,24 @@ const review = (plan: ImportPlan) => plan.entries.map(entry => {
 })
 
 function reconciliationDetails(plan: ImportPlan) {
- const coverageNotCompared = new Set<'missing' | 'outside'>()
- for (const entry of plan.entries) for (const effect of entry.effects) {
-  if (effect.targetKind !== 'schedule') continue
-  const comparison = (effect.value as {equivalence?: {status: string; differences?: string[]}}).equivalence
-  if (comparison?.status === 'not-supplied') {
-   coverageNotCompared.add(comparison.differences?.some(text => text.includes('outside')) ? 'outside' : 'missing')
+ const items = review(plan), copy = reviewCopy(items)
+ const coverageWarnings: string[] = []
+ for (const item of items) {
+  if (item.kind !== 'schedules') continue
+  for (const effect of item.effects) {
+   if (effect.targetKind !== 'schedule') continue
+   const {equivalence} = effect.value as {equivalence?: {status: string}}
+   if (equivalence?.status !== 'equivalent-in-window') {
+    coverageWarnings.push(...copy.comparison(item, equivalence ?? {status: 'not-supplied'}))
+   }
+  }
+  const backup = item.unmapped.find(note => note.field === 'backup')
+  if (backup) coverageWarnings.push(copy.difference(item, backup))
+  if (!item.effects.length && !item.rejection) {
+   coverageWarnings.push(`This check did not compare coverage for ${item.name}. Review the earlier import’s coverage before adopting the schedule.`)
   }
  }
- return {coverageNotCompared: [...coverageNotCompared]}
+ return {coverageWarnings}
 }
 
 /** The saved file names of an earlier import, so a sentence can name it by provider and file. Null when its plan is gone or unreadable. */

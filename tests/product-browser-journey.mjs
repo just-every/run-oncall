@@ -405,7 +405,7 @@ export async function fileJourney(page,context,origin,{readProvider=false}={}) {
  await page.getByRole('heading',{name:'3 · Import paused',exact:true}).waitFor()
  assert.deepEqual(await objects(),before,'the confirmation still writes no imported object')
  const [reconciled]=await Promise.all([page.waitForResponse(response=>new URL(response.url()).pathname==='/api/operator/import/reconcile'),page.getByRole('button',{name:'Confirm paused import',exact:true}).click()])
- await page.getByRole('heading',{name:'Import complete',exact:true}).waitFor()
+ await page.getByRole('heading',{name:/^Import complete(?: with coverage warnings)?$/}).waitFor()
  if(width===1440) {
   const report=await reconciled.json();assert.equal(reconciled.status(),200);assert.equal(report.ok,true)
   assert.equal(report.counts.present+report.counts.explained,report.counts.sourceRecords,'the completed check accounts for every source record')
@@ -445,7 +445,7 @@ export async function reconciliationJourney(page,context,session) {
  await page.getByRole('button',{name:'Import paused',exact:true}).click()
  await page.getByRole('button',{name:'Confirm paused import',exact:true}).click()
  await page.getByRole('alert').waitFor()
- assert.ok(interrupted);assert.equal(await page.getByRole('heading',{name:'Import complete',exact:true}).count(),0)
+ assert.ok(interrupted);assert.equal(await page.getByRole('heading',{name:/^Import complete(?: with coverage warnings)?$/}).count(),0)
  for(const width of [1440]){await page.setViewportSize({width,height:1000});await screenshot(page,`reconcile-interrupted-${width}`)}
  await page.setViewportSize({width:1440,height:1000})
  await fileSource(page,'opsgenie')
@@ -468,7 +468,7 @@ export async function reconciliationJourney(page,context,session) {
  assert.equal(difference.status,'mismatched');assert.ok(difference.conflicts.length)
  const panel=page.locator('section').filter({has:page.getByRole('heading',{name:'Import differences',exact:true})}).last()
  await panel.waitFor();assert.ok((await panel.innerText()).includes(scheduleId));assert.ok((await panel.innerText()).includes(difference.conflicts[0]))
- assert.equal(edited.paging,'OFF');assert.equal(await page.getByRole('heading',{name:'Import complete',exact:true}).count(),0)
+ assert.equal(edited.paging,'OFF');assert.equal(await page.getByRole('heading',{name:/^Import complete(?: with coverage warnings)?$/}).count(),0)
  const native=await request('/api/paging/state');assert.ok(native.schedules.some(row=>row.id===edited.schedule.id))
  for(const width of [1440]){await page.setViewportSize({width,height:1000});await screenshot(page,`reconcile-differences-${width}`)}
  await page.setViewportSize({width:1440,height:1000})
@@ -476,7 +476,7 @@ export async function reconciliationJourney(page,context,session) {
  await page.route(reconcile,route=>route.abort('connectionreset'),{times:1})
  await page.getByRole('button',{name:'Check imported data',exact:true}).click()
  await page.getByRole('heading',{name:'Import needs checking',exact:true}).waitFor();await page.getByRole('alert').waitFor()
- assert.equal(await page.getByRole('heading',{name:'Import complete',exact:true}).count(),0)
+ assert.equal(await page.getByRole('heading',{name:/^Import complete(?: with coverage warnings)?$/}).count(),0)
  for(const width of [1440]){await page.setViewportSize({width,height:1000});await screenshot(page,`reconcile-unavailable-${width}`)}
  await page.setViewportSize({width:1440,height:1000})
  await page.getByRole('button',{name:'Check imported data',exact:true}).click();await page.getByRole('heading',{name:'Import differences',exact:true}).waitFor()
@@ -535,7 +535,7 @@ export async function plainMoveInReview(page,context,session) {
  const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()
  assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[],'review has no serious or critical accessibility violations')
  await capture('review')
- await confirmImport(page);await page.getByRole('heading',{name:'Import complete',exact:true}).waitFor()
+ await confirmImport(page);await page.getByRole('heading',{name:/^Import complete(?: with coverage warnings)?$/}).waitFor()
  const rows=await request('/api/move-in/objects'),row=rows.find(row=>row.value.sourceId===schedule.id)
  assert.ok(row);assert.equal(row.value.paused,true)
  assert.deepEqual(await request('/api/paging/state'),nativeBefore,'confirming a paused import leaves native paging and coverage unchanged')

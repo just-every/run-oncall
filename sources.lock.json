@@ -1936,7 +1936,7 @@
       "executable": false
     },
     "src/app/shell/WorkspaceContext.tsx": {
-      "sha256": "41e62162f17e477e3a8f172c8928a21547384b23cca89a03fc799b807abb49b9",
+      "sha256": "aefbb18f9ede47acc5cd32be6c98adadc6cdc4bc8576f26a1509dc566dd40939",
       "executable": false
     },
     "src/app/tooltip.css": {
@@ -5604,7 +5604,7 @@
       "executable": false
     },
     "src/move-in/door-client.ts": {
-      "sha256": "ff023db592b477afaf5f339adc8658d662d39bffef95a55b33df716723e08243",
+      "sha256": "bac4e16f90a0ebfa9b26947bb684111b99fe6da78280b6b986b3162b8d7b7aaa",
       "executable": false
     },
     "src/move-in/door-key.ts": {
@@ -5672,7 +5672,7 @@
       "executable": false
     },
     "src/move-in/MoveIn.tsx": {
-      "sha256": "4c057b7a11075a1ea3e33bb9521ec8fcf316135bb912e20e5a1f08376725e4cf",
+      "sha256": "5b5d784785d3d868a9c97eef0ec4723ed0c1f1ac800cb58ba940c4f4b4068aa9",
       "executable": false
     },
     "src/move-in/native-erasure.ts": {
@@ -5680,7 +5680,7 @@
       "executable": false
     },
     "src/move-in/owner-door.ts": {
-      "sha256": "d073aa11669fd9a791b8cf45093c4ef61b834cc2ec47d4e37933f0e7ed22ed32",
+      "sha256": "7cfb087bd1d7893bd1f98cc3eb18ecdb5f025ae20efac22e558402d39510e657",
       "executable": false
     },
     "src/move-in/pagerduty-mapping.ts": {
@@ -6464,7 +6464,7 @@
       "executable": false
     },
     "src/site/run.ts": {
-      "sha256": "9bb56cbc197aee7fde9bd15db41b03deaf5671745367793e97324c1cde5b6e22",
+      "sha256": "10b4d84bf97cd96b2dbe5df9d035a4e8b456d7fe4139d2ed39b62e457ee8d54f",
       "executable": false
     },
     "src/site/shared-pages.css": {
@@ -6592,7 +6592,7 @@
       "executable": false
     },
     "src/useWorkspace.ts": {
-      "sha256": "7b9e02a0a0c33de6d8e1f7b1ae0dd143b6aef41a978490fe3e2785f57d8ef117",
+      "sha256": "d14c63d6c819b71d29e48f43341196a3dfb1c790b648083e05b024165ea8680b",
       "executable": false
     },
     "src/workspace-document.ts": {
@@ -6976,7 +6976,7 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "a8b7e7e3c740f1c12918c7ed17c1739eab81c50680f2f04b02b5d2c732302c48",
+      "sha256": "936dbb4c7c23dc9dba6c8dcb2658b702f0e95f74e5467c241f03b3090e2820f2",
       "executable": false
     },
     "tests/product-browser.mjs": {

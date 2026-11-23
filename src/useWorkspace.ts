@@ -32,7 +32,7 @@ export async function compareRequest(path:'/api/replay'|`/api/routing/keys/${str
     return request(path,data);
   }
 }
-export function useWorkspace() {
+export function useWorkspace(refreshInterval = 10000) {
   const [onCall, setOnCall] = useState<import('./on-call/read').OnCall | null>(null);
   const [state, setState] = useState<State | null>(null);
   const [member, setMember] = useState<Member | null>(null);
@@ -122,11 +122,11 @@ export function useWorkspace() {
   useEffect(() => {
     if (!ready || !member) return;
     const update = () => {if (document.visibilityState === "visible") void refresh().catch(readFailed);};
-    const timer = window.setInterval(update, 10000);
+    const timer = window.setInterval(update, refreshInterval);
     window.addEventListener("focus", update);
     document.addEventListener("visibilitychange", update);
     return () => {window.clearInterval(timer); window.removeEventListener("focus", update); document.removeEventListener("visibilitychange", update);};
-  }, [ready, member?.id]);
+  }, [ready, member?.id, refreshInterval]);
   const pendingAction = useRef<((value: any) => void) | null>(null);
   async function run(
     path: string | (() => Promise<any>),
@@ -193,10 +193,13 @@ export function useWorkspace() {
             const change = incident && currentState.current ? incidentChangeSummary(incident, incidentBase, currentState.current) : undefined;
             const recoveryUnchanged = input.type === 'transition' && input.state === 'recovered' &&
               incident?.state === incidentBase?.state && incident?.recovery === incidentBase?.recovery;
+            const sourceRecoveryOnly = incident && incidentBase && !incidentBase.sourceRecovery &&
+              incident.sourceRecovery && incident.revision === incidentBase.revision + 1;
             const apply = incident && !incident.mergedInto && (input.type === 'note' || recoveryUnchanged) ? async () => {
               if (recoveryUnchanged && form && (!form.isConnected || formValues() !== values)) {
                 if (form.isConnected) failures.show(new Error('Your draft has changed. Submit the form to apply the current draft.'), {target, saved});
                 else failures.clear();
+                setBusy(false);
                 finish(null);
                 return null;
               }
@@ -204,6 +207,10 @@ export function useWorkspace() {
               input.revision = incident.revision;
               return execute();
             } : undefined;
+            // A single source recovery adds its own timeline entry and marker.
+            // Retry the unchanged human draft against the checked revision.
+            if (apply && path === '/api/command' && recoveryUnchanged && sourceRecoveryOnly && !lostResponse &&
+                form && pendingAction.current === resolve && currentMember.current === member?.id) return apply();
             const conflict = apply
               ? new Error(`Incident changed. Review ${change ? 'the update below' : 'the timeline'}, then select Apply my edit to save your draft.`)
               : error;

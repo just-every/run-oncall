@@ -1,11 +1,14 @@
 import {createContext, useContext, useEffect, useRef, useState} from "react";
+import {useLocation} from "@tanstack/react-router";
 import {useWorkspace} from "../../useWorkspace";
 import {useWorkspacePath} from "../useWorkspacePath";
+import {workspaceAddress} from "../paths";
 import {resolveIncidentAlias} from "../../incident-workflows/relations";
 
 /** One workspace lifetime: navigation and live reads never remount the shell or its drafts. */
 export function useWorkspaceValue() {
-  const w = useWorkspace();
+  const pathname = useLocation({select: location => location.pathname});
+  const w = useWorkspace(workspaceAddress(pathname).page === 'alerts' ? 2000 : undefined);
   const {page, incident: selected, selectIncident: chooseIncident} = useWorkspacePath({ready: w.ready, stakeholder: w.member?.role === "stakeholder"});
   const [revealing, setRevealing] = useState("");
   const [listedRevision, setListedRevision] = useState(-1);

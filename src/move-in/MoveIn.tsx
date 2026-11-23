@@ -123,6 +123,7 @@ export function MoveIn({admin,connect,request}:{admin:boolean;connect:boolean;re
   }
  },[admin])
  if(!admin)return <section className="panel"><h2>Move in</h2><p>An administrator reads and imports schedules.</p></section>
+ const coverageWarnings=reconciliation?.details.coverageWarnings??[]
  return <section className="scheduling-workspace move-in-workspace">
  {step===1&&<ConnectStep waiting={waiting&&{vendor:waiting.vendor,name:vendorNames[waiting.vendor as keyof typeof vendorNames]??waiting.vendor,continueReview,discardReview}} source={sourceChoice} vendor={vendor} connect={connect} busy={busy}
   choose={value=>{setSourceChoice(value);if(value!=='file')setVendor(value);setPreview(null);failures.clear()}}
@@ -135,14 +136,13 @@ export function MoveIn({admin,connect,request}:{admin:boolean;connect:boolean;re
  }}/>}
  {step===4&&<section className="scheduling-panel move-in-data" aria-live="polite">
  {erased&&!reconciliation?<><h2>Person erased from this import</h2><p>This import no longer matches its saved export: the person and the source records kept for them are permanently gone. The rest of the imported data is unchanged.</p></>:<>
- <h2>{reconciliation?.ok?'Import complete':reconciliation?'Import differences':busy?'Checking imported data':'Import needs checking'}</h2>
+ <h2>{reconciliation?.ok?(coverageWarnings.length?'Import complete with coverage warnings':'Import complete'):reconciliation?'Import differences':busy?'Checking imported data':'Import needs checking'}</h2>
  {reconciliation?<>
- <p>{reconciliation.ok?'Oncall checked the imported records against the saved export.':'The native data differs from the saved export. Review these differences before continuing.'}</p>
- {reconciliation.details?.coverageNotCompared.includes('missing')&&<p>The saved export was missing a final coverage list for one or more schedules. Oncall could not compare who was on call for those schedules.</p>}
- {reconciliation.details?.coverageNotCompared.includes('outside')&&<p>Some final coverage lists fell outside the imported schedule dates. Oncall could not compare who was on call for those schedules.</p>}
- <p>{reconciliation.counts.sourceRecords} {reconciliation.counts.sourceRecords===1?'object':'objects'} in the file, {reconciliation.counts.present+reconciliation.counts.explained} accounted for ({reconciliation.counts.nativeTargets} created in Oncall, the rest kept as source evidence)</p>
+ <p>{reconciliation.ok?'Oncall checked the imported records against the saved import plan.':'The native data differs from the saved import plan. Review these differences before continuing.'}</p>
+ {coverageWarnings.length>0&&<><h3>Schedule coverage from the import review</h3><ul>{coverageWarnings.map((warning,index)=><li key={index}>{warning}</li>)}</ul></>}
+ <p>{reconciliation.counts.sourceRecords} {reconciliation.counts.sourceRecords===1?'source object':'source objects'} checked. {reconciliation.counts.nativeTargets} Oncall {reconciliation.counts.nativeTargets===1?'object matches':'objects match'} the saved plan.</p>
  {!reconciliation.ok&&<ul>{reconciliation.sourceIds.filter(row=>row.status==='mismatched').map(row=><li key={JSON.stringify([row.kind,row.sourceId])}>{row.kind}: {row.sourceId}<ul>{row.conflicts?.map(conflict=><li key={conflict}>Changed or missing native object: {conflict}</li>)}</ul></li>)}</ul>}
- {reconciliation.ok&&<p>Review imported data below. Adopt a schedule when you’re ready.</p>}
+ {reconciliation.ok&&<p>{coverageWarnings.length?'Review the coverage warnings before adopting a schedule.':'Review imported data below. Adopt a schedule when you’re ready.'}</p>}
  </>:<p>Check the native data before treating this import as complete. Use Check imported data in the saved journal to try again.</p>}</>}
  <button onClick={()=>{setStep(1);setPreview(null);setReconciliation(null)}}>Read another account or file</button></section>}
  {(jobs.length>0||job)&&<section className="scheduling-panel move-in-data">
