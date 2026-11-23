@@ -1,3 +1,23 @@
+# 0.5.34 · 2026-11-23
+
+- Workspace admins can open and check completed Move in imports saved by any admin in their workspace. When erasure withdraws a saved snapshot, the journal keeps the explanation and next steps visible when reopened. Schedules with erased or missing people stay paused and cannot be made live.
+- Checking the latest catch-up import clears the pending checks it covers and keeps schedule-specific coverage warnings in the journal, including for schedules omitted from the newer export.
+- Completed imports through the signed Business door now show **Needs checking**. While a saved snapshot is available, imported integrations must pass the check before activation. You can still stage an incumbent key while its integration is paused.
+- Fixed a page startup crash that could prevent Settings → Team from loading.
+- The Run page, README and Getting started guide explain that the first local start can take several minutes on a busy Mac and that rer prints progress every 20 seconds. The Hosting guide labels the email-enabled deployment example and explains how to clear duplicate Cloudflare variables before using a private env file.
+
+### Upgrade from 0.5.33
+
+Back up first. For local data, run `"$HOME/.local/bin/rer" export --output exports/before-0.5.34.rer`. For hosted data, export the D1 database with the original deploying Cloudflare credentials. Keep the backup private and verify it before updating.
+
+Stop the local app with Ctrl-C or `"$HOME/.local/bin/rer" dev --stop`. If preview is running, stop it with `"$HOME/.local/bin/rer" preview --stop`. Once the release is published, run `git fetch --quiet --depth 1 origin tag v0.5.34` and `git checkout --quiet --detach refs/tags/v0.5.34`. Restart with `"$HOME/.local/bin/rer" dev --host localhost` or `npx -y @runeditrun/rer dev --host localhost` if you used Node. Use the same npx substitution for the other rer commands if you used Node. For a hosted installation, update the original deploying checkout to the same tag and run `"$HOME/.local/bin/rer" deploy --environment ENVIRONMENT` with the same credentials. Restore only into an empty destination.
+
+This update applies one additive migration, `0171_mark_completed_imports.sql`. It marks completed imports as needing a check when their jobs finish. Keep all 74 previously released core migration files unchanged. The checkout pins rer to 0.2.131.
+
+## Known limits
+
+Paging stays OFF. Keep your existing pager active. Release 2 paging and independent standby are still unavailable. Live AWS delivery and live PagerDuty account migration or cutover remain unverified.
+
 # 0.5.33 · 2026-11-23
 
 - Move in shows “needs checking” in the saved import journal until the check against the saved plan succeeds. If the check is interrupted, retry it from the journal without importing again. Schedule coverage warnings stay visible. While the saved snapshot is available, imported schedules must pass the check before you can make them live.
