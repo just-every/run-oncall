@@ -4688,11 +4688,26 @@
         "modules/import-kit/src/types.ts"
       ],
       "adapted": {
-        "src/modules/import-kit/src/door/planning.ts": "c2efb501cbc148c2aee4d5e1107ebdba81469006"
+        "src/modules/import-kit/src/door/planning.ts": "c2efb501cbc148c2aee4d5e1107ebdba81469006",
+        "src/modules/import-kit/src/door/inventory.ts": "3637852064bf6ddadd15418518964d99d615cc46",
+        "src/modules/import-kit/src/door/jobs.ts": "3637852064bf6ddadd15418518964d99d615cc46",
+        "src/modules/import-kit/src/door/types.ts": "3637852064bf6ddadd15418518964d99d615cc46"
       },
       "acknowledged": {
         "src/modules/import-kit/src/door/planning.ts": {
           "sha256": "4fcf9eb5136783f6447f2654d72ec0850e537922c7f02f8d23c1b6810655fcd7",
+          "mode": "100644"
+        },
+        "src/modules/import-kit/src/door/inventory.ts": {
+          "sha256": "9a2c6d3556db64da5bebc63ccc6291eb7fbd775a092cfd5c37ca128bcc713dc7",
+          "mode": "100644"
+        },
+        "src/modules/import-kit/src/door/jobs.ts": {
+          "sha256": "f95aa8dc08ff30dbdd94266f461e08705fb4b26899cde71305a0b88bb41705ca",
+          "mode": "100644"
+        },
+        "src/modules/import-kit/src/door/types.ts": {
+          "sha256": "a2a080be5bd73a29a766f654f7d14c76693131e44c7cd9a308e3f13215a47c96",
           "mode": "100644"
         }
       }

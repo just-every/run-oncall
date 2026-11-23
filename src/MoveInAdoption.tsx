@@ -1,7 +1,7 @@
 import { InlineConfirm } from './app/autosave/InlineConfirm'
 import { useState } from 'react'
 
-export function MoveInAdoption({row,rows,choices,busy,adopt}:{row:any;rows:any[];choices:any;busy:boolean;adopt:(input:any)=>Promise<any>}) {
+export function MoveInAdoption({row,rows,choices,warnings,busy,adopt}:{row:any;rows:any[];choices:any;warnings?:string[];busy:boolean;adopt:(input:any)=>Promise<any>}) {
  const [open,setOpen]=useState(false),[service,setService]=useState(''),[members,setMembers]=useState<Record<string,string>>({}),[extraServices,setExtraServices]=useState<string[]>([]),[policyId,setPolicyId]=useState(''),[both,setBoth]=useState(false)
  const schedule=row.value.schedule
  const people=[...new Set<string>([...schedule.primary.members,...schedule.backup.members,...schedule.overrides.flatMap((o:any)=>o.member===null?[]:[o.member])])]
@@ -16,6 +16,7 @@ export function MoveInAdoption({row,rows,choices,busy,adopt}:{row:any;rows:any[]
  if(row.value.adopted)return <p>Adopted into <a href="/on-call">On call</a>. Paging is OFF. Once a schedule is live, this import can no longer be undone.</p>
  return <div><button type="button" disabled={busy} onClick={()=>setOpen(!open)}>{open?'Close adoption':'Make schedule live'}</button>
  {open&&<form onSubmit={e=>e.preventDefault()}>
+ {warnings?.length?<ul>{warnings.map(warning=><li key={warning}>{warning}</li>)}</ul>:null}
  <p>Choose a service and match each person to a workspace member.</p>
  {choices.services.length===1?<p>Service: <strong>{choices.services[0].name}</strong></p>:choices.services.length>1&&<label className="scheduling-field"><span id={row.targetId+'-service'}>Service for {schedule.name}</span><select aria-labelledby={row.targetId+'-service'} value={service} onChange={e=>setService(e.target.value)} required><option value="">Choose a service</option>{choices.services.map((s:any)=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label>}
  {chosenService&&choices.services.length>1&&<fieldset className="shared-rota-services"><legend>Other services sharing this rota</legend>{choices.services.filter((s:any)=>s.id!==chosenService).map((s:any)=><label key={s.id}><input type="checkbox" value={s.id} checked={extraServices.includes(s.id)} onChange={event=>setExtraServices(current=>event.target.checked?[...current,s.id]:current.filter(id=>id!==s.id))}/>{s.name}</label>)}</fieldset>}

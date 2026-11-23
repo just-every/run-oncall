@@ -269,7 +269,13 @@ export async function standingCatchup({w,req,call,upload,ok,ownerId}) {
  await apply(again,approval)
  const target=(await objects()).find(row=>row.targetId===`pagerduty:${schedules[0].schedule.id}`)
  const other=ok(await req('/api/members',{name:'Synthetic catch-up colleague',role:'responder',password:'synthetic-catchup-password-1'}),201)
- const adopted=ok(await req('/api/move-in/adopt',{id:target.targetId,revision:target.revision,service,members:{[users[0].email]:ownerId,[users[1].email]:other.id},confirm:true}),201).schedule
+ const adoption={id:target.targetId,revision:target.revision,service,members:{[users[0].email]:ownerId,[users[1].email]:other.id},confirm:true}
+ assert.ok(ok(await req('/api/move-in/adoption')).uncheckedSchedules.includes(target.targetId))
+ ok(await req('/api/move-in/adopt',adoption),409)
+ await reconcile(again,count)
+ await apply(again,approval)
+ assert.ok(!ok(await req('/api/move-in/adoption')).uncheckedSchedules.includes(target.targetId),'completed apply replay keeps the successful check')
+ const adopted=ok(await req('/api/move-in/adopt',adoption),201).schedule
  const handEdited=await edit(adopted,'Human-edited adopted rota'),beforeConflict=await objects()
  const conflict=structuredClone(bundle);conflict.schedules[0].schedule.name='Source must not replace human edit'
  assert.equal(ok(await plan(conflict,standing),409).error,'catchup_requires_proposal:native_or_mapping_conflict')

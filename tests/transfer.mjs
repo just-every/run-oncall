@@ -524,6 +524,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  for(const vendor of ['splunk','jsm','betterstack']) {
   const reviewed=ok(await door.preview(vendor,await readFile(`tests/fixtures/synthetic-oncall-${vendor}.json`,'utf8')))
   assert.equal(ok(await door.apply(vendor,reviewed)).job.state,'completed')
+  if(vendor==='splunk')assert.equal(ok(await door.call(vendor,'reconcile',{planId:reviewed.planId})).ok,true)
  }
  assert.equal(ok(await req('/api/move-in/objects')).filter(row=>row.targetKind==='integration'&&row.value.active===false&&row.value.incumbentKey==='not supplied').length,3)
  // OC-055 portable custody: held incumbent and native hashes never travel.

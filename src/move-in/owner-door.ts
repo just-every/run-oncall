@@ -15,8 +15,9 @@ import type { Vendor } from './source'
 import { sourceRefusal, withdrawUpload } from './saved-file-refusals'
 import { alreadyImported, changedSinceImport, Refusal, supersededBy } from './refusals'
 import { expireInterruptedImports, importAttempt } from './import-lifecycle'
-import { snapshotHeld } from './check-state'
+import { clearCheckedLineage } from './check-state'
 import { reviewCoverageWarnings, savedReviewItems as review } from './review-copy'
+import { explainNativeEdit } from './native-check'
 
 // The owner's move-in screen imports through Base's owner-session door, the
 // same pipeline and allow-list as Business: upload → plan → reviewed
@@ -133,7 +134,7 @@ export async function ownerImport(c: any): Promise<Response> {
   : null
  const door = createImportOperatorHandler({ database: db, targets, destination: 'oncall', format: 'json', limits: DOOR_LIMITS, ownerPrincipalId: checkOwner?.principal_id ?? actor.id,
   installationId: IMPORT_DOOR_KEY, appOrigin: runtimeBindings(c.env).AUTH_ORIGIN, ownerEmail: await approver(db, actor), namespace: vendor,
-  authorize: async () => session, reconciliationDetails, ...source })
+  authorize: async () => session, reconciliationDetails, explainNativeEdit, onReconciled:clearCheckedLineage, ...source })
  const send = async (sent: Request) => {
   const response = (await door(sent)) ?? answer({ error: 'not_found' }, 404)
   await attempt?.finish(response.ok)
@@ -208,23 +209,6 @@ export async function ownerImport(c: any): Promise<Response> {
   // Keep the screen's preview marker through apply. A completed kit job with
   // this marker still needs a successful check against the saved plan.
   return send(request)
- }
- if (action === 'reconcile' && typeof input?.planId === 'string') {
-  const response = await send(request)
-  if (!response.ok || (await response.clone().json() as {ok?:boolean}).ok!==true) return response
-  // The head compares inherited targets. A replacement had to match its predecessor
-  // before writing and Undo can only restore that exact revision.
-  await db.prepare(`WITH RECURSIVE lineage(id, previous_id) AS (
-   SELECT p.id,p.previous_id FROM ik_door_plans p JOIN ik_jobs j ON j.id=p.job_id
-   JOIN ik_door_namespaces n ON n.installation_id=p.installation_id AND n.namespace=p.namespace AND n.head_id=p.id
-   WHERE p.id=? AND p.installation_id=? AND p.namespace=? AND j.state='completed' AND ${snapshotHeld('p.id')}
-   UNION SELECT p.id,p.previous_id FROM ik_door_plans p JOIN lineage l ON l.previous_id=p.id
-   WHERE p.installation_id=? AND p.namespace=?
-  ) DELETE FROM move_in_previews WHERE plan_id IN (
-   SELECT l.id FROM lineage l JOIN ik_door_plans p ON p.id=l.id JOIN ik_jobs j ON j.id=p.job_id
-   WHERE j.state='completed' AND ${snapshotHeld('l.id')}
-  ) AND (${session.sql})`).bind(input.planId,IMPORT_DOOR_KEY,vendor,IMPORT_DOOR_KEY,vendor,...session.params!).run()
-  return response
  }
  if (action === 'undo' && typeof input?.planId === 'string') {
   // Name a later import over this owner's import, or what changed in Oncall since it, before the door records

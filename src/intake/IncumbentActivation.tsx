@@ -16,11 +16,14 @@ function transportError(error: unknown) {
  return error instanceof TypeError ? new InterruptedTransport() : error;
 }
 
-export function IncumbentActivation(props:{row:any;services:any[];request:(path:string,input?:unknown)=>Promise<any>;reload:()=>Promise<void>}) {
+type ActivationProps={row:any;services:any[];needsCheck?:boolean;request:(path:string,input?:unknown)=>Promise<any>;reload:()=>Promise<void>};
+const checkMessage='Check imported data in the saved journal before activating this integration.';
+
+export function IncumbentActivation(props:ActivationProps) {
  if(props.row.value.provider==='email')return <ImportedEmailActivation {...props}/>;
  return <IncumbentKeyActivation {...props}/>;
 }
-function IncumbentKeyActivation({row,services,request,reload}:{row:any;services:any[];request:(path:string,input?:unknown)=>Promise<any>;reload:()=>Promise<void>}) {
+function IncumbentKeyActivation({row,services,needsCheck,request,reload}:ActivationProps) {
  const [id,setId]=useState(row.value.intakeSource??('import-'+crypto.randomUUID()));
  const [service,setService]=useState(services[0]?.id??'');
  const [secret,setSecret]=useState('');
@@ -92,8 +95,9 @@ function IncumbentKeyActivation({row,services,request,reload}:{row:any;services:
    </fieldset>
   </form>
   {confirmation==='replace'&&<InlineConfirm action="Confirm key replacement" keep="Keep the old key" busy={busy} onCancel={()=>setConfirmation('')} onConfirm={supply}>Replace this credential and leave compatible intake inactive?</InlineConfirm>}
-  {status?.keySupplied&&!status.source.active&&<button type="button" disabled={busy} onClick={()=>setConfirmation('activate')}>Activate integration</button>}
-  {confirmation==='activate'&&<InlineConfirm action="Confirm activation" keep="Keep inactive" busy={busy} onCancel={()=>setConfirmation('')} onConfirm={()=>{
+  {needsCheck&&!status?.source.active&&<p>{checkMessage}</p>}
+  {!needsCheck&&status?.keySupplied&&!status.source.active&&<button type="button" disabled={busy} onClick={()=>setConfirmation('activate')}>Activate integration</button>}
+  {!needsCheck&&confirmation==='activate'&&<InlineConfirm action="Confirm activation" keep="Keep inactive" busy={busy} onCancel={()=>setConfirmation('')} onConfirm={()=>{
    const input={revision:status.source.revision,confirmed:true};
    void run(async()=>{
     const value=await request(`/api/intake/sources/${encodeURIComponent(id)}/activate-incumbent`,input);
@@ -119,7 +123,7 @@ function IncumbentKeyActivation({row,services,request,reload}:{row:any;services:
  </section>;
 }
 
-function ImportedEmailActivation({row,services,request,reload}:{row:any;services:any[];request:(path:string,input?:unknown)=>Promise<any>;reload:()=>Promise<void>}) {
+function ImportedEmailActivation({row,services,needsCheck,request,reload}:ActivationProps) {
  const [service,setService]=useState(services[0]?.id??'');
  const [confirm,setConfirm]=useState(false),[reviewed,setReviewed]=useState(false),[busy,setBusy]=useState(false),[address,setAddress]=useState('');
  const failures=useActionFailure(),settings=row.value.emailSettings;
@@ -127,7 +131,7 @@ function ImportedEmailActivation({row,services,request,reload}:{row:any;services
   <h3>Activate imported email integration</h3><FailureLine failure={failures.failure}/>
   <p>{row.value.name??row.value.sourceId}. {row.value.emailAddress?'Activated email settings':'Inactive email settings; no address and no intake'}. Paging OFF.</p>
   <p>Mode: {settings.draft.mode}. {settings.draft.rules.length} converted rules. Unmatched mail: {settings.draft.fallback==='quarantine'?'quarantine for review':'group by subject'}.</p>
-  {settings.blocked?<p>Resolve the unconverted rules in the saved export and import again before activation.</p>:!row.value.emailAddress&&<>
+  {settings.blocked?<p>Resolve the unconverted rules in the saved export and import again before activation.</p>:!row.value.emailAddress&&(needsCheck?<p>{checkMessage}</p>:<>
    <label className="scheduling-field">Service for imported email<select aria-label="Service for imported email" value={service} onChange={e=>setService(e.target.value)} disabled={busy}>{services.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
    {settings.differences.length>0&&<label><input type="checkbox" checked={reviewed} onChange={e=>setReviewed(e.target.checked)}/>I reviewed the differences and accept quarantine instead of discarding unmatched mail.</label>}
    <button type="button" disabled={busy||!service||settings.differences.length>0&&!reviewed} onClick={()=>setConfirm(true)}>Activate email integration</button>
@@ -138,7 +142,7 @@ function ImportedEmailActivation({row,services,request,reload}:{row:any;services
      setAddress(value.privateAddress);setConfirm(false);await reload();
     }catch(error){failures.show(error)}finally{setBusy(false)}
    }}>Create a private receiving address and version 1 with these converted rules? Only authenticated mail is accepted. Paging stays off.</InlineConfirm>}
-  </>}
+  </>)}
   {address&&<OneTimeSecret value={address} label="Private email address" onDone={()=>setAddress('')}/>}
   <p>Activation is an explicit edit to this imported object; import undo cannot overwrite it. Erase the native email integration to remove its settings and import custody together.</p>
  </section>;

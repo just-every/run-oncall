@@ -100,6 +100,7 @@ export async function reconcile(request: DoorRequest, input: Record<string,unkno
   if (current.head_id!==row.id) throw new DoorError('import_superseded',409);
   const report = await inspectRecords(request,snapshot.records);
   await authorized(request);
+  if (report.ok) await request.options.onReconciled?.(request,row.id);
   return {planId:row.id,fingerprint:row.fingerprint,bundleSha256:snapshot.bundleSha256,...report,
     ...(request.reconciliationDetails ? {details:request.reconciliationDetails(snapshot.plan)} : {})};
 }

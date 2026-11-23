@@ -1,4 +1,4 @@
-import {snapshotHeld} from './check-state'
+import {markedTargets,snapshotHeld,uncheckedTarget} from './check-state'
 import {scheduleChanges} from '../schedule-coordination/model'
 import {workspaceRows,checkWorkspaceSize} from '../workspace-store'
 import { fail } from '../family/response-operations/domain'
@@ -7,10 +7,7 @@ import { validateSchedule,sharedServices } from '../family/response-operations/s
 import { pagingSnapshot, bound, putSchedule,putPolicy } from '../paging-store'
 
 const completed = `EXISTS(SELECT 1 FROM ik_provenance p JOIN ik_jobs j ON j.id=p.job_id WHERE p.destination='oncall' AND p.target_kind='schedule' AND p.target_id=? AND p.reversed=0 AND j.state='completed')`
-const markedSchedules = `FROM ik_provenance p JOIN ik_door_plans d ON d.job_id=p.job_id
- JOIN move_in_previews v ON v.plan_id=d.id JOIN ik_jobs j ON j.id=p.job_id
- WHERE p.destination='oncall' AND p.target_kind='schedule' AND p.reversed=0 AND j.state='completed'`
-const uncheckedSchedule = `SELECT 1 ${markedSchedules} AND ${snapshotHeld('d.id')} AND p.target_id=?`
+const uncheckedSchedule = uncheckedTarget('schedule')
 
 /** Adoption is an explicit native edit. Import undo must preserve it, including after restart. */
 export function installAdoption(api:any,body:(c:any)=>Promise<any>) {
@@ -23,11 +20,12 @@ export function installAdoption(api:any,body:(c:any)=>Promise<any>) {
  api.get('/api/move-in/adoption',async(c:any)=>{
   const s=await snapshot(c)
   // Rotas already live, so the screen can say before adoption that a service has one.
-  const {results:marked}=await (c.env.DB as D1Database).prepare(`SELECT p.target_id,${snapshotHeld('d.id')} AS held
-   ${markedSchedules}`).all<{target_id:string;held:number}>()
+  const {results:marked}=await (c.env.DB as D1Database).prepare(`SELECT p.target_id,p.target_kind,${snapshotHeld('d.id')} AS held
+   ${markedTargets} AND p.target_kind IN ('schedule','integration')`).all<{target_id:string;target_kind:string;held:number}>()
   return c.json({services:s.workspace.services,members:s.workspace.members.filter(m=>m.active&&['admin','responder'].includes(m.role)),rotas:s.archive.schedules.map(rota=>({id:rota.id,name:rota.name,services:[...new Set([rota.service,...(rota.services??[])])]})),
-   uncheckedSchedules:marked.filter(row=>row.held).map(row=>row.target_id),
-   withdrawnSchedules:marked.filter(row=>!row.held).map(row=>row.target_id),paging:'OFF'})
+   uncheckedSchedules:marked.filter(row=>row.target_kind==='schedule'&&row.held).map(row=>row.target_id),
+   withdrawnSchedules:marked.filter(row=>row.target_kind==='schedule'&&!row.held).map(row=>row.target_id),
+   uncheckedIntegrations:marked.filter(row=>row.target_kind==='integration'&&row.held).map(row=>row.target_id),paging:'OFF'})
  })
  api.post('/api/move-in/adopt',async(c:any)=>{
   const s=await snapshot(c),input=await body(c),db=c.env.DB as D1Database
