@@ -1,9 +1,12 @@
 # 0.5.33 · 2026-11-23
 
-- Move in shows “needs checking” in the saved import journal until the check against the saved plan succeeds. If the check is interrupted, retry it from the journal without importing again. Schedule coverage warnings stay visible, and imported schedules must pass the check before you can make them live.
-- The short Hosting guide tells you which command stops development or preview. It also explains how to deploy with `MAIL_PROVIDER=none` and open a private owner link with `rer signin`.
+- Move in shows “needs checking” in the saved import journal until the check against the saved plan succeeds. If the check is interrupted, retry it from the journal without importing again. Schedule coverage warnings stay visible. While the saved snapshot is available, imported schedules must pass the check before you can make them live.
+- If a newer import superseded an unchecked Move in import, use **Check latest import** in the journal to check the latest saved plan and clear the pending checks it covers. A workspace admin can check an import saved by another admin. If an erasure withdrew the saved snapshot, the journal explains why the check is unavailable and prompts you to review schedule coverage before making the schedule live.
+- The short Hosting guide tells you to stop the server that is running, either development or preview, before deploying. It also explains how to deploy with `MAIL_PROVIDER=none` and open a private owner link with `rer signin`.
 - If local passkey enrollment fails while the tab is unfocused, Oncall tells you to bring it forward and try again.
 - The first incident review acceptance button tells you that a confirmation follows.
+- Oncall lowers Cloudflare D1 reads with indexed lists of pending incident deadlines and due alert notification wake-ups. Partial indexes find authorized outbox work and expired leases, and outbox writes use revision-checked batches.
+- Readiness queries fetch narrower sets of evidence. Workspace polls reuse unchanged data and request on-call coverage where it is shown.
 - The shared PagerDuty adoption browser test uses its own workspace so earlier import tests cannot interfere with its saved-plan check.
 
 ### Upgrade from 0.5.32
@@ -12,7 +15,7 @@ Back up first. For local data, run `"$HOME/.local/bin/rer" export --output expor
 
 Stop the local app with Ctrl-C or `"$HOME/.local/bin/rer" dev --stop`. If preview is running, stop it with `"$HOME/.local/bin/rer" preview --stop`. Once the release is published, run `git fetch --quiet --depth 1 origin tag v0.5.33` and `git checkout --quiet --detach refs/tags/v0.5.33`. Restart with `"$HOME/.local/bin/rer" dev --host localhost` or `npx -y @runeditrun/rer dev --host localhost` if you used Node. Use the same npx substitution for the other rer commands if you used Node. For a hosted installation, update the original deploying checkout to the same tag and run `"$HOME/.local/bin/rer" deploy --environment ENVIRONMENT` with the same credentials. Restore only into an empty destination.
 
-This update adds no migrations. Keep all 70 previously released migration files unchanged. The checkout pins rer to 0.2.131.
+This update applies four additive migrations (0167 to 0170) in filename order. Keep all 70 previously released migration files unchanged. The checkout pins rer to 0.2.131.
 
 ## Known limits
 
