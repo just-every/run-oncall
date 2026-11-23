@@ -53,6 +53,7 @@ export async function importedEmailSettings({w,request,cookie,actor,ok}) {
  assert.equal(refusedItem.effects[0].value.emailSettings.blocked,true);
  for(const name of ['Synthetic ignore','Synthetic acknowledge','Synthetic add note','Synthetic compound alias','Synthetic nested filter','Synthetic non RE2 alias'])assert.ok(refusedItem.unmapped.some(note=>note.reason.includes(name)&&note.original.name===name),'mapping report preserves '+name);
  ok(await door.apply('opsgenie',refused));
+ assert.equal(ok(await door.call('opsgenie','reconcile',{planId:refused.planId})).ok,true);
  const refusedRow=(await objects()).find(r=>r.value.provider==='email');
  const refusedNative=ok(await request('/api/state'));
  ok(await request('/api/email/addresses',{importedId:refusedRow.targetId,importedRevision:refusedRow.revision,id:'synthetic-oncall-refused-email',name:'Refused email',service:'payments',localPart:localPart(),confirmed:true,reviewedDifferences:true}),409);
@@ -85,6 +86,9 @@ export async function importedEmailSettings({w,request,cookie,actor,ok}) {
   await mail(w,part,'FAILED: synthetic-oncall-before-activation');
   assert.deepEqual(ok(await request('/api/state')).alerts,preActivation.alerts);
   assert.deepEqual(ok(await request('/api/email')).addresses,noAddress);
+  ok(await request('/api/email/addresses',input),409);
+  assert.deepEqual(ok(await request('/api/email')).addresses,noAddress);
+  assert.equal(ok(await door.call(vendor,'reconcile',{planId:plan.planId})).ok,true);
   ok(await w.request('/api/email/addresses',input),401);
   ok(await w.request('/api/email/addresses',input,viewerCookie),403);
   ok(await request('/api/email/addresses',{...input,importedRevision:'stale'}),409);

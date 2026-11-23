@@ -1,6 +1,6 @@
 import type { D1Database, D1Sql, D1TargetAdapter } from '../d1/types.ts';
 import type { D1ReversalPolicy } from '../d1/undo-types.ts';
-import type { ImportMapping, ImportPlan, Json, ParsedRecord, ReaderLimits } from '../types.ts';
+import type { ImportMapping, ImportPlan, Json, ParsedRecord, ProvenanceRow, ReaderLimits, TargetRow } from '../types.ts';
 import type { DoorGrant } from './protocol.ts';
 import type { ImportDoorIntake } from './intake/types.ts';
 export type { ImportDoorIntake, IntakeFormat } from './intake/types.ts';
@@ -41,6 +41,10 @@ export interface ImportDoorRuntimeOptions extends ImportDoorSource {
    * `preparePreservedUndo` selects 'preserve-conflicts'; other adapters select
    * 'strict'. Existing jobs always keep the policy they were created with. */
   reversalPolicy?: D1ReversalPolicy;
+  /** Explain an independently confirmed native edit during readback only. */
+  explainNativeEdit?(row: TargetRow, provenance: ProvenanceRow, inherited: boolean): string | undefined;
+  /** Persist product check state under the admitted authority after a matching readback. */
+  onReconciled?(request: DoorRequest, planId: string): Promise<void>;
 }
 export type ImportDoorRawRuntimeOptions = Omit<ImportDoorRuntimeOptions, 'format' | 'parse' | 'intake'> & ImportDoorRawSource;
 export type ImportDoorRuntime = ImportDoorRuntimeOptions | ImportDoorRawRuntimeOptions;

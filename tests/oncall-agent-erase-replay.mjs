@@ -139,11 +139,14 @@ export async function eraseClasses(runtime) {
     return answer.result.structuredContent.data.find(row=>row.id===applied.value.job.id);
    };
    const unchecked=await importStatus();assert.equal(unchecked.state,'needs_check');assert.equal(unchecked.needsCheck,true);
-   const checked=await door.call('splunk','reconcile',{planId:plan.value.planId});assert.equal(checked.value.ok,true);
-   assert.equal((await importStatus()).state,'completed');
    const imported=(await json('/api/move-in/objects')).filter(row=>row.targetKind==='integration'&&!before.has(row.targetId));
    assert.equal(imported.length,1);
    await json('/api/intake/incumbent',{importedId:imported[0].targetId,importedRevision:imported[0].revision,id,service,name:id,revision:0,key},201);
+   const refused=await http('/api/intake/sources/'+id+'/activate-incumbent',{revision:1,confirmed:true});
+   assert.equal(refused.status,409);await refused.body?.cancel();
+   assert.equal((await importStatus()).state,'needs_check');
+   const checked=await door.call('splunk','reconcile',{planId:plan.value.planId});assert.equal(checked.value.ok,true);
+   assert.equal((await importStatus()).state,'completed');
    const activated=await http('/api/intake/sources/'+id+'/activate-incumbent',{revision:1,confirmed:true});
    assert.equal(activated.status,200);await activated.body?.cancel();
    return {kind:'intake',id,expected:[destructive,security,live]};

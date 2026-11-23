@@ -4,11 +4,11 @@ import { requestContext } from '../modules/import-kit/src/d1/budget'
 import { nativeStagingScope } from '../modules/import-kit/src/d1/native-staging-context'
 import type { D1ImportContext } from '../modules/import-kit/src/d1/types'
 import type { ImportCheckState } from './check-state'
-import { reviewCoverageWarnings, savedReviewItems } from './review-copy'
+import { scheduleCoverageWarnings, savedReviewItems } from './review-copy'
 
 /** Read the retained plan even after undo removes its native schedule rows.
  * Use the kit's exact read fence so erasure and current authority still apply. */
-export async function readMoveInJournal(id:string,context:D1ImportContext,checkState:ImportCheckState=null) {
+export async function readMoveInJournal(id:string,context:D1ImportContext,checkState:ImportCheckState,liveSchedules:string[]) {
  context=requestContext(context)
  await authorize(context,'read')
  const {job,plan}=await stored(id,context)
@@ -32,6 +32,12 @@ export async function readMoveInJournal(id:string,context:D1ImportContext,checkS
   return typeof name==='string'?entry.effects.map(effect=>[effect.targetKind+':'+effect.targetId,name]):[]
  }))
  const check=job.state==='completed'?checkState:null
+ const coverageBySchedule=job.state==='completed'&&liveSchedules.length
+  ?Object.fromEntries(Object.entries(scheduleCoverageWarnings(savedReviewItems(plan))).filter(([id])=>liveSchedules.includes(id)))
+  :{}
+ const coverageWarnings=Object.values(coverageBySchedule).flat()
  return {...job,schedules,files,...(exportedAt?{exportedAt}:{}),comparisons,labels,
-  ...(check?{needsCheck:check==='pending',...(check==='withdrawn'?{checkUnavailable:'snapshot_withdrawn' as const}:{}),coverageWarnings:reviewCoverageWarnings(savedReviewItems(plan))}:{})}
+  ...(check?{needsCheck:check==='pending',...(check==='withdrawn'?{checkUnavailable:'snapshot_withdrawn' as const}:{})}:{}),
+  ...(check||coverageWarnings.length?{coverageWarnings}:{}),
+  ...(coverageWarnings.length?{coverageBySchedule}:{})}
 }

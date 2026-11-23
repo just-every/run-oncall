@@ -5,7 +5,7 @@ import { DoorError } from './protocol.ts';
 import { readD1PersistedImport } from '../d1/index.ts';
 
 export const recordKey = (r: {kind:string;sourceId:string}) => canonicalJson([r.kind,r.sourceId]);
-export interface ImportedTarget { provenance: ProvenanceRow; matches: boolean }
+export interface ImportedTarget { provenance: ProvenanceRow; matches: boolean; current: TargetRow | null | undefined }
 /** Each distinct owning plan's job, in one read. */
 async function ownerPlans(request: DoorRequest, ids: string[]): Promise<Map<string, Pick<DoorPlanRow,'id'|'job_id'>>> {
   const {results} = await request.options.database.prepare('SELECT id,job_id FROM ik_door_plans WHERE id IN (SELECT value FROM json_each(?)) AND installation_id=? AND namespace=? AND complete=1')
@@ -46,22 +46,28 @@ export async function importedTargets(request: DoorRequest, targets: DoorTarget[
     const current = rows.get(canonicalJson([target.kind,target.id]));
     let matches = false;
     try { matches = !!current && current.revision === provenance.appliedRevision && sha256(canonicalJson(current.value)) === provenance.valueHash && attachmentHash(current.attachment) === provenance.attachmentHash; } catch { /* Corrupt native attachment is a conflict, never replacement authority. */ }
-    return {provenance,matches};
+    return {provenance,matches,current};
   });
 }
-export async function inspectRecords(request: DoorRequest, records: DoorRecord[]) {
+export async function inspectRecords(request: DoorRequest, records: DoorRecord[], planId: string) {
   const result = [], found = await importedTargets(request, records.flatMap(record => record.targets));
   let present = 0, explained = 0, targets = 0, next = 0;
   const counts: Record<string, number> = Object.create(null);
   for (const record of records) {
-    const conflicts: string[] = [];
+    const conflicts: string[] = [], explanations = new Set<string>();
+    if (record.explanation) explanations.add(record.explanation);
     for (const target of record.targets) {
-      if (!found[next++].matches) conflicts.push(canonicalJson([target.kind,target.id]));
-      else { targets++; counts[target.kind] = (counts[target.kind] ?? 0) + 1; }
+      const {matches,current,provenance} = found[next++];
+      if (matches) { targets++; counts[target.kind] = (counts[target.kind] ?? 0) + 1; }
+      else {
+        const reason = current && request.options.explainNativeEdit?.(current,provenance,target.ownerPlanId!==planId);
+        if (reason) explanations.add(reason);
+        else conflicts.push(canonicalJson([target.kind,target.id]));
+      }
     }
     if (!record.targets.length && !record.explanation) conflicts.push('no_native_target_or_explanation');
     if (conflicts.length) result.push({kind:record.kind,sourceId:record.sourceId,status:'mismatched',conflicts});
-    else if (record.explanation) { explained++; result.push({kind:record.kind,sourceId:record.sourceId,status:'explained',reason:record.explanation}); }
+    else if (explanations.size) { explained++; result.push({kind:record.kind,sourceId:record.sourceId,status:'explained',reason:[...explanations].join(' ')}); }
     else { present++; result.push({kind:record.kind,sourceId:record.sourceId,status:'present'}); }
   }
   return {ok: result.every(r=>r.status!=='mismatched'), sourceIds:result, counts:{sourceRecords:records.length,present,explained,nativeTargets:targets,byKind:counts}};

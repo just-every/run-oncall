@@ -12,7 +12,9 @@ import { emailDraft, decideEmail } from './rules.ts';
 import { inboundDomain } from './receive.ts';
 import type { EmailAddress, EmailVersion } from './types.ts';
 import { editEmailField } from './edit';
+import {requireIntegrationCheck,uncheckedBinding} from '../move-in/check-state';
 type Deps={body:(c:any)=>Promise<any>;state:(c:any,admin?:boolean)=>Promise<State>;guard:(c:any)=>{sql:string;values:(string|number|null)[]}};
+const uncheckedEmail=uncheckedBinding('emailAddress');
 export function installEmailManagement(api:any,deps:Deps) {
   const current=async(c:any)=>{const state=await deps.state(c,true);authority(state,c.get('actor'),true);return state;};
   api.get('/api/email',async(c:any)=>{const state=await current(c);return c.json({domain:inboundDomain(c.env),addresses:state.emailAddresses??[],versions:state.emailRules??[],samples:state.emailSamples??[],receipts:state.emailReceipts??[],quarantine:state.emailQuarantine??[]});});
@@ -81,13 +83,15 @@ export function installEmailManagement(api:any,deps:Deps) {
       return c.json({erased:'saved mail and quarantine',receipts:'retained operational history',address});
     }
     if(!['rotate','revoke'].includes(action))fail('Unknown address action',404);
+    if(action==='rotate')await requireIntegrationCheck(c.env.DB,uncheckedEmail,address.id);
     const local=action==='rotate'?text(input.localPart,'Private local part',64).toLowerCase():null,domain=inboundDomain(c.env);
     if(local&&(!domain||!/^[a-z0-9][a-z0-9-]{31,63}$/.test(local)))fail('Configure a domain and a fresh 32–64 character random local part');
     const digest=local?await changeHash(local+'@'+domain):null;
     if(digest&&await c.env.DB.prepare('SELECT 1 FROM oc_email_credentials WHERE digest=?').bind(digest).first())fail('Choose a fresh address');
     if(local)refuseKeyEcho([JSON.stringify(state)],local);
     address.active=action==='rotate';address.revision++;
-    await commit(c,state,token=>[c.env.DB.prepare('UPDATE oc_email_credentials SET active=0 WHERE address=? AND EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)').bind(address.id,token),...(digest?[c.env.DB.prepare('INSERT INTO oc_email_credentials(digest,address,active) SELECT ?,?,1 WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)').bind(digest,address.id,token)]:[])]);
+    await commit(c,state,token=>[c.env.DB.prepare('UPDATE oc_email_credentials SET active=0 WHERE address=? AND EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)').bind(address.id,token),...(digest?[c.env.DB.prepare('INSERT INTO oc_email_credentials(digest,address,active) SELECT ?,?,1 WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)').bind(digest,address.id,token)]:[])],
+     action==='rotate'?{sql:`NOT EXISTS(${uncheckedEmail})`,values:[address.id]}:undefined);
     return c.json(address);
   });
 }

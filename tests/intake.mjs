@@ -206,6 +206,10 @@ try {
    ok(await send(key,id+'-inactive'),vendor==='pagerduty'?400:401);assert.deepEqual(ok(await request('/api/state')).alerts,deniedBefore);
    const activation={revision:status.source.revision,confirmed:true},activate=()=>request('/api/intake/sources/'+id+'/activate-incumbent',activation);
    ok(await w.request('/api/intake/sources/'+id+'/activate-incumbent',activation,viewerCookie),403);
+   ok(await activate(),409);
+   assert.equal(ok(await request('/api/intake/sources/'+id+'/incumbent')).source.active,false);
+   const check=ok(await importDoor.call(vendor,'reconcile',{planId:plan.planId}));
+   assert.equal(check.ok,true,'a key staged while paused does not change the imported definition');
    const beforeActivate=ok(await request('/api/archive'));
    w.sql("CREATE TRIGGER synthetic_incumbent_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.feature='intake' BEGIN SELECT RAISE(ABORT,'SYNTHETIC_INCUMBENT_AUDIT_FAILURE'); END");
    ok(await activate(),503);w.sql('DROP TRIGGER synthetic_incumbent_audit');assert.deepEqual(ok(await request('/api/archive')),beforeActivate);

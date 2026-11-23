@@ -23,17 +23,21 @@ export function savedReviewItems(plan:ImportPlan) {
 }
 
 export function reviewCoverageWarnings(items:any[]):string[] {
- const copy=reviewCopy(items),warnings:string[]=[]
+ return Object.values(scheduleCoverageWarnings(items)).flat()
+}
+
+export function scheduleCoverageWarnings(items:any[]):Record<string,string[]> {
+ const copy=reviewCopy(items),warnings:Record<string,string[]>=Object.create(null)
  for(const item of items) {
   if(item.kind!=='schedules')continue
   for(const effect of item.effects) {
    if(effect.targetKind!=='schedule')continue
+   const notes=warnings[effect.targetId]??=[]
    const equivalence=effect.value.equivalence??{status:'not-supplied'}
-   if(equivalence.status!=='equivalent-in-window')warnings.push(...copy.comparison(item,equivalence))
+   if(equivalence.status!=='equivalent-in-window')notes.push(...copy.comparison(item,equivalence))
+   const backup=item.unmapped.find((note:any)=>note.field==='backup')
+   if(backup)notes.push(copy.difference(item,backup))
   }
-  const backup=item.unmapped.find((note:any)=>note.field==='backup')
-  if(backup)warnings.push(copy.difference(item,backup))
-  if(!item.effects.length&&!item.rejection)warnings.push(`This check did not compare coverage for ${item.name}. Review the earlier import’s coverage before adopting the schedule.`)
  }
  return warnings
 }

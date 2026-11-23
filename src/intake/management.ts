@@ -7,8 +7,10 @@ import { workspaceWrite } from '../workspace-store';
 import { authority, fail, text, type State } from '../family/response-operations/domain.ts';
 import { intakeProviders, type IntakeSource } from './model';
 import { intakeHash } from './credentials';
+import {requireIntegrationCheck,uncheckedBinding} from '../move-in/check-state';
 
 type Dependencies={body:(c:any)=>Promise<any>;state:(c:any,admin?:boolean)=>Promise<State>;guard:(c:any)=>{sql:string;values:(string|number|null)[]}};
+const uncheckedIntake=uncheckedBinding('intakeSource');
 export function installIntakeManagement(api:any,deps:Dependencies) {
   installIncumbentKeys(api,deps);
   api.post('/api/intake/sources',async(c:any)=>{
@@ -19,6 +21,7 @@ export function installIntakeManagement(api:any,deps:Dependencies) {
     if(input.revision!==(previous?.revision??0))fail('Integration changed; reload before saving',409);
     if(input.provider==='sns'||input.provider==='native'||!intakeProviders.includes(input.provider)||!state.services.some(s=>s.id===input.service))fail('Choose a supported provider and service');
     if(previous?.routing)fail('Use routed key management to rotate this key');
+    await requireIntegrationCheck(c.env.DB,uncheckedIntake,id);
     if(previous&&!previous.active&&await c.env.DB.prepare('SELECT 1 FROM oc_incumbent_credentials WHERE source=?').bind(id).first())fail('Use the separate incumbent activation confirmation',409);
     if(previous&&(previous.service!==input.service||previous.provider!==input.provider))fail('Service and provider bindings are immutable; create another integration');
     const key=text(input.key,'Integration key',200);if(key.length<32)fail('Integration key needs at least 32 characters');
@@ -30,7 +33,8 @@ export function installIntakeManagement(api:any,deps:Dependencies) {
     if(previous)state.intakeSources![state.intakeSources!.indexOf(previous)]=source;else(state.intakeSources??=[]).push(source);
     state.audit.push({id:crypto.randomUUID(),at:source.updatedAt,actor:actor.id,kind:'intake-source',text:`Configured ${source.provider} integration ${id}; revision ${source.revision}`});
     auditIdentity(c.env.DB,{source:{kind:'intake-source',id:source.id},subject:{kind:'intake-source',id:source.id}});
-    const token=crypto.randomUUID(),result=await c.env.DB.batch([...workspaceWrite(c.env.DB,state,state.revision,deps.guard(c),token),c.env.DB.prepare('INSERT INTO oc_intake_credentials(source,key_digest,key_custody) SELECT ?,?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?) ON CONFLICT(source) DO UPDATE SET key_digest=excluded.key_digest,key_custody=excluded.key_custody').bind(id,digest,await sealCredential(key,runtimeBindings(c.env).SESSION_SECRET,sourceCustody),token)]);
+    const guard=deps.guard(c),bound={sql:`(${guard.sql}) AND NOT EXISTS(${uncheckedIntake})`,values:[...guard.values,id]};
+    const token=crypto.randomUUID(),result=await c.env.DB.batch([...workspaceWrite(c.env.DB,state,state.revision,bound,token),c.env.DB.prepare('INSERT INTO oc_intake_credentials(source,key_digest,key_custody) SELECT ?,?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?) ON CONFLICT(source) DO UPDATE SET key_digest=excluded.key_digest,key_custody=excluded.key_custody').bind(id,digest,await sealCredential(key,runtimeBindings(c.env).SESSION_SECRET,sourceCustody),token)]);
     if(result[0].meta.changes!==1)fail('Workspace or authority changed; reload',409);
     return c.json(source,previous?200:201);
   });

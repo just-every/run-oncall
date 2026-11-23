@@ -5,10 +5,12 @@ import {workspaceWrite} from '../workspace-store';
 import {authority,fail,text,type State} from '../family/response-operations/domain';
 import type {IntakeSource} from './model';
 import {intakeHash} from './credentials';
+import {requireIntegrationCheck,uncheckedTarget} from '../move-in/check-state';
 
 type Dependencies={body:(c:any)=>Promise<any>;state:(c:any,admin?:boolean)=>Promise<State>;guard:(c:any)=>{sql:string;values:(string|number|null)[]}};
 const gate='EXISTS(SELECT 1 FROM workspace_control WHERE id=1 AND write_token=?)';
 const completed=`EXISTS(SELECT 1 FROM ik_provenance p JOIN ik_jobs j ON j.id=p.job_id WHERE p.destination='oncall' AND p.target_kind='integration' AND p.target_id=? AND p.reversed=0 AND j.state='completed')`;
+const uncheckedIntegration=uncheckedTarget('integration');
 const safeSource=(state:State,id:string)=>{const source=state.intakeSources?.find(s=>s.id===id);if(!source||source.routing||!['pagerduty','opsgenie','splunk'].includes(source.provider))fail('Unknown service-bound compatible integration',404);return source};
 function audit(c:any,state:State,source:IntakeSource,kind:string) {
  state.audit.push({id:crypto.randomUUID(),at:source.updatedAt,actor:c.get('actor').id,kind,text:`${kind}: integration ${source.id}; revision ${source.revision}; paging OFF`});
@@ -55,11 +57,20 @@ export function installIncumbentKeys(api:any,deps:Dependencies) {
   const input=await deps.body(c),state=await deps.state(c,true);authority(state,c.get('actor'),true);
   const source=safeSource(state,c.req.param('source'));
   if(input.confirmed!==true||input.revision!==source.revision||source.active)fail('Confirm the current inactive integration revision',409);
-  const held=await c.env.DB.prepare('SELECT key_digest FROM oc_incumbent_credentials WHERE source=?').bind(source.id).first();
+  const db=c.env.DB as D1Database;
+  const held=await db.prepare('SELECT key_digest,imported_digest FROM oc_incumbent_credentials WHERE source=?').bind(source.id).first<{key_digest:string;imported_digest:string}>();
   if(!held)fail('Supply an incumbent key again before activation',409);
+  const {results:imports}=await db.prepare("SELECT id,revision,data FROM move_in_objects WHERE kind='integration' AND json_extract(data,'$.intakeSource')=?").bind(source.id).all<{id:string;revision:string;data:string}>();
+  const imported=imports[0];
+  if(imports.length!==1||await intakeHash(imported.id)!==held.imported_digest)fail('Imported integration changed; reload',409);
+  await requireIntegrationCheck(db,uncheckedIntegration,imported.id);
   const nativeKey=[...crypto.getRandomValues(new Uint8Array(32))].map(n=>n.toString(16).padStart(2,'0')).join(''),digest=await intakeHash(nativeKey);
   source.active=true;source.revision++;source.updatedAt=new Date().toISOString();audit(c,state,source,'incumbent-key-activated');
-  const token=crypto.randomUUID(),guard=deps.guard(c),bound={sql:`(${guard.sql}) AND EXISTS(SELECT 1 FROM oc_incumbent_credentials WHERE source=? AND key_digest=?)`,values:[...guard.values,source.id,held.key_digest]};
+  const token=crypto.randomUUID(),guard=deps.guard(c),bound={sql:`(${guard.sql})
+   AND EXISTS(SELECT 1 FROM oc_incumbent_credentials WHERE source=? AND key_digest=? AND imported_digest=?)
+   AND EXISTS(SELECT 1 FROM move_in_objects WHERE kind='integration' AND id=? AND revision=? AND data=?)
+   AND ${completed} AND NOT EXISTS(${uncheckedIntegration})`,
+   values:[...guard.values,source.id,held.key_digest,held.imported_digest,imported.id,imported.revision,imported.data,imported.id,imported.id]};
   const result=await c.env.DB.batch([...workspaceWrite(c.env.DB,state,state.revision,bound,token),c.env.DB.prepare(`INSERT INTO oc_intake_credentials(source,key_digest,key_custody) SELECT ?,?,? WHERE ${gate} ON CONFLICT(source) DO UPDATE SET key_digest=excluded.key_digest,key_custody=excluded.key_custody`).bind(source.id,digest,await sealCredential(nativeKey,runtimeBindings(c.env).SESSION_SECRET,sourceCustody),token)]);
   if(result[0].meta.changes!==1){auditRefusalCommitted(c.env.DB);fail('Integration or authority changed; reload',409);}
   return c.json({source,keySupplied:true,nativeKey,paging:'OFF'});
@@ -73,10 +84,11 @@ export async function importedEmailActivation(db:D1Database,input:any) {
  const importedId=text(input.importedId,'Imported integration',200)
  const row=await db.prepare("SELECT revision,data FROM move_in_objects WHERE kind='integration' AND id=?").bind(importedId).first<{revision:string;data:string}>()
  if(!row||row.revision!==input.importedRevision)fail('Imported integration changed; reload',409)
+ await requireIntegrationCheck(db,uncheckedIntegration,importedId)
  const value=JSON.parse(row.data),settings=value.emailSettings
  if(value.provider!=='email'||!settings||settings.blocked)fail('Resolve the unconverted email rules in the saved export and import again before activation',409)
  if(input.confirmed!==true||settings.differences.length&&input.reviewedDifferences!==true)fail('Confirm activation and review the quarantine differences first',409)
  if(value.emailAddress)fail('This imported email integration was already activated',409)
- return {draft:settings.draft,guard:{sql:`EXISTS(SELECT 1 FROM move_in_objects WHERE kind='integration' AND id=? AND revision=? AND data=?) AND ${completed}`,values:[importedId,row.revision,row.data,importedId]},
+ return {draft:settings.draft,guard:{sql:`EXISTS(SELECT 1 FROM move_in_objects WHERE kind='integration' AND id=? AND revision=? AND data=?) AND ${completed} AND NOT EXISTS(${uncheckedIntegration})`,values:[importedId,row.revision,row.data,importedId,importedId]},
   write(token:string,id:string){return db.prepare(`UPDATE move_in_objects SET revision=?,data=? WHERE kind='integration' AND id=? AND ${gate}`).bind('email-'+token,JSON.stringify({...value,emailAddress:id}),importedId,token)}}
 }

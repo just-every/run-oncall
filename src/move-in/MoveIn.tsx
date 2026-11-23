@@ -32,7 +32,8 @@ function transportError(error:unknown) {
 export function MoveIn({admin,connect,request}:{admin:boolean;connect:boolean;request:(path:string,data?:unknown)=>Promise<any>}) {
  const [vendor,setVendor]=useState('pagerduty'),[source,setSource]=useState<Uint8Array|null>(null),[filename,setFilename]=useState(''),[preview,setPreview]=useState<any>(null),[job,setJob]=useState<any>(null),[jobs,setJobs]=useState<any[]>([]),[rows,setRows]=useState<any[]>([]),[choices,setChoices]=useState<any>({services:[],members:[]}),[busy,setBusy]=useState(false),[erasing,setErasing]=useState(''),[typed,setTyped]=useState(''),[erased,setErased]=useState<any>(null)
  const [step,setStep]=useState(1),[sourceChoice,setSourceChoice]=useState('pagerduty'),[confirmUndo,setConfirmUndo]=useState(false),[labels,setLabels]=useState<Record<string,string>>({})
- const [reconciliation,setReconciliation]=useState<Reconciliation|null>(null)
+ const [reconciliation,setReconciliation]=useState<(Reconciliation&{vendor:string})|null>(null)
+ const [coverageBySchedule,setCoverageBySchedule]=useState<Record<string,string[]>>({})
  const pending=useRef(0),loadVersion=useRef(0)
  const failures=useActionFailure()
  const [failureDetails,setFailureDetails]=useState<unknown>(null)
@@ -72,13 +73,14 @@ export function MoveIn({admin,connect,request}:{admin:boolean;connect:boolean;re
   setChoices(options);setRows(objects);setJobs(history)
   // Names remain in erasable journal custody. Prefer the latest saved name for each target.
   setLabels(Object.assign({},...[...history].reverse().map(saved=>saved.labels??{})))
+  setCoverageBySchedule(Object.assign({},...history.map(saved=>saved.coverageBySchedule??{})))
   setJob((current:any)=>history.find(saved=>saved.id===current?.id)??history.find(saved=>saved.state==='completed')??history[0]??null)
  }
  const refreshAfterSave=async()=>{try{await load()}catch(error){failures.show(transportError(error),{read:true,target:null})}}
  const checkImport=async(provider:string,planId:string)=>{
   setReconciliation(null);setErased(null);setStep(4)
   const result=await reconcilePlan(doorClient(provider),planId).finally(refreshAfterSave)
-  setReconciliation(result)
+  setReconciliation({...result,vendor:provider})
   return result
  }
  const applyAndCheck=async(provider:string,planId:string,fingerprint:string)=>{
@@ -130,12 +132,13 @@ export function MoveIn({admin,connect,request}:{admin:boolean;connect:boolean;re
   }
  },[admin])
  if(!admin)return <section className="panel"><h2>Move in</h2><p>An administrator reads and imports schedules.</p></section>
- const coverageWarnings=reconciliation?.details.coverageWarnings
-  ??(preview?.planId===job?.door?.planId&&preview?reviewCoverageWarnings(preview.items):job?.coverageWarnings??[])
+ const coverageWarnings=reconciliation
+  ?[...new Set([...reconciliation.details.coverageWarnings,...reconciliation.sourceIds.flatMap(row=>row.kind==='schedules'?coverageBySchedule[reconciliation.vendor+':'+row.sourceId]??[]:[])])]
+  :(preview?.planId===job?.door?.planId&&preview?reviewCoverageWarnings(preview.items):job?.coverageWarnings??[])
  const connecting=step===1||(step===4&&job?.checkUnavailable)
  return <section className="scheduling-workspace move-in-workspace">
  {(jobs.length>0||job)&&<section className="scheduling-panel move-in-data" hidden={step===2||step===3}>
- <ImportJournal jobs={jobs} job={job} busy={busy} select={selected=>{setJob(selected);setConfirmUndo(false);setPreview(null);setReconciliation(null);setStep(selected?.needsCheck||selected?.checkUnavailable?4:1)}} reconcile={()=>{void run(()=>checkImport(job.vendor,job.checkPlanId),{read:true,retryInput:true})}} resume={()=>{
+ <ImportJournal jobs={jobs} job={job} busy={busy} showCoverageWarnings={step!==4||Boolean(job?.checkUnavailable)} select={selected=>{setJob(selected);setConfirmUndo(false);setPreview(null);setReconciliation(null);setStep(selected?.needsCheck||selected?.checkUnavailable?4:1)}} reconcile={()=>{void run(()=>checkImport(job.vendor,job.checkPlanId),{read:true,retryInput:true})}} resume={()=>{
   const selected=job
   const hasPlan=Boolean(selected?.door?.planId)
   void run(async()=>{
@@ -167,7 +170,7 @@ export function MoveIn({admin,connect,request}:{admin:boolean;connect:boolean;re
  <h2>{reconciliation?.ok?(coverageWarnings.length?'Import complete with coverage warnings':'Import complete'):reconciliation?'Import differences':busy?'Checking imported data':(job?.needsCheck||failures.failure)?'Import needs checking':'Import complete'}</h2>
  {reconciliation?
  <p>{reconciliation.ok?'Oncall checked the imported records against the saved import plan.':'The native data differs from the saved import plan. Review these differences before continuing.'}</p>
- :job?.needsCheck?<p>Use the saved import journal to check the imported data before making schedules live.</p>
+ :job?.needsCheck?<p>Use the saved import journal to check the imported data before making schedules live or activating integrations.</p>
  :null}
  {coverageWarnings.length>0&&<><h3>Schedule coverage from the import review</h3><ul>{coverageWarnings.map((warning:string,index:number)=><li key={index}>{warning}</li>)}</ul></>}
  {reconciliation&&<>
@@ -177,9 +180,9 @@ export function MoveIn({admin,connect,request}:{admin:boolean;connect:boolean;re
  </>}</>}
  <button onClick={()=>{setStep(1);setPreview(null);setReconciliation(null)}}>Read another account or file</button></section>}
  <section className="scheduling-panel move-in-data" hidden={!rows.length&&!erased}><h2>Imported data</h2><p>Data stays paused until you adopt a schedule or activate an integration.</p>{erased&&<p role="status">Imported person erased{erased.recordsErased>0&&<>: {erased.recordsErased} saved {erased.recordsErased===1?'record':'records'} removed permanently</>}.{erased.nativeMember==='kept'&&' A native member with this email was not changed.'}</p>}{rows.length?<ul className="move-in-objects">{rows.map((row,index)=>{const email=row.value.email??row.targetId,label=[row.value.name,row.value.schedule?.name,labels[row.targetKind+':'+row.targetId],row.value.email].find(value=>typeof value==='string'&&value.trim())??`${vendorNames[(row.value.vendor??row.targetId.split(':')[0]) as keyof typeof vendorNames]??'Imported'} ${row.targetKind==='user'?'person':row.targetKind==='policy'?'escalation policy':row.targetKind} ${index+1}`;return <li key={row.targetKind+row.targetId}><strong>{label}</strong> {row.value.adopted&&<span>Adopted · source paused</span>}{row.targetKind==='user'&&<> <button type="button" disabled={busy} onClick={()=>{setErasing(erasing===row.targetId?'':row.targetId);setTyped('');setErased(null)}}>Erase person</button></>}
- {row.targetKind==='integration'&&<IncumbentActivation row={{...row,value:{...row.value,name:label}}} services={choices.services} request={request} reload={load}/>}
+ {row.targetKind==='integration'&&<IncumbentActivation row={{...row,value:{...row.value,name:label}}} services={choices.services} needsCheck={choices.uncheckedIntegrations?.includes(row.targetId)} request={request} reload={load}/>}
  {row.targetKind==='schedule'&&(row.value.adopted||!choices.uncheckedSchedules?.includes(row.targetId)
-  ?<MoveInAdoption row={row} rows={rows} choices={choices} busy={busy} adopt={input=>run(async()=>{await request('/api/move-in/adopt',input);await refreshAfterSave()},{retryInput:hasChangeBase(input)})}/>
+  ?<MoveInAdoption row={row} rows={rows} choices={choices} warnings={coverageBySchedule[row.targetId]} busy={busy} adopt={input=>run(async()=>{await request('/api/move-in/adopt',input);await refreshAfterSave()},{retryInput:hasChangeBase(input)})}/>
   :<p>Check imported data in the saved journal before making this schedule live.</p>)}
  {erasing===row.targetId&&<form onSubmit={e=>{e.preventDefault();void run(async()=>{const receipt=await request('/api/move-in/erase',{email,confirmation:typed});await refreshAfterSave();setErasing('');setTyped('');setReconciliation(null);setErased(receipt)})}}><label className="scheduling-field">Type "erase {email}" to erase this person from imported data<input value={typed} onChange={e=>setTyped(e.target.value)} autoComplete="off"/></label><button type="submit" disabled={busy||typed!==`erase ${email}`}>Erase permanently</button></form>}</li>})}</ul>:<p>No imported objects.</p>}</section><a className="move-in-footer" href="/docs/move-in">How move-in works</a></section>
 }

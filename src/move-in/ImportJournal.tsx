@@ -9,11 +9,12 @@ const label=(job:any)=>[provider(job),...(job.schedules??[]).map(artifactLabel),
 const resumable=(job:any)=>job.door?job.state==='rolling_back'||(!job.door.business&&['queued','applying'].includes(job.state)):['queued','applying','failed','rolling_back'].includes(job.state)
 const undoable=(job:any)=>['completed','undoing'].includes(job.state)||(job.door&&job.state==='failed')
 
-export function ImportJournal({jobs,job,busy,select,resume,reconcile,undo}:{jobs:any[];job:any;busy:boolean;select:(job:any)=>void;resume:()=>void;reconcile:()=>void;undo:()=>void}) {
+export function ImportJournal({jobs,job,busy,showCoverageWarnings,select,resume,reconcile,undo}:{jobs:any[];job:any;busy:boolean;showCoverageWarnings:boolean;select:(job:any)=>void;resume:()=>void;reconcile:()=>void;undo:()=>void}) {
  return <>
  {jobs.length>1&&<label className="scheduling-field">Saved import journal<select aria-label="Saved import journal" value={job?.id??''} disabled={busy} onChange={event=>select(jobs.find(saved=>saved.id===event.target.value)??null)}>{jobs.map((saved,index)=><option key={saved.id} value={saved.id}>{provider(saved)} · {stateLabel(saved)} {index+1}{saved.files?.[0]&&` · ${artifactLabel(saved.files[0])}`}</option>)}</select></label>}
  {job&&<div role="status"><h3>Import journal</h3><p>{label(job)} · {job.checkpoint}/{job.total} source objects processed</p>
  {job.checkUnavailable&&<p>An erasure withdrew the saved snapshot. Oncall needs that snapshot to check the import. Review the coverage of the paused schedules or import a fresh export that excludes the erased person.</p>}
+ {showCoverageWarnings&&job.coverageWarnings?.length>0&&<><h4>Schedule coverage from the import review</h4><ul>{job.coverageWarnings.map((warning:string,index:number)=><li key={index}>{warning}</li>)}</ul></>}
  {job.exportedAt&&<p>Export date from filename: {new Date(job.exportedAt).toLocaleDateString([], {month:'short',day:'numeric',year:'numeric'})}</p>}
  {job.comparisons?.map((comparison:string)=><p key={comparison}>Coverage compared from {comparison.split(' → ').map(day).join(' to ')}</p>)}
  {job.approval&&<details><summary>Approval details</summary><p style={{overflowWrap:'anywhere'}}>{job.approval}</p></details>}

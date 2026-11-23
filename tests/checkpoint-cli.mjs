@@ -244,6 +244,7 @@ if(process.argv[1]&&new URL(import.meta.url).pathname===process.argv[1]) {
   ok(await w.request('/api/command',{type:'service',id:'synthetic-oncall-1',name:'Synthetic checkpoint service',environment:'production',owner:owner.value.member.id,runbook:[],pager:''},cookie))
   const door=ownerDoor(w,cookie),preview=ok(await door.preview('pagerduty',JSON.stringify({integrations:[{id:'synthetic-oncall-1',type:'events_api_v2_inbound_integration'}]})))
   ok(await door.apply('pagerduty',preview))
+  assert.equal(ok(await door.call('pagerduty','reconcile',{planId:preview.planId})).ok,true)
   const row=ok(await w.request('/api/move-in/objects',undefined,cookie)).find(row=>row.targetKind==='integration'),key=randomBytes(16).toString('hex')
   const supplied=await w.request('/api/intake/incumbent',{importedId:row.targetId,importedRevision:row.revision,id:'synthetic-oncall-1',service:'synthetic-oncall-1',name:'Synthetic checkpoint incumbent',revision:0,key},cookie);assert.equal(supplied.status,201)
   const active=ok(await w.request('/api/intake/sources/synthetic-oncall-1/activate-incumbent',{revision:supplied.value.source.revision,confirmed:true},cookie)),digest=w.sql('SELECT key_digest FROM oc_incumbent_credentials')[0].key_digest

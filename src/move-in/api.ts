@@ -10,7 +10,7 @@ import { fail } from '../family/response-operations/domain'
 import { eraseImportedPerson } from './erasure'
 import { mailbox } from './rotations'
 import { changedSinceImport, Refusal } from './refusals'
-import { journalCheckState, snapshotHeld, type ImportCheckState } from './check-state'
+import { journalCheckState, journalLiveSchedules, snapshotHeld, type ImportCheckState } from './check-state'
 import { readMoveInJournal } from './journal'
 import { readImportDoorHistory } from '../modules/import-kit/src/door/index'
 import { IMPORT_DOOR_KEY } from './door-key'
@@ -46,6 +46,7 @@ export function installMoveIn(api:any,body:(c:any,max?:number)=>Promise<any>) {
   const history=await readImportDoorHistory(c.env.DB,IMPORT_DOOR_KEY,auth)
   const rows=await (c.env.DB as D1Database).prepare(`SELECT j.id,j.namespace,j.mapping_version,j.principal_id,j.rowid AS sequence,
    ${journalCheckState} AS check_state,
+   ${journalLiveSchedules} AS live_schedules,
    (SELECT d.id FROM ik_door_namespaces n JOIN ik_door_plans d ON d.id IN (n.pending_id,n.head_id)
     JOIN ik_jobs current ON current.id=d.job_id AND current.state='completed'
     WHERE n.installation_id=? AND n.namespace=? AND ${snapshotHeld('d.id')}
@@ -54,12 +55,12 @@ export function installMoveIn(api:any,body:(c:any,max?:number)=>Promise<any>) {
    WHERE j.destination='oncall' AND (j.namespace=? OR p.id IS NOT NULL)
    AND (j.principal_id=? OR j.state='completed')
    AND (${auth.sql}) ORDER BY j.rowid DESC`).bind(IMPORT_DOOR_KEY,ctx.namespace,ctx.namespace,IMPORT_DOOR_KEY,ctx.namespace,ctx.authorization.principalId,...auth.params!)
-   .all<{id:string;namespace:string;mapping_version:string;principal_id:string;sequence:number;check_state:ImportCheckState;check_head:string|null}>()
+   .all<{id:string;namespace:string;mapping_version:string;principal_id:string;sequence:number;check_state:ImportCheckState;check_head:string|null;live_schedules:string}>()
   // Applied imports are workspace history. Resuming or undoing still requires the applying admin.
   return c.json(await Promise.all(rows.results.map(async row=>{
    const approved=history.find(item=>item.jobId===row.id),checkOnly=row.principal_id!==ctx.authorization.principalId
    const saved=await readMoveInJournal(row.id,{...ctx,namespace:row.namespace,mappingVersion:row.mapping_version,
-    authorization:{...ctx.authorization,principalId:row.principal_id}},row.check_state)
+    authorization:{...ctx.authorization,principalId:row.principal_id}},row.check_state,JSON.parse(row.live_schedules))
    const checkPlanId=saved.needsCheck?(row.check_head??approved?.planId)
     :saved.state==='completed'&&approved?.planId===row.check_head?row.check_head:undefined
    return {...saved,vendor:ctx.namespace,sequence:row.sequence,approval:approved?.caption,checkOnly,checkPlanId,

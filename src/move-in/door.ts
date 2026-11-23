@@ -13,6 +13,7 @@ import { targets } from './target'
 import { IMPORT_DOOR_KEY } from './door-key'
 import { auditIdentity } from '../audit-store'
 import { expireInterruptedImports, importAttempt } from './import-lifecycle'
+import { clearCheckedLineage } from './check-state'
 
 const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }
 /** The saved-export bounds both mounts read a bundle under. */
@@ -71,7 +72,7 @@ export async function importDoorResponse(request: Request, env: Bindings): Promi
  }
  const attempt = typeof planId === 'string' ? importAttempt(env.DB, { planId }) : undefined
  const door = createImportDoorHandler({ database: attempt?.database ?? env.DB, targets, claim, installationId: IMPORT_DOOR_KEY, ownerPrincipalId: owner.id,
-  destination: 'oncall', format: 'json', limits: DOOR_LIMITS, async source(namespace) {
+  destination: 'oncall', format: 'json', limits: DOOR_LIMITS, onReconciled:clearCheckedLineage, async source(namespace) {
    const listed = importSource(namespace)
    if (!listed) return null
    // The kit calls this resolver only after signature, action and origin binding.

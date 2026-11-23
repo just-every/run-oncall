@@ -1532,6 +1532,7 @@ try {
  // Imported integration originals are owned custody too, not an exemption.
  const importedId='synthetic-oncall-409',importedDoor=ownerDoor(w,erasureCookie);
  const importedPlan=ok(await importedDoor.preview('pagerduty',JSON.stringify({integrations:[{id:importedId,type:'events_api_v2_inbound_integration'}]})));ok(await importedDoor.apply('pagerduty',importedPlan));
+ assert.equal(ok(await importedDoor.call('pagerduty','reconcile',{planId:importedPlan.planId})).ok,true);
  const importedRoot=ok(await erasureReq('/api/move-in/objects')).find(row=>row.targetKind==='integration'&&row.targetId==='pagerduty:'+importedId);assert.ok(importedRoot);
  const incumbentKey=Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');
  const supplied=ok(await erasureReq('/api/intake/incumbent',{importedId:importedRoot.targetId,importedRevision:importedRoot.revision,id:importedId,service:erasureService,name:'Synthetic imported integration custody',revision:0,key:incumbentKey}),201);
