@@ -1,13 +1,13 @@
 import { attachmentHash, canonicalJson, sha256 } from '../modules/import-kit/src/provenance/identity'
 import type { ProvenanceRow, TargetRow } from '../modules/import-kit/src/types'
 
-// Adoption and integration setup add a local binding to an otherwise unchanged
-// import. Explain that edit on check, while keeping the exact revision checks
-// for catch-up replacement and Undo.
-export function explainNativeEdit(row:TargetRow,provenance:ProvenanceRow) {
+// Key staging leaves intake paused. A catch-up also carries older bindings
+// that are already live. Both must retain the exact imported definition.
+export function explainNativeEdit(row:TargetRow,provenance:ProvenanceRow,inherited:boolean) {
  const match=/^(adopted|intake|email)-[a-f0-9-]{36}$/.exec(row.revision)
  if(!match||!row.value||typeof row.value!=='object'||Array.isArray(row.value))return
  const edit=match[1]
+ if(edit!=='intake'&&!inherited)return
  const field=edit==='adopted'&&(row.targetKind==='schedule'||row.targetKind==='policy')?'adopted'
   :row.targetKind==='integration'?(edit==='intake'?'intakeSource':edit==='email'?'emailAddress':undefined):undefined
  if(!field||!row.value[field])return

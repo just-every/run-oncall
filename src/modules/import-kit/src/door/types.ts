@@ -42,7 +42,7 @@ export interface ImportDoorRuntimeOptions extends ImportDoorSource {
    * 'strict'. Existing jobs always keep the policy they were created with. */
   reversalPolicy?: D1ReversalPolicy;
   /** Explain an independently confirmed native edit during readback only. */
-  explainNativeEdit?(row: TargetRow, provenance: ProvenanceRow): string | undefined;
+  explainNativeEdit?(row: TargetRow, provenance: ProvenanceRow, inherited: boolean): string | undefined;
   /** Persist product check state under the admitted authority after a matching readback. */
   onReconciled?(request: DoorRequest, planId: string): Promise<void>;
 }

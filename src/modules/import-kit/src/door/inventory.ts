@@ -49,7 +49,7 @@ export async function importedTargets(request: DoorRequest, targets: DoorTarget[
     return {provenance,matches,current};
   });
 }
-export async function inspectRecords(request: DoorRequest, records: DoorRecord[]) {
+export async function inspectRecords(request: DoorRequest, records: DoorRecord[], planId: string) {
   const result = [], found = await importedTargets(request, records.flatMap(record => record.targets));
   let present = 0, explained = 0, targets = 0, next = 0;
   const counts: Record<string, number> = Object.create(null);
@@ -60,7 +60,7 @@ export async function inspectRecords(request: DoorRequest, records: DoorRecord[]
       const {matches,current,provenance} = found[next++];
       if (matches) { targets++; counts[target.kind] = (counts[target.kind] ?? 0) + 1; }
       else {
-        const reason = current && request.options.explainNativeEdit?.(current,provenance);
+        const reason = current && request.options.explainNativeEdit?.(current,provenance,target.ownerPlanId!==planId);
         if (reason) explanations.add(reason);
         else conflicts.push(canonicalJson([target.kind,target.id]));
       }

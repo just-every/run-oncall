@@ -98,7 +98,7 @@ export async function reconcile(request: DoorRequest, input: Record<string,unkno
   if (!row.job_id || (await readD1ImportJob(row.job_id,kitContext(request,snapshot))).state!=='completed') throw new DoorError('import_not_completed',409);
   const current = await lineage(request);
   if (current.head_id!==row.id) throw new DoorError('import_superseded',409);
-  const report = await inspectRecords(request,snapshot.records);
+  const report = await inspectRecords(request,snapshot.records,snapshot.id);
   await authorized(request);
   if (report.ok) await request.options.onReconciled?.(request,row.id);
   return {planId:row.id,fingerprint:row.fingerprint,bundleSha256:snapshot.bundleSha256,...report,
