@@ -1,30 +1,45 @@
-import type {IntakeReceipt} from '../intake/model';
-import type {EmailReceipt} from '../email/types';
-import type {Alert,Incident,Event} from '../family/response-operations/domain';
-import type {Outbox} from '../automation/model';
+import type {Alert} from '../family/response-operations/domain';
 import type {TriageRecord} from '../family/response-operations/triage';
 import type {BusinessService} from '../business-status/types';
 import type {ScheduleRecord} from '../schedule-coordination/model';
-import {records,oldest} from './storage';
+import {records,oldest,type readinessWork} from './storage';
 
-export async function obligationMeasurements(db:D1Database,now:number) {
- const [alerts,incidents,outbox,triage,business,schedules,events,receipts,email]=await Promise.all([
-  records<Alert>(db,'oc_alerts'),records<Incident>(db,'oc_incidents'),records<Outbox>(db,'oc_api_outbox'),
-  records<TriageRecord>(db,'oc_triage'),records<BusinessService>(db,'oc_business_services'),records<ScheduleRecord>(db,'oc_schedule_records'),records<Event>(db,'oc_events'),records<IntakeReceipt>(db,'oc_intake_receipts'),records<EmailReceipt>(db,'oc_email_receipts')]);
+async function alertObligations(db:D1Database) {
+ // An alert's age considers its own event references and every retained
+ // compatible or email receipt, including receipts from inactive sources.
+ const result=await db.prepare(`SELECT a.data,CASE WHEN json_extract(a.data,'$.obligation.state')='recorded'
+  AND COALESCE(json_extract(a.data,'$.coordination.state'),'') NOT IN ('acknowledged','closed') THEN (
+  SELECT MIN(at) FROM (
+   SELECT (SELECT MIN(json_extract(r.data,'$.acceptedAt')) FROM oc_intake_receipts r
+    WHERE json_extract(r.data,'$.alert')=+a.id AND json_extract(r.data,'$.acceptedAt')>'') AS at
+   UNION ALL SELECT (SELECT MIN(json_extract(r.data,'$.at')) FROM oc_email_receipts r
+    WHERE json_extract(r.data,'$.alert')=+a.id AND json_extract(r.data,'$.at')>'')
+   UNION ALL SELECT MIN(json_extract(e.data,'$.acceptedAt')) FROM json_each(a.data,'$.events') ref
+    CROSS JOIN oc_events e ON e.id=ref.value WHERE json_extract(e.data,'$.acceptedAt')>''
+  )
+ ) END AS admissionAt FROM oc_alerts a
+ WHERE json_extract(a.data,'$.obligation.state')='recorded' OR json_extract(a.data,'$.obligation.recoveryNotice.state')='recorded'`)
+ .all<{data:string;admissionAt:string|null}>();
+ return result.results;
+}
+
+export async function obligationMeasurements(db:D1Database,now:number,work:ReturnType<typeof readinessWork>) {
+ const [alerts,incidents,outbox,triage,business,schedules]=await Promise.all([
+  alertObligations(db),work.incidents,work.outbox,
+  records<TriageRecord>(db.prepare("SELECT data FROM oc_triage WHERE json_extract(data,'$.kind')='bulk'")),
+  records<BusinessService>(db.prepare("SELECT data FROM oc_business_services WHERE json_array_length(data,'$.notices')>0")),
+  records<ScheduleRecord>(db.prepare("SELECT data FROM oc_schedule_records WHERE json_extract(data,'$.kind')='notice'")),
+ ]);
  let recorded=0,unanswered=0,overdue=0,deadlineFailures=0;
  const times:(string|null|undefined)[]=[];
  const add=(obligation:{state:string;at?:string}|null|undefined,answered=false,at?:string)=>{
   if(obligation?.state==='recorded'){recorded++;if(!answered){unanswered++;times.push(obligation.at??at);}}
  };
- const admissions=new Map<string,string[]>();
- const retain=(alert:string|null,at:string)=>{if(alert)admissions.set(alert,[...(admissions.get(alert)??[]),at]);};
- for(const receipt of receipts)retain(receipt.alert,receipt.acceptedAt);
- for(const receipt of email)retain(receipt.alert,receipt.at);
- const eventTimes=new Map(events.map(event=>[event.id,event.acceptedAt]));
- for(const alert of alerts){
-  const at=oldest([...(admissions.get(alert.id)??[]),...alert.events.map(id=>eventTimes.get(id))]);
-  const answered=alert.coordination?.state==='acknowledged'||alert.coordination?.state==='closed'||incidents.some(incident=>incident.alerts.includes(alert.id)&&incident.state!=='declared');
-  add(alert.obligation,answered,at??undefined);
+ const answeredAlerts=new Set(incidents.flatMap(incident=>incident.state!=='declared'?incident.alerts:[]));
+ for(const {data,admissionAt} of alerts){
+  const alert=JSON.parse(data) as Alert;
+  const answered=alert.coordination?.state==='acknowledged'||alert.coordination?.state==='closed'||answeredAlerts.has(alert.id);
+  add(alert.obligation,answered,admissionAt??undefined);
   add(alert.obligation?.recoveryNotice,false,alert.obligation?.stoppedAt);
  }
  for(const incident of incidents){

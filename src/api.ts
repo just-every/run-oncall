@@ -57,9 +57,8 @@ import { runtimeBindings, type Bindings } from './auth.server';
 import { admitted } from './base/setup-state';
 import { isLoopbackHost } from './modules/operator-auth/index.mjs';
 import { installSchedules } from './schedule-api';
-import {installOnCall, workspaceOnCall} from './on-call/api';
+import {readOnCall, readWorkspace} from './workspace-read';
 import { installMoveIn } from './move-in/api';
-import { pagerdutyConnect } from './move-in/pagerduty-oauth';
 import { Refusal } from './move-in/refusals';
 import { Hono } from "hono";
 import { deploymentHealth } from "./base/deployment-health";
@@ -222,6 +221,9 @@ api.use("*", async (c, next) => {
 });
 // Readiness authenticates without the ordinary read path’s key/owner maintenance.
 installReadiness(api);
+// Workspace and coverage reads use current member authority without loading signing custody.
+api.get('/api/workspace', async c => c.json(await readWorkspace(c.env, c.req.raw)));
+api.get('/api/on-call', async c => c.json(await readOnCall(c.env, c.req.raw, c.req.query('at'))));
 // Upgraded installations seal any held plaintext signing key before a request can read it.
 api.use("/api/*", async (c, next) => {
   await sealHeldSourceKeys(c.env.DB, runtimeBindings(c.env).SESSION_SECRET);
@@ -243,18 +245,6 @@ api.get("/api/session", async (c) => {
   const state = await load(c.env.DB);
   const member=await session(c,state);
   return c.json({setup: !member && state.members.length===0, member, demo: c.env.RER_DEMO === "1"});
-});
-api.get("/api/workspace", async (c) => {
-  const state = await load(c.env.DB);
-  const member = await session(c, state);
-  if (!member) return c.json({setup: state.members.length === 0, member: null, demo: c.env.RER_DEMO === "1", state: null});
-  c.set("actor", member);
-  const current = await authorizedState(c, false, true);
-  const currentMember = current.members.find(m => m.id === member.id)!;
-  if (currentMember.role === "stakeholder") return c.json({setup:false, member:currentMember, demo:false, state:null});
-  const localSignInSettings = c.get('localOwner') && c.env.AUTH_LOCAL === 'true' && !!c.env.RER_DEV_KEY
-    && c.env.RER_DEV_IDENTITY !== 'off' && c.env.RER_DEMO !== '1';
-  return c.json({setup: false, member: current.members.find(m => m.id === member.id), ...(localSignInSettings ? {localSignInSettings} : {}), demo: c.env.RER_DEMO === "1", moveIn: {pagerdutyConnect: pagerdutyConnect(runtimeBindings(c.env))}, state: memberWorkspace(current, member), onCall: await workspaceOnCall(c.env.DB, current, currentMember)});
 });
 async function session(c: any, state: State): Promise<Member | null> {
   const token = readSessionCookie(c.req.raw);
@@ -759,7 +749,6 @@ api.get("/api/handoff/:id", async (c) => {
 installTeams(api,{body,state:authorizedState,save:(c,state,revision)=>save(c.env.DB,state,revision,sessionGuard(c))});
 installPaging(api, body);
 installSchedules(api,body);
-installOnCall(api);
 installScheduleCoordination(api,body);
 installMoveIn(api,body);
 installHandoffs(api, body);

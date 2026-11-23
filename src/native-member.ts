@@ -1,24 +1,26 @@
 import { auditIdentity, auditKind } from './audit-store'
 import { operatorAuth, runtimeBindings, type Bindings } from './auth.server'
-import { loadWorkspace, workspaceRows, workspaceWrite } from './workspace-store'
+import { loadWorkspace, workspaceRevisionColumns, workspaceRows, workspaceWrite, type WorkspaceReadRevisions } from './workspace-store'
 import type { Member } from './family/response-operations/domain'
 
 /** Base sessions retain Base's key gate, expiry and revocation checks. */
-export async function nativeMember(env:Bindings,request:Request):Promise<{member:Member;digest:string;owner:boolean}|null> {
+export async function nativeMember(env: Bindings, request: Request, workspaceRead?: {coverage: boolean}) {
   if(!env.SESSION_SECRET || !env.OWNER_EMAIL) return null
   const native=await operatorAuth(runtimeBindings(env)).getSession(request)
   if(!native) return null
   auditIdentity(env.DB,{actor:{kind:'member',id:native.operator.id}})
   const digest=`native:${native.id}`
   // Authentication needs the mapped current member, not every incident/event.
-  const read=()=>env.DB.prepare(`SELECT m.data,EXISTS(SELECT 1 FROM sessions WHERE token=?) AS linked
+  const revisions = workspaceRead ? ', ' + workspaceRevisionColumns(workspaceRead.coverage) : '';
+  const read=()=>env.DB.prepare(`SELECT m.data,EXISTS(SELECT 1 FROM sessions WHERE token=?) AS linked${revisions}
     FROM operator_members l JOIN oc_members m ON m.id=l.member_id
     WHERE l.operator_id=? AND json_extract(m.data,'$.active')=1`)
-    .bind(digest,native.operator.id).first<{data:string;linked:number}>()
+    .bind(digest,native.operator.id).first<{data:string;linked:number} & WorkspaceReadRevisions>()
   let link=await read()
   if(!link && native.operator.role==='owner') {
-    const state=await loadWorkspace(env.DB)
-    if(!state.members.length) {
+    const hasMember = await env.DB.prepare('SELECT 1 FROM oc_members LIMIT 1').first()
+    const state = hasMember ? null : await loadWorkspace(env.DB)
+    if (state && !state.members.length) {
       const member:Member={id:native.operator.id,name:native.operator.displayName,role:'admin',active:true}
       state.members=[member]
       const token=crypto.randomUUID()
@@ -48,5 +50,6 @@ export async function nativeMember(env:Bindings,request:Request):Promise<{member
   }
   auditIdentity(env.DB,{actor:{kind:'member',id:member.id}})
   if(!link.linked) await env.DB.prepare('INSERT INTO sessions(token,member,expires,operator_session) SELECT ?,?,?,? WHERE EXISTS(SELECT 1 FROM oa_sessions s JOIN oa_operators o ON o.id=s.operator_id WHERE s.id=? AND s.revoked_at IS NULL AND s.expires_at>? AND o.status=\'active\' AND o.version=s.operator_version) ON CONFLICT(token) DO NOTHING').bind(digest,member.id,native.expiresAt,native.id,native.id,Date.now()).run()
-  return {member,digest,owner:native.operator.role==='owner'}
+  const {workspaceRevision, pagingRevision} = link;
+  return {member, digest, owner: native.operator.role === 'owner', revisions: {workspaceRevision, pagingRevision}};
 }

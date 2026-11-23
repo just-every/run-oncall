@@ -22,6 +22,7 @@ import { identity } from './identity'
 import { authResponse, runtimeBindings, operatorAuth, type Bindings } from './auth.server'
 import {receivedRequest} from './request-body'
 import { workspaceDocument } from './workspace-document'
+import {workspaceCoverageHeader, workspaceRefreshHeader, workspaceStateHeader, type WorkspaceSnapshot} from './workspace-refresh'
 import {readSessionCookie} from './session-cookie'
 import {importDoorResponse} from './move-in/door'
 import { oncallAgentDoor } from './agent-door/index.server'
@@ -72,7 +73,7 @@ export default withDemo({
       return agents;
     }
     const subscription=await subscriptionResponse(request,bindings);if(subscription)return subscription;
-    let workspace: any;
+    let workspace: WorkspaceSnapshot | undefined;
     const address=new URL(request.url), appDocument=isWorkspacePath(address.pathname);
     const route=workspaceAddress(address.pathname);
     let documentStatus=route.page==='not-found'?404:200;
@@ -93,14 +94,18 @@ export default withDemo({
       if(!hasCredential)return (await lobby())!;
       // The same current-member authority protects both native and held password sessions.
       const sessionUrl=new URL('/api/workspace',request.url);
-      const session=await api.fetch(new Request(sessionUrl,{headers:request.headers}),env,execution);
+      const headers = new Headers(request.headers);
+      headers.set(workspaceRefreshHeader, route.page === 'on-call' || route.page === 'alerts' ? 'coverage' : 'state');
+      headers.delete(workspaceStateHeader);
+      headers.delete(workspaceCoverageHeader);
+      const session=await api.fetch(new Request(sessionUrl,{headers}),env,execution);
       if(!session.ok)return session;
-      const current=await session.json() as {member:unknown;state?:{incidents:{id:string}[]}};
+      const current=await session.json<WorkspaceSnapshot>();
       if(current.member) {
         workspace=current;
         const id=route.incident||(address.pathname==='/'?address.searchParams.get('incident'):null);
-        if(id&&!current.state?.incidents.some((incident:any)=>incident.id===id))documentStatus=404;
-        if((current.member as any).role==='stakeholder')documentStatus=200;
+        if(id&&!current.state?.incidents.some(incident=>incident.id===id))documentStatus=404;
+        if(current.member.role==='stakeholder')documentStatus=200;
       }
       if(!current.member) {
         // A restored owner with no workspace mapping still needs the protected mapping door.

@@ -14,12 +14,12 @@ function handoffLabel(instant:string|null|undefined,timezone:string,changesHolde
  return `${changesHolder?'Hand-over':'Next coverage window'}: ${parts.weekday} ${parts.day} ${parts.month}, ${parts.hour}:${parts.minute} ${timezone} (${parts.timeZoneName})`
 }
 
-type ReadProps = {schedule:Schedule;state:State;request:(path:string,data?:unknown)=>Promise<any>}
+type ReadProps = {schedule:Schedule;state:State;coverageUntil?:string|null;request:(path:string,data?:unknown)=>Promise<any>}
 type Role = 'primary'|'backup';
 type ByRole = Record<Role,Coverage|null>;
 type NowNext = {now:Coverage;next:ByRole;upcoming:ByRole;handover:ByRole;searchThrough:string;limited:Role[]}
 
-export function ScheduleNowNext({schedule,state,request}:ReadProps) {
+export function ScheduleNowNext({schedule,state,coverageUntil,request}:ReadProps) {
  const [value,setValue]=useState<NowNext|null>(null)
  const failures=useActionFailure()
  const preserveView=useViewAnchor()
@@ -27,7 +27,7 @@ export function ScheduleNowNext({schedule,state,request}:ReadProps) {
   let current=true
   request(`/api/schedules/${encodeURIComponent(schedule.id)}/now-next`).then(data=>{if(current){preserveView();setValue(data);if(failures.current.current?.read)failures.clear()}}).catch(e=>{if(current)failures.show(e,{read:true,target:null})})
   return ()=>{current=false}
- },[schedule,request])
+ },[schedule,coverageUntil,request])
  const startsLater=value!==null&&value.now.at<Date.parse(schedule.validFrom)
  const name=(id:string|null|undefined)=>state.members.find(m=>m.id===id)?.name??'Nobody on call'
  // Layers explain themselves in one plain sentence: who covers, or that no layer does.

@@ -12,7 +12,7 @@ export function OnCallScreen() {
   if (parts[1]) {
     let id: string;
     try {id = decodeURIComponent(parts[1]);} catch {return <p>Rota not found.</p>;}
-    return <RotaPage key={id} id={id} state={s} actor={actor} value={w.onCall} refresh={w.refresh} edit={parts[2] === 'edit'} renderEdit={schedule => <RotaSteps key={id} schedule={schedule} state={s} actor={actor} refresh={w.refresh}/>}/>;
+    return <RotaPage key={id} id={id} state={s} actor={actor} value={w.onCall} pagingRevision={w.pagingRevision} refresh={w.refresh} edit={parts[2] === 'edit'} renderEdit={schedule => <RotaSteps key={id} schedule={schedule} state={s} actor={actor} refresh={w.refresh}/>}/>;
   }
   return <OnCallHome state={s} actor={actor} value={w.onCall}/>;
 }

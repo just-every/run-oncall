@@ -27,7 +27,7 @@ import './on-call.css';
 import '../scheduling.css';
 
 type ModuleState = PagingArchive & {revision: number};
-export function RotaPage({id, state, actor, value, refresh, edit = false, renderEdit}: {id: string; state: State; actor: Member; value: OnCall | null; refresh: () => Promise<void>; edit?: boolean; renderEdit?: (schedule: Schedule) => React.ReactNode}) {
+export function RotaPage({id, state, actor, value, pagingRevision, refresh, edit = false, renderEdit}: {id: string; state: State; actor: Member; value: OnCall | null; pagingRevision?: number; refresh: () => Promise<void>; edit?: boolean; renderEdit?: (schedule: Schedule) => React.ReactNode}) {
   const tooltips = useRotaTooltips(), swapHintId=useId();
   const [savedNotice,setSavedNotice]=useState('');
   const savedLine=useRef<HTMLParagraphElement>(null);
@@ -47,7 +47,7 @@ export function RotaPage({id, state, actor, value, refresh, edit = false, render
     if (version !== generation.current) return;
     preserve();setData(next);setWindows(preview);if (failures.current.current?.read) failures.clear();
   }, [id, from]);
-  useEffect(() => {void load().catch(error => failures.show(error, {read: true, target: null, retry: load}));return () => {++generation.current;};}, [load, state]);
+  useEffect(() => {void load().catch(error => failures.show(error, {read: true, target: null, retry: load}));return () => {++generation.current;};}, [load, state, pagingRevision]);
   const changed = async () => {await refresh();await load();};
   const canEdit = !!schedule && (schedule.services?.length?actor.role==='admin':teamCoverage(state, actor, schedule.service)), responsive = ['admin','responder'].includes(actor.role);
   const person = (id: string | null) => state.members.find(person => person.id === id);
@@ -110,7 +110,7 @@ export function RotaPage({id, state, actor, value, refresh, edit = false, render
     {savedNotice&&<p ref={savedLine} role="status" tabIndex={-1}>{savedNotice}</p>}
     <FailureLine failure={sheet ? null : failures.failure}/>
     {data && !schedule && <p>Rota not found. <Link to={'/on-call' as any}>Return to On call</Link></p>}
-    {schedule && <><ScheduleNowNext schedule={schedule} state={state} request={request}/>
+    {schedule && <><ScheduleNowNext schedule={schedule} state={state} coverageUntil={rota?.now.until} request={request}/>
       <nav className="oc-rota-actions" aria-label="Shift history">
        <button type="button" disabled={from-14*86_400_000<Date.UTC(2000,0,1)} onClick={()=>{setWindows([]);setFrom(value=>value-14*86_400_000);}}>Previous two weeks</button>
        <button type="button" onClick={()=>{setWindows([]);setFrom(Date.now());}}>Current two weeks</button>

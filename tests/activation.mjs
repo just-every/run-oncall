@@ -156,11 +156,47 @@ export async function scheduleCoordination(){
    assert.deepEqual(durableSnapshot(w),recordsBefore,'aggregate now and next preserve every durable row including audit and outbound work');
    assert.deepEqual(await w.outboundRequests(),[],'aggregate now and next issue zero outbound network requests');
    const combined=ok(await req('/api/workspace'));assert.deepEqual(combined.onCall.rotas.map(row=>row.id),schedules.map(row=>row.id));
+   const poll=async(mode,previous={},asCookie=cookie)=>ok(await w.request('/api/workspace',undefined,asCookie,{
+    'x-oncall-workspace-refresh':mode,
+    ...(previous.stateVersion?{'x-oncall-workspace-version':previous.stateVersion}:{}),
+    ...(previous.coverageVersion?{'x-oncall-coverage-version':previous.coverageVersion}:{}),
+   }));
+   const stateOnly=await poll('state');
+   assert.deepEqual(stateOnly.state,combined.state);
+   assert.equal(stateOnly.onCall,undefined);
+   assert.deepEqual(await poll('state',stateOnly),{unchanged:true});
+   try {
+    await w.time(at-1000);
+    const coverage=await poll('coverage',stateOnly);
+    assert.equal(coverage.unchanged,true);
+    assert.equal(coverage.onCall.rotas.find(row=>row.id===schedule.id).now.primary,null);
+    assert.deepEqual(await poll('coverage',{...stateOnly,...coverage}),{unchanged:true});
+    await w.time(at);
+    const handover=await poll('coverage',{...stateOnly,...coverage});
+    assert.equal(handover.unchanged,true);
+    assert.equal(handover.onCall.rotas.find(row=>row.id===schedule.id).now.primary.id,owner.value.member.id);
+    const archive=ok(await req('/api/paging/archive'));
+    const renamed='Synthetic revised overlap rota';
+    ok(await req('/api/paging/restore',{mode:'replace',archive:{...archive,schedules:archive.schedules.map(row=>row.id===overlap.id?{...row,name:renamed}:row)}}));
+    assert.deepEqual(await poll('state',stateOnly),{unchanged:true});
+    const revised=await poll('coverage',{...stateOnly,...handover});
+    assert.equal(revised.unchanged,true);
+    assert.equal(revised.onCall.rotas.find(row=>row.id===overlap.id).name,renamed);
+    assert.ok(revised.pagingRevision>handover.pagingRevision);
+   } finally {await w.time(null);}
+   const outsiderPoll=await poll('state',stateOnly,viewerCookie);
+   assert.equal(outsiderPoll.member.id,viewer.id,'a saved validator cannot transfer another member’s workspace snapshot');
+   assert.equal((await poll('state',stateOnly,'')).member,null);
    ok(await w.request('/api/on-call'),401);ok(await w.request('/api/on-call?at='+encodeURIComponent(start),undefined,viewerCookie));ok(await w.request('/api/on-call?at='+encodeURIComponent(start),undefined,substituteCookie));
    const stakeholder=ok(await req('/api/members',{name:'synthetic-oncall-254',role:'stakeholder',password:'synthetic-oncall-254-password'}),201);
+   assert.ok((await poll('state',stateOnly)).state.members.some(member=>member.id===stakeholder.id));
    ok(await w.request('/api/on-call',undefined,await login(stakeholder,254)),403);
    const ended=await w.request('/api/login',{name:viewer.name,password:'synthetic-oncall-253-password'});ok(ended);ok(await w.request('/api/logout',{},ended.cookie));ok(await w.request('/api/on-call',undefined,ended.cookie),401);
+   const revoked=await poll('state',outsiderPoll,ended.cookie);
+   assert.equal(revoked.member,null);assert.equal(revoked.state,null);assert.equal(revoked.unchanged,undefined);
    const expiredRead=await w.request('/api/login',{name:viewer.name,password:'synthetic-oncall-253-password'});ok(expiredRead);w.sql("UPDATE sessions SET expires=0 WHERE token=(SELECT token FROM sessions WHERE member='"+viewer.id+"' ORDER BY expires DESC LIMIT 1)");ok(await w.request('/api/on-call',undefined,expiredRead.cookie),401);
+   const expired=await poll('state',outsiderPoll,expiredRead.cookie);
+   assert.equal(expired.member,null);assert.equal(expired.state,null);assert.equal(expired.unchanged,undefined);
    console.log('PASS OC-020 / OC-014 aggregate on-call: all rotas match now/next, empty slot is a gap, 20 reads preserve every table and both revisions, workspace snapshot carries coverage, viewer/responder reads and anonymous/stakeholder/revoked refusals');
   }
   ok(await coord({action:'request',schedule:overlap.id,scheduleRevision:overlap.revision,substitute:substitute.id,role:'primary',start,end}),409);

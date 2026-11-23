@@ -15,16 +15,18 @@ export async function observeSignInMail(env: Bindings): Promise<SignInMail> {
  try {
   // A native session issued from a magic link survives sign-out. Private owner
   // entry, password sign-in and invitations cannot supply this observation.
-  const proof = await env.DB.prepare(`SELECT
-   MAX(CASE WHEN t.mail_sender_digest=? THEN t.consumed_at END) AS current_at,
-   MAX(CASE WHEN t.mail_sender_digest IS NOT NULL THEN t.consumed_at END) AS known_at,
-   MAX(t.consumed_at) AS any_at
-   FROM oa_tokens t JOIN oa_sessions s ON s.source_token_id=t.id
-   WHERE t.kind='magic' AND s.kind='native' AND t.revoked_at IS NULL`)
-   .bind(current.digest).first<{current_at:number|null; known_at:number|null; any_at:number|null}>();
-  if (proof?.current_at != null) return {state: 'confirmed', at: new Date(proof.current_at).toISOString(), sender: current.sender};
-  if (proof?.known_at != null) return {state: 'changed-since'};
-  if (proof?.any_at != null) return {state: 'sender-unrecorded'};
-  return {state: 'awaiting-confirmation'};
+  const eligible = `FROM oa_tokens t INDEXED BY oa_readiness_mail_proof WHERE t.kind='magic' AND t.revoked_at IS NULL AND t.consumed_at IS NOT NULL
+   AND EXISTS(SELECT 1 FROM oa_sessions s WHERE s.source_token_id=t.id AND s.kind='native')`;
+  const proof = await env.DB.prepare(`WITH confirmation AS MATERIALIZED (
+   SELECT (SELECT t.consumed_at ${eligible} AND t.mail_sender_digest=? ORDER BY t.consumed_at DESC LIMIT 1) AS at)
+   SELECT at,CASE
+    WHEN at IS NOT NULL THEN 'confirmed'
+    WHEN EXISTS(SELECT 1 ${eligible} AND t.mail_sender_digest IS NOT NULL) THEN 'changed-since'
+    WHEN EXISTS(SELECT 1 ${eligible}) THEN 'sender-unrecorded'
+    ELSE 'awaiting-confirmation' END AS state FROM confirmation`)
+   .bind(current.digest).first<{at:number;state:'confirmed'}|{at:null;state:'changed-since'|'sender-unrecorded'|'awaiting-confirmation'}>();
+  if (!proof) return {state: 'awaiting-confirmation'};
+  if (proof.state==='confirmed') return {state: 'confirmed', at: new Date(proof.at).toISOString(), sender: current.sender};
+  return {state: proof.state};
  } catch {return {state: 'unavailable'};}
 }

@@ -8,7 +8,9 @@ import {resolveIncidentAlias} from "../../incident-workflows/relations";
 /** One workspace lifetime: navigation and live reads never remount the shell or its drafts. */
 export function useWorkspaceValue() {
   const pathname = useLocation({select: location => location.pathname});
-  const w = useWorkspace(workspaceAddress(pathname).page === 'alerts' ? 2000 : undefined);
+  const routePage = workspaceAddress(pathname).page;
+  const alerts = routePage === 'alerts', onCallPage = routePage === 'on-call';
+  const w = useWorkspace({refreshInterval: alerts ? 5000 : undefined, coverage: alerts || onCallPage, onCallPage});
   const {page, incident: selected, selectIncident: chooseIncident} = useWorkspacePath({ready: w.ready, stakeholder: w.member?.role === "stakeholder"});
   const [revealing, setRevealing] = useState("");
   const [listedRevision, setListedRevision] = useState(-1);

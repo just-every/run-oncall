@@ -1,5 +1,5 @@
 /** The authenticated request's snapshot travels with its uncached document.
- * Hydration consumes it once; subsequent refreshes always read current storage.
+ * Hydration consumes it once; subsequent refreshes check current authority and revisions.
  */
 export function workspaceDocument(response: Response, workspace: unknown): Response {
   const json = JSON.stringify(workspace).replace(/[<>&\u2028\u2029]/g, value =>

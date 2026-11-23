@@ -10,7 +10,25 @@ const tables = {teams:'oc_teams',erasedReportCases:'oc_erased_report_cases',sche
 const collections = Object.keys(tables) as (keyof typeof tables)[]
 // D1 batch reads share one transaction. Individual records avoid a whole-
 // workspace SQL cell and do not depend on SQLite's compound-SELECT limit.
-export const workspaceQueries = [`SELECT 'erasureFences' AS collection,0 AS ordinal,json_object('id',id,'epoch',epoch) AS data FROM (${erasureFencesQuery}) ORDER BY id`,"SELECT 'control' AS collection,0 AS ordinal,json_object('revision',revision) AS data FROM workspace_control WHERE id=1",...collections.map(key=>`SELECT '${key}' AS collection,ordinal,data AS data FROM ${tables[key]} ORDER BY ordinal`)]
+function workspaceCollectionQuery(key: keyof typeof tables) {
+  return `SELECT '${key}' AS collection,ordinal,data AS data FROM ${tables[key]} ORDER BY ordinal`;
+}
+const workspaceControlQuery = "SELECT 'control' AS collection,0 AS ordinal,json_object('revision',revision) AS data FROM workspace_control WHERE id=1";
+export const workspaceQueries = [
+  `SELECT 'erasureFences' AS collection,0 AS ordinal,json_object('id',id,'epoch',epoch) AS data FROM (${erasureFencesQuery}) ORDER BY id`,
+  workspaceControlQuery,
+  ...collections.map(workspaceCollectionQuery),
+];
+export const coverageWorkspaceQueries = [workspaceControlQuery, ...(['members', 'services', 'teams'] as const).map(workspaceCollectionQuery)];
+export type WorkspaceReadRevisions = {workspaceRevision: number | null; pagingRevision: number | null};
+
+export const pagingRevisionQuery = 'SELECT revision FROM paging_control WHERE id=1';
+
+export function workspaceRevisionColumns(coverage: boolean) {
+  return `(SELECT revision FROM workspace_control WHERE id=1) AS workspaceRevision,
+    ${coverage ? `(${pagingRevisionQuery})` : 'NULL'} AS pagingRevision`;
+}
+
 type Snapshot=Map<string,{ordinal:number;data:string}>
 const snapshots=new WeakMap<State,Map<string,Snapshot>>()
 type MutationCounts=Record<string,{deleted:number;updated:number;inserted:number}>

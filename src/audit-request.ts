@@ -40,10 +40,14 @@ export async function auditedRequest(request: Request, env: Bindings, handle: (e
   const subject = /^\/api\/(?:paging\/(?:schedules|jobs)|schedules|handoffs|(?:urgency|response)\/(?:services|alerts)|triage\/incidents)\/([^/]+)/.exec(path)
   if(subject) context.subject={kind:'entity',id:decodeURIComponent(subject[1])}
   const audit = auditedDatabase(env.DB, context)
+  // These handlers attribute a successful current-member check themselves.
+  const workspaceRead = request.method === 'GET' && (path === '/api/workspace' || path === '/api/on-call');
+  const attribute = async () => Object.assign(context, await auditPrincipal(request, env));
   try {
-    Object.assign(context,await auditPrincipal(request,env));
+    if (!workspaceRead) await attribute();
     const response = await handle({ ...env, DB: audit.db })
     const status = response.status
+    if (workspaceRead && status >= 400 && !context.actor) await attribute();
     // Successful write batches already carry their own entries. A refusal with no
     // state write, including paging OFF, still survives as an attributed attempt.
     // The OC-050 human comparison exception excludes denials, failed authority
@@ -54,6 +58,9 @@ export async function auditedRequest(request: Request, env: Bindings, handle: (e
       await audit.record(context.outcome ?? (status >= 500 ? 'failed' : status >= 400 ? 'refused' : 'accepted'))
     return response
   } catch {
+    if (workspaceRead && !context.actor) {
+      try { await attribute(); } catch { /* The authority store remains unavailable. */ }
+    }
     // Never turn a failed audit commit into an apparently accepted state change.
     if (context.actor && !context.storageFailed) {
       try { await audit.record('failed') } catch { /* Storage remains unavailable. */ }

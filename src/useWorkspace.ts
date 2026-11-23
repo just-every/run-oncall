@@ -1,19 +1,23 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {incidentChangeSummary, savedIncidentSummary, savedRecordSummary} from './app/savedEditSummary';
 import {useViewAnchor} from "./app/useViewAnchor";
 import {useActionFailure, failureMessage, hasChangeBase} from "./app/FailureLine";
 import type { Incident, Member, State } from "./family/response-operations/domain";
+import {workspaceCoverageHeader, workspaceRefreshHeader, workspaceStateHeader, type WorkspaceRefresh, type WorkspaceSnapshot} from './workspace-refresh';
 export class InterruptedTransport extends Error {
   constructor(){super('Connection interrupted; no success confirmed');}
 }
 export class HttpFailure extends Error {
   constructor(public status: number, message: string, public human = true) {super(message);}
 }
-export async function request(path: string, data?: unknown): Promise<any> {
+export function request(path: string, data?: unknown): Promise<any> {
+  return sendRequest(path, data);
+}
+async function sendRequest(path: string, data?: unknown, headers?: Headers): Promise<any> {
   const body=data===undefined?undefined:JSON.stringify(data);
   let response:Response,raw:string;
   try {
-    response=await fetch(path,{method:data===undefined?'GET':'POST',headers:data===undefined?{}:{'Content-Type':'application/json'},body});
+    response=await fetch(path,{method:data===undefined?'GET':'POST',headers:data===undefined?headers:{'Content-Type':'application/json'},body});
     raw=await response.text();
   } catch {throw new InterruptedTransport();}
   let value:any;
@@ -32,8 +36,9 @@ export async function compareRequest(path:'/api/replay'|`/api/routing/keys/${str
     return request(path,data);
   }
 }
-export function useWorkspace(refreshInterval = 10000) {
+export function useWorkspace({refreshInterval = 10000, coverage = false, onCallPage = false} = {}) {
   const [onCall, setOnCall] = useState<import('./on-call/read').OnCall | null>(null);
+  const [pagingRevision, setPagingRevision] = useState<number | undefined>();
   const [state, setState] = useState<State | null>(null);
   const [member, setMember] = useState<Member | null>(null);
   const [demo, setDemo] = useState(false);
@@ -47,6 +52,10 @@ export function useWorkspace(refreshInterval = 10000) {
   const failures = useActionFailure();
   const preserveView = useViewAnchor();
   const reading = useRef<Promise<void> | null>(null);
+  const wantsCoverage = useRef(coverage);
+  const stateVersion = useRef<string | undefined>(undefined);
+  const coverageVersion = useRef<string | undefined>(undefined);
+  useLayoutEffect(() => {wantsCoverage.current = coverage;}, [coverage]);
   const currentState = useRef<State | null>(null);
   const currentMember = useRef<string | null>(null);
   const incidentWrites = useRef(new Map<string, Incident>());
@@ -62,8 +71,15 @@ export function useWorkspace(refreshInterval = 10000) {
   }
   function refresh(): Promise<void> {
     if (reading.current) return reading.current;
-    const pending = request("/api/workspace").then(session => {
-      apply(session);
+    const headers = new Headers({[workspaceRefreshHeader]: wantsCoverage.current ? 'coverage' : 'state'});
+    if (stateVersion.current) headers.set(workspaceStateHeader, stateVersion.current);
+    if (wantsCoverage.current && coverageVersion.current) headers.set(workspaceCoverageHeader, coverageVersion.current);
+    const pending = sendRequest("/api/workspace", undefined, headers).then((session: WorkspaceRefresh) => {
+      if ('unchanged' in session) {
+        if (session.onCall) applyCoverage(session);
+      } else {
+        apply(session);
+      }
       if (failures.current.current?.read) {updateError(""); failures.clear();}
     }).finally(() => { if (reading.current === pending) reading.current = null; });
     reading.current = pending;
@@ -74,7 +90,12 @@ export function useWorkspace(refreshInterval = 10000) {
     if (reading.current) await reading.current.catch(() => {});
     await refresh();
   }
-  function apply(session: {member: Member | null; demo?: boolean; localSignInSettings?: boolean; moveIn?: {pagerdutyConnect: boolean}; setup: boolean; state: State | null; onCall?: import('./on-call/read').OnCall}) {
+  function applyCoverage(session: Pick<WorkspaceSnapshot, 'onCall' | 'coverageVersion' | 'pagingRevision'>) {
+    coverageVersion.current = session.coverageVersion;
+    setOnCall(session.onCall ?? null);
+    setPagingRevision(session.pagingRevision);
+  }
+  function apply(session: WorkspaceSnapshot) {
     preserveView();
     setMember(session.member);
     setDemo(session.demo === true);
@@ -93,7 +114,8 @@ export function useWorkspace(refreshInterval = 10000) {
       return incident;
     })} : next;
     setState(currentState.current);
-    setOnCall(session.onCall ?? null);
+    stateVersion.current = session.stateVersion;
+    applyCoverage(session);
     setReady(true);
   }
   function setError(message: string) {
@@ -118,6 +140,12 @@ export function useWorkspace(refreshInterval = 10000) {
     }
     refresh().catch((error) => {readFailed(error); setReady(true);});
   }, []);
+  const priorOnCallPage = useRef(onCallPage);
+  useEffect(() => {
+    const opened = onCallPage && !priorOnCallPage.current;
+    priorOnCallPage.current = onCallPage;
+    if (opened && ready && member) void refreshAfterPendingRead().catch(readFailed);
+  }, [onCallPage, ready, member?.id]);
   // One visible-tab clock for the whole workspace, including focus and resume.
   useEffect(() => {
     if (!ready || !member) return;
@@ -247,5 +275,5 @@ export function useWorkspace(refreshInterval = 10000) {
     void execute();
     return completion;
   }
-  return {localSignInSettings, state, onCall, demo, member, setup, pagerdutyConnect, ready, error, busy, notice, run, refresh, refreshAfterPendingRead, commitIncident, setError, setNotice, failure: failures.failure};
+  return {localSignInSettings, state, onCall, pagingRevision, demo, member, setup, pagerdutyConnect, ready, error, busy, notice, run, refresh, refreshAfterPendingRead, commitIncident, setError, setNotice, failure: failures.failure};
 }
