@@ -1,3 +1,21 @@
+# 0.5.31 · 2026-11-23
+
+- Move in keeps schedule coverage warnings visible when an import completes and when you recheck it from the journal. A warning explains when the saved export lacked a final coverage list or when the list fell outside the imported schedule dates.
+- The README, setup guides and Hosting page use the installer's full rer path in command examples. You can stop preview with `"$HOME/.local/bin/rer" preview --stop` from a fresh terminal without adding rer to PATH.
+- The Run page says that a first local start can take several minutes and that rer prints progress every 20 seconds.
+
+### Upgrade from 0.5.30
+
+Back up first. For local data, run `"$HOME/.local/bin/rer" export --output exports/before-0.5.31.rer`. For hosted data, export the D1 database with the original deploying Cloudflare credentials. Keep the backup private and verify it before updating.
+
+Stop the local app with Ctrl-C or `"$HOME/.local/bin/rer" dev --stop`. If preview is running, stop it with `"$HOME/.local/bin/rer" preview --stop`. Once the release is published, run `git fetch --quiet --depth 1 origin tag v0.5.31` and `git checkout --quiet --detach refs/tags/v0.5.31`. Restart with `"$HOME/.local/bin/rer" dev --host localhost` or `npx -y @runeditrun/rer dev --host localhost` if you used Node. Use the same npx substitution for the other rer commands if you used Node. For a hosted installation, update the original deploying checkout to the same tag and run `"$HOME/.local/bin/rer" deploy --environment ENVIRONMENT` with the same credentials. Restore only into an empty destination.
+
+This update adds no migrations. Keep all 70 previously released migration files unchanged. The checkout pins rer to 0.2.131.
+
+## Known limits
+
+Paging stays OFF. Keep your existing pager active. Release 2 paging and independent standby are still unavailable. Live AWS delivery and live PagerDuty account migration or cutover remain unverified.
+
 # 0.5.30 · 2026-11-23
 
 - Hosted Settings → Readiness reports deployment identity and health, owner access, and removal separately. A healthy deployment with a confirmed owner session still leaves removal to verify in Cloudflare.
