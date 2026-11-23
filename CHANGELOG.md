@@ -1,3 +1,22 @@
+# 0.5.35 · 2026-11-23
+
+- Getting started, Install and run, and the README lead with hosted setup using `MAIL_PROVIDER=none` and owner sign-in via `rer signin`. They make clear that mail credentials are optional and explain how to configure SendGrid for email links.
+- The hosting instructions explain that a deploy dry run validates the plan locally after you stop any running dev or preview server. They show what `rer signin` prints and which private URL the owner or a Business setup agent should use.
+- After local setup, `rer setup` lists the Cloudflare requirements and both hosted sign-in options.
+- When passkey enrollment fails, Oncall tells you to bring the tab to the front and retry, or open the private link from `rer dev`.
+
+### Upgrade from 0.5.34
+
+Back up first. For local data, run `"$HOME/.local/bin/rer" export --output exports/before-0.5.35.rer`. For hosted data, export the D1 database with the original deploying Cloudflare credentials. Keep the backup private and verify it before updating.
+
+Stop the local app with Ctrl-C or `"$HOME/.local/bin/rer" dev --stop`. If preview is running, stop it with `"$HOME/.local/bin/rer" preview --stop`. Once the release is published, run `git fetch --quiet --depth 1 origin tag v0.5.35` and `git checkout --quiet --detach refs/tags/v0.5.35`. Restart with `"$HOME/.local/bin/rer" dev --host localhost` or `npx -y @runeditrun/rer dev --host localhost` if you used Node. Use the same npx substitution for the other rer commands if you used Node. For a hosted installation, update the original deploying checkout to the same tag and run `"$HOME/.local/bin/rer" deploy --environment ENVIRONMENT` with the same credentials. Restore only into an empty destination.
+
+This update adds no migrations. Keep all 75 previously released core migration files unchanged. The checkout pins rer to 0.2.131.
+
+## Known limits
+
+Paging stays OFF. Keep your existing pager active. Release 2 paging and independent standby are still unavailable. Live AWS delivery and live PagerDuty account migration or cutover remain unverified.
+
 # 0.5.34 · 2026-11-23
 
 - Workspace admins can open and check completed Move in imports saved by any admin in their workspace. When erasure withdraws a saved snapshot, the journal keeps the explanation and next steps visible when reopened. Schedules with erased or missing people stay paused and cannot be made live.
