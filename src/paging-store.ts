@@ -1,6 +1,7 @@
 import {scheduleChanges} from './schedule-coordination/model';
 import {workspaceRows,checkWorkspaceSize} from './workspace-store';
-import { workspaceQueries, decodeWorkspace } from './workspace-store'
+import { decodeWorkspace, erasureFenceRead, workspaceRecords } from './workspace-store'
+import { readTracked, type TrackedRead } from './read-cache'
 import { parseHandoffRow } from './handoff-store'
 import { fail, type State } from './family/response-operations/domain'
 import { pause, type EscalationJob, type SyntheticReceipt } from './family/response-operations/escalation'
@@ -10,26 +11,24 @@ import type { PagingArchive, PagingCallback } from './family/response-operations
 
 export type PagingSnapshot = { revision:number, workspace:State, archive:PagingArchive }
 export async function pagingSnapshot(db:D1Database):Promise<PagingSnapshot> {
-  const tables=['paging_control','workspace','paging_schedules','paging_policies','paging_jobs','paging_receipts','paging_callbacks']
-  const rows=await db.batch(tables.flatMap(table=>table==='workspace'?workspaceQueries.map(query=>db.prepare(query)):[db.prepare(`SELECT * FROM ${table} ORDER BY rowid`)]))
-  return decodePagingRows(rows)
+  const read=await readTracked(db,[db.prepare(erasureFenceRead)])
+  return decodePaging(read,read.extras[0])
 }
-function decodePagingRows(rows:D1Result<unknown>[]):PagingSnapshot {
-  const control:any=rows[0].results[0]
+function decodePaging(read:TrackedRead,fences:D1Result<any>):PagingSnapshot {
+  const control=read.rows('paging_control')[0]
   if(!control) fail('Critical scheduling storage missing',503)
-  const workspaceRows=rows.slice(1,1+workspaceQueries.length).flatMap(row=>row.results)
-  if(!workspaceRows.some((r:any)=>r.collection==='control')) fail('Create the local workspace first',409)
-  const state=decodeWorkspace(workspaceRows as any)
+  const records=workspaceRecords(read,fences)
+  if(!records.some(r=>r.collection==='control')) fail('Create the local workspace first',409)
+  const state=decodeWorkspace(records)
   if(!Number.isSafeInteger(control.revision)||control.revision<0)
     fail('Stored scheduling/workspace revisions are inconsistent',503)
-  const values=(index:number)=>rows[index+workspaceQueries.length-1].results.map((r:any)=>JSON.parse(r.data))
-  return { revision:control.revision,workspace:state,archive:{schemaVersion:1,mode:'synthetic-only',schedules:values(2),policies:values(3),jobs:values(4),receipts:values(5),callbacks:values(6)} }
+  const values=(table:string)=>read.rows(table).map(r=>JSON.parse(r.data))
+  return { revision:control.revision,workspace:state,archive:{schemaVersion:1,mode:'synthetic-only',schedules:values('paging_schedules'),policies:values('paging_policies'),jobs:values('paging_jobs'),receipts:values('paging_receipts'),callbacks:values('paging_callbacks')} }
 }
 /** Recovery alone joins communications; paging dispatch never depends on it. */
 export async function recoverySnapshot(db:D1Database) {
-  const tables=['paging_control','workspace','paging_schedules','paging_policies','paging_jobs','paging_receipts','paging_callbacks','handoff_state']
-  const rows=await db.batch(tables.flatMap(table=>table==='workspace'?workspaceQueries.map(query=>db.prepare(query)):[db.prepare(`SELECT * FROM ${table} ORDER BY rowid`)]))
-  return {...decodePagingRows(rows),handoffs:await parseHandoffRow(rows.at(-1)!.results[0])}
+  const read=await readTracked(db,[db.prepare(erasureFenceRead),db.prepare('SELECT * FROM handoff_state WHERE id=1')])
+  return {...decodePaging(read,read.extras[0]),handoffs:await parseHandoffRow(read.extras[1].results[0])}
 }
 export function bound(archive:PagingArchive) {
   for(const [key,max] of Object.entries({schedules:64,policies:64,jobs:256,receipts:512,callbacks:2048}))

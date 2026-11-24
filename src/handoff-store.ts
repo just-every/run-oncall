@@ -1,4 +1,5 @@
-import { workspaceQueries, decodeWorkspace } from './workspace-store'
+import { decodeWorkspace, erasureFenceRead, workspaceRecords } from './workspace-store'
+import { readTracked } from './read-cache'
 import { fail, type State } from './family/response-operations/domain';
 import { boundHandoffArchive, validateHandoffArchive, holdHandoffsForRecovery, type HandoffArchive } from './family/response-operations/handoffs';
 
@@ -26,14 +27,11 @@ export async function decodeHandoffRow(row: any): Promise<{ revision: number; ar
 export const parseHandoffRow = decodeHandoffRow;
 
 export async function handoffSnapshot(db: D1Database): Promise<HandoffSnapshot> {
-  const rows = await db.batch([
-    ...workspaceQueries.map(query=>db.prepare(query)),
-    db.prepare('SELECT * FROM handoff_state WHERE id=1'),
-  ]);
-  const workspaceRows=rows.slice(0,workspaceQueries.length).flatMap(row=>row.results);
-  if (!workspaceRows.some((r:any)=>r.collection==='control')) fail('Create the local workspace first', 409);
-  const state = decodeWorkspace(workspaceRows as any);
-  return { workspace: state, ...await decodeHandoffRow(rows.at(-1)!.results[0]) };
+  const read = await readTracked(db, [db.prepare(erasureFenceRead), db.prepare('SELECT * FROM handoff_state WHERE id=1')]);
+  const records = workspaceRecords(read, read.extras[0]);
+  if (!records.some(r => r.collection === 'control')) fail('Create the local workspace first', 409);
+  const state = decodeWorkspace(records);
+  return { workspace: state, ...await decodeHandoffRow(read.extras[1].results[0]) };
 }
 
 /** The full record, immutable copy and attributed history change together under CAS. */

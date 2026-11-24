@@ -6,6 +6,7 @@ import {isWorkspacePath, workspaceAddress} from './app/paths';
 import {subscriptionResponse} from './schedule-coordination/feed';
 import {sweepDeadlines} from './incident-deadlines/sweep';
 import { dispatchOutbox } from './automation/dispatch'
+import { storeReadSnapshot } from './read-snapshot'
 import { auditedDatabase } from './audit-database'
 import { receiveEmail } from './email/receive'
 import { auditedRequest } from './audit-request'
@@ -45,6 +46,8 @@ export default withDemo({
       const audit=auditedDatabase(env.DB,{feature:'automation',kind:'automation.dispatch',actor:{kind:'service',id:'outbox-dispatcher'},source:{kind:'door',id:'outbox-dispatcher'},commits:0,storageFailed:false});
       if(!(await dispatchOutbox({...env,DB:audit.db})).processed)break;
     }
+    // Keeps a cold isolate's first read near the change log instead of every stored row.
+    await storeReadSnapshot(env.DB);
   },
   async email(message,env) { await receiveEmail(message,runtimeBindings(env)); },
   async fetch(request,original,execution) {

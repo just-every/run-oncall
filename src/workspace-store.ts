@@ -5,24 +5,24 @@ import { restoreErasureFences, erasureFencesQuery } from './erasure-fence'
 import { storedReceipt, nativePrefixWrites } from './native-prefix-store'
 import { authoredWorkspace } from './workspace-profile'
 import { empty, fail, type State } from './family/response-operations/domain'
+import { readTracked, type TrackedRead } from './read-cache'
+import { workspaceTables as tables, type WorkspaceCollection } from './workspace-tables'
 
-const tables = {teams:'oc_teams',erasedReportCases:'oc_erased_report_cases',scheduleRecords:'oc_schedule_records',businessServices:'oc_business_services',keyAllowances:'oc_key_allowances',apiClients:'oc_api_clients',apiEndpoints:'oc_api_endpoints',apiOperations:'oc_api_operations',apiOutbox:'oc_api_outbox',members:'oc_members', services:'oc_services', policies:'oc_policies', events:'oc_events', alerts:'oc_alerts', incidents:'oc_incidents', audit:'oc_audit', triage:'oc_triage', changes:'oc_changes', changeSources:'oc_change_sources', intakeSources:'oc_intake_sources', intakeReceipts:'oc_intake_receipts', emailAddresses:'oc_email_addresses', emailRules:'oc_email_rules', emailSamples:'oc_email_samples', emailReceipts:'oc_email_receipts', emailQuarantine:'oc_email_quarantine'} as const
-const collections = Object.keys(tables) as (keyof typeof tables)[]
-// D1 batch reads share one transaction. Individual records avoid a whole-
-// workspace SQL cell and do not depend on SQLite's compound-SELECT limit.
-function workspaceCollectionQuery(key: keyof typeof tables) {
-  return `SELECT '${key}' AS collection,ordinal,data AS data FROM ${tables[key]} ORDER BY ordinal`;
+const collections = Object.keys(tables) as WorkspaceCollection[]
+type StoredRecord = {collection:string;ordinal:number;data:string}
+export const erasureFenceRead = `SELECT 'erasureFences' AS collection,0 AS ordinal,json_object('id',id,'epoch',epoch) AS data FROM (${erasureFencesQuery}) ORDER BY id`
+/** Stored records for decodeWorkspace from one tracked read and its erasure-fence rows. */
+export function workspaceRecords(read:TrackedRead,fences:D1Result<any>|undefined,keys:readonly WorkspaceCollection[]=collections):StoredRecord[] {
+  const control=read.rows('workspace_control')[0]
+  return [
+    ...(fences?.results??[]),
+    ...(control?[{collection:'control',ordinal:0,data:JSON.stringify({revision:control.revision})}]:[]),
+    ...keys.flatMap(key=>read.rows(tables[key]).map(row=>({collection:key,ordinal:row.ordinal,data:row.data}))),
+  ]
 }
-const workspaceControlQuery = "SELECT 'control' AS collection,0 AS ordinal,json_object('revision',revision) AS data FROM workspace_control WHERE id=1";
-export const workspaceQueries = [
-  `SELECT 'erasureFences' AS collection,0 AS ordinal,json_object('id',id,'epoch',epoch) AS data FROM (${erasureFencesQuery}) ORDER BY id`,
-  workspaceControlQuery,
-  ...collections.map(workspaceCollectionQuery),
-];
-export const coverageWorkspaceQueries = [workspaceControlQuery, ...(['members', 'services', 'teams'] as const).map(workspaceCollectionQuery)];
 export type WorkspaceReadRevisions = {workspaceRevision: number | null; pagingRevision: number | null};
 
-export const pagingRevisionQuery = 'SELECT revision FROM paging_control WHERE id=1';
+const pagingRevisionQuery = 'SELECT revision FROM paging_control WHERE id=1';
 
 export function workspaceRevisionColumns(coverage: boolean) {
   return `(SELECT revision FROM workspace_control WHERE id=1) AS workspaceRevision,
@@ -34,7 +34,7 @@ const snapshots=new WeakMap<State,Map<string,Snapshot>>()
 type MutationCounts=Record<string,{deleted:number;updated:number;inserted:number}>
 const mutationCounts=new WeakMap<State,MutationCounts>()
 export const workspaceMutationCounts=(state:State)=>mutationCounts.get(state)??{}
-export function decodeWorkspace(rows:{collection:string;ordinal:number;data:string}[]):State {
+export function decodeWorkspace(rows:StoredRecord[]):State {
   const control=rows.find(row=>row.collection==='control')
   const state=empty(),previous=new Map<string,Snapshot>(collections.map(key=>[key,new Map()]))
   if(control)state.revision=JSON.parse(control.data).revision
@@ -42,7 +42,7 @@ export function decodeWorkspace(rows:{collection:string;ordinal:number;data:stri
   for(const row of rows) {
     if(row.collection==='control')continue
     if(row.collection==='erasureFences'){(state.erasureFences??=[]).push(JSON.parse(row.data));continue}
-    const key=row.collection as keyof typeof tables,parsed=JSON.parse(row.data)
+    const key=row.collection as WorkspaceCollection,parsed=JSON.parse(row.data)
     // Legacy embedded evidence stays in storage, never in ordinary API/UI reads.
     const value=key==='intakeReceipts'?storedReceipt(parsed):parsed
     ;((state as any)[key]??=[]).push(value)
@@ -52,7 +52,8 @@ export function decodeWorkspace(rows:{collection:string;ordinal:number;data:stri
   return state
 }
 export async function loadWorkspace(db:D1Database):Promise<State> {
-  return decodeWorkspace((await db.batch<{collection:string;ordinal:number;data:string}>(workspaceQueries.map(query=>db.prepare(query)))).flatMap(result=>result.results))
+  const read=await readTracked(db,[db.prepare(erasureFenceRead)])
+  return decodeWorkspace(workspaceRecords(read,read.extras[0]))
 }
 export function inheritWorkspaceSnapshot(next:State,previous:State):State {const snapshot=snapshots.get(previous);if(snapshot)snapshots.set(next,snapshot);return next}
 export function workspaceRows(db:D1Database,state:State,token:string):D1PreparedStatement[] {

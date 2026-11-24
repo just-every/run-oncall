@@ -112,8 +112,9 @@ export function heldWorkspace() {
 
 
 // Compare retained rows directly: exporting some categories itself appends audit.
+// The readers' change log and stored copy (oc_read_*) are derived, not records.
 export function durableSnapshot(w) {
- const names=w.sql("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' ORDER BY name").map(row=>row.name)
+ const names=w.sql("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' AND name NOT IN ('oc_read_changes','oc_read_snapshot') ORDER BY name").map(row=>row.name)
  return Object.fromEntries(w.statements(names.map(name=>'SELECT * FROM "'+name.replaceAll('"','""')+'"').join(';')).map((rows,index)=>[names[index],rows.sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))]))
 }
 
