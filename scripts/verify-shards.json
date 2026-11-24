@@ -45,7 +45,8 @@
       "tests/changes.mjs"
     ],
     "activation": [
-      "tests/activation.mjs"
+      "tests/activation.mjs",
+      "tests/read-budget.mjs"
     ],
     "triage": [
       {
