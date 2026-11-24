@@ -58,7 +58,7 @@ To choose a real owner mailbox before the first launch, clone the tagged release
 "$HOME/.local/bin/rer" dev --host localhost
 ```
 
-`rer install` fetches the locked dependencies. `rer setup` builds the app, applies local migrations and prepares the owner, keeping private settings inside the checkout and out of Git. Setup prints a loopback `RER_SETUP_READY` address and stops its temporary app before exiting. Next, run `"$HOME/.local/bin/rer" dev --host localhost` and open the private `RER_OPEN` link to sign in. Repeating setup preserves the existing owner and data; it is not an owner editor.
+`rer install` fetches the locked dependencies. `rer setup` builds the app, applies local migrations and prepares the owner, keeping private settings inside the checkout and out of Git. Setup prints a loopback address such as `RER_SETUP_READY http://127.0.0.1:8790` and stops its temporary app. To open Oncall locally, run `"$HOME/.local/bin/rer" dev --host localhost` and open the private `RER_OPEN` link that `rer dev` prints. Repeating setup preserves the existing owner and data.
 
 In an interactive terminal, `rer setup` can ask for your owner email instead of receiving `--owner-email`. Piping an email to stdin does not answer setup. For unattended use, create an owner-only JSON file, for example `.seed/local-answers.json` containing `{"OWNER_EMAIL":"you@example.com"}`, then run:
 
@@ -111,7 +111,7 @@ Compare the shared [hosting options](https://run-oncall.com/docs/hosting), or fo
 
 Release 1 supports hosted incident coordination alongside your team's existing pager. Paging stays OFF; coordination does not need an independent standby. Release 2 paging and independent standby are not built. Keep the pager's routes and notification settings in place.
 
-**Hosting is in `v0.3.0` and later.** Hosting claims the owner you set up, so start from a checkout with your real owner mailbox. Install `rer` first if you have not used the installer above. It provides its own Node and pnpm; you do not need global `node` or `npx`.
+**Hosting is in `v0.3.0` and later.** Start with email off using your Cloudflare account. First prepare the owner in a separate checkout. Install `rer` first if you have not used the installer above. It provides its own Node and pnpm.
 
 ```sh
 curl -fsSL https://runeditrun.com/install.sh | sh
@@ -121,12 +121,12 @@ git remote add origin https://github.com/just-every/run-oncall &&
 git fetch --quiet --depth 1 origin tag "$ONCALL_TAG" &&
 git checkout --quiet --detach "refs/tags/$ONCALL_TAG" &&
 "$HOME/.local/bin/rer" install &&
-MAIL_PROVIDER=none "$HOME/.local/bin/rer" setup --owner-email you@example.com
+MAIL_PROVIDER=development "$HOME/.local/bin/rer" setup --owner-email you@example.com
 ```
 
 Already running Oncall locally from `run-oncall`? Keep that folder and its data, and use the fresh `oncall-hosted` checkout above for hosting. Hosting never uploads local records. See [Transfer local coordination records to hosting](data.md#transfer-local-coordination-records-to-hosting) before planning a move; [Export and restore](data.md) explains local backup and recovery.
 
-Replace `you@example.com` with your owner email. The `MAIL_PROVIDER=none` prefix tells setup to list hosting requirements with email off. Setup prepares the owner locally, prints a loopback `RER_SETUP_READY` address, and stops its temporary app. Set your mail choice separately in the deploy file. Repeating setup preserves the configured owner.
+Replace `you@example.com` with your owner email. `MAIL_PROVIDER=development` prepares the owner locally without sending email. Setup prints `RER_SETUP_READY` followed by a loopback address, stops its temporary app and tells you to run `rer dev` for local access. For hosting, continue with the Cloudflare steps below. Set `MAIL_PROVIDER=none` in the private deploy file and run `rer signin` after deployment to get your hosted owner link.
 
 The examples use the named environment `production`. Choose the environment once and use the same `--environment NAME` for deployment, sign-in, updates and removal. Each name has its own hosted resources and deployment record; omitting the flag selects `production`. Names start with a lowercase letter and contain lowercase letters, digits and single hyphens, up to 32 characters.
 
@@ -166,7 +166,7 @@ chmod 600 "$HOME/.config/oncall/production.env"
 vi "$HOME/.config/oncall/production.env"
 ```
 
-In `vi`, press `i` to edit, replace each placeholder after `=` with its copied value, then press Escape, type `:wq` and press Enter to save and close. Use your preferred local editor in place of `vi` if you already have one. Save one `KEY=VALUE` per line, without spaces around `=`, `export`, shell substitutions or inline comments. Blank lines and lines beginning with `#` are allowed. One pair of double quotes around a value is accepted; single quotes are literal. Values are read as text, not executed by a shell. The file must be owned by your user, be a regular file with one hard link, and have no group/other permissions; symlinks are refused. Keep it outside Git and keep private backups of both credentials and this checkout's deployment records.
+In `vi`, press `i` to edit, replace the two Cloudflare placeholders with the values you copied, then press Escape, type `:wq` and press Enter to save and close. Use your preferred local editor in place of `vi` if you already have one. Save one `KEY=VALUE` per line, without spaces around `=`, `export`, shell substitutions or inline comments. Blank lines and lines beginning with `#` are allowed. One pair of double quotes around a value is accepted; single quotes are literal. Values are read as text, not executed by a shell. The file must be owned by your user, be a regular file with one hard link, and have no group/other permissions; symlinks are refused. Keep it outside Git and keep private backups of both credentials and this checkout's deployment records.
 
 `--env-file` accepts an absolute path or a path relative to the checkout. If a credential helper already set Cloudflare variables in your shell, unset them before running deploy with the private file. For the variables above, run `unset CLOUDFLARE_ACCOUNT_ID CLOUDFLARE_API_TOKEN`. Rer refuses the duplicate sources even when the values match. Use this separate file rather than the local `.dev.vars`: local development keys are refused for deployment. You do not need to invent `OWNER_EMAIL`, `SESSION_SECRET` or `SETUP_TOKEN` entries here: `rer` uses the setup owner and generates new hosted secrets where needed, then retires the one-time setup token.
 
@@ -290,8 +290,6 @@ an existing deployment off; a new selection does not remove old secrets.
 — Run Edit Run fleet, 2026-11-15
 
 The name saved by setup in `src/branding.json` appears in signed-in tab titles and beside the Oncall mark on phones, or below it in the desktop rail, including Settings. An installation without a saved name uses Oncall.
-
-Local setup requires `MAIL_PROVIDER=development` for the no-email local owner entry. Selecting `MAIL_PROVIDER=none` stops setup with that correction, including on a retry; choose development and run setup again, then `"$HOME/.local/bin/rer" dev`. Hosted deployments can still use `MAIL_PROVIDER=none` with guarded `rer signin`.
 
 `GET /health` includes `buildVersion` from the compiled package version and `deployment.sourceSha` from the deploy binding, falling back to the checkout commit captured when Vite starts or builds. The source is null only if neither is known. Fingerprint and deployment version bindings keep their existing meaning; storage failures still return 503 with the same build identity, and health does not prove pager coverage. These fields contain public build identity only.
 

@@ -248,11 +248,11 @@
       "executable": false
     },
     "docs/data.md": {
-      "sha256": "b0fc10c371f615ce244076d7531b599d710aa43e261e7fb47536e22d5fb66218",
+      "sha256": "f11fa190b1cdbc6a6267817ef21689cf35ef80c15fe29533b088bc1868efade0",
       "executable": false
     },
     "docs/getting-started.md": {
-      "sha256": "26536b849669d6177da1e762e21d21943ae3610e9ae8808e6c4eaa6d74bdf45a",
+      "sha256": "7bd8c1601ec9d64d30f788574eb41882cecb886e346483d9488cc906c1e07394",
       "executable": false
     },
     "docs/incidents.md": {
@@ -260,7 +260,7 @@
       "executable": false
     },
     "docs/install.md": {
-      "sha256": "a0d7cdfa9e8a1e7b20941249111a64433967781f3ba16a3c8808d9ee2d722ece",
+      "sha256": "cb007cdb99149e80f70a1b6bcdd062b0abbaa33ef4a1c537fdf799ac8ea08a67",
       "executable": false
     },
     "docs/limits.md": {
@@ -756,7 +756,7 @@
       "executable": false
     },
     "ONBOARDING.md": {
-      "sha256": "232d16a2d1286ef1cefa1eaaa8b308386f77afe4cb6bbb6ebb4da8ca70e7f120",
+      "sha256": "fbb5b3f061fca87dc274e7ee3c1a7918f47e569a98def39c7be9e8047f42256c",
       "executable": false
     },
     "OPERATIONS.json": {
@@ -860,7 +860,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "3bbced9b674b9ef0d0372e47f6022e06489cb87918791aaf1060a22b40db8adf",
+      "sha256": "7a154c01cb68bae64a456e1c5454d87e56747a7a8f07012b97c1a844d77a6527",
       "executable": false
     },
     "RELEASE.json": {
@@ -884,7 +884,7 @@
       "executable": false
     },
     "RUN-LOCALLY.md": {
-      "sha256": "58a18127d13869e2505022929d09a94e3be1943182b28f946174d78b7cb294f3",
+      "sha256": "d3d0cee980505cc0f8b34cb5ef591e530e7c90eab45aa7fb54ed04094bf731b2",
       "executable": false
     },
     "SCHEDULE-SEMANTICS.md": {
@@ -6496,7 +6496,7 @@
       "executable": false
     },
     "src/site/run.ts": {
-      "sha256": "2a0e0b22433bf55159babeae66a78ce31720dd8c7d27bee4744b99667d3430e8",
+      "sha256": "30f70b9e12d861154260b6c609f96dd5655466a9518cc34b24a930fe7ede27fa",
       "executable": false
     },
     "src/site/shared-pages.css": {

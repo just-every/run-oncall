@@ -67,7 +67,7 @@ this computer set differently (each distinct pin keeps its own copy), and about
 a checkout on another volume than your home folder, where pnpm cannot clone
 packages from its store.
 
-After `RER_READY`, Oncall prints `RER_SIGNED_IN EMAIL` and a private
+Standalone `rer setup` prints `RER_SETUP_READY` with a loopback address and stops its temporary app. Run `rer dev` to start Oncall. After `RER_READY`, `rer dev` prints `RER_SIGNED_IN EMAIL` and a private
 `RER_OPEN URL`. Open that URL on this computer to enter as the owner. On first
 launch, `/setup` asks you to confirm the read-only owner details; once complete,
 later launches open the app directly. Treat `RER_OPEN` as a credential.
@@ -236,10 +236,7 @@ impose Base pins, aliases or state layout.
 
 ## Update, host and remove
 
-Hosted coordination is in `v0.3.0` and later. For first deployment, follow [Getting started](docs/getting-started.md#host-for-your-team):
-it includes real-owner setup, the Cloudflare account ID/token and SendGrid
-key/verified sender, exact provider menu paths, permissions and verification,
-and private `0600` credential-file creation. The examples below use that file.
+Hosted coordination is in `v0.3.0` and later. For first deployment, follow [Getting started](docs/getting-started.md#host-for-your-team) to prepare the owner and save your Cloudflare account ID and token to a private `0600` deploy file. Start with `MAIL_PROVIDER=none` in that file and leave the sender and mail credentials unset. [SendGrid setup](docs/getting-started.md#get-a-sendgrid-key-and-verified-sender-for-email-links) is optional for emailed sign-in links.
 
 `--environment NAME` selects the hosted resources and deployment record; the
 default is `production`. Use the same name for deploy, sign-in, updates, secret
@@ -251,8 +248,7 @@ changes and removal. Keep the deploying checkout and its `.rer/deploy/` records.
 ```
 
 `--env-file` reads an owned private regular file of `KEY=VALUE` lines, relative
-to the checkout or at an absolute path. File entries override process environment
-values for this command. It refuses symlinks, multiple hard links, foreign
+to the checkout or at an absolute path. If your shell already has Cloudflare credentials, run `unset CLOUDFLARE_ACCOUNT_ID CLOUDFLARE_API_TOKEN` before using the file. It refuses symlinks, multiple hard links, foreign
 ownership and group/other permissions. Blank lines and `#` comment lines are
 allowed, with one optional pair of double quotes around a value; it performs no
 shell expansion. Keep local dev keys out of this file. The setup owner and fresh
@@ -260,13 +256,9 @@ hosted session/setup secrets are supplied automatically where needed.
 
 The dry run builds and validates the local deployment plan without credentials or Cloudflare requests. It does not check target secrets, deployment permissions, remote readiness or mail delivery; `--env-file` does not enable those checks. Local validation or build errors can still refuse. A successful dry run is not hosted acceptance. A successful
 real deploy applies hosted migrations, checks deployment identity at `/health`,
-claims the owner automatically and retires the one-time setup token. Open the
-returned HTTPS address, request an owner sign-in email, open it on the same
-device and press **Confirm**. Mailbox receipt and successful owner entry prove
-the mail flow; deployment success alone does not. Local dev keys and owner-entry
-links do not work there.
+claims the owner automatically and retires the one-time setup token.
 
-The deploying owner can sign in without email:
+With email off, the deploying owner signs in using this command:
 
 ```sh
 "$HOME/.local/bin/rer" signin --environment production --env-file "$HOME/.config/oncall/production.env"
@@ -276,7 +268,7 @@ This uses the Cloudflare credentials to write a one-time grant for the recorded
 owner into the hosted auth database. It prints a private link once, valid for
 one use within 15 minutes; its use is audited. Open it privately and press
 **Confirm**. Never redirect or share the output. Run from the original deploying checkout and use
-the environment named in its deployment record.
+the environment named in its deployment record. If you configured email links, you can also request one at the HTTPS app address. Open it from your mailbox on the same device and press **Confirm**.
 
 Follow [Update a hosted installation](docs/getting-started.md#update-a-hosted-installation)
 to switch this checkout to the latest published release and deploy again.

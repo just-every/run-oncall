@@ -47,20 +47,24 @@ export function oncallRunPage(contract: SeedContract | undefined, homepage: Home
 
 export function oncallHostingPage(hosting: SiteHosting | null, contract: SeedContract | undefined, homepage: HomepageHeader) {
   const launcher = escape(installedRer)
-  return publishedCommands(hostingPageHtml(identity, run, hosting, contract, homepage))
+  // Oncall prepares its owner in a separate checkout and deploys with email off first.
+  const cloudflare = hosting && { ...hosting, ownerEmail: undefined, mail: undefined }
+  return publishedCommands(hostingPageHtml(identity, run, cloudflare, contract, homepage))
     .replaceAll('run the same line from the same folder', `inside <code>run-oncall</code>, run <code>${escape(restart)}</code> if you used the installer or <code>npx -y @runeditrun/rer dev --host localhost</code> if you used the Node alternative`)
-    .replace(/run <code><span class="code-word">git<\/span> <span class="code-word">pull<\/span><\/code>, then .*?\. The hosted data stays\./,
-      'follow the <a href="/docs/getting-started#update-a-hosted-installation">release update steps</a>.')
-    .replace('Stop Oncall on this computer first: rer deploy refuses while it runs.',
-      () => `If Oncall is running in this checkout, stop it with <code>${launcher} dev --stop</code> for development or <code>${launcher} preview --stop</code> for preview.`)
-    .replaceAll('rer dev --stop\nrer deploy --env-file ', () => `${launcher} deploy --env-file `)
-    .replace(', so the hosted Oncall can email sign-in links.', ' if you want Oncall to email sign-in links.')
-    .replace('It ends with these lines:', 'With email enabled, rer deploy ends with these lines.')
-    .replace('<h3 id="deploy">Deploy</h3>', '<h3 id="deploy">Deploy</h3><p>If a credential helper set Cloudflare variables in your shell, unset them before deploying with the private file. For the variables above, run <code>unset CLOUDFLARE_ACCOUNT_ID CLOUDFLARE_API_TOKEN</code>. Rer refuses the duplicate sources even when the values match.</p>')
-    .replace('Open that address and sign in with your owner email:', 'With email enabled, open that address and sign in with your owner email.')
-    .replace('The hosted Oncall starts with its own, empty data; the data on this computer stays where it is.</p>',
-      () => `The hosted Oncall starts with its own, empty data; the data on this computer stays where it is.</p><p>For <a href="/docs/getting-started#hosted-coordination-with-email-off">hosted coordination with email off</a>, set <code>MAIL_PROVIDER=none</code> in the deploy file, leave mail credentials and the sender unset, and after deployment run <code>${launcher} signin --env-file .env.oncall</code> for a private owner link.</p>`)
+    .replace(/(<h3 class="need" id="need">What you need<\/h3><ul><li>).*?(<\/li>)/,
+      (_, start, end) => `${start}<a href="/docs/getting-started#host-for-your-team">Prepare your owner in a hosting checkout</a>. Use that checkout for the steps below. If you installed with Node, use <code>npx -y @runeditrun/rer</code> in place of <code>${launcher}</code>.${end}`)
+    .replace('from the <code><span class="code-word">run-oncall</span></code> folder on your computer.', 'from your hosting checkout.')
+    .replace(/(<h3 id="deploy-file">Write the deploy file<\/h3>).*?(?=<div class="code">)/,
+      '$1<p>In your hosting checkout, create <code>.env.oncall</code> with the lines below. Replace the two Cloudflare placeholders and keep <code>MAIL_PROVIDER=none</code>. Leave the sender and mail credentials unset.</p>')
+    .replaceAll('CLOUDFLARE_API_TOKEN=the token', 'CLOUDFLARE_API_TOKEN=replace-with-token-secret\nMAIL_PROVIDER=none')
+    .replaceAll('CLOUDFLARE_ACCOUNT_ID=your account ID', 'CLOUDFLARE_ACCOUNT_ID=replace-with-account-id')
+    .replace(/(<h3 id="deploy">Deploy<\/h3>).*?(?=<div class="code">)/,
+      (_, heading) => `${heading}<p>If a server is running in this checkout, stop it with <code>${launcher} dev --stop</code> or <code>${launcher} preview --stop</code>.</p><p>If your shell already has Cloudflare credentials, run <code>unset CLOUDFLARE_ACCOUNT_ID CLOUDFLARE_API_TOKEN</code> before using the private file.</p>`)
+    .replaceAll('rer dev --stop\nrer deploy --env-file .env.oncall',
+      () => `${launcher} deploy --env-file .env.oncall --dry-run\n${launcher} deploy --env-file .env.oncall`)
+    .replace(/<p>rer deploy builds .*?(?=<\/li><\/ol>)/,
+      () => `<p>The dry run checks the local build and deploy plan without contacting Cloudflare. The real deploy prints the app’s HTTPS address, claims the owner and reports that email is off. The hosted database starts empty.</p><p>From the same checkout, run <code>${launcher} signin --env-file .env.oncall</code>. Open the private URL it prints within 15 minutes, press <strong>Confirm</strong> and complete <strong>Finish setup</strong> if shown.</p><p>To enable email links, follow the <a href="/docs/getting-started#get-a-sendgrid-key-and-verified-sender-for-email-links">optional SendGrid setup</a> and use your existing deploy file when updating the mail settings.</p>`)
+    .replace(/<strong>Update Oncall:<\/strong>.*?(?=<\/li>)/,
+      '<strong>Update Oncall.</strong> Follow the <a href="/docs/getting-started#update-a-hosted-installation">release update steps</a> with your existing deploy file.')
     .replaceAll(/(<span class="code-word">)rer(<\/span> <span class="code-word">deploy<\/span>)/g, (_, before, after) => `${before}${launcher}${after}`)
-    .replace('wherever this page says <code><span class="code-word">rer</span></code>',
-      () => `in place of <code><span class="code-word">${launcher}</span></code> in the commands below`)
 }

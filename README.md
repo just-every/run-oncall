@@ -142,7 +142,7 @@ Mail is optional. Choose how the owner will sign in and set it in the same deplo
 1. **With email off**, set `MAIL_PROVIDER=none` and leave the sender and mail credentials unset. The deploying owner signs in with `rer signin`.
 2. **With email links**, configure [SendGrid and a verified sender](docs/getting-started.md#get-a-sendgrid-key-and-verified-sender-for-email-links). Set `MAIL_PROVIDER=sendgrid`, `SENDGRID_API_KEY` and `MAIL_FROM`. The owner can then request an emailed sign-in link.
 
-`rer setup` prints a loopback `RER_SETUP_READY` address for local setup. The hosted owner signs in after deployment.
+Use `MAIL_PROVIDER=development` for local `rer setup`. It prints `RER_SETUP_READY` with a loopback address and stops its temporary app. For local access, run `"$HOME/.local/bin/rer" dev --host localhost` and open the private `RER_OPEN` link it prints. For hosting, continue with deployment below.
 
 If a server is running in the hosting checkout, stop it with `"$HOME/.local/bin/rer" dev --stop` for development or `"$HOME/.local/bin/rer" preview --stop` for preview. Ctrl-C also stops a foreground server. With the private file prepared as described there:
 
