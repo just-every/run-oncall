@@ -24,6 +24,8 @@ If you used the installer, restart with `cd run-oncall && "$HOME/.local/bin/rer"
 
 The first time, Oncall opens **Finish setup**. Name and Email are read-only; a default local owner is named **Owner**. Review the displayed email, tick *I confirm this owner account is ready to use* and press **Finish setup**. This screen confirms the owner; it does not edit their name or email. After that, Oncall opens straight into the app. To choose a real owner mailbox before first launch, use the explicit setup steps below.
 
+After the first start, check the install with one schedule that has the owner on it: add a service under **Settings → Services**, choose **On call → New rota**, keep the owner as the primary person, set **Starts** to a time that has already passed and choose **Create rota**. **On call** then shows the owner as on call now. Known accessibility gap: below 900 px wide, including 390 px, the side rail is hidden and the installation name shows in the top bar, which is a plain `div` with no landmark role, so a screen reader cannot jump to it by landmark.
+
 Treat the `RER_OPEN` link like a password: it signs whoever opens it in as the owner. Open it only on this computer.
 
 `rer dev` can detach and return after printing the ready links. The app keeps running in the background; `"$HOME/.local/bin/rer" dev --stop` stops it. If it is running in the foreground, Ctrl-C stops it too.

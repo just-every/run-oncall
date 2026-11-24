@@ -18,6 +18,8 @@ macOS, Linux or Windows with WSL2. git is required; rer brings Node and pnpm.
 
 The line clones the latest published Oncall release into a `run-oncall` folder, installs `rer` and the app's dependencies, prepares the local database and a local owner, and starts Oncall. On a busy Mac, the first local start can take several minutes. `rer dev` prints progress every 20 seconds and tells you how long to allow. Wait for the private `RER_OPEN` link in the terminal, then open it on the same computer. Treat it like a password. The first time, Oncall opens **Finish setup**. Tick *I confirm this owner account is ready to use* and press **Finish setup**. This free copy runs only on your computer and sends no email.
 
+After the first start, check the install with one schedule that has the owner on it: add a service under **Settings → Services**, choose **On call → New rota**, keep the owner as the primary person, set **Starts** to a time that has already passed and choose **Create rota**. **On call** then shows the owner as on call now. Known accessibility gap: below 900 px wide, including 390 px, the side rail is hidden and the installation name shows in the top bar, which is a plain `div` with no landmark role, so a screen reader cannot jump to it by landmark.
+
 The following examples use `"$HOME/.local/bin/rer"`. If you started with Node, use `npx -y @runeditrun/rer` in its place.
 
 If you used the installer, restart with `cd run-oncall && "$HOME/.local/bin/rer" dev --host localhost`. If you used the Node alternative, restart with `cd run-oncall && npx -y @runeditrun/rer dev --host localhost`.
