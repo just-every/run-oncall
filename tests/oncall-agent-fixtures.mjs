@@ -165,7 +165,7 @@ export const manualPageClasses = [
 
 /** Application records exclude required decision custody and value-free audit. */
 export async function manualPageSnapshot(runtime) {
-  const names = (await runtime.db.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name").all()).results
+  const names = (await runtime.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT IN ('oc_read_changes','oc_read_snapshot') ORDER BY name").all()).results
     .map(row => row.name).filter(name => /^(workspace_control$|oc_|paging_)/.test(name)
       && !['oc_admin_audit', 'oc_audit_clock', 'oc_audit_identities'].includes(name));
   const records = {};

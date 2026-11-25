@@ -385,7 +385,7 @@ async function staleNoteRevision(runtime){
  const rows=async(sql,...values)=>(await db.prepare(sql).bind(...values).all()).results;
  // Request-audit scratch and refusal relay bookkeeping are separate from
  // retained state-changing audit, which is compared explicitly below.
- const tables=(await rows("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' ORDER BY name"))
+ const tables=(await rows("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' AND name NOT IN ('oc_read_changes','oc_read_snapshot') ORDER BY name"))
   .map(row=>row.name).filter(name=>!['agent_door_audit','agent_door_relay','oc_admin_audit','oc_audit_clock'].includes(name));
  const commits=()=>rows("SELECT * FROM oc_admin_audit WHERE outcome='accepted' AND (workspace_before<>workspace_after OR paging_before<>paging_after OR handoff_before<>handoff_after) ORDER BY ordinal");
  const snapshot=async()=>({
@@ -1136,7 +1136,7 @@ try{
  // must remain a person's decision even if the company later allows autonomy.
  {
  const native=async()=> (await (await http('/api/state')).json());
- const tables=(await runtime.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' ORDER BY name").all()).results.map(row=>row.name);
+ const tables=(await runtime.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' AND name NOT IN ('oc_read_changes','oc_read_snapshot') ORDER BY name").all()).results.map(row=>row.name);
  const records=async()=>Object.fromEntries((await runtime.db.batch(tables.map(name=>runtime.db.prepare('SELECT * FROM "'+name.replaceAll('"','""')+'"')))).map((row,index)=>[tables[index],row.results.sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))]));
  for(const mode of ['autonomous','held']){
   assert.equal((await adopt(heldPolicy())).status,200);

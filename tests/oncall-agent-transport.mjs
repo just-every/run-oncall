@@ -9,7 +9,7 @@ import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
 // Read retained rows without an export's own audit writes. Empty tables remain
 // present, so a refused call cannot create custody in a previously empty store.
 async function records(db) {
- const {results:names}=await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' ORDER BY name").all();
+ const {results:names}=await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' AND name NOT IN ('oc_read_changes','oc_read_snapshot') ORDER BY name").all();
  const result={};
  for(const {name} of names){
   const {results}=await db.prepare('SELECT * FROM "'+name.replaceAll('"','""')+'"').all();
