@@ -26,6 +26,7 @@
         "part": "machines"
       },
       "tests/intake.mjs",
+      "tests/paging-sender.mjs",
       "tests/routing.mjs"
     ],
     "browser": [

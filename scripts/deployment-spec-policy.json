@@ -1,6 +1,7 @@
 {
   "providerEffects": [
     "outbound-mail",
+    "outbound-sms",
     "signed-response-events",
     "read-only-provider-import"
   ],

@@ -40,6 +40,12 @@
           "summary": "Set primary and backup rotations, hand-overs across clock changes, swaps and your calendar feed."
         },
         {
+          "slug": "paging",
+          "title": "Paging by text message",
+          "source": "docs/paging.md",
+          "summary": "Off by default. Optional text-message paging through your own Twilio account: how to turn it on and check it."
+        },
+        {
           "slug": "incidents",
           "title": "Incidents and alerts",
           "source": "docs/incidents.md",

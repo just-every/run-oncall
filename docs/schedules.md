@@ -67,6 +67,6 @@ You or a workspace administrator can revoke a subscription. The next read is ref
 
 ## Escalation policy as data
 
-On the rota page, expand **Paging is off**. **Escalation policy as data** stores how long to wait for the primary before the backup, as a record your team can read. Oncall never pages from it: see [What Oncall does not do](limits.md).
+On the rota page, expand **Paging is off**. **Escalation policy as data** stores how long to wait for the primary before the backup, as a record your team can read. Oncall pages from it only for a rota whose paging you switch on there, by text message and only when the installation has a sender: see [Paging by text message](paging.md) and [What Oncall does not do](limits.md).
 
 Machine API schedule publication and explicit import adoption record the same schedule-change obligations atomically. The machine client remains the recorded creator and permanent audit actor; adoption records the current administrator. Neither path sends a notice.

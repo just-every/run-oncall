@@ -49,10 +49,17 @@
         "MAIL_API_KEY",
         "INBOUND_EMAIL_DOMAIN",
         "PAGERDUTY_OAUTH_CLIENT_ID",
-        "PAGERDUTY_OAUTH_CLIENT_SECRET"
+        "PAGERDUTY_OAUTH_CLIENT_SECRET",
+        "TWILIO_ACCOUNT_SID",
+        "TWILIO_AUTH_TOKEN",
+        "TWILIO_API_KEY_SID",
+        "TWILIO_API_KEY_SECRET",
+        "TWILIO_FROM_NUMBER",
+        "TWILIO_TO_NUMBER"
       ],
       "providerEffects": [
         "outbound-mail",
+        "outbound-sms",
         "signed-response-events",
         "read-only-provider-import"
       ],

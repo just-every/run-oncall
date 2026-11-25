@@ -9,6 +9,7 @@ import {FailureLine, useActionFailure} from '../app/FailureLine';
 import {useViewAnchor} from '../app/useViewAnchor';
 import {request, HttpFailure, InterruptedTransport} from '../useWorkspace';
 import {ScheduleNowNext, ScheduleSummary} from '../ScheduleSummary';
+import {PagingPanel} from '../sms-paging/PagingPanel';
 import {ScheduleCoordination} from '../schedule-coordination/Controls';
 import {ReviewedChange} from '../schedule-coverage/ReviewedChange';
 import type {ScheduleReview} from '../schedule-coverage/review';
@@ -121,7 +122,7 @@ export function RotaPage({id, state, actor, value, pagingRevision, refresh, edit
       <div className="oc-rota-actions">{canEdit && <button type="button" onClick={openCover}>Cover a shift</button>}{responsive && <button type="button" onClick={() => openSwap()}>Request a swap</button>}</div>
       {schedule.overrides.length > 0 && <section className="oc-card"><h2>Cover</h2><ul className="oc-cover-list">{schedule.overrides.filter(override=>Date.parse(override.start)<from+14*86_400_000&&Date.parse(override.end)>from).map(override => <li key={override.id}><div><strong>{person(override.member)?.name ?? 'Nobody on call'}</strong><p>{override.role} · {shortTime(override.start, schedule.timezone)} – {shortTime(override.end, schedule.timezone)}</p></div>{canEdit && <Tooltip label="Remove cover"><button type="button" aria-label="Remove cover" onClick={() => {setSheet('cover');void reviewChange({...schedule, overrides:schedule.overrides.filter(row => row.id !== override.id)});}}>×</button></Tooltip>}</li>)}</ul></section>}
       <div className="oc-coordination"><ScheduleCoordination rotaPage onRequestSwap={() => openSwap()} schedule={schedule} state={state} actor={actor} onChanged={changed}/></div>
-      <details className="oc-card oc-paging"><summary>Paging is off</summary><ScheduleSummary showCalendar={false} schedule={schedule} policies={data?.policies ?? []} admin={canEdit} request={request} onSaved={() => {void load();}}/></details>
+      <PagingPanel scheduleId={schedule.id} admin={actor.role==='admin'}><ScheduleSummary showCalendar={false} schedule={schedule} policies={data?.policies ?? []} admin={canEdit} request={request} onSaved={() => {void load();}}/></PagingPanel>
     </>}
     {sheet && schedule && <RotaSheet title={sheet === 'cover' ? 'Cover a shift' : 'Request a swap'} close={close} recoverFocus={sheet === 'cover' && !review && !!failures.failure && !failures.failure.read}><p className="oc-quiet">{schedule.timezone}</p><FailureLine failure={failures.failure}/>
       {review ? <ReviewedChange key={review.digest} review={review} busy={busy} onApply={() => void apply()}/> : sheet === 'cover' ? <ValidationForm onSubmit={event => {event.preventDefault();void coverShift();}}>

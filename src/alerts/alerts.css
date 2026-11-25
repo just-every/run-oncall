@@ -62,3 +62,4 @@
 .alerts-workspace a.alert-row { text-decoration: none; font-weight: 400; }
 .alert-filters { margin: 0; }
 @media(max-width:700px) { .alert-group h3 { margin-top: 6px; } }
+.alert-page-log { padding: 0; margin: 12px 0; list-style: none; font-size: 13px; line-height: 1.5; color: var(--oc-ink-soft); }

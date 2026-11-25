@@ -44,6 +44,13 @@ export interface Bindings {
  MAIL_ACCOUNT_ID?: string
  SENDGRID_API_KEY?: string
  RESEND_API_KEY?: string
+ /** Optional SMS paging sender (Twilio); with none of these set, paging cannot send. */
+ TWILIO_ACCOUNT_SID?: string
+ TWILIO_AUTH_TOKEN?: string
+ TWILIO_API_KEY_SID?: string
+ TWILIO_API_KEY_SECRET?: string
+ TWILIO_FROM_NUMBER?: string
+ TWILIO_TO_NUMBER?: string
  /** Hosted deploys: built files and the deploy identity the deploy kit binds. */
  ASSETS?: Fetcher
  RER_DEPLOY_SOURCE?: string

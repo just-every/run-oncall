@@ -76,6 +76,36 @@
       "binding": "PAGERDUTY_OAUTH_CLIENT_SECRET",
       "environment": "PAGERDUTY_OAUTH_CLIENT_SECRET",
       "optional": true
+    },
+    {
+      "binding": "TWILIO_ACCOUNT_SID",
+      "environment": "TWILIO_ACCOUNT_SID",
+      "optional": true
+    },
+    {
+      "binding": "TWILIO_AUTH_TOKEN",
+      "environment": "TWILIO_AUTH_TOKEN",
+      "optional": true
+    },
+    {
+      "binding": "TWILIO_API_KEY_SID",
+      "environment": "TWILIO_API_KEY_SID",
+      "optional": true
+    },
+    {
+      "binding": "TWILIO_API_KEY_SECRET",
+      "environment": "TWILIO_API_KEY_SECRET",
+      "optional": true
+    },
+    {
+      "binding": "TWILIO_FROM_NUMBER",
+      "environment": "TWILIO_FROM_NUMBER",
+      "optional": true
+    },
+    {
+      "binding": "TWILIO_TO_NUMBER",
+      "environment": "TWILIO_TO_NUMBER",
+      "optional": true
     }
   ],
   "crons": [

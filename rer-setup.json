@@ -17,6 +17,10 @@
     {
       "id": "move-in",
       "label": "Move in (optional)"
+    },
+    {
+      "id": "paging",
+      "label": "Text-message paging (optional, off by default)"
     }
   ],
   "dependencies": [
@@ -237,6 +241,66 @@
       "required": false,
       "ownerVisible": true,
       "group": "move-in"
+    },
+    {
+      "name": "TWILIO_ACCOUNT_SID",
+      "label": "Twilio account SID",
+      "help": "Optional: Oncall texts the on-call person through your own Twilio account, only for a rota whose paging you switch on in Oncall. Leave all of these empty to keep paging off. Docs: Paging.",
+      "kind": "secret",
+      "input": "entered",
+      "required": false,
+      "ownerVisible": true,
+      "group": "paging"
+    },
+    {
+      "name": "TWILIO_AUTH_TOKEN",
+      "label": "Twilio auth token",
+      "help": "Optional: Oncall texts the on-call person through your own Twilio account, only for a rota whose paging you switch on in Oncall. Leave all of these empty to keep paging off. Docs: Paging.",
+      "kind": "secret",
+      "input": "entered",
+      "required": false,
+      "ownerVisible": true,
+      "group": "paging"
+    },
+    {
+      "name": "TWILIO_API_KEY_SID",
+      "label": "Twilio API key SID (instead of the auth token)",
+      "help": "Optional: Oncall texts the on-call person through your own Twilio account, only for a rota whose paging you switch on in Oncall. Leave all of these empty to keep paging off. Docs: Paging.",
+      "kind": "secret",
+      "input": "entered",
+      "required": false,
+      "ownerVisible": true,
+      "group": "paging"
+    },
+    {
+      "name": "TWILIO_API_KEY_SECRET",
+      "label": "Twilio API key secret (instead of the auth token)",
+      "help": "Optional: Oncall texts the on-call person through your own Twilio account, only for a rota whose paging you switch on in Oncall. Leave all of these empty to keep paging off. Docs: Paging.",
+      "kind": "secret",
+      "input": "entered",
+      "required": false,
+      "ownerVisible": true,
+      "group": "paging"
+    },
+    {
+      "name": "TWILIO_FROM_NUMBER",
+      "label": "Twilio sending number",
+      "help": "Optional: Oncall texts the on-call person through your own Twilio account, only for a rota whose paging you switch on in Oncall. Leave all of these empty to keep paging off. Docs: Paging.",
+      "kind": "secret",
+      "input": "entered",
+      "required": false,
+      "ownerVisible": true,
+      "group": "paging"
+    },
+    {
+      "name": "TWILIO_TO_NUMBER",
+      "label": "Owner phone number for pages",
+      "help": "Optional: Oncall texts the on-call person through your own Twilio account, only for a rota whose paging you switch on in Oncall. Leave all of these empty to keep paging off. Docs: Paging.",
+      "kind": "secret",
+      "input": "entered",
+      "required": false,
+      "ownerVisible": true,
+      "group": "paging"
     }
   ],
   "steps": [

@@ -10,7 +10,7 @@ Oncall is not a 911 dispatch service. For a US emergency, **call 911** directly 
 
 ## It does not page anyone
 
-Oncall sends no SMS, voice calls, push notifications or paging emails, and it never wakes anyone up. Your existing pager stays in charge of that. Escalation delays you save are stored as data your team can read; no timer runs from them. Any attempt to deliver a page is refused with an explanation.
+Oncall sends no voice calls, push notifications or paging emails, and by default it sends nothing and never wakes anyone up: paging is OFF and your existing pager stays in charge. The one exception is optional [text-message paging](paging.md), which does nothing until the installation has Twilio credentials and an administrator switches it on for a rota. Escalation delays you save are stored as data your team can read and, for a rota with paging on, drive the texts described there; for every other rota no timer runs from them.
 
 ## It does not decide for you
 

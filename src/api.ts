@@ -63,6 +63,7 @@ import { Refusal } from './move-in/refusals';
 import { Hono } from "hono";
 import { deploymentHealth } from "./base/deployment-health";
 import { installPaging } from "./paging-api";
+import { installSmsPaging } from "./sms-paging/api";
 import { recoverySnapshot, prepareCheckpointReplacement, prepareCoordinationRestore } from "./paging-store";
 import { createRecoveryCheckpoint } from "./family/response-operations/recovery";
 import { createRecoveryCheckpointV2, validateAnyRecoveryCheckpoint } from "./family/response-operations/recovery-v2";
@@ -748,6 +749,7 @@ api.get("/api/handoff/:id", async (c) => {
 });
 installTeams(api,{body,state:authorizedState,save:(c,state,revision)=>save(c.env.DB,state,revision,sessionGuard(c))});
 installPaging(api, body);
+installSmsPaging(api, body);
 installSchedules(api,body);
 installScheduleCoordination(api,body);
 installMoveIn(api,body);

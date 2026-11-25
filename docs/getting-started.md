@@ -111,7 +111,7 @@ The update applies Oncall's additive migrations. Your data, owner and password a
 
 Compare the shared [hosting options](https://run-oncall.com/docs/hosting), or follow the Oncall-specific deployment details below.
 
-Release 1 supports hosted incident coordination alongside your team's existing pager. Paging stays OFF; coordination does not need an independent standby. Release 2 paging and independent standby are not built. Keep the pager's routes and notification settings in place.
+Release 1 supports hosted incident coordination alongside your team's existing pager. Paging stays OFF; coordination does not need an independent standby. Optional text-message paging exists and is off by default (see [Paging by text message](paging.md)); independent standby and delivery guarantees are not built. Keep the pager's routes and notification settings in place.
 
 **Hosting is in `v0.3.0` and later.** Start with email off using your Cloudflare account. First prepare the owner in a separate checkout. Install `rer` first if you have not used the installer above. It provides its own Node and pnpm.
 

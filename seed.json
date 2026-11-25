@@ -97,6 +97,36 @@
       "name": "PAGERDUTY_OAUTH_CLIENT_SECRET",
       "required": false,
       "secret": true
+    },
+    {
+      "name": "TWILIO_ACCOUNT_SID",
+      "required": false,
+      "secret": true
+    },
+    {
+      "name": "TWILIO_AUTH_TOKEN",
+      "required": false,
+      "secret": true
+    },
+    {
+      "name": "TWILIO_API_KEY_SID",
+      "required": false,
+      "secret": true
+    },
+    {
+      "name": "TWILIO_API_KEY_SECRET",
+      "required": false,
+      "secret": true
+    },
+    {
+      "name": "TWILIO_FROM_NUMBER",
+      "required": false,
+      "secret": true
+    },
+    {
+      "name": "TWILIO_TO_NUMBER",
+      "required": false,
+      "secret": true
     }
   ],
   "deploy": {

@@ -2,6 +2,8 @@ import type {Alert, State} from '../family/response-operations/domain';
 import {onCallNotifications} from '../family/response-operations/on-call-notifications/read';
 import type {OnCall} from '../on-call/read';
 import {shortTime} from '../reviews/time';
+import {PageLog} from '../sms-paging/PageLog';
+import {useState} from 'react';
 
 const duration=(seconds:number)=>{
   const hours=Math.floor(seconds/3600),minutes=Math.floor(seconds%3600/60),rest=seconds%60;
@@ -10,7 +12,7 @@ const duration=(seconds:number)=>{
 const statuses={waiting:'Waiting',due:'Due',answered:'Answered',closed:'Closed'};
 
 export function AlertNotificationRun({alert,state,onCall,unmatched}:{alert:Alert;state:State;onCall:OnCall|null;unmatched:boolean}) {
-  const run=onCallNotifications(state,{alert:alert.id}).runs[0];
+  const run=onCallNotifications(state,{alert:alert.id}).runs[0], [pages,setPages]=useState(0);
   const rota=onCall?.rotas.find(rota=>rota.id===run?.policy.scheduleId);
   const serviceRotas=onCall?.rotas.filter(rota=>rota.service.id===alert.service)??[];
   const rotaPath=serviceRotas.length===1?'/on-call/'+encodeURIComponent(serviceRotas[0].id):'/on-call';
@@ -30,7 +32,8 @@ export function AlertNotificationRun({alert,state,onCall,unmatched}:{alert:Alert
         <p>Future alerts can go to the primary on call when the service’s rotas point to one available primary. Check the <a href={rotaPath}>rota</a>.</p>
       </>}
     </>:<>
-      <p>These steps are recorded. Oncall doesn't send them; your pager does.</p>
+      <p>{pages?'These steps are recorded. Pages Oncall sent by text message are listed below; the rest is your pager’s.':"These steps are recorded. Oncall doesn't send them; your pager does."}</p>
+      <PageLog alert={alert.id} step={run.step} names={Object.fromEntries(state.members.map(member=>[member.id,member.name]))} onPages={setPages}/>
       {run.status==='answered'&&<p className="alert-run-outcome">Answered · The alert was acknowledged; later steps have stopped.</p>}
       {run.status==='closed'&&<p className="alert-run-outcome">Closed · {run.outcome}</p>}
       <ol className="alert-notification-rules" aria-label="Recorded notification steps">
