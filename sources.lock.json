@@ -252,7 +252,7 @@
       "executable": false
     },
     "docs/getting-started.md": {
-      "sha256": "ed1743efa05752dc5efdc3ef4cb5433d108958a391cf25e1a9751830dfd2845e",
+      "sha256": "aaab61c45c4f33eea6860ef13fc7d8948ea3c283ee20a3b277b635c1c704d47f",
       "executable": false
     },
     "docs/incidents.md": {
@@ -5996,7 +5996,7 @@
       "executable": false
     },
     "src/readiness/sign-in-mail.ts": {
-      "sha256": "7d9accd491307c283cf2b8e47421a42bb5fd8ef14d990f7fbc99c9dd358f2dc9",
+      "sha256": "2aa9454967a733ce412279f317cbb8ff1f694fad9019f821417a17f58ea87704",
       "executable": false
     },
     "src/readiness/signals.ts": {
@@ -7065,6 +7065,10 @@
     },
     "tests/oncall-provider-edge.mjs": {
       "sha256": "d40b7970ea06f79c49981443fdb3c7f387c5eb76ab5c144005d6309ee132af1a",
+      "executable": false
+    },
+    "tests/owner-signin-mail.mjs": {
+      "sha256": "f375b927440675b20b46460e18f03cbcda3e7f343b4215e7286a0b737aff57fc",
       "executable": false
     },
     "tests/paging-response-flow.mjs": {

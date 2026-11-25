@@ -1,5 +1,5 @@
 import type {Bindings} from '../auth.server';
-import {hostedSignInMailSender} from '../mail.server.mjs';
+import {hostedSignInMailSender, mailRecipients} from '../mail.server.mjs';
 
 export type SignInMail =
  | {state: 'local' | 'off' | 'unconfigured' | 'awaiting-confirmation' | 'sender-unrecorded' | 'changed-since' | 'unavailable'}
@@ -7,7 +7,7 @@ export type SignInMail =
 
 export async function observeSignInMail(env: Bindings): Promise<SignInMail> {
  if (env.AUTH_LOCAL === 'true' || env.RER_DEMO === '1') return {state: 'local'};
- if (env.MAIL_PROVIDER === 'none') return {state: 'off'};
+ if (env.MAIL_PROVIDER === 'none' || !mailRecipients(env)) return {state: 'off'};
  let current;
  try {current = await hostedSignInMailSender(env);}
  catch {return {state: 'unconfigured'};}
