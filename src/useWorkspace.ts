@@ -36,6 +36,7 @@ export async function compareRequest(path:'/api/replay'|`/api/routing/keys/${str
     return request(path,data);
   }
 }
+const unchangedRefreshInterval = 30000;
 export function useWorkspace({refreshInterval = 10000, coverage = false, onCallPage = false} = {}) {
   const [onCall, setOnCall] = useState<import('./on-call/read').OnCall | null>(null);
   const [pagingRevision, setPagingRevision] = useState<number | undefined>();
@@ -52,6 +53,7 @@ export function useWorkspace({refreshInterval = 10000, coverage = false, onCallP
   const failures = useActionFailure();
   const preserveView = useViewAnchor();
   const reading = useRef<Promise<void> | null>(null);
+  const unchanged = useRef(false);
   const wantsCoverage = useRef(coverage);
   const stateVersion = useRef<string | undefined>(undefined);
   const coverageVersion = useRef<string | undefined>(undefined);
@@ -75,6 +77,7 @@ export function useWorkspace({refreshInterval = 10000, coverage = false, onCallP
     if (stateVersion.current) headers.set(workspaceStateHeader, stateVersion.current);
     if (wantsCoverage.current && coverageVersion.current) headers.set(workspaceCoverageHeader, coverageVersion.current);
     const pending = sendRequest("/api/workspace", undefined, headers).then((session: WorkspaceRefresh) => {
+      unchanged.current = 'unchanged' in session;
       if ('unchanged' in session) {
         if (session.onCall) applyCoverage(session);
       } else {
@@ -147,13 +150,24 @@ export function useWorkspace({refreshInterval = 10000, coverage = false, onCallP
     if (opened && ready && member) void refreshAfterPendingRead().catch(readFailed);
   }, [onCallPage, ready, member?.id]);
   // One visible-tab clock for the whole workspace, including focus and resume.
+  // After an unchanged read the next one waits longer; any change, action,
+  // focus or resume reads at once and restores the base interval.
   useEffect(() => {
     if (!ready || !member) return;
-    const update = () => {if (document.visibilityState === "visible") void refresh().catch(readFailed);};
-    const timer = window.setInterval(update, refreshInterval);
+    let timer = 0;
+    const schedule = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(tick, unchanged.current ? Math.max(refreshInterval, unchangedRefreshInterval) : refreshInterval);
+    };
+    const tick = () => {
+      if (document.visibilityState !== "visible") return schedule();
+      void refresh().catch(readFailed).finally(schedule);
+    };
+    const update = () => {if (document.visibilityState === "visible") void refresh().catch(readFailed).finally(schedule);};
+    schedule();
     window.addEventListener("focus", update);
     document.addEventListener("visibilitychange", update);
-    return () => {window.clearInterval(timer); window.removeEventListener("focus", update); document.removeEventListener("visibilitychange", update);};
+    return () => {window.clearTimeout(timer); window.removeEventListener("focus", update); document.removeEventListener("visibilitychange", update);};
   }, [ready, member?.id, refreshInterval]);
   const pendingAction = useRef<((value: any) => void) | null>(null);
   async function run(

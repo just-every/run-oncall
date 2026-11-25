@@ -13,7 +13,7 @@ import {signJws,seconds,accessToken,policyEnvelope,renewalEnvelope,autonomousPol
 export async function agentEffectSnapshot({db,http}){
  const response=await http('/api/state');assert.equal(response.status,200);
  const application=await response.json();
- const tables=(await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' ORDER BY name").all()).results.map(row=>row.name)
+ const tables=(await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' AND name NOT IN ('oc_read_changes','oc_read_snapshot') ORDER BY name").all()).results.map(row=>row.name)
   .filter(name=>!['agent_door_audit','agent_door_relay','oc_audit_clock'].includes(name));
  const statements=tables.map(name=>db.prepare(name==='agent_door_agents'
   ? 'SELECT id,name,specialist,sponsor,sponsor_name,revoked FROM agent_door_agents'
@@ -27,7 +27,7 @@ export async function agentEffectSnapshot({db,http}){
 /** Read tools may retain agent decisions, approvals and reviews, never native effects. */
 export async function agentReadSnapshot({db,http}) {
  const response=await http('/api/state');assert.equal(response.status,200);
- const names=(await db.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name").all()).results
+ const names=(await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT IN ('oc_read_changes','oc_read_snapshot') ORDER BY name").all()).results
   .map(row=>row.name).filter(name=>/^(oc_|paging_|workspace_|sources$|sessions$|credentials$|operator_members$)/.test(name));
  const rows=await db.batch(names.map(name=>db.prepare('SELECT * FROM "'+name.replaceAll('"','""')+'"')));
  return {application:await response.json(),records:Object.fromEntries(rows.map((row,index)=>[names[index],row.results
@@ -286,7 +286,7 @@ export async function consentRevocationMatrix(runtime){
  const read=async path=>{const response=await http(path);assert.equal(response.status,200);return response.json()};
  const owner=(await read('/api/workspace')).member;
  const rows=async table=>(await db.prepare('SELECT * FROM "'+table.replaceAll('"','""')+'"').all()).results.sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)));
- const names=(await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' ORDER BY name").all()).results.map(row=>row.name);
+ const names=(await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' AND name NOT IN ('oc_read_changes','oc_read_snapshot') ORDER BY name").all()).results.map(row=>row.name);
  // Refusal audit, its Business relay and native audit bookkeeping are checked
  // separately. Approval, review, replay, usage and event custody stay exact.
  const tables=names.filter(name=>!['agent_door_audit','agent_door_relay','oc_admin_audit','oc_audit_clock'].includes(name));

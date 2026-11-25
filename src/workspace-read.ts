@@ -10,7 +10,8 @@ import type {OnCall} from './on-call/read';
 import {readSessionCookie} from './session-cookie';
 import {memberWorkspace} from './triage-api';
 import {workspaceCoverageHeader, workspaceRefreshHeader, workspaceStateHeader, type WorkspaceRefresh} from './workspace-refresh';
-import {coverageWorkspaceQueries, decodeWorkspace, pagingRevisionQuery, workspaceQueries, workspaceRevisionColumns, type WorkspaceReadRevisions} from './workspace-store';
+import {decodeWorkspace, erasureFenceRead, workspaceRecords, workspaceRevisionColumns, type WorkspaceReadRevisions} from './workspace-store';
+import {readTracked} from './read-cache';
 
 type MemberSessionRow = {data: string; operator_session: string | null};
 type Access = {member: Member; digest: string; owner: boolean; revisions: WorkspaceReadRevisions};
@@ -38,20 +39,16 @@ async function access(env: Bindings, request: Request, coverage: boolean): Promi
   return {member, digest, owner: false, revisions: row};
 }
 
-type StorageRow = {collection: string; ordinal: number; data: string; revision: number};
 async function snapshot(db: D1Database, session: Access, full: boolean, coverage: boolean) {
-  const statements = [
-    memberSession(db, session.digest),
-    ...(full ? workspaceQueries : coverageWorkspaceQueries).map(query => db.prepare(query)),
-  ];
-  if (coverage) statements.push(db.prepare(pagingRevisionQuery), db.prepare('SELECT data FROM paging_schedules ORDER BY rowid'));
-  const [authority, ...state] = await db.batch<StorageRow>(statements);
+  const read = await readTracked(db, [memberSession(db, session.digest), ...(full ? [db.prepare(erasureFenceRead)] : [])]);
+  const [authority, fences] = read.extras;
   const current: Member | null = authority.results[0] ? JSON.parse(authority.results[0].data) : null;
   if (!current || current.id !== session.member.id) fail('Access revoked', 401);
-  const schedules = coverage ? state.pop()!.results.map(row => JSON.parse(row.data) as Schedule) : undefined;
-  const pagingRevision = coverage ? state.pop()!.results[0]?.revision : undefined;
+  const schedules = coverage ? read.rows('paging_schedules').map(row => JSON.parse(row.data) as Schedule) : undefined;
+  const pagingRevision: number | undefined = coverage ? read.rows('paging_control')[0]?.revision : undefined;
   if (coverage && (!Number.isSafeInteger(pagingRevision) || pagingRevision! < 0)) fail('Critical scheduling storage missing', 503);
-  return {current, workspace: decodeWorkspace(state.flatMap(result => result.results)), schedules, pagingRevision};
+  const workspace = decodeWorkspace(workspaceRecords(read, fences, full ? undefined : ['members', 'services', 'teams']));
+  return {current, workspace, schedules, pagingRevision};
 }
 
 const minute = 60_000;
