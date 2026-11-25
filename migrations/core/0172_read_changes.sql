@@ -26,6 +26,12 @@ END;
 -- The minute cron rewrites it (src/read-snapshot.ts). Each part stays well under
 -- D1's 2 MB row limit; every part names the log entry (seq and nonce) it follows.
 CREATE TABLE oc_read_snapshot (part INTEGER PRIMARY KEY, seq INTEGER NOT NULL, nonce TEXT, parts INTEGER NOT NULL, data TEXT NOT NULL);
+-- An erasure removes the stored copy in its own transaction, so no copy of an
+-- erased value outlives it; the next cron writes a fresh one.
+CREATE TRIGGER oc_read_snapshot_erasure AFTER INSERT ON rer_erasure_guard
+BEGIN
+ DELETE FROM oc_read_snapshot;
+END;
 
 CREATE TRIGGER oc_read_oc_teams_insert AFTER INSERT ON oc_teams BEGIN INSERT INTO oc_read_changes(tbl,pk) VALUES('oc_teams',NEW.id); END;
 CREATE TRIGGER oc_read_oc_teams_update AFTER UPDATE ON oc_teams BEGIN INSERT INTO oc_read_changes(tbl,pk) VALUES('oc_teams',NEW.id); INSERT INTO oc_read_changes(tbl,pk) SELECT 'oc_teams',OLD.id WHERE OLD.id IS NOT NEW.id; END;

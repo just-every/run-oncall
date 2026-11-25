@@ -444,7 +444,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "f8aa3da9737a6ebac0e0766f1ae25f6617d14f7c5666a423a1132fa428d9dd8a",
+      "sha256": "b8451ee57278dce18979b32de52e9b38cb9dfd09d9fd84c3b2ca48f02d03a434",
       "executable": false
     },
     "migrations/core/0001_initial.sql": {
@@ -748,7 +748,7 @@
       "executable": false
     },
     "migrations/core/0172_read_changes.sql": {
-      "sha256": "735b260c8ac62c0490afdb441088c2519c4a7a0bdfc1d4c75a0826b1fecbfad1",
+      "sha256": "f67d010f65244f8d80424bc7127241154e8ce104214b242e59456c9715aca335",
       "executable": false
     },
     "MOVE-IN.md": {
@@ -6672,7 +6672,7 @@
       "executable": false
     },
     "tests/agent-door-runtime.mjs": {
-      "sha256": "d991e3612aad1ec6b1bfcd7923d6b730c0fc986f80b2e3d8aa952926032abd90",
+      "sha256": "92276315b4757f7f2bf0097103154bef634dca2ee5a72488252036fd7a91470d",
       "executable": false
     },
     "tests/agent-door.mjs": {
@@ -6948,11 +6948,11 @@
       "executable": false
     },
     "tests/oncall-agent-fixtures.mjs": {
-      "sha256": "b239b53242a3548fed8ab869e2cf59d851f519be34511d8d475cda5e815eabbd",
+      "sha256": "021e6c2ca5e10ea45d403567439326f378668c30e23b6d2b3c5cb693f9d3ad89",
       "executable": false
     },
     "tests/oncall-agent-flow.mjs": {
-      "sha256": "cc248f329ff8b305f78e6f1cdc5a83a65fe6adcfc167486b24a6a2e2e341c7cc",
+      "sha256": "da414c8c77de516df55b6c718e540badb51cd1e4ce2b5cacf7c0e5e44f58a79e",
       "executable": false
     },
     "tests/oncall-agent-incident-replay.mjs": {
@@ -7012,7 +7012,7 @@
       "executable": false
     },
     "tests/oncall-agent-transport.mjs": {
-      "sha256": "6da37af823127eea56a6caee77586e7b7a6e42b4e12e43ebc6a55688732bf600",
+      "sha256": "1376da67a260c261fd18d4a488ab30065f480a672b1fe59d2e9e5e4affe00d24",
       "executable": false
     },
     "tests/oncall-agent-triage.mjs": {
