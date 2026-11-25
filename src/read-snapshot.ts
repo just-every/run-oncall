@@ -12,6 +12,11 @@ const checkQuery = `SELECT h.seq,h.nonce,(SELECT nonce FROM oc_read_changes WHER
  EXISTS(SELECT 1 FROM oc_read_changes WHERE tbl='*' AND seq>h.seq) AS broken
  FROM oc_read_snapshot h WHERE h.part=0`
 
+// The erasure transaction clears the snapshot and logs changes to its rows.
+// Guard both the delete and every insert in the same atomic D1 batch, so a
+// rewrite computed before that transaction cannot put erased data back.
+const sameHead = `(?,?) = (${latestQuery})`
+
 function split(text: string) {
   const parts: string[] = []
   for (let start = 0; start < text.length;) {
@@ -24,16 +29,25 @@ function split(text: string) {
   return parts
 }
 
+async function rewrite(db: D1Database) {
+  const read = await readTracked(db)
+  const parts = split(JSON.stringify({ seq: read.seq, nonce: read.nonce, tables: read.all() }))
+  const head = [read.seq, read.nonce]
+  const [, firstPart] = await db.batch([
+    db.prepare(`DELETE FROM oc_read_snapshot WHERE ${sameHead}`).bind(...head),
+    ...parts.map((data, part) => db.prepare(`INSERT INTO oc_read_snapshot(part,seq,nonce,parts,data)
+      SELECT ?,?,?,?,? WHERE ${sameHead}`).bind(part, ...head, parts.length, data, ...head)),
+  ])
+  return firstPart.meta.changes ? parts.length : 0
+}
+
 export async function storeReadSnapshot(db: D1Database) {
   const [check, latest] = (await db.batch<any>([db.prepare(checkQuery), db.prepare(latestQuery)])).map(result => result.results[0])
   const seq = latest?.seq ?? 0
   const follows = check && !check.broken && check.held === check.nonce
   if (follows && seq >= check.seq && seq - check.seq < stale) return { stored: false }
-  const read = await readTracked(db)
-  const parts = split(JSON.stringify({ seq: read.seq, nonce: read.nonce, tables: read.all() }))
-  await db.batch([
-    db.prepare('DELETE FROM oc_read_snapshot'),
-    ...parts.map((data, part) => db.prepare('INSERT INTO oc_read_snapshot(part,seq,nonce,parts,data) VALUES(?,?,?,?,?)').bind(part, read.seq, read.nonce, parts.length, data)),
-  ])
-  return { stored: true, parts: parts.length }
+  // Retry once with fresh rows. If writes keep moving the head, the next cron
+  // checks again and rebuilds immediately when erasure has cleared the table.
+  const parts = await rewrite(db) || await rewrite(db)
+  return parts ? { stored: true, parts } : { stored: false }
 }

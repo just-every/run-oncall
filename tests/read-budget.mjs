@@ -17,20 +17,42 @@ const alertsPerDay = 40, days = 30, ceiling = 600, coldCeiling = 1500;
 
 // Meters each request's and cron run's D1 statements inside the Worker.
 const meterSource = `const meter={rows:0,statements:0};const originals=new WeakMap();
+let pendingErase, erasure;
 const count=result=>{if(result&&result.meta){meter.rows+=result.meta.rows_read??0;meter.statements++}return result};
-const statement=original=>{const wrapped=new Proxy(original,{get(target,key){
- if(key==='bind')return(...values)=>statement(target.bind(...values));
+const statement=(original,sql)=>{const wrapped=new Proxy(original,{get(target,key){
+ if(key==='bind')return(...values)=>statement(target.bind(...values),sql);
  if(key==='all'||key==='run')return async()=>count(await target[key]());
  if(key==='first')return async column=>{const row=count(await target.all()).results[0]??null;return column&&row?row[column]:row};
  if(key==='raw')return async options=>{const rows=count(await target.all()).results;return [...(options?.columnNames&&rows.length?[Object.keys(rows[0])]:[]),...rows.map(row=>Object.values(row))]};
- const value=Reflect.get(target,key);return typeof value==='function'?value.bind(target):value}});originals.set(wrapped,original);return wrapped};
-const metered=db=>new Proxy(db,{get(target,key){
- if(key==='prepare')return sql=>statement(target.prepare(sql));
- if(key==='batch')return async list=>(await target.batch(list.map(item=>originals.get(item)??item))).map(count);
+ const value=Reflect.get(target,key);return typeof value==='function'?value.bind(target):value}});originals.set(wrapped,{original,sql});return wrapped};
+const metered=(db,beforeSnapshotWrite)=>new Proxy(db,{get(target,key){
+ if(key==='prepare')return sql=>statement(target.prepare(sql),sql);
+ if(key==='batch')return async list=>{
+  if (originals.get(list[0])?.sql.startsWith('DELETE FROM oc_read_snapshot')) await beforeSnapshotWrite?.();
+  return (await target.batch(list.map(item=>originals.get(item)?.original??item))).map(count);
+ };
  const value=Reflect.get(target,key);return typeof value==='function'?value.bind(target):value}});
 const appFetch=app.fetch,appScheduled=app.scheduled;
-app.fetch=(request,env,ctx)=>{if(new URL(request.url).pathname==='/__d1_meter'){const value={...meter};meter.rows=0;meter.statements=0;return Response.json(value)}return appFetch(request,{...env,DB:metered(env.DB)},ctx)};
-app.scheduled=(event,env,ctx)=>appScheduled(event,{...env,DB:metered(env.DB)},ctx);`;
+app.fetch=async(request,env,ctx)=>{
+ const url=new URL(request.url);
+ if(url.pathname==='/__d1_meter'){const value={...meter,erasure};meter.rows=0;meter.statements=0;return Response.json(value)}
+ if(url.pathname==='/__d1_erase_during_snapshot'){
+  const {id,input}=await request.json();
+  pendingErase={url:new URL('/api/erasure/member/'+id,url),headers:{
+   origin:request.headers.get('origin'),cookie:request.headers.get('cookie'),'content-type':'application/json',
+  },input};
+  return Response.json({armed:true});
+ }
+ return appFetch(request,{...env,DB:metered(env.DB)},ctx);
+};
+app.scheduled=(event,env,ctx)=>appScheduled(event,{...env,DB:metered(env.DB,async()=>{
+ if(!pendingErase)return;
+ const {url,headers,input}=pendingErase;
+ pendingErase=undefined;
+ const response=await appFetch(new Request(url,{method:'POST',headers,body:JSON.stringify(input)}),env,ctx);
+ erasure={status:response.status,receipt:await response.json(),
+  parts:await env.DB.prepare('SELECT COUNT(*) AS n FROM oc_read_snapshot').first('n')};
+})},ctx);`;
 
 const tables = ['oc_teams', 'oc_erased_report_cases', 'oc_schedule_records', 'oc_business_services', 'oc_key_allowances', 'oc_api_clients', 'oc_api_endpoints', 'oc_api_operations', 'oc_api_outbox', 'oc_members', 'oc_services', 'oc_policies', 'oc_events', 'oc_alerts', 'oc_incidents', 'oc_audit', 'oc_triage', 'oc_changes', 'oc_change_sources', 'oc_intake_sources', 'oc_intake_receipts', 'oc_email_addresses', 'oc_email_rules', 'oc_email_samples', 'oc_email_receipts', 'oc_email_quarantine'];
 const start = Date.now();
@@ -44,6 +66,29 @@ try {
   const setup = await w.request('/api/setup', {name: 'Synthetic Budget Owner', password: 'synthetic-oncall-budget-password'});
   const cookie = setup.cookie, owner = ok(setup).member;
   const req = (path, input) => w.request(path, input, cookie);
+  const tick = async () => ok(await w.send('/cdn-cgi/local/scheduled', undefined, {}, 'GET'));
+  const target = ok(await req('/api/members', {name: 'Alice Example', role: 'responder', password: 'synthetic-oncall-erasure-password'}), 201);
+  const keep = ok(await req('/api/members', {name: 'Sam Example', role: 'responder', password: 'synthetic-oncall-retained-password'}), 201);
+  const snapshot = () => w.sql('SELECT data FROM oc_read_snapshot ORDER BY part').map(row => row.data).join('');
+  await tick();
+  assert.ok(snapshot().includes(target.name), 'the cron stored the member before erasure');
+
+  // Make an existing snapshot due for rewrite with unrelated changes.
+  w.sql(`WITH RECURSIVE revisions(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM revisions WHERE n<300)
+    INSERT INTO oc_read_changes(tbl,pk) SELECT 'oc_members', '${keep.id.replaceAll("'", "''")}' FROM revisions`);
+  ok(await req('/__d1_erase_during_snapshot', {id: target.id, input: {
+    workspaceRevision: ok(await req('/api/state')).revision, confirmation: 'erase ' + target.id, identitiesReviewed: true, importedPeople: [],
+  }}));
+  await tick();
+  const {erasure} = ok(await w.send('/__d1_meter', undefined, {}, 'GET'));
+  assert.equal(erasure.status, 200, JSON.stringify(erasure.receipt));
+  assert.equal(erasure.receipt.state, 'complete');
+  assert.equal(erasure.parts, 0, 'erasure clears the existing snapshot in its own transaction');
+  assert.ok(!snapshot().includes(target.name), 'the in-flight rewrite never restores the erased name');
+  await tick();
+  assert.ok(snapshot().includes(keep.name) && !snapshot().includes(target.name), 'the snapshot contains only the retained name after a quiet cron');
+  assert.ok(!JSON.stringify(ok(await req('/api/workspace')).state).includes(target.name));
+
   const service = 'synthetic-budget-support';
   const primary = ok(await req('/api/members', {name: 'Synthetic budget primary', role: 'responder', password: 'synthetic-oncall-primary-password'}), 201);
   const backup = ok(await req('/api/members', {name: 'Synthetic budget backup', role: 'responder', password: 'synthetic-oncall-backup-password'}), 201);
@@ -91,7 +136,6 @@ try {
     ...(previous.stateVersion ? {'x-oncall-workspace-version': previous.stateVersion} : {}),
     ...(previous.coverageVersion ? {'x-oncall-coverage-version': previous.coverageVersion} : {}),
   }));
-  const tick = async () => ok(await w.send('/cdn-cgi/local/scheduled', undefined, {}, 'GET'));
   await rows();
   let view = await poll();
   report.firstRead = await rows();

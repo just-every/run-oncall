@@ -155,7 +155,9 @@ export function useWorkspace({refreshInterval = 10000, coverage = false, onCallP
   useEffect(() => {
     if (!ready || !member) return;
     let timer = 0;
+    let disposed = false;
     const schedule = () => {
+      if (disposed) return;
       window.clearTimeout(timer);
       timer = window.setTimeout(tick, unchanged.current ? Math.max(refreshInterval, unchangedRefreshInterval) : refreshInterval);
     };
@@ -167,7 +169,12 @@ export function useWorkspace({refreshInterval = 10000, coverage = false, onCallP
     schedule();
     window.addEventListener("focus", update);
     document.addEventListener("visibilitychange", update);
-    return () => {window.clearTimeout(timer); window.removeEventListener("focus", update); document.removeEventListener("visibilitychange", update);};
+    return () => {
+      disposed = true;
+      window.clearTimeout(timer);
+      window.removeEventListener("focus", update);
+      document.removeEventListener("visibilitychange", update);
+    };
   }, [ready, member?.id, refreshInterval]);
   const pendingAction = useRef<((value: any) => void) | null>(null);
   async function run(

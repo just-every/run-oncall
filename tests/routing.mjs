@@ -519,7 +519,12 @@ try {
  const markerTrigger={...markerRule,id:'marker-failed',action:'trigger',conditions:[{field:'subject',op:'contains',value:'FAILED'},{field:'sender',op:'equals',value:'monitor@example.test'},{field:'text',op:'matches',value:'^Database'},{field:'text',op:'not-matches',value:'forbidden'}]};
  ok(await req('/api/email/addresses/markers/publish',{revision:1,mode:'custom',fallback:'quarantine',rules:[markerTrigger,{...markerRule,match:'any',conditions:[{field:'subject',op:'contains',value:'OK'},{field:'text',op:'equals',value:'RECOVERY'}]}]}));await mail(w,markers,'FAILED [ nightly-db ]');const spaced=ok(await req('/api/email')).receipts.at(-1);assert.equal(spaced.decision.key,' nightly-db ');await mail(w,markers,'OK [nightly-db]');assert.equal(ok(await req('/api/email')).receipts.at(-1).outcome,'no-effect');await mail(w,markers,'OK [ nightly-db ]');assert.equal(ok(await req('/api/email')).receipts.at(-1).outcome,'recovered');
  const eraseRevision=ok(await req('/api/email')).addresses.find(a=>a.id==='nightly').revision;
- ok(await req('/api/email/addresses/nightly/erase',{revision:eraseRevision}));assert.ok(!ok(await req('/api/email')).samples.some(s=>s.address==='nightly'));ok(await req('/api/restore',{mode:'replace',archive:beforeWorkspace}),409);
+ ok(await w.send('/cdn-cgi/local/scheduled',undefined,{},'GET'));
+ const readCopy=()=>w.sql('SELECT data FROM oc_read_snapshot ORDER BY part').map(row=>row.data).join('');
+ assert.ok(readCopy().includes(unmatchedMail.id),'the read snapshot holds the saved mail before erasure');
+ ok(await req('/api/email/addresses/nightly/erase',{revision:eraseRevision}));
+ assert.equal(readCopy(),'','saved-mail erasure immediately clears the read snapshot');
+ assert.ok(!ok(await req('/api/email')).samples.some(s=>s.address==='nightly'));ok(await req('/api/restore',{mode:'replace',archive:beforeWorkspace}),409);
  const create=(id,provider,key)=>req('/api/routing/keys',{id,name:id+' routed monitor',provider,scope:['payments','search'],owner:actor.id,key,revision:0,rules:[],catchAll:null});
  ok(await create('pd','pagerduty',keys.pd),201);
  const publish=(baseVersion,nextRules=rules,catchAll=null)=>req('/api/routing/keys/pd/publish',{baseVersion,rules:nextRules,catchAll});

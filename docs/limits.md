@@ -42,6 +42,8 @@ There is no measured availability commitment for this release. A healthy web pag
 
 [Readiness](readiness.md) explains the current observations and their limits. Settings → Readiness shows the installed release identity and distinguishes local behavior from unproven live operation. Neither a local test nor a provider sandbox establishes live availability or authorizes cutover.
 
+On Cloudflare, the Worker keeps an in-memory copy of workspace and paging records to reduce D1 reads. In a local V8 measurement it retained about 1.5 times the stored bytes. Rewriting the D1 read snapshot peaked at about 87 MB of heap above baseline with 90 days of history at 40 alerts per day. The Worker isolate limit is 128 MB. This was a local measurement and hosted memory use can vary.
+
 ## Regulated data needs agreements and validated controls
 
 This release makes no HIPAA compliance or regulated-data suitability claim. Applicable regulated-data agreements and validated controls have not been established. Do not put protected health information or other regulated data into alerts, notes, runbooks or attachments. Use redacted incident descriptions and references that stay inside your separately authorized systems; a source link grants no access to those systems.
