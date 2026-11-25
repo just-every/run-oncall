@@ -89,6 +89,11 @@
   ],
   "env": [
     {
+      "name": "MAIL_RECIPIENTS",
+      "required": false,
+      "secret": false
+    },
+    {
       "name": "PAGERDUTY_OAUTH_CLIENT_ID",
       "required": false,
       "secret": true

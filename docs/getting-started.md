@@ -176,6 +176,7 @@ Mail is optional. Choose one option in your deploy file:
 
 1. **With email off**, keep `MAIL_PROVIDER=none` and leave the sender and all mail credentials unset. After deploying, use [owner access without email](#owner-access-without-email).
 2. **With email links**, set `MAIL_PROVIDER=sendgrid` and add `SENDGRID_API_KEY` and a verified `MAIL_FROM`. Use a real owner mailbox you can open. See [SendGrid setup](#get-a-sendgrid-key-and-verified-sender-for-email-links).
+3. **With sign-in links for the owner only**, set the email-link inputs above and add `MAIL_RECIPIENTS=owner`. See [Mail the owner only](#mail-the-owner-only).
 
 ### 3. Deploy and test sign-in
 
@@ -211,6 +212,16 @@ With email off, or to recover access when email is unavailable, run this from th
 `rer signin` writes a single-use grant for the recorded owner. It prints a one-time sign-in notice, the private URL on its own line with no `RER_OPEN` prefix, then `signin: complete (exit 0)`. Open the URL privately within 15 minutes and press **Confirm**. Its use is audited. Keep the URL out of logs, chat and files.
 
 For Business agent setup, pass only the printed URL as `sign_in` in `session.report`. If the command reports no completed deployment, check the environment name and use the original deploying checkout.
+
+### Mail the owner only
+
+Set `MAIL_RECIPIENTS=owner` with a mail provider, sender and key, and the installation sends one kind of mail: a sign-in link to the owner address it was set up with (`OWNER_EMAIL`). On the sign-in page, the owner enters that address and presses **Email a sign-in link**; the link works once and expires in 15 minutes. Any other address, including a team member's, gets the same answer and no mail, and no link is created for it. Every other message stays unsent: invitations answer that mail is unavailable, as with email off, and a message to anyone else is refused before the provider is called. The default, `any`, keeps ordinary email links. Any other value turns mail off.
+
+```sh
+"$HOME/.local/bin/rer" deploy --environment production --env-file "$HOME/.config/oncall/production.env" --set-secret MAIL_PROVIDER=sendgrid --set-secret MAIL_RECIPIENTS=owner --set-secret MAIL_FROM --set-secret SENDGRID_API_KEY
+```
+
+Keep the key in the private file, never on the command line. To go back to email off, follow [Hosted coordination with email off](#hosted-coordination-with-email-off) and unset `MAIL_RECIPIENTS` with the sending inputs.
 
 ### Get a SendGrid key and verified sender for email links
 

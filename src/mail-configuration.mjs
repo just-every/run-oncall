@@ -6,6 +6,7 @@ const sendingInputs = ['MAIL_API_KEY', 'SENDGRID_API_KEY', 'RESEND_API_KEY', 'MA
 
 export function validateMailConfiguration(values, { required = false } = {}) {
  const provider = values.MAIL_PROVIDER
+ if (present(values.MAIL_RECIPIENTS) && !['any', 'owner'].includes(values.MAIL_RECIPIENTS.trim())) throw Error('MAIL_RECIPIENTS must be any or owner.')
  if (provider === 'none') {
   const conflicts = sendingInputs.filter(name => present(values[name]))
   if (conflicts.length) throw Error('MAIL_PROVIDER=none conflicts with sending inputs: ' + conflicts.join(', '))

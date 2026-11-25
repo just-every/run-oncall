@@ -63,6 +63,11 @@
       "optional": true
     },
     {
+      "binding": "MAIL_RECIPIENTS",
+      "environment": "MAIL_RECIPIENTS",
+      "optional": true
+    },
+    {
       "binding": "INBOUND_EMAIL_DOMAIN",
       "environment": "INBOUND_EMAIL_DOMAIN",
       "optional": true

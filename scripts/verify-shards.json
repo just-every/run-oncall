@@ -27,6 +27,7 @@
       },
       "tests/intake.mjs",
       "tests/paging-sender.mjs",
+      "tests/owner-signin-mail.mjs",
       "tests/routing.mjs"
     ],
     "browser": [

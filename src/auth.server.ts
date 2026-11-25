@@ -6,7 +6,7 @@ import { firstRunResponse } from './base/setup'
 import { admitted } from './base/setup-state'
 import { brandDocumentResponse } from './brand/document-response'
 import { createOperatorAuth, createAuthHandler, createSignInHandler, devGate, devNotFound, isLoopbackHost, normalizeEmail, safeReturnTo, type AuthConfig } from './modules/operator-auth/index.mjs'
-import { operatorMail } from './mail.server.mjs'
+import { mailRecipients, operatorMail, ownerAddress } from './mail.server.mjs'
 import branding from './branding.json'
 import { sessionCookieLine } from './session-cookie'
 import { importSettingsResponse, importSettingsRow, readImportSettings } from './move-in/door-settings'
@@ -38,6 +38,8 @@ export interface Bindings {
  SESSION_SECRET: string
  SETUP_TOKEN?: string
  MAIL_PROVIDER?: 'none' | 'development' | 'rer' | 'resend' | 'sendgrid' | 'cloudflare'
+ /** 'owner': mail only the owner's own sign-in link to OWNER_EMAIL; every other message stays unsent. */
+ MAIL_RECIPIENTS?: string
  MAIL_RELAY_URL?: string
  MAIL_FROM?: string
  MAIL_API_KEY?: string
@@ -60,8 +62,15 @@ export interface Bindings {
 
 export const runtimeBindings = (env: Bindings): Bindings => env.RER_DEV_ORIGIN && env.AUTH_LOCAL === 'true' ? { ...env, AUTH_ORIGIN: env.RER_DEV_ORIGIN } : env
 export const authConfig = (env: Bindings): AuthConfig => ({ origin: env.AUTH_ORIGIN, local: env.AUTH_LOCAL === 'true', OWNER_EMAIL: env.OWNER_EMAIL, SESSION_SECRET: env.SESSION_SECRET, SETUP_TOKEN: env.SETUP_TOKEN, MAIL_FROM: env.MAIL_PROVIDER === 'none' ? undefined : env.MAIL_FROM ?? (env.RER_DEMO === '1' ? 'oncall@northline.example' : undefined), branding: { productName: branding.name, accentColor: branding.primaryColor, signInPath: '/signin', theme: theme.href } })
+// With MAIL_RECIPIENTS=owner a sign-in link is minted only for the active owner
+// account at OWNER_EMAIL. Any other address gets no token and no mail, and the
+// same public answer as an unknown address.
+const ownerSignInOnly = (env: Bindings) => mailRecipients(env) === 'owner'
+ ? { beforeMagicLink: ({ email, operator }: { email: string; operator: { role: string; status: string; email: string } }) =>
+  Boolean(ownerAddress(env)) && email === ownerAddress(env) && operator.email === email && operator.role === 'owner' && operator.status === 'active' }
+ : {}
 export function operatorAuth(env: Bindings) {
- return createOperatorAuth({ db: env.DB, config: authConfig(env), mailSender: operatorMail(env), clientIp: request => request.headers.get('CF-Connecting-IP') ?? '' })
+ return createOperatorAuth({ db: env.DB, config: authConfig(env), mailSender: operatorMail(env), hooks: ownerSignInOnly(env), clientIp: request => request.headers.get('CF-Connecting-IP') ?? '' })
 }
 
 export function ownerClaimConfig(env:Bindings):OwnerClaimConfig|null {
@@ -128,9 +137,9 @@ export async function authResponse(request: Request, original: Bindings): Promis
    const mapped=await env.DB.prepare('SELECT member_id FROM operator_members WHERE operator_id=?').bind(actor.operator.id).first<{member_id:string}>()
    auditIdentity(env.DB,{actor:{kind:'member',id:mapped?.member_id??actor.operator.id}})
   }
-  // Invitations cannot promise email delivery while the installation has mail off.
-  // Preserve the native authentication/authority refusal for other callers.
-  if (env.MAIL_PROVIDER === 'none' && url.pathname === '/auth/invite' && request.method === 'POST'
+  // Invitations cannot promise email delivery while the installation has mail off
+  // or mails its owner only. Preserve the native authentication/authority refusal for other callers.
+  if ((env.MAIL_PROVIDER === 'none' || mailRecipients(env) !== 'any') && url.pathname === '/auth/invite' && request.method === 'POST'
    && actor && ['owner', 'admin'].includes(actor.operator.role) && request.headers.get('origin') === env.AUTH_ORIGIN && request.headers.get('sec-fetch-site') !== 'cross-site') {
    return Response.json({ error: 'mail_unavailable' }, { status: 503, headers: privateHeaders })
   }
