@@ -132,7 +132,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "b1daba3154f1f9eb23371ef5eeed842e66a8b294cfa7bf5ad163891610805877",
+      "sha256": "1ecbb52bdea7088607837ce84ed046db2631654ac043cc770fd218bc515f8607",
       "executable": false
     },
     ".gitignore": {
@@ -1679,6 +1679,10 @@
       "sha256": "f5b4d7d11e7eef645b79fe6d2ec3e35b28e34a3dbb024d66910a98b34c9dfa34",
       "executable": false
     },
+    "scripts/test-budget.mjs": {
+      "sha256": "b9a588470f14282145286aa790a3af56385e1b1f098dd8c72b7a0dbfa5d4d33b",
+      "executable": false
+    },
     "scripts/verify-app.mjs": {
       "sha256": "4c3a87c809e2b671a555dc36171b60675f87be96362de7d2269d9f5e1c3100b6",
       "executable": false
@@ -1688,7 +1692,7 @@
       "executable": false
     },
     "scripts/verify-evidence.mjs": {
-      "sha256": "9224f772d6a17f043448694eca3c149df83070417b995a2840497e36a9ad0100",
+      "sha256": "87b84b4fbc039ac64e2d5f624d6f25faa681bd51e3f4202eb7d76e0ef9c65804",
       "executable": false
     },
     "scripts/verify-light.mjs": {
@@ -1708,7 +1712,7 @@
       "executable": false
     },
     "scripts/verify-plan.mjs": {
-      "sha256": "45fe2ab9c5cbc72d0186bf77fab32c985605caae6ecee50676dd618612c3e78f",
+      "sha256": "bf340180434e520628359f8755d17a410d53e50835690569bc9d693f459901cc",
       "executable": false
     },
     "scripts/verify-shards.json": {
@@ -6661,6 +6665,10 @@
     },
     "src/workspace-tables.ts": {
       "sha256": "fddf7ed546db420bd96043a1c78c4d40de0ed990256932e0e8978925f2acb9bd",
+      "executable": false
+    },
+    "test-budget.json": {
+      "sha256": "0b68ccc1ab1100808ff641ae123daea39cf1214a0aa0d5b3d9c6aaf6a3800541",
       "executable": false
     },
     "tests/activation.mjs": {

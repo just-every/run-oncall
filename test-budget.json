@@ -1,0 +1,4 @@
+{
+  "cap": 200,
+  "unit": "one count per registration in scripts/verify-shards.json lanes"
+}

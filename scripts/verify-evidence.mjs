@@ -52,12 +52,19 @@ export function githubEvidence(env, fetch = globalThis.fetch) {
  const sameRepository = (value, current) => value.repository.id === current.repository.id
   && value.repository.full_name === env.GITHUB_REPOSITORY
   && value.head_repository?.id === current.repository.id && value.head_repository.full_name === env.GITHUB_REPOSITORY;
- const eligible = (value, current, sha) => value.id !== current.id && value.workflow_id === current.workflow_id
-  && value.name === current.name && value.head_sha === sha && sameRepository(value, current);
- const newest = async (current, sha, qualifies) => (await list(
-  `actions/workflows/${current.workflow_id}/runs?head_sha=${sha}`, 'workflow_runs', runShape))
-  .filter(value => eligible(value, current, sha) && qualifies(value))
-  .reduce((latest, value) => !latest || value.id > latest.id ? value : latest, undefined);
+ const eligible = (value, current, sha, workflow) => value.id !== current.id && value.workflow_id === workflow.id
+  && value.name === workflow.name && value.head_sha === sha && sameRepository(value, current);
+ const workflow = async file => {
+  const result = await get(`actions/workflows/${file}`);
+  if (!Number.isSafeInteger(result?.id) || typeof result.name !== 'string') throw Error('Invalid workflow identity');
+  return { id: result.id, name: result.name };
+ };
+ // Every run of one workflow for a commit that qualifies, newest first.
+ const newestRuns = async (target, current, sha, qualifies) => (await list(
+  `actions/workflows/${target.id}/runs?head_sha=${sha}`, 'workflow_runs', runShape))
+  .filter(value => eligible(value, current, sha, target) && qualifies(value))
+  .sort((a, b) => b.id - a.id);
+ const newest = async (current, sha, qualifies) => (await newestRuns({ id: current.workflow_id, name: current.name }, current, sha, qualifies))[0];
  const proof = async (listed, required) => {
   if (!listed || !succeeded(listed)) return false;
   const latest = await run(listed.id);
@@ -70,5 +77,5 @@ export function githubEvidence(env, fetch = globalThis.fetch) {
   return required.every(name => jobs.filter(job => job.name === name || job.name.endsWith(` / ${name}`)).length === 1
    && jobs.some(job => (job.name === name || job.name.endsWith(` / ${name}`)) && succeeded(job)));
  };
- return { get, run, newest, proof, sameRepository };
+ return { get, run, workflow, newest, newestRuns, proof, sameRepository };
 }
