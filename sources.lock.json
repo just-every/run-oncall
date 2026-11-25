@@ -279,6 +279,10 @@
       "sha256": "7582e2686f4134ac94d7e2621103a6387082c91fd767051a6eebf5cab64ad35d",
       "executable": false
     },
+    "docs/paging.md": {
+      "sha256": "cb068c053876f6bd332d464ba6eb05b48d0fd28c1233442ddb53cf3b11e90e3c",
+      "executable": false
+    },
     "docs/readiness.md": {
       "sha256": "2698b7d854259fd184ee8350c1432c28528f6a1e12e339135da1363ec8ef1c94",
       "executable": false
@@ -749,6 +753,10 @@
     },
     "migrations/core/0172_read_changes.sql": {
       "sha256": "f67d010f65244f8d80424bc7127241154e8ce104214b242e59456c9715aca335",
+      "executable": false
+    },
+    "migrations/core/0173_sms_paging.sql": {
+      "sha256": "eb0731d96386c0c82ce72196d4156bb5b7922d977016b916506817736d09fdc2",
       "executable": false
     },
     "MOVE-IN.md": {
@@ -1836,7 +1844,7 @@
       "executable": false
     },
     "src/alerts/AlertNotificationRun.tsx": {
-      "sha256": "e4e15b5e0e13c04a6ff8f85d63f28d287260707a514ccb45fae1586d16bfe607",
+      "sha256": "d6c8a7f97a62ca0cc1fb7449fc1636a5ef2a0137877e1c1ff7d4ba74e6fc426f",
       "executable": false
     },
     "src/alerts/AlertPage.tsx": {
@@ -6519,6 +6527,34 @@
       "sha256": "d1c462aa9aadf41d8e76cfce19f55a26260ded8ab5061c3a90d63c7ec63c454c",
       "executable": false
     },
+    "src/sms-paging/api.ts": {
+      "sha256": "ffdbdaa39155ab957996bad3e94a9bf24e525d086e2eb3378e3fe3675d12360b",
+      "executable": false
+    },
+    "src/sms-paging/deliveries.ts": {
+      "sha256": "757ab7dadd66839ce987f352d17425ec78aa63f63507e5d0294c21d499e00a69",
+      "executable": false
+    },
+    "src/sms-paging/destination.ts": {
+      "sha256": "df5e29e560e30d24e4044420ab75965e6b2154bd61a4c5073f2c9c877cde1726",
+      "executable": false
+    },
+    "src/sms-paging/PageLog.tsx": {
+      "sha256": "61242f968d5b49e3eb417a4d172f8c3edc722cac0f8cf83f7eb087e22a048f18",
+      "executable": false
+    },
+    "src/sms-paging/PagingPanel.tsx": {
+      "sha256": "4341337035e22c20f61d8531d551918b5be10fc5810c47d163012fd5efa38410",
+      "executable": false
+    },
+    "src/sms-paging/sweep.ts": {
+      "sha256": "3185c1a87b887ce07263ace9def8cad833061724491dc2e0d920e3c2ade8f0b2",
+      "executable": false
+    },
+    "src/sms-paging/twilio.ts": {
+      "sha256": "9dcffa46c28d8284cf8a1132fa1b82804fb680a03604c88d49d4bcd5f009d9c5",
+      "executable": false
+    },
     "src/subject-erasure-identity.ts": {
       "sha256": "0f66a7dd2f756a3f6fa4b4f37eb16c408d9e6759741aa657f7d3c31bb88fa344",
       "executable": false
@@ -7033,6 +7069,10 @@
     },
     "tests/paging-response-flow.mjs": {
       "sha256": "584bf63de2adcbffb36dbdf13536fe866299dcbd436d01cc00bc7f4fc8c03737",
+      "executable": false
+    },
+    "tests/paging-sender.mjs": {
+      "sha256": "d3d6f1a6e90a7beedaf7bbc8b97b87e99387e7513e2db623280d445693100f36",
       "executable": false
     },
     "tests/portability-cli.mjs": {
