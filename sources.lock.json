@@ -1960,7 +1960,7 @@
       "executable": false
     },
     "src/app/shell/WorkspaceContext.tsx": {
-      "sha256": "17416cd7030b923a9fdc1664e71629565cd662a3ec5aeca31500a773de2d1b8d",
+      "sha256": "39dc75744e169540d06663fc5839f540dbc5680757b4b97894be8ff6da7c4519",
       "executable": false
     },
     "src/app/tooltip.css": {
@@ -6636,7 +6636,7 @@
       "executable": false
     },
     "src/useWorkspace.ts": {
-      "sha256": "e48119b2a0d31298b9ee697552a458d1aae4e35b414e0034ae675fffbdef216d",
+      "sha256": "465bb8e5429f27e07f284c363a449e09747c50057785052529b024c35da9691b",
       "executable": false
     },
     "src/workspace-document.ts": {
@@ -7036,7 +7036,7 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "cf9f2f7812acaa8d1c7d04c183a72f64a6a7b746b3bd541dd316779723fe85d3",
+      "sha256": "49700d75acbb2af51d00b649575265178398a09ee5576dacd5814c1f4fe66968",
       "executable": false
     },
     "tests/read-budget.mjs": {

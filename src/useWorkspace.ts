@@ -36,8 +36,10 @@ export async function compareRequest(path:'/api/replay'|`/api/routing/keys/${str
     return request(path,data);
   }
 }
+const liveRefreshInterval = 5000;
+const refreshInterval = 10000;
 const unchangedRefreshInterval = 30000;
-export function useWorkspace({refreshInterval = 10000, coverage = false, onCallPage = false} = {}) {
+export function useWorkspace({alerts = false, incidentId = '', coverage = false, onCallPage = false} = {}) {
   const [onCall, setOnCall] = useState<import('./on-call/read').OnCall | null>(null);
   const [pagingRevision, setPagingRevision] = useState<number | undefined>();
   const [state, setState] = useState<State | null>(null);
@@ -143,29 +145,34 @@ export function useWorkspace({refreshInterval = 10000, coverage = false, onCallP
     }
     refresh().catch((error) => {readFailed(error); setReady(true);});
   }, []);
-  const priorOnCallPage = useRef(onCallPage);
+  const liveIncident = Boolean(incidentId && state?.incidents.some(incident => incident.id === incidentId &&
+    incident.state !== 'resolved' && !incident.mergedInto));
+  const liveView = alerts || liveIncident;
+  const refreshOnOpen = onCallPage ? 'on-call' : liveIncident ? 'incident' : null;
+  const priorRefreshOnOpen = useRef(refreshOnOpen);
   useEffect(() => {
-    const opened = onCallPage && !priorOnCallPage.current;
-    priorOnCallPage.current = onCallPage;
+    const opened = refreshOnOpen && refreshOnOpen !== priorRefreshOnOpen.current;
+    priorRefreshOnOpen.current = refreshOnOpen;
     if (opened && ready && member) void refreshAfterPendingRead().catch(readFailed);
-  }, [onCallPage, ready, member?.id]);
-  // One visible-tab clock for the whole workspace, including focus and resume.
-  // After an unchanged read the next one waits longer; any change, action,
-  // focus or resume reads at once and restores the base interval.
+  }, [refreshOnOpen, ready, member?.id]);
+  // Responders watching live work keep the same cadence after unchanged reads.
+  // The conditional workspace read keeps quiet polls small.
   useEffect(() => {
     if (!ready || !member) return;
     let timer = 0;
     let disposed = false;
-    const schedule = () => {
-      if (disposed) return;
+    const schedule = (startedAt = performance.now()) => {
+      if (disposed || document.visibilityState !== "visible") return;
       window.clearTimeout(timer);
-      timer = window.setTimeout(tick, unchanged.current ? Math.max(refreshInterval, unchangedRefreshInterval) : refreshInterval);
+      const interval = liveView ? liveRefreshInterval : unchanged.current ? unchangedRefreshInterval : refreshInterval;
+      timer = window.setTimeout(update, Math.max(0, startedAt + interval - performance.now()));
     };
-    const tick = () => {
-      if (document.visibilityState !== "visible") return schedule();
-      void refresh().catch(readFailed).finally(schedule);
+    const update = () => {
+      window.clearTimeout(timer);
+      if (document.visibilityState !== "visible") return;
+      const startedAt = performance.now();
+      void refresh().catch(readFailed).finally(() => schedule(startedAt));
     };
-    const update = () => {if (document.visibilityState === "visible") void refresh().catch(readFailed).finally(schedule);};
     schedule();
     window.addEventListener("focus", update);
     document.addEventListener("visibilitychange", update);
@@ -175,7 +182,7 @@ export function useWorkspace({refreshInterval = 10000, coverage = false, onCallP
       window.removeEventListener("focus", update);
       document.removeEventListener("visibilitychange", update);
     };
-  }, [ready, member?.id, refreshInterval]);
+  }, [ready, member?.id, liveView]);
   const pendingAction = useRef<((value: any) => void) | null>(null);
   async function run(
     path: string | (() => Promise<any>),
@@ -242,8 +249,6 @@ export function useWorkspace({refreshInterval = 10000, coverage = false, onCallP
             const change = incident && currentState.current ? incidentChangeSummary(incident, incidentBase, currentState.current) : undefined;
             const recoveryUnchanged = input.type === 'transition' && input.state === 'recovered' &&
               incident?.state === incidentBase?.state && incident?.recovery === incidentBase?.recovery;
-            const sourceRecoveryOnly = incident && incidentBase && incidentBase.revision === input.revision &&
-              !incidentBase.sourceRecovery && incident.sourceRecovery && incident.revision === incidentBase.revision + 1;
             const apply = incident && !incident.mergedInto && (input.type === 'note' || recoveryUnchanged) ? async () => {
               if (recoveryUnchanged && form && (!form.isConnected || formValues() !== values)) {
                 if (form.isConnected) failures.show(new Error('Your draft has changed. Submit the form to apply the current draft.'), {target, saved});
@@ -256,10 +261,6 @@ export function useWorkspace({refreshInterval = 10000, coverage = false, onCallP
               input.revision = incident.revision;
               return execute();
             } : undefined;
-            // A single source recovery adds its own timeline entry and marker.
-            // Retry the unchanged human draft against the checked revision.
-            if (apply && path === '/api/command' && recoveryUnchanged && sourceRecoveryOnly && !lostResponse &&
-                form && pendingAction.current === resolve && currentMember.current === member?.id) return apply();
             const conflict = apply
               ? new Error(`Incident changed. Review ${change ? 'the update below' : 'the timeline'}, then select Apply my edit to save your draft.`)
               : error;
