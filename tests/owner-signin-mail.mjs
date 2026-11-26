@@ -12,6 +12,8 @@ globalThis.fetch=async (input,init)=>{
  if(request.url!==${JSON.stringify(relayUrl)}||request.method!=='POST')throw Error('Unexpected outbound request');
  const mail=await request.json();
  providerCalls.push({to:[mail.to,...(mail.cc??[]),...(mail.bcc??[])],link:mail.text.split('\\n').at(-1)});
+ if(providerMode==='timeout')return Response.json({error:'managed_mail_provider_timeout'},{status:504});
+ if(providerMode==='refused')return Response.json({error:'managed_mail_refused'},{status:403});
  return Response.json({messageId:'<oncall-signin@relay.example.test>'},{status:202});
 };`;
 const w = await localWorker({AUTH_LOCAL: 'false', AUTH_ORIGIN: origin, OWNER_EMAIL: owner, MAIL_PROVIDER: 'rer', MAIL_RECIPIENTS: 'owner',
@@ -55,7 +57,26 @@ try {
  const invite = await request('/auth/invite', {email: 'new@example.test', role: 'member'}, confirmed.cookie);
  assert.equal(invite.status, 503, 'invitations stay unsent');
  assert.equal((await calls()).length, 1, 'nothing more reached the provider');
- console.log('PASS owner-only sign-in mail: the owner gets one working single-use link; a member and a stranger get the same answer and no mail; invitations stay unsent');
+ // The relay answers 504 managed_mail_provider_timeout while the mail may still arrive: the outcome is unknown, so the link stays live.
+ const control = mode => request('/__provider_control', {mode});
+ await control('timeout');
+ const unknown = await ask(owner);
+ assert.equal(unknown.status, 303, 'an uncertain send is answered like a sent one');
+ assert.equal(unknown.headers.get('location'), answers[0], 'with the same neutral answer');
+ const [attempt, ...extra] = await calls();
+ assert.equal(extra.length, 0, 'and is not resent at once');
+ assert.deepEqual(attempt.to, [owner]);
+ const kept = new URL(attempt.link).searchParams.get('token');
+ const reopened = await request('/auth/confirm', {token: kept});
+ assert.equal(reopened.status, 303, 'the link whose send timed out still signs the owner in');
+ assert.equal((await request('/auth/confirm', {token: kept})).status, 400, 'once');
+ // A definite refusal still kills the link.
+ await control('refused');
+ const refused = await ask(owner);
+ assert.equal(refused.status, 303, 'a refusal is answered the same way');
+ const dead = new URL((await calls())[0].link).searchParams.get('token');
+ assert.equal((await request('/auth/confirm', {token: dead})).status, 400, 'a refused link is revoked');
+ console.log('PASS owner-only sign-in mail: the owner gets one working single-use link; a member and a stranger get the same answer and no mail; invitations stay unsent; a relay 504 keeps the link live, a 4xx revokes it');
 } finally {
  await w.close();
 }

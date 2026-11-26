@@ -160,7 +160,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "d9ad3ad0f2a3ff8972330c79964902e9bfc95daaaa516afbdab0a8b0ccd089cd",
+      "sha256": "e973f2f7e12aa4dc9836b9bf8f6981b79c0294c7b59049e7d7af45231f75727f",
       "executable": false
     },
     "BRAND.md": {
@@ -4820,7 +4820,7 @@
       "executable": false
     },
     "src/modules/operator-auth/accounts/admin.mjs": {
-      "sha256": "ef68f9a24788ef0ac00bb0012d988c7661992926491a03b39783b529f6134017",
+      "sha256": "e38f8d3b2e4888a767dfd27f2042ad3ad76916e36748ceea9d77e006d151c25f",
       "executable": false
     },
     "src/modules/operator-auth/accounts/audit.mjs": {
@@ -4972,7 +4972,7 @@
       "executable": false
     },
     "src/modules/operator-auth/conformance/index.mjs": {
-      "sha256": "60e925f31c3c927889aae0dfeb82809e3f325cb572d4c31efe591d5ddc0a5010",
+      "sha256": "6cbb458a7c153bf02ac2b65a4683b86b9754bddd611f102a1a292b510047cd33",
       "executable": false
     },
     "src/modules/operator-auth/conformance/presentation.mjs": {
@@ -5100,7 +5100,7 @@
       "executable": false
     },
     "src/modules/operator-auth/identity/email-link/index.mjs": {
-      "sha256": "07f2d1f51a22e445179995ed3fecba155c954264f8738da1ba69afe2a1d39e2c",
+      "sha256": "9159a33de529821a383ae5aeb0a055ac64ac48b29c49a5e701b24f4f781633db",
       "executable": false
     },
     "src/modules/operator-auth/identity/email-link/message.mjs": {
@@ -5212,7 +5212,7 @@
       "executable": false
     },
     "src/modules/operator-auth/README.md": {
-      "sha256": "b8412340e65441dab25a4773ed188a3edcc2c1631a09d36736f71ed4917128d7",
+      "sha256": "85e5ae061e3b33e7b413b2f91dfc42e0d60912308211fdb9c0d0ce1aed8a947e",
       "executable": false
     },
     "src/modules/operator-auth/rejected-response.mjs": {
@@ -7088,7 +7088,7 @@
       "executable": false
     },
     "tests/owner-signin-mail.mjs": {
-      "sha256": "d5bf3e14c3c0ca46c5cb9e524dbfcab14df4dc81a7712af00365df0908c09341",
+      "sha256": "fd6d308626db873e2d75a72dbf9c436d5f9d079300d6ac4199bfd9d6eba012e5",
       "executable": false
     },
     "tests/paging-response-flow.mjs": {

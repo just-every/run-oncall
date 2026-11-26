@@ -5388,7 +5388,31 @@
         "modules/operator-auth/tests/vendor/axe-core/axe.min.js",
         "modules/operator-auth/tests/vendor/axe-core/provenance.json",
         "modules/operator-auth/tests/worker.mjs"
-      ]
+      ],
+      "adapted": {
+        "src/modules/operator-auth/accounts/admin.mjs": "3637852064bf6ddadd15418518964d99d615cc46",
+        "src/modules/operator-auth/conformance/index.mjs": "3637852064bf6ddadd15418518964d99d615cc46",
+        "src/modules/operator-auth/identity/email-link/index.mjs": "3637852064bf6ddadd15418518964d99d615cc46",
+        "src/modules/operator-auth/README.md": "3637852064bf6ddadd15418518964d99d615cc46"
+      },
+      "acknowledged": {
+        "src/modules/operator-auth/accounts/admin.mjs": {
+          "sha256": "e38f8d3b2e4888a767dfd27f2042ad3ad76916e36748ceea9d77e006d151c25f",
+          "mode": "100644"
+        },
+        "src/modules/operator-auth/conformance/index.mjs": {
+          "sha256": "6cbb458a7c153bf02ac2b65a4683b86b9754bddd611f102a1a292b510047cd33",
+          "mode": "100644"
+        },
+        "src/modules/operator-auth/identity/email-link/index.mjs": {
+          "sha256": "9159a33de529821a383ae5aeb0a055ac64ac48b29c49a5e701b24f4f781633db",
+          "mode": "100644"
+        },
+        "src/modules/operator-auth/README.md": {
+          "sha256": "85e5ae061e3b33e7b413b2f91dfc42e0d60912308211fdb9c0d0ce1aed8a947e",
+          "mode": "100644"
+        }
+      }
     },
     {
       "path": "src/modules/owner-claim",

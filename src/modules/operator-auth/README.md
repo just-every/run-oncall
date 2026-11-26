@@ -340,8 +340,10 @@ and text part. Delivery results still control revocation as described below.
 
 Mail consumes actual IF-056-MAIL-v1 `createMailSender(config).send(message)`;
 `deliveryId` is the token record UUID. No parallel transport or implicit outbox
-exists. Missing/failing/uncertain transport revokes the link and reports
-`mail_unavailable`; retries require a new link. Explicit development results are
+exists. Missing, failing or refused transport revokes the link and reports
+`mail_unavailable`; retries require a new link. An `uncertain` result (a timeout,
+a dropped connection, a provider 5xx) keeps the link live, single-use, for its
+normal lifetime and answers as a sent link, because the mail may still arrive. Explicit development results are
 accepted only in local mode. Auth never claims mailbox receipt.
 
 Identity providers verify the whole protocol and hand the admission a verified
