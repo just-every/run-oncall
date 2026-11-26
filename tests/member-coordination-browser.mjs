@@ -1318,7 +1318,7 @@ try {
   for(const [message,status,actor] of cards){
    const card=requestCard(resolutionPage,requests68,message)
    await expect(card.getByRole('heading',{name:'Request to '+responder.name,exact:true})).toBeVisible()
-   const attribution=[status,'requested by '+ownerMember.name,...(actor?['response by '+actor]:[]),'no sender','paging OFF'].join(' · ')
+   const attribution=[status,'requested by '+ownerMember.name,...(actor?['response by '+actor]:[]),'no sender'].join(' · ')
    await expect(card.getByText(attribution,{exact:true})).toBeVisible()
   }
   await expect(requests68.getByText(/^Requester notice: .* · stopped · non-automatic$/)).toBeVisible()

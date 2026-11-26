@@ -1875,7 +1875,7 @@ export async function triageBulkBrowser(page,context,width,worker){
  const reloadProgress=async()=>{await page.reload();await workflowSummary.click();};
  const showProgress=async(run,stateLabel)=>{
   await launchedProgress.getByText(run.results.length+' of 3 processed · 0 refused',{exact:true}).waitFor();
-  await launchedProgress.getByText('Rule v'+run.rule.policyVersion+' · approved workflow v'+run.rule.workflowVersion+' · '+stateLabel+' · non-automatic · paging OFF',{exact:true}).waitFor();
+  await launchedProgress.getByText('Rule v'+run.rule.policyVersion+' · approved workflow v'+run.rule.workflowVersion+' · '+stateLabel+' · non-automatic · texts nobody',{exact:true}).waitFor();
  };
  const captureProgress=async(label,widths)=>{
   for(const proofWidth of widths){
