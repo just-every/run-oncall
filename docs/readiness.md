@@ -100,7 +100,9 @@ retaining the readable signals and an unproven pager-coverage statement. A fully
 read report can contain failing signals: HTTP 200 means the observations were
 read, not that cutover or paging is ready. Authentication/storage failures that
 prevent checking current membership refuse the report entirely. `/health`
-retains its storage/deployment identity contract and `paging: not-provided`.
+retains its storage/deployment identity contract and reports `paging:
+configured` or `paging: not-configured`, the same SMS sender state
+`GET /api/paging/sms` reads; it never carries a credential or number.
 
 ## Backup and restore today
 
