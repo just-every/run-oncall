@@ -2,6 +2,7 @@ import {fail,type State} from '../domain.ts';
 import {setAuditSubject} from '../../../audit-store.ts';
 import {notificationRulesView,writeNotificationRules} from './rules.ts';
 import {onCallNotifications} from './read.ts';
+import {withPages} from '../../../sms-paging/run-pages.ts';
 
 type Dependencies = {
   body: (c: any) => Promise<unknown>;
@@ -9,7 +10,7 @@ type Dependencies = {
   save: (db: D1Database, state: State, revision: number, guard: {sql: string; values: (string | number | null)[]}) => Promise<void>;
   guard: (c: any) => {sql: string; values: (string | number | null)[]};
 };
-/** recorded contacts, notification rules and on-call notification records. Nothing is sent. */
+/** recorded contacts, notification rules and on-call notification records, with the pages the SMS sender sent for each run. */
 export function installOnCallNotifications(api: any, deps: Dependencies) {
   api.get('/api/members/:id/notification-rules', async (c: any) => {
     const state = await deps.state(c);
@@ -25,6 +26,6 @@ export function installOnCallNotifications(api: any, deps: Dependencies) {
   });
   api.get('/api/on-call/notifications', async (c: any) => {
     const state = await deps.state(c);
-    return c.json(onCallNotifications(state, {incident: c.req.query('incident'), alert: c.req.query('alert')}));
+    return c.json(await withPages(c.env.DB, c.env, onCallNotifications(state, {incident: c.req.query('incident'), alert: c.req.query('alert')})));
   });
 }

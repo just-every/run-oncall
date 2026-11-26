@@ -67,7 +67,7 @@ export async function compiledHealth(request) {
  assert.equal(response.value.buildVersion,version,'public health reports the compiled package version');
  assert.equal(response.value.deployment.sourceSha,sourceSha,'without deploy bindings health identifies the compiled checkout');
  assert.equal(response.value.ok,true);assert.equal(response.value.storage,'available');
- assert.equal(response.value.paging,'not-provided');
+ assert.equal(response.value.paging,'not-configured');
  console.log('PASS compiled health: actual package version and checkout SHA without deployment bindings; coordination liveness preserved');
 }
 
