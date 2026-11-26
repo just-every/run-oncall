@@ -166,7 +166,7 @@ const deployment={...await healthBuildIdentity(),versionId:crypto.randomUUID()}
 const hosted=await serveHosted(process.cwd(),{bindings:{RER_DEPLOY_SOURCE:deployment.sourceSha,RER_DEPLOY_FINGERPRINT:deployment.fingerprint,RER_VERSION:{id:deployment.versionId}}})
 try{
  const health=await hosted.fetch('health');assert.equal(health.status,200)
- const body=await health.json();assert.equal(body.buildVersion,JSON.parse(await readFile('package.json','utf8')).version);assert.equal(body.ok,true);assert.equal(body.storage,'available');assert.equal(body.target,'coordination');assert.equal(body.paging,'not-provided')
+ const body=await health.json();assert.equal(body.buildVersion,JSON.parse(await readFile('package.json','utf8')).version);assert.equal(body.ok,true);assert.equal(body.storage,'available');assert.equal(body.target,'coordination');assert.equal(body.paging,'not-configured')
  assert.deepEqual(body.deployment,deployment,'the built hosted Worker reports the exact supplied source, fingerprint and version identity')
  console.log('OC-010 hosted-mode production output: deployment identity matches; no provider deployment, delivery, drill or capacity result inferred')
  for(const link of links) {
@@ -206,7 +206,7 @@ async function coordinationHealth({request,sql,deployment,cookie}) {
  const healthy=ok(await request('/health'))
  assert.equal(healthy.buildVersion,JSON.parse(await readFile('package.json','utf8')).version)
  assert.deepEqual(healthy.deployment,deployment,'the emitted build identifies its actual source and artifact')
- assert.equal(healthy.ok,true);assert.equal(healthy.storage,'available');assert.equal(healthy.target,'coordination');assert.equal(healthy.paging,'not-provided')
+ assert.equal(healthy.ok,true);assert.equal(healthy.storage,'available');assert.equal(healthy.target,'coordination');assert.equal(healthy.paging,'not-configured')
  const before=ok(await request('/api/archive',undefined,cookie)),description=commands()
  let unavailable,unavailableStateStatus,outageCommands
  assert.deepEqual(ok(await request('/api/archive',undefined,cookie)),before,'check and describe leave durable coordination unchanged')
@@ -214,7 +214,7 @@ async function coordinationHealth({request,sql,deployment,cookie}) {
  try {
   const failed=await request('/health');assert.equal(failed.status,503)
   assert.equal(failed.value.buildVersion,healthy.buildVersion);assert.equal(failed.value.ok,false);assert.equal(failed.value.storage,'unavailable')
-  assert.equal(failed.value.target,'coordination');assert.equal(failed.value.paging,'not-provided')
+  assert.equal(failed.value.target,'coordination');assert.equal(failed.value.paging,'not-configured')
   assert.deepEqual(failed.value.deployment,deployment,'failure still identifies the deployed build')
   assert.equal(typeof failed.value.error,'string')
   unavailable={httpStatus:failed.status,...failed.value}
@@ -233,7 +233,7 @@ async function coordinationHealth({request,sql,deployment,cookie}) {
   recovered:{httpStatus:200,...ok(await request('/health'))},recordsUnchanged:true,
   commands:{available:commandOutcomes(description),unavailable:commandOutcomes(outageCommands)},
  })
- console.log('OC-010 coordination health, deployment identity and honest command effects survive storage failure: local 503/recovery and read-only check/describe; paging not provided; capacity unmeasured')
+ console.log('OC-010 coordination health, deployment identity and honest command effects survive storage failure: local 503/recovery and read-only check/describe; paging sender not configured; capacity unmeasured')
 }
 
 
