@@ -19,7 +19,7 @@
       },
       "acknowledged": {
         ".github/workflows/run-demo.yml": {
-          "sha256": "fcc90f33d454dbacf1f645a4b28ccfb9b2088a0b24d8c264c42fa1fe0c014d74",
+          "sha256": "288b92e750e0871b0f50175d97493f848f5a5b3e4bbe5d383c60bd036f5ae634",
           "mode": "100644"
         }
       }

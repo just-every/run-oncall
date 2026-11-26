@@ -120,7 +120,7 @@
       "executable": false
     },
     ".github/workflows/run-demo.yml": {
-      "sha256": "fcc90f33d454dbacf1f645a4b28ccfb9b2088a0b24d8c264c42fa1fe0c014d74",
+      "sha256": "288b92e750e0871b0f50175d97493f848f5a5b3e4bbe5d383c60bd036f5ae634",
       "executable": false
     },
     ".github/workflows/run-site.yml": {
@@ -160,7 +160,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "120dbd71d280be3fa90fccd477841763713d176cde7e70826ef1b64d94a8e81d",
+      "sha256": "d9ad3ad0f2a3ff8972330c79964902e9bfc95daaaa516afbdab0a8b0ccd089cd",
       "executable": false
     },
     "BRAND.md": {
@@ -180,7 +180,7 @@
       "executable": false
     },
     "DEMO.md": {
-      "sha256": "7a1991892904fc863f46834549f4a3c886c1f6fbae2a1c938f0cef3a7dbd7ab5",
+      "sha256": "adb69348271ad8c67461319e1103997d3edb8e1e97d7f8da3e47a8a34e73c782",
       "executable": false
     },
     "deploy-demo.json": {
