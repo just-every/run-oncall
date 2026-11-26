@@ -32,5 +32,5 @@ export type Readiness = {
  observedAt: string; complete: boolean;
  release: {package: string; version: string; deployment: {sourceSha: string | null; fingerprint: string | null; versionId: string | null}};
  matrix: MatrixRow[]; signals: Signal[]; installation: InstallationChecklist;
- pagerCoverage: {state: 'unproven'; paging: 'off'; reason: string};
+ pagerCoverage: {state: 'unproven'; paging: 'on' | 'off'; sender: 'sms' | 'none'; reason: string};
 };

@@ -1,3 +1,6 @@
-export function PagerNotice() {
-  return <p>Oncall doesn't text, call or page anyone. Keep your pager (PagerDuty, Opsgenie, your phone) to wake people; Oncall keeps your rota, alerts and incident notes beside it.</p>;
+import {pagingLead, type SmsPaging} from '../sms-paging/words';
+
+/** The paging lead line: what Oncall actually does, read from GET /api/paging/sms. Silent until that state is known. */
+export function PagerNotice({sms, rota}: {sms: SmsPaging | null; rota?: string}) {
+  return sms ? <p data-paging-lead>{pagingLead(sms, rota)}</p> : null;
 }

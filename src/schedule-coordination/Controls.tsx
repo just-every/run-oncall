@@ -20,7 +20,7 @@ export function ScheduleCoordination({schedule,state,actor,onChanged,rotaPage=fa
  const author=(row:Row)=>{const id=row.data.obligation?.creator as string|undefined;return state.members.find(m=>m.id===id)?.name??state.apiClients?.find(c=>c.id===id)?.name??'Erased member';};
  if(!ready)return <section className="scheduling-panel" aria-label="Shift coordination"><h2>Shift coordination</h2><FailureLine failure={failures.failure}/>{!failures.failure&&<p role="status">Loading shift coordination…</p>}</section>;
  return <section className="scheduling-panel" aria-label="Shift coordination"><h2>Shift coordination</h2><FailureLine failure={failures.failure}/>
- {!rotaPage&&<p>Substitutes decide swaps explicitly. Overdue requests remain undecided. Paging OFF.</p>}
+ {!rotaPage&&<p>Substitutes decide swaps explicitly. Overdue requests remain undecided.</p>}
  {rows.filter(r=>r.kind==='swap'&&r.data.schedule===schedule.id).map(row=>{
   const pending=row.active&&row.status==='pending';
   const canApprove=pending&&actor.role==='admin'&&!row.data.approved;

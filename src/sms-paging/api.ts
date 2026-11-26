@@ -2,6 +2,7 @@ import {fail} from '../family/response-operations/domain';
 import {deliveryColumns, hint, type Delivery} from './deliveries';
 import {sendText, senderConfigured, senderInputs, type PagingEnv} from './twilio';
 import {pageDestination} from './destination';
+import {smsPaging} from './state';
 
 /** The SMS paging switch and its delivery log. Off until a rota is switched on here AND the Worker has a sender. */
 export function installSmsPaging(api: any, body: (c: any) => Promise<any>) {
@@ -9,8 +10,7 @@ export function installSmsPaging(api: any, body: (c: any) => Promise<any>) {
   const member = (c: any) => {if (c.get('actor').role === 'stakeholder') fail('Stakeholders may only access internal status and approved updates', 403);};
   api.get('/api/paging/sms', async (c: any) => {
     member(c);
-    const rows = await c.env.DB.prepare('SELECT schedule,enabled FROM oc_paging_schedules').all();
-    return c.json({configured: senderConfigured(c.env as PagingEnv), schedules: Object.fromEntries(rows.results.map((row: any) => [row.schedule, row.enabled === 1]))});
+    return c.json(await smsPaging(c.env.DB, c.env as PagingEnv));
   });
   api.post('/api/paging/sms/schedules', async (c: any) => {
     admin(c);

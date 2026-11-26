@@ -3,10 +3,10 @@ import type {IncidentDeadline} from './types';
 import {shortTime} from '../reviews/time';
 export const missedAcknowledgment=(incident:Incident)=>incident.deadlines?.find(d=>d.kind==='initial-acknowledgment'&&d.state==='fired');
 export function acknowledgmentStatus(deadline:IncidentDeadline,state:State) {
- if(deadline.state==='pending')return `Waiting for acknowledgment · due ${shortTime(deadline.dueAt)}. Paging is off.`;
+ if(deadline.state==='pending')return `Waiting for acknowledgment · due ${shortTime(deadline.dueAt)}. This timer texts nobody.`;
  const target=deadline.obligation?.target.id;
  const coverage=target?`${state.members.find(m=>m.id===target)?.name??'An unavailable responder'} was on call`:'No one was on call';
- return `Not acknowledged in time · missed at ${shortTime(deadline.dueAt)}. ${coverage}. Paging is off.`;
+ return `Not acknowledged in time · missed at ${shortTime(deadline.dueAt)}. ${coverage}. This timer texts nobody.`;
 }
 export function AcknowledgmentStatus({incident,state}:{incident:Incident;state:State}) {
  const deadline=incident.deadlines?.find(d=>d.kind==='initial-acknowledgment'&&['pending','fired'].includes(d.state));

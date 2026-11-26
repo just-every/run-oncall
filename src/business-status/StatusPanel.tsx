@@ -63,7 +63,7 @@ export function StatusPanel({actor, state}: {actor: Member; state?: State | null
       <p><strong>Derived status: {service.derived}</strong>{!service.active && ' · inactive after restore'}</p>
       {service.override && <p>Manual override: <strong>{service.override.value}</strong> · {service.override.reason} · {shortTime(service.override.at)}{service.override.by && ` · ${state?.members.find(member => member.id === service.override.by)?.name ?? 'Erased member'}`}</p>}
       <StatusSubscription actorId={actor.id} service={service} onServices={receiveServices}/>
-      {service.notices.length > 0 && <div aria-label="Recorded impact obligations"><h4>Recorded impact obligations</h4>{service.notices.map((record: any) => <p key={record.id}>{record.businessName} · {record.phase?`impact ${record.phase} · `:''}{record.derivedStatus} · {record.channel} · {record.state} · no sender · non-automatic · paging OFF. {record.approvedUpdate === null && 'No approved update is available.'}</p>)}</div>}
+      {service.notices.length > 0 && <div aria-label="Recorded impact obligations"><h4>Recorded impact obligations</h4>{service.notices.map((record: any) => <p key={record.id}>{record.businessName} · {record.phase?`impact ${record.phase} · `:''}{record.derivedStatus} · {record.channel} · {record.state} · no sender · non-automatic. {record.approvedUpdate === null && 'No approved update is available.'}</p>)}</div>}
       {canManageBusinessStatus(actor, service) && <details><summary>Manage internal status</summary>
         {admin && state && <StatusAudience service={service} actorId={actor.id} members={state.members} onServices={receiveServices}/>}
         <ManualStatus service={service} busy={busy} save={save}/>

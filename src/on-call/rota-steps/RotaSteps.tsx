@@ -71,7 +71,7 @@ export function RotaSteps({state, actor, schedule, service = '', refresh}: {stat
     setBusy(true);failures.clear();
     try {
       const result=icsInput?await request(`/api/schedules/${encodeURIComponent(draft.id)}/pto-apply`,{...icsInput,digest:review.digest,confirmed:true}):await request(`/api/schedules/${encodeURIComponent(draft.id)}/apply`, {schedule: proposed, from: review.from, to: review.to, digest: review.digest, confirmed: true});
-      setDraft(editDraft(result.schedule));setICSInput(null);sessionStorage.setItem("rota-saved:"+draft.id,"Reviewed change saved. Paging is off.");
+      setDraft(editDraft(result.schedule));setICSInput(null);sessionStorage.setItem("rota-saved:"+draft.id,"Reviewed change saved.");
       removeLocalDraft('rota', draftId, baseVersion);
       await refresh().catch(() => {});await navigate({to: '/on-call/' + encodeURIComponent(draft.id) as any});
     } catch (error) {
