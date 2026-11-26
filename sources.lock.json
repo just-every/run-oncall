@@ -252,7 +252,7 @@
       "executable": false
     },
     "docs/getting-started.md": {
-      "sha256": "aaab61c45c4f33eea6860ef13fc7d8948ea3c283ee20a3b277b635c1c704d47f",
+      "sha256": "2cda730064f5b240c646276e5af4e1c0ad317a2e589759aa8dea1279cda917b8",
       "executable": false
     },
     "docs/incidents.md": {
@@ -260,7 +260,7 @@
       "executable": false
     },
     "docs/install.md": {
-      "sha256": "d57c5ea3b9705dd5956140ea8df23202f85968f0ef426a047570f7ee83b56a36",
+      "sha256": "a400cab2ac021298b8be4216dc2435cd188f8e4d74e222b806e362e170e886d6",
       "executable": false
     },
     "docs/limits.md": {
@@ -872,7 +872,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "be5a1e4d5708cec889fe1b3c6ad93535a305961bf14b9709ee5fa712b3b28f6b",
+      "sha256": "76437463723620431a83676b447f1e489c4475a659070ad8654321e1cf2a4b27",
       "executable": false
     },
     "RELEASE.json": {
