@@ -8,9 +8,11 @@ import { localPortability } from '@runeditrun/rer/portability';
 import { labels } from '@runeditrun/rer/local-installer';
 import * as model from './ui/seed.mjs';
 import { validateMailConfiguration } from '../../src/mail-configuration.mjs';
+import { deployMailPolicy } from './deploy-mail-policy.mjs';
 import { refuse } from '@runeditrun/rer/errors';
 
 export { selectLocalState };
+const localOnlyKeys = ['RER_DEV_ORIGIN', 'RER_DEV_IDENTITY'];
 const baseLifecycle = operatorInstaller({
  database: 'oncall-local', features: model.features,
  async prepare({ root, input, store }) {
@@ -44,11 +46,7 @@ export const { install } = lifecycle;
 export const commandAdapter = createCommandAdapter(lifecycle, {
  generatedOutputs: ['management/integration/deployment-spec.json', 'public/move-in/oncall-export.mjs.txt'],
  mailOffSignIn: 'rer signin',
- deployPolicy({ options, bindings, env }) {
-  if (options.remove || options.unsetSecret) return;
-  try { validateMailConfiguration({ ...env, ...bindings }, { required: !options.dryRun }); }
-  catch (error) { throw refuse(error.message); }
- },
+ deployPolicy: context => deployMailPolicy({ ...context, localOnlyKeys }),
  site: { entry: 'src/site/pages.tsx', output: 'dist/site', declaration: 'deploy-site.json', config: 'vite.site.config.ts' },
  publicPages: ['/', '/docs', '/docs/install', '/signin/local'],
  dev: developmentTarget, preview: previewTarget, verify: ['pnpm', ['run', 'verify:app']], deploy: ownerDeploy('deploy.json', lifecycle),
@@ -57,6 +55,6 @@ export const commandAdapter = createCommandAdapter(lifecycle, {
  // Local dev identity: the local-only Worker entry, the build output rer build
  // scans for the dev layer.
  devIdentity: { entry: 'src/server.dev.ts', output: ['dist'] },
- localOnlyKeys: ['RER_DEV_ORIGIN', 'RER_DEV_IDENTITY'],
+ localOnlyKeys,
  product: model.product.name, input: { names: { email: 'OWNER_EMAIL', name: 'displayName' }, async defaults(root) { const { readFile } = await import('node:fs/promises'); const branding = JSON.parse(await readFile(join(root, 'src/branding.json'), 'utf8')); return { APP_NAME: branding.name, PRIMARY_COLOR: branding.primaryColor }; } },
 });

@@ -252,7 +252,7 @@
       "executable": false
     },
     "docs/getting-started.md": {
-      "sha256": "aaab61c45c4f33eea6860ef13fc7d8948ea3c283ee20a3b277b635c1c704d47f",
+      "sha256": "23cada4792c4bc751388f69891ec115aa7c46555fbafd75e14939f664217bc3b",
       "executable": false
     },
     "docs/incidents.md": {
@@ -260,7 +260,7 @@
       "executable": false
     },
     "docs/install.md": {
-      "sha256": "d57c5ea3b9705dd5956140ea8df23202f85968f0ef426a047570f7ee83b56a36",
+      "sha256": "f64377abbeda7e9c8a6c4aaf13fe0c3b0a67416d61c8380293d3c592adfc62f5",
       "executable": false
     },
     "docs/limits.md": {
@@ -872,7 +872,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "be5a1e4d5708cec889fe1b3c6ad93535a305961bf14b9709ee5fa712b3b28f6b",
+      "sha256": "a4dcd35e654d141e020090f22765b831a8a8b8784481263b32cca29539ee716e",
       "executable": false
     },
     "RELEASE.json": {
@@ -1663,8 +1663,12 @@
       "sha256": "9c9d03f82b833396a54ab0044d2bfdcb9779c9a2aa27729361d489fc2ef17d85",
       "executable": false
     },
+    "scripts/installer/deploy-mail-policy.mjs": {
+      "sha256": "f8782b025dbc337a8b8d112ac59b2d6cde18786be2b1cebf96074940f1a0aeb2",
+      "executable": false
+    },
     "scripts/installer/local.mjs": {
-      "sha256": "f46f32b4cd97d22a50cf2a7a263b91d4be54fd1bc7cb4f94ef019f6e22ba4c69",
+      "sha256": "5f07e1feaa8783ab7000a2e57052e84beab0f8cacdfc2ba0dee876e83fe47610",
       "executable": false
     },
     "scripts/installer/native-prefix-archive.mjs": {
@@ -2996,7 +3000,7 @@
       "executable": false
     },
     "src/mail-configuration.mjs": {
-      "sha256": "ce432d0988274aaa63e84ed4fac9767d5d04e82441f726061afdc731e939f63d",
+      "sha256": "4fa10c72fefef275503f7083acbc8a59ee1cc4d157891cfee02e08798e32b87c",
       "executable": false
     },
     "src/mail.server.d.mts": {
@@ -6916,7 +6920,7 @@
       "executable": false
     },
     "tests/mail-off.mjs": {
-      "sha256": "4c31c736cf4643770b0fbbd71cedfc30fc5e7940384a5bcbe528a8d5536c0dc9",
+      "sha256": "b3025ae87d8f23a2c5c9a6170a28e12254597f8ed31b681b9415caff910601ab",
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
