@@ -77,6 +77,14 @@ try {
   let log = await pages('first');
   assert.deepEqual(log.map(p => [p.step, p.status, p.toHint, p.attempts]), [[1, 'sent', '0001', 1]]);
   assert.ok(!JSON.stringify(log).includes(ownerNumber.slice(1, 8)), 'the log keeps four digits, never the number');
+  // Health and the alert's run record report the same sender and the same page, never a credential or a number.
+  const health = ok(await w.request('/health'));
+  assert.equal(health.paging, 'configured');
+  assert.ok(![token, ownerNumber, from].some(secret => JSON.stringify(health).includes(secret)));
+  let record = ok(await req('/api/on-call/notifications?alert=' + encodeURIComponent((await alertFor('first')).id)));
+  assert.equal(record.sender, 'sms');
+  assert.deepEqual([record.runs[0].sender, record.runs[0].paging, record.runs[0].pages.map(p => [p.step, p.status, p.toHint])], ['sms', 'on', [[1, 'sent', '0001']]]);
+  assert.ok(!/no sender|paging OFF/.test(JSON.stringify(record)), 'the run record no longer says nothing was sent');
 
   // No acknowledgment in 20 minutes: person 2 is paged, once.
   await tick(start + 1199_000 - 1000); assert.equal((await calls()).length, 1);
@@ -126,6 +134,7 @@ try {
   ready = await coverage(bare, bareCookie);
   assert.deepEqual([ready.paging, ready.sender, ready.row.state], ['off', 'none', 'off']);
   assert.match(ready.reason, /no text-message sender/);
+  assert.equal(ok(await bare.request('/health')).paging, 'not-configured');
   ok(await bare.request('/api/paging/sms/test', {}, bareCookie), 409);
   assert.deepEqual(await bare.outboundRequests(), []);
   console.log('PASS paging sender: off by default, readiness says on/off/no sender, one page per alert, 20-minute escalation, ack stops it, failures recorded, no number or credential kept');

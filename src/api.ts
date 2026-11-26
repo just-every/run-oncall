@@ -64,6 +64,7 @@ import { Hono } from "hono";
 import { deploymentHealth } from "./base/deployment-health";
 import { installPaging } from "./paging-api";
 import { installSmsPaging } from "./sms-paging/api";
+import { senderConfigured } from "./sms-paging/twilio";
 import { recoverySnapshot, prepareCheckpointReplacement, prepareCoordinationRestore } from "./paging-store";
 import { createRecoveryCheckpoint } from "./family/response-operations/recovery";
 import { createRecoveryCheckpointV2, validateAnyRecoveryCheckpoint } from "./family/response-operations/recovery-v2";
@@ -232,7 +233,8 @@ api.use("/api/*", async (c, next) => {
 });
 api.get("/health", async (c) => {
   const identity = deploymentHealth(c.env);
-  const scope = { paging: "not-provided", target: "coordination" };
+  // The same source GET /api/paging/sms reads: whether this Worker has an SMS sender. Never a credential or number.
+  const scope = { paging: senderConfigured(c.env) ? "configured" : "not-configured", target: "coordination" };
   try {
     await c.env.DB.prepare("SELECT revision FROM workspace_control WHERE id=1").first();
     return c.json({ ...identity, ...scope, status: "ok", storage: "available" });

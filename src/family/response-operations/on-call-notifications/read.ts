@@ -1,6 +1,10 @@
 import {fail,type State} from '../domain.ts';
 
-/** Viewer-or-above read of on-call assignment and notification records. Records only; nothing was sent. */
+// Stored run outcomes end with the claim "no sender, paging OFF", written before Oncall had a sender and kept as
+// recorded. The sender and its pages are read from the SMS paging tables (sms-paging/run-pages.ts) instead.
+const senderClaim = /;\s*(recorded only; )?no sender(, paging OFF)?$/;
+const outcome = (text:string) => text.replace(senderClaim,'');
+/** Viewer-or-above read of on-call assignment and notification records. What was texted is added by the API from oc_page_deliveries. */
 export function onCallNotifications(state:State,query:{incident?:string;alert?:string},at=Date.now()) {
   const person = (id:string|null|undefined) => {
     if(!id)return null;
@@ -18,7 +22,7 @@ export function onCallNotifications(state:State,query:{incident?:string;alert?:s
       return {alert:a.id,service:a.service,incident:incident?.id??null,assignedTo:person(a.coordination?.assignee??incident?.assignee??a.owner??run.assignee),assignedOnCall:person(run.assignee),
         status:answered?'answered' as const:run.state==='running'?'running' as const:'closed' as const,
         state:run.state,step:run.step,policy:run.policy,urgency:run.urgency,startedAt:run.startedAt,secondStepAt:run.secondStepAt,endsAt:run.endsAt,
-        endedAt:run.endedAt,outcome:run.outcome,paging:'OFF',sender:'none',
+        endedAt:run.endedAt,outcome:outcome(run.outcome),
         records:records.map((r,index)=>{
           const stepEndsAt=r.step===1?run.secondStepAt:run.endsAt;
           const next=records.slice(index+1).find(next=>next.step===r.step&&next.dueAt<stepEndsAt);
@@ -26,8 +30,8 @@ export function onCallNotifications(state:State,query:{incident?:string;alert?:s
             status:answered?'answered' as const:run.state!=='running'||r.state==='stopped'?'closed' as const:r.state==='pending'&&Date.parse(r.dueAt)>at?'waiting' as const:'due' as const,
             next:next?'rule' as const:r.step===1&&run.policy.secondStep!=='none'?'step' as const:'end' as const,
             waitSeconds:Math.max(0,(Date.parse(next?.dueAt??stepEndsAt)-Date.parse(r.dueAt))/1000),
-            state:r.state,sender:'none',label:'recorded / no sender / paging OFF',outcome:r.outcome};
+            state:r.state,outcome:outcome(r.outcome)};
         })};
     }).sort((x,y)=>y.startedAt.localeCompare(x.startedAt));
-  return {paging:'OFF',sender:'none',label:'Recorded on-call notifications: no sender, nothing delivered',runs};
+  return {runs};
 }

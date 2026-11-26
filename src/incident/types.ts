@@ -53,7 +53,7 @@ export function timelineText(entry: Entry, state: State) {
   // literal text, and the retained timeline is never changed.
   if (entry.kind === 'on-call-assigned') {
     const alert=state.alerts.find(alert=>alert.onCall&&entry.id==='on-call-assigned:'+alert.onCall.id),run=alert?.onCall;
-    if(run)return run.assignee ? `Assigned to ${memberName(state,run.assignee)}. Notifications are recorded only; no sender, paging OFF.` : 'No one is on call. Assign a responder; paging remains OFF.';
+    if(run)return run.assignee ? `Assigned to ${memberName(state,run.assignee)}.` : 'No one is on call. Assign a responder.';
   }
   if (entry.kind === 'source-recovery') {
     return 'All alerts recovered — awaiting resolution. Source recovery stopped the alert obligations. The incident still needs human recovery evidence and a summary. A reminder was recorded for the incident lead; automatic reminders and recovery notices are not available yet.';
