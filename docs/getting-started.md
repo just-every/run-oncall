@@ -79,11 +79,12 @@ Every command, flag and what it changes is in the [command reference](../RUN-LOC
 
 ### Later local updates
 
-From your existing checkout, stop the local servers and switch to the latest published release.
+From your existing checkout, stop the local servers, back up, and switch to the latest published release. Export refuses while the app runs, so stop it first.
 
 ```sh
 "$HOME/.local/bin/rer" dev --stop
 "$HOME/.local/bin/rer" preview --stop
+"$HOME/.local/bin/rer" export --output exports/before-update.rer
 ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" &&
 git fetch --depth 1 origin tag "$ONCALL_TAG" &&
 git checkout --detach "refs/tags/$ONCALL_TAG" &&
@@ -217,8 +218,19 @@ For Business agent setup, pass only the printed URL as `sign_in` in `session.rep
 
 Set `MAIL_RECIPIENTS=owner` with a mail provider, sender and key, and the installation sends one kind of mail: a sign-in link to the owner address it was set up with (`OWNER_EMAIL`). On the sign-in page, the owner enters that address and presses **Email a sign-in link**; the link works once and expires in 15 minutes. Any other address, including a team member's, gets the same answer and no mail, and no link is created for it. Every other message stays unsent: invitations answer that mail is unavailable, as with email off, and a message to anyone else is refused before the provider is called. The default, `any`, keeps ordinary email links. Any other value turns mail off. If the link does not arrive, [owner access without email](#owner-access-without-email) still works.
 
+To switch an installation you already deployed, put the four settings in the private file, one per line, with your own sender and key:
+
+```text
+MAIL_PROVIDER=sendgrid
+MAIL_FROM=oncall@example.com
+SENDGRID_API_KEY=replace-with-key
+MAIL_RECIPIENTS=owner
+```
+
+Then set all four on the Worker as one change:
+
 ```sh
-"$HOME/.local/bin/rer" deploy --environment production --env-file "$HOME/.config/oncall/production.env" --set-secret MAIL_PROVIDER=sendgrid --set-secret MAIL_RECIPIENTS=owner --set-secret MAIL_FROM --set-secret SENDGRID_API_KEY
+"$HOME/.local/bin/rer" deploy --environment production --env-file "$HOME/.config/oncall/production.env" --set-secret MAIL_PROVIDER,MAIL_FROM,SENDGRID_API_KEY,MAIL_RECIPIENTS
 ```
 
 Keep the key in the private file, never on the command line. To go back to email off, follow [Hosted coordination with email off](#hosted-coordination-with-email-off) and unset `MAIL_RECIPIENTS` with the sending inputs.
@@ -236,7 +248,15 @@ For email-link sign-in, use a SendGrid account enabled for sending. Complete its
 
 ### Update a hosted installation
 
-Keep this checkout's `.rer/deploy/` records. Switch to the latest published release and deploy to the same environment with the same credentials.
+Keep this checkout's `.rer/deploy/` records. Back up the hosted database first, from this checkout with the private file the installation was deployed with. The database name comes from the deployment record:
+
+```sh
+DATABASE=$(sed -nE 's/.*"database_name": *"([^"]+)".*/\1/p' .rer/deploy/production.json | head -n 1) && test -n "$DATABASE" &&
+mkdir -p exports &&
+"$HOME/.local/bin/rer" run --script node_modules/wrangler/bin/wrangler.js d1 export "$DATABASE" --remote --env-file "$HOME/.config/oncall/production.env" --output exports/before-update.sql
+```
+
+Keep the backup private. Then switch to the latest published release and deploy to the same environment with the same private file.
 
 ```sh
 ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" &&
@@ -245,7 +265,7 @@ git checkout --detach "refs/tags/$ONCALL_TAG" &&
 "$HOME/.local/bin/rer" deploy --environment production --env-file "$HOME/.config/oncall/production.env"
 ```
 
-The command updates the hosted app and applies migrations, keeping its owner, schedules and incidents. Do not reset to upgrade. Existing hosted secrets are preserved by normal deployment, so editing the private file alone does not rotate them. To replace the mail key or sender, update the private file and explicitly change the affected Worker secret:
+The command updates the hosted app and applies migrations, keeping its owner, schedules and incidents. Do not reset to upgrade. Existing hosted secrets are preserved by normal deployment, so editing the private file alone does not rotate them, and a mail key already bound on the Worker need not be in the file. Keep `MAIL_PROVIDER` and `MAIL_FROM` in it. To replace the mail key or sender, update the private file and explicitly change the affected Worker secret:
 
 ```sh
 "$HOME/.local/bin/rer" deploy --environment production --env-file "$HOME/.config/oncall/production.env" --set-secret MAIL_API_KEY

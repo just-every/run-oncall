@@ -109,11 +109,12 @@ Read [CONTRACT.md](CONTRACT.md), [ACCEPTANCE.md](ACCEPTANCE.md), [OPERATIONS.md]
 
 ### Later updates
 
-From your existing checkout, stop the local servers and switch to the latest published release.
+From your existing checkout, stop the local servers, back up, and switch to the latest published release. Export refuses while the app runs, so stop it first.
 
 ```sh
 "$HOME/.local/bin/rer" dev --stop
 "$HOME/.local/bin/rer" preview --stop
+"$HOME/.local/bin/rer" export --output exports/before-update.rer
 ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/just-every/run-oncall/releases/latest | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$ONCALL_TAG" &&
 git fetch --depth 1 origin tag "$ONCALL_TAG" &&
 git checkout --detach "refs/tags/$ONCALL_TAG" &&

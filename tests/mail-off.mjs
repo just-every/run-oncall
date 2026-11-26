@@ -31,20 +31,22 @@ export async function mailOffJourney() {
   assert.equal((await inspectOperations(root,env)).configuration,'invalid','native operations refuses incomplete or contradictory mail')
  }
  const declaration=JSON.parse(await readFile('deploy.json','utf8'))
+ const policy={root,environment:'production',declarationPath:'deploy.json'}
  const bindings=env=>({...declaration.vars,...Object.fromEntries(declaration.secrets.filter(s=>env[s.environment]).map(s=>[s.binding,env[s.environment]]))})
  for(const env of [off,{MAIL_PROVIDER:'sendgrid',MAIL_FROM:'synthetic-oncall@example.test',SENDGRID_API_KEY:'synthetic-oncall-1'}]) {
-  commandAdapter.deployPolicy({options:{dryRun:true},env,bindings:bindings(env)})
+  await commandAdapter.deployPolicy({...policy,options:{dryRun:true},env,bindings:bindings(env)})
   await requireProductionAuth({root,declaration,env,setupManifest:manifest,adapter:commandAdapter,options:{verb:'deploy',dryRun:true}})
  }
  for(const env of [{},{MAIL_PROVIDER:'later'},{MAIL_PROVIDER:'direct'},{MAIL_PROVIDER:'sendgrid'}, {...off,MAIL_API_KEY:'synthetic-oncall-1'}, {...off,SENDGRID_API_KEY:'synthetic-oncall-1'}, {...off,MAIL_RELAY_URL:'https://relay.example.test'}, {...off,MAIL_DKIM_PRIVATE_KEY:'synthetic-oncall-1'}]) {
-  assert.throws(()=>commandAdapter.deployPolicy({options:{dryRun:false},env,bindings:bindings(env)}), 'incomplete enabled mail and none plus credentials refuse before build')
+  // Without Cloudflare credentials no bound secret can be read: a real deploy refuses before build.
+  await assert.rejects(commandAdapter.deployPolicy({...policy,options:{dryRun:false},env,bindings:bindings(env)}), 'incomplete enabled mail and none plus credentials refuse before build')
  }
  for(const provider of ['rer','sendgrid','resend','cloudflare']) {
   const configured={MAIL_PROVIDER:provider,MAIL_FROM:'synthetic-oncall@example.test',MAIL_API_KEY:'synthetic-oncall-1',...(provider==='rer'?{MAIL_RELAY_URL:'https://relay.example.test'}:{}),...(provider==='cloudflare'?{MAIL_ACCOUNT_ID:'a'.repeat(32)}:{})}
-  commandAdapter.deployPolicy({options:{dryRun:true},env:configured,bindings:bindings(configured)})
+  await commandAdapter.deployPolicy({...policy,options:{dryRun:true},env:configured,bindings:bindings(configured)})
   for(const field of Object.keys(configured).filter(key=>key!=='MAIL_PROVIDER')) {
    const missing={...configured};delete missing[field]
-   assert.throws(()=>commandAdapter.deployPolicy({options:{dryRun:true},env:missing,bindings:bindings(missing)}),'enabled provider refuses each missing input')
+   await assert.rejects(commandAdapter.deployPolicy({...policy,options:{dryRun:true},env:missing,bindings:bindings(missing)}),'enabled provider refuses each missing input')
   }
  }
  assert.equal(bindings(off).MAIL_PROVIDER,'none','the deployment maps explicit none to the runtime binding')
