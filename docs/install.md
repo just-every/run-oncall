@@ -20,7 +20,7 @@ ONCALL_TAG=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' https://github.com/ju
 
 The following examples use `"$HOME/.local/bin/rer"`. If you started with Node, use `npx -y @runeditrun/rer` in its place.
 
-If you used the installer, restart with `cd run-oncall && "$HOME/.local/bin/rer" dev --host localhost`. If you used the Node alternative, restart with `cd run-oncall && npx -y @runeditrun/rer dev --host localhost`. `rer dev` installs the locked dependencies, prepares the local database and creates a local development owner (`owner@<checkout-name>.test`). It starts Oncall and prints a private `RER_OPEN` link. Open that link on this computer and you are signed in as the owner. Use the printed address: the default port starts at 8787 and another free port is selected if needed; `"$HOME/.local/bin/rer" dev --port N` requests a specific free port.
+If you used the installer, restart with `cd run-oncall && "$HOME/.local/bin/rer" dev`. If you used the Node alternative, restart with `cd run-oncall && npx -y @runeditrun/rer dev`. `rer dev` installs the locked dependencies, prepares the local database and creates a local development owner (`owner@<checkout-name>.test`). It starts Oncall and prints a private `RER_OPEN` link. Open that link on this computer and you are signed in as the owner. Use the printed address: the default port starts at 8787 and another free port is selected if needed; `"$HOME/.local/bin/rer" dev --port N` requests a specific free port.
 
 The first time, Oncall opens **Finish setup**. Name and Email are read-only; a default local owner is named **Owner**. Review the displayed email, tick *I confirm this owner account is ready to use* and press **Finish setup**. This screen confirms the owner; it does not edit their name or email. After that, Oncall opens straight into the app. To choose a real owner mailbox before first launch, use the explicit setup steps below.
 
@@ -43,7 +43,7 @@ This command uses the installer’s private Node runtime; no global Node or pnpm
 
 On releases with local passkeys, open the private `RER_OPEN` link and finish owner setup. In Oncall, open your account menu (inside **Menu** on a phone), then choose **Sign-in settings → Enroll passkey** and follow your browser’s prompt. On a later visit to your `http://localhost` address, choose **Sign in → Sign in with a passkey**.
 
-If your running address uses `127.0.0.1`, run `"$HOME/.local/bin/rer" dev --stop` and then `"$HOME/.local/bin/rer" dev --host localhost` in the same checkout. Open the new `RER_OPEN` link. The checkout keeps your schedules and incidents. If your passkey is unavailable, open the private link printed by `"$HOME/.local/bin/rer" dev --host localhost` to get back in.
+If your running address uses `127.0.0.1`, run `"$HOME/.local/bin/rer" dev --stop`, then `"$HOME/.local/bin/rer" setup --host localhost` once in the same checkout, then `"$HOME/.local/bin/rer" dev`. Open the new `RER_OPEN` link. Moving the host keeps your schedules and incidents, and later starts follow the saved address, so `--host` is not needed again (`setup --host` accepts `127.0.0.1`, `localhost` or `::1`). If your passkey is unavailable, open the private link printed by `"$HOME/.local/bin/rer" dev` to get back in.
 
 ## Sign-in emails on your computer
 
@@ -67,19 +67,19 @@ To choose a real owner mailbox before the first launch, after installing `rer` a
 
 ```sh
 "$HOME/.local/bin/rer" install
-"$HOME/.local/bin/rer" setup --owner-email you@example.com
-"$HOME/.local/bin/rer" dev --host localhost
+"$HOME/.local/bin/rer" setup --owner-email you@example.com --host localhost
+"$HOME/.local/bin/rer" dev
 ```
 
-`rer install` fetches the locked dependencies. `rer setup` builds the app, applies local migrations and prepares the owner, keeping private settings inside the checkout and out of Git. Setup prints a loopback address such as `RER_SETUP_READY http://127.0.0.1:8790` and stops its temporary app. To open Oncall locally, run `"$HOME/.local/bin/rer" dev --host localhost` and open the private `RER_OPEN` link that `rer dev` prints. Repeating setup preserves the existing owner and data.
+`rer install` fetches the locked dependencies. `rer setup` builds the app, applies local migrations and prepares the owner, keeping private settings inside the checkout and out of Git. Setup prints a loopback address such as `RER_SETUP_READY http://127.0.0.1:8790` and stops its temporary app. `--host localhost` sets the host once; `rer dev` then follows the saved address. To open Oncall locally, run `"$HOME/.local/bin/rer" dev` and open the private `RER_OPEN` link it prints. Repeating setup, including with a different `--host`, preserves the existing owner and data.
 
 In an interactive terminal, `rer setup` can ask for your owner email instead of receiving `--owner-email`. Piping an email to stdin does not answer setup. For unattended use, create an owner-only JSON file, for example `.seed/local-answers.json` containing `{"OWNER_EMAIL":"you@example.com"}`, then run:
 
 ```sh
 chmod 600 .seed/local-answers.json
 "$HOME/.local/bin/rer" install
-"$HOME/.local/bin/rer" setup --answers .seed/local-answers.json --non-interactive
-"$HOME/.local/bin/rer" dev --host localhost
+"$HOME/.local/bin/rer" setup --answers .seed/local-answers.json --non-interactive --host localhost
+"$HOME/.local/bin/rer" dev
 ```
 
 The answers object uses the exact field names in `rer-setup.json`. Other fields have defaults or managed generated values; missing required answers cause a refusal naming those fields. Keep the file out of Git and never put secret answers in command arguments.
