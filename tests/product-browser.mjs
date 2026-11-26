@@ -147,7 +147,7 @@ async function incompleteIntakeBrowser(page,context) {
   const ownerCard=page.getByRole('article',{name:'Alert details',exact:true});
   await ownerCard.getByText(/Integration unrouted queue.*active$/).waitFor();await ownerCard.getByText('Event context',{exact:true}).click()
   await ownerCard.getByText('Details',{exact:true}).click()
-  await ownerCard.getByText(`Paging obligation: recorded · Integration owner: ${member.name} · high urgency · paging OFF; non-automatic.`,{exact:true}).waitFor()
+  await ownerCard.getByText(`Paging obligation: recorded · Integration owner: ${member.name} · high urgency · recorded only; non-automatic.`,{exact:true}).waitFor()
   assert.ok(await ownerCard.isVisible())
   const incidentService=ownerCard.getByLabel('Incident service',{exact:true}),declare=ownerCard.getByRole('button',{name:'Declare incident from alert',exact:true})
   assert.equal(await incidentService.inputValue(),'','owner queue declaration requires an explicit service choice')
@@ -161,7 +161,7 @@ async function incompleteIntakeBrowser(page,context) {
   await selectRoutedSource(page,source)
   const diagnostics=page.getByRole('region',{name:'Routing diagnostics',exact:true})
   await diagnostics.getByRole('heading',{name:incompleteTitle,exact:true}).waitFor()
-  await diagnostics.getByText('High-urgency incomplete-intake alert · integration-owner page obligation recorded · paging OFF; non-automatic.',{exact:true}).waitFor()
+  await diagnostics.getByText('High-urgency incomplete-intake alert · integration-owner page obligation recorded · recorded only; non-automatic.',{exact:true}).waitFor()
   await diagnostics.getByLabel('Routing receipt filter',{exact:true}).selectOption('all')
   await diagnostics.getByRole('heading',{name:title,exact:true}).waitFor()
   assert.ok(await diagnostics.getByRole('heading',{name:title,exact:true}).isVisible())

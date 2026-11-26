@@ -17,6 +17,8 @@ globalThis.fetch=async (input,init)=>{
  return Response.json({sid:'SM'+providerCalls.length.toString().padStart(32,'0'),status:'queued'},{status:201});
 };`;
 const ok = (r, status = 200) => {assert.equal(r.status, status, JSON.stringify(r.value)); return r.value;};
+// Readiness says what the SMS sender does; its paging row and coverage read the same state as GET /api/paging/sms.
+const coverage = async (worker, cookie) => {const r = (await worker.request('/api/readiness', undefined, cookie)).value; return {...r.pagerCoverage, row: r.matrix.find(row => row.id === 'paging')};};
 const w = await localWorker({TWILIO_ACCOUNT_SID: sid, TWILIO_AUTH_TOKEN: token, TWILIO_FROM_NUMBER: from, TWILIO_TO_NUMBER: ownerNumber}, {clock: true, fetchSource: twilio});
 const bare = await localWorker({}, {outboundLedger: true});
 try {
@@ -53,6 +55,9 @@ try {
   assert.equal(ok(await req('/api/paging/sms')).configured, true);
   await trigger('off'); await tick(start + 1000);
   assert.deepEqual(await calls(), [], 'no rota has paging on');
+  let ready = await coverage(w, cookie);
+  assert.deepEqual([ready.paging, ready.sender, ready.row.state], ['off', 'sms', 'off']);
+  assert.match(ready.reason, /SMS sender is configured, but no rota has paging switched on/);
 
   // Only an administrator switches a rota on; the owner then gets exactly one page per new alert however often it is delivered (an alert open before the switch is not texted about).
   const viewer = await w.request('/api/login', {name: 'Second Responder', password: 'synthetic-paging-bob-password'});
@@ -60,6 +65,9 @@ try {
   ok(await req('/api/paging/sms/schedules', {schedule: 'missing', enabled: true}), 404);
   await w.time(start + 500);
   assert.deepEqual(ok(await req('/api/paging/sms/schedules', {schedule: schedule.id, enabled: true})), {schedule: schedule.id, enabled: true});
+  ready = await coverage(w, cookie);
+  assert.deepEqual([ready.paging, ready.sender, ready.row.state], ['on', 'sms', 'unproven-live']);
+  assert.match(ready.reason, /^Paging is on by SMS for 1 rota/); assert.match(ready.row.limitation, /^On: Oncall texts the on-call person by SMS/);
   await trigger('first'); await trigger('first');
   await Promise.all([tick(start + 61_000), tick(start + 61_000)]); await tick(start + 62_000);
   let sent = await calls();
@@ -115,9 +123,12 @@ try {
   // Without a sender the switch refuses and nothing leaves the Worker.
   const bareCookie = (await bare.request('/api/setup', {name: 'Bare operator', password: 'synthetic-bare-operator-password'})).cookie;
   assert.equal(ok(await bare.request('/api/paging/sms', undefined, bareCookie)).configured, false);
+  ready = await coverage(bare, bareCookie);
+  assert.deepEqual([ready.paging, ready.sender, ready.row.state], ['off', 'none', 'off']);
+  assert.match(ready.reason, /no text-message sender/);
   ok(await bare.request('/api/paging/sms/test', {}, bareCookie), 409);
   assert.deepEqual(await bare.outboundRequests(), []);
-  console.log('PASS paging sender: off by default, one page per alert, 20-minute escalation, ack stops it, failures recorded, no number or credential kept');
+  console.log('PASS paging sender: off by default, readiness says on/off/no sender, one page per alert, 20-minute escalation, ack stops it, failures recorded, no number or credential kept');
 } finally {
   await w.close(); await bare.close();
 }

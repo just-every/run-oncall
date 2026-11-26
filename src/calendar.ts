@@ -11,7 +11,7 @@ export function calendar(schedule:Schedule,members:(CoverageMember & {name?:stri
     const value=windows[index],end=Math.min(to,windows[index+1]?.at??to),member=value[role]
     if(onlyMember&&member!==onlyMember)continue
     const name=member?members.find(m=>m.id===member)?.name??member:'Coverage gap'
-    rows.push('BEGIN:VEVENT',`UID:${escape(schedule.id)}-${role}-${value.at}@oncall.local`,`DTSTAMP:${date(from)}`,`DTSTART:${date(value.at)}`,`DTEND:${date(end)}`,`SUMMARY:${escape(schedule.name)} / ${role}: ${escape(name)}`,`DESCRIPTION:${escape(`Paging OFF. ${schedule.timezone}. ${omitWarnings?'':value.warnings.join('; ')}`)}`,'END:VEVENT')
+    rows.push('BEGIN:VEVENT',`UID:${escape(schedule.id)}-${role}-${value.at}@oncall.local`,`DTSTAMP:${date(from)}`,`DTSTART:${date(value.at)}`,`DTEND:${date(end)}`,`SUMMARY:${escape(schedule.name)} / ${role}: ${escape(name)}`,`DESCRIPTION:${escape(`${schedule.timezone}. ${omitWarnings?'':value.warnings.join('; ')}`)}`,'END:VEVENT')
   }
   return rows.map(fold).join('\r\n')+'\r\n'
 }

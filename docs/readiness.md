@@ -5,8 +5,10 @@ Open **Settings → Readiness** as a current workspace member. The read-only
 sessions have no access; stakeholders cannot read it. Refresh reads a new
 observation. It sends nothing, starts no timer and changes no configuration.
 
-Paging stays **OFF**. Web or storage health cannot establish pager coverage.
-Keep your existing pager authoritative. No localhost test, demo or provider
+Pager coverage says what this installation's paging does, from the same state
+as `GET /api/paging/sms`: on by SMS for the rotas an administrator switched on,
+off with a sender configured, or off with no sender. Either way web or storage
+health cannot establish pager coverage. Keep your existing pager authoritative. No localhost test, demo or provider
 sandbox substitutes for live acceptance. OC-054 remains PARTIAL.
 
 ## Release matrix
@@ -63,7 +65,7 @@ receipt or an unbound deployment identity cannot complete a prerequisite.
 | --- | --- | --- | --- |
 | Hosting | OC-018 | R-1 passed on 2026-10-19 as dated prior evidence | Authorize the Cloudflare account and deployment operation. Check deployment identity and health, sign in as the owner, and verify removal of the Worker and database separately. |
 | Remote mail for hosted sign-in | OC-018 | Unproven live; R-1 passed on 2026-10-19, dated prior evidence | Configure a remote mail provider, credentials and verified sender; test a real sign-in email. Local owner entry proves no mail delivery. R-2 passed on 2026-10-21 for inbound intake only, not sign-in or paging. |
-| Registered US voice and SMS | OC-026, OC-066 | Paging off; R-5 not run | Register A2P 10DLC brand and campaign, sending numbers and caller identity; establish consent, opt-out handling and carrier tests. No sending authority is granted. |
+| Registered US voice and SMS | OC-026, OC-066 | R-5 not run | Register A2P 10DLC brand and campaign, sending numbers and caller identity; establish consent, opt-out handling and carrier tests. No sending authority is granted. |
 | APNs and FCM entitlements | OC-029 | iOS and Android not built; R-7 not run | Provision APNs and FCM, iOS Critical Alerts entitlement and Android full-screen and Do Not Disturb permissions; prove device acceptance. |
 | Native apps and store distribution | OC-029 | Not built; R-7 not run | Build native apps and distribute through the App Store and Google Play. Web and local proof is not native distribution. |
 | Zoom or Microsoft Teams bridges | OC-035 | Not built; R-12 and R-6 not run | Authorize a real tenant, build the bridge integration and prove inbound call routing. |

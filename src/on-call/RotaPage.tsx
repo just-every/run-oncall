@@ -10,6 +10,7 @@ import {useViewAnchor} from '../app/useViewAnchor';
 import {request, HttpFailure, InterruptedTransport} from '../useWorkspace';
 import {ScheduleNowNext, ScheduleSummary} from '../ScheduleSummary';
 import {PagingPanel} from '../sms-paging/PagingPanel';
+import {useSmsPaging} from '../sms-paging/useSmsPaging';
 import {ScheduleCoordination} from '../schedule-coordination/Controls';
 import {ReviewedChange} from '../schedule-coverage/ReviewedChange';
 import type {ScheduleReview} from '../schedule-coverage/review';
@@ -38,7 +39,7 @@ export function RotaPage({id, state, actor, value, pagingRevision, refresh, edit
   const [sheet, setSheet] = useState<'cover' | 'swap' | null>(null), [selected, setSelected] = useState<OnCallBand | null>(null);
   const [review, setReview] = useState<ScheduleReview | null>(null), [proposal, setProposal] = useState<Schedule | null>(null), [busy, setBusy] = useState(false);
   const [cover, setCover] = useState({member: actor.id, role: 'primary' as 'primary' | 'backup', start: '', end: ''}), [substitute, setSubstitute] = useState('');
-  const failures = useActionFailure(), preserve = useViewAnchor(), generation = useRef(0);
+  const failures = useActionFailure(), preserve = useViewAnchor(), generation = useRef(0), paging = useSmsPaging();
   const schedule = data?.schedules.find(schedule => schedule.id === id), rota = value?.rotas.find(rota => rota.id === id);
   const load = useCallback(async () => {
     const version = ++generation.current;
@@ -107,7 +108,7 @@ export function RotaPage({id, state, actor, value, pagingRevision, refresh, edit
   };
   if (edit && schedule && renderEdit) return <>{renderEdit(schedule)}</>;
   return <div ref={tooltips} className="oc-oncall oc-rota-page"><aside className="oc-rota-neighbours oc-card" aria-label="Rotas"><h2>Rotas</h2>{value?.rotas.map(row=><Link key={row.id} to={'/on-call/'+encodeURIComponent(row.id) as any} aria-current={row.id===id?'page':undefined}><strong>{row.service.name}</strong><span>{row.name}</span><span>{row.now.primary?.name??'Nobody on call'}</span></Link>)}</aside><section className="oc-rota-record"><Link className="oc-back" to={'/on-call' as any}>‹ On call</Link><header className="oc-page-head"><div><h1>{schedule?.name ?? rota?.name ?? 'Rota'}</h1><p className="oc-quiet">{rota?.service.name ?? state.services.find(service => service.id === schedule?.service)?.name}</p></div>{(canEdit||!!schedule&&memberPTO(state,actor,schedule.service,actor.id)) && <Link className="oc-button" to={'/on-call/' + encodeURIComponent(id) + '/edit' as any}>{canEdit?'Edit rota':'Your PTO'}</Link>}</header>
-    <PagerNotice/>
+    <PagerNotice sms={paging.sms} rota={id}/>
     {savedNotice&&<p ref={savedLine} role="status" tabIndex={-1}>{savedNotice}</p>}
     <FailureLine failure={sheet ? null : failures.failure}/>
     {data && !schedule && <p>Rota not found. <Link to={'/on-call' as any}>Return to On call</Link></p>}
@@ -122,7 +123,7 @@ export function RotaPage({id, state, actor, value, pagingRevision, refresh, edit
       <div className="oc-rota-actions">{canEdit && <button type="button" onClick={openCover}>Cover a shift</button>}{responsive && <button type="button" onClick={() => openSwap()}>Request a swap</button>}</div>
       {schedule.overrides.length > 0 && <section className="oc-card"><h2>Cover</h2><ul className="oc-cover-list">{schedule.overrides.filter(override=>Date.parse(override.start)<from+14*86_400_000&&Date.parse(override.end)>from).map(override => <li key={override.id}><div><strong>{person(override.member)?.name ?? 'Nobody on call'}</strong><p>{override.role} · {shortTime(override.start, schedule.timezone)} – {shortTime(override.end, schedule.timezone)}</p></div>{canEdit && <Tooltip label="Remove cover"><button type="button" aria-label="Remove cover" onClick={() => {setSheet('cover');void reviewChange({...schedule, overrides:schedule.overrides.filter(row => row.id !== override.id)});}}>×</button></Tooltip>}</li>)}</ul></section>}
       <div className="oc-coordination"><ScheduleCoordination rotaPage onRequestSwap={() => openSwap()} schedule={schedule} state={state} actor={actor} onChanged={changed}/></div>
-      <PagingPanel scheduleId={schedule.id} admin={actor.role==='admin'}><ScheduleSummary showCalendar={false} schedule={schedule} policies={data?.policies ?? []} admin={canEdit} request={request} onSaved={() => {void load();}}/></PagingPanel>
+      <PagingPanel scheduleId={schedule.id} admin={actor.role==='admin'} sms={paging.sms} failed={paging.failed} reload={paging.reload}><ScheduleSummary showCalendar={false} schedule={schedule} policies={data?.policies ?? []} admin={canEdit} request={request} onSaved={() => {void load();}}/></PagingPanel>
     </>}
     {sheet && schedule && <RotaSheet title={sheet === 'cover' ? 'Cover a shift' : 'Request a swap'} close={close} recoverFocus={sheet === 'cover' && !review && !!failures.failure && !failures.failure.read}><p className="oc-quiet">{schedule.timezone}</p><FailureLine failure={failures.failure}/>
       {review ? <ReviewedChange key={review.digest} review={review} busy={busy} onApply={() => void apply()}/> : sheet === 'cover' ? <ValidationForm onSubmit={event => {event.preventDefault();void coverShift();}}>

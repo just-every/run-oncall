@@ -38,7 +38,7 @@ Declare the sender when you deploy, from your own environment or an owned `0600`
   --set-secret TWILIO_ACCOUNT_SID,TWILIO_AUTH_TOKEN,TWILIO_FROM_NUMBER,TWILIO_TO_NUMBER
 ```
 
-Then, as an administrator, open **On call**, choose the rota, expand **Paging is off** and tick the box. It cannot be ticked while the installation has no sender. Untick it to turn paging off again for that rota; this installation-local switch is not part of an export, so an imported archive starts with paging off.
+Then, as an administrator, open **On call**, choose the rota, expand **Paging is off** and tick the box. It cannot be ticked while the installation has no sender. The lead line on the rota page, the On call page and Readiness then say paging is on by SMS. Untick it to turn paging off again for that rota; this installation-local switch is not part of an export, so an imported archive starts with paging off.
 
 You need your own Twilio account and a sending number. For US numbers Twilio requires carrier registration (A2P 10DLC) before texts are delivered reliably; that registration is yours to complete and Oncall cannot do it for you.
 

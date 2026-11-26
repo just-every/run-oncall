@@ -19,6 +19,6 @@ export function SnsSettings({id,config,credential,active=true,canReveal=true}:{i
     {(credential||key)&&active?<label className="field">SNS endpoint URL<input aria-label="SNS endpoint URL" readOnly value={endpoint(credential||key)} onFocus={e=>e.currentTarget.select()}/></label>:active&&canReveal&&<button type="button" onClick={async()=>{try{const result=await request('/api/integrations/intake/'+encodeURIComponent(id)+'/reveal',{});setKey(result.key);setError('');}catch{setError('An administrator must reveal the endpoint.');}}}>Show SNS endpoint</button>}
     {error&&<p role="alert">{error}</p>}
     {config.failure&&<p role="alert">{config.failure}</p>}
-    {config.status==='unsubscribed'&&<p role="alert">AWS reports this subscription was removed. The integration owner must restore its subscription and maintain alternate coverage. Paging stays OFF.</p>}
+    {config.status==='unsubscribed'&&<p role="alert">AWS reports this subscription was removed. The integration owner must restore its subscription and maintain alternate coverage.</p>}
   </section>;
 }

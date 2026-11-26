@@ -13,7 +13,7 @@ export function MoveInAdoption({row,rows,choices,warnings,busy,adopt}:{row:any;r
  const existing=(choices.rotas??[]).filter((rota:any)=>rota.services.some((id:string)=>liveServices.includes(id)))
  const serviceName=(id:string)=>choices.services.find((s:any)=>s.id===id)?.name??'this service'
  const chosenMembers=Object.fromEntries(people.map(person=>[person,choices.members.length===1?choices.members[0].id:members[person]]))
- if(row.value.adopted)return <p>Adopted into <a href="/on-call">On call</a>. Paging is OFF. Once a schedule is live, this import can no longer be undone.</p>
+ if(row.value.adopted)return <p>Adopted into <a href="/on-call">On call</a>. Its paging is off until an administrator switches it on. Once a schedule is live, this import can no longer be undone.</p>
  if(people.some(person=>!names.has(person)))return <p>This schedule contains erased or missing person slots. Keep it paused and create a new schedule with explicit coverage gaps.</p>
  return <div>{choices.withdrawnSchedules?.includes(row.targetId)&&<p>Review this schedule’s coverage before making it live. Its saved snapshot was withdrawn after an erasure.</p>}<button type="button" disabled={busy} onClick={()=>setOpen(!open)}>{open?'Close adoption':'Make schedule live'}</button>
  {open&&<form onSubmit={e=>e.preventDefault()}>

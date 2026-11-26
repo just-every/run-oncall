@@ -28,6 +28,6 @@ export function ReviewedChange({review,busy,onApply,focusOnOpen=true}:{review:Sc
   <label style={{display:"flex",alignItems:"center",gap:"0.5rem",margin:"1rem 0"}}><input type="checkbox" style={{width:"auto",minHeight:"auto",flexShrink:0}} checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/><span>I reviewed these assignments and gaps</span></label>
   <button type="button" aria-describedby={hint?hintId:undefined} disabled={busy||!confirmed} onClick={onApply}>Apply reviewed change</button>
   {hint&&<p id={hintId} role="status">{hint}</p>}
-  <details><summary>About this review</summary><p>Applying changes the whole rota; only the coverage in this range is shown. Existing slots stay in the proposal, and unavailable people show as gaps. A changed rota or workspace needs a fresh review. Paging stays off.</p></details>
+  <details><summary>About this review</summary><p>Applying changes the whole rota; only the coverage in this range is shown. Existing slots stay in the proposal, and unavailable people show as gaps. A changed rota or workspace needs a fresh review. Applying it leaves the rota's paging switch as it is.</p></details>
  </section>;
 }

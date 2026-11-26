@@ -84,7 +84,7 @@ function IncumbentKeyActivation({row,services,needsCheck,request,reload}:Activat
  return <section aria-label={'Activate imported integration '+name}>
   <h3>Activate imported integration</h3>
   <FailureLine failure={failures.failure}/>
-  <p>{name}. {status?.source.active?'Active compatible intake':'Inactive compatible intake'}. Paging OFF. {status?.keySupplied?'Incumbent key supplied; never shown again.':'Incumbent key: not supplied.'}</p>
+  <p>{name}. {status?.source.active?'Active compatible intake':'Inactive compatible intake'}. {status?.keySupplied?'Incumbent key supplied; never shown again.':'Incumbent key: not supplied.'}</p>
   <p>Supply the integration credential separately. It is never read from your saved file. Supplying or rotating it leaves intake inactive until you confirm activation.</p>
   <form onSubmit={e=>{e.preventDefault();if(status)setConfirmation('replace');else supply()}}>
 
@@ -106,7 +106,7 @@ function IncumbentKeyActivation({row,services,needsCheck,request,reload}:Activat
     setConfirmation('');
     await refreshAfterSave();
    },{retryInput:retryAllowed(input.revision)});
-  }}>Accept compatible alerts for this integration and service? Paging stays off.</InlineConfirm>}
+  }}>Accept compatible alerts for this integration and service? Alerts page only where the service's rota has paging on.</InlineConfirm>}
   {status?.keySupplied&&<button type="button" disabled={busy} onClick={()=>setConfirmation('revoke')}>Revoke imported integration keys</button>}
   {confirmation==='revoke'&&<InlineConfirm action="Confirm revoke" keep="Keep these keys" busy={busy} onCancel={()=>setConfirmation('')} onConfirm={()=>{
    const input={revision:status.source.revision};
@@ -129,7 +129,7 @@ function ImportedEmailActivation({row,services,needsCheck,request,reload}:Activa
  const failures=useActionFailure(),settings=row.value.emailSettings;
  return <section aria-label="Activate imported email integration">
   <h3>Activate imported email integration</h3><FailureLine failure={failures.failure}/>
-  <p>{row.value.name??row.value.sourceId}. {row.value.emailAddress?'Activated email settings':'Inactive email settings; no address and no intake'}. Paging OFF.</p>
+  <p>{row.value.name??row.value.sourceId}. {row.value.emailAddress?'Activated email settings':'Inactive email settings; no address and no intake'}.</p>
   <p>Mode: {settings.draft.mode}. {settings.draft.rules.length} converted rules. Unmatched mail: {settings.draft.fallback==='quarantine'?'quarantine for review':'group by subject'}.</p>
   {settings.blocked?<p>Resolve the unconverted rules in the saved export and import again before activation.</p>:!row.value.emailAddress&&(needsCheck?<p>{checkMessage}</p>:<>
    <label className="scheduling-field">Service for imported email<select aria-label="Service for imported email" value={service} onChange={e=>setService(e.target.value)} disabled={busy}>{services.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
@@ -141,7 +141,7 @@ function ImportedEmailActivation({row,services,needsCheck,request,reload}:Activa
      const value=await request('/api/email/addresses',{importedId:row.targetId,importedRevision:row.revision,confirmed:true,reviewedDifferences:reviewed,id:'import-'+crypto.randomUUID(),name:'Imported '+(row.value.sourceId??'email'),service,localPart:'oncall-'+privateKey(20)});
      setAddress(value.privateAddress);setConfirm(false);await reload();
     }catch(error){failures.show(error)}finally{setBusy(false)}
-   }}>Create a private receiving address and version 1 with these converted rules? Only authenticated mail is accepted. Paging stays off.</InlineConfirm>}
+   }}>Create a private receiving address and version 1 with these converted rules? Only authenticated mail is accepted. Alerts page only where the service's rota has paging on.</InlineConfirm>}
   </>)}
   {address&&<OneTimeSecret value={address} label="Private email address" onDone={()=>setAddress('')}/>}
   <p>Activation is an explicit edit to this imported object; import undo cannot overwrite it. Erase the native email integration to remove its settings and import custody together.</p>

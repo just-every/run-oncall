@@ -1,21 +1,20 @@
-import {useCallback, useEffect, useState, type ReactNode} from 'react';
+import {useState, type ReactNode} from 'react';
 import {request} from '../useWorkspace';
+import {pagingStatus, type SmsPaging} from './words';
 
-type Sms = {configured: boolean; schedules: Record<string, boolean>};
 /** The rota's paging toggle. Paging is off until an admin switches it on here and the installation has a sender. */
-export function PagingPanel({scheduleId, admin, children}: {scheduleId: string; admin: boolean; children: ReactNode}) {
-  const [sms, setSms] = useState<Sms | null>(null), [busy, setBusy] = useState(false), [line, setLine] = useState('');
-  const load = useCallback(() => request('/api/paging/sms').then(setSms, () => setLine('Paging status could not be read.')), []);
-  useEffect(() => {void load();}, [load]);
-  const on = !!sms?.configured && !!sms.schedules[scheduleId];
+export function PagingPanel({scheduleId, admin, sms, failed, reload, children}: {scheduleId: string; admin: boolean; sms: SmsPaging | null; failed: boolean; reload: () => Promise<void>; children: ReactNode}) {
+  const [busy, setBusy] = useState(false), [line, setLine] = useState('');
+  const on = !!sms && pagingStatus(sms, scheduleId) === 'on';
   const act = async (path: string, data: unknown, done: (value: any) => string) => {
     setBusy(true);setLine('');
-    try {setLine(done(await request(path, data)));await load();}
+    try {setLine(done(await request(path, data)));await reload();}
     catch (error: any) {setLine(error?.message ?? 'Not saved.');}
     finally {setBusy(false);}
   };
   return <details className="oc-card oc-paging"><summary>{on ? 'Paging is on: text message' : 'Paging is off'}</summary>
     <section className="scheduling-panel" aria-label="Text-message paging">
+      {failed && <p>Paging status could not be read.</p>}
       {sms && !sms.configured && <p>This installation has no text-message sender, so paging cannot be switched on. Your pager stays in charge. See Paging in the docs.</p>}
       {sms?.configured && <>
         <label><input type="checkbox" checked={on} disabled={!admin || busy} onChange={event => void act('/api/paging/sms/schedules', {schedule: scheduleId, enabled: event.target.checked}, value => value.enabled ? 'Paging is on for this rota.' : 'Paging is off for this rota.')}/> Text the on-call person when a high-urgency alert reaches this rota, and the next person if nobody acknowledges</label>

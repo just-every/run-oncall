@@ -64,7 +64,7 @@ export function IncidentBulkActions({items, allMatching, count, total, refreshin
       {action === 'set-priority' && <Field name="priority" label="Bulk priority">{['P1', 'P2', 'P3', 'P4', 'P5'].map(p => <option key={p}>{p}</option>)}</Field>}
       {action === 'set-urgency' && <Field name="urgency" label="Bulk urgency"><option>high</option><option>low</option></Field>}
       {action==='reassign'&&items.every(i=>i.kind==='alert')&&<label><input type="checkbox" checked={durable} onChange={e=>setDurable(e.target.checked)}/>Save reassignment as a resumable workflow</label>}
-      {action==='orchestrate'&&<><p>Up to 25 selected alerts. Each declares an incident, then records a responder obligation. Paging is OFF; no sender runs.</p><button type="button" disabled={busy||!canEdit} onClick={async event=>{
+      {action==='orchestrate'&&<><p>Up to 25 selected alerts. Each declares an incident, then records a responder obligation. These steps text nobody.</p><button type="button" disabled={busy||!canEdit} onClick={async event=>{
         const form=event.currentTarget.closest('form');if(!form?.reportValidity())return;
         const input=Object.fromEntries(new FormData(form));
         await run(async()=>{const value=await request('/api/triage/workflows/preview',{...input,items,confirmedCount:count});setPreview(value);return value;},undefined,'Workflow comparison ready; no effects were written');

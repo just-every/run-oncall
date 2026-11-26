@@ -7,7 +7,7 @@ import type { DocsPage, DocsPageMeta, DocsSection } from './types';
 // while the index, navigation and pager point only to current documentation.
 export const docsSections: DocsSection[] = sections.map(section => ({ ...section, pages: section.pages.filter(page => !page.legacy) }));
 export const docsPages: DocsPageMeta[] = sections.flatMap(section => section.pages);
-export const docsLead = 'Run Oncall locally or in your own Cloudflare account. Set your rota and coordinate incidents beside your existing pager; paging stays OFF.';
+export const docsLead = 'Run Oncall locally or in your own Cloudflare account. Set your rota and coordinate incidents beside your existing pager; text-message paging is off until an administrator switches it on for a rota.';
 
 /** Whether `slug` is a published page; the docs route answers 404 for anything else. */
 export function hasDocsPage(slug: string): boolean {
