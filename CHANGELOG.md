@@ -1,3 +1,20 @@
+# 0.5.39 · 2026-11-26
+
+- `/health` reports whether this installation can send text-message pages: `paging` is `configured` when the deploy declares a Twilio sender and `not-configured` otherwise, the same answer the paging settings give. It never shows a credential or number.
+- An alert's on-call run record now says what the text-message sender did. `GET /api/on-call/notifications` gives the sender (`sms` or `none`), whether paging is on for the run's rota, and each page sent for the alert with its step and outcome, read from the page delivery log. It no longer says "no sender, paging OFF" for an alert Oncall has texted, and the incident timeline no longer says it either.
+
+### Upgrade from 0.5.38
+
+Back up first. For local data, run `"$HOME/.local/bin/rer" export --output exports/before-0.5.39.rer`. For hosted data, export the D1 database with the original deploying Cloudflare credentials. Keep the backup private and verify it before updating.
+
+Stop the local app with Ctrl-C or `"$HOME/.local/bin/rer" dev --stop`. If preview is running, stop it with `"$HOME/.local/bin/rer" preview --stop`. Once the release is published, run `git fetch --quiet --depth 1 origin tag v0.5.39` and `git checkout --quiet --detach refs/tags/v0.5.39`. Restart with `"$HOME/.local/bin/rer" dev --host localhost` or `npx -y @runeditrun/rer dev --host localhost` if you used Node. For a hosted installation, update the original deploying checkout to the same tag and run `"$HOME/.local/bin/rer" deploy --environment ENVIRONMENT` with the same credentials.
+
+This update adds no migrations. Keep all 77 previously released core migration files unchanged. The checkout pins rer to 0.2.131. A monitor that matched `/health` `paging: not-provided` should match `configured` or `not-configured`.
+
+## Known limits
+
+Text-message paging is off until you declare a Twilio sender and switch it on for a rota; keep your existing pager active. A page marked sent means Twilio accepted it, not that the phone received it. Voice calls, a second provider and independent standby are still unavailable.
+
 # 0.5.38 · 2026-11-26
 
 - A hosted Oncall can mail its owner a sign-in link and nobody else. Deploy with a mail provider, sender and key and `MAIL_RECIPIENTS=owner`: the owner enters their address on the sign-in page and receives a link that works once and expires in 15 minutes. Any other address, a team member's included, gets the same answer and no mail. Every other message stays unsent: invitations answer that mail is unavailable, as with email off, and a message to anyone else is refused before the provider is called. The default, `any`, keeps ordinary email links; any other value turns mail off. See Getting started, Mail the owner only.
