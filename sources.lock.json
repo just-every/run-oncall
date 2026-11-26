@@ -6916,7 +6916,7 @@
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
-      "sha256": "536bd2336ad4cc3fb366ac83e733464cffdef2d6f7700376e185689246524bdc",
+      "sha256": "096999d2170e9df9d2a12b25a2aae9fc28e2f2a40f969a11da28bb5a66ecce16",
       "executable": false
     },
     "tests/missed-ack-flow.mjs": {
@@ -7096,7 +7096,7 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "5242f55ff526d30a024bb3a4a7ef77ff3b00613a3c057a1f45bcfd64aae24276",
+      "sha256": "f22f59a6576534c8bff79104918e6344cf4597e47753d85f177a2165ca92dc8c",
       "executable": false
     },
     "tests/product-browser.mjs": {
