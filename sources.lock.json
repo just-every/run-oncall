@@ -160,7 +160,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "d9ad3ad0f2a3ff8972330c79964902e9bfc95daaaa516afbdab0a8b0ccd089cd",
+      "sha256": "90efacbd419a00625b0d1bcdebd5bb6cf727a4e88ed59704eacc7a1c75699cbc",
       "executable": false
     },
     "BRAND.md": {
@@ -1700,7 +1700,7 @@
       "executable": false
     },
     "scripts/verify-ci.mjs": {
-      "sha256": "70c11f74ba4bf98771115dc86c990a273a5fa5b5949ac325dfa8320611921de9",
+      "sha256": "9ea77ab103b87d545724b127a0518ba7b4f505667f67554cd7100a1f8fa13df8",
       "executable": false
     },
     "scripts/verify-evidence.mjs": {
@@ -4824,7 +4824,7 @@
       "executable": false
     },
     "src/modules/operator-auth/accounts/admin.mjs": {
-      "sha256": "ef68f9a24788ef0ac00bb0012d988c7661992926491a03b39783b529f6134017",
+      "sha256": "e38f8d3b2e4888a767dfd27f2042ad3ad76916e36748ceea9d77e006d151c25f",
       "executable": false
     },
     "src/modules/operator-auth/accounts/audit.mjs": {
@@ -4976,7 +4976,7 @@
       "executable": false
     },
     "src/modules/operator-auth/conformance/index.mjs": {
-      "sha256": "60e925f31c3c927889aae0dfeb82809e3f325cb572d4c31efe591d5ddc0a5010",
+      "sha256": "6cbb458a7c153bf02ac2b65a4683b86b9754bddd611f102a1a292b510047cd33",
       "executable": false
     },
     "src/modules/operator-auth/conformance/presentation.mjs": {
@@ -5004,7 +5004,7 @@
       "executable": false
     },
     "src/modules/operator-auth/dev-gate-script.mjs": {
-      "sha256": "939d1911b862638a7e358ca6f41a78af213f66aa319799a77c82b909a6fb16f6",
+      "sha256": "2cefa49df99a8cce920ce1b585c6c6ff50c3ebd83019d4def131aea888a79e7a",
       "executable": false
     },
     "src/modules/operator-auth/dev-gate.mjs": {
@@ -5104,7 +5104,7 @@
       "executable": false
     },
     "src/modules/operator-auth/identity/email-link/index.mjs": {
-      "sha256": "07f2d1f51a22e445179995ed3fecba155c954264f8738da1ba69afe2a1d39e2c",
+      "sha256": "9159a33de529821a383ae5aeb0a055ac64ac48b29c49a5e701b24f4f781633db",
       "executable": false
     },
     "src/modules/operator-auth/identity/email-link/message.mjs": {
@@ -5216,7 +5216,7 @@
       "executable": false
     },
     "src/modules/operator-auth/README.md": {
-      "sha256": "b8412340e65441dab25a4773ed188a3edcc2c1631a09d36736f71ed4917128d7",
+      "sha256": "6fa2202148d6163c6b77ee71a70edcc1321a78b79d60f68eca0eaa705f2b9e9b",
       "executable": false
     },
     "src/modules/operator-auth/rejected-response.mjs": {
@@ -5268,11 +5268,11 @@
       "executable": false
     },
     "src/modules/operator-auth/signin/index.d.mts": {
-      "sha256": "9acad80108b974454b1473c761222ba7daaeceb13b7c9842107cbf1b15745c10",
+      "sha256": "01890deff550fa14e98626a5b48bf908ab1081d5d67f89540f8f3bc768d610ff",
       "executable": false
     },
     "src/modules/operator-auth/signin/index.mjs": {
-      "sha256": "edb64847c2c6a15fd78893eb1cd2e5990bf43e7e89510d925a1f21dd7a66af13",
+      "sha256": "7f0a70441adeb386ca7f847515d27fb6099d08f0cd64afda182b955072e008a5",
       "executable": false
     },
     "src/modules/operator-auth/signin/one-click.mjs": {
@@ -5324,7 +5324,7 @@
       "executable": false
     },
     "src/modules/portability/archive-step.mjs": {
-      "sha256": "02dd6b9ccc8d8e8a31798dfa100d460b005c02ffda7ef3d439bfd7dec2aa03ae",
+      "sha256": "be90f9089b03dfc5e9b597942cbfb57dc85eab30aaf07ff542c7fde4f46a7bc3",
       "executable": false
     },
     "src/modules/portability/backfills.mjs": {
@@ -5336,7 +5336,7 @@
       "executable": false
     },
     "src/modules/portability/bridge.mjs": {
-      "sha256": "8ef40d47f9714a824f437f3a268c2fe13b91a8f3d83e2151c0b897dc7375d7a9",
+      "sha256": "e7afe49dc30ce4b40d6e729af4092395f491ba68b17e235c7ba453557209d037",
       "executable": false
     },
     "src/modules/portability/catalogue.mjs": {
@@ -5344,7 +5344,7 @@
       "executable": false
     },
     "src/modules/portability/checkout-history.mjs": {
-      "sha256": "d7634528dccc5553bbff4c35b49663c683a7d9d6a599a307ee219b35b8cea06a",
+      "sha256": "cc4934ab84ef64d468edee6c0fef643bf29275a78d6406779291c821cc0767ee",
       "executable": false
     },
     "src/modules/portability/cli-options.mjs": {
@@ -5376,7 +5376,7 @@
       "executable": false
     },
     "src/modules/portability/files.mjs": {
-      "sha256": "78e51ddb564e5945f1f760a1829cfd34fba5732ab6c1bf741cdf1a0c4ab2650d",
+      "sha256": "135be6b9a3e45cd904397c2ebfc26c2eb730855660337908655241f08546c05d",
       "executable": false
     },
     "src/modules/portability/format.mjs": {
@@ -5416,7 +5416,7 @@
       "executable": false
     },
     "src/modules/portability/import.mjs": {
-      "sha256": "f9315520ea8294ae4f01f98ca058ba20a0e69127080af3094a4cfe79728b15bc",
+      "sha256": "97fa882ac4c4df80ee88ec6caff14c2cf51e0791ae84bb215141699c1a6317df",
       "executable": false
     },
     "src/modules/portability/index.d.mts": {
@@ -5492,7 +5492,7 @@
       "executable": false
     },
     "src/modules/portability/README.md": {
-      "sha256": "fbcfa569f20c8bc5a32f2a2fe4ac7ea8617c5f1e0565a010c18ebc44a475c71b",
+      "sha256": "cfaf7784943ce5384c0487b03a5bfdf404b9fa7cb339151db5e62a5df0237811",
       "executable": false
     },
     "src/modules/portability/rebuilds.mjs": {
@@ -5548,11 +5548,11 @@
       "executable": false
     },
     "src/modules/portability/worker-history.d.mts": {
-      "sha256": "f8ce6647e4be07a4353f0798e00289935f7fcf31f15ef124e3c39af43e6ba03e",
+      "sha256": "8b02af4fddb2b2a2cb9fb4418b63775d2f8ecb5b194f616bcdb3054036bfcec2",
       "executable": false
     },
     "src/modules/portability/worker-history.mjs": {
-      "sha256": "d0880cc0a3c1cdefd6f51dc151f8b0ef36fed39955f25875e4d5b18baf31db1d",
+      "sha256": "15bb0e9675b43dd1821a78048bd72e27496dee07d555e025af61ed7b9fccb6a3",
       "executable": false
     },
     "src/modules/portability/worker-owner-history.mjs": {
@@ -7092,7 +7092,7 @@
       "executable": false
     },
     "tests/owner-signin-mail.mjs": {
-      "sha256": "d5bf3e14c3c0ca46c5cb9e524dbfcab14df4dc81a7712af00365df0908c09341",
+      "sha256": "fd6d308626db873e2d75a72dbf9c436d5f9d079300d6ac4199bfd9d6eba012e5",
       "executable": false
     },
     "tests/paging-response-flow.mjs": {
