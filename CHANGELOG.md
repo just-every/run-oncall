@@ -1,3 +1,28 @@
+# 0.5.40 · 2026-11-26
+
+- Updating a hosted Oncall that sends mail no longer refuses. A redeploy counts the mail secrets already bound on its Worker, so `rer deploy --environment ENVIRONMENT --env-file FILE` with the private file you deployed with goes through, even without the mail key in the file, and keeps the owner, schedules and incidents. A new deployment still has to choose a mail provider or `MAIL_PROVIDER=none`.
+- Getting started → Mail the owner only gives a command that works: put `MAIL_PROVIDER`, `MAIL_FROM`, the key and `MAIL_RECIPIENTS=owner` in the private file, then run `rer deploy --environment ENVIRONMENT --env-file FILE --set-secret MAIL_PROVIDER,MAIL_FROM,SENDGRID_API_KEY,MAIL_RECIPIENTS`.
+- Update steps stop the app before `rer export`, and the hosted backup is a command you can run: `wrangler d1 export` through `rer run --script`, with the database name read from the deployment record.
+- With `MAIL_PROVIDER=rer` and `MAIL_RECIPIENTS=owner`, the owner's sign-in link goes through the managed relay's owner sender.
+
+### Upgrade from 0.5.39
+
+Stop the local app with Ctrl-C or `"$HOME/.local/bin/rer" dev --stop`, and preview with `"$HOME/.local/bin/rer" preview --stop` if it runs. Then back up: `"$HOME/.local/bin/rer" export --output exports/before-0.5.40.rer` (export refuses while the app runs). For a hosted installation, back up from the original deploying checkout before switching tags, with the private file it was deployed with:
+
+```sh
+DATABASE=$(sed -nE 's/.*"database_name": *"([^"]+)".*/\1/p' .rer/deploy/production.json | head -n 1) && test -n "$DATABASE" &&
+mkdir -p exports &&
+"$HOME/.local/bin/rer" run --script node_modules/wrangler/bin/wrangler.js d1 export "$DATABASE" --remote --env-file "$HOME/.config/oncall/production.env" --output exports/before-0.5.40.sql
+```
+
+Once the release is published, run `git fetch --quiet --depth 1 origin tag v0.5.40` and `git checkout --quiet --detach refs/tags/v0.5.40`. Restart with `"$HOME/.local/bin/rer" dev --host localhost` or `npx -y @runeditrun/rer dev --host localhost` if you used Node. For a hosted installation, update the original deploying checkout to the same tag and run `"$HOME/.local/bin/rer" deploy --environment production --env-file "$HOME/.config/oncall/production.env"` with your environment and private file. Keep `MAIL_PROVIDER` and `MAIL_FROM` in the file; a key already bound on the Worker is kept.
+
+This update adds no migrations. Keep all 77 previously released core migration files unchanged. The checkout pins rer to 0.2.131.
+
+## Known limits
+
+A hosted update with no private file still refuses until rer reads the bound sender; use `--env-file`. Text-message paging is off until you declare a Twilio sender and switch it on for a rota; keep your existing pager active. Voice calls, a second provider and independent standby are still unavailable.
+
 # 0.5.39 · 2026-11-26
 
 - `/health` reports whether this installation can send text-message pages: `paging` is `configured` when the deploy declares a Twilio sender and `not-configured` otherwise, the same answer the paging settings give. It never shows a credential or number.
