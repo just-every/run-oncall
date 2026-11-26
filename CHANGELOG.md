@@ -1,3 +1,20 @@
+# 0.5.38 · 2026-11-26
+
+- A hosted Oncall can mail its owner a sign-in link and nobody else. Deploy with a mail provider, sender and key and `MAIL_RECIPIENTS=owner`: the owner enters their address on the sign-in page and receives a link that works once and expires in 15 minutes. Any other address, a team member's included, gets the same answer and no mail. Every other message stays unsent: invitations answer that mail is unavailable, as with email off, and a message to anyone else is refused before the provider is called. The default, `any`, keeps ordinary email links; any other value turns mail off. See Getting started, Mail the owner only.
+- The readiness checklist reports sign-in mail as off when `MAIL_RECIPIENTS` holds an unknown value.
+
+### Upgrade from 0.5.37
+
+Back up first. For local data, run `"$HOME/.local/bin/rer" export --output exports/before-0.5.38.rer`. For hosted data, export the D1 database with the original deploying Cloudflare credentials. Keep the backup private and verify it before updating.
+
+Stop the local app with Ctrl-C or `"$HOME/.local/bin/rer" dev --stop`. If preview is running, stop it with `"$HOME/.local/bin/rer" preview --stop`. Once the release is published, run `git fetch --quiet --depth 1 origin tag v0.5.38` and `git checkout --quiet --detach refs/tags/v0.5.38`. Restart with `"$HOME/.local/bin/rer" dev --host localhost` or `npx -y @runeditrun/rer dev --host localhost` if you used Node. Use the same npx substitution for the other rer commands if you used Node. For a hosted installation, update the original deploying checkout to the same tag and run `"$HOME/.local/bin/rer" deploy --environment ENVIRONMENT` with the same credentials. Restore only into an empty destination.
+
+This update adds no migrations. Keep all 77 previously released core migration files unchanged. The checkout pins rer to 0.2.131.
+
+## Known limits
+
+Owner-only mail sends nothing until a mail provider, sender and key are deployed with it. Text-message paging is off until you declare a Twilio sender and switch it on for a rota; keep your existing pager active. Voice calls, a second provider and independent standby are still unavailable. Live AWS delivery and live PagerDuty account migration or cutover remain unverified.
+
 # 0.5.37 · 2026-11-26
 
 - Oncall can text the person on call. It is off by default and does nothing until the deploy declares a Twilio sender and an administrator switches paging on for a rota. For a high-urgency alert it sends one text to the primary, and one to the second person if nobody acknowledges within the policy's primary wait. Acknowledging, resolving or recovery ends the run; transient failures are retried up to three attempts.
