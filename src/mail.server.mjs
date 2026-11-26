@@ -1,6 +1,6 @@
 import { demoEffect } from './modules/demo/index.mjs'
 import { demoEffectsEnabled } from './modules/demo/effects.mjs'
-import { createMailSender } from './modules/mail/index.mjs'
+import { createMailSender, createOwnerRelaySender } from './modules/mail/index.mjs'
 import { hashToken } from './modules/operator-auth/crypto.mjs'
 import { normalizeEmail } from './modules/operator-auth/policy.mjs'
 
@@ -43,11 +43,12 @@ export async function hostedSignInMailSender(env) {
 export function operatorMail(env) {
  const recipients = mailRecipients(env)
  if (!recipients) return undefined
- const sender = providerMail(env)
+ const ownerRelay = env.MAIL_PROVIDER === 'rer' && recipients === 'owner'
+ const sender = providerMail(env, ownerRelay)
  return sender && recipients === 'owner' ? ownerOnly(env, sender) : sender
 }
 
-function providerMail(env) {
+function providerMail(env, ownerRelay) {
  if (env.MAIL_PROVIDER === 'none') return undefined
  if (demoEffectsEnabled()) return { send: message => demoEffect(
   () => { throw Error('Mail provider is not configured') },
@@ -56,7 +57,9 @@ function providerMail(env) {
  if (env.AUTH_LOCAL === 'true' && env.MAIL_PROVIDER === 'development') return undefined
  const options = productionMailOptions(env)
  if (!options) return undefined
- const sender = createMailSender(options)
+ const sender = ownerRelay
+  ? createOwnerRelaySender({ ownerEmail: env.OWNER_EMAIL, relayUrl: env.MAIL_RELAY_URL, apiKey: env.MAIL_API_KEY })
+  : createMailSender(options)
  if (env.AUTH_LOCAL === 'true') return sender
  return {async send(message) {
   // The auth module uses the token ID as the mail delivery ID. Stamp it

@@ -160,7 +160,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "932fc2f1802bac09bfd91c32b9d0931da1eaca8cf79f5f89fa5fb5b688ed1811",
+      "sha256": "120dbd71d280be3fa90fccd477841763713d176cde7e70826ef1b64d94a8e81d",
       "executable": false
     },
     "BRAND.md": {
@@ -192,7 +192,7 @@
       "executable": false
     },
     "deploy.json": {
-      "sha256": "75db91946e88587ef0463a59ced32a70e369506ae70360197fb95d8ad7cfc7ef",
+      "sha256": "db7a46e393a07ba1f4386b5565638288aee76333b67b347e8019faa8e0233faf",
       "executable": false
     },
     "docs/agents.md": {
@@ -3004,7 +3004,7 @@
       "executable": false
     },
     "src/mail.server.mjs": {
-      "sha256": "cf9fbae3839a4f221d3a9525f6e459971adebdbba561f98a602fee6e398959a8",
+      "sha256": "8b89868cb402b31a27cb782f7a31d2c613c305e05116f1b81fb507adbf0f2388",
       "executable": false
     },
     "src/manual-pages/archive.ts": {
@@ -4560,7 +4560,7 @@
       "executable": false
     },
     "src/modules/mail/index.mjs": {
-      "sha256": "c0501b55f9ba53796926bed1abb22c8690ad2a66b03e09407a84a632c5a4a0c0",
+      "sha256": "1828d6ddff3456c49114498b722ae884da1736f6181858c1607568bf8b659bd0",
       "executable": false
     },
     "src/modules/mail/LICENSE": {
@@ -4584,7 +4584,7 @@
       "executable": false
     },
     "src/modules/mail/README.md": {
-      "sha256": "00154803c5caf2fa952b4b1a26f849dc44fd9fbbc23db18a5715eb592f63fef9",
+      "sha256": "43f04ee71fb003affbe706640ef60d8a716ba48827a6eec1adfa1ec60145f3b0",
       "executable": false
     },
     "src/modules/mail/src/adapters/cloudflare/headers.mjs": {
@@ -4641,6 +4641,10 @@
     },
     "src/modules/mail/src/adapters/rer/list-headers.mjs": {
       "sha256": "2ee80e4fa4e9185efebc5ce02fca2f777dfce7b423f31d6a1ede5a19f411195b",
+      "executable": false
+    },
+    "src/modules/mail/src/adapters/rer/owner.mjs": {
+      "sha256": "2bc6966d74ea883f7b5f42616e8ec932f4166b1367d4c778e93b14b47dcfe6de",
       "executable": false
     },
     "src/modules/mail/src/adapters/resend/index.mjs": {
@@ -7084,7 +7088,7 @@
       "executable": false
     },
     "tests/owner-signin-mail.mjs": {
-      "sha256": "f375b927440675b20b46460e18f03cbcda3e7f343b4215e7286a0b737aff57fc",
+      "sha256": "d5bf3e14c3c0ca46c5cb9e524dbfcab14df4dc81a7712af00365df0908c09341",
       "executable": false
     },
     "tests/paging-response-flow.mjs": {

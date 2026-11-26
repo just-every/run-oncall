@@ -2,19 +2,20 @@ import assert from 'node:assert/strict';
 import {localWorker} from './worker.mjs';
 
 // MAIL_RECIPIENTS=owner on a hosted Worker: the sign-in page mails a link to the owner and nobody else.
-// The real emitted Worker and D1; only SendGrid is faked, inside the Worker at the network edge.
+// The real emitted Worker and D1 with the Business relay faked at the network edge.
 const origin = 'https://synthetic-oncall-owner-mail.example.test', owner = 'owner@example.test';
-const sendgrid = `
+const relayUrl = 'https://relay.example.test/api/managed-mail/send';
+const relay = `
 let providerMode='normal',providerCalls=[],pkceChallenge='',pkceValid=true,revoked=false;
 globalThis.fetch=async (input,init)=>{
  const request=new Request(input,init);
- if(request.url!=='https://api.sendgrid.com/v3/mail/send'||request.method!=='POST')throw Error('Unexpected outbound request');
+ if(request.url!==${JSON.stringify(relayUrl)}||request.method!=='POST')throw Error('Unexpected outbound request');
  const mail=await request.json();
- providerCalls.push({to:mail.personalizations.flatMap(p=>[...(p.to??[]),...(p.cc??[]),...(p.bcc??[])].map(r=>r.email)),link:mail.content.find(part=>part.type==='text/plain').value.split('\\n').at(-1)});
- return new Response(null,{status:202});
+ providerCalls.push({to:[mail.to,...(mail.cc??[]),...(mail.bcc??[])],link:mail.text.split('\\n').at(-1)});
+ return Response.json({messageId:'<oncall-signin@relay.example.test>'},{status:202});
 };`;
-const w = await localWorker({AUTH_LOCAL: 'false', AUTH_ORIGIN: origin, OWNER_EMAIL: owner, MAIL_PROVIDER: 'sendgrid', MAIL_RECIPIENTS: 'owner',
- MAIL_API_KEY: 'synthetic-example-mail-credential', MAIL_FROM: 'Oncall <oncall@example.test>'}, {requestOrigin: origin, fetchSource: sendgrid});
+const w = await localWorker({AUTH_LOCAL: 'false', AUTH_ORIGIN: origin, OWNER_EMAIL: owner, MAIL_PROVIDER: 'rer', MAIL_RECIPIENTS: 'owner',
+ MAIL_RELAY_URL: relayUrl, MAIL_API_KEY: 'synthetic-example-mail-credential', MAIL_FROM: 'Oncall <oncall@example.test>'}, {requestOrigin: origin, fetchSource: relay});
 const edge = {origin, 'CF-Connecting-IP': '192.0.2.20'};
 const request = (path, data, cookie) => w.request(path, data, cookie, edge);
 // What the sign-in page's own form posts, before any script.

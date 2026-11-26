@@ -11,6 +11,10 @@
     }
   ],
   "originVar": "AUTH_ORIGIN",
+  "publicSettings": [
+    "MAIL_FROM",
+    "MAIL_RELAY_URL"
+  ],
   "vars": {
     "AUTH_LOCAL": "false"
   },
