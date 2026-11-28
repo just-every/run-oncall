@@ -5,14 +5,14 @@ import {changeHash} from './changes/credentials';
 import {fail, type Member} from './family/response-operations/domain';
 import type {Schedule} from './family/response-operations/schedules';
 import {pagerdutyConnect} from './move-in/pagerduty-oauth';
-import {nativeMember} from './native-member';
+import {nativeMember, type NativeLinkRead} from './native-member';
 import {memberOnCall} from './on-call/api';
 import type {OnCall} from './on-call/read';
 import {readSessionCookie} from './session-cookie';
 import {memberWorkspace} from './workspace-visibility';
 import {workspaceCoverageHeader, workspaceRefreshHeader, workspaceStateHeader, type WorkspaceRefresh} from './workspace-refresh';
 import {decodeWorkspace, erasureFenceRead, workspaceRecords, workspaceRevisionColumns, type WorkspaceReadRevisions} from './workspace-store';
-import {readTracked} from './read-cache';
+import {readTracked, type TrackedRead} from './read-cache';
 
 type MemberSessionRow = {data: string; operator_session: string | null};
 type Access = {member: Member; digest: string; owner: boolean; revisions: WorkspaceReadRevisions};
@@ -23,10 +23,10 @@ function memberSession(db: D1Database, digest: string, columns = '') {
     WHERE s.token=? AND s.expires>? AND json_extract(m.data,'$.active')=1`).bind(digest, Date.now());
 }
 
-export async function readCurrentMember(env: Bindings, request: Request, coverage?: boolean): Promise<Access | null> {
+export async function readCurrentMember(env: Bindings, request: Request, coverage?: boolean, readNativeLink?: NativeLinkRead): Promise<Access | null> {
   const token = readSessionCookie(request);
   const scope = coverage === undefined ? undefined : {coverage};
-  if (!token) return nativeMember(env, request, scope);
+  if (!token) return nativeMember(env, request, scope && {...scope, readLink: readNativeLink});
 
   const digest = await changeHash(token);
   const columns = scope ? ', ' + workspaceRevisionColumns(scope.coverage) : '';
@@ -42,12 +42,16 @@ export async function readCurrentMember(env: Bindings, request: Request, coverag
   return {member, digest, owner: false, revisions: row};
 }
 
-async function snapshot(db: D1Database, session: Access, full: boolean, coverage: boolean, document?: InstallationDocumentRead) {
-  const read = await readTracked(db, [
-    memberSession(db, session.digest),
+function snapshotReads(db: D1Database, digest: string, full: boolean, branded: boolean) {
+  return [
+    memberSession(db, digest),
     ...(full ? [db.prepare(erasureFenceRead)] : []),
-    ...(document ? [installationNameRead(db)] : []),
-  ]);
+    ...(branded ? [installationNameRead(db)] : []),
+  ];
+}
+
+async function snapshot(db: D1Database, session: Access, full: boolean, coverage: boolean, document?: InstallationDocumentRead, prefetched?: TrackedRead) {
+  const read = prefetched ?? await readTracked(db, snapshotReads(db, session.digest, full, !!document));
   const [authority, fences, branding] = read.extras;
   const current: Member | null = authority.results[0] ? JSON.parse(authority.results[0].data) : null;
   if (!current || current.id !== session.member.id) fail('Access revoked', 401);
@@ -100,7 +104,15 @@ export async function readWorkspace(env: Bindings, request: Request, document?: 
   const mode = request.headers.get(workspaceRefreshHeader);
   const versioned = mode === 'state' || mode === 'coverage';
   const coverage = mode !== 'state';
-  const session = await readCurrentMember(env, request, coverage);
+  let prefetched: TrackedRead | undefined;
+  const readNativeLink: NativeLinkRead | undefined = document && (async (statement, digest) => {
+    const read = await readTracked(env.DB, [...snapshotReads(env.DB, digest, true, true), statement]);
+    const [authority, , , mapping] = read.extras;
+    // A newly linked session must pass the snapshot fence after its insert.
+    prefetched = authority.results[0] ? read : undefined;
+    return mapping.results[0] ?? null;
+  });
+  const session = await readCurrentMember(env, request, coverage, readNativeLink);
   if (!session) {
     const hasMembers = await env.DB.prepare('SELECT 1 FROM oc_members LIMIT 1').first();
     return {setup: !hasMembers, member: null, demo: env.RER_DEMO === '1', state: null};
@@ -119,7 +131,7 @@ export async function readWorkspace(env: Bindings, request: Request, document?: 
   }
 
   if (member.role === 'stakeholder') return {setup: false, member, state: null, ...flags, ...(version ? {stateVersion: version} : {})};
-  const value = await snapshot(env.DB, session, true, coverage, document);
+  const value = await snapshot(env.DB, session, true, coverage, document, prefetched);
   const currentFlags = settings(env, value.current, owner);
   const currentVersion = versioned ? await stateToken(value.current, value.workspace.revision, currentFlags) : undefined;
   return {

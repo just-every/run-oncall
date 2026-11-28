@@ -48,7 +48,7 @@ class FixtureWorkspace extends WorkspaceControls {
   if(url.pathname==='/__d1_erase_during_snapshot'){
    const {id,input}=await request.json();
    this.#pendingErase={url:new URL('/api/erasure/member/'+id,url),headers:{
-    origin:request.headers.get('origin'),cookie:request.headers.get('cookie'),'content-type':'application/json',
+    host:url.host,origin:request.headers.get('origin'),cookie:request.headers.get('cookie'),'content-type':'application/json',
    },input};
    return Response.json({armed:true});
   }
@@ -75,8 +75,10 @@ const rows = async () => (await metered()).rows;
 const report = {};
 try {
   await w.time(start);
-  const setup = await w.request('/api/setup', {name: 'Synthetic Budget Owner', password: 'synthetic-oncall-budget-password'});
-  const cookie = setup.cookie, owner = ok(setup).member;
+  const setup = await w.request('/auth/bootstrap', {token: w.vars.SETUP_TOKEN, displayName: 'Synthetic Budget Owner'});
+  ok(setup, 303);
+  const cookie = setup.cookie;
+  const owner = ok(await w.request('/api/workspace', undefined, cookie)).member;
   const req = (path, input) => w.request(path, input, cookie);
   const tick = async () => ok(await w.send('/cdn-cgi/local/scheduled', undefined, {}, 'GET'));
   const target = ok(await req('/api/members', {name: 'Alice Example', role: 'responder', password: 'synthetic-oncall-erasure-password'}), 201);
@@ -155,7 +157,8 @@ try {
   await poll();
   const {calls: workspaceCalls} = await metered();
   ok(await w.request('/alerts', undefined, cookie));
-  assert.equal((await metered()).calls, workspaceCalls, 'the branded document uses the same D1 trips as its workspace data');
+  report.documentTrips = (await metered()).calls;
+  assert.ok(report.documentTrips < workspaceCalls, 'the document batches native mapping, branding and workspace data');
   view = {...view, ...await poll(view)};
   report.unchangedPoll = await rows();
 

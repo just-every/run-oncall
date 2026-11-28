@@ -3,8 +3,11 @@ import { operatorAuth, runtimeBindings, type Bindings } from './auth.server'
 import { loadWorkspace, workspaceRevisionColumns, workspaceRows, workspaceWrite, type WorkspaceReadRevisions } from './workspace-store'
 import type { Member } from './family/response-operations/domain'
 
+type NativeLink = {data: string; linked: number} & WorkspaceReadRevisions
+export type NativeLinkRead = (statement: D1PreparedStatement, digest: string) => Promise<NativeLink | null>
+
 /** Base sessions retain Base's key gate, expiry and revocation checks. */
-export async function nativeMember(env: Bindings, request: Request, workspaceRead?: {coverage: boolean}) {
+export async function nativeMember(env: Bindings, request: Request, workspaceRead?: {coverage: boolean; readLink?: NativeLinkRead}) {
   if(!env.SESSION_SECRET || !env.OWNER_EMAIL) return null
   const native=await operatorAuth(runtimeBindings(env)).getSession(request)
   if(!native) return null
@@ -12,10 +15,12 @@ export async function nativeMember(env: Bindings, request: Request, workspaceRea
   const digest=`native:${native.id}`
   // Authentication needs the mapped current member, not every incident/event.
   const revisions = workspaceRead ? ', ' + workspaceRevisionColumns(workspaceRead.coverage) : '';
-  const read=()=>env.DB.prepare(`SELECT m.data,EXISTS(SELECT 1 FROM sessions WHERE token=?) AS linked${revisions}
-    FROM operator_members l JOIN oc_members m ON m.id=l.member_id
-    WHERE l.operator_id=? AND json_extract(m.data,'$.active')=1`)
-    .bind(digest,native.operator.id).first<{data:string;linked:number} & WorkspaceReadRevisions>()
+  const read=()=>{
+    const statement=env.DB.prepare(`SELECT m.data,EXISTS(SELECT 1 FROM sessions WHERE token=?) AS linked${revisions}
+      FROM operator_members l JOIN oc_members m ON m.id=l.member_id
+      WHERE l.operator_id=? AND json_extract(m.data,'$.active')=1`).bind(digest,native.operator.id)
+    return workspaceRead?.readLink?.(statement,digest) ?? statement.first<NativeLink>()
+  }
   let link=await read()
   if(!link && native.operator.role==='owner') {
     const hasMember = await env.DB.prepare('SELECT 1 FROM oc_members LIMIT 1').first()
