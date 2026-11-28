@@ -1650,7 +1650,11 @@ try {
 const {default:assert}=await import('node:assert/strict')
 const { localWorker }=await import('./worker.mjs')
 
-const worker = await localWorker({ RER_DEMO: '1' }, { outboundLedger: true })
+const worker = await localWorker({ RER_DEMO: '1' }, {
+  outboundLedger: true,
+  // The hosted demo's SQLite adapter serves every query from the primary and has no region.
+  d1PlacementMeta: { served_by: 'rer-native-demo', served_by_primary: true },
+})
 const ok = (result, status = 200) => {
   assert.equal(result.status, status, JSON.stringify(result.value))
   return result.value

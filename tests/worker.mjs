@@ -23,10 +23,10 @@ export function fixtureDurableObjects(config) {
  ]));
 }
 
-function workspaceFixture(main, {clock=false,initialTime,fetchSource='',workspaceSource='',requestOrigin} = {}) {
+function workspaceFixture(main, {clock=false,initialTime,fetchSource='',workspaceSource='',requestOrigin,d1PlacementMeta} = {}) {
  const entry=JSON.stringify('./'+main);
  // Clock, outbound fetch and measurement controls must run in the same object
- // as application requests and scheduled work. Only origin rewriting is ingress.
+ // as application requests and scheduled work. Origin and placement metadata are ingress controls.
  const clockSource=clock?`
 const RealDate=Date;
 let at=${JSON.stringify(initialTime??null)};
@@ -56,15 +56,32 @@ globalThis.Date=class extends RealDate {
    return Response.json({ok:true});
   }
 `:'';
- const ingress=requestOrigin?`
-export default {...app,fetch(request,env,ctx){
+ const originRewrite=requestOrigin?`
+ {
  const url=new URL(request.url),canonical=new URL(${JSON.stringify(requestOrigin)});
  url.protocol=canonical.protocol;
  url.host=canonical.host;
  url.port=canonical.port;
  const headers=new Headers(request.headers);
  headers.set('host',canonical.host);
- return app.fetch(new Request(url,new Request(request,{headers})),env,ctx);
+ request=new Request(url,new Request(request,{headers}));
+ }
+`:'';
+ const placementBinding=d1PlacementMeta?`
+ const db=env.DB;
+ env={...env,DB:{prepare(sql){
+  const statement=db.prepare(sql);
+  return {async run(){
+   const result=await statement.run();
+   return {...result,meta:{...result.meta,...${JSON.stringify(d1PlacementMeta)}}};
+  }};
+ }}};
+`:'';
+ const ingress=requestOrigin||d1PlacementMeta?`
+export default {...app,fetch(request,env,ctx){
+ ${originRewrite}
+ ${placementBinding}
+ return app.fetch(request,env,ctx);
 }};
 `:'export default app;';
  return `import app, {OncallWorkspace} from ${entry};
@@ -182,7 +199,7 @@ export function durableSnapshot(w) {
  return Object.fromEntries(w.statements(names.map(name=>'SELECT * FROM "'+name.replaceAll('"','""')+'"').join(';')).map((rows,index)=>[names[index],rows.sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))]))
 }
 
-export async function localWorker(bindings = {}, {persistTo,clock=false,fetchSource='',workspaceSource='',outboundLedger=false,requestOrigin} = {}) {
+export async function localWorker(bindings = {}, {persistTo,clock=false,fetchSource='',workspaceSource='',outboundLedger=false,requestOrigin,d1PlacementMeta} = {}) {
  const dir=await mkdtemp(join(tmpdir(),'oncall-flow-')),socket=createServer()
  await new Promise(r=>socket.listen(0,'127.0.0.1',r));const port=socket.address().port;await new Promise(r=>socket.close(r))
  const persist=persistTo??dir;
@@ -198,11 +215,11 @@ export async function localWorker(bindings = {}, {persistTo,clock=false,fetchSou
  let config='dist/server/wrangler.json',clockFiles=[];
  // A hosted fixture terminates TLS at this local test edge and forwards its
  // canonical origin. Application host, Origin, cookie and authority checks still run.
- if(clock||fetchSource||workspaceSource||requestOrigin){
+ if(clock||fetchSource||workspaceSource||requestOrigin||d1PlacementMeta){
   const name='.test-clock-'+randomBytes(8).toString('hex'),wrapper=resolve('dist/server',name+'.js');
   config=resolve('dist/server',name+'.json');clockFiles=[wrapper,config];
   const built=JSON.parse(await readFile('dist/server/wrangler.json','utf8'));
-  await writeFile(wrapper,workspaceFixture(built.main,{clock,fetchSource,workspaceSource,requestOrigin}));
+  await writeFile(wrapper,workspaceFixture(built.main,{clock,fetchSource,workspaceSource,requestOrigin,d1PlacementMeta}));
   await writeFile(config,JSON.stringify({...built,main:name+'.js'}));
  }
  let worker,diagnostics,logLines=''

@@ -6512,7 +6512,7 @@
       "executable": false
     },
     "src/server.ts": {
-      "sha256": "6e31b5dbcf79372bd49b96d60c6b04e897d58eb54db012b9211378613d18bcbc",
+      "sha256": "ec3135ff7dd7296abf335dd0af5a997ba18d6764812d61928c5c82878482d337",
       "executable": false
     },
     "src/services/DraftComparison.tsx": {
@@ -6804,7 +6804,7 @@
       "executable": false
     },
     "tests/activation.mjs": {
-      "sha256": "0b41545801506b8f70f1079c40e67e2b339b92e1b90d0b5755380ab2c36eb91e",
+      "sha256": "779a2c04829bac8355faf9e56e3ab4ce54374b982e6066ed59e53954f0a82781",
       "executable": false
     },
     "tests/agent-door-browser.mjs": {
@@ -7244,7 +7244,7 @@
       "executable": false
     },
     "tests/worker.mjs": {
-      "sha256": "052b0fff925f687fee37c1d7719f43357a452d598b41e044d10833fbc38eb831",
+      "sha256": "b7646b31490c9f3e93f9a57da2f33a4521f025b860d19c9c6256fa257a50b153",
       "executable": false
     },
     "tsconfig.json": {

@@ -4,35 +4,39 @@ import type { Bindings } from './auth.server';
 import { workspaceShellBuildPath } from './app/shell/document';
 export { OncallWorkspace } from './workspace-object';
 
-let primaryRegion: DurableObjectLocationHint | null | undefined;
-let discovery: Promise<void> | undefined;
+type WorkspacePlacement = {
+  name: string;
+  options?: DurableObjectNamespaceGetDurableObjectOptions;
+};
+let placement: WorkspacePlacement | undefined;
+let discovery: Promise<WorkspacePlacement> | undefined;
 
-async function discoverPrimaryRegion(db: D1Database) {
+async function discoverPlacement(db: D1Database): Promise<WorkspacePlacement> {
   // The ordinary binding always queries the primary, even with replicas enabled.
-  const {meta} = await db.prepare('SELECT 1').run();
-  // Local D1 has no placement metadata. Hosted D1 reports the primary's region.
-  const region = meta.served_by_region?.toLowerCase();
-  if (!region && meta.served_by_primary === undefined) return null;
-  if (meta.served_by_primary !== true || !region?.match(/^(wnam|enam|weur|eeur|apac|oc)$/)) {
-    throw new Error('D1 did not report a supported primary region');
+  const { meta } = await db.prepare('SELECT 1').run();
+  const region = meta.served_by_region?.trim().toLowerCase();
+  // Local D1 and the hosted demo's SQLite adapter omit the region.
+  // A reported region always names a distinct object. Only supported hints go to get().
+  const options = region && /^(wnam|enam|sam|weur|eeur|apac(?:-ne|-se)?|oc|afr|me)$/.test(region)
+    ? { locationHint: region as DurableObjectLocationHint }
+    : undefined;
+  return { name: `workspace-d1:${region || 'local'}`, options };
+}
+
+function resolvePlacement(db: D1Database, ctx: ExecutionContext) {
+  if (!discovery) {
+    discovery = discoverPlacement(db).then(result => { placement = result; return result; });
+    ctx.waitUntil(discovery);
   }
-  return region as DurableObjectLocationHint;
+  // A concurrent request waits in its own I/O context.
+  const pending = discovery;
+  return new Promise<WorkspacePlacement>((resolve, reject) => { void pending.then(resolve, reject); });
 }
 
 async function workspace(env: Bindings, ctx: ExecutionContext) {
-  if (primaryRegion === undefined) {
-    if (!discovery) {
-      discovery = discoverPrimaryRegion(env.DB).then(region => { primaryRegion = region; });
-      ctx.waitUntil(discovery);
-    }
-    // A concurrent request waits in its own I/O context. The shared promise
-    // signals completion and the only cached placement data is the region.
-    const pending = discovery;
-    await new Promise<void>((resolve, reject) => { void pending.then(resolve, reject); });
-  }
+  const { name, options } = placement ?? await resolvePlacement(env.DB, ctx);
   // A hint only applies to a new ID. The old object stored only an in-memory cache.
-  const name = `workspace-d1:${primaryRegion ?? 'local'}`;
-  return env.WORKSPACE.get(env.WORKSPACE.idFromName(name), {locationHint: primaryRegion ?? undefined});
+  return env.WORKSPACE.get(env.WORKSPACE.idFromName(name), options);
 }
 
 export default {
