@@ -1,8 +1,7 @@
 import type {Outbox} from '../automation/model';
 import type {Incident} from '../family/response-operations/domain';
 
-export async function records<T>(statement:D1PreparedStatement):Promise<T[]> {
- const result=await statement.all<{data:string}>();
+export function recordRows<T>(result:D1Result<{data:string}>):T[] {
  return result.results.map(row => JSON.parse(row.data) as T);
 }
 
@@ -17,11 +16,11 @@ export const routedEvent = "COALESCE(json_extract(data,'$.provider')='native',0)
 // Share the same narrow reads within a report. A source failure still affects
 // only the signals that require it.
 export function readinessWork(db:D1Database) {
- const incidents=async()=>records<ReadinessIncident>(db.prepare(`SELECT json_object(
+ const incidents=async()=>recordRows<ReadinessIncident>(await db.prepare(`SELECT json_object(
    'state',json_extract(data,'$.state'),'alerts',json_extract(data,'$.alerts'),
    'manualPage',json_extract(data,'$.manualPage'),'responderRequests',json_extract(data,'$.responderRequests'),
    'sourceRecovery',json_extract(data,'$.sourceRecovery'),'deadlines',json_extract(data,'$.deadlines'),
-   'createdAt',json_extract(data,'$.createdAt')) AS data FROM oc_incidents`));
+   'createdAt',json_extract(data,'$.createdAt')) AS data FROM oc_incidents`).all<{data:string}>());
  const outbox=async()=>(await db.prepare(`SELECT json_extract(data,'$.status') AS status,json_extract(data,'$.at') AS at,
    json_extract(data,'$.leaseUntil') AS leaseUntil FROM oc_api_outbox
    WHERE json_extract(data,'$.status')<>'sent'`)

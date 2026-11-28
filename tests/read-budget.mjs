@@ -16,17 +16,18 @@ import {localWorker} from './worker.mjs';
 const alertsPerDay = 40, days = 30, ceiling = 600, coldCeiling = 1500;
 
 // Meters D1 statements inside the installation object for both HTTP and cron.
-const meterSource = `const meter={rows:0,statements:0};const originals=new WeakMap();
+const meterSource = `const meter={rows:0,statements:0,calls:0};const originals=new WeakMap();
 const count=result=>{if(result&&result.meta){meter.rows+=result.meta.rows_read??0;meter.statements++}return result};
 const statement=(original,sql)=>{const wrapped=new Proxy(original,{get(target,key){
  if(key==='bind')return(...values)=>statement(target.bind(...values),sql);
- if(key==='all'||key==='run')return async()=>count(await target[key]());
- if(key==='first')return async column=>{const row=count(await target.all()).results[0]??null;return column&&row?row[column]:row};
- if(key==='raw')return async options=>{const rows=count(await target.all()).results;return [...(options?.columnNames&&rows.length?[Object.keys(rows[0])]:[]),...rows.map(row=>Object.values(row))]};
+ if(key==='all'||key==='run')return async()=>{meter.calls++;return count(await target[key]())};
+ if(key==='first')return async column=>{meter.calls++;const row=count(await target.all()).results[0]??null;return column&&row?row[column]:row};
+ if(key==='raw')return async options=>{meter.calls++;const rows=count(await target.all()).results;return [...(options?.columnNames&&rows.length?[Object.keys(rows[0])]:[]),...rows.map(row=>Object.values(row))]};
  const value=Reflect.get(target,key);return typeof value==='function'?value.bind(target):value}});originals.set(wrapped,{original,sql});return wrapped};
 const metered=(db,beforeSnapshotWrite)=>new Proxy(db,{get(target,key){
  if(key==='prepare')return sql=>statement(target.prepare(sql),sql);
  if(key==='batch')return async list=>{
+  meter.calls++;
   if (originals.get(list[0])?.sql.startsWith('DELETE FROM oc_read_snapshot')) await beforeSnapshotWrite?.();
   return (await target.batch(list.map(item=>originals.get(item)?.original??item))).map(count);
  };
@@ -41,7 +42,7 @@ class FixtureWorkspace extends WorkspaceControls {
   const url=new URL(request.url);
   if(url.pathname==='/__d1_meter'){
    const value={...meter,erasure:this.#erasure};
-   meter.rows=0;meter.statements=0;
+   meter.rows=0;meter.statements=0;meter.calls=0;
    return Response.json(value);
   }
   if(url.pathname==='/__d1_erase_during_snapshot'){
@@ -69,7 +70,8 @@ const start = Date.now();
 const persist = await mkdtemp(join(tmpdir(), 'oncall-read-budget-'));
 const w = await localWorker({}, {clock: true, workspaceSource: meterSource, persistTo: persist});
 const ok = (response, status = 200) => {assert.equal(response.status, status, JSON.stringify(response.value)); return response.value;};
-const rows = async () => ok(await w.send('/__d1_meter', undefined, {}, 'GET')).rows;
+const metered = async () => ok(await w.send('/__d1_meter', undefined, {}, 'GET'));
+const rows = async () => (await metered()).rows;
 const report = {};
 try {
   await w.time(start);
@@ -150,6 +152,10 @@ try {
   let view = await poll();
   report.firstRead = await rows();
   assert.ok(view.state.alerts.length >= alertsPerDay * days, 'the console reads the whole history');
+  await poll();
+  const {calls: workspaceCalls} = await metered();
+  ok(await w.request('/alerts', undefined, cookie));
+  assert.equal((await metered()).calls, workspaceCalls, 'the branded document uses the same D1 trips as its workspace data');
   view = {...view, ...await poll(view)};
   report.unchangedPoll = await rows();
 

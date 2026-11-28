@@ -1,4 +1,4 @@
-import { checkedInstallationName, savedInstallationName } from './brand/installation';
+import { checkedInstallationName, installationNameRead, savedInstallationName, type InstallationDocumentRead, type InstallationNameRow } from './brand/installation';
 import { businessSettings } from './agent-door/business';
 import { auditIdentity } from './audit-store'
 import { createOwnerClaimHandler } from './modules/owner-claim/index.mjs'
@@ -87,7 +87,7 @@ export function clearWorkspaceSession(response: Response, request: Request): Res
 }
 
 const privateHeaders = { 'cache-control': 'no-store', 'referrer-policy': 'no-referrer', 'x-content-type-options': 'nosniff', 'x-robots-tag': 'noindex, nofollow' }
-export async function authResponse(request: Request, original: Bindings): Promise<Response | null> {
+export async function authResponse(request: Request, original: Bindings, document: InstallationDocumentRead): Promise<Response | null> {
  const env = runtimeBindings(original), url = new URL(request.url)
  // The signed claim exists only on its own route, and only while the platform still holds SETUP_TOKEN. The trust stays bound after the
  // claim (the import and agent doors read it), but the platform then retires the token: every other route must not build the handler.
@@ -113,11 +113,17 @@ export async function authResponse(request: Request, original: Bindings): Promis
   }
   const page = await createSignInHandler(operatorAuth(env), {
    defaultReturnTo: '/setup',
-   links: async () => [
-    ...(isLoopbackHost(url.hostname) ? [{ href: '/docs/install#sign-in-emails-on-your-computer', label: 'Local owner entry and sign-in email settings' }] : []),
-    // Workspace members use installation-local credentials on local and hosted apps.
-    ...(await env.DB.prepare('SELECT 1 FROM credentials LIMIT 1').first() ? [{ href: '/signin/local', label: 'Sign in with a workspace password' }] : []),
-   ],
+   links: async () => {
+    const read = await installationNameRead(env.DB, ', EXISTS(SELECT 1 FROM credentials) AS hasPassword')
+      .first<InstallationNameRow & {hasPassword: number}>();
+    if (!read) throw new Error('Sign-in document state unavailable');
+    document.branding = read;
+    return [
+     ...(isLoopbackHost(url.hostname) ? [{ href: '/docs/install#sign-in-emails-on-your-computer', label: 'Local owner entry and sign-in email settings' }] : []),
+     // Workspace members use installation-local credentials on local and hosted apps.
+     ...(read.hasPassword ? [{ href: '/signin/local', label: 'Sign in with a workspace password' }] : []),
+    ];
+   },
   })(request)
   if (page) {
    let hint = ''

@@ -1,5 +1,6 @@
 import {auditIdentity} from './audit-store';
 import {runtimeBindings, type Bindings} from './auth.server';
+import {installationNameRead, type InstallationDocumentRead} from './brand/installation';
 import {changeHash} from './changes/credentials';
 import {fail, type Member} from './family/response-operations/domain';
 import type {Schedule} from './family/response-operations/schedules';
@@ -41,11 +42,16 @@ export async function readCurrentMember(env: Bindings, request: Request, coverag
   return {member, digest, owner: false, revisions: row};
 }
 
-async function snapshot(db: D1Database, session: Access, full: boolean, coverage: boolean) {
-  const read = await readTracked(db, [memberSession(db, session.digest), ...(full ? [db.prepare(erasureFenceRead)] : [])]);
-  const [authority, fences] = read.extras;
+async function snapshot(db: D1Database, session: Access, full: boolean, coverage: boolean, document?: InstallationDocumentRead) {
+  const read = await readTracked(db, [
+    memberSession(db, session.digest),
+    ...(full ? [db.prepare(erasureFenceRead)] : []),
+    ...(document ? [installationNameRead(db)] : []),
+  ]);
+  const [authority, fences, branding] = read.extras;
   const current: Member | null = authority.results[0] ? JSON.parse(authority.results[0].data) : null;
   if (!current || current.id !== session.member.id) fail('Access revoked', 401);
+  if (document) document.branding = branding.results[0];
   const schedules = coverage ? read.rows('paging_schedules').map(row => JSON.parse(row.data) as Schedule) : undefined;
   const pagingRevision: number | undefined = coverage ? read.rows('paging_control')[0]?.revision : undefined;
   if (coverage && (!Number.isSafeInteger(pagingRevision) || pagingRevision! < 0)) fail('Critical scheduling storage missing', 503);
@@ -90,7 +96,7 @@ function coverageProjection(value: Awaited<ReturnType<typeof snapshot>>, at: num
   return {onCall, ...(stateVersion ? {coverageVersion: coverageToken(stateVersion, value.pagingRevision!, onCall, at), pagingRevision: value.pagingRevision} : {})};
 }
 
-export async function readWorkspace(env: Bindings, request: Request): Promise<WorkspaceRefresh> {
+export async function readWorkspace(env: Bindings, request: Request, document?: InstallationDocumentRead): Promise<WorkspaceRefresh> {
   const mode = request.headers.get(workspaceRefreshHeader);
   const versioned = mode === 'state' || mode === 'coverage';
   const coverage = mode !== 'state';
@@ -113,7 +119,7 @@ export async function readWorkspace(env: Bindings, request: Request): Promise<Wo
   }
 
   if (member.role === 'stakeholder') return {setup: false, member, state: null, ...flags, ...(version ? {stateVersion: version} : {})};
-  const value = await snapshot(env.DB, session, true, coverage);
+  const value = await snapshot(env.DB, session, true, coverage, document);
   const currentFlags = settings(env, value.current, owner);
   const currentVersion = versioned ? await stateToken(value.current, value.workspace.revision, currentFlags) : undefined;
   return {

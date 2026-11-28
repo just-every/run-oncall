@@ -11,6 +11,7 @@ import type { Bindings } from './auth.server'
 const commandNoops = new WeakSet<D1Database>()
 export function markCommandNoop(db: D1Database) { commandNoops.add(db) }
 
+const memberReads = new Set(['/api/workspace', '/api/on-call', '/api/triage', '/api/triage/views'])
 const commands = new Set(['manual-page','user-assignment','request-responders','respond-request','cancel-request','merge-incidents','split-incident','service-template','template-check','service','service-dependencies','policy','member','declare','assign-role','reassign','set-priority','set-urgency','set-severity','bulk-acknowledge','bulk-resolve','review','action','complete','accept-action','reopen-action','note','transition','runbook','priority','close-action','request-response'])
 export function auditInput(db: D1Database, input: any, path: string) {
   if (!input || typeof input !== 'object') return
@@ -42,13 +43,13 @@ export async function auditedRequest(request: Request, env: Bindings, handle: (e
   if(subject) context.subject={kind:'entity',id:decodeURIComponent(subject[1])}
   const audit = auditedDatabase(env.DB, context)
   // These handlers attribute a successful current-member check themselves.
-  const workspaceRead = request.method === 'GET' && (path === '/api/workspace' || path === '/api/on-call');
+  const memberRead = request.method === 'GET' && memberReads.has(path);
   const attribute = async () => Object.assign(context, await auditPrincipal(request, env));
   try {
-    if (!workspaceRead) await attribute();
+    if (!memberRead) await attribute();
     const response = await handle({ ...env, DB: audit.db })
     const status = response.status
-    if (workspaceRead && status >= 400 && !context.actor) await attribute();
+    if (memberRead && status >= 400 && !context.actor) await attribute();
     // Successful write batches already carry their own entries. A refusal with no
     // state write, including paging OFF, still survives as an attributed attempt.
     // The OC-050 human comparison exception excludes denials, failed authority
@@ -59,7 +60,7 @@ export async function auditedRequest(request: Request, env: Bindings, handle: (e
       await audit.record(context.outcome ?? (status >= 500 ? 'failed' : status >= 400 ? 'refused' : 'accepted'))
     return response
   } catch {
-    if (workspaceRead && !context.actor) {
+    if (memberRead && !context.actor) {
       try { await attribute(); } catch { /* The authority store remains unavailable. */ }
     }
     // Never turn a failed audit commit into an apparently accepted state change.

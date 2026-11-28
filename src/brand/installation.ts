@@ -3,14 +3,25 @@ import type { Bindings } from '../auth.server';
 import { appendWorkspace } from '../workspace-document';
 import type { WorkspaceSnapshot } from '../workspace-refresh';
 
-export async function savedInstallationName(env: Bindings) {
-  const row = await env.DB.prepare(`
+export type InstallationNameRow = {local: string | null; shared: string | null};
+export type InstallationDocumentRead = {branding?: InstallationNameRow};
+
+export function installationNameRead(db: D1Database, extraColumns = '') {
+  return db.prepare(`
     SELECT (SELECT value FROM bs_overrides WHERE field='display_name') AS local,
            (SELECT document FROM bs_settings WHERE singleton=1) AS shared
-  `).first<{local: string | null; shared: string | null}>();
+           ${extraColumns}
+  `);
+}
+
+function installationName(row: InstallationNameRow | null) {
   const value: unknown = row?.local != null ? JSON.parse(row.local)
     : (row?.shared && JSON.parse(row.shared)?.values.display_name) ?? identity.deployment;
   return typeof value === 'string' && value.trim() ? value.trim() : identity.product;
+}
+
+export async function savedInstallationName(env: Bindings) {
+  return installationName(await installationNameRead(env.DB).first<InstallationNameRow>());
 }
 
 export function checkedInstallationName(value: unknown): string | null {
@@ -20,9 +31,9 @@ export function checkedInstallationName(value: unknown): string | null {
 }
 
 /** Apply the same saved identity to native forms and the React workspace. */
-export async function installationDocument(response: Response, env: Bindings, pathname: string, workspace?: WorkspaceSnapshot) {
+export async function installationDocument(response: Response, env: Bindings, pathname: string, workspace?: WorkspaceSnapshot, read?: InstallationDocumentRead) {
   if (!response.headers.get('content-type')?.startsWith('text/html')) return response;
-  const name = await savedInstallationName(env);
+  const name = read?.branding ? installationName(read.branding) : await savedInstallationName(env);
   const title = name === identity.product ? identity.product : `${name} · ${identity.product}`;
   const headers = new Headers(response.headers);
   headers.set('cache-control', 'no-store, no-transform');

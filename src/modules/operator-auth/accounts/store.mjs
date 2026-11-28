@@ -16,14 +16,21 @@ export class AuthStore {
   byEmail(email) { return this.first(`SELECT ${operatorColumns} FROM oa_operators WHERE email=?`, [email]); }
   cancellation(operatorId) { return this.first('SELECT operator_version FROM oa_invitation_cancellations WHERE operator_id=?', [operatorId]); }
   async session(hash, now) {
-    const pin = await this.first('SELECT p.provider_id AS id,p.issuer,p.client_id AS clientId,p.linked_at AS linkedAt FROM oa_provider_session_pins p JOIN oa_sessions s ON s.id=p.session_id WHERE s.token_hash=?', [hash]);
-    const fence = providerPinFence(pin);
-    const session = await this.first(`SELECT s.id,s.operator_id AS operatorId,s.created_at AS createdAt,s.expires_at AS expiresAt,s.kind,p.issuer,p.subject,p.sid, o.email,o.display_name AS displayName,o.role,o.status,o.version,o.created_at AS operatorCreatedAt
+    const read = fence => this.first(`SELECT s.id,s.operator_id AS operatorId,s.created_at AS createdAt,s.expires_at AS expiresAt,s.kind,p.issuer,p.subject,p.sid, o.email,o.display_name AS displayName,o.role,o.status,o.version,o.created_at AS operatorCreatedAt,
+      pin.provider_id AS pinId,pin.issuer AS pinIssuer,pin.client_id AS pinClientId,pin.linked_at AS pinLinkedAt
       FROM oa_sessions s JOIN oa_operators o ON o.id=s.operator_id LEFT JOIN oa_provider_sessions p ON p.session_id=s.id
+      LEFT JOIN oa_provider_session_pins pin ON pin.session_id=s.id
       WHERE s.token_hash=? AND s.revoked_at IS NULL AND s.expires_at>? AND o.status='active' AND s.operator_version=o.version AND (s.kind!='oidc' OR (p.session_id IS NOT NULL AND EXISTS(SELECT 1 FROM oa_auth_settings a WHERE a.singleton=1 AND a.idp_sign_in=1 AND a.generation=p.generation))) AND ${fence.sql}`, [hash, now, ...fence.args]);
+    let session = await read(providerPinFence(null));
+    if (!session) return null;
+    const pin = session.pinId == null ? null : {
+      id: session.pinId, issuer: session.pinIssuer, clientId: session.pinClientId, linkedAt: session.pinLinkedAt,
+    };
+    // Only a pinned session needs the optional OIDC protocol table.
+    if (pin) session = await read(providerPinFence(pin));
     if (!session) return null;
     if (pin) session.providerPin = pin;
-    const { email, displayName, role, status, version, operatorCreatedAt, ...fields } = session;
+    const { email, displayName, role, status, version, operatorCreatedAt, pinId, pinIssuer, pinClientId, pinLinkedAt, ...fields } = session;
     return { ...fields, operator: { id: session.operatorId, email, displayName, role, status, version, createdAt: operatorCreatedAt } };
   }
   async limits(keys, now, windowMs) {

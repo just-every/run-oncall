@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import { installationDocument } from './brand/installation';
+import { installationDocument, installationNameRead, type InstallationDocumentRead, type InstallationNameRow } from './brand/installation';
 import {lobbyPaths} from './app/lobbyPaths';
 import {isWorkspacePath, workspaceAddress} from './app/paths';
 import {subscriptionResponse} from './schedule-coordination/feed';
@@ -34,6 +34,7 @@ export default withDemo({
    let received:Request|Response=request,bodyFailure:{error:unknown}|undefined;
    try {received=await receivedRequest(request)} catch(error){bodyFailure={error}}
    let documentWorkspace: WorkspaceSnapshot | undefined;
+   const document: InstallationDocumentRead = {};
    const result = await auditedRequest(request,original,async env => {
     if(bodyFailure)throw bodyFailure.error;
     if(received instanceof Response)return received;
@@ -76,7 +77,13 @@ export default withDemo({
     const apiFetch = async (target: Request) => (await import('./api')).api.fetch(target, env);
     const lobby=async()=>{
       const root=new Request(new URL('/',request.url),{method:request.method,headers:request.headers});
-      const response=await lobbyResponse(root,bindings,identity);
+      const response=await lobbyResponse(root,bindings,identity,async db => {
+        const read = await installationNameRead(db, ', EXISTS(SELECT 1 FROM oa_bootstrap WHERE singleton=1) AS claimed')
+          .first<InstallationNameRow & {claimed: number}>();
+        if (!read) throw new Error('Installation claim state unavailable');
+        document.branding = read;
+        return !!read.claimed;
+      });
       return response ? lobbyPaths(response, documentStatus) : response;
     };
     const state=await setupStateResponse(request,bindings);if(state)return state;
@@ -95,7 +102,7 @@ export default withDemo({
       headers.delete(workspaceStateHeader);
       headers.delete(workspaceCoverageHeader);
       const { readWorkspace } = await import('./workspace-read');
-      const current = await readWorkspace(env, new Request(request.url, {headers})).catch(async error => {
+      const current = await readWorkspace(env, new Request(request.url, {headers}), document).catch(async error => {
         const { Fault } = await import('./family/response-operations/domain');
         if (!(error instanceof Fault)) throw error;
         return Response.json({error: error.message}, {status: error.status, headers: {
@@ -123,7 +130,7 @@ export default withDemo({
       const imports = await importDoorResponse(received, bindings);
       if (imports) return imports;
     }
-    const auth=await authResponse(received,env as Bindings); if(auth) return auth;
+    const auth=await authResponse(received,env,document); if(auth) return auth;
     const response = await dispatch(received, () => apiFetch(received), () =>
       workspace && !import.meta.env.DEV ? workspaceShell(received, env) : render(received));
     if(response.headers.get('content-type')?.startsWith('text/html')) {
@@ -134,6 +141,6 @@ export default withDemo({
     }
     return response;
    });
-   return installationDocument(result, runtimeBindings(original), path, documentWorkspace);
+   return installationDocument(result, runtimeBindings(original), path, documentWorkspace, document);
   },
 }, { seed })
