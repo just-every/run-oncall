@@ -927,6 +927,10 @@
       "sha256": "05b601bec9dda9c1f9467cd401a018044b9f9a37382d5f91d97b8d02dc7f14dc",
       "executable": false
     },
+    "scripts/ci-reserve-disk.sh": {
+      "sha256": "8a9b2dcb16031d11ef767b8b21040460602fd74de556b06c3428498244597200",
+      "executable": false
+    },
     "scripts/delivery/base/artifact.mjs": {
       "sha256": "129f210f1556e816ba94ffe74359ac553cd26466aaf8c6c299765e9cea29aa07",
       "executable": false
