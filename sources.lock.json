@@ -2035,6 +2035,10 @@
       "sha256": "a56ef52c2da491e572780a4ba373a75aee6448a220ad94bfa0f7ff4c7336b3b5",
       "executable": false
     },
+    "src/application.ts": {
+      "sha256": "57dc3711ab54ec0ac0597d4d9cb81ba024dec55a993c2f8ae54c60fb85d76f3b",
+      "executable": false
+    },
     "src/archive/archive-settings.css": {
       "sha256": "e3c9a7d65b1fc6f9c285c2158649f16b26b936dcb265899be5bce3618f94e52c",
       "executable": false
@@ -6504,7 +6508,7 @@
       "executable": false
     },
     "src/server.ts": {
-      "sha256": "ffe7a63afcf3d50ca6cb1e410a1d120062527b6eaabc1995db42ef57f40f3088",
+      "sha256": "30b493d3cb01a65586ed1efc6f89731a97dec3b7a03e17d115d8dc0ddc13ca28",
       "executable": false
     },
     "src/services/DraftComparison.tsx": {
@@ -6755,6 +6759,10 @@
       "sha256": "af4ee05a275da8e055aa002827e1c1fba964da49c9770c1e0ef1134e0748bc6e",
       "executable": false
     },
+    "src/workspace-object.ts": {
+      "sha256": "98ab0c4c51552a1be61fa73e1974a827653584883ff81acb42514eb5c2865168",
+      "executable": false
+    },
     "src/workspace-profile.ts": {
       "sha256": "9ac6229ea80089851e531adfd1cc94b2fd0b039ba3567f9279806eb7689d2ab9",
       "executable": false
@@ -6804,7 +6812,7 @@
       "executable": false
     },
     "tests/agent-door.mjs": {
-      "sha256": "915d71d53997c13e3229aa100774dd93dc895ce1ff6b5f67fc31c539e5fb3385",
+      "sha256": "3098473dad218d2670ecea383d26a34c004fad58d0361ea0d98f1207d4d2f40d",
       "executable": false
     },
     "tests/agent-policy-fixture.mjs": {
@@ -7176,7 +7184,7 @@
       "executable": false
     },
     "tests/read-budget.mjs": {
-      "sha256": "4cfabcf34ac5a753b821ca627ce5579cf0a102457fbfdb6a5b7857a1fd861ed5",
+      "sha256": "08cf9e6752ab3eb53037b02667c271a04cc2c8f0fd96745c1cea4c8075e4f9ae",
       "executable": false
     },
     "tests/readable-names-browser.mjs": {
@@ -7232,7 +7240,7 @@
       "executable": false
     },
     "tests/worker.mjs": {
-      "sha256": "69bda773ba9765aaf72ca0c25be9255891348dfa276d54d86905d7d49e31bb39",
+      "sha256": "052b0fff925f687fee37c1d7719f43357a452d598b41e044d10833fbc38eb831",
       "executable": false
     },
     "tsconfig.json": {

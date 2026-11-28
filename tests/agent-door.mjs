@@ -23,6 +23,7 @@ async function adoption() {
  const {tmpdir} = await import('node:os');
  const {createRequire} = await import('node:module');
  const {pathToFileURL} = await import('node:url');
+ const {fixtureDurableObjects} = await import('./worker.mjs');
  const require = createRequire(import.meta.url), wrangler = require.resolve('wrangler/package.json');
  const {Miniflare,convertV4MiniflareOptions} = await import(pathToFileURL(createRequire(wrangler).resolve('miniflare')));
  const {unstable_splitSqlQuery:split} = require('wrangler');
@@ -39,7 +40,7 @@ async function adoption() {
  const secret = 'synthetic-installation-private-upgrade-secret';
  const mf = new Miniflare(convertV4MiniflareOptions({host:'127.0.0.1',port:0,cf:false,resourcePersistencePath:root,workers:[{
   name:'app',modules,modulesRoot:build,compatibilityDate:config.compatibility_date,compatibilityFlags:config.compatibility_flags,
-  bindings:{SESSION_SECRET:secret,AUTH_LOCAL:'true',AUTH_ORIGIN:'http://localhost',OWNER_EMAIL:'synthetic-upgrade@example.invalid'},d1Databases:{DB:'upgrade'},
+  bindings:{SESSION_SECRET:secret,AUTH_LOCAL:'true',AUTH_ORIGIN:'http://localhost',OWNER_EMAIL:'synthetic-upgrade@example.invalid'},d1Databases:{DB:'upgrade'},durableObjects:fixtureDurableObjects(config),
  }]}));
  try {
   const db = await mf.getD1Database('DB','app'), ledger = (await readdir('migrations/core')).filter(name=>name.endsWith('.sql')).sort();

@@ -15,6 +15,75 @@ const {Miniflare,convertV4MiniflareOptions}=await import(pathToFileURL(createReq
 const {unstable_splitSqlQuery:split}=require('wrangler');
 const walk=async dir=>(await Promise.all((await readdir(dir,{withFileTypes:true})).map(e=>e.isDirectory()?walk(join(dir,e.name)):[join(dir,e.name)]))).flat();
 const types={'.js':'ESModule','.mjs':'ESModule','.cjs':'CommonJS','.wasm':'CompiledWasm','.bin':'Data','.txt':'Text','.html':'Text','.sql':'Text'};
+
+export function fixtureDurableObjects(config) {
+ const sqlite=new Set((config.migrations??[]).flatMap(migration=>migration.new_sqlite_classes??[]));
+ return Object.fromEntries((config.durable_objects?.bindings??[]).filter(binding=>!binding.script_name).map(binding=>[
+  binding.name,{className:binding.class_name,useSQLite:sqlite.has(binding.class_name)},
+ ]));
+}
+
+function workspaceFixture(main, {clock=false,initialTime,fetchSource='',workspaceSource='',requestOrigin} = {}) {
+ const entry=JSON.stringify('./'+main);
+ // Clock, outbound fetch and measurement controls must run in the same object
+ // as application requests and scheduled work. Only origin rewriting is ingress.
+ const clockSource=clock?`
+const RealDate=Date;
+let at=${JSON.stringify(initialTime??null)};
+globalThis.Date=class extends RealDate {
+ constructor(...args){super(...(args.length?args:[at??RealDate.now()]));}
+ static now(){return at??RealDate.now();}
+};
+`:'';
+ const clockControl=clock?`
+  if(path==='/__test_clock'){
+   const value=await request.text();
+   at=value==='real'?null:Number(value);
+   return new Response('clock injected');
+  }
+`:'';
+ const providerControls=fetchSource?`
+  if(path==='/__provider_control'){
+   const input=await request.json();
+   providerMode=input.mode??'normal';
+   providerCalls=[];
+   pkceChallenge=input.challenge??pkceChallenge;
+   return Response.json({ok:true});
+  }
+  if(path==='/__provider_calls')return Response.json({calls:providerCalls,pkceValid,revoked});
+  if(path==='/__provider_cron'){
+   await this.runScheduled();
+   return Response.json({ok:true});
+  }
+`:'';
+ const ingress=requestOrigin?`
+export default {...app,fetch(request,env,ctx){
+ const url=new URL(request.url),canonical=new URL(${JSON.stringify(requestOrigin)});
+ url.protocol=canonical.protocol;
+ url.host=canonical.host;
+ url.port=canonical.port;
+ const headers=new Headers(request.headers);
+ headers.set('host',canonical.host);
+ return app.fetch(new Request(url,new Request(request,{headers})),env,ctx);
+}};
+`:'export default app;';
+ return `import app, {OncallWorkspace} from ${entry};
+export * from ${entry};
+${clockSource}
+${fetchSource}
+class WorkspaceControls extends OncallWorkspace {
+ async fetch(request){
+  const path=new URL(request.url).pathname;
+  ${clockControl}
+  ${providerControls}
+  return super.fetch(request);
+ }
+}
+${workspaceSource||'const FixtureWorkspace=WorkspaceControls;'}
+export {FixtureWorkspace as OncallWorkspace};
+${ingress}`;
+}
+
 export function recordOwnedProcesses() {
  const rows=execFileSync('ps',['-A','-o','pid=,ppid=,comm='],{encoding:'utf8'}).trim().split('\n').map(line=>line.trim().split(/\s+/,3));
  const owned=new Set([String(process.pid)]);let found=true;
@@ -31,17 +100,12 @@ export async function automationRuntime(edge=()=>new Response('refused',{status:
  const directory=await mkdtemp(join(tmpdir(),'oncall-automation-')),build=resolve('dist/server'),config=JSON.parse(await readFile(join(build,'wrangler.json'),'utf8')),entry=join(build,config.main);
  const modules=[entry,...(await walk(build)).filter(p=>p!==entry&&types[extname(p)])].map(path=>({type:types[extname(path)],path}));
  if(native.clock!==undefined){
-  // Only this emitted test Worker receives the controllable platform clock.
-  // Native parsing and explicit dates retain their original Date semantics.
-  modules.unshift({type:'ESModule',path:join(build,'.automation-clock.mjs'),contents:`import app from './${config.main}';
-const RealDate=Date;let at=${JSON.stringify(native.clock)};
-globalThis.Date=class extends RealDate {constructor(...args){super(...(args.length?args:[at??RealDate.now()]));}static now(){return at??RealDate.now();}};
-export default {...app,async fetch(request,env,ctx){if(new URL(request.url).pathname==='/__test_clock'){at=await request.json();return new Response('clock injected');}return app.fetch(request,env,ctx);}};`});
+  modules.unshift({type:'ESModule',path:join(build,'.automation-clock.mjs'),contents:workspaceFixture(config.main,{clock:true,initialTime:native.clock})});
  }
  const freePort=async()=>{const socket=createServer();await new Promise(r=>socket.listen(0,'127.0.0.1',r));const selected=socket.address().port;await new Promise(r=>socket.close(r));return selected;};
  let port=await freePort();
  const secret=randomBytes(32).toString('hex');let mf,db,origin='http://127.0.0.1:'+port;
- const options=()=>convertV4MiniflareOptions({host:'127.0.0.1',port,cf:false,unsafeTriggerHandlers:true,resourcePersistencePath:join(directory,'data'),workers:[{name:'app',modules,modulesRoot:build,compatibilityDate:config.compatibility_date,compatibilityFlags:config.compatibility_flags,bindings:{SESSION_SECRET:secret,AUTH_LOCAL:'true',AUTH_ORIGIN:origin,OWNER_EMAIL:'synthetic-oncall-owner@example.test',...(native.bindings?.(origin)??{})},d1Databases:{DB:'automation-db'},outboundService:edge,...(config.assets?{assets:{directory:resolve('dist/client'),binding:'ASSETS',routerConfig:{has_user_worker:true,invoke_user_worker_ahead_of_assets:true}}}:{})}]});
+ const options=()=>convertV4MiniflareOptions({host:'127.0.0.1',port,cf:false,unsafeTriggerHandlers:true,resourcePersistencePath:join(directory,'data'),workers:[{name:'app',modules,modulesRoot:build,compatibilityDate:config.compatibility_date,compatibilityFlags:config.compatibility_flags,bindings:{SESSION_SECRET:secret,AUTH_LOCAL:'true',AUTH_ORIGIN:origin,OWNER_EMAIL:'synthetic-oncall-owner@example.test',...(native.bindings?.(origin)??{})},d1Databases:{DB:'automation-db'},durableObjects:fixtureDurableObjects(config),outboundService:edge,...(config.assets?{assets:{directory:resolve('dist/client'),binding:'ASSETS',routerConfig:{has_user_worker:true,invoke_user_worker_ahead_of_assets:true}}}:{})}]});
  async function start(){
   // A probe port can be claimed before workerd binds it. Retry only that startup
   // collision, before any request or assertion; all other failures remain fatal.
@@ -53,7 +117,7 @@ export default {...app,async fetch(request,env,ctx){if(new URL(request.url).path
  }
  await start();
  for(const name of (await readdir('migrations/core')).filter(n=>n.endsWith('.sql')).sort())await db.batch(split(await readFile('migrations/core/'+name,'utf8')).map(q=>db.prepare(q)));
- return {get db(){return db;},get origin(){return origin;},get mf(){return mf;},outboundRequests:async()=>structuredClone(outbound),async time(at){if(native.clock===undefined)throw Error('Clock not injected');const response=await fetch(origin+'/__test_clock',{method:'POST',body:JSON.stringify(at)});if(!response.ok)throw Error('Clock injection failed');},async restart(){await mf.dispose();await start();},async close(){await mf.dispose();await rm(directory,{recursive:true,force:true});},async request(path,data,cookie='',headers={}){const response=await fetch(origin+path,{method:data===undefined?'GET':'POST',headers:{origin,'content-type':'application/json',cookie,...headers},...(data===undefined?{}:{body:JSON.stringify(data)})});return {status:response.status,value:await response.json(),cookie:response.headers.get('set-cookie')?.split(';')[0],headers:response.headers};}};
+ return {get db(){return db;},get origin(){return origin;},get mf(){return mf;},outboundRequests:async()=>structuredClone(outbound),async time(at){if(native.clock===undefined)throw Error('Clock not injected');const response=await fetch(origin+'/__test_clock',{method:'POST',body:at===null?'real':String(at)});if(!response.ok)throw Error('Clock injection failed');},async restart(){await mf.dispose();await start();},async close(){await mf.dispose();await rm(directory,{recursive:true,force:true});},async request(path,data,cookie='',headers={}){const response=await fetch(origin+path,{method:data===undefined?'GET':'POST',headers:{origin,'content-type':'application/json',cookie,...headers},...(data===undefined?{}:{body:JSON.stringify(data)})});return {status:response.status,value:await response.json(),cookie:response.headers.get('set-cookie')?.split(';')[0],headers:response.headers};}};
 }
 
 
@@ -118,7 +182,7 @@ export function durableSnapshot(w) {
  return Object.fromEntries(w.statements(names.map(name=>'SELECT * FROM "'+name.replaceAll('"','""')+'"').join(';')).map((rows,index)=>[names[index],rows.sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))]))
 }
 
-export async function localWorker(bindings = {}, {persistTo,clock=false,fetchSource="",outboundLedger=false,requestOrigin} = {}) {
+export async function localWorker(bindings = {}, {persistTo,clock=false,fetchSource='',workspaceSource='',outboundLedger=false,requestOrigin} = {}) {
  const dir=await mkdtemp(join(tmpdir(),'oncall-flow-')),socket=createServer()
  await new Promise(r=>socket.listen(0,'127.0.0.1',r));const port=socket.address().port;await new Promise(r=>socket.close(r))
  const persist=persistTo??dir;
@@ -134,17 +198,11 @@ export async function localWorker(bindings = {}, {persistTo,clock=false,fetchSou
  let config='dist/server/wrangler.json',clockFiles=[];
  // A hosted fixture terminates TLS at this local test edge and forwards its
  // canonical origin. Application host, Origin, cookie and authority checks still run.
- if(clock||fetchSource||requestOrigin){
+ if(clock||fetchSource||workspaceSource||requestOrigin){
   const name='.test-clock-'+randomBytes(8).toString('hex'),wrapper=resolve('dist/server',name+'.js');
   config=resolve('dist/server',name+'.json');clockFiles=[wrapper,config];
   const built=JSON.parse(await readFile('dist/server/wrangler.json','utf8'));
-  await writeFile(wrapper,`import app from './${built.main}';
-const RealDate=Date;let at;
-// The test platform clock must agree for Date.now() and no-argument new Date().
-// Explicit source timestamps and all native Date parsing remain unchanged.
-if(${clock})globalThis.Date=class extends RealDate {constructor(...args){super(...(args.length?args:[at??RealDate.now()]));}static now(){return at??RealDate.now();}};
-${fetchSource}
-export default {...app,async fetch(request,env,ctx){if(new URL(request.url).pathname==='/__provider_control'&&${Boolean(fetchSource)}){const input=await request.json();providerMode=input.mode??'normal';providerCalls=[];pkceChallenge=input.challenge??pkceChallenge;return Response.json({ok:true});}if(new URL(request.url).pathname==='/__provider_calls'&&${Boolean(fetchSource)})return Response.json({calls:providerCalls,pkceValid,revoked});if(new URL(request.url).pathname==='/__provider_cron'&&${Boolean(fetchSource)}){await app.scheduled({},env,ctx);return Response.json({ok:true});}if(new URL(request.url).pathname==='/__test_clock'){const value=await request.text();at=value==='real'?undefined:Number(value);return new Response('clock injected');}if(${JSON.stringify(requestOrigin??'')}){const target=new URL(request.url);const canonical=new URL(${JSON.stringify(requestOrigin??'')});target.protocol=canonical.protocol;target.host=canonical.host;target.port=canonical.port;const headers=new Headers(request.headers);headers.set('host',canonical.host);request=new Request(target,new Request(request,{headers}));}return app.fetch(request,env,ctx);}};`);
+  await writeFile(wrapper,workspaceFixture(built.main,{clock,fetchSource,workspaceSource,requestOrigin}));
   await writeFile(config,JSON.stringify({...built,main:name+'.js'}));
  }
  let worker,diagnostics,logLines=''

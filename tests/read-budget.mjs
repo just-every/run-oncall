@@ -15,9 +15,8 @@ import {localWorker} from './worker.mjs';
 // move with history. Rows are D1's own meta.rows_read for every statement.
 const alertsPerDay = 40, days = 30, ceiling = 600, coldCeiling = 1500;
 
-// Meters each request's and cron run's D1 statements inside the Worker.
+// Meters D1 statements inside the installation object for both HTTP and cron.
 const meterSource = `const meter={rows:0,statements:0};const originals=new WeakMap();
-let pendingErase, erasure;
 const count=result=>{if(result&&result.meta){meter.rows+=result.meta.rows_read??0;meter.statements++}return result};
 const statement=(original,sql)=>{const wrapped=new Proxy(original,{get(target,key){
  if(key==='bind')return(...values)=>statement(target.bind(...values),sql);
@@ -32,32 +31,43 @@ const metered=(db,beforeSnapshotWrite)=>new Proxy(db,{get(target,key){
   return (await target.batch(list.map(item=>originals.get(item)?.original??item))).map(count);
  };
  const value=Reflect.get(target,key);return typeof value==='function'?value.bind(target):value}});
-const appFetch=app.fetch,appScheduled=app.scheduled;
-app.fetch=async(request,env,ctx)=>{
- const url=new URL(request.url);
- if(url.pathname==='/__d1_meter'){const value={...meter,erasure};meter.rows=0;meter.statements=0;return Response.json(value)}
- if(url.pathname==='/__d1_erase_during_snapshot'){
-  const {id,input}=await request.json();
-  pendingErase={url:new URL('/api/erasure/member/'+id,url),headers:{
-   origin:request.headers.get('origin'),cookie:request.headers.get('cookie'),'content-type':'application/json',
-  },input};
-  return Response.json({armed:true});
+class FixtureWorkspace extends WorkspaceControls {
+ #pendingErase;
+ #erasure;
+ constructor(ctx,env){
+  super(ctx,{...env,DB:metered(env.DB,()=>this.#eraseBeforeSnapshot(env.DB))});
  }
- return appFetch(request,{...env,DB:metered(env.DB)},ctx);
-};
-app.scheduled=(event,env,ctx)=>appScheduled(event,{...env,DB:metered(env.DB,async()=>{
- if(!pendingErase)return;
- const {url,headers,input}=pendingErase;
- pendingErase=undefined;
- const response=await appFetch(new Request(url,{method:'POST',headers,body:JSON.stringify(input)}),env,ctx);
- erasure={status:response.status,receipt:await response.json(),
-  parts:await env.DB.prepare('SELECT COUNT(*) AS n FROM oc_read_snapshot').first('n')};
-})},ctx);`;
+ async fetch(request){
+  const url=new URL(request.url);
+  if(url.pathname==='/__d1_meter'){
+   const value={...meter,erasure:this.#erasure};
+   meter.rows=0;meter.statements=0;
+   return Response.json(value);
+  }
+  if(url.pathname==='/__d1_erase_during_snapshot'){
+   const {id,input}=await request.json();
+   this.#pendingErase={url:new URL('/api/erasure/member/'+id,url),headers:{
+    origin:request.headers.get('origin'),cookie:request.headers.get('cookie'),'content-type':'application/json',
+   },input};
+   return Response.json({armed:true});
+  }
+  return super.fetch(request);
+ }
+ async #eraseBeforeSnapshot(db){
+  if(!this.#pendingErase)return;
+  const {url,headers,input}=this.#pendingErase;
+  this.#pendingErase=undefined;
+  // Run the real erasure handler between the cron's snapshot read and write.
+  const response=await super.fetch(new Request(url,{method:'POST',headers,body:JSON.stringify(input)}));
+  this.#erasure={status:response.status,receipt:await response.json(),
+   parts:await db.prepare('SELECT COUNT(*) AS n FROM oc_read_snapshot').first('n')};
+ }
+}`;
 
 const tables = ['oc_teams', 'oc_erased_report_cases', 'oc_schedule_records', 'oc_business_services', 'oc_key_allowances', 'oc_api_clients', 'oc_api_endpoints', 'oc_api_operations', 'oc_api_outbox', 'oc_members', 'oc_services', 'oc_policies', 'oc_events', 'oc_alerts', 'oc_incidents', 'oc_audit', 'oc_triage', 'oc_changes', 'oc_change_sources', 'oc_intake_sources', 'oc_intake_receipts', 'oc_email_addresses', 'oc_email_rules', 'oc_email_samples', 'oc_email_receipts', 'oc_email_quarantine'];
 const start = Date.now();
 const persist = await mkdtemp(join(tmpdir(), 'oncall-read-budget-'));
-const w = await localWorker({}, {clock: true, fetchSource: meterSource, persistTo: persist});
+const w = await localWorker({}, {clock: true, workspaceSource: meterSource, persistTo: persist});
 const ok = (response, status = 200) => {assert.equal(response.status, status, JSON.stringify(response.value)); return response.value;};
 const rows = async () => ok(await w.send('/__d1_meter', undefined, {}, 'GET')).rows;
 const report = {};
@@ -180,6 +190,6 @@ try {
     for (const event of ['insert', 'update', 'delete']) assert.ok(triggers.has(`oc_read_${table}_${event}`), `${table} logs ${event}s for readers`);
   console.log('PASS D1 read budget: console polls, a due on-call sweep and cold reads stay flat with 30 days of history');
 } finally {
-  await w.stop();
+  await w.close();
   await rm(persist, {recursive: true, force: true});
 }
