@@ -7,14 +7,14 @@ import { loadWorkspace, workspaceWrite } from '../workspace-store.ts';
 import { checkEmailCustody } from '../workspace-profile.ts';
 import { changeHash } from '../changes/credentials.ts';
 import { fail } from '../family/response-operations/domain.ts';
-import { parseEmail, emailDiagnostic } from './parse.mjs';
+import { parseEmail, emailDiagnostic, type InboundEmail } from './parse.mjs';
 import { applyEmail } from './lifecycle.ts';
 import type { EmailReceipt } from './types.ts';
 export function inboundDomain(env:Pick<Bindings,'INBOUND_EMAIL_DOMAIN'>) {
   const value=env.INBOUND_EMAIL_DOMAIN?.trim().toLowerCase()??'';
   return /^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,63}$/.test(value)?value:null;
 }
-export async function receiveEmail(message:ForwardableEmailMessage,env:Bindings) {
+export async function receiveEmail(message:InboundEmail & Pick<ForwardableEmailMessage, 'setReject'>,env:Bindings) {
   const context:AuditContext={feature:'email',kind:'email.receive',source:{kind:'transport',id:'cloudflare-email-routing'},actor:{kind:'transport',id:'cloudflare-email-routing'},commits:0,storageFailed:false};
   const audit=auditedDatabase(env.DB,context),db=audit.db;
   try {

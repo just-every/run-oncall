@@ -1,5 +1,6 @@
 import { requireNewSubjectIdentity } from './subject-erasure-identity.ts'
 import { auditIdentity, setAuditSubject } from './audit-store'
+import type { createApi } from './api-boundary';
 import { fail, text, type State } from './family/response-operations/domain';
 import { changeHash, equalSignature, freshTimestamp, sealCredential, sourceCustody } from './changes/credentials';
 import { runtimeBindings } from './auth.server';
@@ -48,7 +49,7 @@ export function refuseKeyEcho(values: unknown[], key: string) {
     fail('Keep the source key out of event content');
 }
 
-async function currentAdmin(c: any, deps: Dependencies) {
+async function currentAdminState(c: any, deps: Dependencies) {
   if (c.get('actor').role !== 'admin') fail('Admin required', 403);
   const state = await deps.load(c.env.DB);
   if (!state.members.some(m => m.id === c.get('actor').id && m.active && m.role === 'admin')) fail('Current admin required', 403);
@@ -65,12 +66,22 @@ async function namedSourceId(db: D1Database, state: State, name: string) {
   return id;
 }
 
-export function installNativeSources(api: any, deps: Dependencies) {
-  api.get('/api/sources', async (c: any) => {
-    await currentAdmin(c, deps);
-    const rows = (await c.env.DB.prepare('SELECT id,signing_secret IS NOT NULL AS pending,signing_custody IS NOT NULL AS signed,key_custody IS NOT NULL AS readable,scopes FROM sources ORDER BY id').all()).results as { id: string; pending: number; signed: number; readable: number; scopes: string }[];
-    return c.json({ sources: rows.map(row => ({ id: row.id, authentication: row.pending || row.signed ? 'signed' : 'bearer',
-      custody: row.pending ? 'awaiting the installation key' : row.signed || row.readable ? 'encrypted in this installation' : 'digest only', scopes: JSON.parse(row.scopes) })) });
+export function installNativeSources(api: ReturnType<typeof createApi>, deps: Dependencies) {
+  api.get('/api/sources', async c => {
+    const actor = c.get('actor');
+    if (actor.role !== 'admin') fail('Admin required', 403);
+    const {results} = await c.env.DB.prepare(`SELECT s.id,s.signing_secret IS NOT NULL AS pending,s.signing_custody IS NOT NULL AS signed,
+      s.key_custody IS NOT NULL AS readable,s.scopes FROM oc_members m LEFT JOIN sources s ON 1
+      WHERE m.id=? AND json_extract(m.data,'$.active')=1 AND json_extract(m.data,'$.role')='admin'
+      ORDER BY s.id`).bind(actor.id).all<{id: string | null; pending: number; signed: number; readable: number; scopes: string | null}>();
+    if (!results.length) fail('Current admin required', 403);
+    // The left join returns a row with null scopes when the authorized source list is empty.
+    return c.json({sources: results.flatMap(row => row.scopes === null ? [] : [{
+      id: row.id,
+      authentication: row.pending || row.signed ? 'signed' : 'bearer',
+      custody: row.pending ? 'awaiting the installation key' : row.signed || row.readable ? 'encrypted in this installation' : 'digest only',
+      scopes: JSON.parse(row.scopes),
+    }])});
   });
   api.post('/api/sources', async (c: any) => {
     if (c.get('actor').role !== 'admin') fail('Admin required', 403);
@@ -78,7 +89,7 @@ export function installNativeSources(api: any, deps: Dependencies) {
     const create = input.name !== undefined;
     const key = text(input.key, 'source key', 200);
     if (key.length < 32) fail('Source key needs at least 32 characters');
-    const state = await currentAdmin(c, deps);
+    const state = await currentAdminState(c, deps);
     const id = create ? await namedSourceId(c.env.DB, state, text(input.name, 'source name', 80)) : text(input.id, 'source', 100);
     auditIdentity(c.env.DB,{source:{kind:"source",id}});
     setAuditSubject(c.env.DB,"source",id);
@@ -99,7 +110,7 @@ export function installNativeSources(api: any, deps: Dependencies) {
       credential: signed ? 'encrypted in this installation; never returned' : 'stored as digest; never returned', effect: 'intake only; no read access' });
   });
   api.post('/api/sources/:source/revoke', async (c: any) => {
-    const state = await currentAdmin(c, deps), id = c.req.param('source');
+    const state = await currentAdminState(c, deps), id = c.req.param('source');
     auditIdentity(c.env.DB,{source:{kind:'source',id}});
     setAuditSubject(c.env.DB,'source',id);
     await deps.body(c);

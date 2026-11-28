@@ -17,6 +17,7 @@ import { rejectedResponse } from './base/rejected-response'
 const theme = { href: '/rer-theme.css', productName: branding.name, accentColor: branding.primaryColor }
 
 export interface Bindings {
+ WORKSPACE: DurableObjectNamespace<import('./workspace-object').OncallWorkspace>
  RER_BUSINESS_TRUST?: string
  RER_DEMO?: string
  RER_OWNER_CLAIM_PUBLIC_KEYS?: string

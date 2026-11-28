@@ -1,3 +1,4 @@
+export { OncallWorkspace } from './server'
 import { installationDocument } from './brand/installation';
 // Local-only Worker entry. vite.config.ts loads it only for `vite dev`; the
 // deployed main stays src/server.ts, and `rer build` refuses any output that

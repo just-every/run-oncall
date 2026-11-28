@@ -25,5 +25,21 @@
       "database_id": "00000000-0000-0000-0000-000000000001",
       "migrations_dir": "migrations/core"
     }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "WORKSPACE",
+        "class_name": "OncallWorkspace"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "oncall-workspace-v1",
+      "new_sqlite_classes": [
+        "OncallWorkspace"
+      ]
+    }
   ]
 }

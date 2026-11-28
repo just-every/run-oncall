@@ -6,8 +6,20 @@
       "binding": "DB"
     }
   ],
-  "durableObjects": [],
-  "durableObjectMigrations": [],
+  "durableObjects": [
+    {
+      "binding": "WORKSPACE",
+      "className": "OncallWorkspace"
+    }
+  ],
+  "durableObjectMigrations": [
+    {
+      "tag": "oncall-workspace-v1",
+      "newSqliteClasses": [
+        "OncallWorkspace"
+      ]
+    }
+  ],
   "queueConsumers": [],
   "migrations": [
     {
