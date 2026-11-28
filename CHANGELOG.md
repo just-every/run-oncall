@@ -1,3 +1,16 @@
+# 0.5.43 · 2026-11-28
+
+- Fixes the 0.5.42 hosted demo start, which returned HTTP 502 because the demo's SQLite adapter reports a D1 primary without a region. Oncall now looks up placement once per Worker isolate and uses the local workspace object name without a hint when there is no region. A reported region still names the object and supplies a placement hint when Cloudflare supports it. Production D1 reporting a supported region uses the same workspace placement as 0.5.42.
+- Vite generates the workspace console shell as part of the Worker build so the native demo includes the signed-in console. The fix reached that console in 4.826 seconds from the start request on the [test host build](https://github.com/just-every/run-oncall/actions/runs/46139451374).
+- This update adds no D1 or Durable Object migrations and keeps the existing `OncallWorkspace` class.
+- **Hosted rollback.** Redeploy 0.5.42 from the original deployment checkout with the same environment and private settings. No migration or Durable Object class change is required.
+
+### Upgrade from 0.5.42
+
+Back up the existing installation before switching tags. Stop the local app and any preview before running `rer export --output exports/before-0.5.43.rer`. For a hosted installation, export D1 from the original deploying checkout with the same private environment file used to deploy. Verify the backup and keep it private.
+
+Run `git fetch --quiet --depth 1 origin tag v0.5.43` and `git checkout --quiet --detach refs/tags/v0.5.43`. Restart the local app with `rer dev --host localhost`. For a hosted installation, update the original deploying checkout to the tag and run `rer deploy --environment ENVIRONMENT --env-file PRIVATE_FILE` with your deployment’s environment and private file.
+
 # 0.5.42 · 2026-11-28
 
 - Oncall discovers the D1 primary region from query metadata once per Worker isolate and uses a fresh region-named `OncallWorkspace` Durable Object with a placement hint near D1. The first HTTP request, Cron event or incoming email creates the new object.
