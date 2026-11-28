@@ -84,10 +84,8 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
-      - name: Free unused runner SDKs for the 15 GiB disk guard
-        run: |
-          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup
-          df -h / /tmp
+      - name: Reserve disk for native runtime journeys
+        run: bash scripts/ci-reserve-disk.sh
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version-file: .node-version
@@ -133,14 +131,12 @@ jobs:
       # Job env is evaluated before the runner context is available.
       - name: Set runner-owned browser cache
         run: printf 'PLAYWRIGHT_BROWSERS_PATH=%s/ms-playwright\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
-      - name: Free unused runner SDKs for the 15 GiB disk guard
-        run: |
-          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup
-          df -h / /tmp
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
           fetch-depth: 0
+      - name: Reserve disk for native runtime journeys
+        run: bash scripts/ci-reserve-disk.sh
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version-file: .node-version
@@ -190,14 +186,9 @@ jobs:
             stat -c 'After apt: %n uid=%u gid=%g mode=%a' "$PLAYWRIGHT_BROWSERS_PATH" "$RUNNER_TEMP/rer-apt/archives"
             probe
           fi
-      - name: Reserve disk for native runtime journeys
+      - name: Check disk after browser setup
         if: matrix.browser
-        run: |
-          free_kib() { df -Pk "$GITHUB_WORKSPACE" | awk 'END { print $4 }'; }
-          for unused_tools in /usr/local/lib/android /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL; do
-            if [ "$(free_kib)" -ge "$((20 * 1024 * 1024))" ]; then break; fi
-            sudo rm -rf -- "$unused_tools"
-          done
+        run: bash scripts/ci-reserve-disk.sh
       - uses: actions/download-artifact@v4
         with:
           name: oncall-verification-build
