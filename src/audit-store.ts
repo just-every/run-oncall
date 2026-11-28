@@ -50,7 +50,8 @@ export function auditTransaction(db: D1Database, context: AuditContext, statemen
   const actor = context.actor ?? { kind: 'service', id: 'installation' }
   const subject = context.subject ?? context.source
   const identities = [actor, subject, context.source, ...(context.namedMember ? [context.namedMember] : [])]
-  const prefix = identities.map(identity => db.prepare('INSERT OR IGNORE INTO oc_audit_identities(kind,entity_id,label) VALUES(?,?,?)')
+  const prefix = identities.filter((identity, index) => !identities.slice(0, index).some(held => held.kind === identity.kind && held.id === identity.id))
+    .map(identity => db.prepare('INSERT OR IGNORE INTO oc_audit_identities(kind,entity_id,label) VALUES(?,?,?)')
     .bind(identity.kind, identity.id, `anon-${crypto.randomUUID()}`))
   prefix.push(db.prepare(`UPDATE oc_audit_clock SET workspace_before=${revision('workspace_control')},paging_before=${revision('paging_control')},handoff_before=${revision('handoff_state')},actor_label=${label},subject_label=${label},source_label=${label},named_member_label=${context.namedMember ? label : 'NULL'},changes_before=total_changes(),changed=0,agent_event_context=1 WHERE id=1`).bind(...identities.flatMap(identity => [identity.kind, identity.id])))
   const suffix = [db.prepare(`UPDATE oc_audit_clock SET changed=CASE WHEN total_changes()>changes_before+1 THEN 1 ELSE 0 END,revision=revision+CASE WHEN total_changes()>changes_before+1 THEN 1 ELSE 0 END WHERE id=1`),

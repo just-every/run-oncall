@@ -61,7 +61,7 @@ export async function nativeIncompleteSource(state:State,identity:string,credent
 export async function retainNativeIncomplete(state:State,source:IntakeSource,body:NativeRequest,key:string) {
   refuseRetainedCredential(body.raw,key);
   const oversized=body.bytes>maximum;
-  const result=retainIncomplete(state,source,'native',{bytes:body.bytes,sha256:body.sha256,readableIds:[],dropped:null,unreadBytes:body.bytes,diagnostics:[oversized?'Native request exceeded 65536 bytes; retained prefix was not parsed':'Native request was unparseable or incomplete; retained prefix was not treated as an event']});
+  const result=retainIncomplete(state,source,'native',{bytes:body.bytes,sha256:body.sha256(),readableIds:[],dropped:null,unreadBytes:body.bytes,diagnostics:[oversized?'Native request exceeded 65536 bytes; retained prefix was not parsed':'Native request was unparseable or incomplete; retained prefix was not treated as an event']});
   if(!result.duplicate)result.receipt.details.nativePrefix={encoding:'base64',value:Buffer.from(body.prefix).toString('base64')};
   return result;
 }

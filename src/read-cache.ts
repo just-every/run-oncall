@@ -22,6 +22,16 @@ const logged: Record<string, Spec> = {
 // Read in full every time (one row each); never logged.
 const controls = ['workspace_control', 'paging_control'] as const
 const ordinalOrder = new Set<string>(Object.values(workspaceTables))
+const workspaceReads = Object.values(workspaceTables)
+const pagingReads = Object.keys(logged).filter(table => !ordinalOrder.has(table))
+// Keep each compound query within D1's SQLite limit while amortizing its
+// result metadata across similarly shaped tables in the same read batch.
+const tablesPerQuery = 5
+const workspaceQueries: string[] = []
+for (let start = 0; start < workspaceReads.length; start += tablesPerQuery) {
+  workspaceQueries.push(workspaceReads.slice(start, start + tablesPerQuery).map(table =>
+    `SELECT '${table}' AS table_name,rowid AS _r,id,ordinal,data FROM ${table}`).join(' UNION ALL '))
+}
 
 type Tables = Map<string, Map<string, TrackedRow>>
 type Cache = { seq: number; nonce: string | null; tables: Tables; sorted: Map<string, TrackedRow[]> }
@@ -46,15 +56,21 @@ function withControls(tables: Tables, results: D1Result<any>[]) {
 }
 
 async function full(db: D1Database, extras: D1PreparedStatement[]): Promise<Result> {
-  const reads = Object.keys(logged)
   const results = await db.batch<any>([
     db.prepare(latestQuery), ...controlReads(db),
-    ...reads.map(table => db.prepare(`SELECT rowid AS _r,${logged[table].columns} FROM ${table}`)),
+    ...workspaceQueries.map(query => db.prepare(query)),
+    ...pagingReads.map(table => db.prepare(`SELECT rowid AS _r,${logged[table].columns} FROM ${table}`)),
     ...extras,
   ])
-  const tables: Tables = new Map(reads.map((table, i) => [table, keyed(results[i + 1 + controls.length].results, keyOf(table))]))
+  const workspaceIndex = 1 + controls.length
+  const pagingIndex = workspaceIndex + workspaceQueries.length
+  const tables: Tables = new Map(workspaceReads.map(table => [table, new Map()]))
+  for (const group of results.slice(workspaceIndex, pagingIndex))
+    for (const {table_name, ...row} of group.results)
+      tables.get(table_name)!.set(String(row.id), row as TrackedRow)
+  pagingReads.forEach((table, i) => tables.set(table, keyed(results[pagingIndex + i].results, keyOf(table))))
   withControls(tables, results.slice(1))
-  return { cache: { ...latest(results[0]), tables, sorted: new Map() }, extras: results.slice(1 + controls.length + reads.length) }
+  return { cache: { ...latest(results[0]), tables, sorted: new Map() }, extras: results.slice(pagingIndex + pagingReads.length) }
 }
 
 function changed(table: string, keys: unknown[], db: D1Database) {

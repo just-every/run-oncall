@@ -6,13 +6,13 @@ const writes = (sql: string) => /^(?:INSERT|REPLACE|UPDATE|DELETE)\b/i.test(sql.
 
 /** Every application write, including a single-statement run/RETURNING, shares D1's batch rollback. */
 export function auditedDatabase(database: D1Database, context: AuditContext) {
-  const originals = new WeakMap<object, { statement: D1PreparedStatement; sql: string }>()
+  const originals = new WeakMap<object, { statement: D1PreparedStatement; sql: string; write: boolean }>()
   async function batch<T>(statements: D1PreparedStatement[], finalOutcome?: AuditOutcome): Promise<D1Result<T>[]> {
-    const entries = statements.map(statement => originals.get(statement) ?? { statement, sql: '' })
-    if (!finalOutcome && !entries.some(entry => writes(entry.sql))) return database.batch<T>(entries.map(entry => entry.statement))
+    const entries = statements.map(statement => originals.get(statement) ?? { statement, sql: '', write: false })
+    const sharedWrites = entries.filter(entry => entry.write)
+    if (!finalOutcome && !sharedWrites.length) return database.batch<T>(entries.map(entry => entry.statement))
     // Base records policy decisions itself. Its custody/audit writes must not
     // look like repeated executions of the native action that preceded them.
-    const sharedWrites = entries.filter(entry=>writes(entry.sql))
     const sharedPersistence = sharedWrites.length>0&&sharedWrites.every(entry=>/^\s*(?:INSERT(?:\s+OR\s+\w+)?\s+INTO|UPDATE|DELETE\s+FROM)\s+agent_door_/i.test(entry.sql))
     const transaction = auditTransaction(database, sharedPersistence?{...context,kind:'agent-door.persistence'}:context, entries.map(entry => entry.statement), finalOutcome)
     try {
@@ -24,10 +24,10 @@ export function auditedDatabase(database: D1Database, context: AuditContext) {
       throw error
     }
   }
-  function prepare(sql: string, original = database.prepare(sql)): D1PreparedStatement {
+  function prepare(sql: string, original = database.prepare(sql), write = writes(sql)): D1PreparedStatement {
     const statement = new Proxy(original, { get(target, property) {
-      if (property === 'bind') return (...values: unknown[]) => prepare(sql, target.bind(...values))
-      if (writes(sql)) {
+      if (property === 'bind') return (...values: unknown[]) => prepare(sql, target.bind(...values), write)
+      if (write) {
         if (property === 'run' || property === 'all') return async () => (await batch([statement]))[0]
         if (property === 'first') return async (column?: string) => {
           const row = (await batch<Record<string, unknown>>([statement]))[0].results[0] ?? null
@@ -42,7 +42,7 @@ export function auditedDatabase(database: D1Database, context: AuditContext) {
       const value = Reflect.get(target, property)
       return typeof value === 'function' ? value.bind(target) : value
     } })
-    originals.set(statement, { statement: original, sql })
+    originals.set(statement, { statement: original, sql, write })
     return statement
   }
   const db = new Proxy(database, { get(target, property) {

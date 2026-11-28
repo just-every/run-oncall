@@ -1,7 +1,7 @@
 import { requireNewSubjectIdentity } from './subject-erasure-identity.ts'
 import { auditIdentity, setAuditSubject } from './audit-store'
 import { fail, text, type State } from './family/response-operations/domain';
-import { changeHash, changeHmac, equalSignature, freshTimestamp, openCredential, sealCredential, sourceCustody } from './changes/credentials';
+import { changeHash, equalSignature, freshTimestamp, sealCredential, sourceCustody } from './changes/credentials';
 import { runtimeBindings } from './auth.server';
 
 // OC-042: authentication uses a bearer digest or encrypted HMAC signing custody.
@@ -25,20 +25,19 @@ export async function sealHeldSourceKeys(db: D1Database, secret: string | undefi
 }
 
 // Returns the verified key so admission can refuse to retain it.
-export async function presentedSourceKey(c: any, source: NativeSource, raw: string | {signature:string}) {
+export async function presentedSourceKey(c: any, source: NativeSource, signature: string, signingKey: string | undefined, attributedBearer: boolean) {
   if (source.signing_secret !== null) fail('Source key custody is incomplete; finish setup so this installation can hold the key', 503);
   if (source.signing_custody === null) {
     const bearer = c.req.header('authorization')?.replace(/^Bearer /, '') ?? '';
-    if (!bearer || !equalSignature(await changeHash(bearer), source.digest)) fail('Invalid source credential', 401);
+    if (!bearer || !attributedBearer && !equalSignature(await changeHash(bearer), source.digest)) fail('Invalid source credential', 401);
     auditIdentity(c.env.DB,{actor:{kind:"source",id:c.req.param("source")},source:{kind:"source",id:c.req.param("source")}});
     return bearer;
   }
   const timestamp = c.req.header('x-oncall-timestamp') ?? '';
   freshTimestamp(timestamp);
-  const key = await openCredential(source.signing_custody, runtimeBindings(c.env).SESSION_SECRET, sourceCustody);
-  if (!equalSignature(c.req.header('x-oncall-signature') ?? '', typeof raw==='string'?await changeHmac(key, timestamp + '.' + raw):raw.signature)) fail('Invalid source signature', 401);
+  if (!signingKey || !equalSignature(c.req.header('x-oncall-signature') ?? '', signature)) fail('Invalid source signature', 401);
   auditIdentity(c.env.DB,{actor:{kind:"source",id:c.req.param("source")},source:{kind:"source",id:c.req.param("source")}});
-  return key;
+  return signingKey;
 }
 
 // Native admission keeps the caller's text, so a key copied into an event would reach the workspace,

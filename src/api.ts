@@ -1,5 +1,10 @@
+import { authorizedState, body, installMemberGuard, session, sessionGuard } from './api-member';
+import { installCommand } from './command-api';
+import { installHeldKeys } from './api-keys';
+import { saveWorkspace as save } from './workspace-write';
+import { createApi } from './api-boundary';
+import { installNativeIngress } from './native-ingress';
 import { checkedInstallationName, savedInstallationName } from './brand/installation';
-import { nativeName } from './integrations/native-name';
 import {installReadiness} from './readiness/api';
 import {installTeams} from './teams/api';
 import {auditRefusalCommitted} from './audit-store';
@@ -10,34 +15,23 @@ import { installSubjectErasure } from './subject-erasure'
 import {installScheduleCoordination} from './schedule-coordination/api';
 import {holdScheduleRecords} from './schedule-coordination/model';
 import {holdDeadlines} from './incident-deadlines/model.ts';
-import { commandKey, runOnce, CommandKeyError } from './base/command-receipts';
-import { responseContext } from './manual-pages/context';
 import { holdManualRecords } from './manual-pages/archive';
 import { pagingSnapshot } from './paging-store';
 import { installBusinessStatus } from './business-status/api';
 import { holdBusinessStatus, refreshBusinessStatus } from './business-status/model';
 import {installOnCallNotifications} from './family/response-operations/on-call-notifications/api';
 import { installResponsePolicy } from './response-policy/api';
-import { finishResponseAdmission } from './response-policy/model';
 import { requireErasureFence, erasureFenceCondition, fenceValues } from './erasure-fence'
 import {hydrateNativePrefixes,requireNativePrefixValues} from './native-prefix-store';
-import {rateFaultBody} from './intake-rate/fault';
-import {readNativeRequest} from './native-request';
-import {beginRate,saveRate,admittedCount} from './intake-rate/admission';
 import {installAllowances} from './intake-rate/management';
 import { installVersionedApi, installAutomationManagement } from './automation/api'
 import { holdAutomation } from './automation/model'
 import { emailErasureFence } from './email/fence'
 import { installEmailManagement } from './email/api'
 import { auditIdentity, setAuditSubject } from './audit-store'
-import { auditInput, markCommandNoop } from './audit-request'
-import { isResponseChange } from './family/response-operations/incident-controls'
 import { installMonitoringSigning } from './monitoring/signing';
 import { installMonitoringIntake } from './monitoring/api';
-import { compatiblePath, monitoringPath } from './intake/paths';
 import { installCompatibleIntake } from './intake/api';
-import { nativeRoutedIngress } from './routing/native';
-import { nativeIncompleteSource, parseNativeRequest, retainNativeIncomplete } from './native-incomplete';
 import { installRoutingManagement } from './routing/management';
 import { installUrgency } from './urgency/api';
 import { serviceUrgency } from './urgency/model';
@@ -47,20 +41,16 @@ import { installReviews } from './reviews/api';
 import { installChangeIntake, installChangeManagement } from "./changes/api";
 import { pauseChangeSources } from "./changes/model";
 import { saveTriageItem } from "./triage-store";
-import { installTriage, memberWorkspace } from "./triage-api";
+import { installTriage } from "./triage-api";
+import { memberWorkspace } from "./workspace-visibility";
 import { linkRestoredOwner, restoredAdministrators } from './identity-link';
 import { checkWorkspaceSize, loadWorkspace, workspaceWrite, workspaceRows } from './workspace-store';
-import { nativeMember } from './native-member';
 import {installKeyReveal} from './integrations/key-reveal';
-import { installNativeSources, refuseKeyEcho, sealHeldSourceKeys, type NativeSource } from './native-sources';
+import { installNativeSources } from './native-sources';
 import { runtimeBindings, type Bindings } from './auth.server';
-import { admitted } from './base/setup-state';
-import { isLoopbackHost } from './modules/operator-auth/index.mjs';
 import { installSchedules } from './schedule-api';
-import {readOnCall, readWorkspace} from './workspace-read';
+import { installWorkspaceReads } from './workspace-read-api';
 import { installMoveIn } from './move-in/api';
-import { Refusal } from './move-in/refusals';
-import { Hono } from "hono";
 import { deploymentHealth } from "./base/deployment-health";
 import { installPaging } from "./paging-api";
 import { installSmsPaging } from "./sms-paging/api";
@@ -76,20 +66,15 @@ import { handoff } from "./family/response-operations/integrations";
 import { readSessionCookie, sessionCookieLine } from "./session-cookie";
 import {
   empty,
-  authority,
-  command,
-  admit,
   route,
   signalInput,
   validateArchive,
-  Fault,
   fail,
   text,
   type State,
   type Member,
 } from "./family/response-operations/domain";
-type Env = Bindings;
-const api = new Hono<{ Bindings: Env; Variables: { actor: Member; sessionDigest: string; localOwner?: boolean } }>();
+const api = createApi();
 const hash = async (v: string) =>
   Array.from(
     new Uint8Array(
@@ -132,105 +117,11 @@ const safeEqual = (a: string, b: string) => {
 const load = loadWorkspace;
 // JSON custody doors keep their request limits; larger installations use the streaming portable export.
 const archiveRestoreLimit = 2000000, checkpointRestoreLimit = 1000000 + 5 * 1024 * 1024 + 1024;
-type WriteGuard = { sql: string; values: (string | number | null)[] };
-function sessionGuard(c: any): WriteGuard {
-  return { sql: "EXISTS(SELECT 1 FROM oc_current_sessions WHERE token=? AND member=? AND expires>?)",
-    values: [c.get("sessionDigest"), c.get("actor").id, Date.now()] };
-}
-async function save(db:D1Database,state:State,revision:number,authority:WriteGuard) {
- const result=await db.batch(workspaceWrite(db,state,revision,authority));
- if(result[0].meta.changes!==1){auditRefusalCommitted(db);fail('Workspace changed. Reload and retry.',409);}
-}
-async function body(c: any, max = 65536, tooLarge = "Request too large") {
-  const raw = await c.req.text();
-  if (new TextEncoder().encode(raw).length > max)
-    fail(tooLarge, 413);
-  try {
-    const input = JSON.parse(raw);
-    auditInput(c.env.DB, input, c.req.path);
-    return input;
-  } catch {
-    return fail("Invalid JSON");
-  }
-}
-// Finish bounded, unread denied bodies before responding. Otherwise the local
-// workerd proxy may close its upstream stream while the sender is still writing.
-// This consumes no application input and never changes the denial decision.
-async function discardDeniedBody(c: any) {
-  const stream = c.req.raw.body;
-  if (!stream || stream.locked || c.req.raw.bodyUsed) return;
-  const reader = stream.getReader();
-  let bytes = 0;
-  try {
-    while (true) {
-      const next = await reader.read();
-      if (next.done) break;
-      bytes += next.value.byteLength;
-      if (bytes > 65536) { await reader.cancel(); break; }
-    }
-  } catch { /* A disconnected rejected sender does not change authorization. */ }
-  finally { reader.releaseLock(); }
-}
-api.onError(async (error, c) => {
-  if(error instanceof CommandKeyError)return c.json({error:error.message},error.status);
-  await discardDeniedBody(c);
-  if(c.req.path.startsWith("/api/v1/")) { const status=error instanceof Fault?error.status:503;return c.json({error:{code:({400:"invalid_request",401:"invalid_token",403:"insufficient_scope",404:"not_found",409:"conflict",413:"request_too_large",429:"rate_or_capacity_limit"} as Record<number,string>)[status]??"storage_unavailable",message:error instanceof Fault?error.message:"Storage unavailable; no success confirmed"}},status as any); }
-  if (error instanceof Refusal)
-    return c.json({ error: error.message, code: error.code }, error.status as any);
-  if (error instanceof Fault)
-    return c.json({ error: error.message, ...('code' in error && error.code === 'subject_erasure_fence' ? {code:error.code} : {}), ...rateFaultBody(error) }, error.status as any);
-  // Read fences return the kit code directly; mutation fences abort D1's
-  // transaction with this named CHECK constraint. Both are expected refusals.
-  // D1 appends extended SQLite constraint details to this primary failure.
-  // Match the exact named CHECK, with a SQLite constraint-code boundary; leave
-  // unrelated SQL and storage failures on the 503 path below.
-  const importCode = /^(?:D1_ERROR: )?CHECK constraint failed: IMPORT_ATOMIC_GUARD(?:$|: SQLITE_CONSTRAINT(?:_CHECK)?\b)/.test(error.message)
-    ? 'IMPORT_ATOMIC_GUARD' : error.message;
-  if(c.req.path.startsWith('/api/move-in/') && /^[A-Z][A-Z0-9_]+$/.test(importCode)) {
-    const conflict=/CONFLICT|GUARD|SUPERSEDED|BUSY/.test(importCode);
-    return c.json({error:`The import journal refused this ${conflict?'change because imported data or current authority changed meanwhile':'request'}; check the job's state before trying again.`,code:importCode},conflict?409:400);
-  }
-  console.error("oncall request failure", error.name);
-  return c.json(
-    { error: "Storage or server failure; no success confirmed" },
-    503,
-  );
-});
-api.use("*", async (c, next) => {
-  c.header("Cache-Control", "no-store");
-  c.header("X-Content-Type-Options", "nosniff");
-  const url = new URL(c.req.url);
-  // Hosted and local coordination share the same current-member authority.
-  // Keep requests on the configured application origin, as the sign-in doors do.
-  if (c.req.path !== "/health" && !admitted(c.req.raw, runtimeBindings(c.env).AUTH_ORIGIN)) {
-    await discardDeniedBody(c);
-    return c.json({ error: "Not found" }, 404);
-  }
-  // The old first-admin password bootstrap belongs to local installations.
-  // A hosted first owner is claimed by rer and signs in through real mail.
-  if (c.req.path === "/api/setup" && !isLoopbackHost(url.hostname)) {
-    await discardDeniedBody(c);
-    return c.json({ error: "Not found" }, 404);
-  }
-  if (c.req.method !== "GET" && !c.req.path.startsWith("/api/v1/") && !compatiblePath(c.req.path) && !monitoringPath(c.req.path) && !c.req.path.startsWith("/api/ingress/") && !c.req.path.startsWith("/api/changes/ingress/") && c.req.path !== "/v2/change/enqueue") {
-    if (c.req.header("origin") !== url.origin) {
-      await discardDeniedBody(c);
-      return c.json({ error: "Same-origin request required" }, 403);
-    }
-  }
-  await next();
-  if (c.res.status >= 400) await discardDeniedBody(c);
-});
 // Readiness authenticates without the ordinary read path’s key/owner maintenance.
 installReadiness(api);
 // Workspace and coverage reads use current member authority without loading signing custody.
-api.get('/api/workspace', async c => c.json(await readWorkspace(c.env, c.req.raw)));
-api.get('/api/on-call', async c => c.json(await readOnCall(c.env, c.req.raw, c.req.query('at'))));
-// Upgraded installations seal any held plaintext signing key before a request can read it.
-api.use("/api/*", async (c, next) => {
-  await sealHeldSourceKeys(c.env.DB, runtimeBindings(c.env).SESSION_SECRET);
-  await next();
-});
+installWorkspaceReads(api);
+installHeldKeys(api);
 api.get("/health", async (c) => {
   const identity = deploymentHealth(c.env);
   // The same source GET /api/paging/sms reads: whether this Worker has an SMS sender. Never a credential or number.
@@ -245,44 +136,10 @@ api.get("/health", async (c) => {
   }
 });
 api.get("/api/session", async (c) => {
-  const state = await load(c.env.DB);
-  const member=await session(c,state);
-  return c.json({setup: !member && state.members.length===0, member, demo: c.env.RER_DEMO === "1"});
+  const member = await session(c);
+  const hasMembers = member || await c.env.DB.prepare('SELECT 1 FROM oc_members LIMIT 1').first();
+  return c.json({setup: !hasMembers, member, demo: c.env.RER_DEMO === "1"});
 });
-async function session(c: any, state: State): Promise<Member | null> {
-  const token = readSessionCookie(c.req.raw);
-  if (!token) {
-    const native = await nativeMember(c.env, c.req.raw);
-    if (native) { c.set('sessionDigest',native.digest); c.set('localOwner',native.owner); auditIdentity(c.env.DB,{actor:{kind:'member',id:native.member.id}}); }
-    return native?.member ?? null;
-  }
-  const digest = await hash(token);
-  const row = await c.env.DB.prepare(
-    "SELECT member,operator_session FROM oc_current_sessions WHERE token=? AND expires>?",
-  )
-    .bind(digest, Date.now())
-    .first();
-  if(row?.operator_session){
-    const native=await nativeMember(c.env,c.req.raw);
-    if(!native||native.digest!==`native:${row.operator_session}`||native.member.id!==row.member)return null;
-    c.set('localOwner',native.owner);
-  }
-  const member = row
-    ? (state.members.find((m) => m.id === row.member && m.active) ?? null)
-    : null;
-  if (member) { c.set("sessionDigest", digest); auditIdentity(c.env.DB,{actor:{kind:"member",id:member.id}}); }
-  return member;
-}
-async function authorizedState(c: any, admin = false, statusOnly = false): Promise<State> {
-  const state = await load(c.env.DB);
-  const member = state.members.find(
-    (m) => m.id === c.get("actor").id && m.active,
-  );
-  if (!member) fail("Access revoked", 401);
-  if (member.role === "stakeholder" && !statusOnly) fail("Stakeholders may only access internal status and approved updates", 403);
-  if (admin && member.role !== "admin") fail("Current admin required", 403);
-  return state;
-}
 async function issue(c: any, member: Member, credentials: { salt: string; digest: string }, revision: number) {
   auditIdentity(c.env.DB,{actor:{kind:"member",id:member.id}});
   const token = crypto.randomUUID() + crypto.randomUUID();
@@ -361,7 +218,7 @@ api.post("/api/login", async (c) => {
   return issue(c, member, record, state.revision);
 });
 api.post("/api/logout", async (c) => {
-  await session(c,await load(c.env.DB));
+  await session(c);
   const token = readSessionCookie(c.req.raw);
   if (token)
     await c.env.DB.prepare("DELETE FROM sessions WHERE token=?")
@@ -370,52 +227,7 @@ api.post("/api/logout", async (c) => {
   c.header("Set-Cookie", sessionCookieLine(c.req.raw, "", 0));
   return c.json({ ok: true });
 });
-api.post("/api/ingress/:source", async (c) => {
-  const source = await c.env.DB.prepare(
-    "SELECT digest,signing_secret,signing_custody,scopes FROM sources WHERE id=?",
-  )
-    .bind(c.req.param("source"))
-    .first<NativeSource>();
-  if (!source) return nativeRoutedIngress(c,{load,save});
-  const nativeBody=await readNativeRequest(c,source),key=nativeBody.key;
-  const authority = {
-    sql: "EXISTS(SELECT 1 FROM sources WHERE id=? AND digest=? AND signing_custody IS ? AND scopes=?)",
-    values: [c.req.param("source"), source.digest, source.signing_custody, source.scopes],
-  };
-  const state = await load(c.env.DB), before=structuredClone(state);
-  const rate=await beginRate(c,{load,save},state,{id:'source:'+c.req.param('source'),name:c.req.param('source'),owner:state.members.find(m=>m.active&&m.role==='admin')!.id},authority);
-  const scopes: string[] = JSON.parse(source.scopes);
-  const parsed = parseNativeRequest(nativeBody, scopes.length === 1 ? scopes[0] : undefined);
-  if (!parsed) {
-    const custody = await nativeIncompleteSource(state, c.req.param("source"), source);
-    const result = await retainNativeIncomplete(state, custody, nativeBody, key);
-    if (!result.duplicate) await saveRate(c,{load,save},state,state.revision,rate,admittedCount(before,state));
-    return c.json({duplicate:result.duplicate,id:result.receipt.id,service:result.receipt.service,acceptedAt:result.receipt.acceptedAt,truncation:true,incomplete:{receipt:result.receipt.id}},202);
-  }
-  const {signal} = parsed;
-  if (signal.source !== c.req.param("source") && signal.source !== nativeName(c.req.param("source")))
-    fail('"source" must match the source ID or displayed name for the URL',403);
-  refuseKeyEcho(Object.values(signal), key);
-  // Names are input aliases only. Retain the established source identity so old
-  // senders, retry receipts and alert generations keep sharing the same custody.
-  signal.source = c.req.param("source");
-  if (!scopes.includes(signal.service))
-    fail('"service" must be an internal service ID authorized for this source', 403);
-  const revision = state.revision;
-  const result = admit(state, signal);
-  if(!result.duplicate&&result.alert)finishResponseAdmission(state,state.alerts.find(a=>a.id===result.alert)!,result.event,result.event.id);
-  if (!result.duplicate) await saveRate(c,{load,save},state,revision,rate,admittedCount(before,state));
-  // Source credentials admit signals; they never grant workspace read access.
-  // Project explicitly so new internal event fields cannot widen this receipt.
-  return c.json({
-    duplicate: result.duplicate,
-    id: result.event.id,
-    eventId: result.event.eventId,
-    service: result.event.service,
-    observedAt: result.event.observedAt,
-    acceptedAt: result.event.acceptedAt,
-  }, result.duplicate ? 200 : 201);
-});
+installNativeIngress(api, { load, save });
 const changeDeps = {body, load, state: authorizedState, save, guard: sessionGuard};
 installVersionedApi(api, changeDeps);
 installChangeIntake(api, changeDeps);
@@ -423,22 +235,7 @@ installCompatibleIntake(api, changeDeps);
 installMonitoringIntake(api, changeDeps);
 api.get("/api/identity-link/administrators",restoredAdministrators);
 api.post("/api/identity-link",async c=>linkRestoredOwner(c,await body(c)));
-api.use("/api/*", async (c, next) => {
-  // PagerDuty returns cross-site: only this callback authenticates its sealed transaction.
-  if (c.req.method === "GET" && c.req.path === "/api/move-in/pagerduty/callback") return next();
-  const state = await load(c.env.DB);
-  const actor = await session(c, state);
-  if (!actor) {
-    await discardDeniedBody(c);
-    return c.json({ error: "Sign in required" }, 401);
-  }
-  c.set("actor", actor);
-  if (actor.role === "stakeholder" && c.req.path !== "/api/status") {
-    await discardDeniedBody(c);
-    return c.json({error:"Stakeholders may only access internal status and approved updates"},403);
-  }
-  await next();
-});
+installMemberGuard(api);
 installBusinessStatus(api, {...changeDeps, state: (c: any) => authorizedState(c, false, true)});
 installAutomationManagement(api, changeDeps);
 installKeyReveal(api,changeDeps);
@@ -472,47 +269,7 @@ api.post('/api/installation', async c => {
   return c.json({name});
 });
 api.get("/api/state", async (c) => c.json(memberWorkspace(await authorizedState(c), c.get("actor"))));
-api.post("/api/command", async (c) => {
-  const input = await body(c);
-  const needsPolicy=['manual-page','user-assignment','request-responders','respond-request','snooze'].includes(input.type)||input.type==='transition'&&input.state==='acknowledged';
-  const snapshot=needsPolicy?await pagingSnapshot(c.env.DB):null;
-  const state=snapshot?.workspace??await load(c.env.DB), revision=state.revision, actor=c.get('actor');
-  const execute=async()=>{
-    if (['service', 'member'].includes(input.type) && input.baseValues !== undefined) {
-      authority(state, actor, true);
-      const record = input.type === 'service' ? state.services.find(row => row.id === input.id) : state.members.find(row => row.id === input.id);
-      const fields = input.type === 'service' ? ['name', 'environment', 'owner', 'runbook', 'pager'] : ['role', 'active'];
-      if (!record || fields.some(field => JSON.stringify((record as any)[field]) !== JSON.stringify(input.baseValues?.[field])))
-        fail('This record changed. Review the saved value before applying your edit.', 409);
-    }
-    const result=command(state,actor,input,new Date(Date.now()).toISOString(),snapshot?responseContext(snapshot,Date.now()):undefined);
-    if(['declare','manual-page'].includes(input.type)&&result&&typeof result==='object'&&'id' in result)setAuditSubject(c.env.DB,'entity',String(result.id));
-    const guard=sessionGuard(c);
-    if(result && ('changed' in result && result.changed === false || isResponseChange(input.type) && 'timeline' in result && result.revision === input.revision)){
-      // A read fence preserves current authority and the compared snapshot without a write.
-      const current=await c.env.DB.prepare(`SELECT revision,${guard.sql} AS activeSession,(SELECT json_extract(data,'$.role') FROM oc_members WHERE id=? AND json_extract(data,'$.active')=1) AS role FROM workspace_control WHERE id=1`)
-        .bind(...guard.values,actor.id).first<{revision:number;activeSession:number;role:string|null}>();
-      if(!current?.activeSession||!current.role)fail('Access revoked',401);
-      if(!['admin','responder'].includes(current.role))fail('Insufficient role',403);
-      if(current.revision!==revision)fail('Workspace changed. Reload before applying your edit.',409);
-      // Keep the existing security ledger exception limited to response-value
-      // comparisons. Other doors retain their accepted-attempt audit facts.
-      if (isResponseChange(input.type)) markCommandNoop(c.env.DB);
-      return {changed:false,message:'Nothing to change'};
-    }
-    if(snapshot){guard.sql+=' AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?)';guard.values.push(snapshot.revision);}
-    await save(c.env.DB,state,revision,guard);return result;
-  };
-  if(input.type==='manual-page'){
-    const current=state.members.find(m=>m.id===actor.id&&m.active);if(!current||!['admin','responder'].includes(current.role))fail('Only responders and admins may create manual pages',403);
-    const key=commandKey({commandKey:input.operationId});
-    const fingerprint=await hash(JSON.stringify(input));
-    const done=await runOnce(c.env.DB,{actor:actor.id,command:'manual-page:'+fingerprint,key},async()=>{const made=await execute() as import('./family/response-operations/domain').Incident;return {result:made.id};});
-    const currentState=await authorizedState(c),currentActor=currentState.members.find(m=>m.id===actor.id&&m.active);if(!currentActor||!['admin','responder'].includes(currentActor.role))fail('Manual-page access revoked',403);
-    const incident=currentState.incidents.find(i=>i.id===done.result);if(!incident)fail('Incident no longer retained',404);return c.json(incident);
-  }
-  return c.json(await execute());
-});
+installCommand(api);
 api.post("/api/replay", async (c) => {
   const input = await body(c);
   const state = await authorizedState(c);

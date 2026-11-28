@@ -4,6 +4,7 @@ import type {PagingArchive} from '../family/response-operations/paging-archive';
 
 const DAY = 86_400_000;
 const roles = ['primary', 'backup'] as const;
+const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 export type OnCallMember = {id: string; name: string};
 export type OnCallBand = {role: 'primary' | 'backup'; member: OnCallMember | null; from: string; to: string};
 export type OnCallRota = {
@@ -45,7 +46,7 @@ export function onCall(workspace: State, archive: Pick<PagingArchive, 'schedules
     const gaps = week.filter(band => !band.member).map(({role, from, to}) => ({role, from, to}));
     const anchor = schedule.primary.anchorLocal;
     return [{id: schedule.id, name: schedule.name, service: {id: service.id, name: services.map(s=>s!.name).join(' · ')}, zone: schedule.timezone, validFrom: schedule.validFrom,
-      rhythm: {every: schedule.primary.periodDays, weekday: new Intl.DateTimeFormat('en-GB', {weekday: 'long', timeZone: 'UTC'}).format(new Date(anchor + 'Z')), time: anchor.slice(11, 16)},
+      rhythm: {every: schedule.primary.periodDays, weekday: weekdays[new Date(anchor + 'Z').getUTCDay()], time: anchor.slice(11, 16)},
       now: {primary: member(now.primary), backup: member(now.backup), until: nextAt === null ? null : new Date(nextAt).toISOString()},
       next: next && nextAt !== null ? {at: new Date(nextAt).toISOString(), primary: member(next.primary), backup: member(next.backup)} : null, gaps, week}];
   });

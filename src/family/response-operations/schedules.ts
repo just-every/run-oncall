@@ -99,14 +99,20 @@ function localEpoch(value: unknown): number {
     fail("Local boundary must be a real calendar minute in 2000–2100");
   return at;
 }
+const formatters = new Map<string, Intl.DateTimeFormat>();
 function formatter(zone: unknown): Intl.DateTimeFormat {
   const name = string(zone, "timezone");
   if (name !== "UTC" && !name.includes("/")) fail("Timezone must be a named IANA zone or UTC");
+  const cached = formatters.get(name);
+  if (cached) return cached;
   try {
-    return new Intl.DateTimeFormat("en-US-u-ca-iso8601-nu-latn", {
+    const format = new Intl.DateTimeFormat("en-US-u-ca-iso8601-nu-latn", {
       timeZone: name, year: "numeric", month: "2-digit", day: "2-digit",
       hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
     });
+    if (formatters.size >= 32) formatters.delete(formatters.keys().next().value!);
+    formatters.set(name, format);
+    return format;
   } catch { return fail("Invalid IANA timezone"); }
 }
 function wallEpoch(format: Intl.DateTimeFormat, at: number): number {
@@ -117,7 +123,16 @@ function wallEpoch(format: Intl.DateTimeFormat, at: number): number {
 
 // Discover offsets around the target, then round-trip every candidate. This supports
 // non-hour shifts and date-line gaps without assuming a timezone's standard offset.
+const resolvers = new WeakMap<Intl.DateTimeFormat, ReturnType<typeof createLocalResolver>>();
 function localResolver(format: Intl.DateTimeFormat) {
+  const existing = resolvers.get(format);
+  if (existing) return existing;
+  const resolve = createLocalResolver(format);
+  resolvers.set(format, resolve);
+  return resolve;
+}
+
+function createLocalResolver(format: Intl.DateTimeFormat) {
   const cache = new Map<string, number | null>();
   return (wall: number, policy: Ambiguity): number | null => {
     if (wall < MIN || wall >= MAX) return null;
@@ -132,6 +147,7 @@ function localResolver(format: Intl.DateTimeFormat) {
       .filter(at => wallEpoch(format, at) === wall).sort((a, b) => a - b);
     const result = !candidates.length || (candidates.length > 1 && policy === "reject")
       ? null : policy === "later" ? candidates[candidates.length - 1] : candidates[0];
+    if (cache.size >= 512) cache.delete(cache.keys().next().value!);
     cache.set(key, result);
     return result;
   };
@@ -140,6 +156,7 @@ function localResolver(format: Intl.DateTimeFormat) {
 /** A nonexistent or policy-rejected repeated wall minute has no UTC instant. */
 export function resolveLocal(local: string, zone: string, ambiguity: Ambiguity): number | null {
   if (!ambiguous(ambiguity)) fail("Invalid ambiguity policy");
+  if (zone === "UTC") return localEpoch(local);
   return localResolver(formatter(zone))(localEpoch(local), ambiguity);
 }
 
@@ -150,7 +167,7 @@ export function validateSchedule(input: unknown, known?: {
   const optional = ["layers", "companyDates", "pto", "services"].filter(key => input && typeof input === "object" && Object.hasOwn(input, key));
   const value = object(input, ["id", "name", "service", "revision", "timezone", "validFrom", "validUntil", "primary", "backup", "overrides", ...optional], "Schedule");
   const timezone = string(value.timezone, "timezone");
-  const canonicalZone = formatter(timezone).resolvedOptions().timeZone;
+  const canonicalZone = timezone === "UTC" ? timezone : formatter(timezone).resolvedOptions().timeZone;
   const validFrom = utc(value.validFrom, "validFrom");
   const validUntil = value.validUntil === null ? null : utc(value.validUntil, "validUntil");
   if (validUntil !== null && validUntil <= validFrom) fail("Schedule validity must be a positive half-open interval");
@@ -203,11 +220,13 @@ function evaluationClock(at: number, endpoint = false): void {
 }
 type RawWindow = { member: string | null; start: number | null; end: number | null; origin: CoverageWindow["origin"]; warning?: string; explanation?: string; decisions?: LayerDecision[] };
 function evaluator(schedule: Schedule, members: CoverageMember[]) {
-  const format = formatter(schedule.timezone), resolve = localResolver(format);
+  const format = schedule.timezone === "UTC" ? null : formatter(schedule.timezone);
+  const resolve = format ? localResolver(format) : (wall: number) => wall < MIN || wall >= MAX ? null : wall;
   const from = Date.parse(schedule.validFrom), until = schedule.validUntil === null ? null : Date.parse(schedule.validUntil);
-  function rotationWindow(rotation: Rotation, at: number): RawWindow {
-    const anchor = localEpoch(rotation.anchorLocal), period = rotation.periodDays * DAY;
-    const estimate = Math.floor((wallEpoch(format, at) - anchor) / period);
+  const anchors = {primary: localEpoch(schedule.primary.anchorLocal), backup: localEpoch(schedule.backup.anchorLocal)};
+  function rotationWindow(role: typeof ROLES[number], at: number): RawWindow {
+    const rotation = schedule[role], anchor = anchors[role], period = rotation.periodDays * DAY;
+    const estimate = Math.floor(((format ? wallEpoch(format, at) : at) - anchor) / period);
     // A civil-day discontinuity can move the wall estimate across a boundary.
     // Include neighbors on both sides, and retain the calendar indices.
     const boundaries = [];
@@ -235,7 +254,7 @@ function evaluator(schedule: Schedule, members: CoverageMember[]) {
         const active = overrides.find(o => Date.parse(o.start) <= at && at < Date.parse(o.end));
         window = active
           ? { member: active.member, start: Date.parse(active.start), end: Date.parse(active.end), origin: "override", warning: active.member === null ? "override explicitly leaves coverage empty" : undefined }
-          : schedule.layers?.some(layer => layer.role === role) ? layeredWindow(schedule.layers.filter(layer => layer.role === role), schedule.companyDates ?? [], schedule.pto ?? [], members, at) : rotationWindow(schedule[role], at);
+          : schedule.layers?.some(layer => layer.role === role) ? layeredWindow(schedule.layers.filter(layer => layer.role === role), schedule.companyDates ?? [], schedule.pto ?? [], members, at) : rotationWindow(role, at);
         window.start = Math.max(window.start ?? from, from);
         if (until !== null) window.end = Math.min(window.end ?? until, until);
         if (!active) for (const o of overrides) {

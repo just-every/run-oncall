@@ -48,17 +48,21 @@ export async function beginRate(c:any,deps:IntakeDependencies,state:State,key:Ra
  const result=await c.env.DB.batch([
   c.env.DB.prepare('DELETE FROM oc_key_rate_usage WHERE key_id=? AND at<=?').bind(key.id,at-windowMs),
   c.env.DB.prepare(`INSERT INTO oc_key_rate_usage(key_id,at,requests,events) SELECT ?,?,1,0 WHERE ${guard.sql} ON CONFLICT(key_id,at) DO UPDATE SET requests=requests+1`).bind(key.id,at,...guard.values),
+  c.env.DB.prepare('SELECT COALESCE(SUM(requests),0) AS requests FROM oc_key_rate_usage WHERE key_id=? AND at>?').bind(key.id,at-windowMs),
  ]);
  if(result[1].meta.changes!==1)fail('Credential changed; retry with a current key',401);
- const rows=await samples(c.env.DB,rate);
- if(rows.reduce((n,r)=>n+r.requests,0)>policy.requests)await throttle(c,deps,rate,rows,'requests',1);
+ if(Number(result[2].results[0].requests)>policy.requests)
+  await throttle(c,deps,rate,await samples(c.env.DB,rate),'requests',1);
  return rate;
 }
 /** The event debit, coordination records and permanent audit commit together. */
 export async function saveRate(c:any,deps:IntakeDependencies,state:State,revision:number,rate:RateAdmission,newEvents:number) {
  const pagingGuard=await beginOnCall(c.env.DB,state);
- const rows=await samples(c.env.DB,rate);
- if(rows.reduce((n,r)=>n+r.events,0)+newEvents>rate.policy.events)await throttle(c,deps,rate,rows,'events',newEvents);
+ const db: D1Database = c.env.DB;
+ const used=await db.prepare('SELECT COALESCE(SUM(events),0) AS events FROM oc_key_rate_usage WHERE key_id=? AND at>?')
+  .bind(rate.key.id,rate.at-windowMs).first<number>('events');
+ if((used??0)+newEvents>rate.policy.events)
+  await throttle(c,deps,rate,await samples(c.env.DB,rate),'events',newEvents);
  checkIntakeBudget(state);
  const token=crypto.randomUUID(),guard={sql:`(${rate.guard.sql}) AND (${pagingGuard.sql}) AND COALESCE((SELECT SUM(events) FROM oc_key_rate_usage WHERE key_id=? AND at>?),0)+?<=?`,values:[...rate.guard.values,...pagingGuard.values,rate.key.id,rate.at-windowMs,newEvents,rate.policy.events]};
  const result=await c.env.DB.batch([...workspaceWrite(c.env.DB,state,revision,guard,token),c.env.DB.prepare('INSERT INTO oc_key_rate_usage(key_id,at,requests,events) SELECT ?,?,0,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?) ON CONFLICT(key_id,at) DO UPDATE SET events=events+excluded.events').bind(rate.key.id,rate.at,newEvents,token)]);

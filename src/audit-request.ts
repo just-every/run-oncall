@@ -23,20 +23,21 @@ function importKind(path: string) {
  const action=path.split('/').at(-1)??''
  return `import-door.${new Set(['uploads','plan','apply','status','reconcile','undo','archive','approve']).has(action)?action:'request'}`
 }
+const prefixes = ['teams','identity-link','command','members','password','sources','paging','schedules','delivery','triage','handoffs','routing','urgency','response','changes','intake','monitoring','email','move-in','restore','recovery','setup','login','logout']
+const operations = new Set(['publish','revoke','review','withdraw','prepare','export','ack','cancel','resume','apply','erase','undo','approve','rotate','overrides','schedules','policies','jobs','tick','callbacks','bulk','views','archive','restore','key','confirm','logout','identity','imports'])
 function route(path: string): { feature: string; kind: string } {
   if (path === '/api/audit/export') return { feature: 'audit', kind: 'audit.export' }
   if (path.startsWith('/api/operator/import/')) return { feature: 'import-door', kind: importKind(path) }
   if (path.startsWith('/api/rer/import/')) return { feature: 'import-door', kind: importKind(path) }
-  const prefixes = ['teams','identity-link','command','members','password','sources','paging','schedules','delivery','triage','handoffs','routing','urgency','response','changes','intake','monitoring','email','move-in','restore','recovery','setup','login','logout']
   const feature = prefixes.find(value => path === `/api/${value}` || path.startsWith(`/api/${value}/`))
     ?? (path.startsWith('/auth/') || path.startsWith('/__dev/') ? 'access' : path.startsWith('/api/ingress/') || path.startsWith('/v2/') || path.startsWith('/integrations/') || path.startsWith('/generic/') ? 'ingest' : 'workspace')
   const operation = path.split('/').at(-1) ?? ''
-  const operations = new Set(['publish','revoke','review','withdraw','prepare','export','ack','cancel','resume','apply','erase','undo','approve','rotate','overrides','schedules','policies','jobs','tick','callbacks','bulk','views','archive','restore','key','confirm','logout','identity','imports'])
   return { feature, kind: `${feature}.${operations.has(operation) ? operation : 'request'}` }
 }
 export async function auditedRequest(request: Request, env: Bindings, handle: (env: Bindings) => Promise<Response>): Promise<Response> {
   const path = new URL(request.url).pathname
-  const context: AuditContext = { ...route(path), source: { kind: 'door', id: route(path).feature }, commits: 0, storageFailed: false }
+  const { feature, kind } = route(path)
+  const context: AuditContext = { feature, kind, source: { kind: 'door', id: feature }, commits: 0, storageFailed: false }
   const subject = /^\/api\/(?:paging\/(?:schedules|jobs)|schedules|handoffs|(?:urgency|response)\/(?:services|alerts)|triage\/incidents)\/([^/]+)/.exec(path)
   if(subject) context.subject={kind:'entity',id:decodeURIComponent(subject[1])}
   const audit = auditedDatabase(env.DB, context)

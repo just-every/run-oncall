@@ -2,7 +2,7 @@ import {correlationLabels} from '../orchestration/correlation.ts';
 import { finishResponseAdmission } from '../response-policy/model.ts';
 import {readNativeRequest} from '../native-request';
 import { intakeReceiptCapacity } from '../workspace-profile.ts';
-import {beginRate,saveRate,admittedCount} from '../intake-rate/admission';
+import {beginRate,saveRate} from '../intake-rate/admission';
 import { auditIdentity } from '../audit-store';
 import { parseNativeRequest, retainNativeIncomplete } from '../native-incomplete';
 import { fail, signalInput, admit, type State } from '../family/response-operations/domain.ts';
@@ -58,11 +58,11 @@ export async function nativeRoutedIngress(c:any,deps:IntakeDependencies) {
   const nativeBody=await readNativeRequest(c,{...credential,signing_secret:null,scopes:JSON.stringify(source.routing!.scope)}),key=nativeBody.key;
   auditIdentity(c.env.DB,{actor:{kind:'intake-source',id:source.id},source:{kind:'intake-source',id:source.id}});
   const authority={sql:'EXISTS(SELECT 1 FROM oc_intake_credentials WHERE source=? AND key_digest=? AND signing_custody IS ?)',values:[source.id,credential.digest,credential.signing_custody]};
-  const before=structuredClone(state),rate=await beginRate(c,deps,state,{id:'intake:'+source.id,name:source.name,owner:source.routing!.owner},authority);
+  const rate=await beginRate(c,deps,state,{id:'intake:'+source.id,name:source.name,owner:source.routing!.owner},authority);
   const parsed=parseNativeRequest(nativeBody);
   if(!parsed) {
     const result=await retainNativeIncomplete(state,source,nativeBody,key);
-    if(!result.duplicate)await saveRate(c,deps,state,state.revision,rate,admittedCount(before,state));
+    if(!result.duplicate)await saveRate(c,deps,state,state.revision,rate,1);
     return c.json({duplicate:result.duplicate,id:result.receipt.id,service:result.receipt.service,acceptedAt:result.receipt.acceptedAt,truncation:true,incomplete:{receipt:result.receipt.id}},202);
   }
   const {input,signal}=parsed;
@@ -71,7 +71,7 @@ export async function nativeRoutedIngress(c:any,deps:IntakeDependencies) {
   const routingInput=sanitizeRoutingInput({...input,summary:signal.title,source:signal.source,severity:signal.severity,event:{action:signal.intent,summary:signal.title,severity:signal.severity}},key);
   const fingerprint=await intakeHash(JSON.stringify({signal,routingInput}));
   const result=receiveNativeRouting(state,source,signal,fingerprint,routingInput);
-  if(!result.duplicate)await saveRate(c,deps,state,state.revision,rate,admittedCount(before,state));
+  if(!result.duplicate)await saveRate(c,deps,state,state.revision,rate,result.receipt.outcome==='deduplicated'?0:1);
   const receipt=result.receipt;
   return c.json({duplicate:result.duplicate,id:receipt.id,eventId:receipt.native!.eventId,service:receipt.service,observedAt:receipt.observedAt,acceptedAt:receipt.acceptedAt},result.duplicate?200:201);
 }

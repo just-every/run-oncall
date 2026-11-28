@@ -6,6 +6,9 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
+  "assets": {
+    "binding": "ASSETS"
+  },
   "triggers": {
     "crons": [
       "* * * * *"

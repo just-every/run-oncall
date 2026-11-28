@@ -34,9 +34,9 @@ const snapshots=new WeakMap<State,Map<string,Snapshot>>()
 type MutationCounts=Record<string,{deleted:number;updated:number;inserted:number}>
 const mutationCounts=new WeakMap<State,MutationCounts>()
 export const workspaceMutationCounts=(state:State)=>mutationCounts.get(state)??{}
-export function decodeWorkspace(rows:StoredRecord[]):State {
+export function decodeWorkspace(rows:StoredRecord[], trackWrites = true):State {
   const control=rows.find(row=>row.collection==='control')
-  const state=empty(),previous=new Map<string,Snapshot>(collections.map(key=>[key,new Map()]))
+  const state=empty(),previous=trackWrites ? new Map<string,Snapshot>(collections.map(key=>[key,new Map()])) : null
   if(control)state.revision=JSON.parse(control.data).revision
   if(!Number.isSafeInteger(state.revision)||state.revision<0)fail('Stored workspace revision is inconsistent',503)
   for(const row of rows) {
@@ -46,9 +46,9 @@ export function decodeWorkspace(rows:StoredRecord[]):State {
     // Legacy embedded evidence stays in storage, never in ordinary API/UI reads.
     const value=key==='intakeReceipts'?storedReceipt(parsed):parsed
     ;((state as any)[key]??=[]).push(value)
-    previous.get(key)!.set(value.id,{ordinal:row.ordinal,data:row.data})
+    previous?.get(key)!.set(value.id,{ordinal:row.ordinal,data:row.data})
   }
-  snapshots.set(state,previous)
+  if(previous)snapshots.set(state,previous)
   return state
 }
 export async function loadWorkspace(db:D1Database):Promise<State> {

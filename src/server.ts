@@ -1,88 +1,82 @@
+/// <reference types="vite/client" />
 import { installationDocument } from './brand/installation';
-import {sweepOnCall} from './family/response-operations/on-call-notifications/sweep';
-import {sweepPages} from './sms-paging/sweep';
-import { sweepMoveInConsent } from './move-in/pagerduty-oauth';
 import {lobbyPaths} from './app/lobbyPaths';
 import {isWorkspacePath, workspaceAddress} from './app/paths';
 import {subscriptionResponse} from './schedule-coordination/feed';
-import {sweepDeadlines} from './incident-deadlines/sweep';
-import { dispatchOutbox } from './automation/dispatch'
-import { storeReadSnapshot } from './read-snapshot'
-import { auditedDatabase } from './audit-database'
-import { receiveEmail } from './email/receive'
 import { auditedRequest } from './audit-request'
 import { withDemo } from './modules/demo/index.mjs'
-import { seedDemo } from './demo'
-import start from '@tanstack/react-start/server-entry'
 import { dispatch } from './base/dispatch'
 import { staticAssetResponse } from './base/static-assets'
 import { guideResponse } from './move-in-guide'
-import { api } from './api'
 import { admitted, setupStateResponse } from './base/setup-state'
 import { lobbyResponse } from './base/lobby'
 import { identity } from './identity'
 import { authResponse, runtimeBindings, operatorAuth, type Bindings } from './auth.server'
 import {receivedRequest} from './request-body'
-import { workspaceDocument } from './workspace-document'
 import {workspaceCoverageHeader, workspaceRefreshHeader, workspaceStateHeader, type WorkspaceSnapshot} from './workspace-refresh'
 import {readSessionCookie} from './session-cookie'
-import {importDoorResponse} from './move-in/door'
-import { oncallAgentDoor } from './agent-door/index.server'
-import { expireReplayCalls } from './modules/agent-door/index.ts'
 import { businessSettings } from './agent-door/business'
-import { businessPeopleResponse } from './agent-door/people-link'
-import { oncallPeople } from './agent-door/people'
-type Env=Bindings
+import { isAgentPath } from './agent-door/paths'
+import { nativeIngress } from './native-ingress'
+import { workspaceShell, workspaceShellBuildPath } from './app/shell/document'
+type Env=Bindings & { TSS_PRERENDERING?: string };
+const render = async (request: Request) => (await import('@tanstack/react-start/server-entry')).default.fetch(request);
+const seed = async (env: Env, context: { ownerEmail: string; now: Date }) =>
+  (await import('./demo')).seedDemo(env, context);
 export default withDemo({
   async scheduled(_event,env) {
-    await expireReplayCalls({ options: { db: env.DB }, now: Date.now });
-    const moveIn=auditedDatabase(env.DB,{feature:'move-in',kind:'move-in.consent.cleanup',actor:{kind:'service',id:'move-in-consent'},source:{kind:'provider',id:'pagerduty'},commits:0,storageFailed:false});
-    if((await sweepMoveInConsent({...env,DB:moveIn.db})).failed)await moveIn.record('failed');
-    const deadlines=auditedDatabase(env.DB,{feature:'incident-deadlines',kind:'deadline.sweep',actor:{kind:'service',id:'incident-deadlines'},source:{kind:'door',id:'scheduled'},commits:0,storageFailed:false});
-    const deadlineEnv={...env,DB:deadlines.db};
-    await sweepDeadlines(deadlines.db,(args,who)=>oncallAgentDoor(deadlineEnv).invoke('oncall.incidents.update',{...args,change:'expire-deadline',idempotency_key:`deadline-${args.deadline}`},who));
-    const notifications=auditedDatabase(env.DB,{feature:'on-call',kind:'on-call.record',actor:{kind:'service',id:'on-call'},source:{kind:'door',id:'scheduled'},commits:0,storageFailed:false});
-    await sweepOnCall(notifications.db);
-    const paging=auditedDatabase(env.DB,{feature:'paging',kind:'paging.send',actor:{kind:'service',id:'paging'},source:{kind:'door',id:'scheduled'},commits:0,storageFailed:false});
-    await sweepPages(paging.db,env,env.AUTH_ORIGIN);
-    for(let n=0;n<10;n++) {
-      const audit=auditedDatabase(env.DB,{feature:'automation',kind:'automation.dispatch',actor:{kind:'service',id:'outbox-dispatcher'},source:{kind:'door',id:'outbox-dispatcher'},commits:0,storageFailed:false});
-      if(!(await dispatchOutbox({...env,DB:audit.db})).processed)break;
-    }
-    // Keeps a cold isolate's first read near the change log instead of every stored row.
-    await storeReadSnapshot(env.DB);
+    await (await import('./scheduled')).scheduled(env);
   },
-  async email(message,env) { await receiveEmail(message,runtimeBindings(env)); },
+  async email(message,env) { await (await import('./email/receive')).receiveEmail(message,runtimeBindings(env)); },
   async fetch(request,original,execution) {
+   const path = new URL(request.url).pathname;
+   if (original.TSS_PRERENDERING === 'true' && (path === workspaceShellBuildPath || path === workspaceShellBuildPath + '/'))
+    return render(request);
    // Buffer bounded API uploads before auditPrincipal performs asynchronous authentication.
    // Keep refusals and read failures inside the audited boundary after transport is consumed.
    let received:Request|Response=request,bodyFailure:{error:unknown}|undefined;
    try {received=await receivedRequest(request)} catch(error){bodyFailure={error}}
+   let documentWorkspace: WorkspaceSnapshot | undefined;
    const result = await auditedRequest(request,original,async env => {
     if(bodyFailure)throw bodyFailure.error;
     if(received instanceof Response)return received;
-    if (new URL(request.url).pathname === '/favicon.ico' && ['GET', 'HEAD'].includes(request.method))
+    if (path === '/favicon.ico' && ['GET', 'HEAD'].includes(request.method))
       return new Response(null, { status: 308, headers: { location: '/brand/mark.svg' } });
     const asset=await staticAssetResponse(request,env);if(asset)return asset;
+    if (request.method === 'POST' && /^\/api\/ingress\/[^/]+$/.test(path)) {
+      return nativeIngress.fetch(received, env, execution);
+    }
+    if (request.method === 'GET' && (path === '/api/workspace' || path === '/api/on-call')) {
+      const { workspaceReadApi } = await import('./workspace-read-api');
+      return workspaceReadApi.fetch(received, env, execution);
+    }
+    if ((request.method === 'GET' && (path === '/api/triage' || path === '/api/triage/views' || path === '/api/readiness')) ||
+        (request.method === 'POST' && path === '/api/command') ||
+        (path === '/api/sources' && (request.method === 'GET' || request.method === 'POST'))) {
+      const { coordinationApi } = await import('./coordination-api');
+      return coordinationApi.fetch(received, env, execution);
+    }
     const bindings=runtimeBindings(env);
-    if (new URL(request.url).pathname === '/api/rer/agent-decisions') return (await oncallAgentDoor(bindings).handle(received))!;
-    const settings=await businessSettings(bindings).handle(received);if(settings)return settings;
-    const linking=await businessPeopleResponse(bindings,received);if(linking)return linking;
-    // Includes signed POST /api/rer/agent-decisions, before native app authentication.
-    const agents=await oncallAgentDoor(bindings).handle(received);
-    if(agents){
-      if(new URL(request.url).pathname==='/agents'&&agents.headers.get('content-type')?.startsWith('text/html')&&await oncallPeople(bindings).session(request)){
-        const brand=await businessSettings(bindings).publicBrand();
-        const business=brand.displayName?.replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]!));
-        return new HTMLRewriter().on('main',{element(main){main.prepend(`${business?`<p><a href="/app" data-business-name>${business}</a></p>`:''}<p><a href="/agents/people">Link existing Business people</a> · <a href="/docs/agents">Oncall agent guide</a></p>`,{html:true})}}).transform(agents)
-      }
-      return agents;
+    if (path === '/api/rer/business-settings' || path === '/rer-business-logo' || path === '/rer-business.css') {
+      const settings = await businessSettings(bindings).handle(received);
+      if (settings) return settings;
+    }
+    if (path === '/api/rer/people-link' || path === '/agents/people') {
+      const { businessPeopleResponse } = await import('./agent-door/people-link');
+      const linking = await businessPeopleResponse(bindings, received);
+      if (linking) return linking;
+    }
+    if (isAgentPath(path)) {
+      const { agentResponse } = await import('./agent-door/response');
+      const agents = await agentResponse(received, bindings, path);
+      if (agents) return agents;
     }
     const subscription=await subscriptionResponse(request,bindings);if(subscription)return subscription;
-    let workspace: WorkspaceSnapshot | undefined;
     const address=new URL(request.url), appDocument=isWorkspacePath(address.pathname);
     const route=workspaceAddress(address.pathname);
     let documentStatus=route.page==='not-found'?404:200;
+    let workspace: WorkspaceSnapshot | undefined;
+    const apiFetch = async (target: Request) => (await import('./api')).api.fetch(target, env, execution);
     const lobby=async()=>{
       const root=new Request(new URL('/',request.url),{method:request.method,headers:request.headers});
       const response=await lobbyResponse(root,bindings,identity);
@@ -99,14 +93,20 @@ export default withDemo({
         /^(?:__Host-operator_session|operator_session_local(?:_\d+)?)=/.test(cookie.trim()));
       if(!hasCredential)return (await lobby())!;
       // The same current-member authority protects both native and held password sessions.
-      const sessionUrl=new URL('/api/workspace',request.url);
       const headers = new Headers(request.headers);
       headers.set(workspaceRefreshHeader, route.page === 'on-call' || route.page === 'alerts' ? 'coverage' : 'state');
       headers.delete(workspaceStateHeader);
       headers.delete(workspaceCoverageHeader);
-      const session=await api.fetch(new Request(sessionUrl,{headers}),env,execution);
-      if(!session.ok)return session;
-      const current=await session.json<WorkspaceSnapshot>();
+      const { readWorkspace } = await import('./workspace-read');
+      const current = await readWorkspace(env, new Request(request.url, {headers})).catch(async error => {
+        const { Fault } = await import('./family/response-operations/domain');
+        if (!(error instanceof Fault)) throw error;
+        return Response.json({error: error.message}, {status: error.status, headers: {
+          'cache-control': 'no-store', 'x-content-type-options': 'nosniff',
+        }});
+      });
+      if (current instanceof Response) return current;
+      if ('unchanged' in current) throw new Error('A document requires the current workspace');
       if(current.member) {
         workspace=current;
         const id=route.incident||(address.pathname==='/'?address.searchParams.get('incident'):null);
@@ -121,17 +121,22 @@ export default withDemo({
       }
     }
     const guide=guideResponse(request);if(guide)return guide;
-    const imports=await importDoorResponse(received,bindings);if(imports)return imports;
+    if (path.startsWith('/api/rer/import/')) {
+      const { importDoorResponse } = await import('./move-in/door');
+      const imports = await importDoorResponse(received, bindings);
+      if (imports) return imports;
+    }
     const auth=await authResponse(received,env as Bindings); if(auth) return auth;
-    const response=await dispatch(received,()=>api.fetch(received,env,execution),()=>start.fetch(received));
+    const response = await dispatch(received, () => apiFetch(received), () =>
+      workspace && !import.meta.env.DEV ? workspaceShell(received, env) : render(received));
     if(response.headers.get('content-type')?.startsWith('text/html')) {
+      documentWorkspace = workspace;
       const headers=new Headers(response.headers);
       headers.set('cache-control','no-store, no-transform');
-      const document=new Response(response.body,{status:appDocument?documentStatus:response.status,headers});
-      return workspace ? workspaceDocument(document,workspace) : document;
+      return new Response(response.body,{status:appDocument?documentStatus:response.status,headers});
     }
     return response;
    });
-   return installationDocument(result, runtimeBindings(original), new URL(request.url).pathname);
+   return installationDocument(result, runtimeBindings(original), path, documentWorkspace);
   },
-} satisfies ExportedHandler<Env>, { seed: seedDemo })
+} satisfies ExportedHandler<Env>, { seed })

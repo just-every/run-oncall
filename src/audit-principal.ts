@@ -3,6 +3,13 @@ import { operatorAuth, runtimeBindings, type Bindings } from './auth.server'
 import { changeHash, equalSignature } from './changes/credentials'
 import { readSessionCookie } from './session-cookie'
 import type { AuditIdentity } from './audit-store'
+import type { NativeSource } from './native-sources'
+
+const nativeBearers = new WeakMap<Request, {id: string; credential: NativeSource}>()
+export function attributedNativeBearer(request: Request, id: string) {
+  const proof = nativeBearers.get(request)
+  return proof?.id === id ? proof.credential : undefined
+}
 
 /** Attribute the request after bounded transport consumption, including refused uploads.
  * The ordinary handler still repeats its authority fence in the state transaction. */
@@ -10,16 +17,18 @@ export async function auditPrincipal(request: Request, env: Bindings): Promise<{
   const path = new URL(request.url).pathname
   if (!path.startsWith('/api/') && !path.startsWith('/auth/')) return {}
   const sourcePath = /^\/api\/(ingress|changes\/ingress|monitoring)\/([^/]+)$/.exec(path)
+  if (sourcePath?.[1] === 'ingress' && request.method === 'POST') nativeBearers.delete(request)
   const bearer = request.headers.get('authorization')?.replace(/^Bearer /, '')
   if (sourcePath && bearer && request.headers.get('authorization')?.startsWith('Bearer ')) {
     const id = decodeURIComponent(sourcePath[2]), type = sourcePath[1]
     const query = type === 'ingress'
-      ? 'SELECT digest FROM sources WHERE id=? AND signing_custody IS NULL AND signing_secret IS NULL'
+      ? 'SELECT digest,signing_secret,signing_custody,scopes FROM sources WHERE id=? AND signing_custody IS NULL AND signing_secret IS NULL'
       : type === 'monitoring'
         ? "SELECT c.key_digest AS digest FROM oc_intake_credentials c JOIN oc_intake_sources s ON s.id=c.source WHERE c.source=? AND json_extract(s.data,'$.active')=1"
         : "SELECT c.key_digest AS digest FROM oc_change_credentials c JOIN oc_change_sources s ON s.id=c.source WHERE c.source=? AND json_extract(s.data,'$.active')=1 AND json_extract(s.data,'$.provider')='native' AND json_extract(s.data,'$.mode')='bearer'"
-    const credential = await env.DB.prepare(query).bind(id).first<{ digest: string }>()
+    const credential = await env.DB.prepare(query).bind(id).first<NativeSource>()
     if (credential && equalSignature(credential.digest, await changeHash(bearer))) {
+      if (type === 'ingress' && request.method === 'POST') nativeBearers.set(request, {id, credential})
       const identity = { kind: type === 'ingress' ? 'source' : type === 'monitoring' ? 'intake-source' : 'change-source', id }
       return { actor: identity, source: identity }
     }

@@ -371,7 +371,13 @@ export async function rateJourney(w,cookie,actor) {
   const isolated=await other.post();
   const isolatedReceipt=ok(isolated,201);
   assert.deepEqual(other.usage(),usage(1));
-  assert.ok((await protectedState()).alerts.some(alert=>alert.events.includes(isolatedReceipt.id)));
+  const groupedReceipt=ok(await other.post({...other.trigger,eventId:other.trigger.eventId+'-grouped'}),201);
+  assert.deepEqual(other.usage(),usage(2),'a new observation of the same generation uses only a request slot');
+  const recovery=ok(await other.post({...other.trigger,eventId:other.trigger.eventId+'-recovered',intent:'recover'}),201);
+  assert.deepEqual(other.usage(),[{at:nativeAt,requests:3,events:2}]);
+  const recovered=(await protectedState()).alerts.find(alert=>alert.events.includes(isolatedReceipt.id));
+  assert.equal(recovered?.state,'recovered');
+  assert.deepEqual(recovered.events,[isolatedReceipt.id,groupedReceipt.id,recovery.id]);
   assert.deepEqual(native.usage(),usage(5));
   assert.deepEqual(await w.outboundRequests(),held.outbound);
   console.log(`PROBE OC-084 2 ${id}: ${accepted.status}, ${retry.status}, ${rejected.status}; `+

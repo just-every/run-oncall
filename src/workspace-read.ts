@@ -8,7 +8,7 @@ import {nativeMember} from './native-member';
 import {memberOnCall} from './on-call/api';
 import type {OnCall} from './on-call/read';
 import {readSessionCookie} from './session-cookie';
-import {memberWorkspace} from './triage-api';
+import {memberWorkspace} from './workspace-visibility';
 import {workspaceCoverageHeader, workspaceRefreshHeader, workspaceStateHeader, type WorkspaceRefresh} from './workspace-refresh';
 import {decodeWorkspace, erasureFenceRead, workspaceRecords, workspaceRevisionColumns, type WorkspaceReadRevisions} from './workspace-store';
 import {readTracked} from './read-cache';
@@ -22,16 +22,18 @@ function memberSession(db: D1Database, digest: string, columns = '') {
     WHERE s.token=? AND s.expires>? AND json_extract(m.data,'$.active')=1`).bind(digest, Date.now());
 }
 
-async function access(env: Bindings, request: Request, coverage: boolean): Promise<Access | null> {
+export async function readCurrentMember(env: Bindings, request: Request, coverage?: boolean): Promise<Access | null> {
   const token = readSessionCookie(request);
-  if (!token) return nativeMember(env, request, {coverage});
+  const scope = coverage === undefined ? undefined : {coverage};
+  if (!token) return nativeMember(env, request, scope);
 
   const digest = await changeHash(token);
-  const row = await memberSession(env.DB, digest, ', ' + workspaceRevisionColumns(coverage)).first<MemberSessionRow & WorkspaceReadRevisions>();
+  const columns = scope ? ', ' + workspaceRevisionColumns(scope.coverage) : '';
+  const row = await memberSession(env.DB, digest, columns).first<MemberSessionRow & WorkspaceReadRevisions>();
   if (!row) return null;
   const member: Member = JSON.parse(row.data);
   if (row.operator_session) {
-    const native = await nativeMember(env, request, {coverage});
+    const native = await nativeMember(env, request, scope);
     if (!native || native.digest !== `native:${row.operator_session}` || native.member.id !== member.id) return null;
     return {...native, digest};
   }
@@ -47,7 +49,7 @@ async function snapshot(db: D1Database, session: Access, full: boolean, coverage
   const schedules = coverage ? read.rows('paging_schedules').map(row => JSON.parse(row.data) as Schedule) : undefined;
   const pagingRevision: number | undefined = coverage ? read.rows('paging_control')[0]?.revision : undefined;
   if (coverage && (!Number.isSafeInteger(pagingRevision) || pagingRevision! < 0)) fail('Critical scheduling storage missing', 503);
-  const workspace = decodeWorkspace(workspaceRecords(read, fences, full ? undefined : ['members', 'services', 'teams']));
+  const workspace = decodeWorkspace(workspaceRecords(read, fences, full ? undefined : ['members', 'services', 'teams']), false);
   return {current, workspace, schedules, pagingRevision};
 }
 
@@ -92,7 +94,7 @@ export async function readWorkspace(env: Bindings, request: Request): Promise<Wo
   const mode = request.headers.get(workspaceRefreshHeader);
   const versioned = mode === 'state' || mode === 'coverage';
   const coverage = mode !== 'state';
-  const session = await access(env, request, coverage);
+  const session = await readCurrentMember(env, request, coverage);
   if (!session) {
     const hasMembers = await env.DB.prepare('SELECT 1 FROM oc_members LIMIT 1').first();
     return {setup: !hasMembers, member: null, demo: env.RER_DEMO === '1', state: null};
@@ -122,7 +124,7 @@ export async function readWorkspace(env: Bindings, request: Request): Promise<Wo
 }
 
 export async function readOnCall(env: Bindings, request: Request, rawAt: string | undefined) {
-  const session = await access(env, request, false);
+  const session = await readCurrentMember(env, request, false);
   if (!session) fail('Sign in required', 401);
   if (session.member.role === 'stakeholder') fail('Stakeholders may only access internal status and approved updates', 403);
   const at = rawAt === undefined ? Date.now() : Date.parse(rawAt);

@@ -1,3 +1,4 @@
+import { installTriageReads } from './triage-read-api';
 import {advanceRuleWorkflow} from './orchestration/workflow-api';
 import {requireNewSubjectIdentity} from './subject-erasure-identity';
 import {coordinationTasks,applyCoordinationStep,coordinationPreview,validateCoordination} from './triage-orchestration';
@@ -7,15 +8,7 @@ import {pagingSnapshot} from './paging-store';
 import {responseContext} from './manual-pages/context';
 import { auditKind, auditOutcome } from './audit-store'
 import { authority, command, fail, Fault, text, type Member, type State } from './family/response-operations/domain';
-import { matchingItems, triagePage, triageQuery, type BulkOperation, type BulkResult, type SavedView } from './family/response-operations/triage';
-
-export function memberWorkspace(state: State, actor: Member): State {
-  if(actor.role!=='admin'){const {apiClients,apiEndpoints,apiOperations,apiOutbox,emailSamples,emailAddresses,emailRules,emailReceipts,emailQuarantine,...visible}=state;state=visible;}
-  if(actor.role!=='admin'&&state.scheduleRecords)state={...state,scheduleRecords:state.scheduleRecords.filter(r=>r.kind==='policy'||r.member===actor.id||r.kind==='swap'&&r.data.substitute===actor.id)};
-  if(state.businessServices)state={...state,businessServices:state.businessServices.map(service=>actor.role==='admin'||actor.id===service.communicationsOwner&&['admin','responder'].includes(actor.role)?service:{...service,emailLists:undefined,notices:service.notices.filter(row=>row.target.kind==='user')})};
-  if (!state.triage) return state;
-  return {...state, triage: state.triage.filter(r => r.kind !== 'view' || r.actor === actor.id)};
-}
+import { matchingItems, triageQuery, type BulkOperation, type BulkResult, type SavedView } from './family/response-operations/triage';
 
 type Dependencies = {
   body: (c: any, max?: number) => Promise<any>;
@@ -26,14 +19,7 @@ type Dependencies = {
 const digest = async (value: string) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))), b => b.toString(16).padStart(2, '0')).join('');
 
 export function installTriage(api: any, deps: Dependencies) {
-  api.get('/api/triage', async (c: any) => {
-    const state = await deps.state(c);
-    return c.json(triagePage(state, c.get('actor'), triageQuery(c.req.query()), c.req.query('cursor'), Number(c.req.query('limit') ?? 25)));
-  });
-  api.get('/api/triage/views', async (c: any) => {
-    const state = await deps.state(c);
-    return c.json({views: (state.triage ?? []).filter(r => r.kind === 'view' && r.actor === c.get('actor').id)});
-  });
+  installTriageReads(api, deps.state);
   api.post('/api/triage/views', async (c: any) => {
     const input = await deps.body(c);
     const state = await deps.state(c), revision = state.revision, actor: Member = c.get('actor');
