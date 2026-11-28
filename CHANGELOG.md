@@ -1,3 +1,16 @@
+# 0.5.41 · 2026-11-28
+
+- Oncall now runs workspace requests, incoming alerts and scheduled work inside one SQLite-backed Durable Object per installation. Hosted measurements for the CPU fix in `53912b63` showed 0–1 ms of Worker CPU in request traces, within the Workers Free 10 ms budget. At ChargeDesk scale, the estimate is about 8,000 Durable Object requests a day and about 1% of the Free plan’s daily Durable Object duration allowance.
+- The Worker adds the `oncall-workspace-v1` migration with only `new_sqlite_classes: ["OncallWorkspace"]`. The object holds no persistent data. D1 remains the source of truth and this release adds no D1 migration.
+- The Base refresh carried by `cce754e2` keeps the owner’s single-use sign-in link valid when the managed mail relay returns 504 and the email may still arrive. A definite relay refusal still revokes the link.
+- **Hosted rollback.** Cloudflare version rollback refuses to cross the Durable Object class change, and an unmodified 0.5.40 build cannot deploy over it. To restore, redeploy 0.5.40 code with a migration under a new tag that sets `deleted_classes: ["OncallWorkspace"]`, or roll forward. The class holds no persistent data.
+
+### Upgrade from 0.5.40
+
+Back up the existing installation before switching tags. Stop the local app and any preview before running `rer export --output exports/before-0.5.41.rer`. For a hosted installation, export D1 from the original deploying checkout with the same private environment file used to deploy. Verify the backup and keep it private.
+
+Run `git fetch --quiet --depth 1 origin tag v0.5.41` and `git checkout --quiet --detach refs/tags/v0.5.41`. Restart the local app with `rer dev --host localhost`. For a hosted installation, update the original deploying checkout to the tag and run `rer deploy --environment ENVIRONMENT --env-file PRIVATE_FILE` with your deployment’s environment and private file.
+
 # 0.5.40 · 2026-11-26
 
 - Updating a hosted Oncall that sends mail no longer refuses. A redeploy counts the mail secrets already bound on its Worker, so `rer deploy --environment ENVIRONMENT --env-file FILE` with the private file you deployed with goes through, even without the mail key in the file, and keeps the owner, schedules and incidents. A new deployment still has to choose a mail provider or `MAIL_PROVIDER=none`.
