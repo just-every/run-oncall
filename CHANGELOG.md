@@ -1,3 +1,16 @@
+# 0.5.42 · 2026-11-28
+
+- Oncall discovers the D1 primary region from query metadata once per Worker isolate and uses a fresh region-named `OncallWorkspace` Durable Object with a placement hint near D1. The first HTTP request, Cron event or incoming email creates the new object.
+- Oncall batches console document reads, reducing warm D1 round trips per page from five to three. ChargeDesk measured roughly 1.5 s for console pages and 430–650 ms signed out on 0.5.41. In Brisbane scratch testing, the 0.5.42 code reached a 156 ms median for the signed-in On call page and 83–88 ms signed-out medians on reused connections. Sampled Worker and object CPU reached 4 ms and 15 ms on cold requests. Warm samples used 0–1 ms and 4–8 ms, respectively.
+- The release keeps the existing Durable Object class and D1 database. It adds no migrations and requires no state transfer.
+- **Hosted rollback.** Use Cloudflare Workers version rollback to restore the 0.5.41 version. Both releases use the same Durable Object class and migrations.
+
+### Upgrade from 0.5.41
+
+Back up the existing installation before switching tags. Stop the local app and any preview before running `rer export --output exports/before-0.5.42.rer`. For a hosted installation, export D1 from the original deploying checkout with the same private environment file used to deploy. Verify the backup and keep it private.
+
+Run `git fetch --quiet --depth 1 origin tag v0.5.42` and `git checkout --quiet --detach refs/tags/v0.5.42`. Restart the local app with `rer dev --host localhost`. For a hosted installation, update the original deploying checkout to the tag and run `rer deploy --environment ENVIRONMENT --env-file PRIVATE_FILE` with your deployment’s environment and private file.
+
 # 0.5.41 · 2026-11-28
 
 - Oncall now runs workspace requests, incoming alerts and scheduled work inside one SQLite-backed Durable Object per installation. Hosted measurements for the CPU fix in `53912b63` showed 0–1 ms of Worker CPU in request traces, within the Workers Free 10 ms budget. At ChargeDesk scale, the estimate is about 8,000 Durable Object requests a day and about 1% of the Free plan’s daily Durable Object duration allowance.
