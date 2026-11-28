@@ -780,7 +780,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "051594e83d36f0e59d13ac06b49ac4faee19f35931b5c714b0bfef27f7aa04c9",
+      "sha256": "ade5c0ae49486e7b1b695a17e9236e9d2776a007f5e127b26823dccbdc97636d",
       "executable": false
     },
     "pnpm-lock.yaml": {
@@ -915,8 +915,8 @@
       "sha256": "81eb7b80491f5e69b18e85fc762b3fbf788929ad9824aa6e3ecad143bf2a7a4f",
       "executable": false
     },
-    "scripts/build-workspace-shell.mjs": {
-      "sha256": "6359ac6ca703786bcc23a252eb77f7224fcf922d10a2a3d350a472a67621c5ba",
+    "scripts/build-workspace-shell.ts": {
+      "sha256": "fd39e499eec0f9af70baa273f80d80a79628250e2b4711116164ced7aec40235",
       "executable": false
     },
     "scripts/checkpoint-local.mjs": {
@@ -7252,7 +7252,7 @@
       "executable": false
     },
     "vite.config.ts": {
-      "sha256": "8e2f61c3806e862f25ccc727c1ca9dc623ecf8981f78dca35793d7a6fc5d4a12",
+      "sha256": "1569fb06bb58ae20213a2dbb30eff33eef42dc5fff4de23f5484fc82cd505920",
       "executable": false
     },
     "vite.site.config.ts": {

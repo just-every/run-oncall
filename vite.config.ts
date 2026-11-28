@@ -7,6 +7,7 @@ import { execFileSync } from 'node:child_process'
 import { archiveOutputGuard } from '@runeditrun/rer/archive-output'
 import { docsSite } from './src/docs/build/plugin.ts'
 import { demoSockets } from './src/modules/demo/vite.mjs'
+import { workspaceShellBuild } from './scripts/build-workspace-shell.ts'
 import pkg from './package.json' with { type: 'json' }
 
 // A checkout supplies its public commit identity even without hosted bindings.
@@ -35,4 +36,4 @@ const serve = { main: './src/server.dev.ts', vars: { ...local('INBOUND_EMAIL_DOM
 // key, installer state), export archives, settings or local data.
 const server = { fs: { allow: ['src', 'public', 'node_modules'], deny: ['**/.rer/**', '**/.seed/**', '**/exports/**', '**/*.rer'] } }
 
-export default defineConfig(({ command, isPreview }) => ({ server, environments: { ssr: { build: { minify: 'oxc' } } }, define: { __ONCALL_SOURCE_SHA__: JSON.stringify(sourceSha), __ONCALL_FIELD_PROOF__: JSON.stringify(fieldProof), __ONCALL_RELEASE__: JSON.stringify({ package: pkg.name, version: pkg.version }) }, plugins: [demoSockets(), cloudflare({ inspectorPort: false, viteEnvironment: { name: 'ssr' }, persistState: { path: process.env.RER_STATE_DIR ?? '.wrangler/state' }, ...(command === 'serve' && !isPreview ? { config: serve } : process.env.RER_DEV_ORIGIN ? { config: { vars: local('RER_DEV_ORIGIN') } } : {}) }), docsSite(), tanstackStart(), react(), archiveOutputGuard()] }))
+export default defineConfig(({ command, isPreview }) => ({ server, environments: { ssr: { build: { minify: 'oxc' } } }, define: { __ONCALL_SOURCE_SHA__: JSON.stringify(sourceSha), __ONCALL_FIELD_PROOF__: JSON.stringify(fieldProof), __ONCALL_RELEASE__: JSON.stringify({ package: pkg.name, version: pkg.version }) }, plugins: [demoSockets(), cloudflare({ inspectorPort: false, viteEnvironment: { name: 'ssr' }, persistState: { path: process.env.RER_STATE_DIR ?? '.wrangler/state' }, ...(command === 'serve' && !isPreview ? { config: serve } : process.env.RER_DEV_ORIGIN ? { config: { vars: local('RER_DEV_ORIGIN') } } : {}) }), docsSite(), tanstackStart(), react(), archiveOutputGuard(), workspaceShellBuild()] }))
